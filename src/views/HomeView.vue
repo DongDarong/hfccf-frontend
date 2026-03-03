@@ -1,9 +1,12 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <section>
+    <h1>{{ t('pages.homeTitle') }}</h1>
+    <p>{{ t('pages.homeDescription') }}</p>
+  </section>
 </template>

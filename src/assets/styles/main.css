@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* HOPE logo palette */
+  --hope-h-lime-green: #8dc63f;
+  --hope-o-cyan-blue: #00aeef;
+  --hope-p-vibrant-red: #ed1c24;
+  --hope-e-golden-yellow: #fdc116;
+
+  /* Supporting text colors */
+  --hope-tagline-dark: #1d1d1b;
+  --hope-background-light: #f2f4f7;
+  --hope-text-white: #ffffff;
+
+  /* Short aliases */
+  --hope-lime: var(--hope-h-lime-green);
+  --hope-cyan: var(--hope-o-cyan-blue);
+  --hope-red: var(--hope-p-vibrant-red);
+  --hope-yellow: var(--hope-e-golden-yellow);
+  --hope-dark: var(--hope-tagline-dark);
+  --hope-light: var(--hope-background-light);
+
+  /* Base tokens */
+  --color-base: var(--hope-cyan);
+  --color-text: var(--hope-tagline-dark);
+  --color-surface: var(--hope-light);
+}
+
+body {
+  font-family: 'Space Grotesk', 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', system-ui, -apple-system, 'Segoe UI', Roboto, 'Leelawadee UI', sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
