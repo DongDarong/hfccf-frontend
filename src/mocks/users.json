@@ -4,7 +4,7 @@
         "firstName":  "Sokha",
         "lastName":  "Chhun",
         "fullName":  "Sokha Chhun",
-        "email":  "sokha.chhun@hfccf.org",
+        "email":  "superadmin@gmail.com",
         "phone":  "+855 12 345 001",
         "role":  "superadmin",
         "department":  "Operations",
@@ -12,7 +12,7 @@
         "avatar":  "",
         "createdAt":  "2026-01-05T08:12:00Z",
         "lastLoginAt":  "2026-03-04T02:20:00Z",
-        "password":  "P@ssw0rd123",
+        "password":  "superadmin@123",
         "role_permission":  [
                                 "all:*"
                             ]
@@ -22,7 +22,7 @@
         "firstName":  "Dara",
         "lastName":  "Meas",
         "fullName":  "Dara Meas",
-        "email":  "dara.meas@hfccf.org",
+        "email":  "admin@gmail.com",
         "phone":  "+855 12 345 002",
         "role":  "admin",
         "department":  "Programs",
@@ -30,7 +30,7 @@
         "avatar":  "",
         "createdAt":  "2026-01-09T09:40:00Z",
         "lastLoginAt":  "2026-03-03T16:05:00Z",
-        "password":  "P@ssw0rd123",
+        "password":  "admin@123",
         "role_permission":  [
                                 "dashboard:read",
                                 "users:read",

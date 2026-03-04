@@ -2,15 +2,16 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
-import users from '@/mocks/users.json'
+import AlertSuccess from '@/components/ui/AlertSuccess.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import ShowPassword from '@/components/icons/ShowPassword.vue'
+import { login } from '@/services/auth'
 
 defineOptions({
   name: 'LoginPage',
 })
 
 const router = useRouter()
-const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
-const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
 
 const form = reactive({
   email: '',
@@ -20,50 +21,40 @@ const form = reactive({
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-
-function buildSafeSessionUser(user) {
-  const safeUser = { ...user }
-  delete safeUser.password
-  return safeUser
-}
-
-function saveSession(user, remember) {
-  const storage = remember ? window.localStorage : window.sessionStorage
-  const fallbackStorage = remember ? window.sessionStorage : window.localStorage
-
-  fallbackStorage.removeItem(AUTH_USER_STORAGE_KEY)
-  fallbackStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-
-  storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(buildSafeSessionUser(user)))
-  storage.setItem(AUTH_TOKEN_STORAGE_KEY, `mock-token-${user.id}`)
-}
+const isPasswordVisible = ref(false)
+const showLoginSuccess = ref(false)
+const shouldRedirectAfterSuccess = ref(false)
 
 async function onSubmit() {
   errorMessage.value = ''
 
-  if (!form.email || !form.password) {
-    errorMessage.value = 'Please enter both email and password.'
-    return
-  }
-
-  const email = form.email.trim().toLowerCase()
-
   isSubmitting.value = true
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 450))
-
-    const matchedUser = users.find((user) => user.email.toLowerCase() === email && user.password === form.password)
-    if (!matchedUser) {
-      errorMessage.value = 'Invalid email or password.'
-      return
-    }
-
-    saveSession(matchedUser, form.remember)
-    await router.push('/dashboard')
+    await login({
+      email: form.email,
+      password: form.password,
+      remember: form.remember,
+    })
+    shouldRedirectAfterSuccess.value = true
+    showLoginSuccess.value = true
+  } catch (error) {
+    errorMessage.value = error?.message || 'Unable to login right now.'
   } finally {
     isSubmitting.value = false
   }
+}
+
+function togglePasswordVisibility() {
+  isPasswordVisible.value = !isPasswordVisible.value
+}
+
+async function onLoginSuccessClose() {
+  showLoginSuccess.value = false
+
+  if (!shouldRedirectAfterSuccess.value) return
+  shouldRedirectAfterSuccess.value = false
+  await router.push('/dashboard')
 }
 </script>
 
@@ -120,14 +111,25 @@ async function onSubmit() {
 
               <div class="space-y-1.5">
                 <label for="password" class="text-sm font-semibold text-slate-700">Password</label>
-                <input
-                  id="password"
-                  v-model="form.password"
-                  type="password"
-                  autocomplete="current-password"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
-                  placeholder="Enter your password"
-                />
+                <div class="relative">
+                  <input
+                    id="password"
+                    v-model="form.password"
+                    :type="isPasswordVisible ? 'text' : 'password'"
+                    autocomplete="current-password"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center text-slate-500 transition hover:text-slate-700"
+                    :aria-label="isPasswordVisible ? 'Hide password' : 'Show password'"
+                    :title="isPasswordVisible ? 'Hide password' : 'Show password'"
+                    @click="togglePasswordVisibility"
+                  >
+                    <ShowPassword :visible="isPasswordVisible" :size="18" />
+                  </button>
+                </div>
               </div>
 
               <div class="flex items-center justify-between gap-3 text-sm">
@@ -147,6 +149,8 @@ async function onSubmit() {
                 {{ errorMessage }}
               </p>
 
+              <LoadingSpinner v-if="isSubmitting" label="Signing in..." size="sm" />
+
               <Button type="submit" variant="primary" size="md" rounded="xl" block :loading="isSubmitting">
                 Sign in
               </Button>
@@ -155,5 +159,14 @@ async function onSubmit() {
         </div>
       </div>
     </section>
+
+    <AlertSuccess
+      :show="showLoginSuccess"
+      title="Login successful"
+      message="Welcome back. Redirecting to dashboard..."
+      button-text="Continue"
+      :auto-close="900"
+      @close="onLoginSuccessClose"
+    />
   </main>
 </template>

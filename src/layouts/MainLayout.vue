@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '@/components/layout/Navbar.vue'
 import Sidebar from '@/components/layout/Sidebar.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import { logout as clearAuthSession } from '@/services/auth'
 
 const props = defineProps({
   mobileBreakpoint: {
@@ -20,6 +22,7 @@ const props = defineProps({
 })
 
 const route = useRoute()
+const router = useRouter()
 const isSidebarOpen = ref(false)
 const isMobileViewport = ref(false)
 const isDesktopSidebarVisible = ref(true)
@@ -78,8 +81,12 @@ function onContentClick() {
   }
 }
 
-function onSidebarLogout() {
+async function onSidebarLogout() {
+  clearAuthSession()
   closeSidebar()
+  if (route.name !== 'login') {
+    await router.push({ name: 'login' })
+  }
 }
 
 function onKeydown(event) {
@@ -304,7 +311,9 @@ onBeforeUnmount(() => {
         @click="onContentClick"
       >
         <slot>
-          <div class="text-[var(--color-text)] text-sm font-medium opacity-60">Main content</div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <LoadingSpinner label="Loading content..." size="md" />
+          </div>
         </slot>
       </main>
     </div>
