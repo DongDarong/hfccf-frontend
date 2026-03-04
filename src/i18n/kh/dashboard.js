@@ -1,57 +1,11 @@
+import common from './dashboard/common'
+import app from './dashboard/app'
+import nav from './dashboard/nav'
+import pages from './dashboard/pages'
+
 export default {
-  common: {
-    loading: 'កំពុងផ្ទុក',
-    logout: 'ចាកចេញ',
-    logoutConfirm: 'តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?',
-    cancel: 'បោះបង់',
-    confirm: 'បញ្ជាក់',
-    close: 'បិទ',
-    continue: 'បន្ត',
-    success: 'ជោគជ័យ',
-    actionCompleted: 'ប្រតិបត្តិការបានបញ្ចប់ដោយជោគជ័យ។',
-    errorOccurred: 'មានបញ្ហាកើតឡើង',
-    errorTryAgain: 'សូមព្យាយាមម្ដងទៀត។',
-    areYouSure: 'តើអ្នកប្រាកដទេ?',
-    actionCannotBeUndone: 'សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។',
-    view: 'មើល',
-    edit: 'កែប្រែ',
-    delete: 'លុប',
-    dashboardOverview: 'ទិដ្ឋភាពទូទៅផ្ទាំងគ្រប់គ្រង',
-    dashboardOverviewSubtitle: 'តាមដានបច្ចុប្បន្នភាពសំខាន់ៗ និងសកម្មភាពថ្មីៗ នៅកន្លែងតែមួយ។',
-    dashboardStats: {
-      loading: 'កំពុងផ្ទុកស្ថិតិ...',
-      empty: 'មិនមានទិន្នន័យស្ថិតិសម្រាប់ផ្ទាំងគ្រប់គ្រងទេ។',
-      cards: {},
-    },
-    status: {
-      success: 'ជោគជ័យ',
-      warning: 'ព្រមាន',
-      error: 'កំហុស',
-      info: 'ព័ត៌មាន',
-      pending: 'កំពុងរង់ចាំ',
-      neutral: 'ធម្មតា',
-    },
-    role: {
-      admin: 'អ្នកគ្រប់គ្រង',
-      coach: 'គ្រូបង្វឹក',
-      player: 'អ្នកលេង',
-    },
-    permission: {},
-  },
-  app: {
-    brand: 'HFCCF ផ្នែកខាងមុខ',
-    language: 'ភាសា',
-  },
-  nav: {
-    home: 'ទំព័រដើម',
-    about: 'អំពី',
-    dashboard: 'ផ្ទាំងគ្រប់គ្រង',
-    navigation: 'ការរុករក',
-  },
-  pages: {
-    homeTitle: 'ទំព័រដើម',
-    homeDescription: 'សូមស្វាគមន៍មកកាន់កម្មវិធី។',
-    aboutTitle: 'អំពី',
-    aboutDescription: 'ទំព័រនេះប្រើប្លង់មេដែលបានចែករំលែក។',
-  },
+  common,
+  app,
+  nav,
+  pages,
 }

@@ -1,57 +1,11 @@
+import common from './dashboard/common'
+import app from './dashboard/app'
+import nav from './dashboard/nav'
+import pages from './dashboard/pages'
+
 export default {
-  common: {
-    loading: 'Loading',
-    logout: 'Logout',
-    logoutConfirm: 'Are you sure you want to log out?',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    close: 'Close',
-    continue: 'Continue',
-    success: 'Success',
-    actionCompleted: 'Action completed successfully.',
-    errorOccurred: 'Something went wrong',
-    errorTryAgain: 'Please try again.',
-    areYouSure: 'Are you sure?',
-    actionCannotBeUndone: 'This action cannot be undone.',
-    view: 'View',
-    edit: 'Edit',
-    delete: 'Delete',
-    dashboardOverview: 'Dashboard Overview',
-    dashboardOverviewSubtitle: 'Track key updates and recent activity in one place.',
-    dashboardStats: {
-      loading: 'Loading statistics...',
-      empty: 'No dashboard statistics available.',
-      cards: {},
-    },
-    status: {
-      success: 'Success',
-      warning: 'Warning',
-      error: 'Error',
-      info: 'Info',
-      pending: 'Pending',
-      neutral: 'Neutral',
-    },
-    role: {
-      admin: 'Admin',
-      coach: 'Coach',
-      player: 'Player',
-    },
-    permission: {},
-  },
-  app: {
-    brand: 'HFCCF Frontend',
-    language: 'Language',
-  },
-  nav: {
-    home: 'Home',
-    about: 'About',
-    dashboard: 'Dashboard',
-    navigation: 'Navigation',
-  },
-  pages: {
-    homeTitle: 'Home',
-    homeDescription: 'Welcome to the application.',
-    aboutTitle: 'About',
-    aboutDescription: 'This page uses the shared main layout.',
-  },
+  common,
+  app,
+  nav,
+  pages,
 }
