@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import SidebarBrand from '@/components/ui/SidebarBrandHeader.vue'
@@ -7,7 +7,6 @@ import SidebarLink from '@/components/layout/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/components/icons/Home.vue'
-import InfoIcon from '@/components/icons/Info.vue'
 
 defineOptions({
   name: 'MainSidebar',
@@ -26,7 +25,6 @@ const route = useRoute()
 const { t } = useLanguage()
 const iconByName = {
   home: HomeIcon,
-  info: InfoIcon,
 }
 
 const currentPath = computed(() => route.path)

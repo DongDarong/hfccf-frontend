@@ -1,12 +1,7 @@
-[
+﻿[
   {
     "to": "/",
     "labelKey": "nav.dashboard",
     "icon": "home"
-  },
-  {
-    "to": "/about",
-    "labelKey": "nav.about",
-    "icon": "info"
   }
 ]

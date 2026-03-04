@@ -239,10 +239,6 @@ function onToggleSidebar() {
 }
 
 @media (max-width: 768px) {
-  .menu-btn {
-    display: inline-flex;
-  }
-
   .navbar-actions {
     gap: 0.45rem;
   }
