@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '@/pages/Dashboard.vue'
 import LoginView from '@/pages/Login.vue'
 

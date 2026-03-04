@@ -4,6 +4,10 @@ import Button from '@/components/ui/Button.vue'
 import AlertQuestion from '@/components/ui/AlertQuestion.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
+defineOptions({
+  name: 'UiLogoutButton',
+})
+
 const props = defineProps({
   collapsed: {
     type: Boolean,
@@ -30,9 +34,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
   showConfirm: {
     type: Boolean,
     default: true,
+  },
+  label: {
+    type: String,
+    default: '',
+  },
+  confirmType: {
+    type: String,
+    default: 'warning',
+    validator: (value) => ['danger', 'warning', 'info'].includes(value),
   },
   title: {
     type: String,
@@ -52,10 +69,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['logout', 'cancel'])
+const emit = defineEmits(['logout', 'cancel', 'click'])
 const { t } = useLanguage()
 const isConfirmOpen = ref(false)
 
+const resolvedLabel = computed(() => props.label || t('common.logout'))
 const resolvedTitle = computed(() => props.title || t('common.logout'))
 const resolvedMessage = computed(() => props.message || t('common.logoutConfirm'))
 const resolvedConfirmText = computed(() => props.confirmText || t('common.logout'))
@@ -64,7 +82,8 @@ const computedSize = computed(() => (props.collapsed ? 'sm' : props.size))
 const shouldBlock = computed(() => (props.collapsed ? false : props.block))
 
 function onClick() {
-  if (props.disabled) return
+  if (props.disabled || props.loading) return
+  emit('click')
 
   if (props.showConfirm) {
     isConfirmOpen.value = true
@@ -93,6 +112,7 @@ function onCancel() {
       :rounded="rounded"
       :block="shouldBlock"
       :disabled="disabled"
+      :loading="loading"
       :class="{ '!px-2.5': collapsed }"
       @click="onClick"
     >
@@ -106,8 +126,8 @@ function onCancel() {
           />
         </svg>
       </template>
-      <span v-if="!collapsed">{{ t('common.logout') }}</span>
-      <span v-else class="sr-only">{{ t('common.logout') }}</span>
+      <span v-if="!collapsed">{{ resolvedLabel }}</span>
+      <span v-else class="sr-only">{{ resolvedLabel }}</span>
     </Button>
 
     <AlertQuestion
@@ -116,7 +136,7 @@ function onCancel() {
       :message="resolvedMessage"
       :confirm-text="resolvedConfirmText"
       :cancel-text="resolvedCancelText"
-      type="warning"
+      :type="confirmType"
       @confirm="onConfirm"
       @cancel="onCancel"
     />

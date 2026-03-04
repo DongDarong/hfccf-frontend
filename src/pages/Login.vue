@@ -1,6 +1,16 @@
-<script setup>
+﻿<script setup>
 import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
+import users from '@/mocks/users.json'
+
+defineOptions({
+  name: 'LoginPage',
+})
+
+const router = useRouter()
+const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
+const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
 
 const form = reactive({
   email: '',
@@ -11,7 +21,24 @@ const form = reactive({
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
-function onSubmit() {
+function buildSafeSessionUser(user) {
+  const safeUser = { ...user }
+  delete safeUser.password
+  return safeUser
+}
+
+function saveSession(user, remember) {
+  const storage = remember ? window.localStorage : window.sessionStorage
+  const fallbackStorage = remember ? window.sessionStorage : window.localStorage
+
+  fallbackStorage.removeItem(AUTH_USER_STORAGE_KEY)
+  fallbackStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+
+  storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(buildSafeSessionUser(user)))
+  storage.setItem(AUTH_TOKEN_STORAGE_KEY, `mock-token-${user.id}`)
+}
+
+async function onSubmit() {
   errorMessage.value = ''
 
   if (!form.email || !form.password) {
@@ -19,13 +46,24 @@ function onSubmit() {
     return
   }
 
+  const email = form.email.trim().toLowerCase()
+
   isSubmitting.value = true
 
-  // Placeholder submit flow until API auth is connected.
-  setTimeout(() => {
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 450))
+
+    const matchedUser = users.find((user) => user.email.toLowerCase() === email && user.password === form.password)
+    if (!matchedUser) {
+      errorMessage.value = 'Invalid email or password.'
+      return
+    }
+
+    saveSession(matchedUser, form.remember)
+    await router.push('/dashboard')
+  } finally {
     isSubmitting.value = false
-    errorMessage.value = 'Login endpoint is not connected yet.'
-  }, 900)
+  }
 }
 </script>
 

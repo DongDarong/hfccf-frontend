@@ -2,6 +2,10 @@
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+defineOptions({
+  name: 'DashboardPage',
+})
+
 const { t } = useI18n()
 </script>
 
