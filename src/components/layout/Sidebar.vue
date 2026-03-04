@@ -1,52 +1,147 @@
 <script setup>
-import { RouterLink } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import SidebarBrand from '@/components/ui/SidebarBrandHeader.vue'
+import Button from '@/components/ui/Button.vue'
+import AlertQuestion from '@/components/ui/AlertQuestion.vue'
+import SidebarLink from '@/components/layout/SidebarLink.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
-const { t } = useI18n()
+const emit = defineEmits(['close', 'toggle-sidebar', 'logout'])
+
+defineProps({
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const route = useRoute()
+const { t } = useLanguage()
+const showLogoutConfirm = ref(false)
+
+const currentPath = computed(() => route.path)
+const navItems = computed(() => [
+  { to: '/', label: t('nav.dashboard') },
+  { to: '/about', label: t('nav.about') },
+])
+
+function isActive(path) {
+  return currentPath.value === path
+}
+
+function onClose() {
+  emit('close')
+}
+
+function onToggleSidebar() {
+  emit('toggle-sidebar')
+}
+
+function handleLogout() {
+  showLogoutConfirm.value = false
+  emit('logout')
+  onClose()
+}
+
+function requestLogout() {
+  showLogoutConfirm.value = true
+}
+
+function cancelLogout() {
+  showLogoutConfirm.value = false
+}
 </script>
 
 <template>
-  <aside class="sidebar">
-    <h2 class="sidebar-title">{{ t('nav.navigation') }}</h2>
+  <aside class="sidebar-shell">
+    <nav class="flex h-full min-h-0 flex-col pb-2" aria-label="Main navigation">
+      <div class="py-2 pb-4 sm:pb-6">
+        <div class="mb-5 flex items-start justify-between" :class="{ 'justify-center': collapsed }">
+          <slot v-if="!collapsed" name="header">
+            <SidebarBrand />
+          </slot>
+          <button
+            type="button"
+            class="hidden h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 p-1.5 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900 min-[769px]:flex"
+            aria-label="Toggle sidebar"
+            @click="onToggleSidebar"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-full w-full">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-    <nav class="sidebar-nav">
-      <RouterLink to="/">{{ t('nav.dashboard') }}</RouterLink>
-      <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
+      <div
+        class="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain pr-1 pb-3 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200"
+      >
+        <div class="space-y-2">
+          <SidebarLink
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="sidebar-nav-link"
+            :class="{ 'sidebar-nav-link--active': isActive(item.to) }"
+          >
+            <span v-if="!collapsed">{{ item.label }}</span>
+            <span v-else class="sr-only">{{ item.label }}</span>
+          </SidebarLink>
+        </div>
+      </div>
+
+      <div class="mt-auto border-t border-slate-100 bg-white/95 pt-4 sm:pt-5" :class="{ 'flex justify-center': collapsed }">
+        <Button
+          variant="danger"
+          :size="collapsed ? 'sm' : 'md'"
+          rounded="xl"
+          :block="!collapsed"
+          :class="{ '!px-2.5': collapsed }"
+          @click="requestLogout"
+        >
+          <template #iconLeft>
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </template>
+          <span v-if="!collapsed">{{ t('common.logout') }}</span>
+          <span v-else class="sr-only">{{ t('common.logout') }}</span>
+        </Button>
+      </div>
+
+      <AlertQuestion
+        :show="showLogoutConfirm"
+        :title="t('common.logout')"
+        :message="t('common.logoutConfirm')"
+        :confirm-text="t('common.logout')"
+        :cancel-text="t('common.cancel')"
+        type="warning"
+        @confirm="handleLogout"
+        @cancel="cancelLogout"
+      />
     </nav>
   </aside>
 </template>
 
 <style scoped>
-.sidebar {
+.sidebar-shell {
   background: #ffffff;
   border-right: 1px solid #dbe1e8;
-  padding: 1rem;
+  padding: 0.75rem;
 }
 
-.sidebar-title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #4b5563;
-  margin: 0 0 0.75rem;
-}
-
-.sidebar-nav {
+.sidebar-nav-link {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.sidebar-nav a {
-  text-decoration: none;
-  color: #1d1d1b;
-  padding: 0.5rem 0.625rem;
-  border-radius: 8px;
-}
-
-.sidebar-nav a.router-link-exact-active {
-  background: #8dc63f;
-  color: #1d1d1b;
+  align-items: center;
+  min-height: 2.5rem;
   font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.sidebar-nav-link--active {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #bbf7d0;
 }
 </style>

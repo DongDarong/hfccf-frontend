@@ -1,105 +1,246 @@
 <script setup>
-import { RouterLink } from 'vue-router'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Aavtar from '@/components/ui/Aavtar.vue'
+import Calendar from '@/components/icons/Calendar.vue'
+import Notification from '@/components/icons/Notification.vue'
 
+const emit = defineEmits(['toggle-sidebar'])
 const { t, locale } = useI18n()
 
 const currentLocale = computed({
   get: () => locale.value,
   set: (value) => {
-    locale.value = value
-    localStorage.setItem('locale', value)
+    const next = value === 'kh' ? 'kh' : 'en'
+    locale.value = next
+    localStorage.setItem('locale', next)
   },
 })
+
+function onToggleSidebar() {
+  emit('toggle-sidebar')
+}
 </script>
 
 <template>
-  <header class="navbar">
-    <div class="brand">{{ t('app.brand') }}</div>
+  <nav class="navbar">
+    <div class="navbar-left">
+      <button type="button" class="menu-btn" aria-label="Open sidebar" @click="onToggleSidebar">
+        <svg class="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <div class="brand">
+        <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="brand-logo" />
+        <div class="brand-copy">
+          <span class="brand-text">{{ t('app.brand') }}</span>
+          <span class="brand-subtext">for Cambodian children</span>
+        </div>
+      </div>
+    </div>
 
     <div class="navbar-actions">
-      <nav class="navbar-links">
-        <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
-        <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
-      </nav>
+      <button type="button" class="icon-btn" aria-label="Calendar">
+        <Calendar :size="18" />
+      </button>
+
+      <button type="button" class="icon-btn icon-btn--notification" :aria-label="t('common.notifications')">
+        <Notification :size="18" />
+        <span class="icon-badge">4</span>
+      </button>
 
       <label class="locale-switcher">
-        <span>{{ t('app.language') }}</span>
+        <span class="sr-only">{{ t('app.language') }}</span>
         <select v-model="currentLocale">
           <option value="en">EN</option>
           <option value="kh">KH</option>
         </select>
       </label>
+
+      <Aavtar name="HFCCF User" size="sm" status="online" />
     </div>
-  </header>
+  </nav>
 </template>
 
 <style scoped>
 .navbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.875rem 1rem;
-  background: #ffffff;
-  border-bottom: 1px solid #dbe1e8;
+  gap: 0.75rem;
+  padding: 0.15rem 0;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.menu-btn {
+  display: none;
+  border: 1px solid #d9e2ec;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  color: #334155;
+  border-radius: 0.65rem;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-btn:hover {
+  border-color: #00aeef;
+  color: #0c4a6e;
+}
+
+.menu-btn:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
+
+.menu-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .brand {
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.brand-logo {
+  width: 58px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-text {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.brand-subtext {
+  font-size: 0.7rem;
+  color: #64748b;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.navbar-links {
-  display: flex;
   gap: 0.75rem;
 }
 
-.navbar-links a {
-  text-decoration: none;
-  color: #1d1d1b;
-  padding: 0.375rem 0.625rem;
-  border-radius: 8px;
+.icon-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe3ec;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475569;
+  transition: all 0.2s ease;
 }
 
-.navbar-links a.router-link-exact-active {
-  background: #00aeef;
+.icon-btn:hover {
+  border-color: #00aeef;
+  color: #0c4a6e;
+}
+
+.icon-btn--notification:hover {
+  border-color: #ed1c24;
+  color: #991b1b;
+}
+
+.icon-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ed1c24;
   color: #ffffff;
+  border: 2px solid #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .locale-switcher {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
 }
 
 .locale-switcher select {
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 0.3rem 0.5rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
   background: #ffffff;
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 
-@media (max-width: 760px) {
-  .navbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.locale-switcher select:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
 
-  .navbar-actions {
-    justify-content: space-between;
-    width: 100%;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (max-width: 768px) {
+  .menu-btn {
+    display: none;
+  }
+}
+
+@media (max-width: 540px) {
+  .brand-subtext {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-text {
+    display: none;
   }
 }
 </style>
