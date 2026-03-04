@@ -1,9 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import SidebarBrand from '@/components/ui/SidebarBrandHeader.vue'
-import Button from '@/components/ui/Button.vue'
-import AlertQuestion from '@/components/ui/AlertQuestion.vue'
+import LogoutButton from '@/components/ui/LogoutButton.vue'
 import SidebarLink from '@/components/layout/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -18,7 +17,6 @@ defineProps({
 
 const route = useRoute()
 const { t } = useLanguage()
-const showLogoutConfirm = ref(false)
 
 const currentPath = computed(() => route.path)
 const navItems = computed(() => [
@@ -39,17 +37,8 @@ function onToggleSidebar() {
 }
 
 function handleLogout() {
-  showLogoutConfirm.value = false
   emit('logout')
   onClose()
-}
-
-function requestLogout() {
-  showLogoutConfirm.value = true
-}
-
-function cancelLogout() {
-  showLogoutConfirm.value = false
 }
 </script>
 
@@ -92,34 +81,8 @@ function cancelLogout() {
       </div>
 
       <div class="mt-auto border-t border-slate-100 bg-white/95 pt-4 sm:pt-5" :class="{ 'flex justify-center': collapsed }">
-        <Button
-          variant="danger"
-          :size="collapsed ? 'sm' : 'md'"
-          rounded="xl"
-          :block="!collapsed"
-          :class="{ '!px-2.5': collapsed }"
-          @click="requestLogout"
-        >
-          <template #iconLeft>
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </template>
-          <span v-if="!collapsed">{{ t('common.logout') }}</span>
-          <span v-else class="sr-only">{{ t('common.logout') }}</span>
-        </Button>
+        <LogoutButton :collapsed="collapsed" @logout="handleLogout" />
       </div>
-
-      <AlertQuestion
-        :show="showLogoutConfirm"
-        :title="t('common.logout')"
-        :message="t('common.logoutConfirm')"
-        :confirm-text="t('common.logout')"
-        :cancel-text="t('common.cancel')"
-        type="warning"
-        @confirm="handleLogout"
-        @cancel="cancelLogout"
-      />
     </nav>
   </aside>
 </template>
