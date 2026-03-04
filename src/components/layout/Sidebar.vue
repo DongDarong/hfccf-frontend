@@ -5,8 +5,11 @@ import SidebarBrand from '@/components/ui/SidebarBrandHeader.vue'
 import LogoutButton from '@/components/ui/LogoutButton.vue'
 import SidebarLink from '@/components/layout/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import sidebarNavData from '@/data/sidebar-nav.json'
+import HomeIcon from '@/components/icons/Home.vue'
+import InfoIcon from '@/components/icons/Info.vue'
 
-const emit = defineEmits(['close', 'toggle-sidebar', 'logout'])
+const emit = defineEmits(['toggle-sidebar', 'logout'])
 
 defineProps({
   collapsed: {
@@ -17,28 +20,30 @@ defineProps({
 
 const route = useRoute()
 const { t } = useLanguage()
+const iconByName = {
+  home: HomeIcon,
+  info: InfoIcon,
+}
 
 const currentPath = computed(() => route.path)
-const navItems = computed(() => [
-  { to: '/', label: t('nav.dashboard') },
-  { to: '/about', label: t('nav.about') },
-])
+const navItems = computed(() =>
+  sidebarNavData.map((item) => ({
+    ...item,
+    label: t(item.labelKey),
+    iconComponent: iconByName[item.icon] || null,
+  })),
+)
 
 function isActive(path) {
   return currentPath.value === path
-}
-
-function onClose() {
-  emit('close')
 }
 
 function onToggleSidebar() {
   emit('toggle-sidebar')
 }
 
-function handleLogout() {
+function onLogout() {
   emit('logout')
-  onClose()
 }
 </script>
 
@@ -71,6 +76,8 @@ function handleLogout() {
             v-for="item in navItems"
             :key="item.to"
             :to="item.to"
+            :icon="item.iconComponent"
+            :collapsed="collapsed"
             class="sidebar-nav-link"
             :class="{ 'sidebar-nav-link--active': isActive(item.to) }"
           >
@@ -81,7 +88,7 @@ function handleLogout() {
       </div>
 
       <div class="mt-auto border-t border-slate-100 bg-white/95 pt-4 sm:pt-5" :class="{ 'flex justify-center': collapsed }">
-        <LogoutButton :collapsed="collapsed" @logout="handleLogout" />
+        <LogoutButton :collapsed="collapsed" @logout="onLogout" />
       </div>
     </nav>
   </aside>
@@ -106,5 +113,16 @@ function handleLogout() {
   background: #ecfdf5;
   color: #065f46;
   border-color: #bbf7d0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 </style>

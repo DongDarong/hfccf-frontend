@@ -7,6 +7,18 @@ const props = defineProps({
     type: [String, Object],
     required: true,
   },
+  icon: {
+    type: [Object, Function, String],
+    default: null,
+  },
+  iconClass: {
+    type: String,
+    default: 'sidebar-link__icon',
+  },
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
   exact: {
     type: Boolean,
     default: false,
@@ -29,9 +41,13 @@ const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--a
     <a
       :href="href"
       class="sidebar-link"
-      :class="(exact ? isExactActive : isActive) ? resolvedActiveClass : inactiveClass"
+      :class="[
+        (exact ? isExactActive : isActive) ? resolvedActiveClass : inactiveClass,
+        { 'sidebar-link--collapsed': collapsed },
+      ]"
       @click="navigate"
     >
+      <component :is="icon" v-if="icon" :class="iconClass" aria-hidden="true" />
       <slot :is-active="exact ? isExactActive : isActive" />
     </a>
   </RouterLink>
@@ -48,6 +64,21 @@ const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--a
   border-radius: 8px;
   border: 1px solid transparent;
   transition: all 0.18s ease;
+}
+
+.sidebar-link__icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.sidebar-link--collapsed {
+  justify-content: center;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  margin-inline: auto;
+  padding-inline: 0.35rem;
 }
 
 .sidebar-link:hover {

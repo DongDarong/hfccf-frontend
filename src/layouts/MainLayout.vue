@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '@/components/layout/Navbar.vue'
 import Sidebar from '@/components/layout/Sidebar.vue'
@@ -24,6 +24,8 @@ const isSidebarOpen = ref(false)
 const isMobileViewport = ref(false)
 const isDesktopSidebarVisible = ref(true)
 const DESKTOP_SIDEBAR_STORAGE_KEY = 'main-layout-desktop-sidebar-visible'
+const DESKTOP_SIDEBAR_EXPANDED_WIDTH = 268
+const DESKTOP_SIDEBAR_COLLAPSED_WIDTH = 84
 const MOBILE_SWIPE_EDGE_PX = 28
 const MOBILE_SWIPE_OPEN_THRESHOLD_PX = 64
 let mediaQueryList = null
@@ -31,6 +33,15 @@ let previousBodyOverflow = ''
 let swipeStartX = 0
 let swipeStartY = 0
 let isTrackingMobileOpenSwipe = false
+
+const desktopSidebarWidth = computed(() =>
+  `${isDesktopSidebarVisible.value ? DESKTOP_SIDEBAR_EXPANDED_WIDTH : DESKTOP_SIDEBAR_COLLAPSED_WIDTH}px`,
+)
+
+const desktopContentPaddingLeft = computed(() => {
+  if (isMobileViewport.value) return '0px'
+  return desktopSidebarWidth.value
+})
 
 function openSidebar() {
   isSidebarOpen.value = true
@@ -194,9 +205,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[var(--color-surface)]">
+  <div class="min-h-screen w-full overflow-x-hidden bg-[var(--color-surface)]">
     <header
-      class="sticky top-0 h-16 bg-white/95 border-b border-slate-100 flex items-center px-4 shadow-sm backdrop-blur z-[80] transition-all
+      class="sticky top-0 z-[80] flex h-16 w-full items-center border-b border-slate-100 bg-white/95 px-4 shadow-sm backdrop-blur transition-all
              max-[768px]:h-[60px] max-[768px]:px-3
              max-[600px]:h-14 max-[600px]:px-2.5
              max-[480px]:h-[52px] max-[480px]:px-2
@@ -209,8 +220,8 @@ onBeforeUnmount(() => {
 
     <aside
       id="main-layout-sidebar-desktop"
-      class="fixed top-16 left-0 z-[70] hidden h-[calc(100vh-64px)] overflow-y-auto border-r border-slate-100 bg-white p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-[width] duration-300 ease-in-out min-[769px]:block"
-      :class="isDesktopSidebarVisible ? 'w-[268px]' : 'w-[84px]'"
+      class="fixed top-16 left-0 z-[70] hidden h-[calc(100vh-64px)] overflow-y-auto border-r border-slate-100 bg-white transition-[width] duration-300 ease-in-out box-border min-[769px]:block"
+      :style="{ width: desktopSidebarWidth }"
       :aria-hidden="false"
     >
       <slot
@@ -255,10 +266,10 @@ onBeforeUnmount(() => {
 
     <aside
       id="main-layout-sidebar-mobile"
-      class="fixed left-0 z-[70] h-[calc(100vh-60px)] w-[min(85vw,320px)] -translate-x-full overflow-y-auto border-r-0 bg-white p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-xl transition-transform duration-300 ease-in-out
-             top-[60px] max-[600px]:top-14 max-[600px]:h-[calc(100vh-56px)] max-[600px]:p-3
-             max-[480px]:top-[52px] max-[480px]:h-[calc(100vh-52px)] max-[480px]:p-2.5
-             max-[420px]:top-[50px] max-[420px]:h-[calc(100vh-50px)] max-[420px]:p-2
+      class="fixed left-0 z-[70] h-[calc(100vh-60px)] w-[min(85vw,320px)] -translate-x-full overflow-y-auto border-r-0 bg-white shadow-xl transition-transform duration-300 ease-in-out box-border
+             top-[60px] max-[600px]:top-14 max-[600px]:h-[calc(100vh-56px)]
+             max-[480px]:top-[52px] max-[480px]:h-[calc(100vh-52px)]
+             max-[420px]:top-[50px] max-[420px]:h-[calc(100vh-50px)]
              min-[769px]:hidden"
       :class="{ 'translate-x-0': isSidebarOpen }"
       :aria-hidden="!isSidebarOpen && isMobileViewport"
@@ -281,8 +292,8 @@ onBeforeUnmount(() => {
     </aside>
 
     <div
-      class="min-h-screen transition-[padding] duration-300 ease-in-out"
-      :class="isDesktopSidebarVisible ? 'min-[769px]:pl-[268px]' : 'min-[769px]:pl-[84px]'"
+      class="min-h-screen w-full transition-[padding] duration-300 ease-in-out"
+      :style="{ paddingLeft: desktopContentPaddingLeft }"
     >
       <main
         class="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-all
