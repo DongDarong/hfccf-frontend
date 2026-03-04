@@ -205,9 +205,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="min-h-screen w-full overflow-x-hidden bg-[var(--color-surface)]">
+  <div
+    class="min-h-screen w-full overflow-x-hidden bg-[var(--color-surface)]
+           pt-16 max-[768px]:pt-[60px] max-[600px]:pt-14 max-[480px]:pt-[52px] max-[420px]:pt-[50px]"
+  >
     <header
-      class="sticky top-0 z-[80] flex h-16 w-full items-center border-b border-slate-100 bg-white/95 px-4 shadow-sm backdrop-blur transition-all
+      class="main-layout-header fixed inset-x-0 top-0 z-[80] flex h-16 w-full items-center border-b border-slate-100 bg-white/95 px-4 shadow-sm backdrop-blur transition-all
              max-[768px]:h-[60px] max-[768px]:px-3
              max-[600px]:h-14 max-[600px]:px-2.5
              max-[480px]:h-[52px] max-[480px]:px-2
@@ -234,7 +237,6 @@ onBeforeUnmount(() => {
       >
         <Sidebar
           :collapsed="!isDesktopSidebarVisible"
-          @close="closeSidebar"
           @toggle-sidebar="toggleSidebar"
           @logout="onSidebarLogout"
         />
@@ -284,7 +286,6 @@ onBeforeUnmount(() => {
       >
         <Sidebar
           :collapsed="false"
-          @close="closeSidebar"
           @toggle-sidebar="toggleSidebar"
           @logout="onSidebarLogout"
         />
@@ -309,3 +310,15 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.main-layout-header {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.main-layout-header * {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+</style>

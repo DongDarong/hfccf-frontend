@@ -72,6 +72,8 @@ function onToggleSidebar() {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.15rem 0;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 .navbar-left {
@@ -149,6 +151,7 @@ function onToggleSidebar() {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .icon-btn {
@@ -226,21 +229,58 @@ function onToggleSidebar() {
   border: 0;
 }
 
+.navbar * {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
 @media (max-width: 768px) {
   .menu-btn {
-    display: none;
+    display: inline-flex;
+  }
+
+  .navbar-actions {
+    gap: 0.45rem;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
   }
 }
 
 @media (max-width: 540px) {
+  .brand-logo {
+    width: 52px;
+    height: 26px;
+  }
+
   .brand-subtext {
     display: none;
+  }
+
+  .navbar-actions {
+    gap: 0.35rem;
+  }
+
+  .locale-switcher select {
+    padding: 0.28rem 0.5rem;
   }
 }
 
 @media (max-width: 420px) {
+  .brand-logo {
+    width: 48px;
+    height: 24px;
+  }
+
   .brand-text {
     display: none;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
   }
 }
 </style>
