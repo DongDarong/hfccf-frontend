@@ -1,6 +1,7 @@
 ﻿<script setup>
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
+import HeaderSection from '@/components/layout/HeaderSection.vue'
 
 defineOptions({
   name: 'DashboardPage',
@@ -12,10 +13,7 @@ const { t } = useI18n()
 <template>
   <MainLayout>
     <section class="dashboard-page">
-      <header class="dashboard-page__header">
-        <h1 class="dashboard-page__title">{{ t('nav.dashboard') }}</h1>
-        <p class="dashboard-page__subtitle">{{ t('pages.homeDescription') }}</p>
-      </header>
+      <HeaderSection :title="t('nav.dashboard')" :subtitle="t('pages.homeDescription')" />
 
       <div class="dashboard-page__placeholder">
         <p>{{ t('common.dashboardStats.empty') }}</p>
@@ -29,25 +27,6 @@ const { t } = useI18n()
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.dashboard-page__header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.dashboard-page__title {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.dashboard-page__subtitle {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.92rem;
 }
 
 .dashboard-page__placeholder {
