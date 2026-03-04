@@ -1,4 +1,8 @@
 ﻿<script setup>
+defineOptions({
+  name: 'InfoIcon',
+})
+
 defineProps({
   size: {
     type: Number,

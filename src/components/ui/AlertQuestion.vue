@@ -62,6 +62,7 @@ const resolvedCancelText = computed(() => props.cancelText || t('common.cancel')
           leave-to-class="opacity-0 scale-95 translate-y-4"
         >
           <div
+            v-if="show"
             class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl transition-all"
           >
             <!-- Icon / Header -->

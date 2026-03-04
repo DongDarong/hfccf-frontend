@@ -1,4 +1,8 @@
 <script setup>
+defineOptions({
+  name: 'UserAvatar',
+})
+
 defineProps({
   name: {
     type: String,

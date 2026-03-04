@@ -1,4 +1,8 @@
 <script setup>
+defineOptions({
+  name: 'CalendarIcon',
+})
+
 defineProps({
   size: {
     type: [Number, String],

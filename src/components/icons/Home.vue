@@ -1,4 +1,8 @@
 ﻿<script setup>
+defineOptions({
+  name: 'HomeIcon',
+})
+
 defineProps({
   size: {
     type: Number,

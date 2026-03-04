@@ -2,6 +2,10 @@
 import { computed, useSlots } from 'vue'
 import { useLanguage } from '../../composables/useLanguage'
 
+defineOptions({
+  name: 'UiButton',
+})
+
 const props = defineProps({
   variant: {
     type: String,

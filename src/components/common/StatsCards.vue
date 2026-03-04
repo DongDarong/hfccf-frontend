@@ -4,7 +4,11 @@ import LoadingSpinner from './LoadingSpinner.vue'
 import StatusBadge from './StatusBadge.vue'
 import { useLanguage } from '../../composables/useLanguage'
 
-const props = defineProps({
+defineOptions({
+  name: 'DashboardStatsCards',
+})
+
+defineProps({
   cards: {
     type: Array,
     default: () => [],

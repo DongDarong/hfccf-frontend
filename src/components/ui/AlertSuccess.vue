@@ -78,6 +78,7 @@ onUnmounted(() => {
           leave-to-class="opacity-0 scale-95"
         >
           <div
+            v-if="show"
             class="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white p-8 text-center shadow-2xl transition-all"
           >
             <!-- Success Icon with Animation Container -->

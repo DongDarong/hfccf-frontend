@@ -1,6 +1,10 @@
 <script setup>
 import { computed } from 'vue'
 
+defineOptions({
+  name: 'UiPagination',
+})
+
 const props = defineProps({
   modelValue: {
     type: Number,

@@ -1,4 +1,8 @@
-<script setup>
+﻿<script setup>
+defineOptions({
+  name: 'NotificationIcon',
+})
+
 defineProps({
   size: {
     type: [Number, String],

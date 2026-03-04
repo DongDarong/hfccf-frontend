@@ -9,6 +9,10 @@ import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/components/icons/Home.vue'
 import InfoIcon from '@/components/icons/Info.vue'
 
+defineOptions({
+  name: 'MainSidebar',
+})
+
 const emit = defineEmits(['toggle-sidebar', 'logout'])
 
 defineProps({

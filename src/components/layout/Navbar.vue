@@ -5,6 +5,10 @@ import Aavtar from '@/components/ui/Aavtar.vue'
 import Calendar from '@/components/icons/Calendar.vue'
 import Notification from '@/components/icons/Notification.vue'
 
+defineOptions({
+  name: 'MainNavbar',
+})
+
 const emit = defineEmits(['toggle-sidebar'])
 const { t, locale } = useI18n()
 
