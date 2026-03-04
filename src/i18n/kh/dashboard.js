@@ -10,12 +10,14 @@ export default {
     success: 'ជោគជ័យ',
     actionCompleted: 'ប្រតិបត្តិការបានបញ្ចប់ដោយជោគជ័យ។',
     errorOccurred: 'មានបញ្ហាកើតឡើង',
-    errorTryAgain: 'សូមព្យាយាមម្តងទៀត។',
+    errorTryAgain: 'សូមព្យាយាមម្ដងទៀត។',
     areYouSure: 'តើអ្នកប្រាកដទេ?',
     actionCannotBeUndone: 'សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។',
     view: 'មើល',
     edit: 'កែប្រែ',
     delete: 'លុប',
+    dashboardOverview: 'ទិដ្ឋភាពទូទៅផ្ទាំងគ្រប់គ្រង',
+    dashboardOverviewSubtitle: 'តាមដានបច្ចុប្បន្នភាពសំខាន់ៗ និងសកម្មភាពថ្មីៗ នៅកន្លែងតែមួយ។',
     dashboardStats: {
       loading: 'កំពុងផ្ទុកស្ថិតិ...',
       empty: 'មិនមានទិន្នន័យស្ថិតិសម្រាប់ផ្ទាំងគ្រប់គ្រងទេ។',
@@ -50,6 +52,6 @@ export default {
     homeTitle: 'ទំព័រដើម',
     homeDescription: 'សូមស្វាគមន៍មកកាន់កម្មវិធី។',
     aboutTitle: 'អំពី',
-    aboutDescription: 'ទំព័រនេះប្រើប្លង់មេចែករំលែករួម។',
+    aboutDescription: 'ទំព័រនេះប្រើប្លង់មេដែលបានចែករំលែក។',
   },
 }

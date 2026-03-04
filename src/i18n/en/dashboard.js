@@ -16,6 +16,8 @@ export default {
     view: 'View',
     edit: 'Edit',
     delete: 'Delete',
+    dashboardOverview: 'Dashboard Overview',
+    dashboardOverviewSubtitle: 'Track key updates and recent activity in one place.',
     dashboardStats: {
       loading: 'Loading statistics...',
       empty: 'No dashboard statistics available.',
