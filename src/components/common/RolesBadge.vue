@@ -32,12 +32,17 @@ const roleLabel = computed(() => {
   return normalizedRole.value.charAt(0).toUpperCase() + normalizedRole.value.slice(1)
 })
 
-const roleClass = computed(() => {
-  if (normalizedRole.value === 'admin') return 'bg-cyan-50 text-cyan-700 ring-cyan-200'
-  if (normalizedRole.value === 'coach') return 'bg-amber-50 text-amber-700 ring-amber-200'
-  if (normalizedRole.value === 'player') return 'bg-rose-50 text-rose-700 ring-rose-200'
-  return 'bg-gray-100 text-gray-700 ring-gray-200'
-})
+const ROLE_BADGE_STYLES = {
+  superadmin: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
+  admin: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+  manager: 'bg-sky-50 text-sky-700 ring-sky-200',
+  staff: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  support: 'bg-violet-50 text-violet-700 ring-violet-200',
+  coach: 'bg-amber-50 text-amber-700 ring-amber-200',
+  player: 'bg-rose-50 text-rose-700 ring-rose-200',
+}
+
+const roleClass = computed(() => ROLE_BADGE_STYLES[normalizedRole.value] || 'bg-gray-100 text-gray-700 ring-gray-200')
 
 const sizeClass = computed(() => {
   if (props.size === 'md') return 'px-3 py-1.5 text-xs'

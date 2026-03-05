@@ -48,7 +48,21 @@ const statusLabel = computed(() => {
   return normalizedStatus.value.charAt(0).toUpperCase() + normalizedStatus.value.slice(1)
 })
 
-const statusClass = computed(() => `status-badge--${normalizedStatus.value}`)
+const STATUS_BADGE_STYLES = {
+  success: 'status-badge--success',
+  active: 'status-badge--success',
+  pending: 'status-badge--pending',
+  warning: 'status-badge--warning',
+  error: 'status-badge--error',
+  suspended: 'status-badge--suspended',
+  inactive: 'status-badge--inactive',
+  info: 'status-badge--info',
+  neutral: 'status-badge--neutral',
+}
+
+const statusClass = computed(
+  () => STATUS_BADGE_STYLES[normalizedStatus.value] || STATUS_BADGE_STYLES.neutral,
+)
 </script>
 
 <template>
@@ -120,5 +134,23 @@ const statusClass = computed(() => `status-badge--${normalizedStatus.value}`)
   --badge-bg: color-mix(in srgb, var(--hope-o-cyan-blue) 16%, white);
   --badge-text: #0a4e69;
   --badge-dot: #3d93b5;
+}
+
+.status-badge--suspended {
+  --badge-bg: color-mix(in srgb, var(--hope-p-vibrant-red) 18%, white);
+  --badge-text: #8f1318;
+  --badge-dot: var(--hope-p-vibrant-red);
+}
+
+.status-badge--inactive {
+  --badge-bg: color-mix(in srgb, var(--hope-dark) 12%, white);
+  --badge-text: #4b5563;
+  --badge-dot: #9ca3af;
+}
+
+.status-badge--neutral {
+  --badge-bg: color-mix(in srgb, var(--hope-tagline-dark) 20%, white);
+  --badge-text: #374151;
+  --badge-dot: var(--hope-tagline-dark);
 }
 </style>

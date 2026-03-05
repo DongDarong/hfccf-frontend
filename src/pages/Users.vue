@@ -1,46 +1,76 @@
 <script setup>
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
+import SearchFilterBar from '@/components/ui/SearchFilterBar.vue'
+import Table from '@/components/ui/Table.vue'
+import usersMock from '@/mocks/users.json'
 
 defineOptions({
   name: 'UsersPage',
 })
 
 const { t } = useI18n()
+const searchQuery = ref('')
+const roleFilter = ref('')
+const statusFilter = ref('')
 
-const mockUsers = [
-  { id: 1, name: 'Dara Sok', email: 'dara.sok@hfccf.org', role: 'Admin' },
-  { id: 2, name: 'Sreyneang Ly', email: 'sreyneang.ly@hfccf.org', role: 'Manager' },
-  { id: 3, name: 'Vannak Chhouk', email: 'vannak.chhouk@hfccf.org', role: 'Staff' },
-]
+const roleOptions = ['Admin', 'Manager', 'Staff', 'Support']
+const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
+
+const users = ref(
+  usersMock.map((item) => ({
+    id: item.id,
+    name: item.fullName,
+    email: item.email,
+    role: item.role,
+    permissions: Array.isArray(item.role_permission) ? [...item.role_permission] : [],
+    status: item.status,
+    phone: item.phone,
+    username: item.firstName ? `${item.firstName.charAt(0).toLowerCase()}${item.lastName.toLowerCase()}` : item.id,
+  })),
+)
+
+const filteredUsers = computed(() => {
+  const query = String(searchQuery.value ?? '').trim().toLowerCase()
+
+  return users.value.filter((user) => {
+    let isMatch = true
+
+    if (query) {
+      const haystack = `${user.name} ${user.email} ${user.role} ${user.permission}`.toLowerCase()
+      isMatch = haystack.includes(query)
+    }
+
+    if (isMatch && roleFilter.value) {
+      isMatch = String(user.role).toLowerCase() === roleFilter.value.toLowerCase()
+    }
+
+    if (isMatch && statusFilter.value) {
+      isMatch = String(user.status).toLowerCase() === statusFilter.value.toLowerCase()
+    }
+
+    return isMatch
+  })
+})
 </script>
 
 <template>
   <MainLayout>
     <section class="users-page">
-      <HeaderSection :title="t('nav.users')" :subtitle="t('pages.usersDescription')" />
+      <HeaderSection :title="t('users.pageTitle')" :subtitle="t('users.summary')" />
 
-      <div class="users-page__card">
-        <table class="users-page__table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in mockUsers" :key="user.id">
-              <td>{{ user.id }}</td>
-              <td>{{ user.name }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.role }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SearchFilterBar
+        class="w-full"
+        v-model:searchQuery="searchQuery"
+        v-model:roleFilter="roleFilter"
+        v-model:statusFilter="statusFilter"
+        :role-options="roleOptions"
+        :status-options="statusOptions"
+      />
+
+      <Table :users="filteredUsers" :empty-text="t('users.table.empty')" />
     </section>
   </MainLayout>
 </template>
@@ -49,40 +79,6 @@ const mockUsers = [
 .users-page {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.users-page__card {
-  border: 1px solid #e2e8f0;
-  border-radius: 0.85rem;
-  background: #ffffff;
-  padding: 0.9rem;
-  overflow-x: auto;
-}
-
-.users-page__table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 520px;
-}
-
-.users-page__table th,
-.users-page__table td {
-  padding: 0.65rem 0.7rem;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: left;
-  font-size: 0.9rem;
-}
-
-.users-page__table th {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #475569;
-}
-
-.users-page__table tbody tr:hover {
-  background: #f8fafc;
+  gap: 1.5rem;
 }
 </style>
