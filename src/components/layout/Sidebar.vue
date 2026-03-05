@@ -7,6 +7,7 @@ import SidebarLink from '@/components/layout/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/components/icons/Home.vue'
+import InfoIcon from '@/components/icons/Info.vue'
 
 defineOptions({
   name: 'MainSidebar',
@@ -25,6 +26,7 @@ const route = useRoute()
 const { t } = useLanguage()
 const iconByName = {
   home: HomeIcon,
+  info: InfoIcon,
 }
 
 const currentPath = computed(() => route.path)
