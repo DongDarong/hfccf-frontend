@@ -23,6 +23,9 @@ export default {
     cards: {},
   },
   searchUsersPlaceholder: 'Search users by name, email, role, or permission',
+  allRoles: 'All roles',
+  allStatus: 'All statuses',
+  clear: 'Clear filters',
   status: {
     success: 'Success',
     warning: 'Warning',

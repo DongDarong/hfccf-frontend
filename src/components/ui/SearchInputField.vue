@@ -19,6 +19,10 @@ const props = defineProps({
     type: String,
     default: 'userSearchInput',
   },
+  inputClass: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -26,6 +30,16 @@ const { t } = useLanguage()
 
 const resolvedPlaceholder = computed(
   () => props.placeholder || t('users.searchPlaceholder') || t('common.searchUsersPlaceholder'),
+)
+
+const inputClasses = computed(
+  () =>
+    [
+      'w-full rounded-xl border-gray-300 border p-2.5 pl-10 text-gray-900 focus:border-hope-cyan focus:ring-hope-cyan sm:text-sm shadow-sm outline-none transition duration-200',
+      props.inputClass,
+    ]
+      .join(' ')
+      .trim(),
 )
 
 function onInput(event) {
@@ -39,7 +53,7 @@ function onInput(event) {
       :id="inputId"
       type="text"
       :placeholder="resolvedPlaceholder"
-      class="w-full rounded-xl border-gray-300 border p-2.5 pl-10 text-gray-900 focus:border-hope-cyan focus:ring-hope-cyan sm:text-sm shadow-sm outline-none"
+    :class="inputClasses"
       :value="modelValue"
       :disabled="disabled"
       @input="onInput"

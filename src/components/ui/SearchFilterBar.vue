@@ -38,23 +38,30 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="p-3 sm:p-4 md:p-5 border-b border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-stretch sm:items-center bg-gray-50 rounded-xl">
-    <SearchInputField
-      :model-value="props.searchQuery"
-      :disabled="props.disabled"
-      :placeholder="''"
-      @update:model-value="emit('update:searchQuery', $event)"
-    />
+  <div class="w-full rounded-2xl border border-slate-200 bg-white shadow-sm p-4 md:p-5">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex-1 min-w-0">
+        <SearchInputField
+          :model-value="props.searchQuery"
+          :disabled="props.disabled"
+          :placeholder="''"
+          input-class="bg-slate-50"
+          @update:model-value="emit('update:searchQuery', $event)"
+        />
+      </div>
 
-    <FilterSelectGroup
-      :role-filter="props.roleFilter"
-      :status-filter="props.statusFilter"
-      :role-options="props.roleOptions"
-      :status-options="props.statusOptions"
-      :disabled="props.disabled"
-      @update:role-filter="emit('update:roleFilter', $event)"
-      @update:status-filter="emit('update:statusFilter', $event)"
-      @clear="clearFilters"
-    />
+      <div class="flex flex-col gap-3 pt-2 lg:flex-row lg:items-center lg:pt-0">
+        <FilterSelectGroup
+          :role-filter="props.roleFilter"
+          :status-filter="props.statusFilter"
+          :role-options="props.roleOptions"
+          :status-options="props.statusOptions"
+          :disabled="props.disabled"
+          @update:role-filter="emit('update:roleFilter', $event)"
+          @update:status-filter="emit('update:statusFilter', $event)"
+          @clear="clearFilters"
+        />
+      </div>
+    </div>
   </div>
 </template>
