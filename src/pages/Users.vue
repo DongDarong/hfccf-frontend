@@ -6,6 +6,7 @@ import HeaderSection from '@/components/layout/HeaderSection.vue'
 import SearchFilterBar from '@/components/ui/SearchFilterBar.vue'
 import Table from '@/components/ui/Table.vue'
 import Pagination from '@/components/ui/Pagination.vue'
+import Button from '@/components/ui/Button.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
@@ -30,6 +31,11 @@ const roleOptions = [
   'adminsport',
 ]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
+const addUserLabel = computed(() => {
+  const key = 'users.addUser'
+  const translated = t(key)
+  return translated !== key ? translated : 'Add User'
+})
 
 const users = ref(
   usersMock.map((item) => ({
@@ -92,6 +98,17 @@ watch(
       <HeaderSection :title="t('users.pageTitle')" :subtitle="t('users.summary')" />
 
       <div class="users-page__panel">
+        <div class="users-page__actions">
+          <Button variant="primary" size="md" rounded="xl">
+            <template #iconLeft>
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </template>
+            {{ addUserLabel }}
+          </Button>
+        </div>
+
         <SearchFilterBar
           class="w-full"
           v-model:searchQuery="searchQuery"
@@ -132,5 +149,10 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.users-page__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
