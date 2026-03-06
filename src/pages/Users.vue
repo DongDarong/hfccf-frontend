@@ -44,7 +44,6 @@ const users = ref(
   })),
 )
 
-
 const filteredUsers = computed(() => {
   const query = String(searchQuery.value ?? '').trim().toLowerCase()
 
@@ -52,6 +51,7 @@ const filteredUsers = computed(() => {
     let isMatch = true
 
     if (query) {
+      // Build a single searchable string for lightweight client-side matching.
       const haystack = `${user.name} ${user.email} ${user.role} ${user.permission}`.toLowerCase()
       isMatch = haystack.includes(query)
     }
@@ -78,6 +78,7 @@ const paginatedUsers = computed(() => {
 watch(
   () => filteredUsers.value.length,
   () => {
+    // Keep page index valid when filters reduce the result set.
     if (currentPage.value > totalPages.value) {
       currentPage.value = totalPages.value
     }

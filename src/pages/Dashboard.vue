@@ -9,6 +9,7 @@ defineOptions({
 })
 
 const { t } = useI18n()
+// Static dashboard sample data; replace with API-driven metrics when backend is connected.
 const statsCards = [
   { title: 'Programs', value: 12, label: 'In progress', status: 'success' },
   { title: 'New referrals', value: 38, label: 'Last 7 days', status: 'info' },

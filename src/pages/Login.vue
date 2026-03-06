@@ -28,6 +28,7 @@ const shouldRedirectAfterSuccess = ref(false)
 async function onSubmit() {
   errorMessage.value = ''
 
+  // Lock form while async auth request is running.
   isSubmitting.value = true
 
   try {
@@ -36,6 +37,7 @@ async function onSubmit() {
       password: form.password,
       remember: form.remember,
     })
+    // Defer redirect until success modal closes (manual or auto-close).
     shouldRedirectAfterSuccess.value = true
     showLoginSuccess.value = true
   } catch (error) {
@@ -54,6 +56,7 @@ async function onLoginSuccessClose() {
 
   if (!shouldRedirectAfterSuccess.value) return
   shouldRedirectAfterSuccess.value = false
+  // Single navigation point avoids duplicate redirects.
   await router.push('/dashboard')
 }
 </script>
