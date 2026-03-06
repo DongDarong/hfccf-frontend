@@ -22,6 +22,19 @@ const currentLocale = computed({
   },
 })
 
+const brandCopy = computed(() =>
+  locale.value === 'kh'
+    ? {
+        orgTop: 'អង្គការមូលនិធិក្តីសង្ឃឹម',
+        orgBottom: 'នៃកុមារកម្ពុជា',
+      }
+    : {
+        orgTop: "Organization for Children's",
+        orgBottom: 'Hope Foundation of Cambodia',
+      },
+)
+const isKh = computed(() => locale.value === 'kh')
+
 function onToggleSidebar() {
   emit('toggle-sidebar')
 }
@@ -36,11 +49,11 @@ function onToggleSidebar() {
         </svg>
       </button>
 
-      <div class="brand">
+      <div class="brand" :class="{ 'brand--kh': isKh, 'brand--en': !isKh }">
         <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="brand-logo" />
-        <div class="brand-copy">
-          <span class="brand-text">{{ t('app.brand') }}</span>
-          <span class="brand-subtext">for Cambodian children</span>
+        <div class="brand-copy" :class="{ 'brand-copy--kh': isKh, 'brand-copy--en': !isKh }">
+          <span class="brand-text">{{ brandCopy.orgTop }}</span>
+          <span class="brand-subtext">{{ brandCopy.orgBottom }}</span>
         </div>
       </div>
     </div>
@@ -120,13 +133,13 @@ function onToggleSidebar() {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.7rem;
   min-width: 0;
 }
 
 .brand-logo {
-  width: 58px;
-  height: 28px;
+  width: 72px;
+  height: 36px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -134,11 +147,12 @@ function onToggleSidebar() {
 .brand-copy {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   min-width: 0;
 }
 
 .brand-text {
-  font-size: 0.95rem;
+  font-size: 1.08rem;
   font-weight: 800;
   letter-spacing: 0.01em;
   line-height: 1.1;
@@ -146,10 +160,46 @@ function onToggleSidebar() {
 }
 
 .brand-subtext {
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   color: #64748b;
   line-height: 1.1;
   white-space: nowrap;
+}
+
+.brand--en .brand-copy {
+  transform: translateY(1px);
+}
+
+.brand-copy--en .brand-text {
+  color: #0f172a;
+}
+
+.brand-copy--en .brand-subtext {
+  color: #475569;
+}
+
+.brand--kh .brand-copy {
+  transform: translateY(0);
+}
+
+.brand-copy--kh .brand-text,
+.brand-copy--kh .brand-subtext {
+  font-family: 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+  letter-spacing: 0;
+  white-space: normal;
+}
+
+.brand-copy--kh .brand-text {
+  font-size: 0.95rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #0b3f58;
+}
+
+.brand-copy--kh .brand-subtext {
+  font-size: 0.82rem;
+  line-height: 1.2;
+  color: #1d6c8f;
 }
 
 .navbar-actions {
@@ -252,12 +302,17 @@ function onToggleSidebar() {
 
 @media (max-width: 540px) {
   .brand-logo {
-    width: 52px;
-    height: 26px;
+    width: 64px;
+    height: 32px;
   }
 
   .brand-subtext {
     display: none;
+  }
+
+  .brand-copy--kh .brand-subtext {
+    display: block;
+    font-size: 0.74rem;
   }
 
   .navbar-actions {
@@ -271,11 +326,20 @@ function onToggleSidebar() {
 
 @media (max-width: 420px) {
   .brand-logo {
-    width: 48px;
-    height: 24px;
+    width: 56px;
+    height: 28px;
   }
 
   .brand-text {
+    display: none;
+  }
+
+  .brand-copy--kh .brand-text {
+    display: block;
+    font-size: 0.82rem;
+  }
+
+  .brand-copy--kh .brand-subtext {
     display: none;
   }
 
