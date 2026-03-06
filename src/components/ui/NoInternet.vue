@@ -31,6 +31,7 @@ const props = defineProps({
 const emit = defineEmits(['retry', 'online', 'offline'])
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
 
+// Inverse mode lets this component render online state banners when needed.
 const shouldShow = computed(() => (props.showWhenOnline ? isOnline.value : !isOnline.value))
 
 function syncConnectionStatus() {

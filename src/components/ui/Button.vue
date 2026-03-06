@@ -44,6 +44,7 @@ const { t } = useLanguage()
 const slots = useSlots()
 
 const variantClasses = computed(() => {
+  // Centralized style composition keeps button API stable across variants/sizes.
   const base = 'inline-flex items-center justify-center font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100'
   
   const variants = {
@@ -116,6 +117,7 @@ const loadingLabel = computed(() => t('common.loading'))
       <slot name="iconLeft" />
     </span>
 
+    <!-- Keep button width stable while loading by hiding slot text via opacity. -->
     <span v-if="hasDefaultSlot" :class="{ 'opacity-0': loading && !block }">
       <slot />
     </span>

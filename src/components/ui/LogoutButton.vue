@@ -78,6 +78,7 @@ const resolvedTitle = computed(() => props.title || t('common.logout'))
 const resolvedMessage = computed(() => props.message || t('common.logoutConfirm'))
 const resolvedConfirmText = computed(() => props.confirmText || t('common.logout'))
 const resolvedCancelText = computed(() => props.cancelText || t('common.cancel'))
+// Collapsed sidebar uses compact sizing and non-block button width.
 const computedSize = computed(() => (props.collapsed ? 'sm' : props.size))
 const shouldBlock = computed(() => (props.collapsed ? false : props.block))
 
@@ -85,6 +86,7 @@ function onClick() {
   if (props.disabled || props.loading) return
   emit('click')
 
+  // Optional confirmation step before dispatching logout.
   if (props.showConfirm) {
     isConfirmOpen.value = true
     return

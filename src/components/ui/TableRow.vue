@@ -19,6 +19,7 @@ const props = defineProps({
 const emit = defineEmits(['view', 'edit', 'delete'])
 
 const statusType = computed(() => {
+  // Normalize backend status values into badge variants used by StatusBadge.
   const value = String(props.user?.status ?? '').toLowerCase()
   if (value === 'active') return 'success'
   if (value === 'pending') return 'pending'
@@ -39,6 +40,7 @@ const userIdLabel = computed(() => {
 })
 
 const permissionList = computed(() => {
+  // Prefer explicit array payload; fallback supports legacy comma-delimited values.
   const explicit = Array.isArray(props.user?.permissions) ? props.user.permissions : []
   if (explicit.length) return explicit
   const fallback = String(props.user?.permission ?? '')

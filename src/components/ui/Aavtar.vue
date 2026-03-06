@@ -31,6 +31,7 @@ defineProps({
     </div>
     <div class="navbar-profile__avatar-container">
       <div class="navbar-profile__avatar">
+        <!-- Prefer uploaded avatar image; fall back to deterministic initials. -->
         <img
           v-if="avatar"
           :src="avatar"

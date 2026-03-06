@@ -9,6 +9,7 @@
         </svg>
       </div>
       <div class="brand-header__title">
+        <!-- Split brand text to apply product colors per segment. -->
         <span class="brand-header__edu">Edu</span><span class="brand-header__sport">Sport</span><span class="brand-header__pro">Pro</span>
       </div>
     </div>

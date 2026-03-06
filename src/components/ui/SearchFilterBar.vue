@@ -32,6 +32,7 @@ const props = defineProps({
 const emit = defineEmits(['update:searchQuery', 'update:roleFilter', 'update:statusFilter', 'clear'])
 
 function clearFilters() {
+  // Reset search here; role/status resets are handled inside FilterSelectGroup.
   emit('update:searchQuery', '')
   emit('clear')
 }

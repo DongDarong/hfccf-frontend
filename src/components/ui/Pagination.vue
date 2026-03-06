@@ -56,6 +56,7 @@ const pageItems = computed(() => {
   }
 
   const items = [1]
+  // Always keep first/last pages visible and collapse the middle with ellipsis.
   if (start > 2) items.push('...')
   for (let i = start; i <= end; i++) items.push(i)
   if (end < total - 1) items.push('...')

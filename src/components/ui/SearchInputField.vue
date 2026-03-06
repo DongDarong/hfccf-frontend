@@ -28,11 +28,13 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const { t } = useLanguage()
 
+// Placeholder priority: explicit prop -> users module text -> generic fallback.
 const resolvedPlaceholder = computed(
   () => props.placeholder || t('users.searchPlaceholder') || t('common.searchUsersPlaceholder'),
 )
 
 const inputClasses = computed(
+  // Merge baseline field styling with optional context-specific class overrides.
   () =>
     [
       'w-full rounded-xl border-gray-300 border p-2.5 pl-10 text-gray-900 focus:border-hope-cyan focus:ring-hope-cyan sm:text-sm shadow-sm outline-none transition duration-200',

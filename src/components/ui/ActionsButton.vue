@@ -60,6 +60,7 @@ function toggleMenu() {
 
   if (isOpen.value) {
     if (typeof window !== 'undefined') {
+      // Broadcast open state so other row menus can close themselves.
       window.dispatchEvent(
         new CustomEvent('actions-menu-open', { detail: { instanceId } }),
       )
@@ -82,6 +83,7 @@ function onAction(type) {
 
 function onWindowClick(event) {
   if (!root.value) return
+  // Close when clicking outside this menu instance.
   if (!root.value.contains(event.target)) {
     closeMenu()
   }
