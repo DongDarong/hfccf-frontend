@@ -16,6 +16,7 @@ const props = defineProps({
 const { t } = useLanguage()
 
 function toPermissionKey(value) {
+  // Normalize backend/display values into stable i18n keys.
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -27,6 +28,7 @@ const permissionLabel = computed(() => {
   if (!value) return '-'
   const key = `common.permission.${toPermissionKey(value)}`
   const translated = t(key)
+  // Fall back to the original value when a translation key is missing.
   return translated !== key ? translated : value
 })
 

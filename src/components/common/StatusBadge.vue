@@ -25,10 +25,12 @@ const { t } = useLanguage()
 
 const normalizedStatus = computed(() => {
   const value = props.status.trim().toLowerCase()
+  // Badge style logic expects a non-empty key.
   return value || 'neutral'
 })
 
 function toStatusKey(value) {
+  // Normalize statuses/labels to match translation key naming.
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -39,15 +41,18 @@ const statusLabel = computed(() => {
   if (props.label.trim()) {
     const providedKey = `common.status.${toStatusKey(props.label)}`
     const translatedProvided = t(providedKey)
+    // Prefer explicit label (translated when possible).
     return translatedProvided !== providedKey ? translatedProvided : props.label
   }
 
   const key = `common.status.${toStatusKey(normalizedStatus.value)}`
   const localized = t(key)
   if (localized !== key) return localized
+  // Final fallback to a readable capitalized value.
   return normalizedStatus.value.charAt(0).toUpperCase() + normalizedStatus.value.slice(1)
 })
 
+// Shared status-to-style mapping for consistent badge semantics.
 const STATUS_BADGE_STYLES = {
   success: 'status-badge--success',
   active: 'status-badge--success',

@@ -18,6 +18,7 @@ const { t } = useLanguage()
 const normalizedRole = computed(() => String(props.role ?? '').trim().toLowerCase())
 
 function toRoleKey(value) {
+  // Normalize role names into a predictable translation key format.
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -29,9 +30,11 @@ const roleLabel = computed(() => {
   const key = `common.role.${toRoleKey(normalizedRole.value)}`
   const translated = t(key)
   if (translated !== key) return translated
+  // Human-readable fallback when no translation exists.
   return normalizedRole.value.charAt(0).toUpperCase() + normalizedRole.value.slice(1)
 })
 
+// Centralized mapping keeps role color semantics consistent across the app.
 const ROLE_BADGE_STYLES = {
   superadmin: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
   coach: 'bg-amber-50 text-amber-700 ring-amber-200',

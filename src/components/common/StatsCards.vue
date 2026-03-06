@@ -26,6 +26,7 @@ const { t, language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
 
 function toCardKey(value) {
+  // Build safe i18n keys from API-provided card titles/labels.
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -38,6 +39,7 @@ function translateCardText(type, value) {
   if (!raw) return ''
   const key = `common.dashboardStats.cards.${toCardKey(raw)}.${type}`
   const translated = t(key)
+  // If no translation exists, preserve source text instead of showing key.
   return translated !== key ? translated : raw
 }
 
@@ -46,6 +48,7 @@ function accentClass(status) {
 }
 
 function icon(status) {
+  // Keep icon selection deterministic by status bucket.
   const key = (status || 'info').toLowerCase()
 
   if (key === 'success') {
@@ -72,6 +75,7 @@ function icon(status) {
     </div>
     <div v-else-if="error" class="stats__state stats__state--error">{{ error }}</div>
 
+    <!-- Render order: loading -> error -> cards/empty. -->
     <div v-else class="stats__grid">
       <article v-for="card in cards" :key="card.title" class="stats__card" :class="accentClass(card.status)">
         <div class="stats__head">
