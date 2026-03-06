@@ -8,6 +8,8 @@ import SearchFilterBar from '@/components/ui/SearchFilterBar.vue'
 import Table from '@/components/ui/Table.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Button from '@/components/ui/Button.vue'
+import AlertQuestion from '@/components/ui/AlertQuestion.vue'
+import AlertSuccess from '@/components/ui/AlertSuccess.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import usersMock from '@/mocks/users.json'
 
@@ -22,6 +24,11 @@ const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 const isLoading = ref(false)
+const isDeleteOpen = ref(false)
+const selectedUserId = ref('')
+const selectedUserName = ref('')
+const showSuccess = ref(false)
+const successMessage = ref('')
 
 const pageSize = 10
 
@@ -39,6 +46,16 @@ const addUserLabel = computed(() => {
   const key = 'users.addUser'
   const translated = t(key)
   return translated !== key ? translated : 'Add User'
+})
+const cancelLabel = computed(() => t('common.cancel') || 'Cancel')
+const deleteConfirmTitle = computed(() => t('users.deleteConfirmTitle') || 'Delete user?')
+const deleteConfirmText = computed(() => t('users.deleteConfirmText') || 'Delete')
+const deleteConfirmMessage = computed(() => {
+  const name = selectedUserName.value || 'this user'
+  const translated = t('users.deleteConfirmMessage', { name })
+  return translated !== 'users.deleteConfirmMessage'
+    ? translated
+    : `Are you sure you want to delete ${name}?`
 })
 
 function goToAddUser() {
@@ -65,8 +82,7 @@ const filteredUsers = computed(() => {
     let isMatch = true
 
     if (query) {
-      // Build a single searchable string for lightweight client-side matching.
-      const haystack = `${user.name} ${user.email} ${user.role} ${user.permission}`.toLowerCase()
+      const haystack = `${user.name} ${user.email} ${user.role} ${user.permissions?.join(' ')}`.toLowerCase()
       isMatch = haystack.includes(query)
     }
 
@@ -92,12 +108,38 @@ const paginatedUsers = computed(() => {
 watch(
   () => filteredUsers.value.length,
   () => {
-    // Keep page index valid when filters reduce the result set.
     if (currentPage.value > totalPages.value) {
       currentPage.value = totalPages.value
     }
   },
 )
+
+function onEditUser(user) {
+  const id = String(user?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/users/add', query: { mode: 'edit', id } })
+}
+
+function onDeleteUser(user) {
+  selectedUserId.value = user?.id || ''
+  selectedUserName.value = user?.name || ''
+  isDeleteOpen.value = true
+}
+
+function onCancelDelete() {
+  isDeleteOpen.value = false
+  selectedUserId.value = ''
+  selectedUserName.value = ''
+}
+
+function onConfirmDelete() {
+  users.value = users.value.filter((user) => user.id !== selectedUserId.value)
+  isDeleteOpen.value = false
+  selectedUserId.value = ''
+  selectedUserName.value = ''
+  successMessage.value = 'User deleted successfully.'
+  showSuccess.value = true
+}
 </script>
 
 <template>
@@ -129,7 +171,13 @@ watch(
         <div v-if="isLoading" class="users-page__loading">
           <LoadingSpinner :label="t('users.loadingUsers')" size="md" />
         </div>
-        <Table v-else :users="paginatedUsers" :empty-text="t('users.table.empty')" />
+        <Table
+          v-else
+          :users="paginatedUsers"
+          :empty-text="t('users.table.empty')"
+          @edit="onEditUser"
+          @delete="onDeleteUser"
+        />
 
         <div v-if="totalPages > 1" class="flex justify-end">
           <Pagination
@@ -141,6 +189,25 @@ watch(
         </div>
       </div>
     </section>
+
+    <AlertQuestion
+      :show="isDeleteOpen"
+      :title="deleteConfirmTitle"
+      :message="deleteConfirmMessage"
+      :confirm-text="deleteConfirmText"
+      :cancel-text="cancelLabel"
+      type="danger"
+      @confirm="onConfirmDelete"
+      @cancel="onCancelDelete"
+    />
+
+    <AlertSuccess
+      :show="showSuccess"
+      title="Success"
+      :message="successMessage"
+      button-text="Close"
+      @close="showSuccess = false"
+    />
   </MainLayout>
 </template>
 

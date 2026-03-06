@@ -1,19 +1,22 @@
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
 import Form from '@/components/ui/Form.vue'
+import Button from '@/components/ui/Button.vue'
 import AlertSuccess from '@/components/ui/AlertSuccess.vue'
 import AlertError from '@/components/ui/AlertError.vue'
 import ShowPassword from '@/components/icons/ShowPassword.vue'
+import usersMock from '@/mocks/users.json'
 
 defineOptions({
   name: 'AddUserPage',
 })
 
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 
 const roleOptions = [
@@ -53,16 +56,22 @@ const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const profileImagePreview = ref('')
 
+const isEditMode = computed(() => route.query.mode === 'edit' || Boolean(route.query.id))
+
 const resolvedPageTitle = computed(() => {
-  const key = 'users.addUser'
+  const key = isEditMode.value ? 'users.editUser' : 'users.addUser'
   const translated = t(key)
-  return translated !== key ? translated : 'Add User'
+  return translated !== key ? translated : isEditMode.value ? 'Update User' : 'Add User'
 })
 
 const resolvedPageSubtitle = computed(() => {
-  const key = 'users.addUserDescription'
+  const key = isEditMode.value ? 'users.editDescription' : 'users.addUserDescription'
   const translated = t(key)
-  return translated !== key ? translated : 'Create a new user account and assign access.'
+  return translated !== key
+    ? translated
+    : isEditMode.value
+      ? 'Update user profile details and permissions.'
+      : 'Create a new user account and assign access.'
 })
 
 const resolvedFormDescription = computed(() => {
@@ -154,9 +163,14 @@ async function onSubmit() {
   try {
     // Placeholder for API integration.
     await new Promise((resolve) => setTimeout(resolve, 700))
+    if (isEditMode.value) {
+      errorMessage.value = 'User updated successfully.'
+    }
     showSuccess.value = true
   } catch {
-    errorMessage.value = 'Unable to create user right now.'
+    errorMessage.value = isEditMode.value
+      ? 'Unable to update user right now.'
+      : 'Unable to create user right now.'
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -175,6 +189,19 @@ async function onSuccessClose() {
 function onErrorClose() {
   showError.value = false
 }
+
+onMounted(() => {
+  if (!isEditMode.value) return
+  const id = String(route.query.id || '')
+  const found = usersMock.find((item) => String(item.id) === id) || usersMock[0]
+  if (!found) return
+  form.name = found.fullName || ''
+  form.email = found.email || ''
+  form.phone = found.phone || ''
+  form.role = found.role || roleOptions[1]
+  form.permissions = Array.isArray(found.role_permission) ? [...found.role_permission] : []
+  form.status = found.status || statusOptions[0]
+})
 
 onBeforeUnmount(() => {
   if (profileImagePreview.value) {
@@ -284,6 +311,7 @@ onBeforeUnmount(() => {
                 v-for="permission in permissionOptions"
                 :key="permission"
                 class="add-user-page__permission-item"
+                :class="{ 'add-user-page__permission-item--active': hasPermission(permission) }"
               >
                 <input
                   type="checkbox"
@@ -343,6 +371,29 @@ onBeforeUnmount(() => {
             </div>
           </label>
         </div>
+
+        <template #actions>
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            rounded="xl"
+            :disabled="isSubmitting"
+            @click="onCancel"
+          >
+            {{ t('common.cancel') }}
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            rounded="xl"
+            :loading="isSubmitting"
+            :disabled="isSubmitting"
+          >
+            {{ resolvedPageTitle }}
+          </Button>
+        </template>
       </Form>
     </section>
 
@@ -356,8 +407,8 @@ onBeforeUnmount(() => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="User created"
-      message="The user account was created successfully."
+      :title="isEditMode ? 'User updated' : 'User created'"
+      :message="isEditMode ? 'The user account was updated successfully.' : 'The user account was created successfully.'"
       button-text="Back to users"
       @close="onSuccessClose"
     />
@@ -368,19 +419,19 @@ onBeforeUnmount(() => {
 .add-user-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.4rem;
 }
 
 .add-user-page__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
 .add-user-page__field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.42rem;
 }
 
 .add-user-page__field--full {
@@ -388,21 +439,27 @@ onBeforeUnmount(() => {
 }
 
 .add-user-page__label {
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #0f172a;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .add-user-page__input {
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid #d4dde8;
   border-radius: 0.75rem;
-  padding: 0.65rem 0.85rem;
+  padding: 0.68rem 0.88rem;
   font-size: 0.88rem;
   color: #111827;
-  background: #ffffff;
+  background: #fcfdff;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
+}
+
+.add-user-page__input:hover {
+  border-color: #bfccdb;
 }
 
 .add-user-page__password-wrap {
@@ -440,43 +497,73 @@ onBeforeUnmount(() => {
 .add-user-page__input:focus {
   border-color: var(--hope-o-cyan-blue);
   box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15);
+  background: #ffffff;
 }
 
 .add-user-page__permissions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.55rem;
 }
 
 .add-user-page__permission-item {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid #dbe4ee;
-  border-radius: 0.65rem;
-  background: #f8fafc;
-  font-size: 0.82rem;
-  color: #1f2937;
+  gap: 0.52rem;
+  min-height: 2.35rem;
+  padding: 0.52rem 0.72rem;
+  border: 1px solid #d6e2ee;
+  border-radius: 0.72rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.add-user-page__permission-item:hover {
+  border-color: #8fc3de;
+  background: #f0f8fe;
+  transform: translateY(-1px);
+}
+
+.add-user-page__permission-item--active {
+  border-color: #67b7df;
+  background: linear-gradient(180deg, #e8f6fe 0%, #dff1fc 100%);
+  color: #075985;
+  box-shadow: 0 6px 14px -12px rgba(0, 87, 138, 0.8);
 }
 
 .add-user-page__permission-checkbox {
   accent-color: var(--hope-o-cyan-blue);
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.add-user-page__permission-item span {
+  line-height: 1.2;
 }
 
 .add-user-page__profile {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.85rem;
   align-items: center;
+  border: 1px dashed #c9d9e8;
+  border-radius: 0.9rem;
+  background: #f9fcff;
+  padding: 0.75rem;
 }
 
 .add-user-page__profile-preview-wrap {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 999px;
   overflow: hidden;
-  border: 2px solid #dbe4ee;
+  border: 2px solid #c7d9ea;
+  box-shadow: 0 6px 14px -10px rgba(15, 23, 42, 0.6);
 }
 
 .add-user-page__profile-preview {
@@ -492,7 +579,7 @@ onBeforeUnmount(() => {
 }
 
 .add-user-page__file-input {
-  max-width: 250px;
+  max-width: 260px;
   font-size: 0.8rem;
   color: #334155;
 }
@@ -504,11 +591,19 @@ onBeforeUnmount(() => {
   border-radius: 0.6rem;
   font-size: 0.78rem;
   font-weight: 600;
-  padding: 0.38rem 0.55rem;
+  padding: 0.42rem 0.62rem;
+}
+
+.add-user-page__remove-image:hover {
+  background: #ffe4e6;
 }
 
 @media (max-width: 768px) {
   .add-user-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-user-page__permissions {
     grid-template-columns: 1fr;
   }
 }

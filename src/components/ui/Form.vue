@@ -113,15 +113,24 @@ function onCancel() {
 
 <style scoped>
 .ui-form {
+  position: relative;
   width: 100%;
   border: 1px solid #dbe4ee;
-  border-radius: 1rem;
+  border-radius: 1.1rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
   box-shadow:
     0 12px 30px -20px rgba(15, 23, 42, 0.55),
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
   overflow: hidden;
+}
+
+.ui-form::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--hope-o-cyan-blue) 0%, var(--hope-h-lime-green) 55%, #93c5fd 100%);
 }
 
 .ui-form__header {
@@ -161,6 +170,47 @@ function onCancel() {
   gap: 0.6rem;
 }
 
+.ui-form__actions :deep(button) {
+  width: 100%;
+}
+
+.ui-form :deep(input),
+.ui-form :deep(select),
+.ui-form :deep(textarea) {
+  border: 1px solid #d4dde8;
+  border-radius: 0.75rem;
+  background: #fcfdff;
+  color: #0f172a;
+  transition: all 0.18s ease;
+}
+
+.ui-form :deep(input:hover),
+.ui-form :deep(select:hover),
+.ui-form :deep(textarea:hover) {
+  border-color: #bfcddd;
+}
+
+.ui-form :deep(input:focus),
+.ui-form :deep(select:focus),
+.ui-form :deep(textarea:focus) {
+  border-color: var(--hope-o-cyan-blue);
+  box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15);
+  background: #ffffff;
+}
+
+.ui-form :deep(input::placeholder),
+.ui-form :deep(textarea::placeholder) {
+  color: #94a3b8;
+}
+
+.ui-form :deep(input:disabled),
+.ui-form :deep(select:disabled),
+.ui-form :deep(textarea:disabled) {
+  background: #f3f6f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
 @media (min-width: 640px) {
   .ui-form__header {
     padding: 1.05rem 1.15rem 0.9rem;
@@ -174,6 +224,10 @@ function onCancel() {
     padding: 0.95rem 1.15rem 1.1rem;
     flex-direction: row;
     justify-content: flex-end;
+  }
+
+  .ui-form__actions :deep(button) {
+    width: auto;
   }
 }
 </style>
