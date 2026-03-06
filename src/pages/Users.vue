@@ -1,12 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
 import SearchFilterBar from '@/components/ui/SearchFilterBar.vue'
 import Table from '@/components/ui/Table.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Button from '@/components/ui/Button.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
@@ -14,10 +16,12 @@ defineOptions({
 })
 
 const { t } = useI18n()
+const router = useRouter()
 const searchQuery = ref('')
 const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
+const isLoading = ref(false)
 
 const pageSize = 10
 
@@ -36,6 +40,10 @@ const addUserLabel = computed(() => {
   const translated = t(key)
   return translated !== key ? translated : 'Add User'
 })
+
+function goToAddUser() {
+  router.push('/users/add')
+}
 
 const users = ref(
   usersMock.map((item) => ({
@@ -99,7 +107,7 @@ watch(
 
       <div class="users-page__panel">
         <div class="users-page__actions">
-          <Button variant="primary" size="md" rounded="xl">
+          <Button variant="primary" size="md" rounded="xl" @click="goToAddUser">
             <template #iconLeft>
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -118,7 +126,10 @@ watch(
           :status-options="statusOptions"
         />
 
-        <Table :users="paginatedUsers" :empty-text="t('users.table.empty')" />
+        <div v-if="isLoading" class="users-page__loading">
+          <LoadingSpinner :label="t('users.loadingUsers')" size="md" />
+        </div>
+        <Table v-else :users="paginatedUsers" :empty-text="t('users.table.empty')" />
 
         <div v-if="totalPages > 1" class="flex justify-end">
           <Pagination
@@ -154,5 +165,9 @@ watch(
 .users-page__actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.users-page__loading {
+  padding: 1.5rem 0.5rem;
 }
 </style>

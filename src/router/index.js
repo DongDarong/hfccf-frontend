@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '@/pages/Dashboard.vue'
 import LoginView from '@/pages/Login.vue'
 import UsersView from '@/pages/Users.vue'
+import AddUserView from '@/pages/AddUser.vue'
 import { ensureSessionIsValid, touchActivity } from '@/services/auth'
 
 const router = createRouter({
@@ -27,6 +28,12 @@ const router = createRouter({
       path: '/users',
       name: 'users',
       component: UsersView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/users/add',
+      name: 'add-user',
+      component: AddUserView,
       meta: { requiresAuth: true },
     },
     {

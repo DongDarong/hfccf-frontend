@@ -46,7 +46,7 @@ const slots = useSlots()
 const variantClasses = computed(() => {
   // Centralized style composition keeps button API stable across variants/sizes.
   const base = 'inline-flex items-center justify-center font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100'
-  
+
   const variants = {
     primary: 'bg-[var(--hope-o-cyan-blue)] text-white shadow-sm shadow-blue-200 hover:bg-[#0087b8] hover:shadow-md hover:shadow-blue-300',
     secondary: 'bg-[var(--hope-h-lime-green)] text-white shadow-sm shadow-lime-200 hover:bg-[#7db135] hover:shadow-md hover:shadow-lime-300',
@@ -112,7 +112,7 @@ const loadingLabel = computed(() => t('common.loading'))
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       ></path>
     </svg>
-    
+
     <span v-if="$slots.iconLeft && !loading" class="flex-shrink-0">
       <slot name="iconLeft" />
     </span>
