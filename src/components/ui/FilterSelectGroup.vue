@@ -1,7 +1,7 @@
 <script setup>
 import { useLanguage } from '../../composables/useLanguage'
 
-const props = defineProps({
+defineProps({
   roleFilter: {
     type: String,
     default: '',

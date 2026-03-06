@@ -74,23 +74,25 @@ function userInitials(user) {
 
 function getInitialBadgeClass(role) {
   const normalized = String(role || '').toLowerCase()
-  if (normalized === 'admin') return 'bg-hope-cyan'
+  if (normalized === 'superadmin') return 'bg-indigo-600'
   if (normalized === 'coach') return 'bg-hope-yellow'
-  if (normalized === 'player') return 'bg-hope-red'
+  if (normalized === 'teacher') return 'bg-hope-lime'
+  if (normalized.startsWith('admin')) return 'bg-hope-cyan'
   return 'bg-gray-400'
 }
 
 function avatarRingClass(role) {
   const normalized = String(role || '').toLowerCase()
-  if (normalized === 'admin') return 'ring-cyan-300'
+  if (normalized === 'superadmin') return 'ring-indigo-300'
   if (normalized === 'coach') return 'ring-amber-300'
-  if (normalized === 'player') return 'ring-rose-300'
+  if (normalized === 'teacher') return 'ring-lime-300'
+  if (normalized.startsWith('admin')) return 'ring-cyan-300'
   return 'ring-gray-300'
 }
 
 function avatarTextClass(role) {
   const normalized = String(role || '').toLowerCase()
-  if (normalized === 'coach') return 'text-gray-900'
+  if (normalized === 'coach' || normalized === 'teacher') return 'text-gray-900'
   return 'text-white'
 }
 

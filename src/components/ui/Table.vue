@@ -4,6 +4,10 @@ import LoadingSpinner from '../common/LoadingSpinner.vue'
 import UsersTableRow from './TableRow.vue'
 import { useLanguage } from '../../composables/useLanguage'
 
+defineOptions({
+  name: 'UsersTable',
+})
+
 const props = defineProps({
   users: {
     type: Array,

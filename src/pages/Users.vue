@@ -20,7 +20,15 @@ const currentPage = ref(1)
 
 const pageSize = 5
 
-const roleOptions = ['Admin', 'Manager', 'Staff', 'Support']
+const roleOptions = [
+  'superadmin',
+  'coach',
+  'teacher',
+  'adminpreschool',
+  'adminscholaship',
+  'adminenglish',
+  'adminsport',
+]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
 
 const users = ref(
@@ -83,19 +91,6 @@ watch(
       <HeaderSection :title="t('users.pageTitle')" :subtitle="t('users.summary')" />
 
       <div class="users-page__panel">
-        <div class="users-page__panel-header">
-          <div>
-            <h2 class="users-page__panel-title">Team directory</h2>
-            <p class="users-page__panel-meta">{{ filteredUsers.length }} records</p>
-          </div>
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:border-slate-300"
-          >
-            Export CSV
-          </button>
-        </div>
-
         <SearchFilterBar
           class="w-full"
           v-model:searchQuery="searchQuery"
@@ -136,24 +131,5 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-}
-
-.users-page__panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.users-page__panel-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.users-page__panel-meta {
-  margin: 0.2rem 0 0;
-  font-size: 0.82rem;
-  color: #64748b;
 }
 </style>

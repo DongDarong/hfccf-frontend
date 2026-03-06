@@ -34,12 +34,12 @@ const roleLabel = computed(() => {
 
 const ROLE_BADGE_STYLES = {
   superadmin: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
-  admin: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
-  manager: 'bg-sky-50 text-sky-700 ring-sky-200',
-  staff: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  support: 'bg-violet-50 text-violet-700 ring-violet-200',
   coach: 'bg-amber-50 text-amber-700 ring-amber-200',
-  player: 'bg-rose-50 text-rose-700 ring-rose-200',
+  teacher: 'bg-lime-50 text-lime-700 ring-lime-200',
+  adminpreschool: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+  adminscholaship: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+  adminenglish: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+  adminsport: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
 }
 
 const roleClass = computed(() => ROLE_BADGE_STYLES[normalizedRole.value] || 'bg-gray-100 text-gray-700 ring-gray-200')
