@@ -18,7 +18,7 @@ const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 
-const pageSize = 5
+const pageSize = 10
 
 const roleOptions = [
   'superadmin',

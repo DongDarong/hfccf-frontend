@@ -158,5 +158,21 @@
     "lastLoginAt": "2026-03-03T23:50:00Z",
     "password": "P@ssw0rd123",
     "role_permission": ["dashboard:read", "users:read", "users:write", "reports:read", "settings:read"]
+  },
+  {
+    "id": "usr_010",
+    "firstName": "Mony",
+    "lastName": "Ly",
+    "fullName": "Mony Ly",
+    "email": "mony.ly@hfccf.org",
+    "phone": "+855 12 345 010",
+    "role": "adminscholaship",
+    "department": "Education",
+    "status": "active",
+    "avatar": "",
+    "createdAt": "2026-02-09T11:35:00Z",
+    "lastLoginAt": "2026-03-03T23:50:00Z",
+    "password": "P@ssw0rd123",
+    "role_permission": ["dashboard:read", "users:read", "users:write", "reports:read", "settings:read"]
   }
 ]
