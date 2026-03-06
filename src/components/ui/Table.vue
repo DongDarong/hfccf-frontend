@@ -25,9 +25,11 @@ const props = defineProps({
 
 const emit = defineEmits(['view', 'edit', 'delete'])
 const { t } = useLanguage()
+// Parent can override empty text; otherwise use i18n with a safe hardcoded fallback.
 const resolvedEmptyText = computed(
   () => props.emptyText || t('users.table.empty') || 'No users found.',
 )
+// Screen-reader label for spinner, localized when available.
 const loadingLabel = computed(() => t('users.loadingUsers') || 'Loading users')
 </script>
 
@@ -49,6 +51,7 @@ const loadingLabel = computed(() => t('users.loadingUsers') || 'Loading users')
       </thead>
 
         <tbody class="divide-y divide-gray-100 bg-white">
+        <!-- Render order: loading state -> empty state -> data rows. -->
         <tr v-if="props.loading">
           <td colspan="8" class="px-4 py-8">
             <div class="flex justify-center">

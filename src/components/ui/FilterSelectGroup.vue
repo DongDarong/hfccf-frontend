@@ -28,6 +28,7 @@ const emit = defineEmits(['update:roleFilter', 'update:statusFilter', 'clear'])
 const { t } = useLanguage()
 
 function normalizeKey(value) {
+  // Keep translation lookups stable across source values (e.g. "Super Admin" -> "super_admin").
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -37,12 +38,14 @@ function normalizeKey(value) {
 function roleLabel(role) {
   const key = `common.role.${normalizeKey(role)}`
   const localized = t(key)
+  // Fall back to the raw API/display value if no locale key is defined.
   return localized !== key ? localized : role
 }
 
 function statusLabel(status) {
   const key = `common.status.${normalizeKey(status)}`
   const localized = t(key)
+  // Fall back to the raw API/display value if no locale key is defined.
   return localized !== key ? localized : status
 }
 
@@ -55,6 +58,7 @@ function onStatusChange(event) {
 }
 
 function clearFilters() {
+  // Emit both model updates + explicit clear event for parent-side side effects.
   emit('update:roleFilter', '')
   emit('update:statusFilter', '')
   emit('clear')
