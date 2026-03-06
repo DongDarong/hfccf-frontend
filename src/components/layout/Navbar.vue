@@ -15,6 +15,7 @@ const { t, locale } = useI18n()
 const currentLocale = computed({
   get: () => locale.value,
   set: (value) => {
+    // Constrain locale values and persist selection across reloads.
     const next = value === 'kh' ? 'kh' : 'en'
     locale.value = next
     localStorage.setItem('locale', next)

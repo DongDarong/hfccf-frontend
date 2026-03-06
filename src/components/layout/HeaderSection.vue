@@ -14,6 +14,7 @@ const props = defineProps({
 })
 
 const { t } = useLanguage()
+// Allow parent overrides while keeping localized defaults for standalone usage.
 const resolvedTitle = computed(() => props.title || t('common.dashboardOverview'))
 const resolvedSubtitle = computed(() => props.subtitle || t('common.dashboardOverviewSubtitle'))
 </script>

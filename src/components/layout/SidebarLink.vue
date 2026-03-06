@@ -37,6 +37,7 @@ const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--a
 </script>
 
 <template>
+  <!-- Use custom RouterLink slot to control exact anchor markup and active class logic. -->
   <RouterLink v-slot="{ href, navigate, isActive, isExactActive }" :to="to" custom>
     <a
       :href="href"

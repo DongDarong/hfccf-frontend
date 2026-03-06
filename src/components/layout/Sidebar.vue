@@ -24,6 +24,7 @@ defineProps({
 
 const route = useRoute()
 const { t } = useLanguage()
+// Map icon keys from JSON config to concrete Vue components.
 const iconByName = {
   home: HomeIcon,
   info: InfoIcon,
@@ -31,6 +32,7 @@ const iconByName = {
 
 const currentPath = computed(() => route.path)
 const navItems = computed(() =>
+  // Resolve labels at render time so locale changes update menu text immediately.
   sidebarNavData.map((item) => ({
     ...item,
     label: t(item.labelKey),
