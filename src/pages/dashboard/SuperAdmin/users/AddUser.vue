@@ -195,12 +195,16 @@ onMounted(() => {
   const id = String(route.query.id || '')
   const found = usersMock.find((item) => String(item.id) === id) || usersMock[0]
   if (!found) return
-  form.name = found.fullName || ''
+  form.name = `${found.firstName || ''} ${found.lastName || ''}`.trim() || found.username || ''
   form.email = found.email || ''
   form.phone = found.phone || ''
   form.role = found.role || roleOptions[1]
   form.permissions = Array.isArray(found.role_permission) ? [...found.role_permission] : []
-  form.status = found.status || statusOptions[0]
+  const normalizedStatus = String(found.status || '')
+  const matchedStatus = statusOptions.find(
+    (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
+  )
+  form.status = matchedStatus || statusOptions[0]
 })
 
 onBeforeUnmount(() => {

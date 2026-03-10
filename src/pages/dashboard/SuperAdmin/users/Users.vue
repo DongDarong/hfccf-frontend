@@ -65,13 +65,13 @@ function goToAddUser() {
 const users = ref(
   usersMock.map((item) => ({
     id: item.id,
-    name: item.fullName,
+    name: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || item.id,
     email: item.email,
     role: item.role,
     permissions: Array.isArray(item.role_permission) ? [...item.role_permission] : [],
     status: item.status,
     phone: item.phone,
-    username: item.firstName ? `${item.firstName.charAt(0).toLowerCase()}${item.lastName.toLowerCase()}` : item.id,
+    username: item.username || item.id,
   })),
 )
 
