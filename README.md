@@ -1,4 +1,4 @@
-# hfccf-frontend
+# hfccf-frontend/
 
 Frontend application built with Vue 3 and Vite.
 
