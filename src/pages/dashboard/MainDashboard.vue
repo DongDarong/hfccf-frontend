@@ -6,7 +6,7 @@ import PreschoolAdminDashboard from '@/pages/dashboard/PreschoolAdmin/PreschoolA
 import ScholarshipAdminDashboard from '@/pages/dashboard/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
 import EnglishAdminDashboard from '@/pages/dashboard/EnglishAdmin/EnglishAdminDashboard.vue'
 import SportAdminDashboard from '@/pages/dashboard/SportAdmin/SportAdminDashboard.vue'
-import TeacherDashboard from '@/pages/dashboard/EnglishAdmin/Teacher/TeacherDashboard.vue'
+import TeacherDashboard from '@/pages/dashboard/EnglishAdmin/TeacherEnglish/TeacherDashboard.vue'
 import CoachDashboard from '@/pages/dashboard/SportAdmin/Coach/CoachDashboard.vue'
 import OperationsDashboard from '@/pages/dashboard/roles/OperationsDashboard.vue'
 import DeliveryDashboard from '@/pages/dashboard/roles/DeliveryDashboard.vue'
