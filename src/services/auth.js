@@ -117,6 +117,20 @@ export function isAuthenticated() {
   return Boolean(getAuthToken())
 }
 
+export function getCurrentPermissions(user = getCurrentUser()) {
+  if (!user || typeof user !== 'object') return []
+  return Array.isArray(user.role_permission) ? user.role_permission : []
+}
+
+export function hasPermission(permission, user = getCurrentUser()) {
+  const permissions = getCurrentPermissions(user)
+  return permissions.includes('all:*') || permissions.includes(permission)
+}
+
+export function isSuperAdmin(user = getCurrentUser()) {
+  return hasPermission('all:*', user)
+}
+
 export function touchActivity(timestamp = Date.now()) {
   const storage = getSessionStorage()
   if (!storage) return

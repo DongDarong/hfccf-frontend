@@ -8,6 +8,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/components/icons/Home.vue'
 import InfoIcon from '@/components/icons/Info.vue'
+import { getCurrentUser, isSuperAdmin } from '@/services/auth'
 
 defineOptions({
   name: 'MainSidebar',
@@ -31,13 +32,20 @@ const iconByName = {
 }
 
 const currentPath = computed(() => route.path)
+const currentUser = computed(() => getCurrentUser() || {})
+const canSeeUsersSection = computed(() => isSuperAdmin(currentUser.value))
 const navItems = computed(() =>
   // Resolve labels at render time so locale changes update menu text immediately.
-  sidebarNavData.map((item) => ({
-    ...item,
-    label: t(item.labelKey),
-    iconComponent: iconByName[item.icon] || null,
-  })),
+  sidebarNavData
+    .filter((item) => {
+      if (item.to === '/users') return canSeeUsersSection.value
+      return true
+    })
+    .map((item) => ({
+      ...item,
+      label: t(item.labelKey),
+      iconComponent: iconByName[item.icon] || null,
+    })),
 )
 
 function isActive(path) {

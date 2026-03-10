@@ -1,16 +1,19 @@
 <script setup>
+import { computed } from 'vue'
+import { getCurrentUser } from '@/services/auth'
+
 defineOptions({
   name: 'UserAvatar',
 })
 
-defineProps({
+const props = defineProps({
   name: {
     type: String,
-    default: 'Admin User',
+    default: '',
   },
   username: {
     type: String,
-    default: 'user',
+    default: '',
   },
   avatar: {
     type: String,
@@ -18,29 +21,94 @@ defineProps({
   },
   initials: {
     type: String,
-    default: 'AU',
+    default: '',
   },
+  size: {
+    type: String,
+    default: 'md',
+  },
+  status: {
+    type: String,
+    default: 'online',
+  },
+  href: {
+    type: String,
+    default: '#profile',
+  },
+})
+
+const currentUser = computed(() => getCurrentUser() || {})
+
+const displayName = computed(() => {
+  if (props.name) return props.name
+
+  const firstName = String(currentUser.value?.firstName || '').trim()
+  const lastName = String(currentUser.value?.lastName || '').trim()
+  const fullName = `${firstName} ${lastName}`.trim()
+  if (fullName) return fullName
+
+  return String(currentUser.value?.username || '').trim() || 'Admin User'
+})
+
+const displayUsername = computed(() => {
+  if (props.username) return props.username
+
+  const username = String(currentUser.value?.username || '').trim()
+  if (username) return username
+
+  const email = String(currentUser.value?.email || '').trim()
+  if (email.includes('@')) return email.split('@')[0]
+  return email || 'user'
+})
+
+const displayAvatar = computed(() => props.avatar || String(currentUser.value?.avatar || '').trim())
+
+const displayInitials = computed(() => {
+  if (props.initials) return props.initials
+
+  const words = displayName.value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('')
+
+  return words || 'AU'
+})
+
+const avatarSizeClass = computed(() => {
+  const value = String(props.size || 'md').toLowerCase()
+  if (value === 'sm') return 'navbar-profile__avatar--sm'
+  if (value === 'lg') return 'navbar-profile__avatar--lg'
+  return 'navbar-profile__avatar--md'
+})
+
+const statusClass = computed(() => {
+  const value = String(props.status || 'online').toLowerCase()
+  if (value === 'offline') return 'navbar-profile__status-dot--offline'
+  if (value === 'away') return 'navbar-profile__status-dot--away'
+  return 'navbar-profile__status-dot--online'
 })
 </script>
 
 <template>
-  <a href="#profile" class="navbar-profile">
+  <a :href="props.href" class="navbar-profile">
     <div class="navbar-profile__text">
-      <div class="navbar-profile__name">{{ name }}</div>
-      <div class="navbar-profile__username">{{ username }}</div>
+      <div class="navbar-profile__name">{{ displayName }}</div>
+      <div class="navbar-profile__username">{{ displayUsername }}</div>
     </div>
     <div class="navbar-profile__avatar-container">
-      <div class="navbar-profile__avatar">
+      <div class="navbar-profile__avatar" :class="avatarSizeClass">
         <!-- Prefer uploaded avatar image; fall back to deterministic initials. -->
         <img
-          v-if="avatar"
-          :src="avatar"
-          :alt="`${name} avatar`"
+          v-if="displayAvatar"
+          :src="displayAvatar"
+          :alt="`${displayName} avatar`"
           class="navbar-profile__avatar-image"
         >
-        <span v-else>{{ initials }}</span>
+        <span v-else>{{ displayInitials }}</span>
       </div>
-      <div class="navbar-profile__status-dot"></div>
+      <div class="navbar-profile__status-dot" :class="statusClass"></div>
     </div>
   </a>
 </template>
@@ -107,15 +175,44 @@ defineProps({
   object-fit: cover;
 }
 
+.navbar-profile__avatar--sm {
+  width: 34px;
+  height: 34px;
+  font-size: 0.75rem;
+}
+
+.navbar-profile__avatar--md {
+  width: 38px;
+  height: 38px;
+  font-size: 0.85rem;
+}
+
+.navbar-profile__avatar--lg {
+  width: 44px;
+  height: 44px;
+  font-size: 0.95rem;
+}
+
 .navbar-profile__status-dot {
   position: absolute;
   bottom: -1px;
   right: -1px;
   width: 10px;
   height: 10px;
-  background: #22c55e;
   border: 2px solid var(--hope-text-white);
   border-radius: 50%;
+}
+
+.navbar-profile__status-dot--online {
+  background: #22c55e;
+}
+
+.navbar-profile__status-dot--away {
+  background: #f59e0b;
+}
+
+.navbar-profile__status-dot--offline {
+  background: #94a3b8;
 }
 
 @media (max-width: 768px) {

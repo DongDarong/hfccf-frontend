@@ -1,9 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from '@/pages/Dashboard.vue'
-import LoginView from '@/pages/Login.vue'
-import UsersView from '@/pages/Users.vue'
-import AddUserView from '@/pages/AddUser.vue'
-import { ensureSessionIsValid, touchActivity } from '@/services/auth'
+import DashboardView from '@/pages/dashboard/Dashboard.vue'
+import LoginView from '@/pages/auth/Login.vue'
+import UsersView from '@/pages/users/Users.vue'
+import AddUserView from '@/pages/users/AddUser.vue'
+import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
+import SuperAdminDashboard from '@/pages/dashboard/SuperAdmin/SuperAdminDashboard.vue'
+import PreschoolAdminDashboard from '@/pages/dashboard/PreschoolAdmin/PreschoolAdminDashboard.vue'
+import ScholarshipAdminDashboard from '@/pages/dashboard/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
+import EnglishAdminDashboard from '@/pages/dashboard/EnglishAdmin/EnglishAdminDashboard.vue'
+import SportAdminDashboard from '@/pages/dashboard/SportAdmin/SportAdminDashboard.vue'
+import TeacherDashboard from '@/pages/dashboard/EnglishAdmin/Teacher/TeacherDashboard.vue'
+import CoachDashboard from '@/pages/dashboard/SportAdmin/Coach/CoachDashboard.vue'
+
+function normalizeRole(role) {
+  return String(role || '')
+    .trim()
+    .toLowerCase()
+}
+
+function hasAllowedRole(user, allowedRoles = []) {
+  if (!Array.isArray(allowedRoles) || !allowedRoles.length) return true
+  const role = normalizeRole(user?.role)
+  return allowedRoles.map((item) => normalizeRole(item)).includes(role)
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,16 +44,58 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/dashboard/super-admin',
+      name: 'dashboard-super-admin',
+      component: SuperAdminDashboard,
+      meta: { requiresAuth: true, superAdminOnly: true },
+    },
+    {
+      path: '/dashboard/preschool-admin',
+      name: 'dashboard-preschool-admin',
+      component: PreschoolAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminpreschool'] },
+    },
+    {
+      path: '/dashboard/scholarship-admin',
+      name: 'dashboard-scholarship-admin',
+      component: ScholarshipAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminscholaship'] },
+    },
+    {
+      path: '/dashboard/english-admin',
+      name: 'dashboard-english-admin',
+      component: EnglishAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminenglish'] },
+    },
+    {
+      path: '/dashboard/sport-admin',
+      name: 'dashboard-sport-admin',
+      component: SportAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminsport'] },
+    },
+    {
+      path: '/dashboard/english-admin/teacher',
+      name: 'dashboard-english-teacher',
+      component: TeacherDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['teacher'] },
+    },
+    {
+      path: '/dashboard/sport-admin/coach',
+      name: 'dashboard-sport-coach',
+      component: CoachDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['coach'] },
+    },
+    {
       path: '/users',
       name: 'users',
       component: UsersView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, superAdminOnly: true },
     },
     {
       path: '/users/add',
       name: 'add-user',
       component: AddUserView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, superAdminOnly: true },
     },
     {
       path: '/:pathMatch(.*)*',
@@ -47,6 +108,9 @@ router.beforeEach((to) => {
   const sessionValid = ensureSessionIsValid()
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
   const guestOnly = to.matched.some((record) => record.meta.guestOnly)
+  const superAdminOnly = to.matched.some((record) => record.meta.superAdminOnly)
+  const allowedRoles = to.matched.flatMap((record) => record.meta.allowedRoles || [])
+  const currentUser = getCurrentUser()
 
   if (requiresAuth && !sessionValid) {
     return {
@@ -56,6 +120,14 @@ router.beforeEach((to) => {
   }
 
   if (guestOnly && sessionValid) {
+    return { name: 'dashboard' }
+  }
+
+  if (sessionValid && superAdminOnly && !isSuperAdmin(currentUser)) {
+    return { name: 'dashboard' }
+  }
+
+  if (sessionValid && allowedRoles.length && !isSuperAdmin(currentUser) && !hasAllowedRole(currentUser, allowedRoles)) {
     return { name: 'dashboard' }
   }
 
