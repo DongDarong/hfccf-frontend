@@ -40,12 +40,12 @@ const props = defineProps({
 const currentUser = computed(() => getCurrentUser() || {})
 
 const displayName = computed(() => {
-  if (props.name) return props.name
-
   const firstName = String(currentUser.value?.firstName || '').trim()
   const lastName = String(currentUser.value?.lastName || '').trim()
-  const fullName = `${firstName} ${lastName}`.trim()
+  const fullName = `${lastName} ${firstName}`.trim()
   if (fullName) return fullName
+
+  if (props.name) return props.name
 
   return String(currentUser.value?.username || '').trim() || 'Admin User'
 })
@@ -53,8 +53,8 @@ const displayName = computed(() => {
 const displayUsername = computed(() => {
   if (props.username) return props.username
 
-  const username = String(currentUser.value?.username || '').trim()
-  if (username) return username
+  const role = String(currentUser.value?.role || '').trim()
+  if (role) return role
 
   const email = String(currentUser.value?.email || '').trim()
   if (email.includes('@')) return email.split('@')[0]
