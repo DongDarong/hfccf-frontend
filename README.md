@@ -1,45 +1,55 @@
 # hfccf-frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend application built with Vue 3 and Vite.
 
-## Recommended IDE Setup
+## Requirements
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Node.js: `^20.19.0 || >=22.12.0`
+- npm
 
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Setup
 
 ```sh
-npm install
+npm ci
 ```
 
-### Compile and Hot-Reload for Development
+## Available scripts
 
 ```sh
+# start dev server
 npm run dev
-```
 
-### Compile and Minify for Production
-
-```sh
+# build production bundle
 npm run build
-```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+# run all linters with auto-fix
 npm run lint
+
+# run only oxlint with auto-fix
+npm run lint:oxlint
+
+# run only eslint with auto-fix and cache
+npm run lint:eslint
+
+# preview production build locally
+npm run preview
+
+# format source files with prettier
+npm run format
 ```
-# hfccf-frontend
+
+## CI
+
+GitHub Actions workflow: [`.github/workflows/main.yml`](.github/workflows/main.yml)
+
+The CI pipeline runs on push to `main` and on pull requests:
+
+1. Install dependencies with `npm ci`
+2. Run `npm run lint`
+3. Fail if lint auto-fixes changed tracked files (`git diff --exit-code`)
+4. Run `npm run build`
+
+## References
+
+- [Vue 3](https://vuejs.org/)
+- [Vite](https://vite.dev/)
