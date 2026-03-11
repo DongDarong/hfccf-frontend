@@ -1,17 +1,17 @@
 <script setup>
 import { computed } from 'vue'
 import { getCurrentUser, hasPermission } from '@/services/auth'
-import SuperAdminDashboard from '@/pages/dashboard/SuperAdmin/SuperAdminDashboard.vue'
-import PreschoolAdminDashboard from '@/pages/dashboard/PreschoolAdmin/PreschoolAdminDashboard.vue'
-import ScholarshipAdminDashboard from '@/pages/dashboard/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
-import EnglishAdminDashboard from '@/pages/dashboard/EnglishAdmin/EnglishAdminDashboard.vue'
-import SportAdminDashboard from '@/pages/dashboard/SportAdmin/SportAdminDashboard.vue'
-import TeacherDashboard from '@/pages/dashboard/EnglishAdmin/TeacherEnglish/TeacherDashboard.vue'
-import CoachDashboard from '@/pages/dashboard/SportAdmin/Coach/CoachDashboard.vue'
-import OperationsDashboard from '@/pages/dashboard/roles/OperationsDashboard.vue'
-import DeliveryDashboard from '@/pages/dashboard/roles/DeliveryDashboard.vue'
-import ProgramsDashboard from '@/pages/dashboard/roles/ProgramsDashboard.vue'
-import BasicDashboard from '@/pages/dashboard/roles/BasicDashboard.vue'
+import SuperAdminDashboard from '@/pages/module/SuperAdmin/SuperAdminDashboard.vue'
+import PreschoolAdminDashboard from '@/pages/module/PreschoolAdmin/PreschoolAdminDashboard.vue'
+import ScholarshipAdminDashboard from '@/pages/module/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
+import EnglishAdminDashboard from '@/pages/module/EnglishAdmin/EnglishAdminDashboard.vue'
+import SportAdminDashboard from '@/pages/module/SportAdmin/SportAdminDashboard.vue'
+import TeacherDashboard from '@/pages/module/EnglishAdmin/TeacherEnglish/TeacherDashboard.vue'
+import CoachDashboard from '@/pages/module/SportAdmin/Coach/CoachDashboard.vue'
+import OperationsDashboard from '@/pages/module/roles/OperationsDashboard.vue'
+import DeliveryDashboard from '@/pages/module/roles/DeliveryDashboard.vue'
+import ProgramsDashboard from '@/pages/module/roles/ProgramsDashboard.vue'
+import BasicDashboard from '@/pages/module/roles/BasicDashboard.vue'
 
 defineOptions({
   name: 'DashboardPage',
