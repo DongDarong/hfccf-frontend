@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '@/pages/module/MainDashboard.vue'
 import LoginView from '@/pages/auth/Login.vue'
-import UsersView from '@/pages/module/SuperAdmin/users/Users.vue'
-import AddUserView from '@/pages/module/SuperAdmin/users/AddUser.vue'
+import UsersView from '@/pages/module/SuperAdmin/Users.vue'
+import AddUserView from '@/pages/module/SuperAdmin/AddUser.vue'
 import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
 import SuperAdminDashboard from '@/pages/module/SuperAdmin/SuperAdminDashboard.vue'
 import PreschoolAdminDashboard from '@/pages/module/PreschoolAdmin/PreschoolAdminDashboard.vue'
 import ScholarshipAdminDashboard from '@/pages/module/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
 import EnglishAdminDashboard from '@/pages/module/EnglishAdmin/EnglishAdminDashboard.vue'
 import SportAdminDashboard from '@/pages/module/SportAdmin/SportAdminDashboard.vue'
-import TeacherDashboard from '@/pages/module/EnglishAdmin/TeacherEnglish/TeacherDashboard.vue'
-import CoachDashboard from '@/pages/module/SportAdmin/Coach/CoachDashboard.vue'
+import TeacherDashboard from '@/pages/module/Teachers/TeacherEnglish/TeacherDashboard.vue'
+import CoachDashboard from '@/pages/module/Teachers/Coach/CoachDashboard.vue'
 
 function normalizeRole(role) {
   return String(role || '')
