@@ -10,18 +10,41 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  row: {
+    type: Object,
+    default: null,
+  },
   rowNumber: {
     type: Number,
     default: null,
+  },
+  columns: {
+    type: Array,
+    default: () => [],
   },
 })
 
 const emit = defineEmits(['view', 'edit', 'delete'])
 const hasImageError = ref(false)
 
+const resolvedRow = computed(() => (props.row && typeof props.row === 'object' ? props.row : props.user))
+const resolvedColumns = computed(() =>
+  props.columns.length
+    ? props.columns
+    : [
+        { key: 'number', align: 'left' },
+        { key: 'user', align: 'left' },
+        { key: 'email', align: 'left' },
+        { key: 'role', align: 'left' },
+        { key: 'permission', align: 'left' },
+        { key: 'status', align: 'left' },
+        { key: 'phone', align: 'left' },
+        { key: 'actions', align: 'right' },
+      ],
+)
+
 const statusType = computed(() => {
-  // Normalize backend status values into badge variants used by StatusBadge.
-  const value = String(props.user?.status ?? '').toLowerCase()
+  const value = String(resolvedRow.value?.status ?? '').toLowerCase()
   if (value === 'active') return 'success'
   if (value === 'pending') return 'pending'
   if (value === 'inactive') return 'warning'
@@ -29,23 +52,22 @@ const statusType = computed(() => {
   return 'info'
 })
 
-const statusText = computed(() => String(props.user?.status ?? 'Unknown'))
+const statusText = computed(() => String(resolvedRow.value?.status ?? 'Unknown'))
 const displayNumber = computed(() => {
   if (Number.isFinite(props.rowNumber) && props.rowNumber > 0) return props.rowNumber
-  const parsed = Number.parseInt(String(props.user?.id ?? '').replace(/\D/g, ''), 10)
+  const parsed = Number.parseInt(String(resolvedRow.value?.id ?? '').replace(/\D/g, ''), 10)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 })
 
 const userIdLabel = computed(() => {
-  const value = String(props.user?.id ?? '').trim()
+  const value = String(resolvedRow.value?.id ?? '').trim()
   return value || '-'
 })
 
 const permissionList = computed(() => {
-  // Prefer explicit array payload; fallback supports legacy comma-delimited values.
-  const explicit = Array.isArray(props.user?.permissions) ? props.user.permissions : []
+  const explicit = Array.isArray(resolvedRow.value?.permissions) ? resolvedRow.value.permissions : []
   if (explicit.length) return explicit
-  const fallback = String(props.user?.permission ?? '')
+  const fallback = String(resolvedRow.value?.permission ?? '')
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean)
@@ -63,28 +85,30 @@ function usernameLabel(username) {
   return value.startsWith('@') ? value : `@${value}`
 }
 
-function avatarSrc(user) {
-  const value = user?.avatar || user?.avatarUrl || user?.profileImage || user?.photo
+function avatarSrc(row) {
+  const value = row?.avatar || row?.avatarUrl || row?.profileImage || row?.photo
   if (hasImageError.value) return ''
   return String(value ?? '').trim()
 }
 
-function userInitials(user) {
-  const name = String(user?.name ?? '').trim()
+function userInitials(row) {
+  const name = String(row?.name ?? '').trim()
   if (!name) return '?'
-  const parts = name.split(/\s+/).filter(Boolean)
-  const initials = parts
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('')
-  return initials || '?'
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('') || '?'
+  )
 }
 
 function getInitialBadgeClass(role) {
   const normalized = String(role || '').toLowerCase()
   if (normalized === 'superadmin') return 'bg-indigo-600'
   if (normalized === 'coach') return 'bg-hope-yellow'
-  if (normalized === 'teacher-english' || normalized === 'teacher-preschool' || normalized === 'adminpreschool') {
+  if (normalized === 'teacher' || normalized === 'teacher-preschool' || normalized === 'adminpreschool') {
     return 'bg-hope-lime'
   }
   if (normalized === 'teacher-english' || normalized === 'adminenglish') return 'bg-hope-cyan'
@@ -121,8 +145,20 @@ function avatarTextClass(role) {
   return 'text-white'
 }
 
+function resolvePlainValue(column) {
+  const field = column?.field || column?.key
+  const value = resolvedRow.value?.[field]
+  const normalized = String(value ?? '').trim()
+  return normalized || '-'
+}
+
+function cellClass(column) {
+  const align = column?.align === 'right' ? 'text-right' : 'text-left'
+  return `px-3 py-3 sm:px-4 sm:py-3.5 md:px-6 whitespace-nowrap ${align}`
+}
+
 watch(
-  () => props.user?.avatar,
+  () => resolvedRow.value?.avatar,
   () => {
     hasImageError.value = false
   },
@@ -135,88 +171,98 @@ function onAvatarError() {
 
 <template>
   <tr class="transition-colors hover:bg-gray-50/80">
-    <td class="px-3 py-3 text-[12px] font-semibold whitespace-nowrap text-gray-700 sm:px-4 sm:py-3.5 sm:text-sm md:px-6">
-      {{ displayNumber || '-' }}
-    </td>
+    <td
+      v-for="column in resolvedColumns"
+      :key="column.key"
+      :class="cellClass(column)"
+    >
+      <template v-if="column.key === 'number'">
+        <span class="text-[12px] font-semibold text-gray-700 sm:text-sm">{{ displayNumber || '-' }}</span>
+      </template>
 
-    <td class="px-3 py-3 whitespace-nowrap sm:px-4 sm:py-3.5 md:px-6">
-      <div class="flex items-center gap-3">
-        <div
-          :class="[
-            'relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/70 bg-white shadow-sm ring-2',
-            avatarRingClass(user.role),
-          ]"
-        >
-          <img
-            v-if="avatarSrc(user)"
-            :src="avatarSrc(user)"
-            :alt="`${user.name || 'User'} avatar`"
-            class="h-full w-full object-cover"
-            @error="onAvatarError"
-          >
+      <template v-else-if="column.key === 'user'">
+        <div class="flex items-center gap-3">
           <div
-            v-else
             :class="[
-              'flex h-full w-full items-center justify-center text-[11px] font-bold uppercase tracking-[0.08em]',
-              getInitialBadgeClass(user.role),
-              avatarTextClass(user.role),
+              'relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/70 bg-white shadow-sm ring-2',
+              avatarRingClass(resolvedRow.role),
             ]"
-            :title="user.name || 'User'"
           >
-            {{ userInitials(user) }}
+            <img
+              v-if="avatarSrc(resolvedRow)"
+              :src="avatarSrc(resolvedRow)"
+              :alt="`${resolvedRow.name || 'User'} avatar`"
+              class="h-full w-full object-cover"
+              @error="onAvatarError"
+            >
+            <div
+              v-else
+              :class="[
+                'flex h-full w-full items-center justify-center text-[11px] font-bold uppercase tracking-[0.08em]',
+                getInitialBadgeClass(resolvedRow.role),
+                avatarTextClass(resolvedRow.role),
+              ]"
+              :title="resolvedRow.name || 'User'"
+            >
+              {{ userInitials(resolvedRow) }}
+            </div>
+          </div>
+          <div>
+            <div class="text-[13px] font-semibold leading-5 text-gray-900 sm:text-sm">
+              {{ resolvedRow.name || '-' }}
+            </div>
+            <div class="text-[11px] text-gray-500 sm:text-xs">
+              ID: {{ userIdLabel }}
+            </div>
+            <div class="text-[11px] text-gray-600 sm:text-xs">
+              {{ usernameLabel(resolvedRow.username) }}
+            </div>
           </div>
         </div>
-        <div>
-          <div class="text-[13px] font-semibold leading-5 text-gray-900 sm:text-sm">
-            {{ user.name || '-' }}
-          </div>
-          <div class="text-[11px] text-gray-500 sm:text-xs">
-            ID: {{ userIdLabel }}
-          </div>
-          <div class="text-[11px] text-gray-600 sm:text-xs">
-            {{ usernameLabel(user.username) }}
-          </div>
+      </template>
+
+      <template v-else-if="column.key === 'email'">
+        <span class="text-[12px] text-gray-700 sm:text-sm">{{ resolvedRow.email || '-' }}</span>
+      </template>
+
+      <template v-else-if="column.key === 'role'">
+        <RolesBadge :role="resolvedRow.role" />
+      </template>
+
+      <template v-else-if="column.key === 'permission'">
+        <div class="flex flex-wrap gap-1">
+          <PermissionBadge
+            v-for="permission in permissionList"
+            :key="permission"
+            :permission="permission"
+            size="sm"
+          />
+          <span v-if="!permissionList.length" class="text-[11px] text-gray-400">-</span>
         </div>
-      </div>
-    </td>
+      </template>
 
-    <td class="px-3 py-3 text-[12px] whitespace-nowrap text-gray-700 sm:px-4 sm:py-3.5 sm:text-sm md:px-6">
-      {{ user.email || '-' }}
-    </td>
+      <template v-else-if="column.key === 'status'">
+        <StatusBadge :status="statusType" :label="statusText" size="sm" />
+      </template>
 
-    <td class="px-3 py-3 whitespace-nowrap sm:px-4 sm:py-3.5 md:px-6">
-      <RolesBadge :role="user.role" />
-    </td>
+      <template v-else-if="column.key === 'phone'">
+        <span class="text-[12px] text-gray-700 sm:text-sm">{{ phoneLabel(resolvedRow.phone) }}</span>
+      </template>
 
-    <td class="px-3 py-3 whitespace-nowrap sm:px-4 sm:py-3.5 md:px-6">
-      <div class="flex flex-wrap gap-1">
-        <PermissionBadge
-          v-for="permission in permissionList"
-          :key="permission"
-          :permission="permission"
-          size="sm"
+      <template v-else-if="column.key === 'actions'">
+        <ActionsButton
+          :item="resolvedRow"
+          align="right"
+          compact
+          @view="emit('view', resolvedRow)"
+          @edit="emit('edit', resolvedRow)"
+          @delete="emit('delete', resolvedRow)"
         />
-        <span v-if="!permissionList.length" class="text-[11px] text-gray-400">-</span>
-      </div>
-    </td>
+      </template>
 
-    <td class="px-3 py-3 whitespace-nowrap sm:px-4 sm:py-3.5 md:px-6">
-      <StatusBadge :status="statusType" :label="statusText" size="sm" />
-    </td>
-
-    <td class="px-3 py-3 text-[12px] whitespace-nowrap text-gray-700 sm:px-4 sm:py-3.5 sm:text-sm md:px-6">
-      {{ phoneLabel(user.phone) }}
-    </td>
-
-    <td class="px-3 py-3 whitespace-nowrap text-right sm:px-4 sm:py-3.5 md:px-6">
-      <ActionsButton
-        :item="user"
-        align="right"
-        compact
-        @view="emit('view', user)"
-        @edit="emit('edit', user)"
-        @delete="emit('delete', user)"
-      />
+      <template v-else>
+        <span class="text-[12px] text-gray-700 sm:text-sm">{{ resolvePlainValue(column) }}</span>
+      </template>
     </td>
   </tr>
 </template>

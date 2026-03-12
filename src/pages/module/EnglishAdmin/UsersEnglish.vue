@@ -3,10 +3,8 @@ import { computed, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
 import SearchFilterBar from '@/components/ui/SearchFilterBar.vue'
+import Table from '@/components/ui/Table.vue'
 import Pagination from '@/components/ui/Pagination.vue'
-import RolesBadge from '@/components/common/RolesBadge.vue'
-import StatusBadge from '@/components/common/StatusBadge.vue'
-import PermissionBadge from '@/components/common/PermissionBadge.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
@@ -21,6 +19,15 @@ const pageSize = 8
 
 const roleOptions = ['teacher-english']
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
+const tableColumns = [
+  { key: 'number', label: 'No.', align: 'left' },
+  { key: 'user', label: 'User', align: 'left' },
+  { key: 'email', label: 'Email', align: 'left' },
+  { key: 'role', label: 'Role', align: 'left' },
+  { key: 'permission', label: 'Permissions', align: 'left' },
+  { key: 'status', label: 'Status', align: 'left' },
+  { key: 'phone', label: 'Phone', align: 'left' },
+]
 
 const englishUsers = ref(
   usersMock
@@ -76,24 +83,6 @@ watch(
     if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
   },
 )
-
-function resolveStatusType(status) {
-  const value = String(status || '').toLowerCase()
-  if (value === 'active') return 'success'
-  if (value === 'pending') return 'pending'
-  if (value === 'inactive') return 'warning'
-  if (value === 'suspended') return 'error'
-  return 'info'
-}
-
-function avatarFallback(user) {
-  return String(user.name || '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('') || '?'
-}
 </script>
 
 <template>
@@ -114,76 +103,11 @@ function avatarFallback(user) {
           :status-options="statusOptions"
         />
 
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-sm">
-              <thead class="bg-slate-50">
-                <tr>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">No.</th>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">User</th>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">Email</th>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">Role</th>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">Permissions</th>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">Status</th>
-                  <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-600">Phone</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <tr v-if="!paginatedUsers.length">
-                  <td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">
-                    No English teachers found.
-                  </td>
-                </tr>
-
-                <tr v-for="user in paginatedUsers" :key="user.id" class="hover:bg-slate-50/80">
-                  <td class="px-4 py-3 text-sm font-semibold text-slate-700">
-                    {{ user.rowNumber }}
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center gap-3">
-                      <img
-                        v-if="user.avatar"
-                        :src="user.avatar"
-                        :alt="`${user.name} avatar`"
-                        class="h-11 w-11 rounded-2xl border border-white/70 object-cover shadow-sm ring-2 ring-cyan-200"
-                      >
-                      <div
-                        v-else
-                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500 text-xs font-bold text-white shadow-sm ring-2 ring-cyan-200"
-                      >
-                        {{ avatarFallback(user) }}
-                      </div>
-
-                      <div>
-                        <div class="font-semibold text-slate-900">{{ user.name }}</div>
-                        <div class="text-xs text-slate-400">ID: {{ user.id }}</div>
-                        <div class="text-xs text-slate-500">@{{ user.username }}</div>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td class="px-4 py-3 text-sm text-slate-700">{{ user.email }}</td>
-                  <td class="px-4 py-3"><RolesBadge :role="user.role" /></td>
-                  <td class="px-4 py-3">
-                    <div class="flex flex-wrap gap-1">
-                      <PermissionBadge
-                        v-for="permission in user.permissions"
-                        :key="permission"
-                        :permission="permission"
-                        size="sm"
-                      />
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <StatusBadge :status="resolveStatusType(user.status)" :label="user.status" size="sm" />
-                  </td>
-                  <td class="px-4 py-3 text-sm text-slate-700">{{ user.phone }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Table
+          :rows="paginatedUsers"
+          :columns="tableColumns"
+          empty-text="No English teachers found."
+        />
 
         <div v-if="totalPages > 1" class="flex justify-end">
           <Pagination v-model="currentPage" :total-pages="totalPages" class="mt-2" />
