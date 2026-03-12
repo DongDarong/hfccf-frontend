@@ -1,6 +1,16 @@
-# hfccf-frontend
+# HFCCF Frontend
 
-Frontend application built with Vue 3 and Vite.
+Frontend dashboard application for HFCCF, built with Vue 3 and Vite.
+
+## Stack
+
+- Vue 3
+- Vite
+- Vue Router
+- Pinia
+- Vue I18n
+- Tailwind CSS 4
+- Axios
 
 ## Requirements
 
@@ -13,7 +23,46 @@ Frontend application built with Vue 3 and Vite.
 npm ci
 ```
 
-## Available scripts
+## Run Locally
+
+```sh
+npm run dev
+```
+
+The app uses mock authentication data from [src/mocks/users.json](/D:/Thesis2026/frontend/hfccf-frontend/src/mocks/users.json).
+
+## Mock Roles
+
+Current mock roles include:
+
+- `superadmin`
+- `adminenglish`
+- `adminpreschool`
+- `adminscholaship`
+- `adminsport`
+- `teacher-english`
+- `teacher-preschool`
+- `teacher-scholarship`
+- `coach`
+
+Note: some route guards and dashboard resolution logic still use older role assumptions for teachers, so if you add or rename roles you may also need to update:
+
+- [src/router/index.js](/D:/Thesis2026/frontend/hfccf-frontend/src/router/index.js)
+- [src/pages/module/MainDashboard.vue](/D:/Thesis2026/frontend/hfccf-frontend/src/pages/module/MainDashboard.vue)
+- [src/components/ui/SidebarBrandHeader.vue](/D:/Thesis2026/frontend/hfccf-frontend/src/components/ui/SidebarBrandHeader.vue)
+
+## Security Notes
+
+The frontend currently includes:
+
+- client-side session expiry handling
+- HTTPS enforcement outside local development
+- hardened Axios defaults for authenticated requests
+- CSP and browser security headers via Vite config
+
+This is still frontend-side protection. Real production auth should be enforced by the backend.
+
+## Available Scripts
 
 ```sh
 # start dev server
@@ -21,6 +70,9 @@ npm run dev
 
 # build production bundle
 npm run build
+
+# preview production build locally
+npm run preview
 
 # run all linters with auto-fix
 npm run lint
@@ -31,12 +83,19 @@ npm run lint:oxlint
 # run only eslint with auto-fix and cache
 npm run lint:eslint
 
-# preview production build locally
-npm run preview
-
 # format source files with prettier
 npm run format
 ```
+
+## Project Areas
+
+- `src/pages/auth`: login flow
+- `src/pages/module`: dashboards and role-specific pages
+- `src/components/layout`: navbar, sidebar, layout primitives
+- `src/components/ui`: shared UI components
+- `src/services`: auth and HTTP services
+- `src/i18n`: English and Khmer translations
+- `src/mocks`: mock user data
 
 ## CI
 
@@ -53,3 +112,4 @@ The CI pipeline runs on push to `main` and on pull requests:
 
 - [Vue 3](https://vuejs.org/)
 - [Vite](https://vite.dev/)
+- [Vue Router](https://router.vuejs.org/)
