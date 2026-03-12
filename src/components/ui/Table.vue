@@ -101,7 +101,7 @@ function resolveRowKey(row, index) {
               :key="resolveRowKey(row, index)"
               :user="row"
               :row="row"
-              :row-number="index + 1"
+              :row-number="Number.isFinite(row?.rowNumber) && row.rowNumber > 0 ? row.rowNumber : index + 1"
               :columns="resolvedColumns"
               @view="emit('view', $event)"
               @edit="emit('edit', $event)"
@@ -113,3 +113,4 @@ function resolveRowKey(row, index) {
     </div>
   </div>
 </template>
+

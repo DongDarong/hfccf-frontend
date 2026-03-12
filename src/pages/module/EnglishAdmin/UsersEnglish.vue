@@ -1,16 +1,19 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
 import SearchFilterBar from '@/components/ui/SearchFilterBar.vue'
 import Table from '@/components/ui/Table.vue'
 import Pagination from '@/components/ui/Pagination.vue'
+import Button from '@/components/ui/Button.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
   name: 'EnglishAdminUsersPage',
 })
 
+const router = useRouter()
 const searchQuery = ref('')
 const roleFilter = ref('')
 const statusFilter = ref('')
@@ -19,6 +22,7 @@ const pageSize = 8
 
 const roleOptions = ['teacher-english']
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
+const addTeacherLabel = computed(() => 'Add Teacher')
 const tableColumns = [
   { key: 'number', label: 'No.', align: 'left' },
   { key: 'user', label: 'User', align: 'left' },
@@ -27,7 +31,12 @@ const tableColumns = [
   { key: 'permission', label: 'Permissions', align: 'left' },
   { key: 'status', label: 'Status', align: 'left' },
   { key: 'phone', label: 'Phone', align: 'left' },
+  { key: 'actions', label: 'Actions', align: 'right' },
 ]
+
+function goToAddTeacher() {
+  router.push({ path: '/users/add', query: { role: 'teacher-english' } })
+}
 
 const englishUsers = ref(
   usersMock
@@ -83,6 +92,24 @@ watch(
     if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
   },
 )
+
+function onViewUser(user) {
+  const id = String(user?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/users/add', query: { mode: 'view', id } })
+}
+
+function onEditUser(user) {
+  const id = String(user?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/users/add', query: { mode: 'edit', id } })
+}
+
+function onDeleteUser(user) {
+  const id = String(user?.id || '').trim()
+  if (!id) return
+  englishUsers.value = englishUsers.value.filter((item) => item.id !== id)
+}
 </script>
 
 <template>
@@ -94,6 +121,17 @@ watch(
       />
 
       <div class="english-users-page__panel">
+        <div class="english-users-page__actions">
+          <Button variant="primary" size="md" rounded="xl" @click="goToAddTeacher">
+            <template #iconLeft>
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </template>
+            {{ addTeacherLabel }}
+          </Button>
+        </div>
+
         <SearchFilterBar
           class="w-full"
           v-model:searchQuery="searchQuery"
@@ -107,6 +145,9 @@ watch(
           :rows="paginatedUsers"
           :columns="tableColumns"
           empty-text="No English teachers found."
+          @view="onViewUser"
+          @edit="onEditUser"
+          @delete="onDeleteUser"
         />
 
         <div v-if="totalPages > 1" class="flex justify-end">
@@ -133,5 +174,10 @@ watch(
   padding: 1.5rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.96) 100%);
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.45);
+}
+
+.english-users-page__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
