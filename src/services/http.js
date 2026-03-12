@@ -10,11 +10,22 @@ function isLocalHostname(hostname) {
   )
 }
 
+function assertSafeHttpUrl(rawUrl, fallbackOrigin = window.location.origin) {
+  const parsedUrl = new URL(String(rawUrl || '').trim(), fallbackOrigin)
+  const isHttpProtocol = parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:'
+
+  if (!isHttpProtocol) {
+    throw new Error('Only HTTP and HTTPS URLs are allowed.')
+  }
+
+  return parsedUrl
+}
+
 function getValidatedApiBaseUrl() {
   const rawBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim()
   if (!rawBaseUrl) return ''
 
-  const parsedUrl = new URL(rawBaseUrl, window.location.origin)
+  const parsedUrl = assertSafeHttpUrl(rawBaseUrl)
   const isSecureOrigin = parsedUrl.protocol === 'https:' || isLocalHostname(parsedUrl.hostname)
 
   if (!isSecureOrigin && !import.meta.env.DEV) {
@@ -25,11 +36,12 @@ function getValidatedApiBaseUrl() {
 }
 
 const apiBaseUrl = getValidatedApiBaseUrl()
+const apiOrigin = apiBaseUrl ? new URL(apiBaseUrl).origin : ''
 
 function resolveRequestUrl(config) {
   const target = config.url || ''
   const base = config.baseURL || apiBaseUrl || window.location.origin
-  return new URL(target, base)
+  return assertSafeHttpUrl(target, base)
 }
 
 const http = axios.create({
@@ -44,9 +56,9 @@ const http = axios.create({
 http.interceptors.request.use((config) => {
   const requestUrl = resolveRequestUrl(config)
   const isSameOrigin = requestUrl.origin === window.location.origin
-  const isApiOrigin = apiBaseUrl ? requestUrl.origin === new URL(apiBaseUrl).origin : isSameOrigin
+  const isTrustedApiOrigin = apiOrigin ? requestUrl.origin === apiOrigin : isSameOrigin
 
-  if (!isSameOrigin && !isApiOrigin) {
+  if (!isSameOrigin && !isTrustedApiOrigin) {
     return config
   }
 

@@ -105,7 +105,10 @@ const totalPages = computed(() => Math.max(Math.ceil(filteredUsers.value.length 
 
 const paginatedUsers = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return filteredUsers.value.slice(start, start + pageSize)
+  return filteredUsers.value.slice(start, start + pageSize).map((user, index) => ({
+    ...user,
+    rowNumber: start + index + 1,
+  }))
 })
 
 watch(
@@ -241,5 +244,3 @@ function onConfirmDelete() {
   padding: 1.5rem 0.5rem;
 }
 </style>
-
-
