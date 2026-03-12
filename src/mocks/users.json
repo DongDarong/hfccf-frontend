@@ -36,7 +36,7 @@
     "firstName": "Vanna",
     "lastName": "Leng",
     "username": "Vanna Leng",
-    "email": "vanna.leng@hfccf.org",
+    "email": "teacherenglish@gmail.com",
     "phone": "+855 12 345 003",
     "role": "teacher-english",
     "department": "Education",
@@ -44,7 +44,7 @@
     "avatar": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80",
     "createdAt": "2026-01-12T03:10:00Z",
     "lastLoginAt": "2026-03-02T11:30:00Z",
-    "password": "P@ssw0rd123",
+    "password": "teacherenglish@123",
     "role_permission": ["dashboard:read", "tasks:read", "tasks:write"]
   },
   {
@@ -100,7 +100,7 @@
     "firstName": "Piseth",
     "lastName": "Kim",
     "username": "Piseth Kim",
-    "email": "piseth.kim@hfccf.org",
+    "email": "adminenglish@gmail.com",
     "phone": "+855 12 345 007",
     "role": "adminenglish",
     "department": "Education",
@@ -108,7 +108,7 @@
     "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
     "createdAt": "2026-01-28T02:08:00Z",
     "lastLoginAt": "2026-03-01T13:09:00Z",
-    "password": "P@ssw0rd123",
+    "password": "adminenglish@123",
     "role_permission": ["dashboard:read", "users:read", "reports:read", "programs:write"]
   },
   {

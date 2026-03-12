@@ -8,6 +8,7 @@ import SuperAdminDashboard from '@/pages/module/SuperAdmin/SuperAdminDashboard.v
 import PreschoolAdminDashboard from '@/pages/module/PreschoolAdmin/PreschoolAdminDashboard.vue'
 import ScholarshipAdminDashboard from '@/pages/module/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
 import EnglishAdminDashboard from '@/pages/module/EnglishAdmin/EnglishAdminDashboard.vue'
+import EnglishAdminUsersView from '@/pages/module/EnglishAdmin/UsersEnglish.vue'
 import SportAdminDashboard from '@/pages/module/SportAdmin/SportAdminDashboard.vue'
 import TeacherDashboard from '@/pages/module/Teachers/TeacherEnglish/TeacherDashboard.vue'
 import CoachDashboard from '@/pages/module/Teachers/Coach/CoachDashboard.vue'
@@ -65,6 +66,12 @@ const router = createRouter({
       path: '/dashboard/english-admin',
       name: 'dashboard-english-admin',
       component: EnglishAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminenglish'] },
+    },
+    {
+      path: '/dashboard/english-admin/users',
+      name: 'dashboard-english-admin-users',
+      component: EnglishAdminUsersView,
       meta: { requiresAuth: true, allowedRoles: ['adminenglish'] },
     },
     {
@@ -139,3 +146,5 @@ router.beforeEach((to) => {
 })
 
 export default router
+
+

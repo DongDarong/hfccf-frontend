@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import SidebarBrand from '@/components/ui/SidebarBrandHeader.vue'
@@ -34,15 +34,20 @@ const iconByName = {
 const currentPath = computed(() => route.path)
 const currentUser = computed(() => getCurrentUser() || {})
 const canSeeUsersSection = computed(() => isSuperAdmin(currentUser.value))
+const isEnglishAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminenglish')
 const navItems = computed(() =>
   // Resolve labels at render time so locale changes update menu text immediately.
   sidebarNavData
     .filter((item) => {
-      if (item.to === '/users') return canSeeUsersSection.value
+      if (item.to === '/users') return canSeeUsersSection.value || isEnglishAdmin.value
       return true
     })
     .map((item) => ({
       ...item,
+      to:
+        item.to === '/users' && isEnglishAdmin.value && !canSeeUsersSection.value
+          ? '/dashboard/english-admin/users'
+          : item.to,
       label: t(item.labelKey),
       iconComponent: iconByName[item.icon] || null,
     })),
@@ -189,3 +194,4 @@ function onLogout() {
   border: 0;
 }
 </style>
+
