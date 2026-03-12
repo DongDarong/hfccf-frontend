@@ -25,13 +25,22 @@ function toRoleKey(value) {
     .replace(/[\s-]+/g, '_')
 }
 
+function humanizeRole(value) {
+  return String(value ?? '')
+    .trim()
+    .split(/[\s-]+/g)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
 const roleLabel = computed(() => {
   if (!normalizedRole.value) return '-'
   const key = `common.role.${toRoleKey(normalizedRole.value)}`
   const translated = t(key)
   if (translated !== key) return translated
   // Human-readable fallback when no translation exists.
-  return normalizedRole.value.charAt(0).toUpperCase() + normalizedRole.value.slice(1)
+  return humanizeRole(normalizedRole.value)
 })
 
 // Centralized mapping keeps role color semantics consistent across the app.
@@ -39,10 +48,13 @@ const ROLE_BADGE_STYLES = {
   superadmin: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
   coach: 'bg-amber-50 text-amber-700 ring-amber-200',
   teacher: 'bg-lime-50 text-lime-700 ring-lime-200',
-  adminpreschool: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
-  adminscholaship: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
-  adminenglish: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
-  adminsport: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+  'teacher-english': 'bg-sky-50 text-sky-700 ring-sky-200',
+  'teacher-preschool': 'bg-lime-50 text-lime-700 ring-lime-200',
+  'teacher-scholarship': 'bg-yellow-50 text-yellow-700 ring-yellow-200',
+  adminpreschool: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  adminscholaship: 'bg-yellow-50 text-yellow-700 ring-yellow-200',
+  adminenglish: 'bg-sky-50 text-sky-700 ring-sky-200',
+  adminsport: 'bg-rose-50 text-rose-700 ring-rose-200',
 }
 
 const roleClass = computed(() => ROLE_BADGE_STYLES[normalizedRole.value] || 'bg-gray-100 text-gray-700 ring-gray-200')
