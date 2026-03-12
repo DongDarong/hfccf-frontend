@@ -22,17 +22,6 @@ const currentLocale = computed({
   },
 })
 
-const brandCopy = computed(() =>
-  locale.value === 'kh'
-    ? {
-        orgTop: 'áž¢áž„áŸ’áž‚áž€áž¶ážšáž˜áž¼áž›áž“áž·áž’áž·áž€áŸ’ážáž¸ážŸáž„áŸ’ážƒáž¹áž˜',
-        orgBottom: 'áž“áŸƒáž€áž»áž˜áž¶ážšáž€áž˜áŸ’áž–áž»áž‡áž¶',
-      }
-    : {
-        orgTop: "Organization for Children's",
-        orgBottom: 'Hope Foundation of Cambodia',
-      },
-)
 const isKh = computed(() => locale.value === 'kh')
 
 function onToggleSidebar() {
@@ -52,8 +41,8 @@ function onToggleSidebar() {
       <div class="brand" :class="{ 'brand--kh': isKh, 'brand--en': !isKh }">
         <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="brand-logo" />
         <div class="brand-copy" :class="{ 'brand-copy--kh': isKh, 'brand-copy--en': !isKh }">
-          <span class="brand-text">{{ brandCopy.orgTop }}</span>
-          <span class="brand-subtext">{{ brandCopy.orgBottom }}</span>
+          <span class="brand-text">{{ t('nav.brand.orgTop') }}</span>
+          <span class="brand-subtext">{{ t('nav.brand.orgBottom') }}</span>
         </div>
       </div>
     </div>
