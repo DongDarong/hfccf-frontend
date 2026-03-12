@@ -84,7 +84,7 @@ function getInitialBadgeClass(role) {
   const normalized = String(role || '').toLowerCase()
   if (normalized === 'superadmin') return 'bg-indigo-600'
   if (normalized === 'coach') return 'bg-hope-yellow'
-  if (normalized === 'teacher' || normalized === 'teacher-preschool' || normalized === 'adminpreschool') {
+  if (normalized === 'teacher-english' || normalized === 'teacher-preschool' || normalized === 'adminpreschool') {
     return 'bg-hope-lime'
   }
   if (normalized === 'teacher-english' || normalized === 'adminenglish') return 'bg-hope-cyan'
@@ -141,24 +141,30 @@ function onAvatarError() {
 
     <td class="px-3 py-3 whitespace-nowrap sm:px-4 sm:py-3.5 md:px-6">
       <div class="flex items-center gap-3">
-        <img
-          v-if="avatarSrc(user)"
-          :src="avatarSrc(user)"
-          :alt="`${user.name || 'User'} avatar`"
-          :class="['h-10 w-10 rounded-full object-cover ring-2', avatarRingClass(user.role)]"
-          @error="onAvatarError"
-        >
         <div
-          v-else
           :class="[
-            'flex h-10 w-10 items-center justify-center rounded-full text-[11px] font-semibold ring-2',
-            getInitialBadgeClass(user.role),
+            'relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/70 bg-white shadow-sm ring-2',
             avatarRingClass(user.role),
-            avatarTextClass(user.role),
           ]"
-          :title="user.name || 'User'"
         >
-          {{ userInitials(user) }}
+          <img
+            v-if="avatarSrc(user)"
+            :src="avatarSrc(user)"
+            :alt="`${user.name || 'User'} avatar`"
+            class="h-full w-full object-cover"
+            @error="onAvatarError"
+          >
+          <div
+            v-else
+            :class="[
+              'flex h-full w-full items-center justify-center text-[11px] font-bold uppercase tracking-[0.08em]',
+              getInitialBadgeClass(user.role),
+              avatarTextClass(user.role),
+            ]"
+            :title="user.name || 'User'"
+          >
+            {{ userInitials(user) }}
+          </div>
         </div>
         <div>
           <div class="text-[13px] font-semibold leading-5 text-gray-900 sm:text-sm">
