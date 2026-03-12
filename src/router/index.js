@@ -6,6 +6,7 @@ import AddUserView from '@/pages/module/SuperAdmin/AddUser.vue'
 import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
 import SuperAdminDashboard from '@/pages/module/SuperAdmin/SuperAdminDashboard.vue'
 import PreschoolAdminDashboard from '@/pages/module/PreschoolAdmin/PreschoolAdminDashboard.vue'
+import PreschoolAdminUsersView from '@/pages/module/PreschoolAdmin/UsersPreschool.vue'
 import ScholarshipAdminDashboard from '@/pages/module/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
 import EnglishAdminDashboard from '@/pages/module/EnglishAdmin/EnglishAdminDashboard.vue'
 import EnglishAdminUsersView from '@/pages/module/EnglishAdmin/UsersEnglish.vue'
@@ -54,6 +55,12 @@ const router = createRouter({
       path: '/dashboard/preschool-admin',
       name: 'dashboard-preschool-admin',
       component: PreschoolAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminpreschool'] },
+    },
+    {
+      path: '/dashboard/preschool-admin/users',
+      name: 'dashboard-preschool-admin-users',
+      component: PreschoolAdminUsersView,
       meta: { requiresAuth: true, allowedRoles: ['adminpreschool'] },
     },
     {
@@ -146,5 +153,6 @@ router.beforeEach((to) => {
 })
 
 export default router
+
 
 

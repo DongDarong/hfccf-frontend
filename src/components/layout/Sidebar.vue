@@ -35,18 +35,25 @@ const currentPath = computed(() => route.path)
 const currentUser = computed(() => getCurrentUser() || {})
 const canSeeUsersSection = computed(() => isSuperAdmin(currentUser.value))
 const isEnglishAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminenglish')
+const isPreschoolAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminpreschool')
 const navItems = computed(() =>
   // Resolve labels at render time so locale changes update menu text immediately.
   sidebarNavData
     .filter((item) => {
-      if (item.to === '/users') return canSeeUsersSection.value || isEnglishAdmin.value
+      if (item.to === '/users') {
+        return canSeeUsersSection.value || isEnglishAdmin.value || isPreschoolAdmin.value
+      }
       return true
     })
     .map((item) => ({
       ...item,
       to:
-        item.to === '/users' && isEnglishAdmin.value && !canSeeUsersSection.value
-          ? '/dashboard/english-admin/users'
+        item.to === '/users' && !canSeeUsersSection.value
+          ? isEnglishAdmin.value
+            ? '/dashboard/english-admin/users'
+            : isPreschoolAdmin.value
+              ? '/dashboard/preschool-admin/users'
+              : item.to
           : item.to,
       label: t(item.labelKey),
       iconComponent: iconByName[item.icon] || null,
@@ -194,4 +201,3 @@ function onLogout() {
   border: 0;
 }
 </style>
-
