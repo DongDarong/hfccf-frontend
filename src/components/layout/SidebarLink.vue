@@ -58,39 +58,58 @@ const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--a
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.7rem;
   text-decoration: none;
-  color: #1d1d1b;
-  padding: 0.5rem 0.625rem;
-  border-radius: 8px;
+  color: #334155;
+  padding: 0.7rem 0.8rem;
+  border-radius: 14px;
   border: 1px solid transparent;
-  transition: all 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .sidebar-link__icon {
-  width: 1.05rem;
-  height: 1.05rem;
+  width: 1.1rem;
+  height: 1.1rem;
   flex-shrink: 0;
   overflow: visible;
+  color: currentColor;
 }
 
 .sidebar-link--collapsed {
   justify-content: center;
-  width: 2.75rem;
-  min-width: 2.75rem;
+  width: 3rem;
+  min-width: 3rem;
   margin-inline: auto;
-  padding-inline: 0.35rem;
+  padding-inline: 0.4rem;
 }
 
 .sidebar-link:hover {
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.88);
+  border-color: color-mix(in srgb, var(--color-base) 24%, white);
+  color: #0f172a;
+  transform: translateX(2px);
 }
 
 .sidebar-link--active {
-  background: #ecfdf5;
-  color: #065f46;
-  border-color: #bbf7d0;
-  font-weight: 600;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-base) 10%, white) 0%,
+    color-mix(in srgb, var(--color-base) 20%, white) 100%
+  );
+  color: #0f172a;
+  border-color: color-mix(in srgb, var(--color-base) 38%, white);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 14px 28px -24px color-mix(in srgb, var(--color-base) 58%, transparent);
+  font-weight: 700;
+}
+
+.sidebar-link--active .sidebar-link__icon {
+  color: var(--color-base);
 }
 </style>

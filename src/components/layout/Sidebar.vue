@@ -83,9 +83,10 @@ function onLogout() {
       </div>
 
       <div
-        class="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain pr-1 pb-3 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200"
+        class="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-3"
       >
-        <div class="space-y-2">
+        <div class="sidebar-section">
+          <p v-if="!collapsed" class="sidebar-section__label">Navigation</p>
           <SidebarLink
             v-for="item in navItems"
             :key="item.to"
@@ -101,7 +102,7 @@ function onLogout() {
         </div>
       </div>
 
-      <div class="mt-auto border-t border-slate-100 bg-white/95 pt-4 sm:pt-5" :class="{ 'flex justify-center': collapsed }">
+      <div class="sidebar-footer mt-auto pt-4 sm:pt-5" :class="{ 'flex justify-center': collapsed }">
         <LogoutButton :collapsed="collapsed" @logout="onLogout" />
       </div>
     </nav>
@@ -110,23 +111,71 @@ function onLogout() {
 
 <style scoped>
 .sidebar-shell {
-  background: #ffffff;
+  height: 100%;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-base) 14%, transparent), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border-right: 1px solid #dbe1e8;
-  padding: 0.75rem;
+  padding: 0.9rem 0.8rem 0.8rem;
+}
+
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.sidebar-section__label {
+  margin: 0 0 0.35rem;
+  padding: 0 0.55rem;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .sidebar-nav-link {
   display: flex;
   align-items: center;
-  min-height: 2.5rem;
-  font-weight: 600;
+  min-height: 2.8rem;
+  font-weight: 700;
   border: 1px solid transparent;
 }
 
 .sidebar-nav-link--active {
-  background: #ecfdf5;
-  color: #065f46;
-  border-color: #bbf7d0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-base) 10%, white) 0%,
+    color-mix(in srgb, var(--color-base) 18%, white) 100%
+  );
+  color: #0f172a;
+  border-color: color-mix(in srgb, var(--color-base) 35%, white);
+  box-shadow: 0 12px 24px -22px color-mix(in srgb, var(--color-base) 60%, transparent);
+}
+
+.sidebar-footer {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(248, 250, 252, 0.85) 100%);
 }
 
 .sr-only {

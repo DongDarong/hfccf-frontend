@@ -38,7 +38,7 @@
     "username": "Vanna Leng",
     "email": "vanna.leng@hfccf.org",
     "phone": "+855 12 345 003",
-    "role": "teacher",
+    "role": "teacher-english",
     "department": "Education",
     "status": "active",
     "avatar": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80",
@@ -54,7 +54,7 @@
     "username": "Rina Nop",
     "email": "rina.nop@hfccf.org",
     "phone": "+855 12 345 004",
-    "role": "teacher",
+    "role": "teacher-preschool",
     "department": "Education",
     "status": "inactive",
     "avatar": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80",
@@ -177,19 +177,18 @@
   },
 {
     "id": "usr_012",
-    "firstName": "Mony",
-    "lastName": "Ly",
-    "username": "Mony Ly",
-    "email": "mony.ly@hfccf.org",
-    "phone": "+855 12 345 010",
-    "role": "adminscholaship",
+    "firstName": "Sophea",
+    "lastName": "Chan",
+    "username": "Sophea Chan",
+    "email": "sophea.chan@hfccf.org",
+    "phone": "+855 12 345 012",
+    "role": "teacher-scholarship",
     "department": "Education",
     "status": "active",
     "avatar": "",
-    "createdAt": "2026-02-09T11:35:00Z",
-    "lastLoginAt": "2026-03-03T23:50:00Z",
+    "createdAt": "2026-02-12T09:20:00Z",
+    "lastLoginAt": "2026-03-04T06:15:00Z",
     "password": "P@ssw0rd123",
-    "role_permission": ["dashboard:read", "users:read", "users:write", "reports:read", "settings:read"]
+    "role_permission": ["dashboard:read", "tasks:read", "tasks:write"]
   }
 ]
-

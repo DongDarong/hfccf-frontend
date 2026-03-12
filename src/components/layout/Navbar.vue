@@ -25,8 +25,8 @@ const currentLocale = computed({
 const brandCopy = computed(() =>
   locale.value === 'kh'
     ? {
-        orgTop: 'អង្គការមូលនិធិក្តីសង្ឃឹម',
-        orgBottom: 'នៃកុមារកម្ពុជា',
+        orgTop: 'áž¢áž„áŸ’áž‚áž€áž¶ážšáž˜áž¼áž›áž“áž·áž’áž·áž€áŸ’ážáž¸ážŸáž„áŸ’ážƒáž¹áž˜',
+        orgBottom: 'áž“áŸƒáž€áž»áž˜áž¶ážšáž€áž˜áŸ’áž–áž»áž‡áž¶',
       }
     : {
         orgTop: "Organization for Children's",

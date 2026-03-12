@@ -35,6 +35,8 @@ const permissionOptions = [
   'manage_programs',
   'approve_requests',
 ]
+const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
 const form = reactive({
   name: '',
@@ -128,8 +130,14 @@ function onProfileImageChange(event) {
   const [file] = event?.target?.files || []
   if (!file) return
 
-  if (!file.type.startsWith('image/')) {
-    errorMessage.value = 'Please choose a valid image file.'
+  if (!allowedProfileImageTypes.includes(file.type)) {
+    errorMessage.value = 'Please choose a JPG, PNG, WEBP, or GIF image.'
+    showError.value = true
+    return
+  }
+
+  if (file.size > maxProfileImageSizeBytes) {
+    errorMessage.value = 'Profile images must be 2 MB or smaller.'
     showError.value = true
     return
   }
@@ -239,7 +247,7 @@ onBeforeUnmount(() => {
               <div class="add-user-page__profile-actions">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   class="add-user-page__file-input"
                   :disabled="isSubmitting"
                   @change="onProfileImageChange"
@@ -612,3 +620,8 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+
+
+
+

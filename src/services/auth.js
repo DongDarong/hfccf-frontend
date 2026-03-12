@@ -5,12 +5,26 @@ const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
 const LAST_ACTIVITY_STORAGE_KEY = 'hfccf-last-activity-at'
 const INACTIVITY_TIMEOUT_MS = 12 * 60 * 60 * 1000
 
+function createSessionToken() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`
+}
+
 function getStorage(remember = false) {
   return remember ? window.localStorage : window.sessionStorage
 }
 
 function getFallbackStorage(remember = false) {
   return remember ? window.sessionStorage : window.localStorage
+}
+
+function clearSessionStorage(storage) {
+  storage?.removeItem(AUTH_USER_STORAGE_KEY)
+  storage?.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  storage?.removeItem(LAST_ACTIVITY_STORAGE_KEY)
 }
 
 function sanitizeUser(user) {
@@ -64,12 +78,10 @@ export async function login({ email, password, remember = false }) {
   const storage = getStorage(remember)
   const fallbackStorage = getFallbackStorage(remember)
 
-  fallbackStorage.removeItem(AUTH_USER_STORAGE_KEY)
-  fallbackStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  fallbackStorage.removeItem(LAST_ACTIVITY_STORAGE_KEY)
+  clearSessionStorage(fallbackStorage)
 
   storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(sanitizeUser(matchedUser)))
-  storage.setItem(AUTH_TOKEN_STORAGE_KEY, `mock-token-${matchedUser.id}`)
+  storage.setItem(AUTH_TOKEN_STORAGE_KEY, createSessionToken())
   storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
 
   return sanitizeUser(matchedUser)
@@ -78,29 +90,29 @@ export async function login({ email, password, remember = false }) {
 export function logout() {
   if (typeof window === 'undefined') return
 
-  window.localStorage.removeItem(AUTH_USER_STORAGE_KEY)
-  window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  window.localStorage.removeItem(LAST_ACTIVITY_STORAGE_KEY)
+  clearSessionStorage(window.localStorage)
+  clearSessionStorage(window.sessionStorage)
+}
 
-  window.sessionStorage.removeItem(AUTH_USER_STORAGE_KEY)
-  window.sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  window.sessionStorage.removeItem(LAST_ACTIVITY_STORAGE_KEY)
+function getStoredUser() {
+  const storage = getSessionStorage()
+  const raw = storage?.getItem(AUTH_USER_STORAGE_KEY)
+
+  if (!raw) return null
+
+  try {
+    const user = JSON.parse(raw)
+    return user && typeof user === 'object' ? user : null
+  } catch {
+    clearSessionStorage(storage)
+    return null
+  }
 }
 
 export function getCurrentUser() {
   if (typeof window === 'undefined') return null
 
-  const raw =
-    window.localStorage.getItem(AUTH_USER_STORAGE_KEY) ||
-    window.sessionStorage.getItem(AUTH_USER_STORAGE_KEY)
-
-  if (!raw) return null
-
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return null
-  }
+  return getStoredUser()
 }
 
 export function getAuthToken() {
@@ -152,6 +164,11 @@ export function hasSessionExpired(now = Date.now()) {
 
 export function ensureSessionIsValid() {
   if (!isAuthenticated()) return false
+
+  if (!getCurrentUser()) {
+    logout()
+    return false
+  }
 
   if (hasSessionExpired()) {
     logout()

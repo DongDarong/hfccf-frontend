@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import AlertSuccess from '@/components/ui/AlertSuccess.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -12,6 +12,7 @@ defineOptions({
 })
 
 const router = useRouter()
+const route = useRoute()
 
 const form = reactive({
   email: '',
@@ -51,13 +52,23 @@ function togglePasswordVisibility() {
   isPasswordVisible.value = !isPasswordVisible.value
 }
 
+function getSafeRedirectTarget(value) {
+  const redirect = String(value || '').trim()
+
+  if (!redirect.startsWith('/') || redirect.startsWith('//')) {
+    return '/dashboard'
+  }
+
+  return redirect
+}
+
 async function onLoginSuccessClose() {
   showLoginSuccess.value = false
 
   if (!shouldRedirectAfterSuccess.value) return
   shouldRedirectAfterSuccess.value = false
   // Single navigation point avoids duplicate redirects.
-  await router.push('/dashboard')
+  await router.push(getSafeRedirectTarget(route.query.redirect))
 }
 </script>
 
@@ -173,3 +184,4 @@ async function onLoginSuccessClose() {
     />
   </main>
 </template>
+
