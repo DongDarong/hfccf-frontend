@@ -25,7 +25,7 @@ function createContentSecurityPolicy({ isDev }) {
     `object-src 'none'`,
     `frame-ancestors 'none'`,
     `form-action 'self'`,
-    `img-src 'self' data: blob:`,
+    `img-src 'self' data: blob: https:`,
     `font-src 'self' data:`,
     `style-src 'self' 'unsafe-inline'`,
     `script-src ${scriptSources.join(' ')}`,

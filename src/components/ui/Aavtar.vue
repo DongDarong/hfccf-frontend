@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getCurrentUser } from '@/services/auth'
+import users from '@/mocks/users.json'
 
 defineOptions({
   name: 'UserAvatar',
@@ -38,6 +39,24 @@ const props = defineProps({
 })
 
 const currentUser = computed(() => getCurrentUser() || {})
+const hasImageError = ref(false)
+
+const matchedMockUser = computed(() => {
+  const currentId = String(currentUser.value?.id || '').trim()
+  const currentEmail = String(currentUser.value?.email || '')
+    .trim()
+    .toLowerCase()
+  const currentUsername = String(currentUser.value?.username || '')
+    .trim()
+    .toLowerCase()
+
+  return (
+    users.find((user) => String(user.id || '').trim() === currentId) ||
+    users.find((user) => String(user.email || '').trim().toLowerCase() === currentEmail) ||
+    users.find((user) => String(user.username || '').trim().toLowerCase() === currentUsername) ||
+    null
+  )
+})
 
 const displayName = computed(() => {
   const firstName = String(currentUser.value?.firstName || '').trim()
@@ -61,7 +80,19 @@ const displayUsername = computed(() => {
   return email || 'user'
 })
 
-const displayAvatar = computed(() => props.avatar || String(currentUser.value?.avatar || '').trim())
+const resolvedAvatar = computed(() => {
+  if (props.avatar) return props.avatar
+
+  const currentAvatar = String(currentUser.value?.avatar || '').trim()
+  if (currentAvatar) return currentAvatar
+
+  return String(matchedMockUser.value?.avatar || '').trim()
+})
+
+const displayAvatar = computed(() => {
+  if (hasImageError.value) return ''
+  return resolvedAvatar.value
+})
 
 const displayInitials = computed(() => {
   if (props.initials) return props.initials
@@ -89,6 +120,14 @@ const statusClass = computed(() => {
   if (value === 'away') return 'navbar-profile__status-dot--away'
   return 'navbar-profile__status-dot--online'
 })
+
+watch(resolvedAvatar, () => {
+  hasImageError.value = false
+})
+
+function onImageError() {
+  hasImageError.value = true
+}
 </script>
 
 <template>
@@ -99,12 +138,13 @@ const statusClass = computed(() => {
     </div>
     <div class="navbar-profile__avatar-container">
       <div class="navbar-profile__avatar" :class="avatarSizeClass">
-        <!-- Prefer uploaded avatar image; fall back to deterministic initials. -->
+        <!-- Prefer avatar from props or matched mock user; fall back to initials. -->
         <img
           v-if="displayAvatar"
           :src="displayAvatar"
           :alt="`${displayName} avatar`"
           class="navbar-profile__avatar-image"
+          @error="onImageError"
         >
         <span v-else>{{ displayInitials }}</span>
       </div>

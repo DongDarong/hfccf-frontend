@@ -35,7 +35,9 @@ const pageSize = 10
 const roleOptions = [
   'superadmin',
   'coach',
-  'teacher',
+  'teacher-english',
+  'teacher-preschool',
+  'teacher-scholarship',
   'adminpreschool',
   'adminscholaship',
   'adminenglish',
@@ -67,6 +69,7 @@ const users = ref(
     id: item.id,
     name: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || item.id,
     email: item.email,
+    avatar: item.avatar,
     role: item.role,
     permissions: Array.isArray(item.role_permission) ? [...item.role_permission] : [],
     status: item.status,
@@ -238,3 +241,5 @@ function onConfirmDelete() {
   padding: 1.5rem 0.5rem;
 }
 </style>
+
+
