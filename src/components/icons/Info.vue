@@ -4,6 +4,7 @@ defineOptions({
 })
 
 defineProps({
+  // Kept numeric because this icon is used with fixed pixel-based controls.
   size: {
     type: Number,
     default: 18,

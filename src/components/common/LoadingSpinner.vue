@@ -20,6 +20,7 @@ const props = defineProps({
 })
 
 const { t } = useLanguage()
+// Prefer an explicit label when passed in, otherwise use localized default text.
 const resolvedLabel = computed(() => props.label || t('common.loading'))
 </script>
 

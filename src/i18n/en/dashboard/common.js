@@ -39,12 +39,15 @@ export default {
   },
   role: {
     superadmin: 'Super Admin',
-    admin: 'Admin',
-    manager: 'Manager',
-    staff: 'Staff',
-    support: 'Support',
     coach: 'Coach',
-    player: 'Player',
+    teacher: 'Teacher',
+    teacher_english: 'English Teacher',
+    teacher_preschool: 'Preschool Teacher',
+    teacher_scholarship: 'Scholarship Teacher',
+    adminpreschool: 'Preschool Admin',
+    adminscholaship: 'Scholarship Admin',
+    adminenglish: 'English Admin',
+    adminsport: 'Sport Admin',
   },
   permission: {
     'all:*': 'Full access',
@@ -68,5 +71,9 @@ export default {
     status: 'Status',
     phone: 'Phone',
     actions: 'Actions',
+  },
+  pagination: {
+    previous: 'Previous',
+    next: 'Next',
   },
 }

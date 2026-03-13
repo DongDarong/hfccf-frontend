@@ -1,16 +1,20 @@
 <script setup>
+import { computed, ref, watch } from 'vue'
+import { getCurrentUser } from '@/services/auth'
+import users from '@/mocks/users.json'
+
 defineOptions({
   name: 'UserAvatar',
 })
 
-defineProps({
+const props = defineProps({
   name: {
     type: String,
-    default: 'Admin User',
+    default: '',
   },
   username: {
     type: String,
-    default: 'user',
+    default: '',
   },
   avatar: {
     type: String,
@@ -18,28 +22,133 @@ defineProps({
   },
   initials: {
     type: String,
-    default: 'AU',
+    default: '',
+  },
+  size: {
+    type: String,
+    default: 'md',
+  },
+  status: {
+    type: String,
+    default: 'online',
+  },
+  href: {
+    type: String,
+    default: '#profile',
   },
 })
+
+const currentUser = computed(() => getCurrentUser() || {})
+const hasImageError = ref(false)
+
+const matchedMockUser = computed(() => {
+  const currentId = String(currentUser.value?.id || '').trim()
+  const currentEmail = String(currentUser.value?.email || '')
+    .trim()
+    .toLowerCase()
+  const currentUsername = String(currentUser.value?.username || '')
+    .trim()
+    .toLowerCase()
+
+  return (
+    users.find((user) => String(user.id || '').trim() === currentId) ||
+    users.find((user) => String(user.email || '').trim().toLowerCase() === currentEmail) ||
+    users.find((user) => String(user.username || '').trim().toLowerCase() === currentUsername) ||
+    null
+  )
+})
+
+const displayName = computed(() => {
+  const firstName = String(currentUser.value?.firstName || '').trim()
+  const lastName = String(currentUser.value?.lastName || '').trim()
+  const fullName = `${lastName} ${firstName}`.trim()
+  if (fullName) return fullName
+
+  if (props.name) return props.name
+
+  return String(currentUser.value?.username || '').trim() || 'Admin User'
+})
+
+const displayUsername = computed(() => {
+  if (props.username) return props.username
+
+  const role = String(currentUser.value?.role || '').trim()
+  if (role) return role
+
+  const email = String(currentUser.value?.email || '').trim()
+  if (email.includes('@')) return email.split('@')[0]
+  return email || 'user'
+})
+
+const resolvedAvatar = computed(() => {
+  if (props.avatar) return props.avatar
+
+  const currentAvatar = String(currentUser.value?.avatar || '').trim()
+  if (currentAvatar) return currentAvatar
+
+  return String(matchedMockUser.value?.avatar || '').trim()
+})
+
+const displayAvatar = computed(() => {
+  if (hasImageError.value) return ''
+  return resolvedAvatar.value
+})
+
+const displayInitials = computed(() => {
+  if (props.initials) return props.initials
+
+  const words = displayName.value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('')
+
+  return words || 'AU'
+})
+
+const avatarSizeClass = computed(() => {
+  const value = String(props.size || 'md').toLowerCase()
+  if (value === 'sm') return 'navbar-profile__avatar--sm'
+  if (value === 'lg') return 'navbar-profile__avatar--lg'
+  return 'navbar-profile__avatar--md'
+})
+
+const statusClass = computed(() => {
+  const value = String(props.status || 'online').toLowerCase()
+  if (value === 'offline') return 'navbar-profile__status-dot--offline'
+  if (value === 'away') return 'navbar-profile__status-dot--away'
+  return 'navbar-profile__status-dot--online'
+})
+
+watch(resolvedAvatar, () => {
+  hasImageError.value = false
+})
+
+function onImageError() {
+  hasImageError.value = true
+}
 </script>
 
 <template>
-  <a href="#profile" class="navbar-profile">
+  <a :href="props.href" class="navbar-profile">
     <div class="navbar-profile__text">
-      <div class="navbar-profile__name">{{ name }}</div>
-      <div class="navbar-profile__username">{{ username }}</div>
+      <div class="navbar-profile__name">{{ displayName }}</div>
+      <div class="navbar-profile__username">{{ displayUsername }}</div>
     </div>
     <div class="navbar-profile__avatar-container">
-      <div class="navbar-profile__avatar">
+      <div class="navbar-profile__avatar" :class="avatarSizeClass">
+        <!-- Prefer avatar from props or matched mock user; fall back to initials. -->
         <img
-          v-if="avatar"
-          :src="avatar"
-          :alt="`${name} avatar`"
+          v-if="displayAvatar"
+          :src="displayAvatar"
+          :alt="`${displayName} avatar`"
           class="navbar-profile__avatar-image"
+          @error="onImageError"
         >
-        <span v-else>{{ initials }}</span>
+        <span v-else>{{ displayInitials }}</span>
       </div>
-      <div class="navbar-profile__status-dot"></div>
+      <div class="navbar-profile__status-dot" :class="statusClass"></div>
     </div>
   </a>
 </template>
@@ -106,15 +215,44 @@ defineProps({
   object-fit: cover;
 }
 
+.navbar-profile__avatar--sm {
+  width: 34px;
+  height: 34px;
+  font-size: 0.75rem;
+}
+
+.navbar-profile__avatar--md {
+  width: 38px;
+  height: 38px;
+  font-size: 0.85rem;
+}
+
+.navbar-profile__avatar--lg {
+  width: 44px;
+  height: 44px;
+  font-size: 0.95rem;
+}
+
 .navbar-profile__status-dot {
   position: absolute;
   bottom: -1px;
   right: -1px;
   width: 10px;
   height: 10px;
-  background: #22c55e;
   border: 2px solid var(--hope-text-white);
   border-radius: 50%;
+}
+
+.navbar-profile__status-dot--online {
+  background: #22c55e;
+}
+
+.navbar-profile__status-dot--away {
+  background: #f59e0b;
+}
+
+.navbar-profile__status-dot--offline {
+  background: #94a3b8;
 }
 
 @media (max-width: 768px) {

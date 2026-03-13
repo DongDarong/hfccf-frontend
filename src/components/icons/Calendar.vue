@@ -4,6 +4,7 @@ defineOptions({
 })
 
 defineProps({
+  // Accept number or CSS string values (e.g. 20, "1.25rem") for flexible sizing.
   size: {
     type: [Number, String],
     default: 20,

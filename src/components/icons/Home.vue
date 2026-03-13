@@ -4,6 +4,7 @@ defineOptions({
 })
 
 defineProps({
+  // Shared icon-size prop keeps navbar/sidebar icon scaling consistent.
   size: {
     type: Number,
     default: 18,

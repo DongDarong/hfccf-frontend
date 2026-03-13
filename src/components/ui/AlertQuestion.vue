@@ -32,6 +32,7 @@ const props = defineProps({
 defineEmits(['confirm', 'cancel'])
 const { t } = useLanguage()
 
+// Provide sane translated defaults while still supporting per-usage custom copy.
 const resolvedTitle = computed(() => props.title || t('common.areYouSure'))
 const resolvedMessage = computed(() => props.message || t('common.actionCannotBeUndone'))
 const resolvedConfirmText = computed(() => props.confirmText || t('common.confirm'))

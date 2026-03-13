@@ -1,45 +1,115 @@
-# hfccf-frontend
+# HFCCF Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend dashboard application for HFCCF, built with Vue 3 and Vite.
 
-## Recommended IDE Setup
+## Stack
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Vue 3
+- Vite
+- Vue Router
+- Pinia
+- Vue I18n
+- Tailwind CSS 4
+- Axios
 
-## Recommended Browser Setup
+## Requirements
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- Node.js: `^20.19.0 || >=22.12.0`
+- npm
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Setup
 
 ```sh
-npm install
+npm ci
 ```
 
-### Compile and Hot-Reload for Development
+## Run Locally
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+The app uses mock authentication data from [src/mocks/users.json](/D:/Thesis2026/frontend/hfccf-frontend/src/mocks/users.json).
+
+## Mock Roles
+
+Current mock roles include:
+
+- `superadmin`
+- `adminenglish`
+- `adminpreschool`
+- `adminscholaship`
+- `adminsport`
+- `teacher-english`
+- `teacher-preschool`
+- `teacher-scholarship`
+- `coach`
+
+Note: some route guards and dashboard resolution logic still use older role assumptions for teachers, so if you add or rename roles you may also need to update:
+
+- [src/router/index.js](/D:/Thesis2026/frontend/hfccf-frontend/src/router/index.js)
+- [src/pages/module/MainDashboard.vue](/D:/Thesis2026/frontend/hfccf-frontend/src/pages/module/MainDashboard.vue)
+- [src/components/ui/SidebarBrandHeader.vue](/D:/Thesis2026/frontend/hfccf-frontend/src/components/ui/SidebarBrandHeader.vue)
+
+## Security Notes
+
+The frontend currently includes:
+
+- client-side session expiry handling
+- HTTPS enforcement outside local development
+- hardened Axios defaults for authenticated requests
+- CSP and browser security headers via Vite config
+
+This is still frontend-side protection. Real production auth should be enforced by the backend.
+
+## Available Scripts
 
 ```sh
+# start dev server
+npm run dev
+
+# build production bundle
 npm run build
-```
 
-### Lint with [ESLint](https://eslint.org/)
+# preview production build locally
+npm run preview
 
-```sh
+# run all linters with auto-fix
 npm run lint
+
+# run only oxlint with auto-fix
+npm run lint:oxlint
+
+# run only eslint with auto-fix and cache
+npm run lint:eslint
+
+# format source files with prettier
+npm run format
 ```
-# hfccf-frontend
+
+## Project Areas
+
+- `src/pages/auth`: login flow
+- `src/pages/module`: dashboards and role-specific pages
+- `src/components/layout`: navbar, sidebar, layout primitives
+- `src/components/ui`: shared UI components
+- `src/services`: auth and HTTP services
+- `src/i18n`: English and Khmer translations
+- `src/mocks`: mock user data
+
+## CI
+
+GitHub Actions workflow: [`.github/workflows/main.yml`](.github/workflows/main.yml)
+
+The CI pipeline runs on push to `main` and on pull requests:
+
+1. Install dependencies with `npm ci`
+2. Run `npm run lint`
+3. Fail if lint auto-fixes changed tracked files (`git diff --exit-code`)
+4. Run `npm run build`
+
+## References
+
+- [Vue 3](https://vuejs.org/)
+- [Vite](https://vite.dev/)
+- [Vue Router](https://router.vuejs.org/)

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { useLanguage } from '../../composables/useLanguage'
 
 const props = defineProps({
@@ -22,10 +23,26 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showRoleFilter: {
+    type: Boolean,
+    default: true,
+  },
+  showStatusFilter: {
+    type: Boolean,
+    default: true,
+  },
+  showClearButton: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['update:roleFilter', 'update:statusFilter', 'clear'])
 const { t } = useLanguage()
+
+const hasRoleOptions = computed(() => props.showRoleFilter && props.roleOptions.length > 0)
+const hasStatusOptions = computed(() => props.showStatusFilter && props.statusOptions.length > 0)
+const hasActiveFilters = computed(() => Boolean(props.roleFilter || props.statusFilter))
 
 function normalizeKey(value) {
   return String(value ?? '')
@@ -62,10 +79,11 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+  <div class="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
     <select
+      v-if="hasRoleOptions"
       id="userRoleFilter"
-      class="w-full sm:w-32 bg-white border border-gray-300 text-gray-600 text-sm rounded-xl focus:ring-hope-cyan focus:border-hope-cyan block px-3 sm:px-4 py-2.5 outline-none shadow-sm"
+      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[var(--color-base)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--color-base)_16%,white)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 sm:w-40"
       :value="roleFilter"
       :disabled="disabled"
       @change="onRoleChange"
@@ -75,8 +93,9 @@ function clearFilters() {
     </select>
 
     <select
+      v-if="hasStatusOptions"
       id="userStatusFilter"
-      class="w-full sm:w-36 bg-white border border-gray-300 text-gray-600 text-sm rounded-xl focus:ring-hope-cyan focus:border-hope-cyan block px-3 sm:px-4 py-2.5 outline-none shadow-sm"
+      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[var(--color-base)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--color-base)_16%,white)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 sm:w-44"
       :value="statusFilter"
       :disabled="disabled"
       @change="onStatusChange"
@@ -86,9 +105,11 @@ function clearFilters() {
     </select>
 
     <button
+      v-if="showClearButton"
       type="button"
-      class="w-full sm:w-auto rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
-      :disabled="disabled"
+      class="w-full rounded-xl border px-3.5 py-3 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+      :class="hasActiveFilters ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50' : 'border-slate-200 bg-slate-100 text-slate-400'"
+      :disabled="disabled || !hasActiveFilters"
       @click="clearFilters"
     >
       {{ t('common.clear') }}

@@ -4,6 +4,7 @@ defineOptions({
 })
 
 defineProps({
+  // Accept number or CSS string values (e.g. 20, "1.25rem") for flexible sizing.
   size: {
     type: [Number, String],
     default: 20,
@@ -28,6 +29,7 @@ defineProps({
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
   >
+    <!-- Toggle icon path set based on whether the password is currently visible. -->
     <template v-if="visible">
       <path
         d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"

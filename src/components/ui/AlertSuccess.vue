@@ -42,6 +42,7 @@ watch(
   () => props.show,
   (newShow) => {
     if (newShow && props.autoClose > 0) {
+      // Auto-dismiss is opt-in and controlled by millisecond prop.
       timeout = setTimeout(handleClose, props.autoClose)
     } else if (!newShow) {
       if (timeout) clearTimeout(timeout)

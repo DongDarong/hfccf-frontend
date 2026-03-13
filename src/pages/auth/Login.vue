@@ -1,6 +1,6 @@
-﻿<script setup>
+<script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import AlertSuccess from '@/components/ui/AlertSuccess.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -12,6 +12,7 @@ defineOptions({
 })
 
 const router = useRouter()
+const route = useRoute()
 
 const form = reactive({
   email: '',
@@ -28,6 +29,7 @@ const shouldRedirectAfterSuccess = ref(false)
 async function onSubmit() {
   errorMessage.value = ''
 
+  // Lock form while async auth request is running.
   isSubmitting.value = true
 
   try {
@@ -36,6 +38,7 @@ async function onSubmit() {
       password: form.password,
       remember: form.remember,
     })
+    // Defer redirect until success modal closes (manual or auto-close).
     shouldRedirectAfterSuccess.value = true
     showLoginSuccess.value = true
   } catch (error) {
@@ -49,12 +52,23 @@ function togglePasswordVisibility() {
   isPasswordVisible.value = !isPasswordVisible.value
 }
 
+function getSafeRedirectTarget(value) {
+  const redirect = String(value || '').trim()
+
+  if (!redirect.startsWith('/') || redirect.startsWith('//')) {
+    return '/dashboard'
+  }
+
+  return redirect
+}
+
 async function onLoginSuccessClose() {
   showLoginSuccess.value = false
 
   if (!shouldRedirectAfterSuccess.value) return
   shouldRedirectAfterSuccess.value = false
-  await router.push('/dashboard')
+  // Single navigation point avoids duplicate redirects.
+  await router.push(getSafeRedirectTarget(route.query.redirect))
 }
 </script>
 
@@ -170,3 +184,4 @@ async function onLoginSuccessClose() {
     />
   </main>
 </template>
+

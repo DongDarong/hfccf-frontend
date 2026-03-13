@@ -25,6 +25,7 @@ defineEmits(['close'])
 
 const { t } = useLanguage()
 
+// Keep modal reusable by allowing explicit overrides with localized defaults.
 const resolvedTitle = computed(() => props.title || t('common.errorOccurred'))
 const resolvedMessage = computed(() => props.message || t('common.errorTryAgain'))
 const resolvedButtonText = computed(() => props.buttonText || t('common.close'))
