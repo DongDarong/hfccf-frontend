@@ -19,10 +19,13 @@ const liveMatches = adminDashboardData.liveMatches
       </div>
 
       <div class="live-matches__list">
-        <div v-for="match in liveMatches" :key="match.teams" class="live-matches__item">
+        <div v-for="(match, index) in liveMatches" :key="match.teams" class="live-matches__item">
           <div class="live-matches__info">
-            <p class="live-matches__teams">{{ match.teams }}</p>
-            <p class="live-matches__meta">{{ match.meta }}</p>
+            <span class="live-matches__number">{{ index + 1 }}</span>
+            <div>
+              <p class="live-matches__teams">{{ match.teams }}</p>
+              <p class="live-matches__meta">{{ match.meta }}</p>
+            </div>
           </div>
           <span class="live-matches__badge">
             {{ t('sportAdminDashboard.quickPanels.liveLabel') }}
@@ -96,6 +99,27 @@ const liveMatches = adminDashboardData.liveMatches
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar */
+.live-matches__list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.live-matches__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.live-matches__list::-webkit-scrollbar-thumb {
+  background: #fecaca; /* Red tint for live scrollbar */
+  border-radius: 10px;
+}
+
+.live-matches__list::-webkit-scrollbar-thumb:hover {
+  background: #f87171;
 }
 
 .live-matches__item {
@@ -106,6 +130,26 @@ const liveMatches = adminDashboardData.liveMatches
   background: white;
   border: 1px solid #edf2f7;
   border-radius: 0.75rem;
+}
+
+.live-matches__info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.live-matches__number {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--hope-red);
+  background: color-mix(in srgb, var(--hope-red) 10%, white);
+  width: 1.4rem;
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
 }
 
 .live-matches__teams {
