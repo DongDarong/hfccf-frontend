@@ -28,6 +28,13 @@ export default {
         label: 'Pending approvals',
       },
     },
+    quickPanels: {
+      liveMatches: 'Live matches',
+      todayMatches: 'Today matches',
+      topScorers: 'Top scorers',
+      standings: 'Standings preview',
+      liveLabel: 'Live',
+    },
     tournamentBanner: {
       badge: 'Tournament Banner',
       title: 'No Tournament Selected',

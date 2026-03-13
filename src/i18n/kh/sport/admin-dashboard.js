@@ -34,5 +34,12 @@ export default {
       subtitle: 'ផ្ទុកទិន្នន័យពី JSON ដើម្បីមើលព័ត៌មានពីព្រឹត្ដិការណ៍បច្ចុប្បន្ន។',
       action: 'មើលព្រឹត្ដិការណ៍',
     },
+    quickPanels: {
+      liveMatches: 'ការប្រកួតផ្ទាល់',
+      todayMatches: 'ការប្រកួតថ្ងៃនេះ',
+      topScorers: 'អ្នកគ្រាប់បាល់ចំនួនច្រើន',
+      standings: 'មើលស្ថានភាព',
+      liveLabel: 'ផ្ទាល់',
+    },
   },
 }

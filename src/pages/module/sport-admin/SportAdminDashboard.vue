@@ -1,10 +1,11 @@
-<script setup>
+﻿<script setup>
 import { computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
-import { useLanguage } from '@/composables/useLanguage'
 import StatsCards from '@/components/common/StatsCards.vue'
 import TournamentBanner from '@/components/sports/admin-dashboard/TournamentBanner.vue'
+import TournamentQuickPanels from '@/components/sports/admin-dashboard/TournamentQuickPanels.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import adminDashboardData from '@/mocks/sport/admin-dashboard-data.json'
 
 const { t } = useLanguage()
@@ -67,6 +68,7 @@ const tournament = computed(() => adminDashboardData.tournament)
           :tournamentSubtitle="`${tournament.subtitle} · ${tournament.location}`"
           :actionLabel="t('sportAdminDashboard.tournamentBanner.action')"
         />
+        <TournamentQuickPanels />
       </div>
     </section>
   </MainLayout>
