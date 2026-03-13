@@ -186,12 +186,12 @@ async function onSubmit() {
 }
 
 async function onCancel() {
-  await router.push('/users')
+  await router.push('/module/super-admin/users/manage')
 }
 
 async function onSuccessClose() {
   showSuccess.value = false
-  await router.push('/users')
+  await router.push('/module/super-admin/users/manage')
 }
 
 function onErrorClose() {
@@ -620,6 +620,7 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
 
 
 

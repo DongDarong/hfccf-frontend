@@ -35,7 +35,7 @@ const tableColumns = [
 ]
 
 function goToAddTeacher() {
-  router.push({ path: '/users/add', query: { role: 'teacher-preschool' } })
+  router.push({ path: '/module/super-admin/users/add', query: { role: 'teacher-preschool' } })
 }
 
 const preschoolUsers = ref(
@@ -96,13 +96,13 @@ watch(
 function onViewUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'view', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'view', id } })
 }
 
 function onEditUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'edit', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
 }
 
 function onDeleteUser(user) {

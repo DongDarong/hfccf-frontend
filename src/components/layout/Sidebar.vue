@@ -53,23 +53,31 @@ const navItems = computed(() =>
       }
       return true
     })
-    .map((item) => ({
-      ...item,
-      to:
-        item.to === '/users' && !canSeeUsersSection.value
-          ? isEnglishAdmin.value
-            ? '/module/english-admin/users'
-            : isPreschoolAdmin.value
-              ? '/module/preschool-admin/users'
-              : isScholarshipAdmin.value
-                ? '/module/scholarship-admin/users'
-                : isSportAdmin.value
-                  ? '/module/sport-admin/users'
-                  : item.to
-          : item.to,
-      label: t(item.labelKey),
-      iconComponent: iconByName[item.icon] || null,
-    })),
+    .map((item) => {
+      const baseTo = item.to === '/dashboard' ? '/module/dashboard' : item.to
+      let resolvedTo = baseTo
+
+      if (item.to === '/users') {
+        if (canSeeUsersSection.value) {
+          resolvedTo = '/module/super-admin/users/manage'
+        } else if (isEnglishAdmin.value) {
+          resolvedTo = '/module/english-admin/users'
+        } else if (isPreschoolAdmin.value) {
+          resolvedTo = '/module/preschool-admin/users'
+        } else if (isScholarshipAdmin.value) {
+          resolvedTo = '/module/scholarship-admin/users'
+        } else if (isSportAdmin.value) {
+          resolvedTo = '/module/sport-admin/users'
+        }
+      }
+
+      return {
+        ...item,
+        to: resolvedTo,
+        label: t(item.labelKey),
+        iconComponent: iconByName[item.icon] || null,
+      }
+    }),
 )
 
 function isActive(path) {
