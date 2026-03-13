@@ -4,10 +4,12 @@ import HeaderSection from '@/components/layout/HeaderSection.vue'
 import StatsCards from '@/components/common/StatsCards.vue'
 
 const cards = [
-  { title: 'Weekly sessions', value: 24, label: 'Planned this week', status: 'info' },
-  { title: 'Athletes flagged', value: 5, label: 'Condition monitoring', status: 'warning' },
-  { title: 'Coach confirmations', value: 18, label: 'Completed', status: 'success' },
-  { title: 'Facility conflicts', value: 1, label: 'Needs reschedule', status: 'error' },
+  { title: 'Total Teams', value: 28, label: 'Active rosters', status: 'info' },
+  { title: 'Total Players', value: 9, label: 'Under observation', status: 'warning' },
+  { title: 'Upcoming Matches', value: 21, label: 'Confirmed fixtures', status: 'success' },
+  { title: 'Low Stock Items', value: 3, label: 'Reorder soon', status: 'error' },
+  { title: 'Total Coaches', value: '86%', label: 'Coverage target', status: 'info' },
+  { title: 'Coaches Requests', value: 4, label: 'Pending approvals', status: 'warning' },
 ]
 </script>
 
