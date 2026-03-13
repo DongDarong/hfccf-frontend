@@ -7,7 +7,7 @@ import SidebarLink from '@/components/layout/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/components/icons/Home.vue'
-import InfoIcon from '@/components/icons/Info.vue'
+import UsersIcon from '@/components/icons/Users.vue'
 import { getCurrentUser, isSuperAdmin } from '@/services/auth'
 
 defineOptions({
@@ -28,7 +28,7 @@ const { t } = useLanguage()
 // Map icon keys from JSON config to concrete Vue components.
 const iconByName = {
   home: HomeIcon,
-  info: InfoIcon,
+  info: UsersIcon,
 }
 
 const currentPath = computed(() => route.path)
