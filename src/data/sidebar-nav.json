@@ -1,12 +1,13 @@
 [
   {
-    "to": "/dashboard",
+    "to": "/module/dashboard",
     "labelKey": "nav.dashboard",
     "icon": "home"
   },
   {
-    "to": "/users",
+    "to": "/module/super-admin/users/manage",
     "labelKey": "nav.users",
     "icon": "info"
   }
 ]
+

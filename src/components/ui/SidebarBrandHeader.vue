@@ -45,6 +45,8 @@ const brandConfig = computed(() => {
 
   if (
     matchesSection(path, [
+      '/module/english-admin/dashboard',
+      '/module/english-admin/teacher',
       '/dashboard/english-admin',
       '/dashboard/english-admin/teacher',
       '/dashboard/teacher-english',
@@ -60,6 +62,7 @@ const brandConfig = computed(() => {
 
   if (
     matchesSection(path, [
+      '/module/preschool-admin/dashboard',
       '/dashboard/preschool-admin',
       '/dashboard/preschool-admin/teacher',
       '/dashboard/teacher-preschool',
@@ -75,6 +78,7 @@ const brandConfig = computed(() => {
 
   if (
     matchesSection(path, [
+      '/module/scholarship-admin/dashboard',
       '/dashboard/scholarship-admin',
       '/dashboard/scholarship-admin/teacher',
       '/dashboard/teacher-scholarship',
@@ -90,6 +94,8 @@ const brandConfig = computed(() => {
 
   if (
     matchesSection(path, [
+      '/module/sport-admin/dashboard',
+      '/module/sport-admin/coach',
       '/dashboard/sport-admin',
       '/dashboard/sport-admin/coach',
       '/dashboard/coach',

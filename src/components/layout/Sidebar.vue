@@ -58,13 +58,13 @@ const navItems = computed(() =>
       to:
         item.to === '/users' && !canSeeUsersSection.value
           ? isEnglishAdmin.value
-            ? '/dashboard/english-admin/users'
+            ? '/module/english-admin/users'
             : isPreschoolAdmin.value
-              ? '/dashboard/preschool-admin/users'
+              ? '/module/preschool-admin/users'
               : isScholarshipAdmin.value
-                ? '/dashboard/scholarship-admin/users'
+                ? '/module/scholarship-admin/users'
                 : isSportAdmin.value
-                  ? '/dashboard/sport-admin/users'
+                  ? '/module/sport-admin/users'
                   : item.to
           : item.to,
       label: t(item.labelKey),
@@ -213,6 +213,7 @@ function onLogout() {
   border: 0;
 }
 </style>
+
 
 
 
