@@ -65,4 +65,3 @@ export const moduleRoutes = [
     meta: { requiresAuth: true, allowedRoles: ['adminsport'] },
   },
 ]
-

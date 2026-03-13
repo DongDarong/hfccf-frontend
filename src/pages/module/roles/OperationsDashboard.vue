@@ -16,6 +16,10 @@ const cards = [
     :cards="cards"
     spotlight-title="Access governance"
     spotlight-text="Review account role changes and close the remaining security alert."
-    :actions="['Approve role update requests', 'Validate account audit trail', 'Publish pending policy notices']"
+    :actions="[
+      'Approve role update requests',
+      'Validate account audit trail',
+      'Publish pending policy notices',
+    ]"
   />
 </template>

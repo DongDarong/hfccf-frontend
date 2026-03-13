@@ -16,6 +16,10 @@ const cards = [
     :cards="cards"
     spotlight-title="Athlete readiness"
     spotlight-text="Complete performance reviews and monitor injury watchlist before next sessions."
-    :actions="['Finalize training intensity plans', 'Submit performance notes', 'Confirm recovery protocols']"
+    :actions="[
+      'Finalize training intensity plans',
+      'Submit performance notes',
+      'Confirm recovery protocols',
+    ]"
   />
 </template>

@@ -20,11 +20,7 @@ defineProps({
     stroke="currentColor"
     aria-hidden="true"
   >
-    <path
-      d="M4 18h16"
-      stroke-width="2"
-      stroke-linecap="round"
-    />
+    <path d="M4 18h16" stroke-width="2" stroke-linecap="round" />
     <polyline
       points="5 14 9 10 12 13 16 7 19 11"
       stroke-width="2"

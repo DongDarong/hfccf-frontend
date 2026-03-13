@@ -65,10 +65,7 @@ function onCancel() {
 </script>
 
 <template>
-  <form
-    class="ui-form"
-    @submit.prevent="onSubmit"
-  >
+  <form class="ui-form" @submit.prevent="onSubmit">
     <header v-if="title || description || $slots.header" class="ui-form__header">
       <slot name="header">
         <h3 v-if="title" class="ui-form__title">{{ title }}</h3>
@@ -80,10 +77,7 @@ function onCancel() {
       <slot />
     </div>
 
-    <footer
-      v-if="$slots.actions || showCancel"
-      class="ui-form__actions"
-    >
+    <footer v-if="$slots.actions || showCancel" class="ui-form__actions">
       <slot name="actions" :loading="loading" :disabled="isDisabled">
         <Button
           v-if="showCancel"
@@ -117,8 +111,7 @@ function onCancel() {
   width: 100%;
   border: 1px solid #dbe4ee;
   border-radius: 1.1rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
   box-shadow:
     0 12px 30px -20px rgba(15, 23, 42, 0.55),
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
@@ -130,7 +123,12 @@ function onCancel() {
   position: absolute;
   inset: 0 0 auto;
   height: 3px;
-  background: linear-gradient(90deg, var(--hope-o-cyan-blue) 0%, var(--hope-h-lime-green) 55%, #93c5fd 100%);
+  background: linear-gradient(
+    90deg,
+    var(--hope-o-cyan-blue) 0%,
+    var(--hope-h-lime-green) 55%,
+    #93c5fd 100%
+  );
 }
 
 .ui-form__header {

@@ -12,7 +12,14 @@ defineProps({
 </script>
 
 <template>
-  <svg :width="size" :height="size" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+  <svg
+    :width="size"
+    :height="size"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
     <rect x="3" y="5" width="18" height="4" rx="1.5" stroke-width="2" />
     <rect x="3" y="11" width="18" height="4" rx="1.5" stroke-width="2" />
     <rect x="3" y="17" width="18" height="4" rx="1.5" stroke-width="2" />

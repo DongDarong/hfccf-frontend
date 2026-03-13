@@ -101,14 +101,20 @@ function clearFilters() {
       @change="onStatusChange"
     >
       <option value="">{{ t('common.allStatus') }}</option>
-      <option v-for="status in statusOptions" :key="status" :value="status">{{ statusLabel(status) }}</option>
+      <option v-for="status in statusOptions" :key="status" :value="status">
+        {{ statusLabel(status) }}
+      </option>
     </select>
 
     <button
       v-if="showClearButton"
       type="button"
       class="w-full rounded-xl border px-3.5 py-3 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-      :class="hasActiveFilters ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50' : 'border-slate-200 bg-slate-100 text-slate-400'"
+      :class="
+        hasActiveFilters
+          ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+          : 'border-slate-200 bg-slate-100 text-slate-400'
+      "
       :disabled="disabled || !hasActiveFilters"
       @click="clearFilters"
     >

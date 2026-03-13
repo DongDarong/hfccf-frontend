@@ -18,7 +18,11 @@ defineOptions({
 })
 
 const currentUser = computed(() => getCurrentUser() || {})
-const normalizedRole = computed(() => String(currentUser.value?.role || '').trim().toLowerCase())
+const normalizedRole = computed(() =>
+  String(currentUser.value?.role || '')
+    .trim()
+    .toLowerCase(),
+)
 
 function resolveDashboardKey() {
   if (hasPermission('all:*', currentUser.value)) return 'superadmin'
@@ -26,8 +30,10 @@ function resolveDashboardKey() {
   if (normalizedRole.value === 'adminscholaship') return 'adminscholaship'
   if (normalizedRole.value === 'adminenglish') return 'adminenglish'
   if (normalizedRole.value === 'adminsport') return 'adminsport'
-  if (normalizedRole.value === 'teacher' && hasPermission('tasks:write', currentUser.value)) return 'teacher'
-  if (normalizedRole.value === 'coach' && hasPermission('training:write', currentUser.value)) return 'coach'
+  if (normalizedRole.value === 'teacher' && hasPermission('tasks:write', currentUser.value))
+    return 'teacher'
+  if (normalizedRole.value === 'coach' && hasPermission('training:write', currentUser.value))
+    return 'coach'
   if (hasPermission('users:write', currentUser.value)) return 'operations'
   if (hasPermission('tasks:write', currentUser.value)) return 'delivery'
   if (hasPermission('programs:write', currentUser.value)) return 'programs'
@@ -56,6 +62,3 @@ const activeDashboardComponent = computed(
 <template>
   <component :is="activeDashboardComponent" />
 </template>
-
-
-

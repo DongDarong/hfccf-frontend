@@ -34,10 +34,30 @@ const iconByName = {
 const currentPath = computed(() => route.path)
 const currentUser = computed(() => getCurrentUser() || {})
 const canSeeUsersSection = computed(() => isSuperAdmin(currentUser.value))
-const isEnglishAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminenglish')
-const isPreschoolAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminpreschool')
-const isScholarshipAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminscholaship')
-const isSportAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminsport')
+const isEnglishAdmin = computed(
+  () =>
+    String(currentUser.value?.role || '')
+      .trim()
+      .toLowerCase() === 'adminenglish',
+)
+const isPreschoolAdmin = computed(
+  () =>
+    String(currentUser.value?.role || '')
+      .trim()
+      .toLowerCase() === 'adminpreschool',
+)
+const isScholarshipAdmin = computed(
+  () =>
+    String(currentUser.value?.role || '')
+      .trim()
+      .toLowerCase() === 'adminscholaship',
+)
+const isSportAdmin = computed(
+  () =>
+    String(currentUser.value?.role || '')
+      .trim()
+      .toLowerCase() === 'adminsport',
+)
 const navItems = computed(() =>
   // Resolve labels at render time so locale changes update menu text immediately.
   sidebarNavData
@@ -108,15 +128,18 @@ function onLogout() {
             @click="onToggleSidebar"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-full w-full">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
       </div>
 
-      <div
-        class="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-3"
-      >
+      <div class="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-3">
         <div class="sidebar-section">
           <p v-if="!collapsed" class="sidebar-section__label">Navigation</p>
           <SidebarLink
@@ -134,7 +157,10 @@ function onLogout() {
         </div>
       </div>
 
-      <div class="sidebar-footer mt-auto pt-4 sm:pt-5" :class="{ 'flex justify-center': collapsed }">
+      <div
+        class="sidebar-footer mt-auto pt-4 sm:pt-5"
+        :class="{ 'flex justify-center': collapsed }"
+      >
         <LogoutButton :collapsed="collapsed" @logout="onLogout" />
       </div>
     </nav>
@@ -145,7 +171,11 @@ function onLogout() {
 .sidebar-shell {
   height: 100%;
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-base) 14%, transparent), transparent 28%),
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--color-base) 14%, transparent),
+      transparent 28%
+    ),
     linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border-right: 1px solid #dbe1e8;
   padding: 0.9rem 0.8rem 0.8rem;
@@ -221,9 +251,3 @@ function onLogout() {
   border: 0;
 }
 </style>
-
-
-
-
-
-

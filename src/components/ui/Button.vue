@@ -10,7 +10,8 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'outline', 'ghost', 'danger', 'success'].includes(value),
+    validator: (value) =>
+      ['primary', 'secondary', 'outline', 'ghost', 'danger', 'success'].includes(value),
   },
   size: {
     type: String,
@@ -45,14 +46,20 @@ const slots = useSlots()
 
 const variantClasses = computed(() => {
   // Centralized style composition keeps button API stable across variants/sizes.
-  const base = 'inline-flex items-center justify-center font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100'
+  const base =
+    'inline-flex items-center justify-center font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100'
 
   const variants = {
-    primary: 'bg-[var(--hope-o-cyan-blue)] text-white shadow-sm shadow-blue-200 hover:bg-[#0087b8] hover:shadow-md hover:shadow-blue-300',
-    secondary: 'bg-[var(--hope-h-lime-green)] text-white shadow-sm shadow-lime-200 hover:bg-[#7db135] hover:shadow-md hover:shadow-lime-300',
-    danger: 'bg-[var(--hope-p-vibrant-red)] text-white shadow-sm shadow-red-200 hover:bg-[#d41920] hover:shadow-md hover:shadow-red-300',
-    success: 'bg-emerald-500 text-white shadow-sm shadow-emerald-200 hover:bg-emerald-600 hover:shadow-md hover:shadow-emerald-300',
-    outline: 'border-2 border-slate-200 bg-transparent text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900',
+    primary:
+      'bg-[var(--hope-o-cyan-blue)] text-white shadow-sm shadow-blue-200 hover:bg-[#0087b8] hover:shadow-md hover:shadow-blue-300',
+    secondary:
+      'bg-[var(--hope-h-lime-green)] text-white shadow-sm shadow-lime-200 hover:bg-[#7db135] hover:shadow-md hover:shadow-lime-300',
+    danger:
+      'bg-[var(--hope-p-vibrant-red)] text-white shadow-sm shadow-red-200 hover:bg-[#d41920] hover:shadow-md hover:shadow-red-300',
+    success:
+      'bg-emerald-500 text-white shadow-sm shadow-emerald-200 hover:bg-emerald-600 hover:shadow-md hover:shadow-emerald-300',
+    outline:
+      'border-2 border-slate-200 bg-transparent text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900',
     ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900',
   }
 

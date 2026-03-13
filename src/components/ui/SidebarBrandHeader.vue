@@ -5,7 +5,11 @@ import { getCurrentUser } from '@/services/auth'
 
 const route = useRoute()
 const currentUser = computed(() => getCurrentUser() || {})
-const normalizedRole = computed(() => String(currentUser.value?.role || '').trim().toLowerCase())
+const normalizedRole = computed(() =>
+  String(currentUser.value?.role || '')
+    .trim()
+    .toLowerCase(),
+)
 
 function matchesSection(path, patterns) {
   return patterns.some((pattern) => path.startsWith(pattern))
@@ -122,13 +126,27 @@ const brandConfig = computed(() => {
       <div class="brand-header__icon">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-          <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M2 17L12 22L22 17"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M2 12L12 17L22 12"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </div>
       <div class="brand-header__title">
         <span class="brand-header__eyebrow">HFCCF</span>
-        <span class="brand-header__line" :class="brandConfig.className">{{ brandConfig.label }}</span>
+        <span class="brand-header__line" :class="brandConfig.className">{{
+          brandConfig.label
+        }}</span>
       </div>
     </div>
   </div>

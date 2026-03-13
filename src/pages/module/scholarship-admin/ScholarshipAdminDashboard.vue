@@ -16,6 +16,10 @@ const cards = [
     :cards="cards"
     spotlight-title="Funding decision queue"
     spotlight-text="Prioritize incomplete files first to reduce decision cycle time this week."
-    :actions="['Finalize pending eligibility checks', 'Trigger applicant reminder emails', 'Prepare donor utilization summary']"
+    :actions="[
+      'Finalize pending eligibility checks',
+      'Trigger applicant reminder emails',
+      'Prepare donor utilization summary',
+    ]"
   />
 </template>

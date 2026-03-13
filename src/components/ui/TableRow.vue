@@ -27,7 +27,9 @@ const props = defineProps({
 const emit = defineEmits(['view', 'edit', 'delete'])
 const hasImageError = ref(false)
 
-const resolvedRow = computed(() => (props.row && typeof props.row === 'object' ? props.row : props.user))
+const resolvedRow = computed(() =>
+  props.row && typeof props.row === 'object' ? props.row : props.user,
+)
 const resolvedColumns = computed(() =>
   props.columns.length
     ? props.columns
@@ -65,7 +67,9 @@ const userIdLabel = computed(() => {
 })
 
 const permissionList = computed(() => {
-  const explicit = Array.isArray(resolvedRow.value?.permissions) ? resolvedRow.value.permissions : []
+  const explicit = Array.isArray(resolvedRow.value?.permissions)
+    ? resolvedRow.value.permissions
+    : []
   if (explicit.length) return explicit
   const fallback = String(resolvedRow.value?.permission ?? '')
     .split(',')
@@ -108,11 +112,16 @@ function getInitialBadgeClass(role) {
   const normalized = String(role || '').toLowerCase()
   if (normalized === 'superadmin') return 'bg-indigo-600'
   if (normalized === 'coach') return 'bg-hope-yellow'
-  if (normalized === 'teacher' || normalized === 'teacher-preschool' || normalized === 'adminpreschool') {
+  if (
+    normalized === 'teacher' ||
+    normalized === 'teacher-preschool' ||
+    normalized === 'adminpreschool'
+  ) {
     return 'bg-hope-lime'
   }
   if (normalized === 'teacher-english' || normalized === 'adminenglish') return 'bg-hope-cyan'
-  if (normalized === 'teacher-scholarship' || normalized === 'adminscholaship') return 'bg-hope-yellow'
+  if (normalized === 'teacher-scholarship' || normalized === 'adminscholaship')
+    return 'bg-hope-yellow'
   if (normalized === 'adminsport') return 'bg-hope-red'
   if (normalized.startsWith('admin')) return 'bg-hope-cyan'
   return 'bg-gray-400'
@@ -122,11 +131,16 @@ function avatarRingClass(role) {
   const normalized = String(role || '').toLowerCase()
   if (normalized === 'superadmin') return 'ring-indigo-300'
   if (normalized === 'coach') return 'ring-amber-300'
-  if (normalized === 'teacher' || normalized === 'teacher-preschool' || normalized === 'adminpreschool') {
+  if (
+    normalized === 'teacher' ||
+    normalized === 'teacher-preschool' ||
+    normalized === 'adminpreschool'
+  ) {
     return 'ring-lime-300'
   }
   if (normalized === 'teacher-english' || normalized === 'adminenglish') return 'ring-cyan-300'
-  if (normalized === 'teacher-scholarship' || normalized === 'adminscholaship') return 'ring-yellow-300'
+  if (normalized === 'teacher-scholarship' || normalized === 'adminscholaship')
+    return 'ring-yellow-300'
   if (normalized === 'adminsport') return 'ring-rose-300'
   if (normalized.startsWith('admin')) return 'ring-cyan-300'
   return 'ring-gray-300'
@@ -171,13 +185,11 @@ function onAvatarError() {
 
 <template>
   <tr class="transition-colors hover:bg-gray-50/80">
-    <td
-      v-for="column in resolvedColumns"
-      :key="column.key"
-      :class="cellClass(column)"
-    >
+    <td v-for="column in resolvedColumns" :key="column.key" :class="cellClass(column)">
       <template v-if="column.key === 'number'">
-        <span class="text-[12px] font-semibold text-gray-700 sm:text-sm">{{ displayNumber || '-' }}</span>
+        <span class="text-[12px] font-semibold text-gray-700 sm:text-sm">{{
+          displayNumber || '-'
+        }}</span>
       </template>
 
       <template v-else-if="column.key === 'user'">
@@ -194,7 +206,7 @@ function onAvatarError() {
               :alt="`${resolvedRow.name || 'User'} avatar`"
               class="h-full w-full object-cover"
               @error="onAvatarError"
-            >
+            />
             <div
               v-else
               :class="[
@@ -211,9 +223,7 @@ function onAvatarError() {
             <div class="text-[13px] font-semibold leading-5 text-gray-900 sm:text-sm">
               {{ resolvedRow.name || '-' }}
             </div>
-            <div class="text-[11px] text-gray-500 sm:text-xs">
-              ID: {{ userIdLabel }}
-            </div>
+            <div class="text-[11px] text-gray-500 sm:text-xs">ID: {{ userIdLabel }}</div>
             <div class="text-[11px] text-gray-600 sm:text-xs">
               {{ usernameLabel(resolvedRow.username) }}
             </div>
@@ -246,7 +256,9 @@ function onAvatarError() {
       </template>
 
       <template v-else-if="column.key === 'phone'">
-        <span class="text-[12px] text-gray-700 sm:text-sm">{{ phoneLabel(resolvedRow.phone) }}</span>
+        <span class="text-[12px] text-gray-700 sm:text-sm">{{
+          phoneLabel(resolvedRow.phone)
+        }}</span>
       </template>
 
       <template v-else-if="column.key === 'actions'">

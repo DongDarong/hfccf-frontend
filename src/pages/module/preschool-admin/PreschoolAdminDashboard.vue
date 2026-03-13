@@ -16,6 +16,10 @@ const cards = [
     :cards="cards"
     spotlight-title="Early-learning priorities"
     spotlight-text="Confirm attendance gaps and finalize this week's parent engagement schedule."
-    :actions="['Assign overflow students', 'Approve classroom support requests', 'Close missing attendance records']"
+    :actions="[
+      'Assign overflow students',
+      'Approve classroom support requests',
+      'Close missing attendance records',
+    ]"
   />
 </template>

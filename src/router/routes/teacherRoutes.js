@@ -16,4 +16,3 @@ export const teacherRoutes = [
     meta: { requiresAuth: true, allowedRoles: ['coach'] },
   },
 ]
-

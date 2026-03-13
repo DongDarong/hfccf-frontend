@@ -25,7 +25,12 @@ const resolvedLabel = computed(() => props.label || t('common.loading'))
 </script>
 
 <template>
-  <div class="loading" :class="[`loading--${size}`, `loading--${tone}`]" role="status" aria-live="polite">
+  <div
+    class="loading"
+    :class="[`loading--${size}`, `loading--${tone}`]"
+    role="status"
+    aria-live="polite"
+  >
     <span class="loading__halo" aria-hidden="true">
       <span class="loading__spinner"></span>
     </span>
@@ -61,7 +66,8 @@ const resolvedLabel = computed(() => props.label || t('common.loading'))
   width: var(--spinner-size, 1.25rem);
   height: var(--spinner-size, 1.25rem);
   border-radius: 50%;
-  border: 2.5px solid color-mix(in srgb, var(--spinner-color, var(--hope-o-cyan-blue)) 28%, transparent);
+  border: 2.5px solid
+    color-mix(in srgb, var(--spinner-color, var(--hope-o-cyan-blue)) 28%, transparent);
   border-top-color: var(--spinner-color, var(--hope-o-cyan-blue));
   border-right-color: var(--spinner-color, var(--hope-o-cyan-blue));
   animation: spin 0.8s linear infinite;

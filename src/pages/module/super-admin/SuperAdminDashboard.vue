@@ -16,6 +16,10 @@ const cards = [
     :cards="cards"
     spotlight-title="Global control focus"
     spotlight-text="You have full access. Prioritize escalations and complete policy approvals before end of day."
-    :actions="['Review unresolved incidents', 'Approve cross-department requests', 'Validate weekly governance report']"
+    :actions="[
+      'Review unresolved incidents',
+      'Approve cross-department requests',
+      'Validate weekly governance report',
+    ]"
   />
 </template>

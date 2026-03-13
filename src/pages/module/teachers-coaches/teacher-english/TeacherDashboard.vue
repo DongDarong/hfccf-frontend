@@ -8,7 +8,11 @@ const cards = [
   { title: 'Completed lesson plans', value: 9, label: 'This week', status: 'success' },
 ]
 
-const actions = ["Publish today's lesson summary", 'Grade overdue assignments', 'Schedule support sessions']
+const actions = [
+  "Publish today's lesson summary",
+  'Grade overdue assignments',
+  'Schedule support sessions',
+]
 </script>
 
 <template>

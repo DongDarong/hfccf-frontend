@@ -5,6 +5,7 @@ import { moduleRoutes } from './routes/moduleRoutes'
 import { teacherRoutes } from './routes/teacherRoutes'
 import { userRoutes } from './routes/userRoutes'
 
+// Combined route list keeps the router tree centralized while allowing per-module maintenance.
 const routes = [...baseRoutes, ...moduleRoutes, ...teacherRoutes, ...userRoutes]
 
 function normalizeRole(role) {
@@ -48,7 +49,12 @@ router.beforeEach((to) => {
     return { name: 'dashboard' }
   }
 
-  if (sessionValid && allowedRoles.length && !isSuperAdmin(currentUser) && !hasAllowedRole(currentUser, allowedRoles)) {
+  if (
+    sessionValid &&
+    allowedRoles.length &&
+    !isSuperAdmin(currentUser) &&
+    !hasAllowedRole(currentUser, allowedRoles)
+  ) {
     return { name: 'dashboard' }
   }
 
@@ -60,4 +66,3 @@ router.beforeEach((to) => {
 })
 
 export default router
-

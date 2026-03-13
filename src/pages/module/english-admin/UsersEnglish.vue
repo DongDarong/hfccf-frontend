@@ -55,13 +55,16 @@ const englishUsers = ref(
 )
 
 const filteredUsers = computed(() => {
-  const query = String(searchQuery.value || '').trim().toLowerCase()
+  const query = String(searchQuery.value || '')
+    .trim()
+    .toLowerCase()
 
   return englishUsers.value.filter((user) => {
     let isMatch = true
 
     if (query) {
-      const haystack = `${user.name} ${user.email} ${user.role} ${user.permissions.join(' ')}`.toLowerCase()
+      const haystack =
+        `${user.name} ${user.email} ${user.role} ${user.permissions.join(' ')}`.toLowerCase()
       isMatch = haystack.includes(query)
     }
 
@@ -124,8 +127,19 @@ function onDeleteUser(user) {
         <div class="english-users-page__actions">
           <Button variant="primary" size="md" rounded="xl" @click="goToAddTeacher">
             <template #iconLeft>
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
             </template>
             {{ addTeacherLabel }}

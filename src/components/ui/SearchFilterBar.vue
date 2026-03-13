@@ -46,7 +46,12 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:searchQuery', 'update:roleFilter', 'update:statusFilter', 'clear'])
+const emit = defineEmits([
+  'update:searchQuery',
+  'update:roleFilter',
+  'update:statusFilter',
+  'clear',
+])
 
 const hasFilterControls = computed(
   () => props.showRoleFilter || props.showStatusFilter || props.showClearButton,
@@ -59,7 +64,9 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="w-full rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm shadow-slate-200/60 md:p-5">
+  <div
+    class="w-full rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm shadow-slate-200/60 md:p-5"
+  >
     <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
       <div class="min-w-0 flex-1">
         <SearchInputField
@@ -71,10 +78,7 @@ function clearFilters() {
         />
       </div>
 
-      <div
-        v-if="hasFilterControls"
-        class="flex w-full xl:w-auto xl:justify-end"
-      >
+      <div v-if="hasFilterControls" class="flex w-full xl:w-auto xl:justify-end">
         <FilterSelectGroup
           :role-filter="props.roleFilter"
           :status-filter="props.statusFilter"

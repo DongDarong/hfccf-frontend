@@ -65,7 +65,6 @@ function icon(status) {
 
   return 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
 }
-
 </script>
 
 <template>
@@ -77,7 +76,12 @@ function icon(status) {
 
     <!-- Render order: loading -> error -> cards/empty. -->
     <div v-else class="stats__grid">
-      <article v-for="card in cards" :key="card.title" class="stats__card" :class="accentClass(card.status)">
+      <article
+        v-for="card in cards"
+        :key="card.title"
+        class="stats__card"
+        :class="accentClass(card.status)"
+      >
         <div class="stats__head">
           <p class="stats__title">{{ translateCardText('title', card.title) }}</p>
           <span class="stats__icon" aria-hidden="true">
@@ -92,7 +96,9 @@ function icon(status) {
           <StatusBadge :status="card.status || 'info'" size="sm" />
         </div>
       </article>
-      <article v-if="!cards.length" class="stats__empty">{{ t('common.dashboardStats.empty') }}</article>
+      <article v-if="!cards.length" class="stats__empty">
+        {{ t('common.dashboardStats.empty') }}
+      </article>
     </div>
   </section>
 </template>
@@ -212,7 +218,8 @@ function icon(status) {
 .stats--kh .stats__meta,
 .stats--kh .stats__state,
 .stats--kh .stats__empty {
-  font-family: 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
 .stats--kh .stats__title {
@@ -246,7 +253,6 @@ function icon(status) {
   .stats__meta {
     font-size: 0.74rem;
   }
-
 }
 
 @media (max-width: 420px) {

@@ -16,4 +16,3 @@ export const userRoutes = [
     meta: { requiresAuth: true, superAdminOnly: true },
   },
 ]
-

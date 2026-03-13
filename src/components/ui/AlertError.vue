@@ -60,10 +60,14 @@ const resolvedButtonText = computed(() => props.buttonText || t('common.close'))
           >
             <!-- Error Icon Container -->
             <div class="mb-6 flex justify-center">
-              <div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-[var(--hope-p-vibrant-red)]">
+              <div
+                class="relative flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-[var(--hope-p-vibrant-red)]"
+              >
                 <!-- Pulse Effect -->
-                <div class="absolute inset-0 animate-pulse rounded-full bg-red-100 opacity-40"></div>
-                
+                <div
+                  class="absolute inset-0 animate-pulse rounded-full bg-red-100 opacity-40"
+                ></div>
+
                 <svg
                   class="h-10 w-10 relative z-10"
                   fill="none"
@@ -71,11 +75,7 @@ const resolvedButtonText = computed(() => props.buttonText || t('common.close'))
                   stroke="currentColor"
                   stroke-width="2.5"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
             </div>

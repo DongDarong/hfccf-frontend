@@ -33,11 +33,6 @@ defineProps({
       stroke-linejoin="round"
       stroke-width="1.7"
     />
-    <path
-      d="M12 2v20"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="1.7"
-    />
+    <path d="M12 2v20" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" />
   </svg>
 </template>

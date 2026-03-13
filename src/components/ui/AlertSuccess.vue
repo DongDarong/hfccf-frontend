@@ -84,10 +84,14 @@ onUnmounted(() => {
           >
             <!-- Success Icon with Animation Container -->
             <div class="mb-6 flex justify-center">
-              <div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+              <div
+                class="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-500"
+              >
                 <!-- Outer Ring Animation -->
-                <div class="absolute inset-0 animate-ping rounded-full bg-emerald-100 opacity-20"></div>
-                
+                <div
+                  class="absolute inset-0 animate-ping rounded-full bg-emerald-100 opacity-20"
+                ></div>
+
                 <svg
                   class="h-10 w-10 relative z-10"
                   fill="none"

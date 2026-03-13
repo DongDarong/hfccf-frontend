@@ -26,4 +26,3 @@ export const baseRoutes = [
     redirect: '/module/dashboard',
   },
 ]
-

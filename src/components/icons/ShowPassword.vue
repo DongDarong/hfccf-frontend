@@ -38,13 +38,7 @@ defineProps({
         stroke-linecap="round"
         stroke-linejoin="round"
       />
-      <circle
-        cx="12"
-        cy="12"
-        r="2.8"
-        stroke="currentColor"
-        :stroke-width="strokeWidth"
-      />
+      <circle cx="12" cy="12" r="2.8" stroke="currentColor" :stroke-width="strokeWidth" />
     </template>
 
     <template v-else>

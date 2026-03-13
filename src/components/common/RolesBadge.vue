@@ -15,7 +15,11 @@ const props = defineProps({
 })
 const { t } = useLanguage()
 
-const normalizedRole = computed(() => String(props.role ?? '').trim().toLowerCase())
+const normalizedRole = computed(() =>
+  String(props.role ?? '')
+    .trim()
+    .toLowerCase(),
+)
 
 function toRoleKey(value) {
   // Normalize role names into a predictable translation key format.
@@ -57,7 +61,9 @@ const ROLE_BADGE_STYLES = {
   adminsport: 'bg-rose-50 text-rose-700 ring-rose-200',
 }
 
-const roleClass = computed(() => ROLE_BADGE_STYLES[normalizedRole.value] || 'bg-gray-100 text-gray-700 ring-gray-200')
+const roleClass = computed(
+  () => ROLE_BADGE_STYLES[normalizedRole.value] || 'bg-gray-100 text-gray-700 ring-gray-200',
+)
 
 const sizeClass = computed(() => {
   if (props.size === 'md') return 'px-3 py-1.5 text-xs'

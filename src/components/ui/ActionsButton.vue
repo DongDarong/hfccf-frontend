@@ -48,7 +48,9 @@ const labels = computed(() => ({
   edit: props.editLabel || t('common.edit'),
   delete: props.deleteLabel || t('common.delete'),
 }))
-const triggerAriaLabel = computed(() => `${labels.value.view} / ${labels.value.edit} / ${labels.value.delete}`)
+const triggerAriaLabel = computed(
+  () => `${labels.value.view} / ${labels.value.edit} / ${labels.value.delete}`,
+)
 
 const menuPositionClass = computed(() =>
   props.align === 'left' ? 'left-0 origin-top-left' : 'right-0 origin-top-right',
@@ -61,9 +63,7 @@ function toggleMenu() {
   if (isOpen.value) {
     if (typeof window !== 'undefined') {
       // Broadcast open state so other row menus can close themselves.
-      window.dispatchEvent(
-        new CustomEvent('actions-menu-open', { detail: { instanceId } }),
-      )
+      window.dispatchEvent(new CustomEvent('actions-menu-open', { detail: { instanceId } }))
     }
     nextTick(() => {
       firstActionButton.value?.focus()
@@ -132,7 +132,12 @@ onBeforeUnmount(() => {
       @click.stop="toggleMenu"
     >
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h.01M12 12h.01M18 12h.01" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 12h.01M12 12h.01M18 12h.01"
+        />
       </svg>
     </button>
 

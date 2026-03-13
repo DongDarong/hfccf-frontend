@@ -12,7 +12,14 @@ defineProps({
 </script>
 
 <template>
-  <svg :width="size" :height="size" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+  <svg
+    :width="size"
+    :height="size"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
     <path d="M5 5h14v4H5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
     <path d="M7 9v10h10V9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
     <path d="M9 15h6" stroke-width="1.5" stroke-linecap="round" />

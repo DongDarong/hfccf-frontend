@@ -29,12 +29,7 @@ const roleOptions = [
   'adminsport',
 ]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
-const permissionOptions = [
-  'manage_users',
-  'view_reports',
-  'manage_programs',
-  'approve_requests',
-]
+const permissionOptions = ['manage_users', 'view_reports', 'manage_programs', 'approve_requests']
 const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
@@ -242,7 +237,11 @@ onBeforeUnmount(() => {
             <span class="add-user-page__label">Profile Image</span>
             <div class="add-user-page__profile">
               <div v-if="profileImagePreview" class="add-user-page__profile-preview-wrap">
-                <img :src="profileImagePreview" alt="Profile preview" class="add-user-page__profile-preview" />
+                <img
+                  :src="profileImagePreview"
+                  alt="Profile preview"
+                  class="add-user-page__profile-preview"
+                />
               </div>
               <div class="add-user-page__profile-actions">
                 <input
@@ -420,7 +419,11 @@ onBeforeUnmount(() => {
     <AlertSuccess
       :show="showSuccess"
       :title="isEditMode ? 'User updated' : 'User created'"
-      :message="isEditMode ? 'The user account was updated successfully.' : 'The user account was created successfully.'"
+      :message="
+        isEditMode
+          ? 'The user account was updated successfully.'
+          : 'The user account was created successfully.'
+      "
       button-text="Back to users"
       @close="onSuccessClose"
     />
@@ -620,9 +623,3 @@ onBeforeUnmount(() => {
   }
 }
 </style>
-
-
-
-
-
-

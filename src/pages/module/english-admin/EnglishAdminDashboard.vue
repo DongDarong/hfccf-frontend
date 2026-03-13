@@ -16,6 +16,10 @@ const cards = [
     :cards="cards"
     spotlight-title="Program continuity"
     spotlight-text="Resolve tutor substitutions and action low-progress learner alerts today."
-    :actions="['Approve class staffing updates', 'Review learner intervention plans', 'Publish curriculum changes']"
+    :actions="[
+      'Approve class staffing updates',
+      'Review learner intervention plans',
+      'Publish curriculum changes',
+    ]"
   />
 </template>

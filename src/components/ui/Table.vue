@@ -39,7 +39,9 @@ const emit = defineEmits(['view', 'edit', 'delete'])
 const { t } = useLanguage()
 
 const resolvedRows = computed(() => (Array.isArray(props.rows) ? props.rows : props.users))
-const resolvedEmptyText = computed(() => props.emptyText || t('users.table.empty') || 'No rows found.')
+const resolvedEmptyText = computed(
+  () => props.emptyText || t('users.table.empty') || 'No rows found.',
+)
 const loadingLabel = computed(() => t('users.loadingUsers') || 'Loading data')
 const defaultColumns = computed(() => [
   { key: 'number', label: t('common.table.number'), align: 'left' },
@@ -51,7 +53,9 @@ const defaultColumns = computed(() => [
   { key: 'phone', label: t('common.table.phone'), align: 'left' },
   { key: 'actions', label: t('common.table.actions'), align: 'right' },
 ])
-const resolvedColumns = computed(() => (props.columns.length ? props.columns : defaultColumns.value))
+const resolvedColumns = computed(() =>
+  props.columns.length ? props.columns : defaultColumns.value,
+)
 
 function headerClass(column) {
   const align = column?.align === 'right' ? 'text-right' : 'text-left'
@@ -70,11 +74,7 @@ function resolveRowKey(row, index) {
       <table class="min-w-full divide-y divide-gray-100 text-sm">
         <thead class="bg-gray-50">
           <tr>
-            <th
-              v-for="column in resolvedColumns"
-              :key="column.key"
-              :class="headerClass(column)"
-            >
+            <th v-for="column in resolvedColumns" :key="column.key" :class="headerClass(column)">
               {{ column.label }}
             </th>
           </tr>
@@ -90,7 +90,10 @@ function resolveRowKey(row, index) {
           </tr>
 
           <tr v-else-if="!resolvedRows.length">
-            <td :colspan="resolvedColumns.length" class="px-4 py-7 text-center text-sm text-gray-500">
+            <td
+              :colspan="resolvedColumns.length"
+              class="px-4 py-7 text-center text-sm text-gray-500"
+            >
               {{ resolvedEmptyText }}
             </td>
           </tr>
@@ -101,7 +104,9 @@ function resolveRowKey(row, index) {
               :key="resolveRowKey(row, index)"
               :user="row"
               :row="row"
-              :row-number="Number.isFinite(row?.rowNumber) && row.rowNumber > 0 ? row.rowNumber : index + 1"
+              :row-number="
+                Number.isFinite(row?.rowNumber) && row.rowNumber > 0 ? row.rowNumber : index + 1
+              "
               :columns="resolvedColumns"
               @view="emit('view', $event)"
               @edit="emit('edit', $event)"
@@ -113,4 +118,3 @@ function resolveRowKey(row, index) {
     </div>
   </div>
 </template>
-

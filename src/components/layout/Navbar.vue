@@ -34,7 +34,12 @@ function onToggleSidebar() {
     <div class="navbar-left">
       <button type="button" class="menu-btn" aria-label="Open sidebar" @click="onToggleSidebar">
         <svg class="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
         </svg>
       </button>
 
@@ -52,7 +57,11 @@ function onToggleSidebar() {
         <Calendar :size="18" />
       </button>
 
-      <button type="button" class="icon-btn icon-btn--notification" :aria-label="t('common.notifications')">
+      <button
+        type="button"
+        class="icon-btn icon-btn--notification"
+        :aria-label="t('common.notifications')"
+      >
         <Notification :size="18" />
         <span class="icon-badge">4</span>
       </button>
@@ -173,7 +182,8 @@ function onToggleSidebar() {
 
 .brand-copy--kh .brand-text,
 .brand-copy--kh .brand-subtext {
-  font-family: 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
   letter-spacing: 0;
   white-space: normal;
 }

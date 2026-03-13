@@ -52,8 +52,18 @@ const matchedMockUser = computed(() => {
 
   return (
     users.find((user) => String(user.id || '').trim() === currentId) ||
-    users.find((user) => String(user.email || '').trim().toLowerCase() === currentEmail) ||
-    users.find((user) => String(user.username || '').trim().toLowerCase() === currentUsername) ||
+    users.find(
+      (user) =>
+        String(user.email || '')
+          .trim()
+          .toLowerCase() === currentEmail,
+    ) ||
+    users.find(
+      (user) =>
+        String(user.username || '')
+          .trim()
+          .toLowerCase() === currentUsername,
+    ) ||
     null
   )
 })
@@ -145,7 +155,7 @@ function onImageError() {
           :alt="`${displayName} avatar`"
           class="navbar-profile__avatar-image"
           @error="onImageError"
-        >
+        />
         <span v-else>{{ displayInitials }}</span>
       </div>
       <div class="navbar-profile__status-dot" :class="statusClass"></div>

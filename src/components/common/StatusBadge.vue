@@ -96,7 +96,7 @@ const statusClass = computed(
 
 .status-badge--sm {
   padding: 0.2rem 0.45rem;
-  font-size: 0.70rem;
+  font-size: 0.7rem;
 }
 
 .status-badge--md {
