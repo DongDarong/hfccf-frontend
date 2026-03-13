@@ -8,10 +8,11 @@ import SuperAdminDashboard from '@/pages/module/super-admin/SuperAdminDashboard.
 import PreschoolAdminDashboard from '@/pages/module/preschool-admin/PreschoolAdminDashboard.vue'
 import PreschoolAdminUsersView from '@/pages/module/preschool-admin/UsersPreschool.vue'
 import ScholarshipAdminDashboard from '@/pages/module/scholarship-admin/ScholarshipAdminDashboard.vue'
-import ScholarshipAdminUsersView from '@/pages/module/scholarship-admin/UserSchoarship.vue'
+import ScholarshipAdminUsersView from '@/pages/module/scholarship-admin/UserScholarship.vue'
 import EnglishAdminDashboard from '@/pages/module/english-admin/EnglishAdminDashboard.vue'
 import EnglishAdminUsersView from '@/pages/module/english-admin/UsersEnglish.vue'
 import SportAdminDashboard from '@/pages/module/sport-admin/SportAdminDashboard.vue'
+import SportAdminUsersView from '@/pages/module/sport-admin/UsersCoaches.vue'
 import TeacherDashboard from '@/pages/module/teachers-coaches/teacher-english/TeacherDashboard.vue'
 import CoachDashboard from '@/pages/module/teachers-coaches/coach/CoachDashboard.vue'
 
@@ -82,7 +83,7 @@ const router = createRouter({
       component: EnglishAdminDashboard,
       meta: { requiresAuth: true, allowedRoles: ['adminenglish'] },
     },
-    {
+        {
       path: '/dashboard/english-admin/users',
       name: 'dashboard-english-admin-users',
       component: EnglishAdminUsersView,
@@ -92,6 +93,12 @@ const router = createRouter({
       path: '/dashboard/sport-admin',
       name: 'dashboard-sport-admin',
       component: SportAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminsport'] },
+    },
+    {
+      path: '/dashboard/sport-admin/users',
+      name: 'dashboard-sport-admin-users',
+      component: SportAdminUsersView,
       meta: { requiresAuth: true, allowedRoles: ['adminsport'] },
     },
     {
@@ -160,6 +167,12 @@ router.beforeEach((to) => {
 })
 
 export default router
+
+
+
+
+
+
 
 
 
