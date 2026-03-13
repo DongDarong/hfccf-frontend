@@ -1,25 +1,59 @@
 <script setup>
+import { computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/layout/HeaderSection.vue'
 import StatsCards from '@/components/common/StatsCards.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
-const cards = [
-  { title: 'Total Teams', value: 28, label: 'Active rosters', status: 'info' },
-  { title: 'Total Players', value: 9, label: 'Under observation', status: 'warning' },
-  { title: 'Upcoming Matches', value: 21, label: 'Confirmed fixtures', status: 'success' },
-  { title: 'Low Stock Items', value: 3, label: 'Reorder soon', status: 'error' },
-  { title: 'Total Coaches', value: '86%', label: 'Coverage target', status: 'info' },
-  { title: 'Coaches Requests', value: 4, label: 'Pending approvals', status: 'warning' },
-]
+const { t } = useLanguage()
+
+const title = computed(() => t('sportAdminDashboard.title'))
+const subtitle = computed(() => t('sportAdminDashboard.subtitle'))
+
+const cards = computed(() => [
+  {
+    title: t('sportAdminDashboard.cards.totalTeams.title'),
+    value: 28,
+    label: t('sportAdminDashboard.cards.totalTeams.label'),
+    status: 'info',
+  },
+  {
+    title: t('sportAdminDashboard.cards.totalPlayers.title'),
+    value: 9,
+    label: t('sportAdminDashboard.cards.totalPlayers.label'),
+    status: 'warning',
+  },
+  {
+    title: t('sportAdminDashboard.cards.upcomingMatches.title'),
+    value: 21,
+    label: t('sportAdminDashboard.cards.upcomingMatches.label'),
+    status: 'success',
+  },
+  {
+    title: t('sportAdminDashboard.cards.lowStockItems.title'),
+    value: 3,
+    label: t('sportAdminDashboard.cards.lowStockItems.label'),
+    status: 'error',
+  },
+  {
+    title: t('sportAdminDashboard.cards.totalCoaches.title'),
+    value: '86%',
+    label: t('sportAdminDashboard.cards.totalCoaches.label'),
+    status: 'info',
+  },
+  {
+    title: t('sportAdminDashboard.cards.coachesRequests.title'),
+    value: 4,
+    label: t('sportAdminDashboard.cards.coachesRequests.label'),
+    status: 'warning',
+  },
+])
 </script>
 
 <template>
   <MainLayout>
     <section class="sport-dashboard">
-      <HeaderSection
-        title="Sport Program Dashboard"
-        subtitle="Session coverage, athlete readiness, and facility usage."
-      />
+      <HeaderSection :title="title" :subtitle="subtitle" />
 
       <StatsCards :cards="cards" />
     </section>
