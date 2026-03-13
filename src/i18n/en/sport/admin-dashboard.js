@@ -33,7 +33,7 @@ export default {
       todayMatches: 'Today matches',
       topScorers: 'Top scorers',
       standings: 'Standings preview',
-      liveLabel: 'Live',
+      liveLabel: 'Competing',
     },
     tournamentBanner: {
       badge: 'Tournament Banner',

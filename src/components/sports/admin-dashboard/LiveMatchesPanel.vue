@@ -1,13 +1,11 @@
 <script setup>
 import { useLanguage } from '@/composables/useLanguage'
 import Button from '@/components/ui/Button.vue'
+import adminDashboardData from '@/mocks/sport/admin-dashboard-data.json'
 
 const { t } = useLanguage()
 
-const liveMatches = [
-  { teams: 'Team A vs Team B', meta: "65' · City Stadium" },
-  { teams: 'Team C vs Team D', meta: "42' · National Arena" },
-]
+const liveMatches = adminDashboardData.liveMatches
 </script>
 
 <template>

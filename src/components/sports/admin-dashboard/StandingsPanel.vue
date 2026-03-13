@@ -1,7 +1,10 @@
 <script setup>
 import { useLanguage } from '@/composables/useLanguage'
+import adminDashboardData from '@/mocks/sport/admin-dashboard-data.json'
 
 const { t } = useLanguage()
+
+const standings = adminDashboardData.standings
 </script>
 
 <template>
@@ -24,53 +27,17 @@ const { t } = useLanguage()
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-gray-600">
-          <tr>
-            <td class="py-2 font-medium">1</td>
-            <td class="py-2 font-medium text-hope-dark">Team A</td>
-            <td class="py-2">4</td>
-            <td class="py-2">3</td>
-            <td class="py-2">1</td>
-            <td class="py-2">0</td>
-            <td class="py-2">9</td>
-            <td class="py-2">3</td>
-            <td class="py-2">+6</td>
-            <td class="py-2 text-right font-semibold text-hope-lime">10</td>
-          </tr>
-          <tr>
-            <td class="py-2 font-medium">2</td>
-            <td class="py-2 font-medium text-hope-dark">Team B</td>
-            <td class="py-2">4</td>
-            <td class="py-2">2</td>
-            <td class="py-2">2</td>
-            <td class="py-2">0</td>
-            <td class="py-2">7</td>
-            <td class="py-2">4</td>
-            <td class="py-2">+3</td>
-            <td class="py-2 text-right font-semibold text-hope-lime">8</td>
-          </tr>
-          <tr>
-            <td class="py-2 font-medium">3</td>
-            <td class="py-2 font-medium text-hope-dark">Team C</td>
-            <td class="py-2">4</td>
-            <td class="py-2">2</td>
-            <td class="py-2">1</td>
-            <td class="py-2">1</td>
-            <td class="py-2">6</td>
-            <td class="py-2">5</td>
-            <td class="py-2">+1</td>
-            <td class="py-2 text-right font-semibold text-hope-lime">7</td>
-          </tr>
-          <tr>
-            <td class="py-2 font-medium">4</td>
-            <td class="py-2 font-medium text-hope-dark">Team D</td>
-            <td class="py-2">4</td>
-            <td class="py-2">2</td>
-            <td class="py-2">0</td>
-            <td class="py-2">2</td>
-            <td class="py-2">5</td>
-            <td class="py-2">5</td>
-            <td class="py-2">0</td>
-            <td class="py-2 text-right font-semibold text-hope-lime">6</td>
+          <tr v-for="team in standings" :key="team.team">
+            <td class="py-2 font-medium">{{ team.pos }}</td>
+            <td class="py-2 font-medium text-hope-dark">{{ team.team }}</td>
+            <td class="py-2">{{ team.p }}</td>
+            <td class="py-2">{{ team.w }}</td>
+            <td class="py-2">{{ team.d }}</td>
+            <td class="py-2">{{ team.l }}</td>
+            <td class="py-2">{{ team.gf }}</td>
+            <td class="py-2">{{ team.ga }}</td>
+            <td class="py-2">{{ team.gd }}</td>
+            <td class="py-2 text-right font-semibold text-hope-lime">{{ team.pts }}</td>
           </tr>
         </tbody>
       </table>

@@ -39,7 +39,7 @@ export default {
       todayMatches: 'ការប្រកួតថ្ងៃនេះ',
       topScorers: 'អ្នកគ្រាប់បាល់ចំនួនច្រើន',
       standings: 'មើលស្ថានភាព',
-      liveLabel: 'ផ្ទាល់',
+      liveLabel: 'កំពុងប្រកួត',
     },
   },
 }

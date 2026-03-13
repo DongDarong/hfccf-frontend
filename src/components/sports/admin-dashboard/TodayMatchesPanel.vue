@@ -1,13 +1,10 @@
 <script setup>
 import { useLanguage } from '@/composables/useLanguage'
+import adminDashboardData from '@/mocks/sport/admin-dashboard-data.json'
 
 const { t } = useLanguage()
 
-const todayMatches = [
-  { teams: 'Team E vs Team F', time: '3:00 PM' },
-  { teams: 'Team G vs Team H', time: '5:30 PM' },
-  { teams: 'Team I vs Team J', time: '7:00 PM' },
-]
+const todayMatches = adminDashboardData.todayMatches
 </script>
 
 <template>
