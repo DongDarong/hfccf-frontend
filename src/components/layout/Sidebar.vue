@@ -7,7 +7,7 @@ import SidebarLink from '@/components/layout/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/components/icons/Home.vue'
-import InfoIcon from '@/components/icons/Info.vue'
+import UsersIcon from '@/components/icons/Users.vue'
 import { getCurrentUser, isSuperAdmin } from '@/services/auth'
 
 defineOptions({
@@ -28,7 +28,7 @@ const { t } = useLanguage()
 // Map icon keys from JSON config to concrete Vue components.
 const iconByName = {
   home: HomeIcon,
-  info: InfoIcon,
+  info: UsersIcon,
 }
 
 const currentPath = computed(() => route.path)
@@ -36,28 +36,48 @@ const currentUser = computed(() => getCurrentUser() || {})
 const canSeeUsersSection = computed(() => isSuperAdmin(currentUser.value))
 const isEnglishAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminenglish')
 const isPreschoolAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminpreschool')
+const isScholarshipAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminscholaship')
+const isSportAdmin = computed(() => String(currentUser.value?.role || '').trim().toLowerCase() === 'adminsport')
 const navItems = computed(() =>
   // Resolve labels at render time so locale changes update menu text immediately.
   sidebarNavData
     .filter((item) => {
       if (item.to === '/users') {
-        return canSeeUsersSection.value || isEnglishAdmin.value || isPreschoolAdmin.value
+        return (
+          canSeeUsersSection.value ||
+          isEnglishAdmin.value ||
+          isPreschoolAdmin.value ||
+          isScholarshipAdmin.value ||
+          isSportAdmin.value
+        )
       }
       return true
     })
-    .map((item) => ({
-      ...item,
-      to:
-        item.to === '/users' && !canSeeUsersSection.value
-          ? isEnglishAdmin.value
-            ? '/dashboard/english-admin/users'
-            : isPreschoolAdmin.value
-              ? '/dashboard/preschool-admin/users'
-              : item.to
-          : item.to,
-      label: t(item.labelKey),
-      iconComponent: iconByName[item.icon] || null,
-    })),
+    .map((item) => {
+      const baseTo = item.to === '/dashboard' ? '/module/dashboard' : item.to
+      let resolvedTo = baseTo
+
+      if (item.to === '/users') {
+        if (canSeeUsersSection.value) {
+          resolvedTo = '/module/super-admin/users/manage'
+        } else if (isEnglishAdmin.value) {
+          resolvedTo = '/module/english-admin/users'
+        } else if (isPreschoolAdmin.value) {
+          resolvedTo = '/module/preschool-admin/users'
+        } else if (isScholarshipAdmin.value) {
+          resolvedTo = '/module/scholarship-admin/users'
+        } else if (isSportAdmin.value) {
+          resolvedTo = '/module/sport-admin/users'
+        }
+      }
+
+      return {
+        ...item,
+        to: resolvedTo,
+        label: t(item.labelKey),
+        iconComponent: iconByName[item.icon] || null,
+      }
+    }),
 )
 
 function isActive(path) {
@@ -201,3 +221,9 @@ function onLogout() {
   border: 0;
 }
 </style>
+
+
+
+
+
+

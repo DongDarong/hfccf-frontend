@@ -56,7 +56,7 @@ function getSafeRedirectTarget(value) {
   const redirect = String(value || '').trim()
 
   if (!redirect.startsWith('/') || redirect.startsWith('//')) {
-    return '/dashboard'
+    return '/module/dashboard'
   }
 
   return redirect
@@ -184,4 +184,5 @@ async function onLoginSuccessClose() {
     />
   </main>
 </template>
+
 

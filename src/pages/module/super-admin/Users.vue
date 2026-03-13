@@ -61,7 +61,7 @@ const deleteConfirmMessage = computed(() => {
 })
 
 function goToAddUser() {
-  router.push('/users/add')
+  router.push('/module/super-admin/users/add')
 }
 
 const users = ref(
@@ -123,7 +123,7 @@ watch(
 function onEditUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'edit', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
 }
 
 function onDeleteUser(user) {
@@ -244,3 +244,4 @@ function onConfirmDelete() {
   padding: 1.5rem 0.5rem;
 }
 </style>
+

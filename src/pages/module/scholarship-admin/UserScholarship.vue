@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
-  name: 'EnglishAdminUsersPage',
+  name: 'ScholarshipAdminUsersPage',
 })
 
 const router = useRouter()
@@ -20,7 +20,7 @@ const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 8
 
-const roleOptions = ['teacher-english']
+const roleOptions = ['teacher-scholarship']
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
 const addTeacherLabel = computed(() => 'Add Teacher')
 const tableColumns = [
@@ -35,12 +35,12 @@ const tableColumns = [
 ]
 
 function goToAddTeacher() {
-  router.push({ path: '/users/add', query: { role: 'teacher-english' } })
+  router.push({ path: '/module/super-admin/users/add', query: { role: 'teacher-scholarship' } })
 }
 
-const englishUsers = ref(
+const scholarshipUsers = ref(
   usersMock
-    .filter((item) => String(item.role || '').toLowerCase() === 'teacher-english')
+    .filter((item) => String(item.role || '').toLowerCase() === 'teacher-scholarship')
     .map((item) => ({
       id: item.id,
       name: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || item.id,
@@ -57,7 +57,7 @@ const englishUsers = ref(
 const filteredUsers = computed(() => {
   const query = String(searchQuery.value || '').trim().toLowerCase()
 
-  return englishUsers.value.filter((user) => {
+  return scholarshipUsers.value.filter((user) => {
     let isMatch = true
 
     if (query) {
@@ -96,32 +96,32 @@ watch(
 function onViewUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'view', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'view', id } })
 }
 
 function onEditUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'edit', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
 }
 
 function onDeleteUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  englishUsers.value = englishUsers.value.filter((item) => item.id !== id)
+  scholarshipUsers.value = scholarshipUsers.value.filter((item) => item.id !== id)
 }
 </script>
 
 <template>
   <MainLayout>
-    <section class="english-users-page">
+    <section class="scholarship-users-page">
       <HeaderSection
-        title="English Teachers"
-        subtitle="View teachers assigned to the English program."
+        title="Scholarship Teachers"
+        subtitle="View teachers assigned to the Scholarship program."
       />
 
-      <div class="english-users-page__panel">
-        <div class="english-users-page__actions">
+      <div class="scholarship-users-page__panel">
+        <div class="scholarship-users-page__actions">
           <Button variant="primary" size="md" rounded="xl" @click="goToAddTeacher">
             <template #iconLeft>
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -144,7 +144,7 @@ function onDeleteUser(user) {
         <Table
           :rows="paginatedUsers"
           :columns="tableColumns"
-          empty-text="No English teachers found."
+          empty-text="No Scholarship teachers found."
           @view="onViewUser"
           @edit="onEditUser"
           @delete="onDeleteUser"
@@ -159,13 +159,13 @@ function onDeleteUser(user) {
 </template>
 
 <style scoped>
-.english-users-page {
+.scholarship-users-page {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
 }
 
-.english-users-page__panel {
+.scholarship-users-page__panel {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -176,7 +176,7 @@ function onDeleteUser(user) {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.45);
 }
 
-.english-users-page__actions {
+.scholarship-users-page__actions {
   display: flex;
   justify-content: flex-end;
 }

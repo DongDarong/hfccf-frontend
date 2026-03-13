@@ -31,6 +31,12 @@ npm run dev
 
 The app uses mock authentication data from [src/mocks/users.json](/D:/Thesis2026/frontend/hfccf-frontend/src/mocks/users.json).
 
+## Routing
+
+- Routes now live in `src/router/routes/*`, grouped by namespace (`baseRoutes`, `moduleRoutes`, `teacherRoutes`, `userRoutes`) so you can scope changes to a folder.
+- Paths include their module folder (`/module/super-admin/dashboard`, `/module/english-admin/users`, `/module/sport-admin/coach`, etc.) to keep URLs aligned with their source areas.
+- `src/router/index.js` still stitches the arrays together and enforces the auth/role guard plus session touching before any view renders.
+
 ## Mock Roles
 
 Current mock roles include:
@@ -96,6 +102,7 @@ npm run format
 - `src/services`: auth and HTTP services
 - `src/i18n`: English and Khmer translations
 - `src/mocks`: mock user data
+- `src/components/icons`: new theme icons (`Users`, `Class`, `Ball`, `Team`, `Players`, `Attendance`, `Reports`, `Inventory`, `Performance`, `Training`, `Tournaments`, `Matches`) that power the refreshed navigation and module tiles
 
 ## CI
 

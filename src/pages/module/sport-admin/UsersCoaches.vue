@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
-  name: 'PreschoolAdminUsersPage',
+  name: 'SportAdminUsersPage',
 })
 
 const router = useRouter()
@@ -20,9 +20,9 @@ const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 8
 
-const roleOptions = ['teacher-preschool']
+const roleOptions = ['coach']
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
-const addTeacherLabel = computed(() => 'Add Teacher')
+const addCoachLabel = computed(() => 'Add Coach')
 const tableColumns = [
   { key: 'number', label: 'No.', align: 'left' },
   { key: 'user', label: 'User', align: 'left' },
@@ -34,13 +34,13 @@ const tableColumns = [
   { key: 'actions', label: 'Actions', align: 'right' },
 ]
 
-function goToAddTeacher() {
-  router.push({ path: '/users/add', query: { role: 'teacher-preschool' } })
+function goToAddCoach() {
+  router.push({ path: '/module/super-admin/users/add', query: { role: 'coach' } })
 }
 
-const preschoolUsers = ref(
+const coachUsers = ref(
   usersMock
-    .filter((item) => String(item.role || '').toLowerCase() === 'teacher-preschool')
+    .filter((item) => String(item.role || '').toLowerCase() === 'coach')
     .map((item) => ({
       id: item.id,
       name: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || item.id,
@@ -57,7 +57,7 @@ const preschoolUsers = ref(
 const filteredUsers = computed(() => {
   const query = String(searchQuery.value || '').trim().toLowerCase()
 
-  return preschoolUsers.value.filter((user) => {
+  return coachUsers.value.filter((user) => {
     let isMatch = true
 
     if (query) {
@@ -96,39 +96,39 @@ watch(
 function onViewUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'view', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'view', id } })
 }
 
 function onEditUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/users/add', query: { mode: 'edit', id } })
+  router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
 }
 
 function onDeleteUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  preschoolUsers.value = preschoolUsers.value.filter((item) => item.id !== id)
+  coachUsers.value = coachUsers.value.filter((item) => item.id !== id)
 }
 </script>
 
 <template>
   <MainLayout>
-    <section class="preschool-users-page">
+    <section class="sport-users-page">
       <HeaderSection
-        title="Preschool Teachers"
-        subtitle="View teachers assigned to the Preschool program."
+        title="Sport Coaches"
+        subtitle="View coaches assigned to the sport program."
       />
 
-      <div class="preschool-users-page__panel">
-        <div class="preschool-users-page__actions">
-          <Button variant="primary" size="md" rounded="xl" @click="goToAddTeacher">
+      <div class="sport-users-page__panel">
+        <div class="sport-users-page__actions">
+          <Button variant="primary" size="md" rounded="xl" @click="goToAddCoach">
             <template #iconLeft>
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
             </template>
-            {{ addTeacherLabel }}
+            {{ addCoachLabel }}
           </Button>
         </div>
 
@@ -144,7 +144,7 @@ function onDeleteUser(user) {
         <Table
           :rows="paginatedUsers"
           :columns="tableColumns"
-          empty-text="No Preschool teachers found."
+          empty-text="No coaches found."
           @view="onViewUser"
           @edit="onEditUser"
           @delete="onDeleteUser"
@@ -159,13 +159,13 @@ function onDeleteUser(user) {
 </template>
 
 <style scoped>
-.preschool-users-page {
+.sport-users-page {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
 }
 
-.preschool-users-page__panel {
+.sport-users-page__panel {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -176,7 +176,7 @@ function onDeleteUser(user) {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.45);
 }
 
-.preschool-users-page__actions {
+.sport-users-page__actions {
   display: flex;
   justify-content: flex-end;
 }
