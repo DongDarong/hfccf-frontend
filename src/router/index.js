@@ -1,18 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '@/pages/module/MainDashboard.vue'
 import LoginView from '@/pages/auth/Login.vue'
-import UsersView from '@/pages/module/SuperAdmin/Users.vue'
-import AddUserView from '@/pages/module/SuperAdmin/AddUser.vue'
+import UsersView from '@/pages/module/super-admin/Users.vue'
+import AddUserView from '@/pages/module/super-admin/AddUser.vue'
 import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
-import SuperAdminDashboard from '@/pages/module/SuperAdmin/SuperAdminDashboard.vue'
-import PreschoolAdminDashboard from '@/pages/module/PreschoolAdmin/PreschoolAdminDashboard.vue'
-import PreschoolAdminUsersView from '@/pages/module/PreschoolAdmin/UsersPreschool.vue'
-import ScholarshipAdminDashboard from '@/pages/module/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
-import EnglishAdminDashboard from '@/pages/module/EnglishAdmin/EnglishAdminDashboard.vue'
-import EnglishAdminUsersView from '@/pages/module/EnglishAdmin/UsersEnglish.vue'
-import SportAdminDashboard from '@/pages/module/SportAdmin/SportAdminDashboard.vue'
-import TeacherDashboard from '@/pages/module/Teachers/TeacherEnglish/TeacherDashboard.vue'
-import CoachDashboard from '@/pages/module/Teachers/Coach/CoachDashboard.vue'
+import SuperAdminDashboard from '@/pages/module/super-admin/SuperAdminDashboard.vue'
+import PreschoolAdminDashboard from '@/pages/module/preschool-admin/PreschoolAdminDashboard.vue'
+import PreschoolAdminUsersView from '@/pages/module/preschool-admin/UsersPreschool.vue'
+import ScholarshipAdminDashboard from '@/pages/module/scholarship-admin/ScholarshipAdminDashboard.vue'
+import ScholarshipAdminUsersView from '@/pages/module/scholarship-admin/UserSchoarship.vue'
+import EnglishAdminDashboard from '@/pages/module/english-admin/EnglishAdminDashboard.vue'
+import EnglishAdminUsersView from '@/pages/module/english-admin/UsersEnglish.vue'
+import SportAdminDashboard from '@/pages/module/sport-admin/SportAdminDashboard.vue'
+import TeacherDashboard from '@/pages/module/teachers-coaches/teacher-english/TeacherDashboard.vue'
+import CoachDashboard from '@/pages/module/teachers-coaches/coach/CoachDashboard.vue'
 
 function normalizeRole(role) {
   return String(role || '')
@@ -67,6 +68,12 @@ const router = createRouter({
       path: '/dashboard/scholarship-admin',
       name: 'dashboard-scholarship-admin',
       component: ScholarshipAdminDashboard,
+      meta: { requiresAuth: true, allowedRoles: ['adminscholaship'] },
+    },
+    {
+      path: '/dashboard/scholarship-admin/users',
+      name: 'dashboard-scholarship-admin-users',
+      component: ScholarshipAdminUsersView,
       meta: { requiresAuth: true, allowedRoles: ['adminscholaship'] },
     },
     {
@@ -153,6 +160,12 @@ router.beforeEach((to) => {
 })
 
 export default router
+
+
+
+
+
+
 
 
 

@@ -1,13 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 import { getCurrentUser, hasPermission } from '@/services/auth'
-import SuperAdminDashboard from '@/pages/module/SuperAdmin/SuperAdminDashboard.vue'
-import PreschoolAdminDashboard from '@/pages/module/PreschoolAdmin/PreschoolAdminDashboard.vue'
-import ScholarshipAdminDashboard from '@/pages/module/ScholarshipAdmin/ScholarshipAdminDashboard.vue'
-import EnglishAdminDashboard from '@/pages/module/EnglishAdmin/EnglishAdminDashboard.vue'
-import SportAdminDashboard from '@/pages/module/SportAdmin/SportAdminDashboard.vue'
-import TeacherDashboard from '@/pages/module/Teachers/TeacherEnglish/TeacherDashboard.vue'
-import CoachDashboard from '@/pages/module/Teachers/Coach/CoachDashboard.vue'
+import SuperAdminDashboard from '@/pages/module/super-admin/SuperAdminDashboard.vue'
+import PreschoolAdminDashboard from '@/pages/module/preschool-admin/PreschoolAdminDashboard.vue'
+import ScholarshipAdminDashboard from '@/pages/module/scholarship-admin/ScholarshipAdminDashboard.vue'
+import EnglishAdminDashboard from '@/pages/module/english-admin/EnglishAdminDashboard.vue'
+import SportAdminDashboard from '@/pages/module/sport-admin/SportAdminDashboard.vue'
+import TeacherDashboard from '@/pages/module/teachers-coaches/teacher-english/TeacherDashboard.vue'
+import CoachDashboard from '@/pages/module/teachers-coaches/coach/CoachDashboard.vue'
 import OperationsDashboard from '@/pages/module/roles/OperationsDashboard.vue'
 import DeliveryDashboard from '@/pages/module/roles/DeliveryDashboard.vue'
 import ProgramsDashboard from '@/pages/module/roles/ProgramsDashboard.vue'
@@ -56,3 +56,6 @@ const activeDashboardComponent = computed(
 <template>
   <component :is="activeDashboardComponent" />
 </template>
+
+
+
