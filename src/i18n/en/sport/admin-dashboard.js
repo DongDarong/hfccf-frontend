@@ -28,5 +28,11 @@ export default {
         label: 'Pending approvals',
       },
     },
+    tournamentBanner: {
+      badge: 'Tournament Banner',
+      title: 'No Tournament Selected',
+      subtitle: 'Load data from JSON to see active tournament context.',
+      action: 'View Tournament',
+    },
   },
 }
