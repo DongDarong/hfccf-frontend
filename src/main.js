@@ -1,4 +1,4 @@
-import './assets/styles/main.css'
+import './assets/css/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -51,3 +51,5 @@ window.addEventListener(
   },
   { once: true },
 )
+
+

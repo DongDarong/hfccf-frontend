@@ -1,9 +1,9 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
-import Sidebar from '@/components/layout/Sidebar.vue'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import Navbar from '@/components/Navbar.vue'
+import Sidebar from '@/components/Sidebar.vue'
+import Loading from '@/components/Loading.vue'
 import { logout as clearAuthSession } from '@/services/auth'
 
 const props = defineProps({
@@ -295,7 +295,7 @@ onBeforeUnmount(() => {
       >
         <slot>
           <div class="rounded-xl border border-slate-200 bg-white p-5">
-            <LoadingSpinner label="Loading content..." size="md" />
+            <Loading label="Loading content..." size="md" />
           </div>
         </slot>
       </main>
@@ -314,3 +314,6 @@ onBeforeUnmount(() => {
   app-region: no-drag;
 }
 </style>
+
+
+

@@ -1,12 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
-import { baseRoutes } from './routes/baseRoutes'
-import { moduleRoutes } from './routes/moduleRoutes'
-import { teacherRoutes } from './routes/teacherRoutes'
-import { userRoutes } from './routes/userRoutes'
+import { authRoutes } from '@/modules/auth/routes'
+import { userRoutes } from '@/modules/users/routes'
 
-// Combined route list keeps the router tree centralized while allowing per-module maintenance.
-const routes = [...baseRoutes, ...moduleRoutes, ...teacherRoutes, ...userRoutes]
+const routes = [
+  ...authRoutes,
+  ...userRoutes,
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/module/dashboard',
+  },
+]
 
 function normalizeRole(role) {
   return String(role || '')
@@ -20,7 +24,6 @@ function hasAllowedRole(user, allowedRoles = []) {
   return allowedRoles.map((item) => normalizeRole(item)).includes(role)
 }
 
-// Central router with shared auth / role guards.
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -66,3 +69,6 @@ router.beforeEach((to) => {
 })
 
 export default router
+
+
+
