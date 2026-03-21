@@ -1,10 +1,14 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import Card from 'primevue/card'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Checkbox from 'primevue/checkbox'
+import Message from 'primevue/message'
 import Button from '@/components/Button.vue'
 import AlertSuccess from '@/components/AlertSuccess.vue'
 import Loading from '@/components/Loading.vue'
-import ShowPassword from '@/assets/icons/ShowPassword.vue'
 import { login } from '@/modules/auth/services/authService'
 
 const router = useRouter()
@@ -18,7 +22,6 @@ const form = reactive({
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-const isPasswordVisible = ref(false)
 const showLoginSuccess = ref(false)
 const shouldRedirectAfterSuccess = ref(false)
 
@@ -39,10 +42,6 @@ async function onSubmit() {
   } finally {
     isSubmitting.value = false
   }
-}
-
-function togglePasswordVisibility() {
-  isPasswordVisible.value = !isPasswordVisible.value
 }
 
 function getSafeRedirectTarget(value) {
@@ -73,85 +72,74 @@ async function onLoginSuccessClose() {
       </span>
     </div>
 
-    <header class="mb-8">
-      <h2 class="text-2xl font-bold text-slate-900">Login</h2>
-      <p class="mt-1 text-sm text-slate-600">Enter your credentials to access your account.</p>
-    </header>
+    <Card class="login-form-card border-0 shadow-none">
+      <template #content>
+        <header class="mb-8">
+          <h2 class="text-2xl font-bold text-slate-900">Login</h2>
+          <p class="mt-1 text-sm text-slate-600">Enter your credentials to access your account.</p>
+        </header>
 
-    <form class="space-y-5" @submit.prevent="onSubmit">
-      <div class="space-y-1.5">
-        <label for="email" class="text-sm font-semibold text-slate-700">Email</label>
-        <input
-          id="email"
-          v-model="form.email"
-          type="email"
-          autocomplete="email"
-          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
-          placeholder="name@hfccf.org"
-        />
-      </div>
+        <form class="space-y-5" @submit.prevent="onSubmit">
+          <div class="space-y-1.5">
+            <label for="email" class="text-sm font-semibold text-slate-700">Email</label>
+            <InputText
+              id="email"
+              v-model="form.email"
+              type="email"
+              autocomplete="email"
+              class="w-full"
+              placeholder="name@hfccf.org"
+            />
+          </div>
 
-      <div class="space-y-1.5">
-        <label for="password" class="text-sm font-semibold text-slate-700">Password</label>
-        <div class="relative">
-          <input
-            id="password"
-            v-model="form.password"
-            :type="isPasswordVisible ? 'text' : 'password'"
-            autocomplete="current-password"
-            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
-            placeholder="Enter your password"
-          />
-          <button
-            type="button"
-            class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center text-slate-500 transition hover:text-slate-700"
-            :aria-label="isPasswordVisible ? 'Hide password' : 'Show password'"
-            :title="isPasswordVisible ? 'Hide password' : 'Show password'"
-            @click="togglePasswordVisibility"
-          >
-            <ShowPassword :visible="isPasswordVisible" :size="18" />
-          </button>
-        </div>
-      </div>
+          <div class="space-y-1.5">
+            <label for="password" class="text-sm font-semibold text-slate-700">Password</label>
+            <Password
+              id="password"
+              v-model="form.password"
+              input-class="w-full"
+              class="w-full login-form-password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              :feedback="false"
+              toggle-mask
+              fluid
+            />
+          </div>
 
-      <div class="flex items-center justify-between gap-3 text-sm">
-        <label class="inline-flex items-center gap-2 text-slate-600">
-          <input
-            v-model="form.remember"
-            type="checkbox"
-            class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-300"
-          />
-          Remember me
-        </label>
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <label class="inline-flex items-center gap-2 text-slate-600">
+              <Checkbox v-model="form.remember" binary input-id="rememberMe" />
+              <span>Remember me</span>
+            </label>
 
-        <RouterLink
-          :to="{ name: 'forgot-password' }"
-          class="font-semibold text-sky-700 transition hover:text-sky-800"
-        >
-          Forgot password?
-        </RouterLink>
-      </div>
+            <RouterLink
+              :to="{ name: 'forgot-password' }"
+              class="font-semibold text-sky-700 transition hover:text-sky-800"
+            >
+              Forgot password?
+            </RouterLink>
+          </div>
 
-      <p
-        v-if="errorMessage"
-        class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-      >
-        {{ errorMessage }}
-      </p>
+          <Message v-if="errorMessage" severity="error" :closable="false">
+            {{ errorMessage }}
+          </Message>
 
-      <Loading v-if="isSubmitting" label="Signing in..." size="sm" />
+          <Loading v-if="isSubmitting" label="Signing in..." size="sm" />
 
-      <Button type="submit" variant="primary" size="md" rounded="xl" block :loading="isSubmitting">
-        Sign in
-      </Button>
+          <Button type="submit" variant="primary" size="md" rounded="xl" block :loading="isSubmitting">
+            Sign in
+          </Button>
 
-      <p class="text-sm text-slate-600">
-        Need access?
-        <RouterLink :to="{ name: 'register' }" class="font-semibold text-sky-700">
-          Create an account
-        </RouterLink>
-      </p>
-    </form>
+          <p class="text-sm text-slate-600">
+            Need access?
+            <RouterLink :to="{ name: 'register' }" class="font-semibold text-sky-700">
+              Create an account
+            </RouterLink>
+          </p>
+        </form>
+      </template>
+    </Card>
 
     <AlertSuccess
       :show="showLoginSuccess"
@@ -164,5 +152,27 @@ async function onLoginSuccessClose() {
   </div>
 </template>
 
+<style scoped>
+:deep(.login-form-card.p-card .p-card-body) {
+  padding: 0;
+}
 
+:deep(.login-form-card .p-inputtext),
+:deep(.login-form-card .p-password-input) {
+  width: 100%;
+  border-radius: 0.9rem;
+  border-color: #e2e8f0;
+  background: #fff;
+  padding: 0.85rem 1rem;
+}
 
+:deep(.login-form-card .p-inputtext:enabled:focus),
+:deep(.login-form-card .p-password-input:enabled:focus) {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.35);
+}
+
+:deep(.login-form-password .p-password) {
+  width: 100%;
+}
+</style>
