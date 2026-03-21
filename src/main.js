@@ -1,7 +1,10 @@
 import './assets/css/main.css'
+import 'primeicons/primeicons.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import PrimeVue from 'primevue/config'
+import Aura from '@primeuix/themes/aura'
 
 import App from './App.vue'
 import i18n from './i18n'
@@ -31,6 +34,11 @@ enforceSecureOrigin()
 const app = createApp(App)
 
 app.use(createPinia())
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+  },
+})
 app.use(i18n)
 app.use(router)
 
