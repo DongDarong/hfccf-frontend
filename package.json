@@ -36,7 +36,8 @@
     "oxlint": "^1.55.0",
     "prettier": "3.8.1",
     "vite": "^8.0.0",
-    "vite-plugin-vue-devtools": "^8.1.0"
+    "vite-plugin-vue-devtools": "^8.1.0",
+    "vue-eslint-parser": "^10.4.0"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
