@@ -1,6 +1,9 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import Drawer from 'primevue/drawer'
+import Card from 'primevue/card'
+import BlockUI from 'primevue/blockui'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Loading from '@/components/Loading.vue'
@@ -247,31 +250,26 @@ onBeforeUnmount(() => {
     </aside>
 
     <button
-      type="button"
-      class="fixed inset-0 top-[60px] z-[60] bg-black/25 opacity-0 pointer-events-none transition-opacity duration-300 max-[600px]:top-14 max-[480px]:top-[52px] max-[420px]:top-[50px] min-[769px]:hidden"
-      :class="{ 'opacity-100 pointer-events-auto': isSidebarOpen }"
-      aria-label="Close sidebar"
-      :aria-hidden="!isSidebarOpen"
-      @click="closeSidebar"
-    />
-
-    <button
       v-if="isMobileViewport && !isSidebarOpen"
       type="button"
       class="fixed left-0 z-[65] flex h-14 w-5 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white/95 text-slate-500 shadow-sm backdrop-blur transition-all hover:w-6 hover:text-slate-800 min-[769px]:hidden top-[calc(60px+38vh)] max-[600px]:top-[calc(56px+38vh)] max-[480px]:top-[calc(52px+38vh)] max-[420px]:top-[calc(50px+38vh)]"
       aria-label="Open sidebar"
       @click="openSidebar"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-4 w-4">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
+      <i class="pi pi-angle-right text-sm" />
     </button>
 
-    <aside
-      id="main-layout-sidebar-mobile"
-      class="fixed left-0 z-[70] h-[calc(100vh-60px)] w-[min(85vw,320px)] -translate-x-full overflow-y-auto border-r-0 bg-white shadow-xl transition-transform duration-300 ease-in-out box-border top-[60px] max-[600px]:top-14 max-[600px]:h-[calc(100vh-56px)] max-[480px]:top-[52px] max-[480px]:h-[calc(100vh-52px)] max-[420px]:top-[50px] max-[420px]:h-[calc(100vh-50px)] min-[769px]:hidden"
-      :class="{ 'translate-x-0': isSidebarOpen }"
-      :aria-hidden="!isSidebarOpen && isMobileViewport"
+    <Drawer
+      v-model:visible="isSidebarOpen"
+      position="left"
+      :show-close-icon="false"
+      :modal="true"
+      class="main-layout-drawer min-[769px]:hidden"
+      :pt="{
+        root: { class: 'w-[min(85vw,320px)] mt-[60px] max-[600px]:mt-14 max-[480px]:mt-[52px] max-[420px]:mt-[50px]' },
+        content: { class: 'p-0' },
+        mask: { class: 'min-[769px]:hidden' },
+      }"
     >
       <slot
         name="sidebar"
@@ -283,22 +281,26 @@ onBeforeUnmount(() => {
       >
         <Sidebar :collapsed="false" @toggle-sidebar="toggleSidebar" @logout="onSidebarLogout" />
       </slot>
-    </aside>
+    </Drawer>
 
     <div
       class="min-h-screen w-full transition-[padding] duration-300 ease-in-out"
       :style="{ paddingLeft: desktopContentPaddingLeft }"
     >
-      <main
-        class="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-all max-[600px]:p-3 max-[480px]:p-2.5 max-[420px]:p-2"
-        @click="onContentClick"
-      >
-        <slot>
-          <div class="rounded-xl border border-slate-200 bg-white p-5">
-            <Loading label="Loading content..." size="md" />
-          </div>
-        </slot>
-      </main>
+      <BlockUI :blocked="false">
+        <main
+          class="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-all max-[600px]:p-3 max-[480px]:p-2.5 max-[420px]:p-2"
+          @click="onContentClick"
+        >
+          <slot>
+            <Card class="main-layout-card">
+              <template #content>
+                <Loading label="Loading content..." size="md" />
+              </template>
+            </Card>
+          </slot>
+        </main>
+      </BlockUI>
     </div>
   </div>
 </template>
@@ -313,7 +315,9 @@ onBeforeUnmount(() => {
   -webkit-app-region: no-drag;
   app-region: no-drag;
 }
+
+:deep(.main-layout-card.p-card) {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+}
 </style>
-
-
-
