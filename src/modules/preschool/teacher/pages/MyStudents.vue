@@ -4,8 +4,8 @@ import PlaceholderPage from '@/shared/pages/PlaceholderPage.vue'
 
 <template>
   <PlaceholderPage
-    title="Attendance Report"
-    description="Reports module page scaffolded under the new architecture."
+    title="My Preschool Students"
+    description="This page is scaffolded under the preschool teacher module."
   />
 </template>
 

@@ -1,5 +1,5 @@
 <script setup>
-import PlaceholderPage from '@/modules/users/shared/PlaceholderPage.vue'
+import PlaceholderPage from '@/shared/pages/PlaceholderPage.vue'
 </script>
 
 <template>
@@ -8,6 +8,7 @@ import PlaceholderPage from '@/modules/users/shared/PlaceholderPage.vue'
     description="Reports module page scaffolded under the new architecture."
   />
 </template>
+
 
 
 

@@ -1,11 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
 import { authRoutes } from '@/modules/auth/routes'
-import { userRoutes } from '@/modules/users/routes'
+import { dashboardRoutes } from '@/modules/dashboard/routes'
+import { superAdminRoutes } from '@/modules/super-admin/routes'
+import { englishRoutes } from '@/modules/english/routes'
+import { preschoolRoutes } from '@/modules/preschool/routes'
+import { scholarshipRoutes } from '@/modules/scholarship/routes'
+import { sportRoutes } from '@/modules/sport/routes'
 
 const routes = [
   ...authRoutes,
-  ...userRoutes,
+  ...dashboardRoutes,
+  ...superAdminRoutes,
+  ...englishRoutes,
+  ...preschoolRoutes,
+  ...scholarshipRoutes,
+  ...sportRoutes,
   {
     path: '/:pathMatch(.*)*',
     redirect: '/module/dashboard',
@@ -69,6 +79,3 @@ router.beforeEach((to) => {
 })
 
 export default router
-
-
-
