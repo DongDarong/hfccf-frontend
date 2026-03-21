@@ -4,8 +4,8 @@ import PlaceholderPage from '@/modules/users/shared/PlaceholderPage.vue'
 
 <template>
   <PlaceholderPage
-    title="Role Permissions"
-    description="Settings module page scaffolded under the new architecture."
+    title="English Class Management"
+    description="This page is scaffolded under the english admin module."
   />
 </template>
 

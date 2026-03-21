@@ -4,8 +4,8 @@ import PlaceholderPage from '@/modules/users/shared/PlaceholderPage.vue'
 
 <template>
   <PlaceholderPage
-    title="Role Permissions"
-    description="Settings module page scaffolded under the new architecture."
+    title="My Preschool Students"
+    description="This page is scaffolded under the preschool teacher module."
   />
 </template>
 

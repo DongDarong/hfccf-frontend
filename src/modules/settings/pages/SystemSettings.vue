@@ -1,5 +1,5 @@
 <script setup>
-import PlaceholderPage from '@/modules/users/components/PlaceholderPage.vue'
+import PlaceholderPage from '@/modules/users/shared/PlaceholderPage.vue'
 </script>
 
 <template>

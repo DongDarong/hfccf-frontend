@@ -1,17 +1,17 @@
 <script setup>
 import { computed } from 'vue'
 import { getCurrentUser, hasPermission } from '@/services/auth'
-import SuperAdminDashboard from '@/modules/users/superadmins/pages/Dashboard.vue'
-import PreschoolAdminDashboard from '@/modules/users/admins/preschool-admin/pages/Dashboard.vue'
-import ScholarshipAdminDashboard from '@/modules/users/admins/scholarship-admin/pages/Dashboard.vue'
-import EnglishAdminDashboard from '@/modules/users/admins/english-admin/pages/Dashboard.vue'
-import SportAdminDashboard from '@/modules/users/admins/sport-admin/pages/Dashboard.vue'
-import TeacherDashboard from '@/modules/users/teachers/english_teacher/pages/Dashboard.vue'
-import CoachDashboard from '@/modules/users/coaches/pages/Dashboard.vue'
-import OperationsDashboard from '@/modules/users/components/dashboards/OperationsDashboard.vue'
-import DeliveryDashboard from '@/modules/users/components/dashboards/DeliveryDashboard.vue'
-import ProgramsDashboard from '@/modules/users/components/dashboards/ProgramsDashboard.vue'
-import BasicDashboard from '@/modules/users/components/dashboards/BasicDashboard.vue'
+import SuperAdminDashboard from '@/modules/users/roles/super-admin/pages/Dashboard.vue'
+import PreschoolAdminDashboard from '@/modules/users/roles/preschool-admin/pages/Dashboard.vue'
+import ScholarshipAdminDashboard from '@/modules/users/roles/scholarship-admin/pages/Dashboard.vue'
+import EnglishAdminDashboard from '@/modules/users/roles/english-admin/pages/Dashboard.vue'
+import SportAdminDashboard from '@/modules/users/roles/sport-admin/pages/Dashboard.vue'
+import TeacherDashboard from '@/modules/users/roles/english-teacher/pages/Dashboard.vue'
+import CoachDashboard from '@/modules/users/roles/coach/pages/Dashboard.vue'
+import OperationsDashboard from '@/modules/users/shared/dashboards/OperationsDashboard.vue'
+import DeliveryDashboard from '@/modules/users/shared/dashboards/DeliveryDashboard.vue'
+import ProgramsDashboard from '@/modules/users/shared/dashboards/ProgramsDashboard.vue'
+import BasicDashboard from '@/modules/users/shared/dashboards/BasicDashboard.vue'
 
 defineOptions({
   name: 'DashboardPage',
