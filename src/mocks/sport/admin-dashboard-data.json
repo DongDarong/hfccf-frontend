@@ -1,0 +1,53 @@
+{
+  "tournament": {
+    "title": "Inter-Club Summer Showcase",
+    "subtitle": "Final week structure, fixtures, and broadcast-ready highlights.",
+    "matches": 14,
+    "location": "Phnom Penh Sports Complex",
+    "status": "Live"
+  },
+  "cards": {
+    "totalTeams": 28,
+    "totalPlayers": 86,
+    "upcomingMatches": 21,
+    "lowStockItems": 3,
+    "totalCoaches": "86%",
+    "coachesRequests": 4
+  },
+  "alerts": [
+    {
+      "type": "warning",
+      "message": "Hydration stations require restocking before Saturday matches."
+    },
+    {
+      "type": "info",
+      "message": "Live stream overlay graphics are scheduled for deployment tomorrow."
+    }
+  ],
+  "liveMatches": [
+    { "teams": "Team A vs Team B", "meta": "65' · City Stadium" },
+    { "teams": "Team C vs Team D", "meta": "42' · National Arena" },
+    { "teams": "Team Q vs Team R", "meta": "12' · West Wing" },
+    { "teams": "Team S vs Team T", "meta": "88' · Main Field" },
+    { "teams": "Team U vs Team V", "meta": "25' · North Park" }
+  ],
+  "todayMatches": [
+    { "teams": "Team E vs Team F", "time": "3:00 PM" },
+    { "teams": "Team G vs Team H", "time": "5:30 PM" },
+    { "teams": "Team I vs Team J", "time": "7:00 PM" },
+    { "teams": "Team K vs Team L", "time": "8:30 PM" },
+    { "teams": "Team M vs Team N", "time": "9:00 PM" },
+    { "teams": "Team O vs Team P", "time": "10:30 PM" }
+  ],
+  "topScorers": [
+    { "player": "Player A", "goals": 6, "team": "Team A" },
+    { "player": "Player B", "goals": 5, "team": "Team B" },
+    { "player": "Player C", "goals": 4, "team": "Team C" }
+  ],
+  "standings": [
+    { "pos": 1, "team": "Team A", "p": 4, "w": 3, "d": 1, "l": 0, "gf": 9, "ga": 3, "gd": "+6", "pts": 10 },
+    { "pos": 2, "team": "Team B", "p": 4, "w": 2, "d": 2, "l": 0, "gf": 7, "ga": 4, "gd": "+3", "pts": 8 },
+    { "pos": 3, "team": "Team C", "p": 4, "w": 2, "d": 1, "l": 1, "gf": 6, "ga": 5, "gd": "+1", "pts": 7 },
+    { "pos": 4, "team": "Team D", "p": 4, "w": 2, "d": 0, "l": 2, "gf": 5, "ga": 5, "gd": "0", "pts": 6 }
+  ]
+}

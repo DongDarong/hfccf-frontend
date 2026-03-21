@@ -1,9 +1,9 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
-import Sidebar from '@/components/layout/Sidebar.vue'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import Navbar from '@/components/Navbar.vue'
+import Sidebar from '@/components/Sidebar.vue'
+import Loading from '@/components/Loading.vue'
 import { logout as clearAuthSession } from '@/services/auth'
 
 const props = defineProps({
@@ -37,8 +37,9 @@ let swipeStartX = 0
 let swipeStartY = 0
 let isTrackingMobileOpenSwipe = false
 
-const desktopSidebarWidth = computed(() =>
-  `${isDesktopSidebarVisible.value ? DESKTOP_SIDEBAR_EXPANDED_WIDTH : DESKTOP_SIDEBAR_COLLAPSED_WIDTH}px`,
+const desktopSidebarWidth = computed(
+  () =>
+    `${isDesktopSidebarVisible.value ? DESKTOP_SIDEBAR_EXPANDED_WIDTH : DESKTOP_SIDEBAR_COLLAPSED_WIDTH}px`,
 )
 
 const desktopContentPaddingLeft = computed(() => {
@@ -213,15 +214,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="min-h-screen w-full overflow-x-hidden bg-[var(--color-surface)]
-           pt-16 max-[768px]:pt-[60px] max-[600px]:pt-14 max-[480px]:pt-[52px] max-[420px]:pt-[50px]"
+    class="min-h-screen w-full overflow-x-hidden bg-[var(--color-surface)] pt-16 max-[768px]:pt-[60px] max-[600px]:pt-14 max-[480px]:pt-[52px] max-[420px]:pt-[50px]"
   >
     <header
-      class="main-layout-header fixed inset-x-0 top-0 z-[80] flex h-16 w-full items-center border-b border-slate-100 bg-white/95 px-4 shadow-sm backdrop-blur transition-all
-             max-[768px]:h-[60px] max-[768px]:px-3
-             max-[600px]:h-14 max-[600px]:px-2.5
-             max-[480px]:h-[52px] max-[480px]:px-2
-             max-[420px]:h-[50px] max-[420px]:px-1.5"
+      class="main-layout-header fixed inset-x-0 top-0 z-[80] flex h-16 w-full items-center border-b border-slate-100 bg-white/95 px-4 shadow-sm backdrop-blur transition-all max-[768px]:h-[60px] max-[768px]:px-3 max-[600px]:h-14 max-[600px]:px-2.5 max-[480px]:h-[52px] max-[480px]:px-2 max-[420px]:h-[50px] max-[420px]:px-1.5"
     >
       <slot name="navbar" :toggle-sidebar="toggleSidebar" :is-sidebar-open="isSidebarOpen">
         <Navbar @toggle-sidebar="toggleSidebar" />
@@ -252,8 +248,7 @@ onBeforeUnmount(() => {
 
     <button
       type="button"
-      class="fixed inset-0 top-[60px] z-[60] bg-black/25 opacity-0 pointer-events-none transition-opacity duration-300
-             max-[600px]:top-14 max-[480px]:top-[52px] max-[420px]:top-[50px] min-[769px]:hidden"
+      class="fixed inset-0 top-[60px] z-[60] bg-black/25 opacity-0 pointer-events-none transition-opacity duration-300 max-[600px]:top-14 max-[480px]:top-[52px] max-[420px]:top-[50px] min-[769px]:hidden"
       :class="{ 'opacity-100 pointer-events-auto': isSidebarOpen }"
       aria-label="Close sidebar"
       :aria-hidden="!isSidebarOpen"
@@ -263,8 +258,7 @@ onBeforeUnmount(() => {
     <button
       v-if="isMobileViewport && !isSidebarOpen"
       type="button"
-      class="fixed left-0 z-[65] flex h-14 w-5 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white/95 text-slate-500 shadow-sm backdrop-blur transition-all hover:w-6 hover:text-slate-800 min-[769px]:hidden
-             top-[calc(60px+38vh)] max-[600px]:top-[calc(56px+38vh)] max-[480px]:top-[calc(52px+38vh)] max-[420px]:top-[calc(50px+38vh)]"
+      class="fixed left-0 z-[65] flex h-14 w-5 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white/95 text-slate-500 shadow-sm backdrop-blur transition-all hover:w-6 hover:text-slate-800 min-[769px]:hidden top-[calc(60px+38vh)] max-[600px]:top-[calc(56px+38vh)] max-[480px]:top-[calc(52px+38vh)] max-[420px]:top-[calc(50px+38vh)]"
       aria-label="Open sidebar"
       @click="openSidebar"
     >
@@ -275,11 +269,7 @@ onBeforeUnmount(() => {
 
     <aside
       id="main-layout-sidebar-mobile"
-      class="fixed left-0 z-[70] h-[calc(100vh-60px)] w-[min(85vw,320px)] -translate-x-full overflow-y-auto border-r-0 bg-white shadow-xl transition-transform duration-300 ease-in-out box-border
-             top-[60px] max-[600px]:top-14 max-[600px]:h-[calc(100vh-56px)]
-             max-[480px]:top-[52px] max-[480px]:h-[calc(100vh-52px)]
-             max-[420px]:top-[50px] max-[420px]:h-[calc(100vh-50px)]
-             min-[769px]:hidden"
+      class="fixed left-0 z-[70] h-[calc(100vh-60px)] w-[min(85vw,320px)] -translate-x-full overflow-y-auto border-r-0 bg-white shadow-xl transition-transform duration-300 ease-in-out box-border top-[60px] max-[600px]:top-14 max-[600px]:h-[calc(100vh-56px)] max-[480px]:top-[52px] max-[480px]:h-[calc(100vh-52px)] max-[420px]:top-[50px] max-[420px]:h-[calc(100vh-50px)] min-[769px]:hidden"
       :class="{ 'translate-x-0': isSidebarOpen }"
       :aria-hidden="!isSidebarOpen && isMobileViewport"
     >
@@ -291,11 +281,7 @@ onBeforeUnmount(() => {
         :is-desktop-collapsed="false"
         :is-sidebar-open="isSidebarOpen"
       >
-        <Sidebar
-          :collapsed="false"
-          @toggle-sidebar="toggleSidebar"
-          @logout="onSidebarLogout"
-        />
+        <Sidebar :collapsed="false" @toggle-sidebar="toggleSidebar" @logout="onSidebarLogout" />
       </slot>
     </aside>
 
@@ -304,15 +290,12 @@ onBeforeUnmount(() => {
       :style="{ paddingLeft: desktopContentPaddingLeft }"
     >
       <main
-        class="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-all
-               max-[600px]:p-3
-               max-[480px]:p-2.5
-               max-[420px]:p-2"
+        class="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-all max-[600px]:p-3 max-[480px]:p-2.5 max-[420px]:p-2"
         @click="onContentClick"
       >
         <slot>
           <div class="rounded-xl border border-slate-200 bg-white p-5">
-            <LoadingSpinner label="Loading content..." size="md" />
+            <Loading label="Loading content..." size="md" />
           </div>
         </slot>
       </main>
@@ -331,3 +314,6 @@ onBeforeUnmount(() => {
   app-region: no-drag;
 }
 </style>
+
+
+

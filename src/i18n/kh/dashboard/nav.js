@@ -9,3 +9,5 @@ export default {
     orgBottom: 'នៃកុមារកម្ពុជា',
   },
 }
+
+

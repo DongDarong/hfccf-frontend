@@ -25,7 +25,9 @@ export default {
   searchUsersPlaceholder: 'Search users by name, email, role, or permission',
   allRoles: 'All roles',
   allStatus: 'All statuses',
-  clear: 'Clear filters',
+  actions: {
+    viewAll: 'View All',
+  },
   status: {
     success: 'Success',
     warning: 'Warning',
@@ -77,3 +79,5 @@ export default {
     next: 'Next',
   },
 }
+
+

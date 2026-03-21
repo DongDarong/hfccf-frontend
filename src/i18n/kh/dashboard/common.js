@@ -24,8 +24,9 @@ export default {
   },
   searchUsersPlaceholder: 'ស្វែងរកអ្នកប្រើប្រាស់តាមឈ្មោះ អ៊ីមែល តួនាទី ឬសិទ្ធិ',
   allRoles: 'តួនាទីទាំងអស់',
-  allStatus: 'ស្ថានភាពទាំងអស់',
-  clear: 'សម្អាតការត្រង',
+  actions: {
+    viewAll: 'មើលទាំងអស់',
+  },
   status: {
     success: 'ជោគជ័យ',
     warning: 'ព្រមាន',
@@ -77,3 +78,5 @@ export default {
     next: 'បន្ទាប់',
   },
 }
+
+

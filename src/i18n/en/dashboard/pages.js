@@ -5,3 +5,5 @@ export default {
   aboutTitle: 'About',
   aboutDescription: 'This page uses the shared main layout.',
 }
+
+

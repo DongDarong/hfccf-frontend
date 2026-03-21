@@ -9,6 +9,8 @@ Frontend dashboard application for HFCCF, built with Vue 3 and Vite.
 - Vue Router
 - Pinia
 - Vue I18n
+- PrimeVue 4
+- PrimeIcons
 - Tailwind CSS 4
 - Axios
 
@@ -23,6 +25,12 @@ Frontend dashboard application for HFCCF, built with Vue 3 and Vite.
 npm ci
 ```
 
+If `npm ci` fails because of the current peer dependency mismatch between `vite@8` and `@tailwindcss/vite@4.2.1`, use:
+
+```sh
+npm install --legacy-peer-deps
+```
+
 ## Run Locally
 
 ```sh
@@ -30,6 +38,33 @@ npm run dev
 ```
 
 The app uses mock authentication data from [src/mocks/users.json](/D:/Thesis2026/frontend/hfccf-frontend/src/mocks/users.json).
+
+## PrimeVue
+
+PrimeVue is installed and configured globally in [src/main.js](/D:/Thesis2026/frontend/hfccf-frontend/src/main.js) with:
+
+- `primevue`
+- `@primeuix/themes`
+- `primeicons`
+- `Aura` theme preset
+
+Example usage:
+
+```vue
+<script setup>
+import Button from 'primevue/button'
+</script>
+
+<template>
+  <Button label="Save" icon="pi pi-check" />
+</template>
+```
+
+## Routing
+
+- Root router setup lives in [src/router/index.js](/D:/Thesis2026/frontend/hfccf-frontend/src/router/index.js).
+- Feature routes are defined inside modules such as [src/modules/auth/routes.js](/D:/Thesis2026/frontend/hfccf-frontend/src/modules/auth/routes.js), [src/modules/students/routes.js](/D:/Thesis2026/frontend/hfccf-frontend/src/modules/students/routes.js), and [src/modules/users/routes.js](/D:/Thesis2026/frontend/hfccf-frontend/src/modules/users/routes.js).
+- Layout wrappers live in [src/layouts](/D:/Thesis2026/frontend/hfccf-frontend/src/layouts).
 
 ## Mock Roles
 
@@ -45,11 +80,7 @@ Current mock roles include:
 - `teacher-scholarship`
 - `coach`
 
-Note: some route guards and dashboard resolution logic still use older role assumptions for teachers, so if you add or rename roles you may also need to update:
-
-- [src/router/index.js](/D:/Thesis2026/frontend/hfccf-frontend/src/router/index.js)
-- [src/pages/module/MainDashboard.vue](/D:/Thesis2026/frontend/hfccf-frontend/src/pages/module/MainDashboard.vue)
-- [src/components/ui/SidebarBrandHeader.vue](/D:/Thesis2026/frontend/hfccf-frontend/src/components/ui/SidebarBrandHeader.vue)
+If you add or rename roles, review route guards, navigation, and dashboard selection logic in the router and user module.
 
 ## Security Notes
 
@@ -87,15 +118,29 @@ npm run lint:eslint
 npm run format
 ```
 
-## Project Areas
+## Project Structure
 
-- `src/pages/auth`: login flow
-- `src/pages/module`: dashboards and role-specific pages
-- `src/components/layout`: navbar, sidebar, layout primitives
-- `src/components/ui`: shared UI components
-- `src/services`: auth and HTTP services
+- `src/assets`: global styles, icons, images
+- `src/components`: shared reusable UI components
+- `src/composables`: shared composables
 - `src/i18n`: English and Khmer translations
-- `src/mocks`: mock user data
+- `src/layouts`: app layouts
+- `src/mocks`: mock data
+- `src/modules`: feature modules such as `auth`, `students`, `training`, `users`, `settings`, `classes`, and `reports`
+- `src/router`: root router setup
+- `src/services`: shared API and auth utilities
+- `src/store`: global state
+
+Recommended module shape:
+
+```text
+src/modules/<feature>/
+|- components/
+|- pages/
+|- services/
+|- routes.js
+\- index.js
+```
 
 ## CI
 
@@ -113,3 +158,4 @@ The CI pipeline runs on push to `main` and on pull requests:
 - [Vue 3](https://vuejs.org/)
 - [Vite](https://vite.dev/)
 - [Vue Router](https://router.vuejs.org/)
+- [PrimeVue](https://primevue.org/)
