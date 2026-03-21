@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import Tag from 'primevue/tag'
 import { useLanguage } from '@/composables/useLanguage'
 
 const props = defineProps({
@@ -10,19 +11,12 @@ const props = defineProps({
   size: {
     type: String,
     default: 'sm',
-    validator: (value) => ['sm', 'md'].includes(value),
   },
 })
+
 const { t } = useLanguage()
 
-const normalizedRole = computed(() =>
-  String(props.role ?? '')
-    .trim()
-    .toLowerCase(),
-)
-
 function toRoleKey(value) {
-  // Normalize role names into a predictable translation key format.
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -38,49 +32,24 @@ function humanizeRole(value) {
     .join(' ')
 }
 
+const normalizedRole = computed(() => String(props.role || '').trim().toLowerCase())
 const roleLabel = computed(() => {
   if (!normalizedRole.value) return '-'
   const key = `common.role.${toRoleKey(normalizedRole.value)}`
   const translated = t(key)
-  if (translated !== key) return translated
-  // Human-readable fallback when no translation exists.
-  return humanizeRole(normalizedRole.value)
+  return translated !== key ? translated : humanizeRole(normalizedRole.value)
 })
 
-// Centralized mapping keeps role color semantics consistent across the app.
-const ROLE_BADGE_STYLES = {
-  superadmin: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
-  coach: 'bg-amber-50 text-amber-700 ring-amber-200',
-  teacher: 'bg-lime-50 text-lime-700 ring-lime-200',
-  'teacher-english': 'bg-sky-50 text-sky-700 ring-sky-200',
-  'teacher-preschool': 'bg-lime-50 text-lime-700 ring-lime-200',
-  'teacher-scholarship': 'bg-yellow-50 text-yellow-700 ring-yellow-200',
-  adminpreschool: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  adminscholaship: 'bg-yellow-50 text-yellow-700 ring-yellow-200',
-  adminenglish: 'bg-sky-50 text-sky-700 ring-sky-200',
-  adminsport: 'bg-rose-50 text-rose-700 ring-rose-200',
-}
-
-const roleClass = computed(
-  () => ROLE_BADGE_STYLES[normalizedRole.value] || 'bg-gray-100 text-gray-700 ring-gray-200',
-)
-
-const sizeClass = computed(() => {
-  if (props.size === 'md') return 'px-3 py-1.5 text-xs'
-  return 'px-2.5 py-1 text-[11px] sm:text-xs'
+const severity = computed(() => {
+  if (normalizedRole.value === 'superadmin') return 'contrast'
+  if (normalizedRole.value.includes('sport') || normalizedRole.value === 'coach') return 'danger'
+  if (normalizedRole.value.includes('scholarship')) return 'warn'
+  if (normalizedRole.value.includes('english')) return 'info'
+  if (normalizedRole.value.includes('preschool') || normalizedRole.value === 'teacher') return 'success'
+  return 'secondary'
 })
 </script>
 
 <template>
-  <span
-    :class="[
-      'inline-flex items-center rounded-full font-semibold ring-1 ring-inset whitespace-nowrap',
-      roleClass,
-      sizeClass,
-    ]"
-  >
-    {{ roleLabel }}
-  </span>
+  <Tag :value="roleLabel" rounded :severity="severity" class="ui-role-tag" />
 </template>
-
-

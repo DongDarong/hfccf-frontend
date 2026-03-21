@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import PrimeAvatar from 'primevue/avatar'
 import { getCurrentUser } from '@/services/auth'
 import users from '@/mocks/users.json'
 
@@ -8,22 +9,10 @@ defineOptions({
 })
 
 const props = defineProps({
-  name: {
-    type: String,
-    default: '',
-  },
-  username: {
-    type: String,
-    default: '',
-  },
-  avatar: {
-    type: String,
-    default: '',
-  },
-  initials: {
-    type: String,
-    default: '',
-  },
+  name: String,
+  username: String,
+  avatar: String,
+  initials: String,
   size: {
     type: String,
     default: 'md',
@@ -43,27 +32,13 @@ const hasImageError = ref(false)
 
 const matchedMockUser = computed(() => {
   const currentId = String(currentUser.value?.id || '').trim()
-  const currentEmail = String(currentUser.value?.email || '')
-    .trim()
-    .toLowerCase()
-  const currentUsername = String(currentUser.value?.username || '')
-    .trim()
-    .toLowerCase()
+  const currentEmail = String(currentUser.value?.email || '').trim().toLowerCase()
+  const currentUsername = String(currentUser.value?.username || '').trim().toLowerCase()
 
   return (
     users.find((user) => String(user.id || '').trim() === currentId) ||
-    users.find(
-      (user) =>
-        String(user.email || '')
-          .trim()
-          .toLowerCase() === currentEmail,
-    ) ||
-    users.find(
-      (user) =>
-        String(user.username || '')
-          .trim()
-          .toLowerCase() === currentUsername,
-    ) ||
+    users.find((user) => String(user.email || '').trim().toLowerCase() === currentEmail) ||
+    users.find((user) => String(user.username || '').trim().toLowerCase() === currentUsername) ||
     null
   )
 })
@@ -73,18 +48,13 @@ const displayName = computed(() => {
   const lastName = String(currentUser.value?.lastName || '').trim()
   const fullName = `${lastName} ${firstName}`.trim()
   if (fullName) return fullName
-
-  if (props.name) return props.name
-
-  return String(currentUser.value?.username || '').trim() || 'Admin User'
+  return props.name || String(currentUser.value?.username || '').trim() || 'Admin User'
 })
 
 const displayUsername = computed(() => {
   if (props.username) return props.username
-
   const role = String(currentUser.value?.role || '').trim()
   if (role) return role
-
   const email = String(currentUser.value?.email || '').trim()
   if (email.includes('@')) return email.split('@')[0]
   return email || 'user'
@@ -92,52 +62,34 @@ const displayUsername = computed(() => {
 
 const resolvedAvatar = computed(() => {
   if (props.avatar) return props.avatar
-
-  const currentAvatar = String(currentUser.value?.avatar || '').trim()
-  if (currentAvatar) return currentAvatar
-
-  return String(matchedMockUser.value?.avatar || '').trim()
+  return (
+    String(currentUser.value?.avatar || '').trim() || String(matchedMockUser.value?.avatar || '').trim()
+  )
 })
 
-const displayAvatar = computed(() => {
-  if (hasImageError.value) return ''
-  return resolvedAvatar.value
-})
+const displayAvatar = computed(() => (hasImageError.value ? '' : resolvedAvatar.value))
 
 const displayInitials = computed(() => {
   if (props.initials) return props.initials
-
-  const words = displayName.value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('')
-
-  return words || 'AU'
+  return (
+    displayName.value
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || '')
+      .join('') || 'AU'
+  )
 })
 
-const avatarSizeClass = computed(() => {
-  const value = String(props.size || 'md').toLowerCase()
-  if (value === 'sm') return 'navbar-profile__avatar--sm'
-  if (value === 'lg') return 'navbar-profile__avatar--lg'
-  return 'navbar-profile__avatar--md'
-})
-
-const statusClass = computed(() => {
-  const value = String(props.status || 'online').toLowerCase()
-  if (value === 'offline') return 'navbar-profile__status-dot--offline'
-  if (value === 'away') return 'navbar-profile__status-dot--away'
-  return 'navbar-profile__status-dot--online'
+const avatarSize = computed(() => {
+  if (props.size === 'sm') return 'normal'
+  if (props.size === 'lg') return 'large'
+  return 'normal'
 })
 
 watch(resolvedAvatar, () => {
   hasImageError.value = false
 })
-
-function onImageError() {
-  hasImageError.value = true
-}
 </script>
 
 <template>
@@ -147,18 +99,15 @@ function onImageError() {
       <div class="navbar-profile__username">{{ displayUsername }}</div>
     </div>
     <div class="navbar-profile__avatar-container">
-      <div class="navbar-profile__avatar" :class="avatarSizeClass">
-        <!-- Prefer avatar from props or matched mock user; fall back to initials. -->
-        <img
-          v-if="displayAvatar"
-          :src="displayAvatar"
-          :alt="`${displayName} avatar`"
-          class="navbar-profile__avatar-image"
-          @error="onImageError"
-        />
-        <span v-else>{{ displayInitials }}</span>
-      </div>
-      <div class="navbar-profile__status-dot" :class="statusClass"></div>
+      <PrimeAvatar
+        :label="displayAvatar ? undefined : displayInitials"
+        :image="displayAvatar || undefined"
+        shape="circle"
+        :size="avatarSize"
+        class="navbar-profile__avatar"
+        @image-error="hasImageError = true"
+      />
+      <div class="navbar-profile__status-dot" :class="`navbar-profile__status-dot--${status}`"></div>
     </div>
   </a>
 </template>
@@ -203,44 +152,10 @@ function onImageError() {
   display: flex;
 }
 
-.navbar-profile__avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 0.75rem;
-  background: var(--hope-o-cyan-blue);
+:deep(.navbar-profile__avatar.p-avatar) {
   background: linear-gradient(135deg, var(--hope-o-cyan-blue) 0%, #0087b8 100%);
-  color: var(--hope-text-white);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
+  color: #fff;
   box-shadow: 0 2px 8px rgba(0, 174, 239, 0.25);
-  overflow: hidden;
-}
-
-.navbar-profile__avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.navbar-profile__avatar--sm {
-  width: 34px;
-  height: 34px;
-  font-size: 0.75rem;
-}
-
-.navbar-profile__avatar--md {
-  width: 38px;
-  height: 38px;
-  font-size: 0.85rem;
-}
-
-.navbar-profile__avatar--lg {
-  width: 44px;
-  height: 44px;
-  font-size: 0.95rem;
 }
 
 .navbar-profile__status-dot {
@@ -249,7 +164,7 @@ function onImageError() {
   right: -1px;
   width: 10px;
   height: 10px;
-  border: 2px solid var(--hope-text-white);
+  border: 2px solid #fff;
   border-radius: 50%;
 }
 
@@ -264,38 +179,4 @@ function onImageError() {
 .navbar-profile__status-dot--offline {
   background: #94a3b8;
 }
-
-@media (max-width: 768px) {
-  .navbar-profile__text {
-    display: none;
-  }
-
-  .navbar-profile {
-    border-left: 0;
-    padding-left: 0.375rem;
-    margin-left: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar-profile__avatar {
-    width: 34px;
-    height: 34px;
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .navbar-profile {
-    padding-left: 0.25rem;
-  }
-
-  .navbar-profile__avatar {
-    width: 30px;
-    height: 30px;
-    font-size: 0.7rem;
-  }
-}
 </style>
-
-

@@ -1,5 +1,8 @@
 <script setup>
 import { computed } from 'vue'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import InputText from 'primevue/inputtext'
 import { useLanguage } from '@/composables/useLanguage'
 
 const props = defineProps({
@@ -34,50 +37,53 @@ const resolvedPlaceholder = computed(
 
 const inputClasses = computed(() =>
   [
-    'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pl-11 text-sm text-slate-900 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 focus:border-[var(--color-base)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--color-base)_16%,white)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500',
+    'ui-search-input w-full',
     props.inputClass,
   ]
     .join(' ')
     .trim(),
 )
-
-function onInput(event) {
-  emit('update:modelValue', event.target.value)
-}
 </script>
 
 <template>
-  <label class="relative block w-full" :for="inputId">
+  <label class="block w-full" :for="inputId">
     <span class="sr-only">{{ resolvedPlaceholder }}</span>
-    <input
-      :id="inputId"
-      type="search"
-      :placeholder="resolvedPlaceholder"
-      :class="inputClasses"
-      :value="modelValue"
-      :disabled="disabled"
-      autocomplete="off"
-      spellcheck="false"
-      @input="onInput"
-    />
-    <svg
-      class="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+    <IconField icon-position="left" class="w-full">
+      <InputIcon class="pi pi-search" />
+      <InputText
+        :id="inputId"
+        :model-value="modelValue"
+        type="search"
+        :placeholder="resolvedPlaceholder"
+        :class="inputClasses"
+        :disabled="disabled"
+        autocomplete="off"
+        spellcheck="false"
+        @update:model-value="emit('update:modelValue', $event)"
       />
-    </svg>
+    </IconField>
   </label>
 </template>
 
 <style scoped>
+:deep(.ui-search-input.p-inputtext) {
+  border-radius: 0.9rem;
+  border-color: #cbd5e1;
+  background: #fff;
+  padding: 0.85rem 1rem 0.85rem 2.75rem;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+:deep(.ui-search-input.p-inputtext:enabled:hover) {
+  border-color: #94a3b8;
+}
+
+:deep(.ui-search-input.p-inputtext:enabled:focus) {
+  border-color: var(--color-base);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-base) 16%, white);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -90,5 +96,3 @@ function onInput(event) {
   border: 0;
 }
 </style>
-
-

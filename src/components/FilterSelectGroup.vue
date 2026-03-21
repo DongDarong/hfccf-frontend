@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import Select from 'primevue/select'
+import Button from '@/components/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 const props = defineProps({
@@ -63,13 +65,21 @@ function statusLabel(status) {
   return localized !== key ? localized : status
 }
 
-function onRoleChange(event) {
-  emit('update:roleFilter', event.target.value)
-}
+const mappedRoleOptions = computed(() => [
+  { label: t('common.allRoles'), value: '' },
+  ...props.roleOptions.map((role) => ({
+    label: roleLabel(role),
+    value: role,
+  })),
+])
 
-function onStatusChange(event) {
-  emit('update:statusFilter', event.target.value)
-}
+const mappedStatusOptions = computed(() => [
+  { label: t('common.allStatus'), value: '' },
+  ...props.statusOptions.map((status) => ({
+    label: statusLabel(status),
+    value: status,
+  })),
+])
 
 function clearFilters() {
   emit('update:roleFilter', '')
@@ -80,47 +90,52 @@ function clearFilters() {
 
 <template>
   <div class="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-    <select
+    <Select
       v-if="hasRoleOptions"
-      id="userRoleFilter"
-      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[var(--color-base)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--color-base)_16%,white)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 sm:w-40"
-      :value="roleFilter"
+      input-id="userRoleFilter"
+      :model-value="roleFilter"
+      :options="mappedRoleOptions"
+      option-label="label"
+      option-value="value"
       :disabled="disabled"
-      @change="onRoleChange"
-    >
-      <option value="">{{ t('common.allRoles') }}</option>
-      <option v-for="role in roleOptions" :key="role" :value="role">{{ roleLabel(role) }}</option>
-    </select>
+      class="ui-filter-select w-full sm:w-40"
+      @update:model-value="emit('update:roleFilter', $event)"
+    />
 
-    <select
+    <Select
       v-if="hasStatusOptions"
-      id="userStatusFilter"
-      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[var(--color-base)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--color-base)_16%,white)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 sm:w-44"
-      :value="statusFilter"
+      input-id="userStatusFilter"
+      :model-value="statusFilter"
+      :options="mappedStatusOptions"
+      option-label="label"
+      option-value="value"
       :disabled="disabled"
-      @change="onStatusChange"
-    >
-      <option value="">{{ t('common.allStatus') }}</option>
-      <option v-for="status in statusOptions" :key="status" :value="status">
-        {{ statusLabel(status) }}
-      </option>
-    </select>
+      class="ui-filter-select w-full sm:w-44"
+      @update:model-value="emit('update:statusFilter', $event)"
+    />
 
-    <button
+    <Button
       v-if="showClearButton"
       type="button"
-      class="w-full rounded-xl border px-3.5 py-3 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-      :class="
-        hasActiveFilters
-          ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-          : 'border-slate-200 bg-slate-100 text-slate-400'
-      "
+      variant="outline"
+      size="md"
       :disabled="disabled || !hasActiveFilters"
       @click="clearFilters"
     >
       {{ t('common.clear') }}
-    </button>
+    </Button>
   </div>
 </template>
 
+<style scoped>
+:deep(.ui-filter-select .p-select-label) {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  font-size: 0.9rem;
+}
 
+:deep(.ui-filter-select.p-select) {
+  border-radius: 0.9rem;
+  border-color: #cbd5e1;
+}
+</style>
