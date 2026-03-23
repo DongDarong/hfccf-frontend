@@ -161,7 +161,6 @@ async function onLoginSuccessClose() {
             <Password
               id="password"
               v-model="form.password"
-              input-class="w-full"
               class="w-full login-form-password"
               autocomplete="current-password"
               placeholder="Enter your password"
