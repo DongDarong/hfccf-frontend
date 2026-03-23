@@ -26,8 +26,8 @@ function createContentSecurityPolicy({ isDev }) {
     `frame-ancestors 'none'`,
     `form-action 'self'`,
     `img-src 'self' data: blob: https:`,
-    `font-src 'self' data:`,
-    `style-src 'self' 'unsafe-inline'`,
+    `font-src 'self' data: https://fonts.gstatic.com`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `script-src ${scriptSources.join(' ')}`,
     `connect-src ${connectSources.join(' ')}`,
   ]
@@ -53,19 +53,8 @@ function createSecurityHeaders({ isDev }) {
 function securityHeadersPlugin() {
   return {
     name: 'security-headers',
-    transformIndexHtml(_, context) {
-      const isDev = Boolean(context.server)
-      const csp = createContentSecurityPolicy({ isDev })
-
+    transformIndexHtml() {
       return [
-        {
-          tag: 'meta',
-          attrs: {
-            'http-equiv': 'Content-Security-Policy',
-            content: csp,
-          },
-          injectTo: 'head',
-        },
         {
           tag: 'meta',
           attrs: {

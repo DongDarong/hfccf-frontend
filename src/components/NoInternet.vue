@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import Button from '@/components/Button.vue'
 
 defineOptions({
   name: 'NoInternetState',
@@ -82,9 +83,9 @@ onBeforeUnmount(() => {
       <h3 class="no-internet__title">{{ title }}</h3>
       <p class="no-internet__message">{{ message }}</p>
 
-      <button type="button" class="no-internet__button" @click="onRetry">
+      <Button type="button" class="mt-2" block @click="onRetry">
         {{ buttonText }}
-      </button>
+      </Button>
     </div>
   </section>
 </template>
@@ -140,21 +141,6 @@ onBeforeUnmount(() => {
   margin: 0.5rem 0 1rem;
   font-size: 0.92rem;
   color: #4b5563;
-}
-
-.no-internet__button {
-  border: 0;
-  border-radius: 0.75rem;
-  padding: 0.62rem 1rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #fff;
-  background: var(--hope-o-cyan-blue);
-  cursor: pointer;
-}
-
-.no-internet__button:hover {
-  filter: brightness(0.95);
 }
 </style>
 

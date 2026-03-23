@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import PrimeButton from 'primevue/button'
 import SidebarBrand from '@/components/SidebarBrandHeader.vue'
 import LogoutButton from '@/components/LogoutButton.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
@@ -121,21 +122,26 @@ function onLogout() {
           <slot v-if="!collapsed" name="header">
             <SidebarBrand />
           </slot>
-          <button
+          <PrimeButton
             type="button"
-            class="hidden h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 p-1.5 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900 min-[769px]:flex"
+            severity="secondary"
+            text
+            rounded
+            class="sidebar-toggle-btn hidden h-8 w-8 min-h-0 !p-1.5 min-[769px]:flex"
             aria-label="Toggle sidebar"
             @click="onToggleSidebar"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-full w-full">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+            <template #icon>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-full w-full">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </template>
+          </PrimeButton>
         </div>
       </div>
 
@@ -203,6 +209,19 @@ function onLogout() {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+}
+
+:deep(.sidebar-toggle-btn.p-button) {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+:deep(.sidebar-toggle-btn.p-button:hover) {
+  border-color: var(--hope-cyan);
+  color: #0c4a6e;
+  background: #f1f5f9;
 }
 
 .sidebar-section__label {

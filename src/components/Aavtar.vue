@@ -119,15 +119,16 @@ watch(resolvedAvatar, () => {
   gap: 0.75rem;
   text-decoration: none;
   color: inherit;
-  padding: 0.375rem 0.375rem 0.375rem 1rem;
+  padding: 0.35rem 0.35rem 0.35rem 1rem;
   border-left: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-  border-radius: 0.75rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1rem;
   margin-left: 0.5rem;
 }
 
 .navbar-profile:hover {
-  background: #f1f5f9;
+  background: rgba(241, 245, 249, 0.8);
+  transform: translateY(-1px);
 }
 
 .navbar-profile__text {
@@ -136,15 +137,16 @@ watch(resolvedAvatar, () => {
 
 .navbar-profile__name {
   font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--color-text);
+  font-weight: 800;
+  color: #0f172a;
   line-height: 1.2;
 }
 
 .navbar-profile__username {
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #64748b;
+  letter-spacing: 0.02em;
 }
 
 .navbar-profile__avatar-container {
@@ -153,19 +155,21 @@ watch(resolvedAvatar, () => {
 }
 
 :deep(.navbar-profile__avatar.p-avatar) {
-  background: linear-gradient(135deg, var(--hope-o-cyan-blue) 0%, #0087b8 100%);
+  background: linear-gradient(135deg, var(--hope-cyan) 0%, #0087b8 100%);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 174, 239, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 174, 239, 0.2);
+  border: 2px solid #fff;
 }
 
 .navbar-profile__status-dot {
   position: absolute;
-  bottom: -1px;
-  right: -1px;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #fff;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border: 2.5px solid #fff;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-profile__status-dot--online {
@@ -179,4 +183,17 @@ watch(resolvedAvatar, () => {
 .navbar-profile__status-dot--offline {
   background: #94a3b8;
 }
+
+@media (max-width: 640px) {
+  .navbar-profile__text {
+    display: none;
+  }
+  
+  .navbar-profile {
+    padding: 0.25rem;
+    border-left: none;
+    margin-left: 0;
+  }
+}
 </style>
+

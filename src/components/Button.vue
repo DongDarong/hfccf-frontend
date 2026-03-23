@@ -153,38 +153,44 @@ const passthrough = computed(() => ({
 }
 
 :deep(.ui-button--primary.p-button) {
-  background: var(--hope-o-cyan-blue);
-  border-color: var(--hope-o-cyan-blue);
-  box-shadow: 0 10px 20px -16px rgba(0, 174, 239, 0.9);
+  background: linear-gradient(135deg, var(--hope-cyan) 0%, #0087b8 100%);
+  border-color: var(--hope-cyan);
+  box-shadow: 0 8px 20px -10px rgba(0, 174, 239, 0.6);
 }
 
 :deep(.ui-button--primary.p-button:not(:disabled):hover) {
-  background: #0087b8;
+  background: linear-gradient(135deg, #0087b8 0%, #0076a1 100%);
   border-color: #0087b8;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -8px rgba(0, 174, 239, 0.7);
 }
 
 :deep(.ui-button--secondary.p-button),
 :deep(.ui-button--success.p-button) {
-  background: var(--hope-h-lime-green);
-  border-color: var(--hope-h-lime-green);
-  box-shadow: 0 10px 20px -16px rgba(132, 186, 60, 0.9);
+  background: linear-gradient(135deg, var(--hope-lime) 0%, #7db135 100%);
+  border-color: var(--hope-lime);
+  box-shadow: 0 8px 20px -10px rgba(132, 186, 60, 0.6);
 }
 
 :deep(.ui-button--secondary.p-button:not(:disabled):hover),
 :deep(.ui-button--success.p-button:not(:disabled):hover) {
-  background: #7db135;
+  background: linear-gradient(135deg, #7db135 0%, #6b992d 100%);
   border-color: #7db135;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -8px rgba(132, 186, 60, 0.7);
 }
 
 :deep(.ui-button--danger.p-button) {
-  background: var(--hope-p-vibrant-red);
-  border-color: var(--hope-p-vibrant-red);
-  box-shadow: 0 10px 20px -16px rgba(230, 35, 41, 0.85);
+  background: linear-gradient(135deg, var(--hope-red) 0%, #d41920 100%);
+  border-color: var(--hope-red);
+  box-shadow: 0 8px 20px -10px rgba(230, 35, 41, 0.6);
 }
 
 :deep(.ui-button--danger.p-button:not(:disabled):hover) {
-  background: #d41920;
+  background: linear-gradient(135deg, #d41920 0%, #b8151b 100%);
   border-color: #d41920;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -8px rgba(230, 35, 41, 0.7);
 }
 
 :deep(.ui-button--outline.p-button) {

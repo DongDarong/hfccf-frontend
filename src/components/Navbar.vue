@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Select from 'primevue/select'
+import Button from 'primevue/button'
 import Aavtar from '@/components/Aavtar.vue'
 import Calendar from '@/assets/icons/Calendar.vue'
 import Notification from '@/assets/icons/Notification.vue'
@@ -24,6 +26,11 @@ const currentLocale = computed({
 
 const isKh = computed(() => locale.value === 'kh')
 
+const localeOptions = [
+  { label: 'EN', value: 'en' },
+  { label: 'KH', value: 'kh' },
+]
+
 function onToggleSidebar() {
   emit('toggle-sidebar')
 }
@@ -32,16 +39,16 @@ function onToggleSidebar() {
 <template>
   <nav class="navbar">
     <div class="navbar-left">
-      <button type="button" class="menu-btn" aria-label="Open sidebar" @click="onToggleSidebar">
-        <svg class="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
+      <Button
+        type="button"
+        icon="pi pi-bars"
+        severity="secondary"
+        text
+        rounded
+        class="menu-btn !flex lg:!hidden"
+        aria-label="Open sidebar"
+        @click="onToggleSidebar"
+      />
 
       <div class="brand" :class="{ 'brand--kh': isKh, 'brand--en': !isKh }">
         <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="brand-logo" />
@@ -53,26 +60,43 @@ function onToggleSidebar() {
     </div>
 
     <div class="navbar-actions">
-      <button type="button" class="icon-btn" aria-label="Calendar">
-        <Calendar :size="18" />
-      </button>
-
-      <button
+      <Button
         type="button"
+        severity="secondary"
+        text
+        rounded
+        class="icon-btn"
+        aria-label="Calendar"
+      >
+        <template #icon>
+          <Calendar :size="18" />
+        </template>
+      </Button>
+
+      <Button
+        type="button"
+        severity="secondary"
+        text
+        rounded
         class="icon-btn icon-btn--notification"
         :aria-label="t('common.notifications')"
       >
-        <Notification :size="18" />
-        <span class="icon-badge">4</span>
-      </button>
+        <template #icon>
+          <div class="relative flex items-center justify-center">
+            <Notification :size="18" />
+            <span class="icon-badge">4</span>
+          </div>
+        </template>
+      </Button>
 
-      <label class="locale-switcher">
-        <span class="sr-only">{{ t('app.language') }}</span>
-        <select v-model="currentLocale">
-          <option value="en">EN</option>
-          <option value="kh">KH</option>
-        </select>
-      </label>
+      <Select
+        v-model="currentLocale"
+        :options="localeOptions"
+        option-label="label"
+        option-value="value"
+        class="locale-switcher"
+        aria-label="Language Switcher"
+      />
 
       <Aavtar name="HFCCF User" size="sm" status="online" />
     </div>
@@ -99,33 +123,18 @@ function onToggleSidebar() {
   min-width: 0;
 }
 
-.menu-btn {
-  display: none;
+:deep(.menu-btn.p-button) {
   border: 1px solid #d9e2ec;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   color: #334155;
-  border-radius: 0.65rem;
   width: 38px;
   height: 38px;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.menu-btn:hover {
-  border-color: #00aeef;
+:deep(.menu-btn.p-button:hover) {
+  border-color: var(--hope-cyan);
   color: #0c4a6e;
-}
-
-.menu-btn:focus-visible {
-  outline: 2px solid #7dd3fc;
-  outline-offset: 2px;
-}
-
-.menu-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  background: #f1f5f9;
 }
 
 .brand {
@@ -208,34 +217,29 @@ function onToggleSidebar() {
   flex-shrink: 0;
 }
 
-.icon-btn {
-  position: relative;
+:deep(.icon-btn.p-button) {
   width: 36px;
   height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   border: 1px solid #dbe3ec;
-  border-radius: 10px;
   background: #ffffff;
   color: #475569;
-  transition: all 0.2s ease;
 }
 
-.icon-btn:hover {
-  border-color: #00aeef;
+:deep(.icon-btn.p-button:hover) {
+  border-color: var(--hope-cyan);
   color: #0c4a6e;
+  background: #f8fafc;
 }
 
-.icon-btn--notification:hover {
+:deep(.icon-btn--notification.p-button:hover) {
   border-color: #ed1c24;
   color: #991b1b;
 }
 
 .icon-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -8px;
+  right: -8px;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
@@ -251,36 +255,18 @@ function onToggleSidebar() {
   justify-content: center;
 }
 
-.locale-switcher {
-  display: inline-flex;
-  align-items: center;
+:deep(.locale-switcher.p-select) {
+  border-radius: 999px;
+  background: #ffffff;
+  border-color: #d1d5db;
 }
 
-.locale-switcher select {
-  border: 1px solid #d1d5db;
-  border-radius: 999px;
+:deep(.locale-switcher.p-select .p-select-label) {
   padding: 0.3rem 0.65rem;
-  background: #ffffff;
-  color: #0f172a;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-}
-
-.locale-switcher select:focus-visible {
-  outline: 2px solid #7dd3fc;
-  outline-offset: 2px;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  color: #0f172a;
 }
 
 .navbar * {
@@ -293,7 +279,7 @@ function onToggleSidebar() {
     gap: 0.45rem;
   }
 
-  .icon-btn {
+  :deep(.icon-btn.p-button) {
     width: 34px;
     height: 34px;
   }
@@ -317,10 +303,6 @@ function onToggleSidebar() {
   .navbar-actions {
     gap: 0.35rem;
   }
-
-  .locale-switcher select {
-    padding: 0.28rem 0.5rem;
-  }
 }
 
 @media (max-width: 420px) {
@@ -342,12 +324,13 @@ function onToggleSidebar() {
     display: none;
   }
 
-  .icon-btn {
+  :deep(.icon-btn.p-button) {
     width: 32px;
     height: 32px;
   }
 }
 </style>
+
 
 
 

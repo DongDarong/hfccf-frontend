@@ -56,8 +56,11 @@ function getLastActivityRaw() {
   )
 }
 
-export async function login({ email, password, remember = false }) {
+export async function login({ email, password, remember = false, role = '' }) {
   const normalizedEmail = String(email || '')
+    .trim()
+    .toLowerCase()
+  const normalizedRole = String(role || '')
     .trim()
     .toLowerCase()
 
@@ -68,11 +71,14 @@ export async function login({ email, password, remember = false }) {
   await new Promise((resolve) => setTimeout(resolve, 450))
 
   const matchedUser = users.find(
-    (user) => user.email.toLowerCase() === normalizedEmail && user.password === password,
+    (user) =>
+      user.email.toLowerCase() === normalizedEmail &&
+      user.password === password &&
+      (!normalizedRole || String(user.role || '').trim().toLowerCase() === normalizedRole),
   )
 
   if (!matchedUser) {
-    throw new Error('Invalid email or password.')
+    throw new Error(normalizedRole ? 'Invalid user type, email, or password.' : 'Invalid email or password.')
   }
 
   const storage = getStorage(remember)
@@ -218,5 +224,4 @@ export function startAutoLogoutWatcher({ onExpire, checkEveryMs = 60000 } = {}) 
     window.clearInterval(timer)
   }
 }
-
 
