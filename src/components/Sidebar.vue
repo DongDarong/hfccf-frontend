@@ -117,8 +117,8 @@ function onLogout() {
 <template>
   <aside class="sidebar-shell">
     <nav class="flex h-full min-h-0 flex-col pb-2" aria-label="Main navigation">
-      <div class="py-2 pb-4 sm:pb-6">
-        <div class="mb-5 flex items-start justify-between" :class="{ 'justify-center': collapsed }">
+      <div class="py-2 pb-4 sm:pb-5">
+        <div class="mb-4 flex items-start justify-between" :class="{ 'justify-center': collapsed }">
           <slot v-if="!collapsed" name="header">
             <SidebarBrand />
           </slot>
@@ -179,12 +179,12 @@ function onLogout() {
   background:
     radial-gradient(
       circle at top left,
-      color-mix(in srgb, var(--color-base) 14%, transparent),
-      transparent 28%
+      color-mix(in srgb, var(--color-base) 10%, transparent),
+      transparent 26%
     ),
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border-right: 1px solid #dbe1e8;
-  padding: 0.9rem 0.8rem 0.8rem;
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-right: 1px solid #dbe4ee;
+  padding: 0.95rem 0.8rem 0.8rem;
 }
 
 .sidebar-scroll {
@@ -208,25 +208,26 @@ function onLogout() {
 .sidebar-section {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.38rem;
 }
 
 :deep(.sidebar-toggle-btn.p-button) {
   border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  background: #ffffff;
   color: #64748b;
   transition: all 0.2s ease;
+  box-shadow: 0 10px 22px -22px rgba(15, 23, 42, 0.14);
 }
 
 :deep(.sidebar-toggle-btn.p-button:hover) {
-  border-color: var(--hope-cyan);
+  border-color: color-mix(in srgb, var(--hope-cyan) 38%, white);
   color: #0c4a6e;
   background: #f1f5f9;
 }
 
 .sidebar-section__label {
   margin: 0 0 0.35rem;
-  padding: 0 0.55rem;
+  padding: 0 0.6rem;
   color: #64748b;
   font-size: 0.68rem;
   font-weight: 800;
@@ -237,7 +238,7 @@ function onLogout() {
 .sidebar-nav-link {
   display: flex;
   align-items: center;
-  min-height: 2.8rem;
+  min-height: 2.95rem;
   font-weight: 700;
   border: 1px solid transparent;
 }
@@ -245,18 +246,18 @@ function onLogout() {
 .sidebar-nav-link--active {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--color-base) 10%, white) 0%,
-    color-mix(in srgb, var(--color-base) 18%, white) 100%
+    color-mix(in srgb, var(--color-base) 8%, white) 0%,
+    color-mix(in srgb, var(--color-base) 16%, white) 100%
   );
   color: #0f172a;
-  border-color: color-mix(in srgb, var(--color-base) 35%, white);
-  box-shadow: 0 12px 24px -22px color-mix(in srgb, var(--color-base) 60%, transparent);
+  border-color: color-mix(in srgb, var(--color-base) 26%, white);
+  box-shadow: 0 12px 22px -22px color-mix(in srgb, var(--color-base) 40%, transparent);
 }
 
 .sidebar-footer {
   margin-top: 1rem;
   border-top: 1px solid rgba(148, 163, 184, 0.18);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(248, 250, 252, 0.85) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(248, 250, 252, 0.92) 100%);
 }
 
 .sr-only {
@@ -270,6 +271,5 @@ function onLogout() {
   border: 0;
 }
 </style>
-
 
 

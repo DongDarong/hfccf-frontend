@@ -122,7 +122,13 @@ function onDeleteUser(user) {
 
       <div class="sport-users-page__panel">
         <div class="sport-users-page__actions">
-          <Button variant="primary" size="md" rounded="xl" @click="goToAddCoach">
+          <Button
+            variant="primary"
+            size="md"
+            rounded="xl"
+            class="sport-users-page__add-button"
+            @click="goToAddCoach"
+          >
             <template #iconLeft>
               <svg
                 class="h-4 w-4"
@@ -190,8 +196,14 @@ function onDeleteUser(user) {
 .sport-users-page__actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.sport-users-page__add-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 </style>
-
 
 

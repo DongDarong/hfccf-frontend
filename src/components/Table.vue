@@ -227,7 +227,15 @@ watch(
 :deep(.ui-data-table.p-datatable) {
   border: 1px solid #e5e7eb;
   border-radius: 1rem;
+  background: #ffffff;
   overflow: hidden;
+}
+
+:deep(.ui-data-table .p-datatable-table-container),
+:deep(.ui-data-table table),
+:deep(.ui-data-table .p-datatable-thead),
+:deep(.ui-data-table .p-datatable-tbody) {
+  background: #ffffff;
 }
 
 :deep(.ui-data-table .p-datatable-thead > tr > th) {
@@ -239,8 +247,27 @@ watch(
   letter-spacing: 0.06em;
 }
 
+:deep(.ui-data-table .p-datatable-tbody > tr) {
+  background: #ffffff;
+}
+
+:deep(.ui-data-table .p-datatable-tbody > tr:nth-child(even)) {
+  background: #fbfdff;
+}
+
 :deep(.ui-data-table .p-datatable-tbody > tr > td) {
   padding: 0.9rem 1rem;
+  background: transparent;
+  color: #334155;
+  border-color: #eef2f7;
+}
+
+:deep(.ui-data-table .p-datatable-tbody > tr:hover) {
+  background: #f8fbff;
+}
+
+:deep(.ui-data-table .p-datatable-tbody > tr:hover > td) {
+  background: transparent;
 }
 
 :deep(.ui-user-avatar.p-avatar) {

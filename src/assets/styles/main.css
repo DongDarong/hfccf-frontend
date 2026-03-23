@@ -51,3 +51,35 @@ body,
 #app {
   min-height: 100%;
 }
+
+.p-dialog,
+.p-dialog .p-dialog-header,
+.p-dialog .p-dialog-content,
+.p-dialog .p-dialog-footer,
+.p-menu,
+.p-menu .p-menu-list,
+.p-select,
+.p-select-overlay,
+.p-select-list-container,
+.p-select-option,
+.p-overlaypanel,
+.p-overlaypanel .p-overlaypanel-content,
+.p-popover,
+.p-popover .p-popover-content {
+  background: #ffffff;
+  color: var(--color-text);
+}
+
+.p-dialog,
+.p-menu,
+.p-select,
+.p-select-overlay,
+.p-overlaypanel,
+.p-popover {
+  border-color: #e2e8f0;
+}
+
+.p-dialog-mask,
+.p-overlay-mask {
+  background: rgba(248, 250, 252, 0.78);
+}

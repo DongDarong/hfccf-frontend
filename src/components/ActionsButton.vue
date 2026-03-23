@@ -18,6 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['view', 'edit', 'delete', 'action'])
 const { t } = useLanguage()
 const menu = ref(null)
+const menuId = `row-actions-menu-${Math.random().toString(36).slice(2, 10)}`
 
 const labels = computed(() => ({
   view: props.viewLabel || t('common.view'),
@@ -47,6 +48,10 @@ function onAction(type) {
   emit(type, props.item)
   emit('action', { type, item: props.item })
 }
+
+function toggleMenu(event) {
+  menu.value?.toggle(event)
+}
 </script>
 
 <template>
@@ -58,9 +63,44 @@ function onAction(type) {
       severity="secondary"
       :disabled="disabled"
       aria-haspopup="true"
-      aria-controls="row_actions_menu"
-      @click="menu.toggle($event)"
+      :aria-controls="menuId"
+      @click="toggleMenu"
     />
-    <Menu ref="menu" id="row_actions_menu" :model="menuItems" popup />
+    <Menu ref="menu" :id="menuId" :model="menuItems" popup class="actions-button-menu" />
   </div>
 </template>
+
+<style>
+.actions-button-menu.p-menu {
+  min-width: 11rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.95rem;
+  background: #ffffff !important;
+  box-shadow: 0 14px 30px -22px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+}
+
+.actions-button-menu .p-menu-list {
+  padding: 0.35rem;
+  background: #ffffff;
+}
+
+.actions-button-menu .p-menu-item-content {
+  border-radius: 0.7rem;
+}
+
+.actions-button-menu .p-menu-item-link {
+  gap: 0.7rem;
+  border-radius: 0.7rem;
+  color: #0f172a;
+  padding: 0.7rem 0.85rem;
+}
+
+.actions-button-menu .p-menu-item:not(.p-disabled) .p-menu-item-content:hover {
+  background: #f8fafc;
+}
+
+.actions-button-menu .p-menu-item-icon {
+  color: #64748b;
+}
+</style>
