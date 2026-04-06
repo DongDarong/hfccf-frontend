@@ -82,7 +82,7 @@ function onToggleSidebar() {
 
 <template>
   <nav
-    class="flex h-full w-full items-center justify-between gap-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none [app-region:no-drag] [-webkit-app-region:no-drag] max-md:gap-3"
+    class="flex h-full w-full items-center justify-between gap-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none [app-region:no-drag] [-webkit-app-region:no-drag] max-md:gap-3 max-[540px]:gap-2"
   >
     <div class="flex min-w-0 items-center gap-[0.65rem]">
       <Button
@@ -97,21 +97,21 @@ function onToggleSidebar() {
         @click="onToggleSidebar"
       />
 
-      <div class="flex min-w-0 items-center gap-3 max-[420px]:gap-2">
+      <div class="flex min-w-0 items-center gap-3 max-[540px]:gap-2">
         <img
           src="@/assets/images/logo.jpg"
           alt="HFCCF logo"
-          class="h-16 w-16 shrink-0 scale-115 object-contain brightness-[1.05] contrast-[1.02] max-[540px]:h-14 max-[540px]:w-14 max-[420px]:h-11 max-[420px]:w-11"
+          class="h-16 w-16 shrink-0 scale-115 object-contain brightness-[1.05] contrast-[1.02] max-[640px]:h-14 max-[640px]:w-14 max-[540px]:h-12 max-[540px]:w-12 max-[420px]:h-10 max-[420px]:w-10"
         />
-        <div class="flex min-w-0 flex-col justify-center" :class="{ 'translate-y-px': !isKh }">
+        <div class="flex min-w-0 flex-col justify-center max-[540px]:gap-0.5" :class="{ 'translate-y-px': !isKh }">
           <span
-            class="whitespace-nowrap text-[1.02rem] leading-[1.1] font-black text-surface-900 max-[420px]:hidden"
+            class="whitespace-nowrap text-[1.02rem] leading-[1.1] font-black text-surface-900 max-[540px]:text-[0.92rem] max-[420px]:hidden"
             :class="{
-              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.92rem] leading-[1.22] font-bold text-[#0b3f58] tracking-normal max-[420px]:block max-[420px]:text-[0.8rem]': isKh,
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.92rem] leading-[1.22] font-bold text-[#0b3f58] tracking-normal max-[540px]:text-[0.84rem] max-[420px]:block max-[420px]:text-[0.78rem]': isKh,
             }"
           >{{ t('nav.brand.orgTop') }}</span>
           <span
-            class="whitespace-nowrap text-[0.78rem] leading-[1.1] text-surface-500 max-[540px]:hidden"
+            class="whitespace-nowrap text-[0.78rem] leading-[1.1] text-surface-500 max-[640px]:text-[0.72rem] max-[540px]:hidden"
             :class="{
               'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.78rem] leading-[1.18] text-[#1d6c8f] max-[540px]:block max-[540px]:text-[0.72rem] max-[420px]:hidden': isKh,
             }"
@@ -120,13 +120,13 @@ function onToggleSidebar() {
       </div>
     </div>
 
-    <div class="flex shrink-0 items-center gap-2 max-md:gap-1.5">
+    <div class="flex shrink-0 items-center gap-2 max-md:gap-1.5 max-[540px]:gap-1">
       <Button
         type="button"
         severity="secondary"
         text
         rounded
-        class="icon-btn"
+        class="icon-btn max-[540px]:hidden"
         :pt="menuButtonPt"
         aria-label="Calendar"
       >
@@ -157,7 +157,7 @@ function onToggleSidebar() {
         :options="localeOptions"
         option-label="label"
         option-value="value"
-        class="locale-switcher"
+        class="locale-switcher max-[420px]:hidden"
         :pt="localePt"
         aria-label="Language Switcher"
       />
