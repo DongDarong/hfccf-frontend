@@ -65,7 +65,7 @@ function clearFilters() {
 
 <template>
   <div
-    class="w-full rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm shadow-slate-200/60 md:p-5"
+    class="w-full rounded-2xl border border-surface-200/90 bg-white p-4 shadow-sm shadow-slate-200/60 md:p-5"
   >
     <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
       <div class="min-w-0 flex-1">
@@ -100,8 +100,6 @@ function clearFilters() {
 <style scoped>
 :deep(.search-filter-bar__search-input) {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border-color: #dbe1e8;
 }
 </style>
-
 

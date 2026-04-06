@@ -81,6 +81,43 @@ const mappedStatusOptions = computed(() => [
   })),
 ])
 
+const selectPt = {
+  root: {
+    class: [
+      '!min-h-[2.9rem]',
+      '!rounded-[0.9rem]',
+      '!border',
+      '!border-surface-300',
+      '!bg-white',
+      '!shadow-none',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-surface-400',
+      'focus-within:!border-brand-400',
+      'focus-within:!shadow-focus',
+      'max-sm:!min-h-11',
+    ],
+  },
+  label: {
+    class:
+      '!flex !min-h-[2.9rem] !items-center !bg-transparent !px-[0.9rem] !py-[0.8rem] !text-[0.9rem] !text-surface-900 max-sm:!min-h-11 max-sm:!text-[0.88rem]',
+  },
+  dropdown: {
+    class: '!w-[2.8rem] !bg-transparent !text-surface-500',
+  },
+  overlay: {
+    class:
+      '!mt-[0.3rem] !rounded-[0.9rem] !border !border-surface-200 !bg-white !shadow-[0_12px_24px_-18px_rgba(15,23,42,0.16)]',
+  },
+  listContainer: {
+    class: '!bg-white !p-[0.35rem]',
+  },
+  option: {
+    class:
+      '!rounded-[0.65rem] !bg-white !text-surface-900 hover:!bg-slate-50 data-[p-selected=true]:!bg-brand-50 data-[p-selected=true]:!text-brand-700',
+  },
+}
+
 function clearFilters() {
   emit('update:roleFilter', '')
   emit('update:statusFilter', '')
@@ -100,6 +137,7 @@ function clearFilters() {
       :disabled="disabled"
       append-to="self"
       class="ui-filter-select w-full sm:w-40"
+      :pt="selectPt"
       @update:model-value="emit('update:roleFilter', $event)"
     />
 
@@ -113,6 +151,7 @@ function clearFilters() {
       :disabled="disabled"
       append-to="self"
       class="ui-filter-select w-full sm:w-44"
+      :pt="selectPt"
       @update:model-value="emit('update:statusFilter', $event)"
     />
 
@@ -128,90 +167,4 @@ function clearFilters() {
     </Button>
   </div>
 </template>
-
-<style scoped>
-:deep(.ui-filter-select.p-select) {
-  min-height: 2.9rem;
-  border-radius: 0.9rem;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  box-shadow: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
-}
-
-:deep(.ui-filter-select .p-select-label) {
-  display: flex;
-  align-items: center;
-  min-height: 2.9rem;
-  background: transparent;
-  padding-top: 0.8rem;
-  padding-bottom: 0.8rem;
-  padding-left: 0.9rem;
-  padding-right: 0.9rem;
-  font-size: 0.9rem;
-  color: #0f172a;
-}
-
-:deep(.ui-filter-select .p-select-label.p-placeholder) {
-  color: #94a3b8;
-}
-
-:deep(.ui-filter-select .p-select-dropdown) {
-  width: 2.8rem;
-  background: transparent;
-  color: #64748b;
-}
-
-:deep(.ui-filter-select:not(.p-disabled):hover) {
-  border-color: #94a3b8;
-  background: #ffffff;
-}
-
-:deep(.ui-filter-select.p-focus) {
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.2);
-}
-
-:deep(.ui-filter-select .p-select-overlay) {
-  margin-top: 0.3rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.9rem;
-  background: #ffffff;
-  box-shadow: 0 12px 24px -18px rgba(15, 23, 42, 0.16);
-}
-
-:deep(.ui-filter-select .p-select-list-container) {
-  background: #ffffff;
-  padding: 0.35rem;
-}
-
-:deep(.ui-filter-select .p-select-option) {
-  border-radius: 0.65rem;
-  background: #ffffff;
-  color: #0f172a;
-}
-
-:deep(.ui-filter-select .p-select-option:hover) {
-  background: #f8fafc;
-}
-
-:deep(.ui-filter-select .p-select-option.p-select-option-selected) {
-  background: rgba(56, 189, 248, 0.12);
-  color: #0369a1;
-}
-
-@media (max-width: 639px) {
-  :deep(.ui-filter-select.p-select) {
-    min-height: 2.75rem;
-  }
-
-  :deep(.ui-filter-select .p-select-label) {
-    min-height: 2.75rem;
-    font-size: 0.88rem;
-  }
-}
-</style>
 

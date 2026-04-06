@@ -43,6 +43,27 @@ const inputClasses = computed(() =>
     .join(' ')
     .trim(),
 )
+
+const inputPt = {
+  root: {
+    class: [
+      '!w-full',
+      '!rounded-[0.9rem]',
+      '!border-surface-300',
+      '!bg-white',
+      '!py-[0.85rem]',
+      '!pr-4',
+      '!pl-11',
+      '!text-surface-900',
+      '!shadow-[0_1px_2px_rgba(15,23,42,0.05)]',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-surface-400',
+      'focus:!border-brand-500',
+      'focus:!shadow-focus',
+    ],
+  },
+}
 </script>
 
 <template>
@@ -57,6 +78,7 @@ const inputClasses = computed(() =>
         :placeholder="resolvedPlaceholder"
         :class="inputClasses"
         :disabled="disabled"
+        :pt="inputPt"
         autocomplete="off"
         spellcheck="false"
         @update:model-value="emit('update:modelValue', $event)"
@@ -66,24 +88,6 @@ const inputClasses = computed(() =>
 </template>
 
 <style scoped>
-:deep(.ui-search-input.p-inputtext) {
-  border-radius: 0.9rem;
-  border-color: #cbd5e1;
-  background: #fff;
-  padding: 0.85rem 1rem 0.85rem 2.75rem;
-  color: #0f172a;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-}
-
-:deep(.ui-search-input.p-inputtext:enabled:hover) {
-  border-color: #94a3b8;
-}
-
-:deep(.ui-search-input.p-inputtext:enabled:focus) {
-  border-color: var(--color-base);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-base) 16%, white);
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -94,5 +98,9 @@ const inputClasses = computed(() =>
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+:deep(.p-iconfield .p-inputicon) {
+  color: var(--brand-surface-500);
 }
 </style>

@@ -65,19 +65,32 @@ function onCancel() {
 </script>
 
 <template>
-  <form class="ui-form" @submit.prevent="onSubmit">
-    <header v-if="title || description || $slots.header" class="ui-form__header">
+  <form
+    class="relative w-full overflow-hidden rounded-[1.1rem] border border-surface-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,250,252,0.92)_100%)] shadow-[0_12px_30px_-20px_rgba(15,23,42,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-[linear-gradient(90deg,var(--hope-o-cyan-blue)_0%,var(--hope-h-lime-green)_55%,#93c5fd_100%)] before:content-['']"
+    @submit.prevent="onSubmit"
+  >
+    <header
+      v-if="title || description || $slots.header"
+      class="border-b border-surface-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-4 pt-4 pb-[0.85rem] sm:px-[1.15rem] sm:pt-[1.05rem] sm:pb-[0.9rem]"
+    >
       <slot name="header">
-        <h3 v-if="title" class="ui-form__title">{{ title }}</h3>
-        <p v-if="description" class="ui-form__description">{{ description }}</p>
+        <h3 v-if="title" class="m-0 text-base leading-tight font-extrabold text-surface-900">
+          {{ title }}
+        </h3>
+        <p v-if="description" class="mt-[0.32rem] text-[0.86rem] leading-[1.35] text-surface-600">
+          {{ description }}
+        </p>
       </slot>
     </header>
 
-    <div class="ui-form__body">
+    <div class="grid gap-[0.9rem] p-4 sm:px-[1.15rem] sm:py-[1.1rem]">
       <slot />
     </div>
 
-    <footer v-if="$slots.actions || showCancel" class="ui-form__actions">
+    <footer
+      v-if="$slots.actions || showCancel"
+      class="mt-[0.1rem] flex flex-col-reverse gap-[0.6rem] border-t border-surface-200 bg-sky-50/30 px-4 pt-[0.9rem] pb-4 sm:flex-row sm:justify-end sm:px-[1.15rem] sm:pt-[0.95rem] sm:pb-[1.1rem]"
+    >
       <slot name="actions" :loading="loading" :disabled="isDisabled">
         <Button
           v-if="showCancel"
@@ -106,75 +119,16 @@ function onCancel() {
 </template>
 
 <style scoped>
-.ui-form {
-  position: relative;
-  width: 100%;
-  border: 1px solid #dbe4ee;
-  border-radius: 1.1rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
-  box-shadow:
-    0 12px 30px -20px rgba(15, 23, 42, 0.55),
-    0 1px 0 rgba(255, 255, 255, 0.9) inset;
-  overflow: hidden;
-}
-
-.ui-form::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--hope-o-cyan-blue) 0%,
-    var(--hope-h-lime-green) 55%,
-    #93c5fd 100%
-  );
-}
-
-.ui-form__header {
-  padding: 1rem 1rem 0.85rem;
-  border-bottom: 1px solid #e6edf5;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-}
-
-.ui-form__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.2;
-}
-
-.ui-form__description {
-  margin: 0.32rem 0 0;
-  font-size: 0.86rem;
-  color: #475569;
-  line-height: 1.35;
-}
-
-.ui-form__body {
-  padding: 1rem;
-  display: grid;
-  gap: 0.9rem;
-}
-
-.ui-form__actions {
-  margin-top: 0.1rem;
-  padding: 0.9rem 1rem 1rem;
-  border-top: 1px solid #e6edf5;
-  background: #fbfdff;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.6rem;
-}
-
-.ui-form__actions :deep(button) {
+:deep(footer button) {
   width: 100%;
 }
 
 .ui-form :deep(input),
 .ui-form :deep(select),
-.ui-form :deep(textarea) {
+.ui-form :deep(textarea),
+form :deep(input),
+form :deep(select),
+form :deep(textarea) {
   border: 1px solid #d4dde8;
   border-radius: 0.75rem;
   background: #fcfdff;
@@ -182,51 +136,36 @@ function onCancel() {
   transition: all 0.18s ease;
 }
 
-.ui-form :deep(input:hover),
-.ui-form :deep(select:hover),
-.ui-form :deep(textarea:hover) {
+form :deep(input:hover),
+form :deep(select:hover),
+form :deep(textarea:hover) {
   border-color: #bfcddd;
 }
 
-.ui-form :deep(input:focus),
-.ui-form :deep(select:focus),
-.ui-form :deep(textarea:focus) {
+form :deep(input:focus),
+form :deep(select:focus),
+form :deep(textarea:focus) {
   border-color: var(--hope-o-cyan-blue);
   box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15);
   background: #ffffff;
 }
 
-.ui-form :deep(input::placeholder),
-.ui-form :deep(textarea::placeholder) {
+form :deep(input::placeholder),
+form :deep(textarea::placeholder) {
   color: #94a3b8;
 }
 
-.ui-form :deep(input:disabled),
-.ui-form :deep(select:disabled),
-.ui-form :deep(textarea:disabled) {
+form :deep(input:disabled),
+form :deep(select:disabled),
+form :deep(textarea:disabled) {
   background: #f3f6f9;
   color: #94a3b8;
   cursor: not-allowed;
 }
 
 @media (min-width: 640px) {
-  .ui-form__header {
-    padding: 1.05rem 1.15rem 0.9rem;
-  }
-
-  .ui-form__body {
-    padding: 1.1rem 1.15rem;
-  }
-
-  .ui-form__actions {
-    padding: 0.95rem 1.15rem 1.1rem;
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-
-  .ui-form__actions :deep(button) {
+  :deep(footer button) {
     width: auto;
   }
 }
 </style>
-
