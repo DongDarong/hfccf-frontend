@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import Button from '@/components/Button.vue'
+import Button from '@/components/buttons/Button.vue'
 
 defineOptions({
   name: 'NoInternetState',
@@ -143,5 +143,6 @@ onBeforeUnmount(() => {
   color: #4b5563;
 }
 </style>
+
 
 

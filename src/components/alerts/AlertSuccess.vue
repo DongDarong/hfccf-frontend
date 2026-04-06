@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onUnmounted, watch } from 'vue'
 import Dialog from 'primevue/dialog'
-import Button from '@/components/Button.vue'
+import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 const props = defineProps({
@@ -217,3 +217,4 @@ onUnmounted(() => {
   }
 }
 </style>
+

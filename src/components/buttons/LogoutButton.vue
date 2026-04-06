@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
-import Button from '@/components/Button.vue'
-import AlertQuestion from '@/components/AlertQuestion.vue'
+import Button from '@/components/buttons/Button.vue'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -245,4 +245,5 @@ function onCancel() {
   }
 }
 </style>
+
 

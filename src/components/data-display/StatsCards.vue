@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import Loading from '@/components/Loading.vue'
-import StatusBadge from './StatusBadge.vue'
+import Loading from '@/components/feedback/Loading.vue'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -291,5 +291,6 @@ function icon(status) {
   }
 }
 </style>
+
 
 

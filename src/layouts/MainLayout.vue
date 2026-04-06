@@ -4,9 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import Drawer from 'primevue/drawer'
 import Card from 'primevue/card'
 import BlockUI from 'primevue/blockui'
-import Navbar from '@/components/Navbar.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import Loading from '@/components/Loading.vue'
+import Navbar from '@/components/navigation/Navbar.vue'
+import Sidebar from '@/components/navigation/Sidebar.vue'
+import Loading from '@/components/feedback/Loading.vue'
 import { logout as clearAuthSession } from '@/services/auth'
 
 const props = defineProps({
@@ -321,3 +321,4 @@ onBeforeUnmount(() => {
   border: 1px solid #e2e8f0;
 }
 </style>
+

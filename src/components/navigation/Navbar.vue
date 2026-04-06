@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import Aavtar from '@/components/Aavtar.vue'
+import Aavtar from '@/components/navigation/Aavtar.vue'
 import Calendar from '@/assets/icons/Calendar.vue'
 import Notification from '@/assets/icons/Notification.vue'
 
@@ -330,6 +330,7 @@ function onToggleSidebar() {
   }
 }
 </style>
+
 
 
 

@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/HeaderSection.vue'
-import StatsCards from '@/components/StatsCards.vue'
+import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import StatsCards from '@/components/data-display/StatsCards.vue'
 import TournamentBanner from '@/modules/sport/admin/components/admin-dashboard/TournamentBanner.vue'
 import TournamentQuickPanels from '@/modules/sport/admin/components/admin-dashboard/TournamentQuickPanels.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -93,6 +93,7 @@ const tournament = computed(() => adminDashboardData.tournament)
   gap: 1.25rem;
 }
 </style>
+
 
 
 

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import Select from 'primevue/select'
-import Button from '@/components/Button.vue'
+import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 const props = defineProps({
@@ -214,3 +214,4 @@ function clearFilters() {
   }
 }
 </style>
+

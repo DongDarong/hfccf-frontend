@@ -3,11 +3,11 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/HeaderSection.vue'
-import Form from '@/components/Form.vue'
-import Button from '@/components/Button.vue'
-import AlertSuccess from '@/components/AlertSuccess.vue'
-import AlertError from '@/components/AlertError.vue'
+import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import Form from '@/components/forms/Form.vue'
+import Button from '@/components/buttons/Button.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import AlertError from '@/components/alerts/AlertError.vue'
 import ShowPassword from '@/assets/icons/ShowPassword.vue'
 import usersMock from '@/mocks/users.json'
 
@@ -623,6 +623,7 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
 
 
 

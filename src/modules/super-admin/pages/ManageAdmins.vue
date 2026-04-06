@@ -3,14 +3,14 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/HeaderSection.vue'
-import SearchFilterBar from '@/components/SearchFilterBar.vue'
-import Table from '@/components/Table.vue'
-import Pagination from '@/components/Pagination.vue'
-import Button from '@/components/Button.vue'
-import AlertQuestion from '@/components/AlertQuestion.vue'
-import AlertSuccess from '@/components/AlertSuccess.vue'
-import Loading from '@/components/Loading.vue'
+import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
+import Table from '@/components/data-display/Table.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
+import Button from '@/components/buttons/Button.vue'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import Loading from '@/components/feedback/Loading.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
@@ -258,6 +258,7 @@ function onConfirmDelete() {
   padding: 1.5rem 0.5rem;
 }
 </style>
+
 
 
 

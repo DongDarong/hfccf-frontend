@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
-import Button from '@/components/Button.vue'
-import Loading from '@/components/Loading.vue'
+import Button from '@/components/buttons/Button.vue'
+import Loading from '@/components/feedback/Loading.vue'
 
 defineOptions({
   name: 'ClassTable',
@@ -118,3 +118,4 @@ function statusSeverity(status) {
   padding: 0.95rem 1rem;
 }
 </style>
+

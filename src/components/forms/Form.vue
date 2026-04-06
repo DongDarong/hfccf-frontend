@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
-import Button from './Button.vue'
+import Button from '@/components/buttons/Button.vue'
 
 defineOptions({
   name: 'UiForm',
@@ -229,5 +229,4 @@ function onCancel() {
   }
 }
 </style>
-
 

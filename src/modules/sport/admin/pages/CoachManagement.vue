@@ -2,11 +2,11 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/HeaderSection.vue'
-import SearchFilterBar from '@/components/SearchFilterBar.vue'
-import Table from '@/components/Table.vue'
-import Pagination from '@/components/Pagination.vue'
-import Button from '@/components/Button.vue'
+import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
+import Table from '@/components/data-display/Table.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
+import Button from '@/components/buttons/Button.vue'
 import usersMock from '@/mocks/users.json'
 
 defineOptions({
@@ -205,5 +205,6 @@ function onDeleteUser(user) {
   white-space: nowrap;
 }
 </style>
+
 
 

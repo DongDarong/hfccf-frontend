@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import PrimeButton from 'primevue/button'
-import SidebarBrand from '@/components/SidebarBrandHeader.vue'
-import LogoutButton from '@/components/LogoutButton.vue'
-import SidebarLink from '@/components/SidebarLink.vue'
+import SidebarBrand from '@/components/navigation/SidebarBrandHeader.vue'
+import LogoutButton from '@/components/buttons/LogoutButton.vue'
+import SidebarLink from '@/components/navigation/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/assets/icons/Home.vue'
@@ -271,5 +271,6 @@ function onLogout() {
   border: 0;
 }
 </style>
+
 
 

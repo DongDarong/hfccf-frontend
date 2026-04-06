@@ -7,9 +7,9 @@ import Password from 'primevue/password'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
-import Button from '@/components/Button.vue'
-import AlertSuccess from '@/components/AlertSuccess.vue'
-import Loading from '@/components/Loading.vue'
+import Button from '@/components/buttons/Button.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import Loading from '@/components/feedback/Loading.vue'
 import { login } from '@/modules/auth/services/authService'
 
 const router = useRouter()
@@ -422,3 +422,4 @@ async function onLoginSuccessClose() {
   }
 }
 </style>
+

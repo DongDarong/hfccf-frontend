@@ -3,11 +3,11 @@ import { computed, ref, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
-import Loading from '@/components/Loading.vue'
-import StatusBadge from '@/components/StatusBadge.vue'
-import RolesBadge from '@/components/RolesBadge.vue'
-import PermissionBadge from '@/components/PermissionBadge.vue'
-import ActionsButton from '@/components/ActionsButton.vue'
+import Loading from '@/components/feedback/Loading.vue'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
+import RolesBadge from '@/components/badges/RolesBadge.vue'
+import PermissionBadge from '@/components/badges/PermissionBadge.vue'
+import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -277,3 +277,4 @@ watch(
   color: #fff;
 }
 </style>
+

@@ -1,6 +1,6 @@
 <script setup>
 import { useLanguage } from '@/composables/useLanguage'
-import Button from '@/components/Button.vue'
+import Button from '@/components/buttons/Button.vue'
 import adminDashboardData from '@/mocks/sport/admin-dashboard-data.json'
 
 const { t } = useLanguage()
@@ -180,6 +180,7 @@ const liveMatches = adminDashboardData.liveMatches
   margin-top: 1.25rem;
 }
 </style>
+
 
 
 

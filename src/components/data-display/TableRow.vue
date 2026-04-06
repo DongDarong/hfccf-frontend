@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import StatusBadge from '@/components/StatusBadge.vue'
-import RolesBadge from '@/components/RolesBadge.vue'
-import PermissionBadge from '@/components/PermissionBadge.vue'
-import ActionsButton from '@/components/ActionsButton.vue'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
+import RolesBadge from '@/components/badges/RolesBadge.vue'
+import PermissionBadge from '@/components/badges/PermissionBadge.vue'
+import ActionsButton from '@/components/buttons/ActionsButton.vue'
 
 const props = defineProps({
   user: {
@@ -278,5 +278,6 @@ function onAvatarError() {
     </td>
   </tr>
 </template>
+
 
 
