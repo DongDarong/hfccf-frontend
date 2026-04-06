@@ -20,6 +20,27 @@ const { t } = useLanguage()
 const menu = ref(null)
 const menuId = `row-actions-menu-${Math.random().toString(36).slice(2, 10)}`
 
+const triggerPt = {
+  root: {
+    class: [
+      '!h-9',
+      '!w-9',
+      '!border',
+      '!border-slate-200',
+      '!bg-white',
+      '!text-surface-600',
+      'shadow-sm',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-brand-50',
+      'hover:enabled:!text-brand-700',
+      'focus-visible:!outline-none',
+      'focus-visible:!shadow-focus',
+    ],
+  },
+}
+
 const labels = computed(() => ({
   view: props.viewLabel || t('common.view'),
   edit: props.editLabel || t('common.edit'),
@@ -61,7 +82,9 @@ function toggleMenu(event) {
       text
       rounded
       severity="secondary"
+      class="actions-button-trigger"
       :disabled="disabled"
+      :pt="triggerPt"
       aria-haspopup="true"
       :aria-controls="menuId"
       @click="toggleMenu"
@@ -70,10 +93,14 @@ function toggleMenu(event) {
   </div>
 </template>
 
-<style>
+<style scoped>
+.actions-button-trigger:deep(.p-button-icon) {
+  font-size: 0.92rem;
+}
+
 .actions-button-menu.p-menu {
   min-width: 11rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--brand-surface-200);
   border-radius: 0.95rem;
   background: #ffffff !important;
   box-shadow: 0 14px 30px -22px rgba(15, 23, 42, 0.16);
@@ -87,20 +114,28 @@ function toggleMenu(event) {
 
 .actions-button-menu .p-menu-item-content {
   border-radius: 0.7rem;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .actions-button-menu .p-menu-item-link {
   gap: 0.7rem;
   border-radius: 0.7rem;
-  color: #0f172a;
+  color: var(--hope-dark);
   padding: 0.7rem 0.85rem;
 }
 
 .actions-button-menu .p-menu-item:not(.p-disabled) .p-menu-item-content:hover {
-  background: #f8fafc;
+  background: var(--brand-primary-50);
 }
 
 .actions-button-menu .p-menu-item-icon {
-  color: #64748b;
+  color: var(--brand-surface-500);
+}
+
+.actions-button-menu .p-menu-item:not(.p-disabled) .p-menu-item-content:hover .p-menu-item-link,
+.actions-button-menu .p-menu-item:not(.p-disabled) .p-menu-item-content:hover .p-menu-item-icon {
+  color: var(--brand-primary-700);
 }
 </style>

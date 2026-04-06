@@ -117,13 +117,20 @@ function onCancel() {
       :disabled="disabled"
       :loading="loading"
       class="logout-button"
-      :class="collapsed ? 'logout-button--collapsed !px-2.5' : 'logout-button--expanded'"
+      :class="
+        collapsed
+          ? 'logout-button--collapsed !min-w-[2.9rem] !justify-center !px-2.5'
+          : 'logout-button--expanded !min-h-12 !justify-start !py-2.5'
+      "
       @click="onClick"
     >
       <template #iconLeft>
-        <span class="logout-button__icon-shell" aria-hidden="true">
+        <span
+          class="logout-button__icon-shell inline-flex h-7.5 w-7.5 flex-none items-center justify-center rounded-full bg-white/15"
+          aria-hidden="true"
+        >
           <svg
-            class="logout-button__icon h-5 w-5"
+            class="logout-button__icon h-5 w-5 flex-none"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -137,9 +144,14 @@ function onCancel() {
           </svg>
         </span>
       </template>
-      <span v-if="!collapsed" class="logout-button__content">
-        <span class="logout-button__label">{{ resolvedLabel }}</span>
-        <span class="logout-button__caption">{{ resolvedCaption }}</span>
+      <span
+        v-if="!collapsed"
+        class="logout-button__content inline-flex min-w-0 flex-col items-start leading-none"
+      >
+        <span class="logout-button__label font-extrabold tracking-[0.01em]">{{ resolvedLabel }}</span>
+        <span class="logout-button__caption mt-0.5 text-[0.72rem] font-semibold text-white/70">
+          {{ resolvedCaption }}
+        </span>
       </span>
       <span v-else class="sr-only">{{ resolvedLabel }}</span>
     </Button>
@@ -162,50 +174,6 @@ function onCancel() {
   position: relative;
 }
 
-.logout-button__content {
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1.1;
-}
-
-.logout-button__icon-shell {
-  display: inline-flex;
-  height: 1.9rem;
-  width: 1.9rem;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 10%, white);
-}
-
-.logout-button__icon {
-  flex: 0 0 auto;
-}
-
-.logout-button__label {
-  letter-spacing: 0.01em;
-  font-weight: 800;
-}
-
-.logout-button__caption {
-  margin-top: 0.15rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #64748b;
-}
-
-.logout-button--expanded {
-  justify-content: flex-start;
-}
-
-.logout-button--collapsed {
-  min-width: 2.9rem;
-  justify-content: center;
-}
-
 .logout-button--collapsed .logout-button__icon-shell {
   height: 1.7rem;
   width: 1.7rem;
@@ -217,15 +185,6 @@ function onCancel() {
 
 .logout-button:deep(.ui-button.p-button) {
   min-height: 3rem;
-}
-
-.logout-button--expanded:deep(.ui-button.p-button) {
-  padding-top: 0.7rem;
-  padding-bottom: 0.7rem;
-}
-
-.logout-button--expanded:deep(.ui-button.p-button .p-button-icon) {
-  margin-top: 0;
 }
 
 .sr-only {
