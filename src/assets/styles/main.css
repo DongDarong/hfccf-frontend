@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700;800&display=swap');
+@config '../../../tailwind.config.js';
+@layer theme, base, primevue, components, utilities;
 @import 'tailwindcss';
 
 :root {
@@ -21,17 +23,39 @@
   --hope-dark: var(--hope-tagline-dark);
   --hope-light: var(--hope-background-light);
 
+  /* Shared brand scale for Tailwind and PrimeVue */
+  --brand-primary-50: #ecfbff;
+  --brand-primary-100: #d2f5ff;
+  --brand-primary-200: #a7ebff;
+  --brand-primary-300: #6fdcff;
+  --brand-primary-400: #2cc8f7;
+  --brand-primary-500: #00aeef;
+  --brand-primary-600: #0b8bc2;
+  --brand-primary-700: #116f9c;
+  --brand-primary-800: #165b80;
+  --brand-primary-900: #184d6b;
+  --brand-primary-950: #103146;
+
+  --brand-surface-50: #f8fafc;
+  --brand-surface-100: #f1f5f9;
+  --brand-surface-200: #e2e8f0;
+  --brand-surface-300: #cbd5e1;
+  --brand-surface-400: #94a3b8;
+  --brand-surface-500: #64748b;
+  --brand-surface-600: #475569;
+  --brand-surface-700: #334155;
+  --brand-surface-800: #1e293b;
+  --brand-surface-900: #0f172a;
+  --brand-surface-950: #020617;
+
   /* Base tokens */
   --color-base: var(--hope-cyan);
   --color-text: var(--hope-tagline-dark);
   --color-surface: var(--hope-light);
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  font-family:
+@theme inline {
+  --font-sans:
     'Space Grotesk',
     'Noto Sans Khmer',
     'Khmer OS Siemreap',
@@ -42,6 +66,44 @@ body {
     Roboto,
     'Leelawadee UI',
     sans-serif;
+
+  --color-brand-50: var(--brand-primary-50);
+  --color-brand-100: var(--brand-primary-100);
+  --color-brand-200: var(--brand-primary-200);
+  --color-brand-300: var(--brand-primary-300);
+  --color-brand-400: var(--brand-primary-400);
+  --color-brand-500: var(--brand-primary-500);
+  --color-brand-600: var(--brand-primary-600);
+  --color-brand-700: var(--brand-primary-700);
+  --color-brand-800: var(--brand-primary-800);
+  --color-brand-900: var(--brand-primary-900);
+  --color-brand-950: var(--brand-primary-950);
+
+  --color-surface-50: var(--brand-surface-50);
+  --color-surface-100: var(--brand-surface-100);
+  --color-surface-200: var(--brand-surface-200);
+  --color-surface-300: var(--brand-surface-300);
+  --color-surface-400: var(--brand-surface-400);
+  --color-surface-500: var(--brand-surface-500);
+  --color-surface-600: var(--brand-surface-600);
+  --color-surface-700: var(--brand-surface-700);
+  --color-surface-800: var(--brand-surface-800);
+  --color-surface-900: var(--brand-surface-900);
+  --color-surface-950: var(--brand-surface-950);
+
+  --color-hope-lime: var(--hope-lime);
+  --color-hope-cyan: var(--hope-cyan);
+  --color-hope-red: var(--hope-red);
+  --color-hope-yellow: var(--hope-yellow);
+  --color-hope-dark: var(--hope-dark);
+  --color-hope-light: var(--hope-light);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--font-sans);
   color: var(--color-text);
   background-color: var(--color-surface);
 }

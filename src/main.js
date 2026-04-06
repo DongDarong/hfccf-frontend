@@ -4,12 +4,12 @@ import 'primeicons/primeicons.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
-import Aura from '@primeuix/themes/aura'
 
 import App from './App.vue'
 import i18n from './i18n'
 import router from './router'
 import { startAutoLogoutWatcher } from './services/auth'
+import HopePreset from './theme/primevuePreset'
 
 function enforceSecureOrigin() {
   if (typeof window === 'undefined') return
@@ -36,7 +36,15 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(PrimeVue, {
   theme: {
-    preset: Aura,
+    preset: HopePreset,
+    options: {
+      // Keep PrimeVue theme styles inside a dedicated cascade layer so
+      // Tailwind utilities and local component styles can override them predictably.
+      cssLayer: {
+        name: 'primevue',
+        order: 'theme, base, primevue, components, utilities',
+      },
+    },
   },
 })
 app.use(i18n)
@@ -59,5 +67,3 @@ window.addEventListener(
   },
   { once: true },
 )
-
-
