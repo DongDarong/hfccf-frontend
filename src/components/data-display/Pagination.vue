@@ -30,6 +30,76 @@ const emit = defineEmits(['update:modelValue', 'change'])
 const rows = 1
 const first = computed(() => (Math.max(props.modelValue, 1) - 1) * rows)
 const totalRecords = computed(() => Math.max(props.totalPages, 1) * rows)
+const paginationPt = computed(() => ({
+  root: {
+    class: [
+      '!border-0',
+      '!bg-transparent',
+      '!p-0',
+      '!justify-end',
+      props.disabled ? 'pointer-events-none opacity-50' : '',
+    ],
+  },
+  content: { class: '!gap-2' },
+  pages: { class: '!gap-2' },
+  pageButton: {
+    class: [
+      '!min-h-9',
+      '!min-w-9',
+      '!rounded-xl',
+      '!border',
+      '!border-surface-300',
+      '!bg-white',
+      '!text-hope-dark',
+      '!shadow-sm',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-brand-50',
+      'hover:enabled:!text-brand-700',
+      'focus-visible:!outline-none',
+      'focus-visible:!shadow-focus',
+    ],
+  },
+  previousPageButton: {
+    class: [
+      '!min-h-9',
+      '!min-w-9',
+      '!rounded-xl',
+      '!border',
+      '!border-surface-300',
+      '!bg-white',
+      '!text-surface-600',
+      '!shadow-sm',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-brand-50',
+      'hover:enabled:!text-brand-700',
+      'focus-visible:!outline-none',
+      'focus-visible:!shadow-focus',
+    ],
+  },
+  nextPageButton: {
+    class: [
+      '!min-h-9',
+      '!min-w-9',
+      '!rounded-xl',
+      '!border',
+      '!border-surface-300',
+      '!bg-white',
+      '!text-surface-600',
+      '!shadow-sm',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-brand-50',
+      'hover:enabled:!text-brand-700',
+      'focus-visible:!outline-none',
+      'focus-visible:!shadow-focus',
+    ],
+  },
+}))
 
 function onPage(event) {
   const next = Math.floor(event.first / rows) + 1
@@ -48,35 +118,7 @@ function onPage(event) {
       default: 'PrevPageLink PageLinks NextPageLink',
     }"
     class="ui-pagination"
-    :pt="{
-      root: { class: disabled ? 'pointer-events-none opacity-50' : '' },
-    }"
+    :pt="paginationPt"
     @page="onPage"
   />
 </template>
-
-<style scoped>
-:deep(.ui-pagination.p-paginator) {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  justify-content: flex-end;
-}
-
-:deep(.ui-pagination .p-paginator-page),
-:deep(.ui-pagination .p-paginator-prev),
-:deep(.ui-pagination .p-paginator-next) {
-  min-width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid #d7e0ea;
-  background: #fff;
-  color: #1d1d1b;
-}
-
-:deep(.ui-pagination .p-paginator-page.p-highlight) {
-  background: var(--hope-o-cyan-blue);
-  color: #fff;
-  border-color: var(--hope-o-cyan-blue);
-}
-</style>

@@ -48,6 +48,38 @@ const hasImageError = ref({})
 const resolvedRows = computed(() => (Array.isArray(props.rows) ? props.rows : props.users))
 const resolvedEmptyText = computed(() => props.emptyText || t('users.table.empty') || 'No rows found.')
 const loadingLabel = computed(() => t('users.loadingUsers') || 'Loading data')
+const tablePt = computed(() => ({
+  root: {
+    class: '!overflow-hidden !rounded-2xl !border !border-surface-200 !bg-white',
+  },
+  tableContainer: {
+    class: '!bg-white',
+  },
+  table: {
+    class: '!bg-white',
+  },
+  headerRow: {
+    class: '!bg-slate-50',
+  },
+  headerCell: {
+    class:
+      '!border-b !border-surface-200 !bg-slate-50 !px-4 !py-3.5 !text-[0.75rem] !font-bold !tracking-[0.06em] !text-surface-600 uppercase md:!px-4',
+  },
+  bodyRow: ({ context }) => ({
+    class: context?.stripedRows
+      ? 'odd:!bg-white even:!bg-sky-50/30 hover:!bg-brand-50/60 transition-colors'
+      : 'hover:!bg-brand-50/60 transition-colors',
+  }),
+  bodyCell: {
+    class: '!border-b !border-slate-100 !bg-transparent !px-4 !py-3.5 !text-surface-700 md:!px-4',
+  },
+  loadingOverlay: {
+    class: '!bg-white/80 backdrop-blur-[1px]',
+  },
+  emptyMessage: {
+    class: '!bg-white',
+  },
+}))
 const defaultColumns = computed(() => [
   { key: 'number', label: t('common.table.number'), align: 'left' },
   { key: 'user', label: t('common.table.user'), align: 'left' },
@@ -132,9 +164,10 @@ watch(
     striped-rows
     removable-sort
     class="ui-data-table"
+    :pt="tablePt"
   >
     <template #empty>
-      <div class="px-4 py-7 text-center text-sm text-gray-500">
+      <div class="px-4 py-7 text-center text-sm text-surface-500">
         {{ resolvedEmptyText }}
       </div>
     </template>
@@ -159,7 +192,7 @@ watch(
     >
       <template #body="{ data, index }">
         <template v-if="column.key === 'number'">
-          <span class="text-[12px] font-semibold text-gray-700 sm:text-sm">
+          <span class="text-[12px] font-semibold text-surface-700 sm:text-sm">
             {{ data?.rowNumber || index + 1 }}
           </span>
         </template>
@@ -174,13 +207,13 @@ watch(
               @image-error="onAvatarError(data)"
             />
             <div>
-              <div class="text-[13px] font-semibold leading-5 text-gray-900 sm:text-sm">
+              <div class="text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
                 {{ data.name || '-' }}
               </div>
-              <div class="text-[11px] text-gray-500 sm:text-xs">
+              <div class="text-[11px] text-surface-500 sm:text-xs">
                 ID: {{ data.id || '-' }}
               </div>
-              <div class="text-[11px] text-gray-600 sm:text-xs">
+              <div class="text-[11px] text-surface-600 sm:text-xs">
                 {{ usernameLabel(data.username) }}
               </div>
             </div>
@@ -198,7 +231,7 @@ watch(
               :key="permission"
               :permission="permission"
             />
-            <span v-if="!permissionList(data).length" class="text-[11px] text-gray-400">-</span>
+            <span v-if="!permissionList(data).length" class="text-[11px] text-surface-400">-</span>
           </div>
         </template>
 
@@ -216,7 +249,7 @@ watch(
         </template>
 
         <template v-else>
-          <span class="text-[12px] text-gray-700 sm:text-sm">{{ plainValue(data, column) }}</span>
+          <span class="text-[12px] text-surface-700 sm:text-sm">{{ plainValue(data, column) }}</span>
         </template>
       </template>
     </Column>
@@ -224,57 +257,12 @@ watch(
 </template>
 
 <style scoped>
-:deep(.ui-data-table.p-datatable) {
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  background: #ffffff;
-  overflow: hidden;
-}
-
-:deep(.ui-data-table .p-datatable-table-container),
-:deep(.ui-data-table table),
-:deep(.ui-data-table .p-datatable-thead),
-:deep(.ui-data-table .p-datatable-tbody) {
-  background: #ffffff;
-}
-
-:deep(.ui-data-table .p-datatable-thead > tr > th) {
-  background: #f8fafc;
-  color: #4b5563;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-:deep(.ui-data-table .p-datatable-tbody > tr) {
-  background: #ffffff;
-}
-
-:deep(.ui-data-table .p-datatable-tbody > tr:nth-child(even)) {
-  background: #fbfdff;
-}
-
-:deep(.ui-data-table .p-datatable-tbody > tr > td) {
-  padding: 0.9rem 1rem;
-  background: transparent;
-  color: #334155;
-  border-color: #eef2f7;
-}
-
-:deep(.ui-data-table .p-datatable-tbody > tr:hover) {
-  background: #f8fbff;
-}
-
-:deep(.ui-data-table .p-datatable-tbody > tr:hover > td) {
-  background: transparent;
-}
-
 :deep(.ui-user-avatar.p-avatar) {
   width: 2.75rem;
   height: 2.75rem;
-  background: linear-gradient(135deg, var(--hope-o-cyan-blue) 0%, #0087b8 100%);
+  background: linear-gradient(135deg, var(--brand-primary-500) 0%, var(--brand-primary-700) 100%);
   color: #fff;
+  box-shadow: 0 10px 18px -14px rgba(0, 174, 239, 0.55);
 }
 </style>
 

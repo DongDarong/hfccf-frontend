@@ -124,7 +124,7 @@ function getInitialBadgeClass(role) {
     return 'bg-hope-yellow'
   if (normalized === 'adminsport') return 'bg-hope-red'
   if (normalized.startsWith('admin')) return 'bg-hope-cyan'
-  return 'bg-gray-400'
+  return 'bg-surface-400'
 }
 
 function avatarRingClass(role) {
@@ -143,7 +143,7 @@ function avatarRingClass(role) {
     return 'ring-yellow-300'
   if (normalized === 'adminsport') return 'ring-rose-300'
   if (normalized.startsWith('admin')) return 'ring-cyan-300'
-  return 'ring-gray-300'
+  return 'ring-surface-300'
 }
 
 function avatarTextClass(role) {
@@ -184,10 +184,10 @@ function onAvatarError() {
 </script>
 
 <template>
-  <tr class="transition-colors hover:bg-gray-50/80">
+  <tr class="transition-colors hover:bg-brand-50/60">
     <td v-for="column in resolvedColumns" :key="column.key" :class="cellClass(column)">
       <template v-if="column.key === 'number'">
-        <span class="text-[12px] font-semibold text-gray-700 sm:text-sm">{{
+        <span class="text-[12px] font-semibold text-surface-700 sm:text-sm">{{
           displayNumber || '-'
         }}</span>
       </template>
@@ -219,12 +219,12 @@ function onAvatarError() {
               {{ userInitials(resolvedRow) }}
             </div>
           </div>
-          <div>
-            <div class="text-[13px] font-semibold leading-5 text-gray-900 sm:text-sm">
+            <div>
+            <div class="text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
               {{ resolvedRow.name || '-' }}
             </div>
-            <div class="text-[11px] text-gray-500 sm:text-xs">ID: {{ userIdLabel }}</div>
-            <div class="text-[11px] text-gray-600 sm:text-xs">
+            <div class="text-[11px] text-surface-500 sm:text-xs">ID: {{ userIdLabel }}</div>
+            <div class="text-[11px] text-surface-600 sm:text-xs">
               {{ usernameLabel(resolvedRow.username) }}
             </div>
           </div>
@@ -232,7 +232,7 @@ function onAvatarError() {
       </template>
 
       <template v-else-if="column.key === 'email'">
-        <span class="text-[12px] text-gray-700 sm:text-sm">{{ resolvedRow.email || '-' }}</span>
+        <span class="text-[12px] text-surface-700 sm:text-sm">{{ resolvedRow.email || '-' }}</span>
       </template>
 
       <template v-else-if="column.key === 'role'">
@@ -247,7 +247,7 @@ function onAvatarError() {
             :permission="permission"
             size="sm"
           />
-          <span v-if="!permissionList.length" class="text-[11px] text-gray-400">-</span>
+          <span v-if="!permissionList.length" class="text-[11px] text-surface-400">-</span>
         </div>
       </template>
 
@@ -256,7 +256,7 @@ function onAvatarError() {
       </template>
 
       <template v-else-if="column.key === 'phone'">
-        <span class="text-[12px] text-gray-700 sm:text-sm">{{
+        <span class="text-[12px] text-surface-700 sm:text-sm">{{
           phoneLabel(resolvedRow.phone)
         }}</span>
       </template>
@@ -273,7 +273,7 @@ function onAvatarError() {
       </template>
 
       <template v-else>
-        <span class="text-[12px] text-gray-700 sm:text-sm">{{ resolvePlainValue(column) }}</span>
+        <span class="text-[12px] text-surface-700 sm:text-sm">{{ resolvePlainValue(column) }}</span>
       </template>
     </td>
   </tr>
