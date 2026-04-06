@@ -22,6 +22,17 @@
   --hope-yellow: var(--hope-e-golden-yellow);
   --hope-dark: var(--hope-tagline-dark);
   --hope-light: var(--hope-background-light);
+  --font-sans:
+    'Space Grotesk',
+    'Noto Sans Khmer',
+    'Khmer OS Siemreap',
+    'Khmer OS Battambang',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Leelawadee UI',
+    sans-serif;
 
   /* Shared brand scale for Tailwind and PrimeVue */
   --brand-primary-50: #ecfbff;
@@ -52,51 +63,6 @@
   --color-base: var(--hope-cyan);
   --color-text: var(--hope-tagline-dark);
   --color-surface: var(--hope-light);
-}
-
-@theme inline {
-  --font-sans:
-    'Space Grotesk',
-    'Noto Sans Khmer',
-    'Khmer OS Siemreap',
-    'Khmer OS Battambang',
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    'Leelawadee UI',
-    sans-serif;
-
-  --color-brand-50: var(--brand-primary-50);
-  --color-brand-100: var(--brand-primary-100);
-  --color-brand-200: var(--brand-primary-200);
-  --color-brand-300: var(--brand-primary-300);
-  --color-brand-400: var(--brand-primary-400);
-  --color-brand-500: var(--brand-primary-500);
-  --color-brand-600: var(--brand-primary-600);
-  --color-brand-700: var(--brand-primary-700);
-  --color-brand-800: var(--brand-primary-800);
-  --color-brand-900: var(--brand-primary-900);
-  --color-brand-950: var(--brand-primary-950);
-
-  --color-surface-50: var(--brand-surface-50);
-  --color-surface-100: var(--brand-surface-100);
-  --color-surface-200: var(--brand-surface-200);
-  --color-surface-300: var(--brand-surface-300);
-  --color-surface-400: var(--brand-surface-400);
-  --color-surface-500: var(--brand-surface-500);
-  --color-surface-600: var(--brand-surface-600);
-  --color-surface-700: var(--brand-surface-700);
-  --color-surface-800: var(--brand-surface-800);
-  --color-surface-900: var(--brand-surface-900);
-  --color-surface-950: var(--brand-surface-950);
-
-  --color-hope-lime: var(--hope-lime);
-  --color-hope-cyan: var(--hope-cyan);
-  --color-hope-red: var(--hope-red);
-  --color-hope-yellow: var(--hope-yellow);
-  --color-hope-dark: var(--hope-dark);
-  --color-hope-light: var(--hope-light);
 }
 
 body {
