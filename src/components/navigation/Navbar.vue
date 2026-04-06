@@ -30,6 +30,37 @@ const localeOptions = [
   { label: 'EN', value: 'en' },
   { label: 'KH', value: 'kh' },
 ]
+const menuButtonPt = {
+  root: {
+    class: [
+      '!h-[38px]',
+      '!w-[38px]',
+      '!border',
+      '!border-surface-300',
+      '!bg-white',
+      '!text-surface-700',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-brand-400',
+      'hover:enabled:!bg-slate-100',
+      'hover:enabled:!text-sky-800',
+      'focus-visible:!outline-none',
+      'focus-visible:!shadow-focus',
+      'max-md:!h-[34px]',
+      'max-md:!w-[34px]',
+      'max-[420px]:!h-8',
+      'max-[420px]:!w-8',
+    ],
+  },
+}
+const localePt = {
+  root: {
+    class: '!rounded-full !border-surface-300 !bg-white',
+  },
+  label: {
+    class: '!px-[0.65rem] !py-[0.3rem] !text-[0.78rem] !font-bold !tracking-[0.03em] !text-surface-900',
+  },
+}
 
 function onToggleSidebar() {
   emit('toggle-sidebar')
@@ -37,8 +68,8 @@ function onToggleSidebar() {
 </script>
 
 <template>
-  <nav class="navbar">
-    <div class="navbar-left">
+  <nav class="flex h-full items-center justify-between gap-3 py-[0.15rem] [app-region:no-drag] [-webkit-app-region:no-drag]">
+    <div class="flex min-w-0 items-center gap-[0.65rem]">
       <Button
         type="button"
         icon="pi pi-bars"
@@ -46,26 +77,38 @@ function onToggleSidebar() {
         text
         rounded
         class="menu-btn !flex lg:!hidden"
+        :pt="menuButtonPt"
         aria-label="Open sidebar"
         @click="onToggleSidebar"
       />
 
-      <div class="brand" :class="{ 'brand--kh': isKh, 'brand--en': !isKh }">
-        <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="brand-logo" />
-        <div class="brand-copy" :class="{ 'brand-copy--kh': isKh, 'brand-copy--en': !isKh }">
-          <span class="brand-text">{{ t('nav.brand.orgTop') }}</span>
-          <span class="brand-subtext">{{ t('nav.brand.orgBottom') }}</span>
+      <div class="flex min-w-0 items-center gap-[0.7rem]">
+        <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="h-9 w-[72px] shrink-0 object-contain max-[540px]:h-8 max-[540px]:w-16 max-[420px]:h-7 max-[420px]:w-14" />
+        <div class="flex min-w-0 flex-col justify-center" :class="{ 'translate-y-px': !isKh }">
+          <span
+            class="whitespace-nowrap text-[1.08rem] leading-[1.1] font-extrabold text-surface-900 max-[420px]:hidden"
+            :class="{
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.95rem] leading-[1.25] font-bold text-[#0b3f58] tracking-normal max-[420px]:block max-[420px]:text-[0.82rem]': isKh,
+            }"
+          >{{ t('nav.brand.orgTop') }}</span>
+          <span
+            class="whitespace-nowrap text-[0.82rem] leading-[1.1] text-surface-600 max-[540px]:hidden"
+            :class="{
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.82rem] leading-[1.2] text-[#1d6c8f] max-[540px]:block max-[540px]:text-[0.74rem] max-[420px]:hidden': isKh,
+            }"
+          >{{ t('nav.brand.orgBottom') }}</span>
         </div>
       </div>
     </div>
 
-    <div class="navbar-actions">
+    <div class="flex shrink-0 items-center gap-3 max-md:gap-[0.45rem] max-[540px]:gap-[0.35rem]">
       <Button
         type="button"
         severity="secondary"
         text
         rounded
         class="icon-btn"
+        :pt="menuButtonPt"
         aria-label="Calendar"
       >
         <template #icon>
@@ -79,12 +122,13 @@ function onToggleSidebar() {
         text
         rounded
         class="icon-btn icon-btn--notification"
+        :pt="menuButtonPt"
         :aria-label="t('common.notifications')"
       >
         <template #icon>
           <div class="relative flex items-center justify-center">
             <Notification :size="18" />
-            <span class="icon-badge">4</span>
+            <span class="absolute -top-2 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-hope-red px-1 text-[0.62rem] leading-none font-bold text-white">4</span>
           </div>
         </template>
       </Button>
@@ -95,6 +139,7 @@ function onToggleSidebar() {
         option-label="label"
         option-value="value"
         class="locale-switcher"
+        :pt="localePt"
         aria-label="Language Switcher"
       />
 
@@ -102,234 +147,6 @@ function onToggleSidebar() {
     </div>
   </nav>
 </template>
-
-<style scoped>
-.navbar {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.15rem 0;
-  -webkit-app-region: no-drag;
-  app-region: no-drag;
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
-}
-
-:deep(.menu-btn.p-button) {
-  border: 1px solid #d9e2ec;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  color: #334155;
-  width: 38px;
-  height: 38px;
-}
-
-:deep(.menu-btn.p-button:hover) {
-  border-color: var(--hope-cyan);
-  color: #0c4a6e;
-  background: #f1f5f9;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  min-width: 0;
-}
-
-.brand-logo {
-  width: 72px;
-  height: 36px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.brand-copy {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-}
-
-.brand-text {
-  font-size: 1.08rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-.brand-subtext {
-  font-size: 0.82rem;
-  color: #64748b;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-.brand--en .brand-copy {
-  transform: translateY(1px);
-}
-
-.brand-copy--en .brand-text {
-  color: #0f172a;
-}
-
-.brand-copy--en .brand-subtext {
-  color: #475569;
-}
-
-.brand--kh .brand-copy {
-  transform: translateY(0);
-}
-
-.brand-copy--kh .brand-text,
-.brand-copy--kh .brand-subtext {
-  font-family:
-    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
-  letter-spacing: 0;
-  white-space: normal;
-}
-
-.brand-copy--kh .brand-text {
-  font-size: 0.95rem;
-  line-height: 1.25;
-  font-weight: 700;
-  color: #0b3f58;
-}
-
-.brand-copy--kh .brand-subtext {
-  font-size: 0.82rem;
-  line-height: 1.2;
-  color: #1d6c8f;
-}
-
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-:deep(.icon-btn.p-button) {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #dbe3ec;
-  background: #ffffff;
-  color: #475569;
-}
-
-:deep(.icon-btn.p-button:hover) {
-  border-color: var(--hope-cyan);
-  color: #0c4a6e;
-  background: #f8fafc;
-}
-
-:deep(.icon-btn--notification.p-button:hover) {
-  border-color: #ed1c24;
-  color: #991b1b;
-}
-
-.icon-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: #ed1c24;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  font-size: 0.62rem;
-  font-weight: 700;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:deep(.locale-switcher.p-select) {
-  border-radius: 999px;
-  background: #ffffff;
-  border-color: #d1d5db;
-}
-
-:deep(.locale-switcher.p-select .p-select-label) {
-  padding: 0.3rem 0.65rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: #0f172a;
-}
-
-.navbar * {
-  -webkit-app-region: no-drag;
-  app-region: no-drag;
-}
-
-@media (max-width: 768px) {
-  .navbar-actions {
-    gap: 0.45rem;
-  }
-
-  :deep(.icon-btn.p-button) {
-    width: 34px;
-    height: 34px;
-  }
-}
-
-@media (max-width: 540px) {
-  .brand-logo {
-    width: 64px;
-    height: 32px;
-  }
-
-  .brand-subtext {
-    display: none;
-  }
-
-  .brand-copy--kh .brand-subtext {
-    display: block;
-    font-size: 0.74rem;
-  }
-
-  .navbar-actions {
-    gap: 0.35rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .brand-logo {
-    width: 56px;
-    height: 28px;
-  }
-
-  .brand-text {
-    display: none;
-  }
-
-  .brand-copy--kh .brand-text {
-    display: block;
-    font-size: 0.82rem;
-  }
-
-  .brand-copy--kh .brand-subtext {
-    display: none;
-  }
-
-  :deep(.icon-btn.p-button) {
-    width: 32px;
-    height: 32px;
-  }
-}
-</style>
 
 
 

@@ -100,6 +100,24 @@ const navItems = computed(() =>
       }
     }),
 )
+const togglePt = {
+  root: {
+    class: [
+      '!border',
+      '!border-surface-200',
+      '!bg-white',
+      '!text-surface-500',
+      '!shadow-[0_10px_22px_-22px_rgba(15,23,42,0.14)]',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-slate-100',
+      'hover:enabled:!text-sky-800',
+      'focus-visible:!outline-none',
+      'focus-visible:!shadow-focus',
+    ],
+  },
+}
 
 function isActive(path) {
   return currentPath.value === path
@@ -115,7 +133,7 @@ function onLogout() {
 </script>
 
 <template>
-  <aside class="sidebar-shell">
+  <aside class="h-full border-r border-surface-200 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--color-base)_10%,transparent),transparent_26%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-[0.8rem] pt-[0.95rem] pb-[0.8rem]">
     <nav class="flex h-full min-h-0 flex-col pb-2" aria-label="Main navigation">
       <div class="py-2 pb-4 sm:pb-5">
         <div class="mb-4 flex items-start justify-between" :class="{ 'justify-center': collapsed }">
@@ -128,6 +146,7 @@ function onLogout() {
             text
             rounded
             class="sidebar-toggle-btn hidden h-8 w-8 min-h-0 !p-1.5 min-[769px]:flex"
+            :pt="togglePt"
             aria-label="Toggle sidebar"
             @click="onToggleSidebar"
           >
@@ -146,8 +165,8 @@ function onLogout() {
       </div>
 
       <div class="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-3">
-        <div class="sidebar-section">
-          <p v-if="!collapsed" class="sidebar-section__label">Navigation</p>
+        <div class="flex flex-col gap-[0.38rem]">
+          <p v-if="!collapsed" class="mb-[0.35rem] px-[0.6rem] text-[0.68rem] font-extrabold tracking-[0.18em] text-surface-500 uppercase">Navigation</p>
           <SidebarLink
             v-for="item in navItems"
             :key="item.to"
@@ -164,7 +183,7 @@ function onLogout() {
       </div>
 
       <div
-        class="sidebar-footer mt-auto pt-4 sm:pt-5"
+        class="mt-4 border-t border-slate-300/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.4)_0%,rgba(248,250,252,0.92)_100%)] pt-4 sm:pt-5"
         :class="{ 'flex justify-center': collapsed }"
       >
         <LogoutButton :collapsed="collapsed" @logout="onLogout" />
@@ -174,19 +193,6 @@ function onLogout() {
 </template>
 
 <style scoped>
-.sidebar-shell {
-  height: 100%;
-  background:
-    radial-gradient(
-      circle at top left,
-      color-mix(in srgb, var(--color-base) 10%, transparent),
-      transparent 26%
-    ),
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border-right: 1px solid #dbe4ee;
-  padding: 0.95rem 0.8rem 0.8rem;
-}
-
 .sidebar-scroll {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
@@ -203,61 +209,6 @@ function onLogout() {
 .sidebar-scroll::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #cbd5e1;
-}
-
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.38rem;
-}
-
-:deep(.sidebar-toggle-btn.p-button) {
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #64748b;
-  transition: all 0.2s ease;
-  box-shadow: 0 10px 22px -22px rgba(15, 23, 42, 0.14);
-}
-
-:deep(.sidebar-toggle-btn.p-button:hover) {
-  border-color: color-mix(in srgb, var(--hope-cyan) 38%, white);
-  color: #0c4a6e;
-  background: #f1f5f9;
-}
-
-.sidebar-section__label {
-  margin: 0 0 0.35rem;
-  padding: 0 0.6rem;
-  color: #64748b;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.sidebar-nav-link {
-  display: flex;
-  align-items: center;
-  min-height: 2.95rem;
-  font-weight: 700;
-  border: 1px solid transparent;
-}
-
-.sidebar-nav-link--active {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-base) 8%, white) 0%,
-    color-mix(in srgb, var(--color-base) 16%, white) 100%
-  );
-  color: #0f172a;
-  border-color: color-mix(in srgb, var(--color-base) 26%, white);
-  box-shadow: 0 12px 22px -22px color-mix(in srgb, var(--color-base) 40%, transparent);
-}
-
-.sidebar-footer {
-  margin-top: 1rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(248, 250, 252, 0.92) 100%);
 }
 
 .sr-only {

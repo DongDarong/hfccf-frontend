@@ -93,12 +93,17 @@ watch(resolvedAvatar, () => {
 </script>
 
 <template>
-  <a :href="props.href" class="navbar-profile">
-    <div class="navbar-profile__text">
-      <div class="navbar-profile__name">{{ displayName }}</div>
-      <div class="navbar-profile__username">{{ displayUsername }}</div>
+  <a
+    :href="props.href"
+    class="ml-2.5 flex items-center gap-3 rounded-2xl border-l border-surface-200 px-[1rem] py-[0.35rem] text-inherit no-underline transition-all duration-200 hover:-translate-y-px hover:bg-slate-100/80 max-sm:ml-0 max-sm:border-l-0 max-sm:p-1"
+  >
+    <div class="text-right max-sm:hidden">
+      <div class="text-[0.88rem] leading-tight font-extrabold text-surface-900">{{ displayName }}</div>
+      <div class="text-[0.72rem] font-semibold tracking-[0.02em] text-surface-500">
+        {{ displayUsername }}
+      </div>
     </div>
-    <div class="navbar-profile__avatar-container">
+    <div class="relative flex">
       <PrimeAvatar
         :label="displayAvatar ? undefined : displayInitials"
         :image="displayAvatar || undefined"
@@ -107,69 +112,20 @@ watch(resolvedAvatar, () => {
         class="navbar-profile__avatar"
         @image-error="hasImageError = true"
       />
-      <div class="navbar-profile__status-dot" :class="`navbar-profile__status-dot--${status}`"></div>
+      <div
+        class="absolute right-0 bottom-0 h-3 w-3 rounded-full border-[2.5px] border-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]"
+        :class="`navbar-profile__status-dot--${status}`"
+      ></div>
     </div>
   </a>
 </template>
 
 <style scoped>
-.navbar-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  text-decoration: none;
-  color: inherit;
-  padding: 0.35rem 0.35rem 0.35rem 1rem;
-  border-left: 1px solid #e2e8f0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 1rem;
-  margin-left: 0.5rem;
-}
-
-.navbar-profile:hover {
-  background: rgba(241, 245, 249, 0.8);
-  transform: translateY(-1px);
-}
-
-.navbar-profile__text {
-  text-align: right;
-}
-
-.navbar-profile__name {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.2;
-}
-
-.navbar-profile__username {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #64748b;
-  letter-spacing: 0.02em;
-}
-
-.navbar-profile__avatar-container {
-  position: relative;
-  display: flex;
-}
-
 :deep(.navbar-profile__avatar.p-avatar) {
   background: linear-gradient(135deg, var(--hope-cyan) 0%, #0087b8 100%);
   color: #fff;
   box-shadow: 0 4px 12px rgba(0, 174, 239, 0.2);
   border: 2px solid #fff;
-}
-
-.navbar-profile__status-dot {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  border: 2.5px solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-profile__status-dot--online {
@@ -183,17 +139,4 @@ watch(resolvedAvatar, () => {
 .navbar-profile__status-dot--offline {
   background: #94a3b8;
 }
-
-@media (max-width: 640px) {
-  .navbar-profile__text {
-    display: none;
-  }
-  
-  .navbar-profile {
-    padding: 0.25rem;
-    border-left: none;
-    margin-left: 0;
-  }
-}
 </style>
-

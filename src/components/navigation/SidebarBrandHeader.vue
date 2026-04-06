@@ -121,9 +121,13 @@ const brandConfig = computed(() => {
 </script>
 
 <template>
-  <div class="brand-header">
-    <div class="brand-header__logo">
-      <div class="brand-header__icon">
+  <div class="pt-[0.15rem] pb-[0.3rem]">
+    <div
+      class="flex items-center gap-3 rounded-[1.1rem] border border-surface-200 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.1),transparent_40%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-[0.85rem] py-[0.8rem] shadow-[0_14px_28px_-24px_rgba(15,23,42,0.18)]"
+    >
+      <div
+        class="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[0.95rem] border border-white/20 bg-[linear-gradient(145deg,#1cb6ef_0%,#0b9ad6_58%,#0672a5_100%)] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_22px_-18px_rgba(2,132,199,0.55)]"
+      >
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
           <path
@@ -142,85 +146,22 @@ const brandConfig = computed(() => {
           />
         </svg>
       </div>
-      <div class="brand-header__title">
-        <span class="brand-header__eyebrow">HFCCF</span>
-        <span class="brand-header__line" :class="brandConfig.className">{{ brandConfig.label }}</span>
+      <div class="flex min-w-0 flex-col gap-[0.38rem] leading-none">
+        <span class="text-[0.64rem] font-black tracking-[0.22em] text-surface-500 uppercase">HFCCF</span>
+        <span
+          class="inline-flex min-h-[1.9rem] w-fit max-w-full items-center whitespace-nowrap rounded-full border px-[0.7rem] py-[0.38rem] text-[0.78rem] font-black tracking-[-0.025em] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]"
+          :class="brandConfig.className"
+        >{{ brandConfig.label }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.brand-header {
-  padding: 0.15rem 0 0.3rem;
-}
-
-.brand-header__logo {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 0.8rem 0.85rem;
-  border: 1px solid #dce5ee;
-  border-radius: 1.1rem;
-  background:
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 40%),
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 14px 28px -24px rgba(15, 23, 42, 0.18);
-}
-
-.brand-header__icon {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(145deg, #1cb6ef 0%, #0b9ad6 58%, #0672a5 100%);
-  border-radius: 0.95rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 12px 22px -18px rgba(2, 132, 199, 0.55);
-  flex-shrink: 0;
-}
-
-.brand-header__icon svg {
+.brand-header svg {
   width: 100%;
   height: 100%;
 }
-
-.brand-header__title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.38rem;
-  min-width: 0;
-  line-height: 1;
-}
-
-.brand-header__eyebrow {
-  color: #64748b;
-  font-size: 0.64rem;
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.brand-header__line {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  max-width: 100%;
-  min-height: 1.9rem;
-  border-radius: 999px;
-  padding: 0.38rem 0.7rem;
-  border: 1px solid transparent;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: -0.025em;
-  white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-
 .brand-header__line--default {
   color: #0f172a;
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
@@ -251,4 +192,3 @@ const brandConfig = computed(() => {
   border-color: #fda4af;
 }
 </style>
-
