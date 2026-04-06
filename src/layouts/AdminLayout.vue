@@ -5,17 +5,9 @@ import MainLayout from '@/layouts/MainLayout.vue'
 <template>
   <MainLayout>
     <template #default>
-      <section class="admin-layout-shell">
+      <section class="flex flex-col gap-5">
         <slot />
       </section>
     </template>
   </MainLayout>
 </template>
-
-<style scoped>
-.admin-layout-shell {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-</style>

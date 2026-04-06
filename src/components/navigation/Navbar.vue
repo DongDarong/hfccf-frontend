@@ -33,21 +33,21 @@ const localeOptions = [
 const menuButtonPt = {
   root: {
     class: [
-      '!h-[38px]',
-      '!w-[38px]',
-      '!border',
-      '!border-surface-300',
-      '!bg-white',
+      '!h-10',
+      '!w-10',
+      '!border-transparent',
+      '!bg-transparent',
       '!text-surface-700',
       'transition-all',
       'duration-200',
-      'hover:enabled:!border-brand-400',
-      'hover:enabled:!bg-slate-100',
-      'hover:enabled:!text-sky-800',
+      'hover:enabled:-translate-y-px',
+      'hover:enabled:!bg-slate-100/80',
+      'hover:enabled:!text-brand-700',
       'focus-visible:!outline-none',
-      'focus-visible:!shadow-focus',
-      'max-md:!h-[34px]',
-      'max-md:!w-[34px]',
+      'focus-visible:!ring-2',
+      'focus-visible:!ring-brand-200',
+      'max-md:!h-9',
+      'max-md:!w-9',
       'max-[420px]:!h-8',
       'max-[420px]:!w-8',
     ],
@@ -55,10 +55,23 @@ const menuButtonPt = {
 }
 const localePt = {
   root: {
-    class: '!rounded-full !border-surface-300 !bg-white',
+    class: [
+      '!rounded-full',
+      '!border-transparent',
+      '!bg-transparent',
+      'transition-all',
+      'duration-200',
+      'hover:!bg-slate-100/80',
+      'focus-within:!ring-2',
+      'focus-within:!ring-brand-200',
+    ],
   },
   label: {
-    class: '!px-[0.65rem] !py-[0.3rem] !text-[0.78rem] !font-bold !tracking-[0.03em] !text-surface-900',
+    class:
+      '!px-3 !py-1.5 !text-[0.76rem] !font-extrabold !tracking-[0.08em] !text-surface-900',
+  },
+  dropdown: {
+    class: '!w-8 !text-surface-500',
   },
 }
 
@@ -68,7 +81,9 @@ function onToggleSidebar() {
 </script>
 
 <template>
-  <nav class="flex h-full items-center justify-between gap-3 py-[0.15rem] [app-region:no-drag] [-webkit-app-region:no-drag]">
+  <nav
+    class="flex h-full w-full items-center justify-between gap-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none [app-region:no-drag] [-webkit-app-region:no-drag] max-md:gap-3"
+  >
     <div class="flex min-w-0 items-center gap-[0.65rem]">
       <Button
         type="button"
@@ -82,26 +97,30 @@ function onToggleSidebar() {
         @click="onToggleSidebar"
       />
 
-      <div class="flex min-w-0 items-center gap-[0.7rem]">
-        <img src="@/assets/images/logo.jpg" alt="HFCCF logo" class="h-9 w-[72px] shrink-0 object-contain max-[540px]:h-8 max-[540px]:w-16 max-[420px]:h-7 max-[420px]:w-14" />
+      <div class="flex min-w-0 items-center gap-3 max-[420px]:gap-2">
+        <img
+          src="@/assets/images/logo.jpg"
+          alt="HFCCF logo"
+          class="h-16 w-16 shrink-0 scale-115 object-contain brightness-[1.05] contrast-[1.02] max-[540px]:h-14 max-[540px]:w-14 max-[420px]:h-11 max-[420px]:w-11"
+        />
         <div class="flex min-w-0 flex-col justify-center" :class="{ 'translate-y-px': !isKh }">
           <span
-            class="whitespace-nowrap text-[1.08rem] leading-[1.1] font-extrabold text-surface-900 max-[420px]:hidden"
+            class="whitespace-nowrap text-[1.02rem] leading-[1.1] font-black text-surface-900 max-[420px]:hidden"
             :class="{
-              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.95rem] leading-[1.25] font-bold text-[#0b3f58] tracking-normal max-[420px]:block max-[420px]:text-[0.82rem]': isKh,
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.92rem] leading-[1.22] font-bold text-[#0b3f58] tracking-normal max-[420px]:block max-[420px]:text-[0.8rem]': isKh,
             }"
           >{{ t('nav.brand.orgTop') }}</span>
           <span
-            class="whitespace-nowrap text-[0.82rem] leading-[1.1] text-surface-600 max-[540px]:hidden"
+            class="whitespace-nowrap text-[0.78rem] leading-[1.1] text-surface-500 max-[540px]:hidden"
             :class="{
-              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.82rem] leading-[1.2] text-[#1d6c8f] max-[540px]:block max-[540px]:text-[0.74rem] max-[420px]:hidden': isKh,
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.78rem] leading-[1.18] text-[#1d6c8f] max-[540px]:block max-[540px]:text-[0.72rem] max-[420px]:hidden': isKh,
             }"
           >{{ t('nav.brand.orgBottom') }}</span>
         </div>
       </div>
     </div>
 
-    <div class="flex shrink-0 items-center gap-3 max-md:gap-[0.45rem] max-[540px]:gap-[0.35rem]">
+    <div class="flex shrink-0 items-center gap-2 max-md:gap-1.5">
       <Button
         type="button"
         severity="secondary"
@@ -128,7 +147,7 @@ function onToggleSidebar() {
         <template #icon>
           <div class="relative flex items-center justify-center">
             <Notification :size="18" />
-            <span class="absolute -top-2 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-hope-red px-1 text-[0.62rem] leading-none font-bold text-white">4</span>
+            <span class="absolute -top-2 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-hope-red px-1 text-[0.62rem] leading-none font-bold text-white shadow-[0_6px_12px_-8px_rgba(237,28,36,0.8)]">4</span>
           </div>
         </template>
       </Button>
