@@ -27,46 +27,34 @@ const spinnerSize = computed(() => {
   if (props.size === 'lg') return '1.6rem'
   return '1.3rem'
 })
+const toneClass = computed(() =>
+  props.tone === 'neutral' ? 'text-hope-dark' : 'text-brand-500',
+)
+const spinnerPt = computed(() => ({
+  root: {
+    class: '!inline-flex',
+  },
+  spinner: {
+    class: '!stroke-current',
+  },
+}))
 </script>
 
 <template>
-  <div class="loading" :class="`loading--${tone}`" role="status" aria-live="polite">
+  <div
+    class="inline-flex w-full items-center justify-center gap-2.5 font-bold uppercase tracking-[0.08em]"
+    :class="toneClass"
+    role="status"
+    aria-live="polite"
+  >
     <ProgressSpinner
       class="loading__spinner"
       stroke-width="6"
       fill="transparent"
       animation-duration=".8s"
       :style="{ width: spinnerSize, height: spinnerSize }"
+      :pt="spinnerPt"
     />
-    <span class="loading__label">{{ resolvedLabel }}</span>
+    <span class="text-[0.74rem] leading-none">{{ resolvedLabel }}</span>
   </div>
 </template>
-
-<style scoped>
-.loading {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.loading--primary {
-  color: var(--hope-o-cyan-blue);
-}
-
-.loading--neutral {
-  color: var(--hope-tagline-dark);
-}
-
-.loading__label {
-  font-size: 0.74rem;
-}
-
-:deep(.loading__spinner svg) {
-  color: currentColor;
-}
-</style>
