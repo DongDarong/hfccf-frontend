@@ -44,17 +44,83 @@ const statusLabel = computed(() => {
   return localized !== key ? localized : normalizedStatus.value
 })
 
-const severity = computed(() => {
-  if (['success', 'active'].includes(normalizedStatus.value)) return 'success'
-  if (['warning', 'inactive'].includes(normalizedStatus.value)) return 'warn'
-  if (['error', 'suspended'].includes(normalizedStatus.value)) return 'danger'
-  if (normalizedStatus.value === 'info' || normalizedStatus.value === 'pending') return 'info'
-  return 'secondary'
+const sizeClass = computed(() => {
+  if (props.size === 'sm') return '!px-2.5 !py-1 !text-[0.68rem]'
+  if (props.size === 'lg') return '!px-3.5 !py-1.5 !text-[0.8rem]'
+  return '!px-3 !py-1.5 !text-[0.74rem]'
 })
+
+const toneClass = computed(() => {
+  if (['success', 'active'].includes(normalizedStatus.value)) {
+    return [
+      '!border-lime-200',
+      '!bg-lime-50',
+      '!text-lime-800',
+      '[--status-dot:var(--hope-lime)]',
+    ]
+  }
+
+  if (['warning', 'inactive'].includes(normalizedStatus.value)) {
+    return [
+      '!border-amber-200',
+      '!bg-amber-50',
+      '!text-amber-800',
+      '[--status-dot:var(--hope-yellow)]',
+    ]
+  }
+
+  if (['error', 'suspended'].includes(normalizedStatus.value)) {
+    return [
+      '!border-rose-200',
+      '!bg-rose-50',
+      '!text-rose-800',
+      '[--status-dot:var(--hope-red)]',
+    ]
+  }
+
+  if (normalizedStatus.value === 'info' || normalizedStatus.value === 'pending') {
+    return [
+      '!border-brand-200',
+      '!bg-brand-50',
+      '!text-brand-800',
+      '[--status-dot:var(--hope-cyan)]',
+    ]
+  }
+
+  return [
+    '!border-surface-200',
+    '!bg-surface-50',
+    '!text-surface-700',
+    '[--status-dot:var(--brand-surface-400)]',
+  ]
+})
+
+const statusPt = computed(() => ({
+  root: {
+    class: [
+      '!inline-flex',
+      '!items-center',
+      '!gap-1.5',
+      '!rounded-full',
+      '!border',
+      '!font-bold',
+      '!tracking-[0.03em]',
+      '!leading-none',
+      ...toneClass.value,
+      sizeClass.value,
+    ],
+  },
+  label: {
+    class: '!leading-none',
+  },
+  icon: {
+    class: props.dot ? '!mr-0' : '!hidden',
+  },
+}))
 </script>
 
 <template>
-  <Tag :value="statusLabel" :severity="severity" rounded class="ui-tag" :class="`ui-tag--${size}`">
+  <Tag :value="statusLabel" rounded class="ui-tag" :class="`ui-tag--${size}`" :pt="statusPt">
     <template v-if="dot" #icon>
       <span class="ui-tag__dot" aria-hidden="true"></span>
     </template>
@@ -62,15 +128,10 @@ const severity = computed(() => {
 </template>
 
 <style scoped>
-:deep(.ui-tag.p-tag) {
-  gap: 0.35rem;
-  font-weight: 700;
-}
-
 .ui-tag__dot {
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 999px;
-  background: currentColor;
+  background: var(--status-dot, currentColor);
 }
 </style>
