@@ -1,6 +1,9 @@
 <script setup>
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import LoginForm from '@/modules/auth/components/LoginForm.vue'
+import { useLanguage } from '@/composables/useLanguage'
+
+const { language } = useLanguage()
 </script>
 
 <template>
@@ -8,30 +11,48 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
     <main
       class="login-page relative flex min-h-screen items-center overflow-hidden px-4 py-5 sm:px-6 sm:py-8 lg:px-8"
     >
-      <section class="login-page-shell relative z-10 mx-auto grid w-full max-w-6xl overflow-hidden lg:grid-cols-[0.95fr_1.05fr]">
-        <div class="login-page-brand hidden min-h-[660px] flex-col justify-between lg:flex">
-          <div>
-            <div class="flex items-center gap-4">
-              <div class="login-page-logo">
-                <img src="@/assets/images/logo.jpg" alt="HFCCF" class="h-12 w-auto" />
-              </div>
-              <div class="space-y-1">
-                <p class="text-xs font-black uppercase text-sky-900">HFCCF Portal</p>
-                <p class="max-w-[14rem] text-sm leading-6 text-slate-600">
-                  Secure access for staff, teachers, and administrators.
-                </p>
-              </div>
-            </div>
+      <section class="login-page-shell relative z-10 mx-auto grid w-full max-w-4xl overflow-hidden lg:grid-cols-[0.88fr_1.12fr]">
+        <div class="login-page-brand hidden min-h-[540px] flex-col justify-between lg:flex">
+          <div class="login-page-language" aria-label="Language">
+            <i class="pi pi-globe" aria-hidden="true"></i>
+            <button
+              type="button"
+              :class="{ 'login-page-language__option--active': language === 'EN' }"
+              class="login-page-language__option"
+              aria-label="English"
+              @click="language = 'EN'"
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              :class="{ 'login-page-language__option--active': language === 'KH' }"
+              class="login-page-language__option"
+              aria-label="Khmer"
+              @click="language = 'KH'"
+            >
+              ខ្មែរ
+            </button>
+          </div>
 
-            <div class="mt-14 space-y-5">
-              <p class="login-page-eyebrow">Welcome back</p>
-              <p class="max-w-sm text-[2.75rem] leading-[1.02] font-black text-slate-950">
-                One sign-in for your daily HFCCF work.
+          <div class="login-page-brand-center">
+            <div class="login-page-logo login-page-logo--hero">
+              <img src="@/assets/images/logo.jpg" alt="HFCCF" class="h-20 w-auto" />
+            </div>
+            <div class="login-page-welcome" :class="{ 'login-page-khmer': language === 'KH' }">
+              <p class="login-page-eyebrow">
+                {{ language === 'KH' ? 'ច្រកបុគ្គលិក' : 'Staff Portal' }}
               </p>
-              <p class="max-w-md text-base leading-8 text-slate-600">
-                Continue to your role dashboard, manage users, and handle day-to-day tasks
-                from a single protected workspace.
+              <p>
+                {{ language === 'KH' ? 'សូមស្វាគមន៍មកកាន់ប្រព័ន្ធ HFCCF។' : 'Welcome back to your HFCCF workspace.' }}
               </p>
+              <span>
+                {{
+                  language === 'KH'
+                    ? 'ចូលប្រើដើម្បីបន្តការងារប្រចាំថ្ងៃតាមតួនាទីរបស់អ្នក។'
+                    : 'Sign in to continue your daily work with the right access for your role.'
+                }}
+              </span>
             </div>
           </div>
 
@@ -41,63 +62,51 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
                 <span class="pi pi-clock text-sky-600" aria-hidden="true"></span>
                 <div>
                   <p class="text-xl font-black text-slate-950">24/7</p>
-                  <p class="text-xs font-bold uppercase text-slate-500">Access window</p>
+                  <p class="text-xs font-bold uppercase text-slate-500">Access</p>
                 </div>
               </div>
               <div class="login-page-metric">
                 <span class="pi pi-check-circle text-lime-600" aria-hidden="true"></span>
                 <div>
                   <p class="text-xl font-black text-slate-950">5+</p>
-                  <p class="text-xs font-bold uppercase text-slate-500">Program areas</p>
+                  <p class="text-xs font-bold uppercase text-slate-500">Areas</p>
                 </div>
               </div>
             </div>
-
-            <ul class="login-page-checklist grid gap-3 text-sm text-slate-600">
-              <li class="flex items-center gap-3">
-                <i class="pi pi-shield text-sky-600" aria-hidden="true"></i>
-                Role-based access for each team
-              </li>
-              <li class="flex items-center gap-3">
-                <i class="pi pi-lock text-sky-600" aria-hidden="true"></i>
-                Secure session management
-              </li>
-              <li class="flex items-center gap-3">
-                <i class="pi pi-chart-line text-sky-600" aria-hidden="true"></i>
-                Faster access to daily dashboards
-              </li>
-            </ul>
           </div>
         </div>
 
         <div class="login-page-form-panel">
-          <div class="login-page-form-shell mx-auto w-full max-w-xl">
-            <div class="mb-7 flex items-start justify-between gap-4 lg:hidden">
+          <div class="login-page-form-shell mx-auto w-full max-w-md">
+            <div class="mb-5 flex items-start justify-between gap-4 lg:hidden">
               <div class="flex min-w-0 items-center gap-3">
                 <div class="login-page-logo login-page-logo--compact">
                   <img src="@/assets/images/logo.jpg" alt="HFCCF" class="h-9 w-auto" />
                 </div>
                 <div class="min-w-0">
-                  <p class="text-xs font-black uppercase text-sky-800">HFCCF Portal</p>
-                  <p class="text-xs leading-5 text-slate-500 sm:text-sm">
-                    Secure access for staff and administrators
+                  <p
+                    class="text-xs font-black uppercase text-sky-800"
+                    :class="{ 'login-page-khmer': language === 'KH' }"
+                  >
+                    {{ language === 'KH' ? 'ច្រកបុគ្គលិក' : 'HFCCF Portal' }}
                   </p>
                 </div>
               </div>
-              <div class="login-page-status hidden items-center gap-2 sm:inline-flex">
+              <div class="login-page-status hidden sm:inline-grid" aria-label="Protected">
                 <i class="pi pi-lock" aria-hidden="true"></i>
-                Protected
               </div>
             </div>
 
-            <div class="mb-6 px-1">
-              <p class="login-page-eyebrow">Staff Sign In</p>
-              <h1 class="mt-3 text-[1.65rem] leading-tight font-black text-slate-950 sm:text-[2rem] lg:text-[2.15rem]">
-                Continue to your dashboard
-              </h1>
-              <p class="mt-3 max-w-lg text-sm leading-6 text-slate-600 sm:text-[0.95rem]">
-                Use your HFCCF email, password, and assigned role to continue securely.
+            <div class="mb-4 px-1">
+              <p class="login-page-eyebrow" :class="{ 'login-page-khmer': language === 'KH' }">
+                {{ language === 'KH' ? 'បុគ្គលិក' : 'Staff' }}
               </p>
+              <h1
+                class="mt-2 text-[1.55rem] leading-tight font-black text-slate-950 sm:text-[1.85rem] lg:text-[1.95rem]"
+                :class="{ 'login-page-khmer': language === 'KH' }"
+              >
+                {{ language === 'KH' ? 'ចូលប្រើ' : 'Sign in' }}
+              </h1>
             </div>
 
             <LoginForm />
@@ -130,7 +139,7 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
 
 .login-page-shell {
   border: 1px solid rgba(203, 213, 225, 0.82);
-  border-radius: 2rem;
+  border-radius: 1.5rem;
   background: rgba(255, 255, 255, 0.84);
   color: #0f172a;
   box-shadow: 0 30px 70px -42px rgba(15, 23, 42, 0.36);
@@ -147,27 +156,114 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
 
 .login-page-brand {
   position: relative;
-  padding: 2rem 1.75rem 2rem 2rem;
+  padding: 1.45rem 1.25rem 1.45rem 1.55rem;
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(236, 251, 255, 0.78)),
     repeating-linear-gradient(135deg, rgba(0, 174, 239, 0.08) 0 1px, transparent 1px 14px);
+}
+
+.login-page-language {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid rgba(203, 213, 225, 0.88);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.25rem;
+  color: #64748b;
+  box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.28);
+}
+
+.login-page-language .pi {
+  padding: 0 0.4rem;
+  color: #0284c7;
+  font-size: 0.82rem;
+}
+
+.login-page-language__option {
+  min-width: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0.32rem 0.45rem;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.login-page-language__option--active {
+  background: #0ea5e9;
+  color: #ffffff;
+}
+
+.login-page-khmer {
+  font-family:
+    'Noto Sans Khmer',
+    'Khmer OS Siemreap',
+    'Khmer OS Battambang',
+    'Leelawadee UI',
+    sans-serif;
+  line-height: 1.6;
+}
+
+.login-page-brand-center {
+  display: grid;
+  min-height: 22rem;
+  place-items: center;
+  align-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.login-page-welcome {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  max-width: 16rem;
+}
+
+.login-page-welcome p:not(.login-page-eyebrow) {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.login-page-welcome span {
+  color: #64748b;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.55;
 }
 
 .login-page-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 4.35rem;
-  min-height: 4rem;
+  min-width: 3.55rem;
+  min-height: 3.25rem;
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 1.15rem;
   background: #ffffff;
   box-shadow: 0 16px 30px -24px rgba(15, 23, 42, 0.3);
 }
 
+.login-page-logo--hero {
+  min-width: 8.5rem;
+  min-height: 7.25rem;
+  border-radius: 1.35rem;
+  box-shadow: 0 22px 42px -28px rgba(15, 23, 42, 0.35);
+}
+
 .login-page-logo--compact {
-  min-width: 3.4rem;
-  min-height: 3.2rem;
+  min-width: 3rem;
+  min-height: 2.85rem;
   border-radius: 1rem;
   box-shadow: 0 10px 22px -18px rgba(15, 23, 42, 0.32);
 }
@@ -189,19 +285,18 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 660px;
-  padding: 2.5rem;
+  min-height: 540px;
+  padding: 1.4rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92)),
     linear-gradient(90deg, rgba(141, 198, 63, 0.08), transparent 42%);
 }
 
 .login-page-form-shell {
-  padding: 1.35rem;
+  padding: 0.75rem;
 }
 
-.login-page-metric,
-.login-page-checklist {
+.login-page-metric {
   border: 1px solid rgba(226, 232, 240, 0.82);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.76);
@@ -209,55 +304,41 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
 
 .login-page-metric {
   display: flex;
-  min-height: 5.25rem;
+  min-height: 4.25rem;
   align-items: center;
   gap: 0.85rem;
-  padding: 1rem;
+  padding: 0.8rem;
 }
 
 .login-page-metric .pi {
   display: inline-grid;
-  height: 2.45rem;
-  width: 2.45rem;
+  height: 2.1rem;
+  width: 2.1rem;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 999px;
   background: #f8fafc;
 }
 
-.login-page-checklist {
-  padding: 1rem;
-}
-
-.login-page-checklist .pi {
-  display: inline-grid;
-  height: 2rem;
-  width: 2rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(14, 165, 233, 0.09);
-}
-
 .login-page-status {
+  height: 2.3rem;
+  width: 2.3rem;
+  place-items: center;
   border: 1px solid rgba(203, 213, 225, 0.86);
   border-radius: 999px;
   background: #ffffff;
-  padding: 0.35rem 0.7rem;
   color: #475569;
-  font-size: 0.68rem;
-  font-weight: 900;
-  text-transform: uppercase;
 }
 
 @media (max-width: 1023px) {
   .login-page-shell {
-    border-radius: 1.5rem;
+    max-width: 32rem;
+    border-radius: 1.25rem;
   }
 
   .login-page-form-panel {
     min-height: auto;
-    padding: 1.75rem;
+    padding: 1.15rem;
   }
 
   .login-page-form-shell {
@@ -272,7 +353,7 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
   }
 
   .login-page-shell {
-    border-radius: 1.2rem;
+    border-radius: 1.1rem;
     box-shadow: 0 18px 40px -30px rgba(15, 23, 42, 0.35);
   }
 
@@ -282,7 +363,7 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
   }
 
   .login-page-form-panel {
-    padding: 1.1rem 0.95rem;
+    padding: 0.9rem 0.75rem;
   }
 
   .login-page-form-shell {
@@ -292,12 +373,12 @@ import LoginForm from '@/modules/auth/components/LoginForm.vue'
 
 @media (max-width: 420px) {
   .login-page-form-panel {
-    padding: 0.95rem 0.8rem;
+    padding: 0.75rem 0.65rem;
   }
 
   .login-page-logo--compact {
-    min-width: 3rem;
-    min-height: 2.9rem;
+    min-width: 2.75rem;
+    min-height: 2.6rem;
   }
 }
 </style>

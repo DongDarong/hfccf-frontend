@@ -10,10 +10,14 @@ import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { login } from '@/modules/auth/services/authService'
 
 const router = useRouter()
 const route = useRoute()
+const { language } = useLanguage()
+
+const isKhmer = computed(() => language.value === 'KH')
 
 const form = reactive({
   email: '',
@@ -33,33 +37,42 @@ const touched = reactive({
 })
 
 const userTypeOptions = [
-  { label: 'Super Admin', value: 'superadmin' },
-  { label: 'English Admin', value: 'adminenglish' },
-  { label: 'Preschool Admin', value: 'adminpreschool' },
-  { label: 'Scholarship Admin', value: 'adminscholaship' },
-  { label: 'Sport Admin', value: 'adminsport' },
-  { label: 'English Teacher', value: 'teacher-english' },
-  { label: 'Preschool Teacher', value: 'teacher-preschool' },
-  { label: 'Scholarship Teacher', value: 'teacher-scholarship' },
-  { label: 'Coach', value: 'coach' },
+  { label: 'Super Admin', khLabel: 'អ្នកគ្រប់គ្រងធំ', value: 'superadmin' },
+  { label: 'English Admin', khLabel: 'អ្នកគ្រប់គ្រងអង់គ្លេស', value: 'adminenglish' },
+  { label: 'Preschool Admin', khLabel: 'អ្នកគ្រប់គ្រងមត្តេយ្យ', value: 'adminpreschool' },
+  { label: 'Scholarship Admin', khLabel: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍', value: 'adminscholaship' },
+  { label: 'Sport Admin', khLabel: 'អ្នកគ្រប់គ្រងកីឡា', value: 'adminsport' },
+  { label: 'English Teacher', khLabel: 'គ្រូអង់គ្លេស', value: 'teacher-english' },
+  { label: 'Preschool Teacher', khLabel: 'គ្រូមត្តេយ្យ', value: 'teacher-preschool' },
+  { label: 'Scholarship Teacher', khLabel: 'គ្រូអាហារូបករណ៍', value: 'teacher-scholarship' },
+  { label: 'Coach', khLabel: 'គ្រូបង្វឹក', value: 'coach' },
 ]
+
+const localizedUserTypeOptions = computed(() =>
+  userTypeOptions.map((option) => ({
+    ...option,
+    displayLabel: isKhmer.value ? option.khLabel : option.label,
+  })),
+)
 
 const emailError = computed(() => {
   if (!touched.email) return ''
-  if (!form.email.trim()) return 'Email is required.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'Enter a valid email address.'
+  if (!form.email.trim()) return isKhmer.value ? 'សូមបញ្ចូលអ៊ីមែល។' : 'Email is required.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    return isKhmer.value ? 'សូមបញ្ចូលអ៊ីមែលឱ្យបានត្រឹមត្រូវ។' : 'Enter a valid email address.'
+  }
   return ''
 })
 
 const passwordError = computed(() => {
   if (!touched.password) return ''
-  if (!form.password) return 'Password is required.'
+  if (!form.password) return isKhmer.value ? 'សូមបញ្ចូលពាក្យសម្ងាត់។' : 'Password is required.'
   return ''
 })
 
 const userTypeError = computed(() => {
   if (!touched.userType) return ''
-  if (!form.userType) return 'Please choose your user type.'
+  if (!form.userType) return isKhmer.value ? 'សូមជ្រើសរើសប្រភេទអ្នកប្រើ។' : 'Please choose your user type.'
   return ''
 })
 
@@ -71,7 +84,10 @@ const isFormValid = computed(
     Boolean(form.userType),
 )
 
-const submitLabel = computed(() => (isSubmitting.value ? 'Signing in...' : 'Sign in'))
+const localizedSubmitLabel = computed(() => {
+  if (isSubmitting.value) return isKhmer.value ? 'កំពុងចូល...' : 'Signing in...'
+  return isKhmer.value ? 'ចូលប្រើ' : 'Sign in'
+})
 
 function touchField(field) {
   touched[field] = true
@@ -97,7 +113,9 @@ async function onSubmit() {
     shouldRedirectAfterSuccess.value = true
     showLoginSuccess.value = true
   } catch (error) {
-    errorMessage.value = error?.message || 'Unable to login right now.'
+    errorMessage.value = isKhmer.value
+      ? 'ព័ត៌មានចូលប្រើមិនត្រឹមត្រូវ។'
+      : error?.message || 'Unable to login right now.'
   } finally {
     isSubmitting.value = false
   }
@@ -123,122 +141,140 @@ async function onLoginSuccessClose() {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-md">
-    <Card class="login-form-card border-0 shadow-none">
+  <div class="login-form-root mx-auto w-full max-w-md">
+    <Card class="login-form-card border-0">
       <template #content>
-        <header class="login-form-header mb-7 space-y-3 sm:mb-8">
-          <p
-            class="inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-sky-700 sm:text-[0.68rem]"
-          >
-            Secure access
-          </p>
-          <div class="space-y-1">
-            <h2 class="text-[1.7rem] font-bold tracking-tight text-slate-900 sm:text-2xl">Login</h2>
-            <p class="text-sm leading-6 text-slate-600 sm:text-sm">
-              Use your HFCCF account details and assigned role to continue.
+        <form class="login-form-fields" :class="{ 'login-form-khmer': isKhmer }" @submit.prevent="onSubmit">
+          <div class="login-form-field">
+            <div class="login-form-label-row">
+              <label for="email">{{ isKhmer ? 'អ៊ីមែល' : 'Email' }}</label>
+            </div>
+            <div class="login-form-control">
+              <i class="pi pi-envelope login-form-control-icon" aria-hidden="true"></i>
+              <InputText
+                id="email"
+                v-model="form.email"
+                type="email"
+                autocomplete="email"
+                class="login-form-input w-full"
+                :class="{ 'login-form-input--invalid': emailError }"
+                :aria-invalid="Boolean(emailError)"
+                :aria-describedby="emailError ? 'email-error' : undefined"
+                :placeholder="isKhmer ? 'name@hfccf.org' : 'name@hfccf.org'"
+                @blur="touchField('email')"
+              />
+            </div>
+            <p v-if="emailError" id="email-error" class="login-form-error">
+              <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+              {{ emailError }}
             </p>
           </div>
-        </header>
 
-        <form class="login-form-fields space-y-4 sm:space-y-5" @submit.prevent="onSubmit">
-          <div class="space-y-1.5">
-            <label for="email" class="text-sm font-semibold text-slate-700">Email</label>
-            <InputText
-              id="email"
-              v-model="form.email"
-              type="email"
-              autocomplete="email"
-              class="login-form-input w-full"
-              :class="{ 'login-form-input--invalid': emailError }"
-              placeholder="name@hfccf.org"
-              @blur="touchField('email')"
-            />
-            <p v-if="emailError" class="login-form-error">{{ emailError }}</p>
+          <div class="login-form-field">
+            <div class="login-form-label-row">
+              <label for="password">{{ isKhmer ? 'ពាក្យសម្ងាត់' : 'Password' }}</label>
+            </div>
+            <div class="login-form-control">
+              <i class="pi pi-key login-form-control-icon" aria-hidden="true"></i>
+              <Password
+                id="password"
+                v-model="form.password"
+                class="w-full login-form-password"
+                autocomplete="current-password"
+                :placeholder="isKhmer ? 'បញ្ចូលពាក្យសម្ងាត់' : 'Enter your password'"
+                :feedback="false"
+                toggle-mask
+                fluid
+                :input-class="['w-full', passwordError ? 'login-form-input--invalid' : '']"
+                :aria-invalid="Boolean(passwordError)"
+                :aria-describedby="passwordError ? 'password-error' : undefined"
+                @blur="touchField('password')"
+              />
+            </div>
+            <p v-if="passwordError" id="password-error" class="login-form-error">
+              <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+              {{ passwordError }}
+            </p>
           </div>
 
-          <div class="space-y-1.5">
-            <label for="password" class="text-sm font-semibold text-slate-700">Password</label>
-            <Password
-              id="password"
-              v-model="form.password"
-              class="w-full login-form-password"
-              autocomplete="current-password"
-              placeholder="Enter your password"
-              :feedback="false"
-              toggle-mask
-              fluid
-              :input-class="['w-full', passwordError ? 'login-form-input--invalid' : '']"
-              @blur="touchField('password')"
-            />
-            <p v-if="passwordError" class="login-form-error">{{ passwordError }}</p>
+          <div class="login-form-field">
+            <div class="login-form-label-row">
+              <label for="userType">{{ isKhmer ? 'ប្រភេទអ្នកប្រើ' : 'User type' }}</label>
+            </div>
+            <div class="login-form-control">
+              <i class="pi pi-id-card login-form-control-icon" aria-hidden="true"></i>
+              <Select
+                id="userType"
+                v-model="form.userType"
+                :options="localizedUserTypeOptions"
+                option-label="displayLabel"
+                option-value="value"
+                append-to="self"
+                class="login-form-input w-full"
+                :class="{ 'login-form-input--invalid': userTypeError }"
+                :aria-invalid="Boolean(userTypeError)"
+                :aria-describedby="userTypeError ? 'user-type-error' : undefined"
+                :placeholder="isKhmer ? 'ជ្រើសរើសប្រភេទ' : 'Select user type'"
+                @blur="touchField('userType')"
+              />
+            </div>
+            <p v-if="userTypeError" id="user-type-error" class="login-form-error">
+              <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+              {{ userTypeError }}
+            </p>
           </div>
 
-          <div class="space-y-1.5">
-            <label for="userType" class="text-sm font-semibold text-slate-700">User type</label>
-            <Select
-              id="userType"
-              v-model="form.userType"
-              :options="userTypeOptions"
-              option-label="label"
-              option-value="value"
-              append-to="self"
-              class="login-form-input w-full"
-              :class="{ 'login-form-input--invalid': userTypeError }"
-              placeholder="Select user type"
-              @blur="touchField('userType')"
-            />
-            <p class="text-xs text-slate-500">Choose the role assigned to your account.</p>
-            <p v-if="userTypeError" class="login-form-error">{{ userTypeError }}</p>
-          </div>
-
-          <div class="login-form-actions flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-            <label class="inline-flex items-center gap-2 text-slate-600">
+          <div class="login-form-actions">
+            <label class="login-form-remember">
               <Checkbox v-model="form.remember" binary input-id="rememberMe" />
-              <span>Remember me</span>
+              <span>{{ isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me' }}</span>
             </label>
 
             <RouterLink
+              v-if="form.userType === 'superadmin'"
               :to="{ name: 'forgot-password' }"
               class="font-semibold text-sky-700 transition hover:text-sky-800 max-sm:self-start"
             >
-              Forgot password?
+              {{ isKhmer ? 'ភ្លេច?' : 'Forgot?' }}
             </RouterLink>
           </div>
 
-          <Message v-if="errorMessage" severity="error" :closable="false">
+          <Message v-if="errorMessage" severity="error" :closable="false" class="login-form-message">
             {{ errorMessage }}
           </Message>
 
-          <Loading v-if="isSubmitting" label="Signing in..." size="sm" />
+          <Loading
+            v-if="isSubmitting"
+            class="login-form-loading"
+            :label="isKhmer ? 'កំពុងចូល...' : 'Signing in...'"
+            size="sm"
+          />
 
           <Button
             type="submit"
             variant="primary"
-            size="md"
+            size="lg"
             rounded="xl"
             block
             :disabled="!isFormValid"
             :loading="isSubmitting"
-            class="mt-1"
+            class="login-form-submit"
           >
-            {{ submitLabel }}
+            <template #iconLeft>
+              <i class="pi pi-sign-in" aria-hidden="true"></i>
+            </template>
+            {{ localizedSubmitLabel }}
           </Button>
 
-          <p class="text-sm leading-6 text-slate-600">
-            Need access?
-            <RouterLink :to="{ name: 'register' }" class="font-semibold text-sky-700">
-              Create an account
-            </RouterLink>
-          </p>
         </form>
       </template>
     </Card>
 
     <AlertSuccess
       :show="showLoginSuccess"
-      title="Login successful"
-      message="Welcome back. Redirecting to dashboard..."
-      button-text="Continue"
+      :title="isKhmer ? 'បានចូលប្រើ' : 'Signed in'"
+      :message="isKhmer ? 'កំពុងបញ្ជូន...' : 'Redirecting...'"
+      :button-text="isKhmer ? 'បន្ត' : 'Continue'"
       :auto-close="900"
       @close="onLoginSuccessClose"
     />
@@ -246,19 +282,76 @@ async function onLoginSuccessClose() {
 </template>
 
 <style scoped>
+:deep(.login-form-card.p-card) {
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95)),
+    linear-gradient(135deg, rgba(0, 174, 239, 0.07), transparent 42%);
+  box-shadow: 0 18px 38px -30px rgba(15, 23, 42, 0.34);
+}
+
 :deep(.login-form-card.p-card .p-card-body) {
   padding: 0;
+}
+
+:deep(.login-form-card.p-card .p-card-content) {
+  padding: 1.35rem;
+}
+
+.login-form-fields {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-form-khmer {
+  font-family:
+    'Noto Sans Khmer',
+    'Khmer OS Siemreap',
+    'Khmer OS Battambang',
+    'Leelawadee UI',
+    sans-serif;
+}
+
+.login-form-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.login-form-label-row {
+  display: flex;
+  align-items: center;
+}
+
+.login-form-label-row label {
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.login-form-control {
+  position: relative;
+}
+
+.login-form-control-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.95rem;
+  z-index: 2;
+  color: #0ea5e9;
+  font-size: 0.95rem;
+  transform: translateY(-50%);
 }
 
 :deep(.login-form-card .login-form-input.p-inputtext),
 :deep(.login-form-card .p-password-input),
 :deep(.login-form-card .login-form-input.p-select) {
   width: 100%;
-  min-height: 3.05rem;
-  border-radius: 0.9rem;
+  min-height: 3.15rem;
+  border-radius: 1rem;
   border: 1px solid #dbe4ee;
-  background: #fff;
-  padding: 0.8rem 0.95rem;
+  background: #ffffff;
+  padding: 0.82rem 0.95rem 0.82rem 2.8rem;
   color: #0f172a;
   font-size: 0.95rem;
   transition:
@@ -275,9 +368,9 @@ async function onLoginSuccessClose() {
 :deep(.login-form-card .login-form-input.p-select .p-select-label) {
   display: flex;
   align-items: center;
-  min-height: 3.05rem;
+  min-height: 3.15rem;
   color: #0f172a;
-  padding: 0.8rem 0.95rem;
+  padding: 0.82rem 0.95rem 0.82rem 2.8rem;
 }
 
 :deep(.login-form-card .login-form-input.p-select .p-select-label.p-placeholder) {
@@ -285,13 +378,13 @@ async function onLoginSuccessClose() {
 }
 
 :deep(.login-form-card .login-form-input.p-select .p-select-dropdown) {
-  width: 3rem;
+  width: 3.05rem;
   background: transparent;
   color: #64748b;
 }
 
 :deep(.login-form-card .login-form-input.p-select .p-select-clear-icon) {
-  right: 3rem;
+  right: 3.05rem;
   color: #94a3b8;
 }
 
@@ -304,15 +397,17 @@ async function onLoginSuccessClose() {
 :deep(.login-form-card .login-form-input.p-inputtext:enabled:hover),
 :deep(.login-form-card .p-password-input:enabled:hover),
 :deep(.login-form-card .login-form-input.p-select:not(.p-disabled):hover) {
-  border-color: #94a3b8;
-  background: #fff;
+  border-color: #7dd3fc;
+  background: #ffffff;
 }
 
 :deep(.login-form-card .login-form-input.p-inputtext:enabled:focus),
 :deep(.login-form-card .p-password-input:enabled:focus),
 :deep(.login-form-card .login-form-input.p-select.p-focus) {
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.22);
+  border-color: #0ea5e9;
+  box-shadow:
+    0 0 0 3px rgba(14, 165, 233, 0.14),
+    0 12px 22px -20px rgba(14, 165, 233, 0.58);
 }
 
 :deep(.login-form-password .p-password) {
@@ -340,12 +435,16 @@ async function onLoginSuccessClose() {
   background: #0ea5e9;
 }
 
+:deep(.login-form-card .p-checkbox.p-highlight .p-checkbox-icon) {
+  color: #ffffff;
+}
+
 :deep(.login-form-card .login-form-input.p-select .p-select-overlay) {
   margin-top: 0.3rem;
   border: 1px solid #e2e8f0;
-  border-radius: 0.9rem;
+  border-radius: 1rem;
   background: #fff;
-  box-shadow: 0 12px 24px -18px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 16px 28px -20px rgba(15, 23, 42, 0.2);
 }
 
 :deep(.login-form-card .login-form-input.p-select .p-select-list-container) {
@@ -354,7 +453,7 @@ async function onLoginSuccessClose() {
 }
 
 :deep(.login-form-card .login-form-input.p-select .p-select-option) {
-  border-radius: 0.65rem;
+  border-radius: 0.75rem;
   background: #fff;
   color: #0f172a;
 }
@@ -372,31 +471,78 @@ async function onLoginSuccessClose() {
 :deep(.login-form-card .login-form-input--invalid.p-select),
 :deep(.login-form-card .login-form-password .login-form-input--invalid) {
   border-color: #f43f5e;
-  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.1);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1);
+}
+
+.login-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding-top: 0.15rem;
+  font-size: 0.9rem;
+}
+
+.login-form-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #475569;
+  font-weight: 700;
+}
+
+.login-form-actions a {
+  color: #0369a1;
+  font-weight: 900;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-form-actions a:hover {
+  color: #075985;
+}
+
+.login-form-message {
+  border-radius: 1rem;
+}
+
+.login-form-loading {
+  padding: 0.1rem 0;
+}
+
+.login-form-submit {
+  margin-top: 0.1rem;
 }
 
 .login-form-error {
-  font-size: 0.78rem;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   color: #e11d48;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 @media (max-width: 639px) {
-  .login-form-header {
-    margin-bottom: 1.35rem;
+  :deep(.login-form-card.p-card .p-card-content) {
+    padding: 1rem;
+  }
+
+  .login-form-fields {
+    gap: 0.9rem;
   }
 
   :deep(.login-form-card .login-form-input.p-inputtext),
   :deep(.login-form-card .p-password-input),
   :deep(.login-form-card .login-form-input.p-select) {
-    min-height: 2.9rem;
-    padding: 0.75rem 0.9rem;
+    min-height: 2.95rem;
+    padding: 0.74rem 0.9rem 0.74rem 2.65rem;
     font-size: 0.92rem;
   }
 
   :deep(.login-form-card .login-form-input.p-select .p-select-label) {
-    min-height: 2.9rem;
-    padding: 0.75rem 0.9rem;
+    min-height: 2.95rem;
+    padding: 0.74rem 0.9rem 0.74rem 2.65rem;
   }
 
   :deep(.login-form-card .login-form-input.p-select .p-select-dropdown) {
@@ -407,14 +553,20 @@ async function onLoginSuccessClose() {
     right: 2.75rem;
   }
 
+  .login-form-control-icon {
+    left: 0.9rem;
+  }
+
   .login-form-actions {
-    padding-top: 0.15rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 }
 
 @media (max-width: 420px) {
-  .login-form-fields {
-    gap: 0.9rem;
+  :deep(.login-form-card.p-card .p-card-content) {
+    padding: 0.9rem;
   }
 
   .login-form-error {
