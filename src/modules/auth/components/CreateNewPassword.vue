@@ -4,6 +4,7 @@ import Card from 'primevue/card'
 import Password from 'primevue/password'
 import Message from 'primevue/message'
 import Button from '@/components/buttons/Button.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 
 defineProps({
   loading: {
@@ -20,7 +21,7 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['submit', 'back'])
+const emit = defineEmits(['submit', 'back', 'success-close'])
 
 const form = reactive({
   password: '',
@@ -164,6 +165,14 @@ function onSubmit() {
         </form>
       </template>
     </Card>
+
+    <AlertSuccess
+      :show="Boolean(successMessage)"
+      title="Password updated"
+      :message="successMessage || 'Your password has been updated successfully.'"
+      button-text="Back to login"
+      @close="$emit('success-close')"
+    />
   </div>
 </template>
 

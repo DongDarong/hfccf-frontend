@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Loading from '@/components/feedback/Loading.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import CreateNewPassword from '@/modules/auth/components/CreateNewPassword.vue'
 import VerifyCode from '@/modules/auth/components/VerifyCode.vue'
@@ -28,6 +29,14 @@ const isResending = ref(false)
 const isSavingPassword = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+const isRecoveryLoading = computed(() => isResending.value || isVerifying.value || isSavingPassword.value)
+const recoveryLoadingLabel = computed(() => {
+  if (isSavingPassword.value) return 'Saving password...'
+  if (isVerifying.value) return 'Verifying OTP...'
+  if (isResending.value) return 'Sending OTP...'
+  return 'Loading...'
+})
 
 function wait(ms = 450) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -152,10 +161,14 @@ async function onCreatePassword(payload) {
 
   try {
     await wait()
-    await router.push({ name: 'login' })
+    successMessage.value = 'Your password has been updated. Please sign in with the new password.'
   } finally {
     isSavingPassword.value = false
   }
+}
+
+async function onPasswordSuccessClose() {
+  await router.push({ name: 'login' })
 }
 
 async function onResend(payload) {
@@ -217,6 +230,13 @@ async function onResend(payload) {
               <h2>{{ isPasswordStep ? 'New password' : isOtpStep ? 'Verify OTP' : 'Verify email' }}</h2>
             </div>
 
+            <Loading
+              v-if="isRecoveryLoading"
+              class="forgot-page-loading"
+              :label="recoveryLoadingLabel"
+              size="sm"
+            />
+
             <VerifyEmail
               v-if="!isOtpStep && !isPasswordStep"
               v-model:email="email"
@@ -245,6 +265,7 @@ async function onResend(payload) {
               :success-message="successMessage"
               @submit="onCreatePassword"
               @back="onBackToOtp"
+              @success-close="onPasswordSuccessClose"
             />
           </div>
         </div>
@@ -422,6 +443,14 @@ async function onResend(payload) {
   font-size: 1.85rem;
   font-weight: 900;
   line-height: 1.1;
+}
+
+.forgot-page-loading {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(14, 165, 233, 0.14);
+  border-radius: 1rem;
+  background: rgba(240, 249, 255, 0.74);
+  padding: 0.7rem 0.85rem;
 }
 
 @media (max-width: 1023px) {
