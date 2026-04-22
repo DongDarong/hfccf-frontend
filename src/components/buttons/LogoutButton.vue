@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import Button from '@/components/buttons/Button.vue'
+import PrimeButton from 'primevue/button'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import LogoutIcon from '@/assets/icons/Logout.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -10,85 +10,174 @@ defineOptions({
 })
 
 const props = defineProps({
-  collapsed: {
-    type: Boolean,
-    default: false,
-  },
-  block: {
-    type: Boolean,
-    default: true,
-  },
+  collapsed: { type: Boolean, default: false },
+  block: { type: Boolean, default: true },
   size: {
     type: String,
     default: 'md',
     validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value),
   },
-  variant: {
-    type: String,
-    default: 'ghost',
-  },
-  rounded: {
-    type: String,
-    default: '2xl',
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  showConfirm: {
-    type: Boolean,
-    default: true,
-  },
-  label: {
-    type: String,
-    default: '',
-  },
+  variant: { type: String, default: 'ghost' },
+  rounded: { type: String, default: '2xl' },
+  disabled: { type: Boolean, default: false },
+  loading: { type: Boolean, default: false },
+  showConfirm: { type: Boolean, default: true },
+  label: { type: String, default: '' },
   confirmType: {
     type: String,
     default: 'warning',
     validator: (value) => ['danger', 'warning', 'info'].includes(value),
   },
-  title: {
-    type: String,
-    default: '',
-  },
-  message: {
-    type: String,
-    default: '',
-  },
-  confirmText: {
-    type: String,
-    default: '',
-  },
-  cancelText: {
-    type: String,
-    default: '',
-  },
+  title: { type: String, default: '' },
+  message: { type: String, default: '' },
+  confirmText: { type: String, default: '' },
+  cancelText: { type: String, default: '' },
 })
 
 const emit = defineEmits(['logout', 'cancel', 'click'])
+
 const { t } = useLanguage()
 const isConfirmOpen = ref(false)
 
-const resolvedLabel = computed(() => props.label || t('common.logout'))
-const resolvedTitle = computed(() => props.title || t('common.logout'))
-const resolvedMessage = computed(() => props.message || t('common.logoutConfirm'))
-const resolvedConfirmText = computed(() => props.confirmText || t('common.logout'))
-const resolvedCancelText = computed(() => props.cancelText || t('common.cancel'))
-const resolvedCaption = computed(() => (props.collapsed ? '' : t('dashboard.nav.logoutCaption') || 'End current session'))
-// Collapsed sidebar uses compact sizing and non-block button width.
+/**
+ * Helper: safely resolve translation with fallback
+ */
+function translate(key, fallback) {
+  const value = t(key)
+  return value && value !== key ? value : fallback
+}
+
+/**
+ * Labels
+ */
+const resolvedLabel = computed(() =>
+  props.label || translate('common.logout', 'Logout')
+)
+
+const resolvedTitle = computed(() =>
+  props.title || translate('common.logout', 'Logout')
+)
+
+const resolvedMessage = computed(() =>
+  props.message || translate('common.logoutConfirm', 'Are you sure you want to logout?')
+)
+
+const resolvedConfirmText = computed(() =>
+  props.confirmText || translate('common.logout', 'Logout')
+)
+
+const resolvedCancelText = computed(() =>
+  props.cancelText || translate('common.cancel', 'Cancel')
+)
+
+/**
+ * 🔥 FIXED: caption fallback logic
+ */
+const resolvedCaption = computed(() => {
+  if (props.collapsed) return ''
+  return translate('dashboard.nav.logoutCaption', 'End current session')
+})
+
+/**
+ * Layout
+ */
 const computedSize = computed(() => (props.collapsed ? 'sm' : props.size))
 const shouldBlock = computed(() => (props.collapsed ? false : props.block))
 
+const roundedClass = computed(() => {
+  if (props.rounded === 'full') return '!rounded-full'
+  if (props.rounded === 'md') return '!rounded-md'
+  if (props.rounded === 'lg') return '!rounded-lg'
+  if (props.rounded === 'xl') return '!rounded-xl'
+  return '!rounded-2xl'
+})
+
+const sizeClass = computed(() => {
+  if (computedSize.value === 'xs') return '!min-h-8 !px-2.5 !py-1.5 !text-xs'
+  if (computedSize.value === 'sm') return '!min-h-9.5 !px-3 !py-2 !text-sm'
+  if (computedSize.value === 'lg') return '!min-h-12 !px-4.5 !py-3 !text-base'
+  if (computedSize.value === 'xl') return '!min-h-13 !px-5 !py-3.5 !text-base'
+  return '!min-h-11 !px-4 !py-2.5 !text-sm'
+})
+
+const rootClass = computed(() => {
+  const classes = [
+    'logout-button',
+    'group',
+    '!inline-flex',
+    '!items-center',
+    '!border',
+    '!font-bold',
+    '!transition-all',
+    '!duration-200',
+    'focus-visible:!outline-none',
+    'focus-visible:!shadow-focus',
+    'active:enabled:scale-[0.98]',
+    'disabled:!cursor-not-allowed',
+    'disabled:!opacity-60',
+    'disabled:!shadow-none',
+    roundedClass.value,
+    sizeClass.value,
+  ]
+
+  if (props.collapsed) {
+    classes.push(
+      '!h-11',
+      '!w-11',
+      '!min-w-0',
+      '!justify-center',
+      '!border-rose-200',
+      '!bg-white',
+      '!p-0',
+      '!text-rose-700'
+    )
+  } else {
+    classes.push(
+      '!justify-start',
+      '!border-rose-200',
+      '!bg-rose-50',
+      '!text-rose-700',
+      '!px-3',
+      '!py-2.5'
+    )
+  }
+
+  if (shouldBlock.value) classes.push('w-full')
+  return classes
+})
+
+const iconShellClass = computed(() => [
+  'inline-flex',
+  'h-8.5',
+  'w-8.5',
+  'items-center',
+  'justify-center',
+  'rounded-xl',
+  'border',
+  'border-rose-200',
+  'bg-white',
+  'text-rose-600',
+])
+
+const buttonPt = computed(() => ({
+  root: { class: rootClass.value },
+  label: {
+    class: [
+      'inline-flex',
+      'w-full',
+      'items-center',
+      props.collapsed ? 'justify-center' : 'justify-start',
+    ],
+  },
+}))
+
+/**
+ * Actions
+ */
 function onClick() {
   if (props.disabled || props.loading) return
   emit('click')
 
-  // Optional confirmation step before dispatching logout.
   if (props.showConfirm) {
     isConfirmOpen.value = true
     return
@@ -109,43 +198,32 @@ function onCancel() {
 </script>
 
 <template>
-  <div :class="collapsed ? 'inline-flex' : 'w-full px-1.5'">
-    <Button
-      :variant="variant"
-      :size="computedSize"
-      :rounded="rounded"
-      :block="shouldBlock"
+  <div class="logout-button-wrap" :class="collapsed ? 'inline-flex' : 'w-full px-1'">
+    <PrimeButton
+      type="button"
       :disabled="disabled"
       :loading="loading"
-      class="logout-button transition-all duration-300"
-      :class="
-        collapsed
-          ? 'logout-button--collapsed !h-12 !w-12 !min-w-0 !justify-center !p-0 mx-auto'
-          : 'logout-button--expanded !min-h-[3.8rem] !justify-start !px-3.5 !py-2.5'
-      "
+      :pt="buttonPt"
+      :aria-label="resolvedLabel"
       @click="onClick"
     >
-      <template #iconLeft>
-        <span
-          class="logout-button__icon-shell inline-flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--hope-red)_10%,transparent)] text-hope-red transition-colors duration-200 group-hover:bg-[color-mix(in_srgb,var(--hope-red)_18%,transparent)]"
-          aria-hidden="true"
-        >
-          <LogoutIcon :size="20" class="logout-button__icon" />
+      <template #icon>
+        <span :class="iconShellClass">
+          <LogoutIcon :size="19" />
         </span>
       </template>
-      <span
-        v-if="!collapsed"
-        class="logout-button__content ml-1 inline-flex min-w-0 flex-col items-start leading-tight"
-      >
-        <span class="logout-button__label text-[0.92rem] font-extrabold tracking-tight text-slate-800">
+
+      <span v-if="!collapsed" class="ml-2 flex flex-col">
+        <span class="font-bold text-rose-700">
           {{ resolvedLabel }}
         </span>
-        <span class="logout-button__caption mt-0.5 text-[0.7rem] font-medium text-slate-500">
+        <span class="text-xs text-slate-500">
           {{ resolvedCaption }}
         </span>
       </span>
+
       <span v-else class="sr-only">{{ resolvedLabel }}</span>
-    </Button>
+    </PrimeButton>
 
     <AlertQuestion
       :show="isConfirmOpen"
@@ -159,59 +237,3 @@ function onCancel() {
     />
   </div>
 </template>
-
-<style scoped>
-.logout-button {
-  position: relative;
-}
-
-.logout-button--expanded {
-  background: transparent !important;
-  border-color: transparent !important;
-}
-
-.logout-button--expanded:hover {
-  background: color-mix(in srgb, var(--color-base) 6%, rgb(214, 116, 116)) !important;
-  border-color: color-mix(in srgb, var(--color-base) 12%, white) !important;
-}
-
-.logout-button--collapsed {
-  background: white !important;
-  border-color: #f1f5f9 !important;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
-}
-
-.logout-button--collapsed:hover {
-  background: color-mix(in srgb, var(--hope-red) 8%, white) !important;
-  border-color: color-mix(in srgb, var(--hope-red) 20%, white) !important;
-  color: var(--hope-red) !important;
-}
-
-.logout-button--collapsed:hover .logout-button__icon-shell {
-  background: white !important;
-}
-
-.logout-button:deep(.ui-button__label) {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.logout-button--collapsed :deep(.ui-button__label) {
-  justify-content: center;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-</style>
-
-

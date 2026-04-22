@@ -185,7 +185,7 @@ function onLogout() {
       </div>
 
       <div
-        class="mt-3 bg-[linear-gradient(180deg,rgba(255,255,255,0.4)_0%,rgba(248,250,252,0.92)_100%)] pt-1 sm:pt-2"
+        class="sidebar-logout-area mt-3 pt-3"
         :class="{ 'flex justify-center': collapsed }"
       >
         <LogoutButton :collapsed="collapsed" @logout="onLogout" />
@@ -213,6 +213,11 @@ function onLogout() {
   background: #cbd5e1;
 }
 
+.sidebar-logout-area {
+  border-top: 1px solid rgba(226, 232, 240, 0.86);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(248, 250, 252, 0.94) 100%);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -224,6 +229,5 @@ function onLogout() {
   border: 0;
 }
 </style>
-
 
 
