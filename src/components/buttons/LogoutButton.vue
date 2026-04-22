@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import PrimeButton from 'primevue/button'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
-import LogoutIcon from '@/assets/icons/Logout.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -106,6 +105,7 @@ const rootClass = computed(() => {
     'group',
     '!inline-flex',
     '!items-center',
+    '!gap-0',
     '!border',
     '!font-bold',
     '!transition-all',
@@ -150,6 +150,7 @@ const iconShellClass = computed(() => [
   'inline-flex',
   'h-8.5',
   'w-8.5',
+  'flex-none',
   'items-center',
   'justify-center',
   'rounded-xl',
@@ -157,6 +158,10 @@ const iconShellClass = computed(() => [
   'border-rose-200',
   'bg-white',
   'text-rose-600',
+  'transition-colors',
+  'duration-200',
+  'group-hover:border-rose-300',
+  'group-hover:text-rose-700',
 ])
 
 const buttonPt = computed(() => ({
@@ -207,11 +212,9 @@ function onCancel() {
       :aria-label="resolvedLabel"
       @click="onClick"
     >
-      <template #icon>
-        <span :class="iconShellClass">
-          <LogoutIcon :size="19" />
-        </span>
-      </template>
+      <span :class="iconShellClass" aria-hidden="true">
+        <i class="pi pi-sign-out text-[1rem]"></i>
+      </span>
 
       <span v-if="!collapsed" class="ml-2 flex flex-col">
         <span class="font-bold text-rose-700">
