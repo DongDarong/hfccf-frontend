@@ -10,8 +10,6 @@ import Notification from '@/assets/icons/Notification.vue'
 defineOptions({
   name: 'MainNavbar',
 })
-
-const emit = defineEmits(['toggle-sidebar'])
 const { t, locale } = useI18n()
 
 const currentLocale = computed({
@@ -75,9 +73,6 @@ const localePt = {
   },
 }
 
-function onToggleSidebar() {
-  emit('toggle-sidebar')
-}
 </script>
 
 <template>
@@ -85,18 +80,6 @@ function onToggleSidebar() {
     class="flex h-full w-full items-center justify-between gap-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none [app-region:no-drag] [-webkit-app-region:no-drag] max-md:gap-3 max-[540px]:gap-2"
   >
     <div class="flex min-w-0 items-center gap-[0.65rem]">
-      <Button
-        type="button"
-        icon="pi pi-bars"
-        severity="secondary"
-        text
-        rounded
-        class="menu-btn !flex lg:!hidden"
-        :pt="menuButtonPt"
-        aria-label="Open sidebar"
-        @click="onToggleSidebar"
-      />
-
       <div class="flex min-w-0 items-center gap-3 max-[540px]:gap-2">
         <img
           src="@/assets/images/logo.jpg"
@@ -162,7 +145,7 @@ function onToggleSidebar() {
         aria-label="Language Switcher"
       />
 
-      <Aavtar name="HFCCF User" size="sm" status="online" />
+      <Aavtar name="HFCCF User" size="sm" status="online" :show-meta="false" compact />
     </div>
   </nav>
 </template>

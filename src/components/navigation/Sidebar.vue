@@ -137,9 +137,11 @@ function onLogout() {
     <nav class="flex h-full min-h-0 flex-col pb-2" aria-label="Main navigation">
       <div class="py-2 pb-4 sm:pb-5">
         <div class="mb-4 flex items-start justify-between" :class="{ 'justify-center': collapsed }">
-          <slot v-if="!collapsed" name="header">
-            <SidebarBrand />
-          </slot>
+          <div v-if="!collapsed" class="min-w-0 flex-1">
+            <slot name="header">
+              <SidebarBrand />
+            </slot>
+          </div>
           <PrimeButton
             type="button"
             severity="secondary"
@@ -183,7 +185,7 @@ function onLogout() {
       </div>
 
       <div
-        class="mt-4 border-t border-slate-300/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.4)_0%,rgba(248,250,252,0.92)_100%)] pt-4 sm:pt-5"
+        class="mt-3 bg-[linear-gradient(180deg,rgba(255,255,255,0.4)_0%,rgba(248,250,252,0.92)_100%)] pt-1 sm:pt-2"
         :class="{ 'flex justify-center': collapsed }"
       >
         <LogoutButton :collapsed="collapsed" @logout="onLogout" />

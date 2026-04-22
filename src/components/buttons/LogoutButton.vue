@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import LogoutIcon from '@/assets/icons/Logout.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -24,11 +25,11 @@ const props = defineProps({
   },
   variant: {
     type: String,
-    default: 'danger',
+    default: 'ghost',
   },
   rounded: {
     type: String,
-    default: 'xl',
+    default: '2xl',
   },
   disabled: {
     type: Boolean,
@@ -78,7 +79,7 @@ const resolvedTitle = computed(() => props.title || t('common.logout'))
 const resolvedMessage = computed(() => props.message || t('common.logoutConfirm'))
 const resolvedConfirmText = computed(() => props.confirmText || t('common.logout'))
 const resolvedCancelText = computed(() => props.cancelText || t('common.cancel'))
-const resolvedCaption = computed(() => (props.collapsed ? '' : 'End current session'))
+const resolvedCaption = computed(() => (props.collapsed ? '' : t('dashboard.nav.logoutCaption') || 'End current session'))
 // Collapsed sidebar uses compact sizing and non-block button width.
 const computedSize = computed(() => (props.collapsed ? 'sm' : props.size))
 const shouldBlock = computed(() => (props.collapsed ? false : props.block))
@@ -108,7 +109,7 @@ function onCancel() {
 </script>
 
 <template>
-  <div :class="collapsed ? 'inline-flex' : 'w-full'">
+  <div :class="collapsed ? 'inline-flex' : 'w-full px-1.5'">
     <Button
       :variant="variant"
       :size="computedSize"
@@ -116,40 +117,30 @@ function onCancel() {
       :block="shouldBlock"
       :disabled="disabled"
       :loading="loading"
-      class="logout-button"
+      class="logout-button transition-all duration-300"
       :class="
         collapsed
-          ? 'logout-button--collapsed !min-w-[2.9rem] !justify-center !px-2.5'
-          : 'logout-button--expanded !min-h-12 !justify-start !py-2.5'
+          ? 'logout-button--collapsed !h-12 !w-12 !min-w-0 !justify-center !p-0 mx-auto'
+          : 'logout-button--expanded !min-h-[3.8rem] !justify-start !px-3.5 !py-2.5'
       "
       @click="onClick"
     >
       <template #iconLeft>
         <span
-          class="logout-button__icon-shell inline-flex h-7.5 w-7.5 flex-none items-center justify-center rounded-full bg-white/15"
+          class="logout-button__icon-shell inline-flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--hope-red)_10%,transparent)] text-hope-red transition-colors duration-200 group-hover:bg-[color-mix(in_srgb,var(--hope-red)_18%,transparent)]"
           aria-hidden="true"
         >
-          <svg
-            class="logout-button__icon h-5 w-5 flex-none"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
+          <LogoutIcon :size="20" class="logout-button__icon" />
         </span>
       </template>
       <span
         v-if="!collapsed"
-        class="logout-button__content inline-flex min-w-0 flex-col items-start leading-none"
+        class="logout-button__content ml-1 inline-flex min-w-0 flex-col items-start leading-tight"
       >
-        <span class="logout-button__label font-extrabold tracking-[0.01em]">{{ resolvedLabel }}</span>
-        <span class="logout-button__caption mt-0.5 text-[0.72rem] font-semibold text-white/70">
+        <span class="logout-button__label text-[0.92rem] font-extrabold tracking-tight text-slate-800">
+          {{ resolvedLabel }}
+        </span>
+        <span class="logout-button__caption mt-0.5 text-[0.7rem] font-medium text-slate-500">
           {{ resolvedCaption }}
         </span>
       </span>
@@ -174,17 +165,41 @@ function onCancel() {
   position: relative;
 }
 
-.logout-button--collapsed .logout-button__icon-shell {
-  height: 1.7rem;
-  width: 1.7rem;
+.logout-button--expanded {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.logout-button--expanded:hover {
+  background: color-mix(in srgb, var(--color-base) 6%, rgb(214, 116, 116)) !important;
+  border-color: color-mix(in srgb, var(--color-base) 12%, white) !important;
+}
+
+.logout-button--collapsed {
+  background: white !important;
+  border-color: #f1f5f9 !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+}
+
+.logout-button--collapsed:hover {
+  background: color-mix(in srgb, var(--hope-red) 8%, white) !important;
+  border-color: color-mix(in srgb, var(--hope-red) 20%, white) !important;
+  color: var(--hope-red) !important;
+}
+
+.logout-button--collapsed:hover .logout-button__icon-shell {
+  background: white !important;
+}
+
+.logout-button:deep(.ui-button__label) {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .logout-button--collapsed :deep(.ui-button__label) {
-  display: none;
-}
-
-.logout-button:deep(.ui-button.p-button) {
-  min-height: 3rem;
+  justify-content: center;
 }
 
 .sr-only {
@@ -196,12 +211,6 @@ function onCancel() {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
-}
-
-@media (max-width: 640px) {
-  .logout-button__caption {
-    font-size: 0.68rem;
-  }
 }
 </style>
 

@@ -25,6 +25,14 @@ const props = defineProps({
     type: String,
     default: '#profile',
   },
+  showMeta: {
+    type: Boolean,
+    default: true,
+  },
+  compact: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const currentUser = computed(() => getCurrentUser() || {})
@@ -95,9 +103,14 @@ watch(resolvedAvatar, () => {
 <template>
   <a
     :href="props.href"
-    class="ml-2.5 flex items-center gap-3 rounded-2xl border-l border-surface-200 px-[1rem] py-[0.35rem] text-inherit no-underline transition-all duration-200 hover:-translate-y-px hover:bg-slate-100/80 max-sm:ml-0 max-sm:border-l-0 max-sm:p-1"
+    class="flex items-center gap-3 rounded-2xl text-inherit no-underline transition-all duration-200 hover:-translate-y-px hover:bg-slate-100/80"
+    :class="
+      compact
+        ? 'justify-center p-1'
+        : 'ml-2.5 border-l border-surface-200 px-[1rem] py-[0.35rem] max-sm:ml-0 max-sm:border-l-0 max-sm:p-1'
+    "
   >
-    <div class="text-right max-sm:hidden">
+    <div v-if="showMeta" class="text-right max-sm:hidden">
       <div class="text-[0.88rem] leading-tight font-extrabold text-surface-900">{{ displayName }}</div>
       <div class="text-[0.72rem] font-semibold tracking-[0.02em] text-surface-500">
         {{ displayUsername }}

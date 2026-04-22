@@ -38,6 +38,9 @@ app.use(PrimeVue, {
   theme: {
     preset: HopePreset,
     options: {
+      // This app only defines a light token set. Disabling PrimeVue dark-mode
+      // switching prevents components from falling back to dark surfaces/text.
+      darkModeSelector: false,
       // Keep PrimeVue theme styles inside a dedicated cascade layer so
       // Tailwind utilities and local component styles can override them predictably.
       cssLayer: {
