@@ -3,6 +3,34 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import LoginForm from '@/modules/auth/components/LoginForm.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
+const loginAccessPolicy = Object.freeze({
+  guestOnly: true,
+  defaultRedirect: '/module/dashboard',
+  recoveryRole: 'superadmin',
+  allowedRoles: [
+    'superadmin',
+    'adminenglish',
+    'adminpreschool',
+    'adminscholaship',
+    'adminsport',
+    'teacher-english',
+    'teacher-preschool',
+    'teacher-scholarship',
+    'coach',
+  ],
+  requiredPermissionsByRole: {
+    superadmin: ['all:*'],
+    adminenglish: ['dashboard:read', 'users:read'],
+    adminpreschool: ['dashboard:read', 'users:read'],
+    adminscholaship: ['dashboard:read', 'users:read'],
+    adminsport: ['dashboard:read', 'users:read'],
+    'teacher-english': ['dashboard:read', 'tasks:read'],
+    'teacher-preschool': ['dashboard:read', 'tasks:read'],
+    'teacher-scholarship': ['dashboard:read', 'tasks:read'],
+    coach: ['dashboard:read', 'tasks:read'],
+  },
+})
+
 const { language } = useLanguage()
 </script>
 
@@ -92,9 +120,6 @@ const { language } = useLanguage()
                   </p>
                 </div>
               </div>
-              <div class="login-page-status hidden sm:inline-grid" aria-label="Protected">
-                <i class="pi pi-lock" aria-hidden="true"></i>
-              </div>
             </div>
 
             <div class="mb-4 px-1">
@@ -109,7 +134,7 @@ const { language } = useLanguage()
               </h1>
             </div>
 
-            <LoginForm />
+            <LoginForm :access-policy="loginAccessPolicy" />
           </div>
         </div>
       </section>
@@ -318,16 +343,6 @@ const { language } = useLanguage()
   place-items: center;
   border-radius: 999px;
   background: #f8fafc;
-}
-
-.login-page-status {
-  height: 2.3rem;
-  width: 2.3rem;
-  place-items: center;
-  border: 1px solid rgba(203, 213, 225, 0.86);
-  border-radius: 999px;
-  background: #ffffff;
-  color: #475569;
 }
 
 @media (max-width: 1023px) {

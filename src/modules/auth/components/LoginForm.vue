@@ -11,11 +11,23 @@ import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { login } from '@/modules/auth/services/authService'
+import { login, logout } from '@/modules/auth/services/authService'
 
 const router = useRouter()
 const route = useRoute()
 const { language } = useLanguage()
+
+const props = defineProps({
+  accessPolicy: {
+    type: Object,
+    default: () => ({
+      defaultRedirect: '/module/dashboard',
+      recoveryRole: 'superadmin',
+      allowedRoles: [],
+      requiredPermissionsByRole: {},
+    }),
+  },
+})
 
 const isKhmer = computed(() => language.value === 'KH')
 
@@ -48,11 +60,35 @@ const userTypeOptions = [
   { label: 'Coach', khLabel: 'គ្រូបង្វឹក', value: 'coach' },
 ]
 
+const allowedRoleValues = computed(() =>
+  Array.isArray(props.accessPolicy.allowedRoles)
+    ? props.accessPolicy.allowedRoles.map((role) => String(role || '').trim().toLowerCase()).filter(Boolean)
+    : [],
+)
+
+const normalizedUserType = computed(() =>
+  String(form.userType || '')
+    .trim()
+    .toLowerCase(),
+)
+
+const isRoleAllowed = computed(
+  () => !allowedRoleValues.value.length || allowedRoleValues.value.includes(normalizedUserType.value),
+)
+
+const recoveryRole = computed(() =>
+  String(props.accessPolicy.recoveryRole || 'superadmin')
+    .trim()
+    .toLowerCase(),
+)
+
 const localizedUserTypeOptions = computed(() =>
-  userTypeOptions.map((option) => ({
-    ...option,
-    displayLabel: isKhmer.value ? option.khLabel : option.label,
-  })),
+  userTypeOptions
+    .filter((option) => !allowedRoleValues.value.length || allowedRoleValues.value.includes(option.value))
+    .map((option) => ({
+      ...option,
+      displayLabel: isKhmer.value ? option.khLabel : option.label,
+    })),
 )
 
 const emailError = computed(() => {
@@ -73,6 +109,7 @@ const passwordError = computed(() => {
 const userTypeError = computed(() => {
   if (!touched.userType) return ''
   if (!form.userType) return isKhmer.value ? 'សូមជ្រើសរើសប្រភេទអ្នកប្រើ។' : 'Please choose your user type.'
+  if (!isRoleAllowed.value) return isKhmer.value ? 'អ្នកប្រើនេះមិនមានសិទ្ធិចូលប្រើទេ។' : 'This user type is not allowed.'
   return ''
 })
 
@@ -81,7 +118,8 @@ const isFormValid = computed(
     Boolean(form.email.trim()) &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) &&
     Boolean(form.password) &&
-    Boolean(form.userType),
+    Boolean(form.userType) &&
+    isRoleAllowed.value,
 )
 
 const localizedSubmitLabel = computed(() => {
@@ -91,6 +129,21 @@ const localizedSubmitLabel = computed(() => {
 
 function touchField(field) {
   touched[field] = true
+}
+
+function hasRequiredPermissionsForRole(user) {
+  const role = String(user?.role || '')
+    .trim()
+    .toLowerCase()
+  const requiredPermissions = Array.isArray(props.accessPolicy.requiredPermissionsByRole?.[role])
+    ? props.accessPolicy.requiredPermissionsByRole[role]
+    : []
+  const userPermissions = Array.isArray(user?.role_permission) ? user.role_permission : []
+
+  if (!requiredPermissions.length) return true
+  if (userPermissions.includes('all:*')) return true
+
+  return requiredPermissions.every((permission) => userPermissions.includes(permission))
 }
 
 async function onSubmit() {
@@ -104,12 +157,18 @@ async function onSubmit() {
   isSubmitting.value = true
 
   try {
-    await login({
-      email: form.email,
+    const authenticatedUser = await login({
+      email: form.email.trim().toLowerCase(),
       password: form.password,
-      role: form.userType,
+      role: normalizedUserType.value,
       remember: form.remember,
     })
+
+    if (!hasRequiredPermissionsForRole(authenticatedUser)) {
+      logout()
+      throw new Error('Your account does not have the required permissions for this access type.')
+    }
+
     shouldRedirectAfterSuccess.value = true
     showLoginSuccess.value = true
   } catch (error) {
@@ -125,7 +184,7 @@ function getSafeRedirectTarget(value) {
   const redirect = String(value || '').trim()
 
   if (!redirect.startsWith('/') || redirect.startsWith('//')) {
-    return '/module/dashboard'
+    return props.accessPolicy.defaultRedirect || '/module/dashboard'
   }
 
   return redirect
@@ -231,7 +290,7 @@ async function onLoginSuccessClose() {
             </label>
 
             <RouterLink
-              v-if="form.userType === 'superadmin'"
+              v-if="normalizedUserType === recoveryRole"
               :to="{ name: 'forgot-password' }"
               class="font-semibold text-sky-700 transition hover:text-sky-800 max-sm:self-start"
             >

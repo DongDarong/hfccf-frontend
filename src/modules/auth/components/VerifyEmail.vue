@@ -4,6 +4,7 @@ import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Button from '@/components/buttons/Button.vue'
+import users from '@/mocks/users.json'
 
 const props = defineProps({
   email: {
@@ -28,16 +29,14 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['verify', 'resend', 'update:email'])
+const emit = defineEmits(['resend', 'update:email'])
 
 const form = reactive({
   email: props.email,
-  code: '',
 })
 
 const touched = reactive({
   email: false,
-  code: false,
 })
 
 watch(
@@ -55,7 +54,15 @@ watch(
 )
 
 const normalizedEmail = computed(() => form.email.trim())
-const normalizedCode = computed(() => form.code.replace(/\D/g, '').slice(0, 6))
+const normalizedEmailKey = computed(() => normalizedEmail.value.toLowerCase())
+
+const matchedSuperAdmin = computed(() =>
+  users.find(
+    (user) =>
+      String(user.email || '').trim().toLowerCase() === normalizedEmailKey.value &&
+      String(user.role || '').trim().toLowerCase() === 'superadmin',
+  ),
+)
 
 const emailError = computed(() => {
   if (!touched.email) return ''
@@ -63,46 +70,26 @@ const emailError = computed(() => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value)) {
     return 'Enter a valid email address.'
   }
+  if (!matchedSuperAdmin.value) {
+    return 'Use a Super Admin email registered in the system.'
+  }
   return ''
 })
 
-const codeError = computed(() => {
-  if (!touched.code) return ''
-  if (!normalizedCode.value) return 'Verification code is required.'
-  if (normalizedCode.value.length !== 6) return 'Enter the 6-digit code.'
-  return ''
-})
-
-const isFormValid = computed(
-  () =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value) &&
-    normalizedCode.value.length === 6,
+const canContinueToOtp = computed(
+  () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value) && Boolean(matchedSuperAdmin.value),
 )
+
+const canSubmitCurrentStep = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value))
 
 function touchField(field) {
   touched[field] = true
 }
 
-function onCodeInput(value) {
-  form.code = String(value || '').replace(/\D/g, '').slice(0, 6)
-}
-
 function onSubmit() {
   touched.email = true
-  touched.code = true
 
-  if (!isFormValid.value) return
-
-  emit('verify', {
-    email: normalizedEmail.value,
-    code: normalizedCode.value,
-  })
-}
-
-function onResend() {
-  touched.email = true
-
-  if (emailError.value || !normalizedEmail.value) return
+  if (!canContinueToOtp.value) return
 
   emit('resend', {
     email: normalizedEmail.value,
@@ -116,12 +103,16 @@ function onResend() {
       <template #content>
         <form class="verify-email-fields" @submit.prevent="onSubmit">
           <div class="verify-email-header">
+            <RouterLink :to="{ name: 'login' }" class="verify-email-back" aria-label="Back to login">
+              <i class="pi pi-arrow-left" aria-hidden="true"></i>
+            </RouterLink>
+
             <div class="verify-email-badge" aria-hidden="true">
               <i class="pi pi-envelope"></i>
             </div>
             <div>
               <p class="verify-email-eyebrow">Email verification</p>
-              <h2>Check your inbox</h2>
+              <h2>Find account</h2>
             </div>
           </div>
 
@@ -148,31 +139,6 @@ function onResend() {
             </p>
           </div>
 
-          <div class="verify-email-field">
-            <label for="verifyCode">Code</label>
-            <div class="verify-email-control">
-              <i class="pi pi-key verify-email-control-icon" aria-hidden="true"></i>
-              <InputText
-                id="verifyCode"
-                :model-value="form.code"
-                inputmode="numeric"
-                autocomplete="one-time-code"
-                maxlength="6"
-                class="verify-email-input verify-email-code w-full"
-                :class="{ 'verify-email-input--invalid': codeError }"
-                :aria-invalid="Boolean(codeError)"
-                :aria-describedby="codeError ? 'verify-code-error' : undefined"
-                placeholder="000000"
-                @update:model-value="onCodeInput"
-                @blur="touchField('code')"
-              />
-            </div>
-            <p v-if="codeError" id="verify-code-error" class="verify-email-error">
-              <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
-              {{ codeError }}
-            </p>
-          </div>
-
           <Message v-if="errorMessage" severity="error" :closable="false">
             {{ errorMessage }}
           </Message>
@@ -186,23 +152,14 @@ function onResend() {
             size="lg"
             rounded="xl"
             block
-            :disabled="!isFormValid"
-            :loading="loading"
+            :disabled="!canSubmitCurrentStep"
+            :loading="resendLoading"
           >
             <template #iconLeft>
               <i class="pi pi-check-circle" aria-hidden="true"></i>
             </template>
-            Verify email
+            Continue
           </Button>
-
-          <button
-            type="button"
-            class="verify-email-resend"
-            :disabled="resendLoading"
-            @click="onResend"
-          >
-            {{ resendLoading ? 'Sending...' : 'Resend code' }}
-          </button>
         </form>
       </template>
     </Card>
@@ -233,23 +190,35 @@ function onResend() {
 }
 
 .verify-email-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
   align-items: center;
-  gap: 0.9rem;
+  gap: 0.75rem;
   padding-bottom: 0.2rem;
 }
 
+.verify-email-back,
 .verify-email-badge {
   display: grid;
-  height: 3rem;
-  width: 3rem;
   flex: 0 0 auto;
   place-items: center;
   border: 1px solid rgba(203, 213, 225, 0.85);
-  border-radius: 1rem;
   background: #ffffff;
   color: #0ea5e9;
   box-shadow: 0 12px 22px -18px rgba(15, 23, 42, 0.3);
+}
+
+.verify-email-back {
+  height: 2.45rem;
+  width: 2.45rem;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.verify-email-badge {
+  height: 3rem;
+  width: 3rem;
+  border-radius: 1rem;
 }
 
 .verify-email-eyebrow {
@@ -323,11 +292,6 @@ function onResend() {
     0 12px 22px -20px rgba(14, 165, 233, 0.58);
 }
 
-:deep(.verify-email-code.p-inputtext) {
-  font-weight: 900;
-  letter-spacing: 0.18em;
-}
-
 :deep(.verify-email-input--invalid.p-inputtext) {
   border-color: #f43f5e;
   box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1);
@@ -342,21 +306,6 @@ function onResend() {
   font-weight: 800;
 }
 
-.verify-email-resend {
-  justify-self: center;
-  border: 0;
-  background: transparent;
-  color: #0369a1;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 900;
-}
-
-.verify-email-resend:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 @media (max-width: 639px) {
   :deep(.verify-email-card.p-card .p-card-content) {
     padding: 1rem;
@@ -364,6 +313,14 @@ function onResend() {
 
   .verify-email-fields {
     gap: 0.9rem;
+  }
+
+  .verify-email-header {
+    grid-template-columns: auto 1fr;
+  }
+
+  .verify-email-badge {
+    display: none;
   }
 
   :deep(.verify-email-input.p-inputtext) {
