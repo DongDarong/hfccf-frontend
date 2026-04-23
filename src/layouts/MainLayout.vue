@@ -268,7 +268,7 @@ onBeforeUnmount(() => {
       :pt="{
         root: {
           class:
-            'w-[min(85vw,320px)] mt-[60px] border-r border-surface-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,251,255,1)_100%)] shadow-[0_18px_40px_-28px_rgba(15,23,42,0.35)] max-[600px]:mt-14 max-[480px]:mt-[52px] max-[420px]:mt-[50px]',
+            'w-[min(88vw,300px)] mt-[60px] border-r border-surface-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,251,255,1)_100%)] shadow-[0_18px_40px_-28px_rgba(15,23,42,0.35)] max-[600px]:mt-14 max-[600px]:w-[min(90vw,290px)] max-[480px]:mt-[52px] max-[480px]:w-[min(92vw,270px)] max-[420px]:mt-[50px] max-[420px]:w-[min(94vw,250px)]',
         },
         content: { class: 'p-0' },
         mask: { class: 'min-[769px]:hidden bg-slate-950/20 backdrop-blur-[2px]' },
@@ -326,4 +326,3 @@ onBeforeUnmount(() => {
   box-shadow: 0 18px 40px -34px rgba(15, 23, 42, 0.28);
 }
 </style>
-

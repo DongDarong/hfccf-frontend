@@ -261,6 +261,83 @@ function onLogout() {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(248, 250, 252, 0.94) 100%);
 }
 
+@media (max-width: 768px) {
+  .sidebar-shell {
+    padding: 0.7rem 0.65rem 0.65rem;
+  }
+
+  .sidebar-topbar {
+    min-height: 3.05rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .sidebar-topbar--custom {
+    min-height: 4.75rem;
+  }
+
+  .sidebar-topbar--collapsed {
+    min-height: 2.4rem;
+  }
+
+  .sidebar-user-card {
+    gap: 0.55rem;
+  }
+
+  .sidebar-user-card :deep(a) {
+    padding: 0.38rem 0.45rem 0.38rem 0.4rem;
+    border-radius: 0.82rem;
+  }
+
+  .sidebar-user-card :deep(.navbar-profile__avatar.p-avatar) {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .sidebar-user-card__name {
+    font-size: 0.86rem;
+  }
+
+  .sidebar-user-card__username {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-shell {
+    padding: 0.6rem 0.55rem 0.55rem;
+  }
+
+  .sidebar-topbar {
+    min-height: 2.85rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .sidebar-topbar--custom {
+    min-height: 4.35rem;
+  }
+
+  .sidebar-user-card {
+    gap: 0.5rem;
+  }
+
+  .sidebar-user-card :deep(a) {
+    padding: 0.34rem 0.4rem 0.34rem 0.35rem;
+  }
+
+  .sidebar-user-card :deep(.navbar-profile__avatar.p-avatar) {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .sidebar-user-card__name {
+    font-size: 0.82rem;
+  }
+
+  .sidebar-user-card__username {
+    font-size: 0.65rem;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
