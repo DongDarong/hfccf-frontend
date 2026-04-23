@@ -12,6 +12,8 @@ import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import usersMock from '@/mocks/users.json'
+import { ROLES } from '@/constants/roles'
+import { mapUsers } from '@/services/mappers/userMapper'
 
 defineOptions({
   name: 'UsersPage',
@@ -33,15 +35,15 @@ const successMessage = ref('')
 const pageSize = 10
 
 const roleOptions = [
-  'superadmin',
-  'coach',
-  'teacher-english',
-  'teacher-preschool',
-  'teacher-scholarship',
-  'adminpreschool',
-  'adminscholaship',
-  'adminenglish',
-  'adminsport',
+  ROLES.SUPER_ADMIN,
+  ROLES.COACH,
+  ROLES.TEACHER_ENGLISH,
+  ROLES.TEACHER_PRESCHOOL,
+  ROLES.TEACHER_SCHOLARSHIP,
+  ROLES.ADMIN_PRESCHOOL,
+  ROLES.ADMIN_SCHOLARSHIP,
+  ROLES.ADMIN_ENGLISH,
+  ROLES.ADMIN_SPORT,
 ]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
 const addUserLabel = computed(() => {
@@ -64,19 +66,7 @@ function goToAddUser() {
   router.push('/module/super-admin/users/add')
 }
 
-const users = ref(
-  usersMock.map((item) => ({
-    id: item.id,
-    name: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || item.id,
-    email: item.email,
-    avatar: item.avatar,
-    role: item.role,
-    permissions: Array.isArray(item.role_permission) ? [...item.role_permission] : [],
-    status: item.status,
-    phone: item.phone,
-    username: item.username || item.id,
-  })),
-)
+const users = ref(mapUsers(usersMock))
 
 const filteredUsers = computed(() => {
   const query = String(searchQuery.value ?? '')
@@ -258,7 +248,5 @@ function onConfirmDelete() {
   padding: 1.5rem 0.5rem;
 }
 </style>
-
-
 
 

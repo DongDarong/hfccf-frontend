@@ -8,6 +8,8 @@ import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
 import usersMock from '@/mocks/users.json'
+import { ROLES } from '@/constants/roles'
+import { mapUser } from '@/services/mappers/userMapper'
 
 defineOptions({
   name: 'SportAdminUsersPage',
@@ -20,7 +22,7 @@ const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 8
 
-const roleOptions = ['coach']
+const roleOptions = [ROLES.COACH]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
 const addCoachLabel = computed(() => 'Add Coach')
 const tableColumns = [
@@ -35,23 +37,13 @@ const tableColumns = [
 ]
 
 function goToAddCoach() {
-  router.push({ path: '/module/super-admin/users/add', query: { role: 'coach' } })
+  router.push({ path: '/module/super-admin/users/add', query: { role: ROLES.COACH } })
 }
 
 const coachUsers = ref(
   usersMock
-    .filter((item) => String(item.role || '').toLowerCase() === 'coach')
-    .map((item) => ({
-      id: item.id,
-      name: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || item.id,
-      username: item.username || item.id,
-      email: item.email,
-      avatar: item.avatar,
-      role: item.role,
-      permissions: Array.isArray(item.role_permission) ? [...item.role_permission] : [],
-      status: item.status,
-      phone: item.phone,
-    })),
+    .filter((item) => String(item.role || '').toLowerCase() === ROLES.COACH)
+    .map((item) => mapUser(item)),
 )
 
 const filteredUsers = computed(() => {
@@ -205,6 +197,4 @@ function onDeleteUser(user) {
   white-space: nowrap;
 }
 </style>
-
-
 

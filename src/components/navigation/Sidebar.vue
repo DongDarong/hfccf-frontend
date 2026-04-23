@@ -10,6 +10,7 @@ import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/assets/icons/Home.vue'
 import UsersIcon from '@/assets/icons/Users.vue'
 import { getCurrentUser, isSuperAdmin } from '@/services/auth'
+import { ROLES, PROGRAM_ADMIN_ROLES, normalizeRole } from '@/constants/roles'
 
 defineOptions({
   name: 'MainSidebar',
@@ -34,43 +35,26 @@ const iconByName = {
 
 const currentPath = computed(() => route.path)
 const currentUser = computed(() => getCurrentUser() || {})
-const canSeeUsersSection = computed(() => isSuperAdmin(currentUser.value))
-const isEnglishAdmin = computed(
-  () =>
-    String(currentUser.value?.role || '')
-      .trim()
-      .toLowerCase() === 'adminenglish',
+const currentRole = computed(() => normalizeRole(currentUser.value?.role))
+const userManagementRouteByRole = Object.freeze({
+  [ROLES.ADMIN_ENGLISH]: '/module/english-admin/users',
+  [ROLES.ADMIN_PRESCHOOL]: '/module/preschool-admin/users',
+  [ROLES.ADMIN_SCHOLARSHIP]: '/module/scholarship-admin/users',
+  [ROLES.ADMIN_SPORT]: '/module/sport-admin/users',
+})
+const canSeeUsersSection = computed(
+  () => isSuperAdmin(currentUser.value) || PROGRAM_ADMIN_ROLES.includes(currentRole.value),
 )
-const isPreschoolAdmin = computed(
-  () =>
-    String(currentUser.value?.role || '')
-      .trim()
-      .toLowerCase() === 'adminpreschool',
-)
-const isScholarshipAdmin = computed(
-  () =>
-    String(currentUser.value?.role || '')
-      .trim()
-      .toLowerCase() === 'adminscholaship',
-)
-const isSportAdmin = computed(
-  () =>
-    String(currentUser.value?.role || '')
-      .trim()
-      .toLowerCase() === 'adminsport',
-)
+const userManagementRoute = computed(() => {
+  if (isSuperAdmin(currentUser.value)) return '/module/super-admin/users/manage'
+  return userManagementRouteByRole[currentRole.value] || ''
+})
 const navItems = computed(() =>
   // Resolve labels at render time so locale changes update menu text immediately.
   sidebarNavData
     .filter((item) => {
       if (item.to === '/users') {
-        return (
-          canSeeUsersSection.value ||
-          isEnglishAdmin.value ||
-          isPreschoolAdmin.value ||
-          isScholarshipAdmin.value ||
-          isSportAdmin.value
-        )
+        return canSeeUsersSection.value
       }
       return true
     })
@@ -79,17 +63,7 @@ const navItems = computed(() =>
       let resolvedTo = baseTo
 
       if (item.to === '/users') {
-        if (canSeeUsersSection.value) {
-          resolvedTo = '/module/super-admin/users/manage'
-        } else if (isEnglishAdmin.value) {
-          resolvedTo = '/module/english-admin/users'
-        } else if (isPreschoolAdmin.value) {
-          resolvedTo = '/module/preschool-admin/users'
-        } else if (isScholarshipAdmin.value) {
-          resolvedTo = '/module/scholarship-admin/users'
-        } else if (isSportAdmin.value) {
-          resolvedTo = '/module/sport-admin/users'
-        }
+        resolvedTo = userManagementRoute.value || baseTo
       }
 
       return {
@@ -224,6 +198,4 @@ function onLogout() {
   border: 0;
 }
 </style>
-
-
 

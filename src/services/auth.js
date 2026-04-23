@@ -1,4 +1,5 @@
 import users from '@/mocks/users.json'
+import { mapUser } from '@/services/mappers/userMapper'
 
 const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
 const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
@@ -28,7 +29,7 @@ function clearSessionStorage(storage) {
 }
 
 function sanitizeUser(user) {
-  const safeUser = { ...user }
+  const safeUser = mapUser(user)
   delete safeUser.password
   return safeUser
 }
@@ -137,7 +138,8 @@ export function isAuthenticated() {
 
 export function getCurrentPermissions(user = getCurrentUser()) {
   if (!user || typeof user !== 'object') return []
-  return Array.isArray(user.role_permission) ? user.role_permission : []
+  if (Array.isArray(user.role_permission)) return user.role_permission
+  return Array.isArray(user.permissions) ? user.permissions : []
 }
 
 export function hasPermission(permission, user = getCurrentUser()) {
@@ -188,6 +190,7 @@ export function startAutoLogoutWatcher({ onExpire, checkEveryMs = 60000 } = {}) 
   if (typeof window === 'undefined') return () => {}
 
   const activityEvents = ['click', 'keydown', 'mousedown', 'touchstart', 'scroll']
+  const sessionKeys = [AUTH_USER_STORAGE_KEY, AUTH_TOKEN_STORAGE_KEY]
   let lastTrackedAt = 0
 
   function trackActivity() {
@@ -209,9 +212,21 @@ export function startAutoLogoutWatcher({ onExpire, checkEveryMs = 60000 } = {}) 
     }
   }
 
+  function handleStorageChange(event) {
+    const sessionWasCleared = event.key === null
+    const authValueWasRemoved =
+      sessionKeys.includes(event.key) && event.oldValue !== null && event.newValue === null
+
+    if (!authValueWasRemoved && !(sessionWasCleared && isAuthenticated())) return
+
+    logout()
+    if (typeof onExpire === 'function') onExpire()
+  }
+
   activityEvents.forEach((eventName) => {
     window.addEventListener(eventName, trackActivity, { passive: true })
   })
+  window.addEventListener('storage', handleStorageChange)
 
   const timer = window.setInterval(checkExpiry, checkEveryMs)
   checkExpiry()
@@ -222,6 +237,6 @@ export function startAutoLogoutWatcher({ onExpire, checkEveryMs = 60000 } = {}) 
     })
 
     window.clearInterval(timer)
+    window.removeEventListener('storage', handleStorageChange)
   }
 }
-

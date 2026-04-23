@@ -12,6 +12,7 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { login, logout } from '@/modules/auth/services/authService'
+import { ROLES } from '@/constants/roles'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,7 +23,7 @@ const props = defineProps({
     type: Object,
     default: () => ({
       defaultRedirect: '/module/dashboard',
-      recoveryRole: 'superadmin',
+      recoveryRole: ROLES.SUPER_ADMIN,
       allowedRoles: [],
       requiredPermissionsByRole: {},
     }),
@@ -49,15 +50,23 @@ const touched = reactive({
 })
 
 const userTypeOptions = [
-  { label: 'Super Admin', khLabel: 'អ្នកគ្រប់គ្រងធំ', value: 'superadmin' },
-  { label: 'English Admin', khLabel: 'អ្នកគ្រប់គ្រងអង់គ្លេស', value: 'adminenglish' },
-  { label: 'Preschool Admin', khLabel: 'អ្នកគ្រប់គ្រងមត្តេយ្យ', value: 'adminpreschool' },
-  { label: 'Scholarship Admin', khLabel: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍', value: 'adminscholaship' },
-  { label: 'Sport Admin', khLabel: 'អ្នកគ្រប់គ្រងកីឡា', value: 'adminsport' },
-  { label: 'English Teacher', khLabel: 'គ្រូអង់គ្លេស', value: 'teacher-english' },
-  { label: 'Preschool Teacher', khLabel: 'គ្រូមត្តេយ្យ', value: 'teacher-preschool' },
-  { label: 'Scholarship Teacher', khLabel: 'គ្រូអាហារូបករណ៍', value: 'teacher-scholarship' },
-  { label: 'Coach', khLabel: 'គ្រូបង្វឹក', value: 'coach' },
+  { label: 'Super Admin', khLabel: 'អ្នកគ្រប់គ្រងធំ', value: ROLES.SUPER_ADMIN },
+  { label: 'English Admin', khLabel: 'អ្នកគ្រប់គ្រងអង់គ្លេស', value: ROLES.ADMIN_ENGLISH },
+  { label: 'Preschool Admin', khLabel: 'អ្នកគ្រប់គ្រងមត្តេយ្យ', value: ROLES.ADMIN_PRESCHOOL },
+  {
+    label: 'Scholarship Admin',
+    khLabel: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍',
+    value: ROLES.ADMIN_SCHOLARSHIP,
+  },
+  { label: 'Sport Admin', khLabel: 'អ្នកគ្រប់គ្រងកីឡា', value: ROLES.ADMIN_SPORT },
+  { label: 'English Teacher', khLabel: 'គ្រូអង់គ្លេស', value: ROLES.TEACHER_ENGLISH },
+  { label: 'Preschool Teacher', khLabel: 'គ្រូមត្តេយ្យ', value: ROLES.TEACHER_PRESCHOOL },
+  {
+    label: 'Scholarship Teacher',
+    khLabel: 'គ្រូអាហារូបករណ៍',
+    value: ROLES.TEACHER_SCHOLARSHIP,
+  },
+  { label: 'Coach', khLabel: 'គ្រូបង្វឹក', value: ROLES.COACH },
 ]
 
 const allowedRoleValues = computed(() =>
@@ -77,7 +86,7 @@ const isRoleAllowed = computed(
 )
 
 const recoveryRole = computed(() =>
-  String(props.accessPolicy.recoveryRole || 'superadmin')
+  String(props.accessPolicy.recoveryRole || ROLES.SUPER_ADMIN)
     .trim()
     .toLowerCase(),
 )
@@ -633,4 +642,3 @@ async function onLoginSuccessClose() {
   }
 }
 </style>
-

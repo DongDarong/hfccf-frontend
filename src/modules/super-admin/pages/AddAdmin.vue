@@ -10,6 +10,8 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import ShowPassword from '@/assets/icons/ShowPassword.vue'
 import usersMock from '@/mocks/users.json'
+import { ROLES } from '@/constants/roles'
+import { mapUser } from '@/services/mappers/userMapper'
 
 defineOptions({
   name: 'AddUserPage',
@@ -20,13 +22,15 @@ const route = useRoute()
 const { t } = useI18n()
 
 const roleOptions = [
-  'superadmin',
-  'coach',
-  'teacher',
-  'adminpreschool',
-  'adminscholaship',
-  'adminenglish',
-  'adminsport',
+  ROLES.SUPER_ADMIN,
+  ROLES.COACH,
+  ROLES.TEACHER_ENGLISH,
+  ROLES.TEACHER_PRESCHOOL,
+  ROLES.TEACHER_SCHOLARSHIP,
+  ROLES.ADMIN_PRESCHOOL,
+  ROLES.ADMIN_SCHOLARSHIP,
+  ROLES.ADMIN_ENGLISH,
+  ROLES.ADMIN_SPORT,
 ]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
 const permissionOptions = ['manage_users', 'view_reports', 'manage_programs', 'approve_requests']
@@ -196,13 +200,13 @@ function onErrorClose() {
 onMounted(() => {
   if (!isEditMode.value) return
   const id = String(route.query.id || '')
-  const found = usersMock.find((item) => String(item.id) === id) || usersMock[0]
+  const found = mapUser(usersMock.find((item) => String(item.id) === id) || usersMock[0])
   if (!found) return
-  form.name = `${found.firstName || ''} ${found.lastName || ''}`.trim() || found.username || ''
+  form.name = found.name || found.username || ''
   form.email = found.email || ''
   form.phone = found.phone || ''
   form.role = found.role || roleOptions[1]
-  form.permissions = Array.isArray(found.role_permission) ? [...found.role_permission] : []
+  form.permissions = Array.isArray(found.permissions) ? [...found.permissions] : []
   const normalizedStatus = String(found.status || '')
   const matchedStatus = statusOptions.find(
     (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
@@ -623,7 +627,5 @@ onBeforeUnmount(() => {
   }
 }
 </style>
-
-
 
 
