@@ -1,16 +1,11 @@
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, useSlots } from 'vue'
 import PrimeButton from 'primevue/button'
-import SidebarBrand from '@/components/navigation/SidebarBrandHeader.vue'
+import Avatar from '@/components/navigation/Avatar.vue'
 import LogoutButton from '@/components/buttons/LogoutButton.vue'
-import SidebarLink from '@/components/navigation/SidebarLink.vue'
-import { useLanguage } from '@/composables/useLanguage'
-import sidebarNavData from '@/data/sidebar-nav.json'
-import HomeIcon from '@/assets/icons/Home.vue'
-import UsersIcon from '@/assets/icons/Users.vue'
+import SidebarNavigation from '@/components/navigation/SidebarNavigation.vue'
 import { getCurrentUser, isSuperAdmin } from '@/services/auth'
-import { ROLES, PROGRAM_ADMIN_ROLES, normalizeRole } from '@/constants/roles'
+import { ROLES, normalizeRole } from '@/constants/roles'
 
 defineOptions({
   name: 'MainSidebar',
@@ -25,55 +20,47 @@ defineProps({
   },
 })
 
-const route = useRoute()
-const { t } = useLanguage()
-// Map icon keys from JSON config to concrete Vue components.
-const iconByName = {
-  home: HomeIcon,
-  info: UsersIcon,
-}
-
-const currentPath = computed(() => route.path)
+const slots = useSlots()
 const currentUser = computed(() => getCurrentUser() || {})
+const currentUserDisplayName = computed(() => {
+  const firstName = String(currentUser.value?.firstName || '').trim()
+  const lastName = String(currentUser.value?.lastName || '').trim()
+  const fullName = `${lastName} ${firstName}`.trim()
+  return fullName || String(currentUser.value?.username || '').trim() || 'Admin User'
+})
+const currentUserDisplayUsername = computed(() => {
+  const role = String(currentUser.value?.role || '').trim()
+  if (role) return role
+  const email = String(currentUser.value?.email || '').trim()
+  if (email.includes('@')) return email.split('@')[0]
+  return email || 'user'
+})
 const currentRole = computed(() => normalizeRole(currentUser.value?.role))
-const userManagementRouteByRole = Object.freeze({
-  [ROLES.ADMIN_ENGLISH]: '/module/english-admin/users',
-  [ROLES.ADMIN_PRESCHOOL]: '/module/preschool-admin/users',
-  [ROLES.ADMIN_SCHOLARSHIP]: '/module/scholarship-admin/users',
-  [ROLES.ADMIN_SPORT]: '/module/sport-admin/users',
-})
-const canSeeUsersSection = computed(
-  () => isSuperAdmin(currentUser.value) || PROGRAM_ADMIN_ROLES.includes(currentRole.value),
-)
-const userManagementRoute = computed(() => {
-  if (isSuperAdmin(currentUser.value)) return '/module/super-admin/users/manage'
-  return userManagementRouteByRole[currentRole.value] || ''
-})
-const navItems = computed(() =>
-  // Resolve labels at render time so locale changes update menu text immediately.
-  sidebarNavData
-    .filter((item) => {
-      if (item.to === '/users') {
-        return canSeeUsersSection.value
-      }
-      return true
-    })
-    .map((item) => {
-      const baseTo = item.to === '/dashboard' ? '/module/dashboard' : item.to
-      let resolvedTo = baseTo
+const isSuperAdminUser = computed(() => isSuperAdmin(currentUser.value))
+const sidebarToneClass = computed(() => {
+  if (isSuperAdminUser.value) return 'sidebar-shell--super-admin'
 
-      if (item.to === '/users') {
-        resolvedTo = userManagementRoute.value || baseTo
-      }
+  if (
+    currentRole.value === ROLES.ADMIN_PRESCHOOL ||
+    currentRole.value === ROLES.TEACHER_PRESCHOOL
+  ) {
+    return 'sidebar-shell--preschool'
+  }
 
-      return {
-        ...item,
-        to: resolvedTo,
-        label: t(item.labelKey),
-        iconComponent: iconByName[item.icon] || null,
-      }
-    }),
-)
+  if (
+    currentRole.value === ROLES.ADMIN_SCHOLARSHIP ||
+    currentRole.value === ROLES.TEACHER_SCHOLARSHIP
+  ) {
+    return 'sidebar-shell--scholarship'
+  }
+
+  if (currentRole.value === ROLES.ADMIN_SPORT || currentRole.value === ROLES.COACH) {
+    return 'sidebar-shell--sport'
+  }
+
+  return 'sidebar-shell--english'
+})
+const hasHeaderSlot = computed(() => Boolean(slots.header))
 const togglePt = {
   root: {
     class: [
@@ -93,10 +80,6 @@ const togglePt = {
   },
 }
 
-function isActive(path) {
-  return currentPath.value === path
-}
-
 function onToggleSidebar() {
   emit('toggle-sidebar')
 }
@@ -107,13 +90,34 @@ function onLogout() {
 </script>
 
 <template>
-  <aside class="h-full border-r border-surface-200 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--color-base)_10%,transparent),transparent_26%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-[0.8rem] pt-[0.95rem] pb-[0.8rem]">
+  <aside
+    class="sidebar-shell h-full border-r border-surface-200 px-[0.8rem] pt-[0.95rem] pb-[0.8rem]"
+    :class="[sidebarToneClass, { 'sidebar-shell--collapsed': collapsed }]"
+  >
     <nav class="flex h-full min-h-0 flex-col pb-2" aria-label="Main navigation">
       <div class="py-2 pb-4 sm:pb-5">
-        <div class="mb-4 flex items-start justify-between" :class="{ 'justify-center': collapsed }">
+        <div
+          class="sidebar-topbar mb-4 flex items-start justify-between"
+          :class="{
+            'sidebar-topbar--collapsed justify-center': collapsed,
+            'sidebar-topbar--custom': hasHeaderSlot,
+          }"
+        >
           <div v-if="!collapsed" class="min-w-0 flex-1">
             <slot name="header">
-              <SidebarBrand />
+              <div class="sidebar-user-card">
+                <Avatar
+                  :name="currentUserDisplayName"
+                  :username="currentUserDisplayUsername"
+                  size="sm"
+                  status="online"
+                  :show-meta="false"
+                />
+                <div class="sidebar-user-card__meta">
+                  <p class="sidebar-user-card__name">{{ currentUserDisplayName }}</p>
+                  <p class="sidebar-user-card__username">{{ currentUserDisplayUsername }}</p>
+                </div>
+              </div>
             </slot>
           </div>
           <PrimeButton
@@ -140,28 +144,9 @@ function onLogout() {
         </div>
       </div>
 
-      <div class="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-3">
-        <div class="flex flex-col gap-[0.38rem]">
-          <p v-if="!collapsed" class="mb-[0.35rem] px-[0.6rem] text-[0.68rem] font-extrabold tracking-[0.18em] text-surface-500 uppercase">Navigation</p>
-          <SidebarLink
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
-            :icon="item.iconComponent"
-            :collapsed="collapsed"
-            class="sidebar-nav-link"
-            :class="{ 'sidebar-nav-link--active': isActive(item.to) }"
-          >
-            <span v-if="!collapsed">{{ item.label }}</span>
-            <span v-else class="sr-only">{{ item.label }}</span>
-          </SidebarLink>
-        </div>
-      </div>
+      <SidebarNavigation :collapsed="collapsed" />
 
-      <div
-        class="sidebar-logout-area mt-3 pt-3"
-        :class="{ 'flex justify-center': collapsed }"
-      >
+      <div class="sidebar-logout-area mt-3 pt-3" :class="{ 'flex justify-center': collapsed }">
         <LogoutButton :collapsed="collapsed" @logout="onLogout" />
       </div>
     </nav>
@@ -169,22 +154,106 @@ function onLogout() {
 </template>
 
 <style scoped>
-.sidebar-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+.sidebar-shell {
+  --sidebar-shell-accent: var(--hope-cyan);
+  --color-base: var(--sidebar-shell-accent);
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--sidebar-shell-accent) 12%, transparent),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
 }
 
-.sidebar-scroll::-webkit-scrollbar {
-  width: 6px;
+.sidebar-shell--super-admin {
+  --sidebar-shell-accent: var(--brand-surface-800);
 }
 
-.sidebar-scroll::-webkit-scrollbar-track {
-  background: transparent;
+.sidebar-shell--english {
+  --sidebar-shell-accent: var(--hope-cyan);
 }
 
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: #cbd5e1;
+.sidebar-shell--preschool {
+  --sidebar-shell-accent: var(--hope-lime);
+}
+
+.sidebar-shell--scholarship {
+  --sidebar-shell-accent: var(--hope-yellow);
+}
+
+.sidebar-shell--sport {
+  --sidebar-shell-accent: var(--hope-red);
+}
+
+.sidebar-topbar {
+  min-height: 3.35rem;
+}
+
+.sidebar-topbar--custom {
+  min-height: 5.9rem;
+}
+
+.sidebar-topbar--collapsed {
+  min-height: 2.75rem;
+}
+
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.68rem;
+  min-width: 0;
+  padding: 0.08rem 0;
+}
+
+.sidebar-user-card :deep(a) {
+  flex: none;
+  margin-left: 0;
+  padding: 0.45rem 0.55rem 0.45rem 0.48rem;
+  border-left: 0;
+  border-radius: 0.92rem;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--sidebar-shell-accent) 10%, transparent) 0 3px,
+      transparent 3px
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 251, 255, 0.76) 100%);
+  border: 1px solid color-mix(in srgb, var(--sidebar-shell-accent) 14%, var(--brand-surface-200));
+}
+
+.sidebar-user-card :deep(.navbar-profile__avatar.p-avatar) {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.sidebar-user-card__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sidebar-user-card__name {
+  margin: 0;
+  overflow: hidden;
+  color: var(--brand-surface-900);
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-user-card__username {
+  margin: 0;
+  overflow: hidden;
+  color: var(--brand-surface-500);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-logout-area {
@@ -203,8 +272,3 @@ function onLogout() {
   border: 0;
 }
 </style>
-
-<<<<<<< HEAD
-
-=======
->>>>>>> main

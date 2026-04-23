@@ -5,10 +5,41 @@ export default {
   users: 'អ្នកប្រើប្រាស់',
   navigation: 'ការរុករក',
   logoutCaption: 'បញ្ចប់សម័យការបច្ចុប្បន្ន',
+  sections: {
+    main: 'Navigation',
+    superAdmin: 'Super Admin',
+    english: 'English',
+    preschool: 'Preschool',
+    scholarship: 'Scholarship',
+    sport: 'Sport',
+  },
+  sectionCaptions: {
+    main: 'Staff workspace',
+    superAdmin: 'System-wide control',
+    english: 'Language program',
+    preschool: 'Early learning',
+    scholarship: 'Student support',
+    sport: 'EduSportPro',
+  },
+  items: {
+    commandCenter: 'Command Center',
+    manageUsers: 'Manage Users',
+    adminDashboard: 'Admin Dashboard',
+    teachers: 'Teachers',
+    coaches: 'Coaches',
+  },
+  badges: {
+    admin: 'Admin',
+    core: 'Core',
+    fullAccess: 'Full access',
+    staff: 'Staff',
+  },
+  footer: {
+    portal: 'Staff portal',
+    workspace: 'HFCCF workspace',
+  },
   brand: {
     orgTop: 'អង្គការមូលនិធិក្តីសង្ឃឹម',
     orgBottom: 'នៃកុមារកម្ពុជា',
   },
 }
-
-

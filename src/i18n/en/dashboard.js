@@ -11,7 +11,11 @@ export default {
   nav,
   pages,
   users,
+  dashboard: {
+    nav: {
+      logoutCaption: nav.logoutCaption,
+    },
+  },
   ...sportAdminDashboard,
 }
-
 

@@ -6,6 +6,7 @@ export default {
   confirm: 'បញ្ជាក់',
   close: 'បិទ',
   continue: 'បន្ត',
+  notifications: 'ការជូនដំណឹង',
   success: 'ជោគជ័យ',
   actionCompleted: 'ប្រតិបត្តិការត្រូវបានបញ្ចប់ដោយជោគជ័យ។',
   errorOccurred: 'មានបញ្ហាកើតឡើង',
@@ -78,5 +79,3 @@ export default {
     next: 'បន្ទាប់',
   },
 }
-
-

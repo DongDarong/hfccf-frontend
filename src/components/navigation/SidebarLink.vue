@@ -31,6 +31,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  forceActive: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--active')
@@ -43,7 +47,7 @@ const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--a
       :href="href"
       class="sidebar-link flex items-center gap-3 rounded-2xl border border-transparent px-[0.82rem] py-[0.72rem] text-surface-600 no-underline transition-all duration-200 hover:border-[color-mix(in_srgb,var(--color-base)_18%,white)] hover:bg-white hover:text-surface-900 hover:shadow-[0_10px_22px_-22px_rgba(15,23,42,0.12)]"
       :class="[
-        (exact ? isExactActive : isActive) ? resolvedActiveClass : inactiveClass,
+        forceActive || (exact ? isExactActive : isActive) ? resolvedActiveClass : inactiveClass,
         {
           'sidebar-link--collapsed justify-center !w-12 !min-w-12 !px-[0.45rem] mx-auto': collapsed,
         },
@@ -63,10 +67,16 @@ const resolvedActiveClass = computed(() => props.activeClass || 'sidebar-link--a
 
 <style scoped>
 .sidebar-link--active {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-base) 8%, white) 0%, color-mix(in srgb, var(--color-base) 16%, white) 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-base) 8%, white) 0%,
+    color-mix(in srgb, var(--color-base) 16%, white) 100%
+  );
   color: #0f172a;
   border-color: color-mix(in srgb, var(--color-base) 28%, white);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 14px 24px -24px color-mix(in srgb, var(--color-base) 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 14px 24px -24px color-mix(in srgb, var(--color-base) 40%, transparent);
   font-weight: 700;
 }
 

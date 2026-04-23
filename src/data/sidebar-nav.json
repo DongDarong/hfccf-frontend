@@ -1,12 +1,160 @@
-[
-  {
-    "to": "/dashboard",
-    "labelKey": "nav.dashboard",
-    "icon": "home"
-  },
-  {
-    "to": "/users",
-    "labelKey": "nav.users",
-    "icon": "info"
-  }
-]
+{
+  "standard": [
+    {
+      "id": "main",
+      "labelKey": "nav.sections.main",
+      "captionKey": "nav.sectionCaptions.main",
+      "className": "sidebar-section--default",
+      "items": [
+        {
+          "id": "dashboard",
+          "to": "/dashboard",
+          "labelKey": "nav.dashboard",
+          "icon": "home"
+        },
+        {
+          "id": "users",
+          "to": "/users",
+          "labelKey": "nav.users",
+          "icon": "users",
+          "visibility": ["program-admin"],
+          "badgeKey": "nav.badges.admin"
+        }
+      ]
+    }
+  ],
+  "superAdmin": [
+    {
+      "id": "super-admin",
+      "labelKey": "nav.sections.superAdmin",
+      "captionKey": "nav.sectionCaptions.superAdmin",
+      "className": "sidebar-section--super-admin",
+      "badgeKey": "nav.badges.fullAccess",
+      "collapsible": true,
+      "items": [
+        {
+          "id": "super-admin-dashboard",
+          "to": "/module/super-admin/dashboard",
+          "labelKey": "nav.items.commandCenter",
+          "icon": "home",
+          "badgeKey": "nav.badges.core",
+          "activePrefixes": ["/module/dashboard"],
+          "children": [
+            {
+              "id": "super-admin-users",
+              "to": "/module/super-admin/users/manage",
+              "labelKey": "nav.items.manageUsers",
+              "icon": "users",
+              "secondary": true,
+              "activePrefixes": ["/module/super-admin/users"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "english",
+      "labelKey": "nav.sections.english",
+      "captionKey": "nav.sectionCaptions.english",
+      "className": "sidebar-section--english",
+      "collapsible": true,
+      "items": [
+        {
+          "id": "english-dashboard",
+          "to": "/module/english-admin/dashboard",
+          "labelKey": "nav.items.adminDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin",
+          "children": [
+            {
+              "id": "english-teachers",
+              "to": "/module/english-admin/users",
+              "labelKey": "nav.items.teachers",
+              "icon": "users",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "preschool",
+      "labelKey": "nav.sections.preschool",
+      "captionKey": "nav.sectionCaptions.preschool",
+      "className": "sidebar-section--preschool",
+      "collapsible": true,
+      "items": [
+        {
+          "id": "preschool-dashboard",
+          "to": "/module/preschool-admin/dashboard",
+          "labelKey": "nav.items.adminDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin",
+          "children": [
+            {
+              "id": "preschool-teachers",
+              "to": "/module/preschool-admin/users",
+              "labelKey": "nav.items.teachers",
+              "icon": "users",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scholarship",
+      "labelKey": "nav.sections.scholarship",
+      "captionKey": "nav.sectionCaptions.scholarship",
+      "className": "sidebar-section--scholarship",
+      "collapsible": true,
+      "items": [
+        {
+          "id": "scholarship-dashboard",
+          "to": "/module/scholarship-admin/dashboard",
+          "labelKey": "nav.items.adminDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin",
+          "children": [
+            {
+              "id": "scholarship-teachers",
+              "to": "/module/scholarship-admin/users",
+              "labelKey": "nav.items.teachers",
+              "icon": "reports",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sport",
+      "labelKey": "nav.sections.sport",
+      "captionKey": "nav.sectionCaptions.sport",
+      "className": "sidebar-section--sport",
+      "collapsible": true,
+      "items": [
+        {
+          "id": "sport-dashboard",
+          "to": "/module/sport-admin/dashboard",
+          "labelKey": "nav.items.adminDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin",
+          "children": [
+            {
+              "id": "sport-coaches",
+              "to": "/module/sport-admin/users",
+              "labelKey": "nav.items.coaches",
+              "icon": "users",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

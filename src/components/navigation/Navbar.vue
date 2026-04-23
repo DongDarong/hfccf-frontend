@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import Avatar from '@/components/navigation/Avatar.vue'
 import Calendar from '@/assets/icons/Calendar.vue'
 import Notification from '@/assets/icons/Notification.vue'
 
@@ -65,14 +64,12 @@ const localePt = {
     ],
   },
   label: {
-    class:
-      '!px-3 !py-1.5 !text-[0.76rem] !font-extrabold !tracking-[0.08em] !text-surface-900',
+    class: '!px-3 !py-1.5 !text-[0.76rem] !font-extrabold !tracking-[0.08em] !text-surface-900',
   },
   dropdown: {
     class: '!w-8 !text-surface-500',
   },
 }
-
 </script>
 
 <template>
@@ -86,19 +83,26 @@ const localePt = {
           alt="HFCCF logo"
           class="h-16 w-16 shrink-0 scale-115 object-contain brightness-[1.05] contrast-[1.02] max-[640px]:h-14 max-[640px]:w-14 max-[540px]:h-12 max-[540px]:w-12 max-[420px]:h-10 max-[420px]:w-10"
         />
-        <div class="flex min-w-0 flex-col justify-center max-[540px]:gap-0.5" :class="{ 'translate-y-px': !isKh }">
+        <div
+          class="flex min-w-0 flex-col justify-center max-[540px]:gap-0.5"
+          :class="{ 'translate-y-px': !isKh }"
+        >
           <span
             class="whitespace-nowrap text-[1.02rem] leading-[1.1] font-black text-surface-900 max-[540px]:text-[0.92rem] max-[420px]:hidden"
             :class="{
-              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.92rem] leading-[1.22] font-bold text-[#0b3f58] tracking-normal max-[540px]:text-[0.84rem] max-[420px]:block max-[420px]:text-[0.78rem]': isKh,
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.92rem] leading-[1.22] font-bold text-[#0b3f58] tracking-normal max-[540px]:text-[0.84rem] max-[420px]:block max-[420px]:text-[0.78rem]':
+                isKh,
             }"
-          >{{ t('nav.brand.orgTop') }}</span>
+            >{{ t('nav.brand.orgTop') }}</span
+          >
           <span
             class="whitespace-nowrap text-[0.78rem] leading-[1.1] text-surface-500 max-[640px]:text-[0.72rem] max-[540px]:hidden"
             :class="{
-              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.78rem] leading-[1.18] text-[#1d6c8f] max-[540px]:block max-[540px]:text-[0.72rem] max-[420px]:hidden': isKh,
+              'font-[Noto_Sans_Khmer,_Khmer_OS_Siemreap,_Khmer_OS_Battambang,_Leelawadee_UI,_sans-serif] whitespace-normal text-[0.78rem] leading-[1.18] text-[#1d6c8f] max-[540px]:block max-[540px]:text-[0.72rem] max-[420px]:hidden':
+                isKh,
             }"
-          >{{ t('nav.brand.orgBottom') }}</span>
+            >{{ t('nav.brand.orgBottom') }}</span
+          >
         </div>
       </div>
     </div>
@@ -130,7 +134,10 @@ const localePt = {
         <template #icon>
           <div class="relative flex items-center justify-center">
             <Notification :size="18" />
-            <span class="absolute -top-2 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-hope-red px-1 text-[0.62rem] leading-none font-bold text-white shadow-[0_6px_12px_-8px_rgba(237,28,36,0.8)]">4</span>
+            <span
+              class="absolute -top-2 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-hope-red px-1 text-[0.62rem] leading-none font-bold text-white shadow-[0_6px_12px_-8px_rgba(237,28,36,0.8)]"
+              >4</span
+            >
           </div>
         </template>
       </Button>
@@ -144,12 +151,6 @@ const localePt = {
         :pt="localePt"
         aria-label="Language Switcher"
       />
-
-      <Avatar name="HFCCF User" size="sm" status="online" :show-meta="false" compact />
     </div>
   </nav>
 </template>
-
-
-
-

@@ -6,6 +6,7 @@ export default {
   confirm: 'Confirm',
   close: 'Close',
   continue: 'Continue',
+  notifications: 'Notifications',
   success: 'Success',
   actionCompleted: 'Action completed successfully.',
   errorOccurred: 'Something went wrong',
@@ -79,5 +80,4 @@ export default {
     next: 'Next',
   },
 }
-
 

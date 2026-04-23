@@ -5,10 +5,41 @@ export default {
   users: 'Users',
   navigation: 'Navigation',
   logoutCaption: 'End current session',
+  sections: {
+    main: 'Navigation',
+    superAdmin: 'Super Admin',
+    english: 'English',
+    preschool: 'Preschool',
+    scholarship: 'Scholarship',
+    sport: 'Sport',
+  },
+  sectionCaptions: {
+    main: 'Staff workspace',
+    superAdmin: 'System-wide control',
+    english: 'Language program',
+    preschool: 'Early learning',
+    scholarship: 'Student support',
+    sport: 'EduSportPro',
+  },
+  items: {
+    commandCenter: 'Command Center',
+    manageUsers: 'Manage Users',
+    adminDashboard: 'Admin Dashboard',
+    teachers: 'Teachers',
+    coaches: 'Coaches',
+  },
+  badges: {
+    admin: 'Admin',
+    core: 'Core',
+    fullAccess: 'Full access',
+    staff: 'Staff',
+  },
+  footer: {
+    portal: 'Staff portal',
+    workspace: 'HFCCF workspace',
+  },
   brand: {
     orgTop: "Organization for Children's Hope",
     orgBottom: 'Foundation of Cambodia',
   },
 }
-
-
