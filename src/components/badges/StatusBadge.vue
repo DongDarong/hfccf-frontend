@@ -31,7 +31,18 @@ function toStatusKey(value) {
     .replace(/[\s-]+/g, '_')
 }
 
-const normalizedStatus = computed(() => String(props.status || 'neutral').trim().toLowerCase() || 'neutral')
+function normalizeStatus(value) {
+  const key = String(value || 'neutral').trim().toLowerCase()
+
+  if (['stable', 'success', 'active'].includes(key)) return 'success'
+  if (['watch', 'warning', 'pending', 'medium'].includes(key)) return 'warning'
+  if (['critical', 'error', 'high', 'urgent', 'suspended'].includes(key)) return 'error'
+  if (['info', 'low'].includes(key)) return 'info'
+
+  return key || 'neutral'
+}
+
+const normalizedStatus = computed(() => normalizeStatus(props.status))
 const statusLabel = computed(() => {
   if (props.label.trim()) {
     const key = `common.status.${toStatusKey(props.label)}`

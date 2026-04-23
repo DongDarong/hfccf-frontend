@@ -34,6 +34,9 @@ export default {
     warning: 'Warning',
     error: 'Error',
     info: 'Info',
+    stable: 'Stable',
+    watch: 'Watch',
+    critical: 'Critical',
     pending: 'Pending',
     neutral: 'Neutral',
     active: 'Active',
@@ -80,4 +83,3 @@ export default {
     next: 'Next',
   },
 }
-
