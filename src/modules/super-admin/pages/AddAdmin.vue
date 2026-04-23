@@ -8,13 +8,18 @@ import Form from '@/components/forms/Form.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
-import ShowPassword from '@/assets/icons/ShowPassword.vue'
-import usersMock from '@/mocks/users.json'
 import { ROLES } from '@/constants/roles'
 import { mapUser } from '@/services/mappers/userMapper'
+import usersMock from '@/mocks/users.json'
+import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
+import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
+import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
+import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
+import AddAdminPermissionsField from '@/modules/super-admin/components/admin-management/AddAdminPermissionsField.vue'
+import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
 
 defineOptions({
-  name: 'AddUserPage',
+  name: 'AddAdminPage',
 })
 
 const router = useRouter()
@@ -22,17 +27,13 @@ const route = useRoute()
 const { t } = useI18n()
 
 const roleOptions = [
-  ROLES.SUPER_ADMIN,
-  ROLES.COACH,
-  ROLES.TEACHER_ENGLISH,
-  ROLES.TEACHER_PRESCHOOL,
-  ROLES.TEACHER_SCHOLARSHIP,
+  ROLES.ADMIN_ENGLISH,
   ROLES.ADMIN_PRESCHOOL,
   ROLES.ADMIN_SCHOLARSHIP,
-  ROLES.ADMIN_ENGLISH,
   ROLES.ADMIN_SPORT,
+  ROLES.SUPER_ADMIN,
 ]
-const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
+const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 const permissionOptions = ['manage_users', 'view_reports', 'manage_programs', 'approve_requests']
 const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
@@ -41,7 +42,7 @@ const form = reactive({
   name: '',
   email: '',
   phone: '',
-  role: roleOptions[1],
+  role: roleOptions[0],
   permissions: [],
   status: statusOptions[0],
   password: '',
@@ -59,27 +60,37 @@ const profileImagePreview = ref('')
 
 const isEditMode = computed(() => route.query.mode === 'edit' || Boolean(route.query.id))
 
-const resolvedPageTitle = computed(() => {
-  const key = isEditMode.value ? 'users.editUser' : 'users.addUser'
+function resolvedText(key, fallback) {
   const translated = t(key)
-  return translated !== key ? translated : isEditMode.value ? 'Update User' : 'Add User'
-})
+  return translated !== key ? translated : fallback
+}
 
-const resolvedPageSubtitle = computed(() => {
-  const key = isEditMode.value ? 'users.editDescription' : 'users.addUserDescription'
-  const translated = t(key)
-  return translated !== key
-    ? translated
-    : isEditMode.value
-      ? 'Update user profile details and permissions.'
-      : 'Create a new user account and assign access.'
-})
+const pageTitle = computed(() =>
+  isEditMode.value ? resolvedText('users.addAdmin.updateTitle', 'Update Admin') : t('users.addAdmin.title'),
+)
 
-const resolvedFormDescription = computed(() => {
-  const key = 'users.formDescription'
+const pageSubtitle = computed(() =>
+  isEditMode.value
+    ? resolvedText(
+        'users.addAdmin.updateSubtitle',
+        'Update the admin profile, permissions, and account security details.',
+      )
+    : t('users.addAdmin.summary'),
+)
+
+const resolvedFormDescription = computed(() => t('users.addAdmin.formDescription'))
+
+function statusLabel(status) {
+  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
-  return translated !== key ? translated : 'Fill in all required details before saving.'
-})
+  return translated !== key ? translated : String(status || '')
+}
+
+function roleLabel(value) {
+  const key = `common.role.${String(value || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const translated = t(key)
+  return translated !== key ? translated : String(value || '')
+}
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -95,14 +106,14 @@ function toggleConfirmPasswordVisibility() {
 }
 
 function validateForm() {
-  if (!form.name.trim()) return 'Full name is required.'
-  if (!form.email.trim()) return 'Email is required.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email.'
-  if (!form.role) return 'Role is required.'
-  if (!form.permissions.length) return 'At least one role permission is required.'
-  if (!form.status) return 'Status is required.'
-  if (form.password.length < 6) return 'Password must be at least 6 characters.'
-  if (form.password !== form.confirmPassword) return 'Passwords do not match.'
+  if (!form.name.trim()) return t('users.addAdmin.validation.fullNameRequired')
+  if (!form.email.trim()) return t('users.addAdmin.validation.emailRequired')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('users.addAdmin.validation.emailInvalid')
+  if (!form.role) return t('users.addAdmin.validation.roleRequired')
+  if (!form.permissions.length) return t('users.addAdmin.validation.permissionsRequired')
+  if (!form.status) return t('users.addAdmin.validation.statusRequired')
+  if (form.password.length < 6) return t('users.addAdmin.validation.passwordLength')
+  if (form.password !== form.confirmPassword) return t('users.addAdmin.validation.passwordMismatch')
   return ''
 }
 
@@ -119,6 +130,22 @@ function togglePermission(permission) {
 }
 
 function permissionLabel(value) {
+  const normalized = String(value ?? '').trim().toLowerCase()
+  const permissionKeyMap = {
+    manage_users: 'users:write',
+    view_reports: 'reports:read',
+    manage_programs: 'programs:write',
+  }
+
+  if (normalized === 'approve_requests') {
+    return t('users.addAdmin.permissionLabels.approveRequests')
+  }
+
+  const mappedPermissionKey = permissionKeyMap[normalized] || normalized
+  const key = `common.permission.${mappedPermissionKey}`
+  const translated = t(key)
+  if (translated !== key) return translated
+
   return String(value ?? '')
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -130,13 +157,13 @@ function onProfileImageChange(event) {
   if (!file) return
 
   if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = 'Please choose a JPG, PNG, WEBP, or GIF image.'
+    errorMessage.value = t('users.addAdmin.validation.imageType')
     showError.value = true
     return
   }
 
   if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = 'Profile images must be 2 MB or smaller.'
+    errorMessage.value = t('users.addAdmin.validation.imageSize')
     showError.value = true
     return
   }
@@ -168,16 +195,12 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    // Placeholder for API integration.
     await new Promise((resolve) => setTimeout(resolve, 700))
-    if (isEditMode.value) {
-      errorMessage.value = 'User updated successfully.'
-    }
     showSuccess.value = true
   } catch {
     errorMessage.value = isEditMode.value
-      ? 'Unable to update user right now.'
-      : 'Unable to create user right now.'
+      ? t('users.addAdmin.validation.updateFailed')
+      : t('users.addAdmin.validation.createFailed')
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -205,7 +228,7 @@ onMounted(() => {
   form.name = found.name || found.username || ''
   form.email = found.email || ''
   form.phone = found.phone || ''
-  form.role = found.role || roleOptions[1]
+  form.role = found.role || roleOptions[0]
   form.permissions = Array.isArray(found.permissions) ? [...found.permissions] : []
   const normalizedStatus = String(found.status || '')
   const matchedStatus = statusOptions.find(
@@ -219,245 +242,295 @@ onBeforeUnmount(() => {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 })
+
+const formSummaryCards = computed(() => {
+  const selectedRole = roleLabel(form.role)
+  const permissionCount = form.permissions.length
+  const securityStatus =
+    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
+
+  return [
+    {
+      id: 'role-scope',
+      title: t('users.addAdmin.roleScope'),
+      value: selectedRole,
+      label: t('users.addAdmin.programAccess'),
+      status: 'info',
+      statusLabel: statusLabel('info'),
+      surfaceClass: 'bg-cyan-50/80 border-cyan-200',
+    },
+    {
+      id: 'permissions',
+      title: t('users.addAdmin.permissions'),
+      value: permissionCount,
+      label: permissionCount
+        ? t('users.addAdmin.configuredPermissions')
+        : t('users.addAdmin.noPermissionsSelected'),
+      status: permissionCount ? 'success' : 'warning',
+      statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
+      surfaceClass: 'bg-lime-50/80 border-lime-200',
+    },
+    {
+      id: 'account-state',
+      title: t('users.addAdmin.accountState'),
+      value: statusLabel(form.status),
+      label: t('users.addAdmin.initialAccountState'),
+      status: form.status,
+      statusLabel: statusLabel(form.status),
+      surfaceClass: 'bg-amber-50/80 border-amber-200',
+    },
+    {
+      id: 'security-review',
+      title: t('users.addAdmin.securityReview'),
+      value: profileImagePreview.value ? t('users.addAdmin.ready') : t('users.addAdmin.pending'),
+      label: profileImagePreview.value
+        ? t('users.addAdmin.profileImageSet')
+        : t('users.addAdmin.profileImagePending'),
+      status: securityStatus,
+      statusLabel: statusLabel(securityStatus),
+      surfaceClass: 'bg-rose-50/80 border-rose-200',
+    },
+  ]
+})
+
+const selectedRoleDescription = computed(() => roleLabel(form.role))
+
+const checklistItems = computed(() => [
+  {
+    title: t('users.addAdmin.sidebarItems.role'),
+    text: selectedRoleDescription.value,
+  },
+  {
+    title: t('users.addAdmin.sidebarItems.permissions'),
+    text: t('users.addAdmin.sidebarItems.permissionsDetail'),
+  },
+  {
+    title: t('users.addAdmin.sidebarItems.security'),
+    text: t('users.addAdmin.sidebarItems.securityDetail'),
+  },
+  {
+    title: t('users.addAdmin.sidebarItems.review'),
+    text: t('users.addAdmin.sidebarItems.reviewDetail'),
+  },
+])
 </script>
 
 <template>
   <MainLayout>
-    <section class="add-user-page">
-      <HeaderSection :title="resolvedPageTitle" :subtitle="resolvedPageSubtitle" />
+    <section class="add-admin-page">
+      <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <Form
-        :title="resolvedPageTitle"
-        :description="resolvedFormDescription"
-        :submit-text="resolvedPageTitle"
-        :cancel-text="t('common.cancel')"
-        :loading="isSubmitting"
-        :show-cancel="true"
-        @submit="onSubmit"
-        @cancel="onCancel"
-      >
-        <div class="add-user-page__grid">
-          <div class="add-user-page__field add-user-page__field--full">
-            <span class="add-user-page__label">Profile Image</span>
-            <div class="add-user-page__profile">
-              <div v-if="profileImagePreview" class="add-user-page__profile-preview-wrap">
-                <img
-                  :src="profileImagePreview"
-                  alt="Profile preview"
-                  class="add-user-page__profile-preview"
-                />
-              </div>
-              <div class="add-user-page__profile-actions">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  class="add-user-page__file-input"
-                  :disabled="isSubmitting"
-                  @change="onProfileImageChange"
-                />
-                <button
-                  v-if="profileImagePreview"
-                  type="button"
-                  class="add-user-page__remove-image"
-                  :disabled="isSubmitting"
-                  @click="removeProfileImage"
-                >
-                  Remove Image
-                </button>
-              </div>
+      <AdminSummaryCards :cards="formSummaryCards" />
+
+      <div class="add-admin-page__layout">
+        <Form
+          class="add-admin-page__form"
+          :title="pageTitle"
+          :description="resolvedFormDescription"
+          :submit-text="pageTitle"
+          :cancel-text="t('common.cancel')"
+          :loading="isSubmitting"
+          :show-cancel="true"
+          @submit="onSubmit"
+          @cancel="onCancel"
+        >
+          <div class="add-admin-page__intro">
+            <div>
+              <p class="text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-surface-500">
+                {{ t('users.addAdmin.title') }}
+              </p>
+              <p class="mt-1 text-[0.92rem] leading-6 text-slate-600">
+                {{ t('users.addAdmin.summary') }}
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span
+                class="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[0.74rem] font-semibold text-brand-800"
+              >
+                {{ selectedRoleDescription }}
+              </span>
+              <span
+                class="inline-flex items-center rounded-full border border-surface-200 bg-slate-50 px-3 py-1 text-[0.74rem] font-semibold text-slate-700"
+              >
+                {{ statusLabel(form.status) }}
+              </span>
             </div>
           </div>
 
-          <label class="add-user-page__field">
-            <span class="add-user-page__label">Full Name</span>
-            <input
-              v-model="form.name"
-              type="text"
-              class="add-user-page__input"
-              placeholder="Enter full name"
+          <div class="add-admin-page__grid">
+            <AddAdminProfileImageField
+              class="add-admin-page__field add-admin-page__field--full"
+              :title="t('users.addAdmin.profileImage')"
+              :preview="profileImagePreview"
+              :remove-label="t('users.addAdmin.removeImage')"
               :disabled="isSubmitting"
+              @change="onProfileImageChange"
+              @remove="removeProfileImage"
             />
-          </label>
 
-          <label class="add-user-page__field">
-            <span class="add-user-page__label">Email</span>
-            <input
-              v-model="form.email"
-              type="email"
-              class="add-user-page__input"
-              placeholder="name@hfccf.org"
+            <AddAdminIdentityFields
+              class="add-admin-page__field add-admin-page__field--full"
+              v-model:name="form.name"
+              v-model:email="form.email"
+              v-model:phone="form.phone"
+              v-model:role="form.role"
+              v-model:status="form.status"
+              :role-options="roleOptions"
+              :status-options="statusOptions"
               :disabled="isSubmitting"
+              :name-label="t('users.addAdmin.fullName')"
+              :email-label="t('users.addAdmin.email')"
+              :phone-label="t('users.addAdmin.phone')"
+              :role-label-text="t('users.addAdmin.role')"
+              :status-label-text="t('users.addAdmin.status')"
+              :name-placeholder="t('users.addAdmin.enterFullName')"
+              :email-placeholder="t('users.addAdmin.emailPlaceholder')"
+              :phone-placeholder="t('users.addAdmin.phonePlaceholder')"
+              :role-label="roleLabel"
+              :status-label="statusLabel"
             />
-          </label>
 
-          <label class="add-user-page__field">
-            <span class="add-user-page__label">Phone</span>
-            <input
-              v-model="form.phone"
-              type="text"
-              class="add-user-page__input"
-              placeholder="012 345 678"
+            <AddAdminPermissionsField
+              class="add-admin-page__field add-admin-page__field--full"
+              :title="t('users.addAdmin.permissions')"
+              :permissions="form.permissions"
+              :options="permissionOptions"
               :disabled="isSubmitting"
+              :permission-label="permissionLabel"
+              @toggle="togglePermission"
             />
-          </label>
 
-          <label class="add-user-page__field">
-            <span class="add-user-page__label">Role</span>
-            <select v-model="form.role" class="add-user-page__input" :disabled="isSubmitting">
-              <option v-for="role in roleOptions" :key="role" :value="role">
-                {{ role }}
-              </option>
-            </select>
-          </label>
-
-          <label class="add-user-page__field">
-            <span class="add-user-page__label">Status</span>
-            <select v-model="form.status" class="add-user-page__input" :disabled="isSubmitting">
-              <option v-for="status in statusOptions" :key="status" :value="status">
-                {{ status }}
-              </option>
-            </select>
-          </label>
-
-          <div class="add-user-page__field add-user-page__field--full">
-            <span class="add-user-page__label">Role Permission</span>
-            <div class="add-user-page__permissions">
-              <label
-                v-for="permission in permissionOptions"
-                :key="permission"
-                class="add-user-page__permission-item"
-                :class="{ 'add-user-page__permission-item--active': hasPermission(permission) }"
-              >
-                <input
-                  type="checkbox"
-                  class="add-user-page__permission-checkbox"
-                  :checked="hasPermission(permission)"
-                  :disabled="isSubmitting"
-                  @change="togglePermission(permission)"
-                />
-                <span>{{ permissionLabel(permission) }}</span>
-              </label>
-            </div>
+            <AddAdminPasswordFields
+              class="add-admin-page__field add-admin-page__field--full"
+              v-model:password="form.password"
+              v-model:confirmPassword="form.confirmPassword"
+              :disabled="isSubmitting"
+              :password-visible="isPasswordVisible"
+              :confirm-password-visible="isConfirmPasswordVisible"
+              :password-label="t('users.addAdmin.password')"
+              :confirm-password-label="t('users.addAdmin.confirmPassword')"
+              :password-placeholder="t('users.addAdmin.minimumPassword')"
+              :confirm-password-placeholder="t('users.addAdmin.reenterPassword')"
+              :show-password-label="t('users.addAdmin.showPassword')"
+              :hide-password-label="t('users.addAdmin.hidePassword')"
+              @toggle-password="togglePasswordVisibility"
+              @toggle-confirm-password="toggleConfirmPasswordVisibility"
+            />
           </div>
 
-          <label class="add-user-page__field">
-            <span class="add-user-page__label">Password</span>
-            <div class="add-user-page__password-wrap">
-              <input
-                v-model="form.password"
-                :type="isPasswordVisible ? 'text' : 'password'"
-                class="add-user-page__input add-user-page__input--password"
-                placeholder="Minimum 6 characters"
-                :disabled="isSubmitting"
-              />
-              <button
-                type="button"
-                class="add-user-page__toggle-password"
-                :aria-label="isPasswordVisible ? 'Hide password' : 'Show password'"
-                :title="isPasswordVisible ? 'Hide password' : 'Show password'"
-                :disabled="isSubmitting"
-                @click="togglePasswordVisibility"
-              >
-                <ShowPassword :visible="isPasswordVisible" :size="18" />
-              </button>
-            </div>
-          </label>
+          <template #actions>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              rounded="xl"
+              :disabled="isSubmitting"
+              @click="onCancel"
+            >
+              {{ t('common.cancel') }}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              rounded="xl"
+              :loading="isSubmitting"
+              :disabled="isSubmitting"
+            >
+              {{ pageTitle }}
+            </Button>
+          </template>
+        </Form>
 
-          <label class="add-user-page__field add-user-page__field--full">
-            <span class="add-user-page__label">Confirm Password</span>
-            <div class="add-user-page__password-wrap">
-              <input
-                v-model="form.confirmPassword"
-                :type="isConfirmPasswordVisible ? 'text' : 'password'"
-                class="add-user-page__input add-user-page__input--password"
-                placeholder="Re-enter password"
-                :disabled="isSubmitting"
-              />
-              <button
-                type="button"
-                class="add-user-page__toggle-password"
-                :aria-label="isConfirmPasswordVisible ? 'Hide password' : 'Show password'"
-                :title="isConfirmPasswordVisible ? 'Hide password' : 'Show password'"
-                :disabled="isSubmitting"
-                @click="toggleConfirmPasswordVisibility"
-              >
-                <ShowPassword :visible="isConfirmPasswordVisible" :size="18" />
-              </button>
-            </div>
-          </label>
+        <div class="add-admin-page__rail">
+          <AdminChecklistPanel
+            :title="t('users.addAdmin.sidebarTitle')"
+            :description="t('users.addAdmin.sidebarText')"
+            :items="checklistItems"
+            :highlight-label="t('users.addAdmin.roleScope')"
+            :highlight-value="selectedRoleDescription"
+          />
         </div>
-
-        <template #actions>
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            rounded="xl"
-            :disabled="isSubmitting"
-            @click="onCancel"
-          >
-            {{ t('common.cancel') }}
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            rounded="xl"
-            :loading="isSubmitting"
-            :disabled="isSubmitting"
-          >
-            {{ resolvedPageTitle }}
-          </Button>
-        </template>
-      </Form>
+      </div>
     </section>
 
     <AlertError
       :show="showError"
-      title="Validation error"
+      :title="t('users.addAdmin.validationError')"
       :message="errorMessage"
-      button-text="Close"
+      :button-text="t('common.close')"
       @close="onErrorClose"
     />
 
     <AlertSuccess
       :show="showSuccess"
-      :title="isEditMode ? 'User updated' : 'User created'"
+      :title="isEditMode ? t('users.addAdmin.adminUpdated') : t('users.addAdmin.adminCreated')"
       :message="
         isEditMode
-          ? 'The user account was updated successfully.'
-          : 'The user account was created successfully.'
+          ? t('users.addAdmin.updatedMessage')
+          : t('users.addAdmin.createdMessage')
       "
-      button-text="Back to users"
+      :button-text="t('users.addAdmin.backToAdmins')"
       @close="onSuccessClose"
     />
   </MainLayout>
 </template>
 
 <style scoped>
-.add-user-page {
+.add-admin-page {
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
+  gap: 1.35rem;
 }
 
-.add-user-page__grid {
+.add-admin-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.95fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.add-admin-page__form {
+  display: block;
+}
+
+.add-admin-page__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.add-admin-page__intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #e7eaf3;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.add-admin-page__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.add-user-page__field {
+.add-admin-page__field {
   display: flex;
   flex-direction: column;
   gap: 0.42rem;
 }
 
-.add-user-page__field--full {
+.add-admin-page__field--full {
   grid-column: 1 / -1;
 }
 
-.add-user-page__label {
+.add-admin-page__label {
   font-size: 0.8rem;
   font-weight: 700;
   color: #0f172a;
@@ -465,7 +538,7 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 }
 
-.add-user-page__input {
+.add-admin-page__input {
   width: 100%;
   border: 1px solid #d4dde8;
   border-radius: 0.75rem;
@@ -477,19 +550,19 @@ onBeforeUnmount(() => {
   transition: all 0.18s ease;
 }
 
-.add-user-page__input:hover {
+.add-admin-page__input:hover {
   border-color: #bfccdb;
 }
 
-.add-user-page__password-wrap {
+.add-admin-page__password-wrap {
   position: relative;
 }
 
-.add-user-page__input--password {
+.add-admin-page__input--password {
   padding-right: 2.75rem;
 }
 
-.add-user-page__toggle-password {
+.add-admin-page__toggle-password {
   position: absolute;
   right: 0;
   top: 0;
@@ -504,28 +577,28 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.add-user-page__toggle-password:hover {
+.add-admin-page__toggle-password:hover {
   color: #334155;
 }
 
-.add-user-page__toggle-password:disabled {
+.add-admin-page__toggle-password:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.add-user-page__input:focus {
+.add-admin-page__input:focus {
   border-color: var(--hope-o-cyan-blue);
   box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15);
   background: #ffffff;
 }
 
-.add-user-page__permissions {
+.add-admin-page__permissions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.55rem;
 }
 
-.add-user-page__permission-item {
+.add-admin-page__permission-item {
   display: flex;
   align-items: center;
   gap: 0.52rem;
@@ -541,31 +614,31 @@ onBeforeUnmount(() => {
   transition: all 0.16s ease;
 }
 
-.add-user-page__permission-item:hover {
+.add-admin-page__permission-item:hover {
   border-color: #8fc3de;
   background: #f0f8fe;
   transform: translateY(-1px);
 }
 
-.add-user-page__permission-item--active {
+.add-admin-page__permission-item--active {
   border-color: #67b7df;
   background: linear-gradient(180deg, #e8f6fe 0%, #dff1fc 100%);
   color: #075985;
   box-shadow: 0 6px 14px -12px rgba(0, 87, 138, 0.8);
 }
 
-.add-user-page__permission-checkbox {
+.add-admin-page__permission-checkbox {
   accent-color: var(--hope-o-cyan-blue);
   width: 0.95rem;
   height: 0.95rem;
   flex-shrink: 0;
 }
 
-.add-user-page__permission-item span {
+.add-admin-page__permission-item span {
   line-height: 1.2;
 }
 
-.add-user-page__profile {
+.add-admin-page__profile {
   display: flex;
   flex-wrap: wrap;
   gap: 0.85rem;
@@ -576,7 +649,7 @@ onBeforeUnmount(() => {
   padding: 0.75rem;
 }
 
-.add-user-page__profile-preview-wrap {
+.add-admin-page__profile-preview-wrap {
   width: 68px;
   height: 68px;
   border-radius: 999px;
@@ -585,25 +658,25 @@ onBeforeUnmount(() => {
   box-shadow: 0 6px 14px -10px rgba(15, 23, 42, 0.6);
 }
 
-.add-user-page__profile-preview {
+.add-admin-page__profile-preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.add-user-page__profile-actions {
+.add-admin-page__profile-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.add-user-page__file-input {
+.add-admin-page__file-input {
   max-width: 260px;
   font-size: 0.8rem;
   color: #334155;
 }
 
-.add-user-page__remove-image {
+.add-admin-page__remove-image {
   border: 1px solid #fecaca;
   background: #fff1f2;
   color: #be123c;
@@ -613,19 +686,27 @@ onBeforeUnmount(() => {
   padding: 0.42rem 0.62rem;
 }
 
-.add-user-page__remove-image:hover {
+.add-admin-page__remove-image:hover {
   background: #ffe4e6;
 }
 
-@media (max-width: 768px) {
-  .add-user-page__grid {
+@media (max-width: 1120px) {
+  .add-admin-page__layout {
     grid-template-columns: 1fr;
   }
 
-  .add-user-page__permissions {
+  .add-admin-page__rail {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .add-admin-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-admin-page__permissions {
     grid-template-columns: 1fr;
   }
 }
 </style>
-
-

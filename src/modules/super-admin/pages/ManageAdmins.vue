@@ -11,12 +11,13 @@ import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
-import usersMock from '@/mocks/users.json'
-import { ROLES } from '@/constants/roles'
+import { PROGRAM_ADMIN_ROLES, ROLES, isProgramAdminRole, isSuperAdminRole } from '@/constants/roles'
 import { mapUsers } from '@/services/mappers/userMapper'
+import usersMock from '@/mocks/users.json'
+import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 
 defineOptions({
-  name: 'UsersPage',
+  name: 'AdminManagementPage',
 })
 
 const { t } = useI18n()
@@ -33,52 +34,87 @@ const showSuccess = ref(false)
 const successMessage = ref('')
 
 const pageSize = 10
+const statusOptions = ['active', 'pending', 'inactive', 'suspended']
+const roleOptions = [ROLES.SUPER_ADMIN, ...PROGRAM_ADMIN_ROLES]
 
-const roleOptions = [
-  ROLES.SUPER_ADMIN,
-  ROLES.COACH,
-  ROLES.TEACHER_ENGLISH,
-  ROLES.TEACHER_PRESCHOOL,
-  ROLES.TEACHER_SCHOLARSHIP,
-  ROLES.ADMIN_PRESCHOOL,
-  ROLES.ADMIN_SCHOLARSHIP,
-  ROLES.ADMIN_ENGLISH,
-  ROLES.ADMIN_SPORT,
-]
-const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
-const addUserLabel = computed(() => {
-  const key = 'users.addUser'
+const pageTitle = computed(() => t('users.manageAdmins.title'))
+const pageSubtitle = computed(() => t('users.manageAdmins.summary'))
+const searchPlaceholder = computed(() => t('users.manageAdmins.searchPlaceholder'))
+const addButtonLabel = computed(() => t('users.manageAdmins.addButton'))
+const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
+const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
+const loadingLabel = computed(() => t('users.manageAdmins.loading'))
+
+const admins = ref(
+  mapUsers(usersMock).filter((user) => isSuperAdminRole(user.role) || isProgramAdminRole(user.role)),
+)
+
+function statusLabel(status) {
+  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
-  return translated !== key ? translated : 'Add User'
-})
-const cancelLabel = computed(() => t('common.cancel') || 'Cancel')
-const deleteConfirmTitle = computed(() => t('users.deleteConfirmTitle') || 'Delete user?')
-const deleteConfirmText = computed(() => t('users.deleteConfirmText') || 'Delete')
-const deleteConfirmMessage = computed(() => {
-  const name = selectedUserName.value || 'this user'
-  const translated = t('users.deleteConfirmMessage', { name })
-  return translated !== 'users.deleteConfirmMessage'
-    ? translated
-    : `Are you sure you want to delete ${name}?`
-})
-
-function goToAddUser() {
-  router.push('/module/super-admin/users/add')
+  return translated !== key ? translated : String(status || '')
 }
 
-const users = ref(mapUsers(usersMock))
+const summaryCards = computed(() => {
+  const total = admins.value.length
+  const active = admins.value.filter((user) => String(user.status).toLowerCase() === 'active').length
+  const pending = admins.value.filter((user) => String(user.status).toLowerCase() === 'pending').length
+  const alerts = admins.value.filter((user) =>
+    ['inactive', 'suspended'].includes(String(user.status).toLowerCase()),
+  ).length
 
-const filteredUsers = computed(() => {
+  return [
+    {
+      id: 'total-admins',
+      title: t('users.manageAdmins.metrics.total'),
+      value: total,
+      label: toolbarNote.value,
+      status: 'info',
+      statusLabel: statusLabel('info'),
+      surfaceClass: 'bg-cyan-50/80 border-cyan-200',
+      actionLabel: addButtonLabel.value,
+    },
+    {
+      id: 'active-admins',
+      title: t('users.manageAdmins.metrics.active'),
+      value: active,
+      label: t('users.manageAdmins.metrics.activeLabel'),
+      status: 'success',
+      statusLabel: statusLabel('success'),
+      surfaceClass: 'bg-lime-50/80 border-lime-200',
+    },
+    {
+      id: 'pending-admins',
+      title: t('users.manageAdmins.metrics.pending'),
+      value: pending,
+      label: t('users.manageAdmins.metrics.pendingLabel'),
+      status: 'warning',
+      statusLabel: statusLabel('warning'),
+      surfaceClass: 'bg-amber-50/80 border-amber-200',
+    },
+    {
+      id: 'security-alerts',
+      title: t('users.manageAdmins.metrics.alerts'),
+      value: alerts,
+      label: t('users.manageAdmins.metrics.alertsLabel'),
+      status: alerts > 0 ? 'error' : 'success',
+      statusLabel: statusLabel(alerts > 0 ? 'error' : 'success'),
+      surfaceClass: 'bg-rose-50/80 border-rose-200',
+    },
+  ]
+})
+
+const filteredAdmins = computed(() => {
   const query = String(searchQuery.value ?? '')
     .trim()
     .toLowerCase()
 
-  return users.value.filter((user) => {
+  return admins.value.filter((user) => {
     let isMatch = true
 
     if (query) {
       const haystack =
-        `${user.name} ${user.email} ${user.role} ${user.permissions?.join(' ')}`.toLowerCase()
+        `${user.name} ${user.email} ${user.role} ${user.department} ${user.permissions?.join(' ')}`.toLowerCase()
       isMatch = haystack.includes(query)
     }
 
@@ -94,18 +130,21 @@ const filteredUsers = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(Math.ceil(filteredUsers.value.length / pageSize), 1))
+const totalPages = computed(() => Math.max(Math.ceil(filteredAdmins.value.length / pageSize), 1))
 
-const paginatedUsers = computed(() => {
+const paginatedAdmins = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return filteredUsers.value.slice(start, start + pageSize).map((user, index) => ({
+  return filteredAdmins.value.slice(start, start + pageSize).map((user, index) => ({
     ...user,
     rowNumber: start + index + 1,
+    role: user.role || ROLES.SUPER_ADMIN,
+    status: user.status || 'active',
+    permissions: Array.isArray(user.permissions) ? user.permissions : [],
   }))
 })
 
 watch(
-  () => filteredUsers.value.length,
+  () => filteredAdmins.value.length,
   () => {
     if (currentPage.value > totalPages.value) {
       currentPage.value = totalPages.value
@@ -113,15 +152,19 @@ watch(
   },
 )
 
-function onEditUser(user) {
-  const id = String(user?.id || '').trim()
+function goToAddAdmin() {
+  router.push('/module/super-admin/users/add')
+}
+
+function onEditAdmin(admin) {
+  const id = String(admin?.id || '').trim()
   if (!id) return
   router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
 }
 
-function onDeleteUser(user) {
-  selectedUserId.value = user?.id || ''
-  selectedUserName.value = user?.name || ''
+function onDeleteAdmin(admin) {
+  selectedUserId.value = admin?.id || ''
+  selectedUserName.value = admin?.name || ''
   isDeleteOpen.value = true
 }
 
@@ -132,23 +175,45 @@ function onCancelDelete() {
 }
 
 function onConfirmDelete() {
-  users.value = users.value.filter((user) => user.id !== selectedUserId.value)
+  admins.value = admins.value.filter((user) => user.id !== selectedUserId.value)
   isDeleteOpen.value = false
   selectedUserId.value = ''
   selectedUserName.value = ''
-  successMessage.value = 'User deleted successfully.'
+  successMessage.value = t('users.manageAdmins.removeSuccess')
   showSuccess.value = true
 }
+
+const deleteConfirmTitle = computed(() => t('users.deleteConfirmTitle') || 'Delete admin?')
+const deleteConfirmText = computed(() => t('users.deleteConfirmText') || 'Delete')
+const cancelLabel = computed(() => t('common.cancel') || 'Cancel')
+const deleteConfirmMessage = computed(() => {
+  const name = selectedUserName.value || 'this admin'
+  const translated = t('users.deleteConfirmMessage', { name })
+  return translated !== 'users.deleteConfirmMessage'
+    ? translated
+    : `Are you sure you want to delete ${name}?`
+})
 </script>
 
 <template>
   <MainLayout>
-    <section class="users-page">
-      <HeaderSection :title="t('users.pageTitle')" :subtitle="t('users.summary')" />
+    <section class="admin-directory-page">
+      <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <div class="users-page__panel">
-        <div class="users-page__actions">
-          <Button variant="primary" size="md" rounded="xl" @click="goToAddUser">
+      <AdminSummaryCards :cards="summaryCards" />
+
+      <div class="admin-directory-shell">
+        <div class="admin-directory-shell__toolbar">
+          <div class="min-w-0">
+            <p class="text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-surface-500">
+              {{ toolbarNote }}
+            </p>
+            <p class="mt-1 text-[0.9rem] leading-6 text-slate-600">
+              {{ t('users.manageAdmins.accountsInView', { count: filteredAdmins.length }) }}
+            </p>
+          </div>
+
+          <Button variant="primary" size="md" rounded="xl" @click="goToAddAdmin">
             <template #iconLeft>
               <svg
                 class="h-4 w-4"
@@ -165,7 +230,7 @@ function onConfirmDelete() {
                 />
               </svg>
             </template>
-            {{ addUserLabel }}
+            {{ addButtonLabel }}
           </Button>
         </div>
 
@@ -174,26 +239,28 @@ function onConfirmDelete() {
           v-model:searchQuery="searchQuery"
           v-model:roleFilter="roleFilter"
           v-model:statusFilter="statusFilter"
+          :search-placeholder="searchPlaceholder"
           :role-options="roleOptions"
           :status-options="statusOptions"
         />
 
-        <div v-if="isLoading" class="users-page__loading">
-          <Loading :label="t('users.loadingUsers')" size="md" />
+        <div v-if="isLoading" class="admin-directory-shell__loading">
+          <Loading :label="loadingLabel" size="md" />
         </div>
+
         <Table
           v-else
-          :users="paginatedUsers"
-          :empty-text="t('users.table.empty')"
-          @edit="onEditUser"
-          @delete="onDeleteUser"
+          :users="paginatedAdmins"
+          :empty-text="tableEmptyText"
+          @edit="onEditAdmin"
+          @delete="onDeleteAdmin"
         />
 
         <div v-if="totalPages > 1" class="flex justify-end">
           <Pagination
             v-model="currentPage"
             :total-pages="totalPages"
-            :disabled="!filteredUsers.length"
+            :disabled="!filteredAdmins.length"
             class="mt-3"
           />
         </div>
@@ -213,40 +280,41 @@ function onConfirmDelete() {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('common.success')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('common.close')"
       @close="showSuccess = false"
     />
   </MainLayout>
 </template>
 
 <style scoped>
-.users-page {
+.admin-directory-page {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.35rem;
 }
 
-.users-page__panel {
+.admin-directory-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
   border-radius: 1.5rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.98) 100%);
   border: 1px solid #e7eaf3;
   padding: 1.5rem;
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
 }
 
-.users-page__actions {
+.admin-directory-shell__toolbar {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.users-page__loading {
+.admin-directory-shell__loading {
   padding: 1.5rem 0.5rem;
 }
 </style>
-
-
