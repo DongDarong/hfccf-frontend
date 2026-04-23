@@ -5,6 +5,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Button from '@/components/buttons/Button.vue'
 import users from '@/mocks/users.json'
+import { ROLES } from '@/constants/roles'
 
 const props = defineProps({
   email: {
@@ -60,7 +61,7 @@ const matchedSuperAdmin = computed(() =>
   users.find(
     (user) =>
       String(user.email || '').trim().toLowerCase() === normalizedEmailKey.value &&
-      String(user.role || '').trim().toLowerCase() === 'superadmin',
+      String(user.role || '').trim().toLowerCase() === ROLES.SUPER_ADMIN,
   ),
 )
 

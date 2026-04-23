@@ -10,12 +10,15 @@ import PreschoolAdminDashboard from '@/modules/preschool/admin/pages/Dashboard.v
 import ScholarshipAdminDashboard from '@/modules/scholarship/admin/pages/Dashboard.vue'
 import EnglishAdminDashboard from '@/modules/english/admin/pages/Dashboard.vue'
 import SportAdminDashboard from '@/modules/sport/admin/pages/Dashboard.vue'
-import TeacherDashboard from '@/modules/english/teacher/pages/Dashboard.vue'
+import TeacherEnglishDashboard from '@/modules/english/teacher/pages/Dashboard.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
+import PreschoolTeacherDashboard from '@/modules/preschool/teacher/pages/Dashboard.vue'
+import ScholarshipTeacherDashboard from '@/modules/scholarship/teacher/pages/Dashboard.vue'
 import OperationsDashboard from '@/shared/components/dashboards/OperationsDashboard.vue'
 import DeliveryDashboard from '@/shared/components/dashboards/DeliveryDashboard.vue'
 import ProgramsDashboard from '@/shared/components/dashboards/ProgramsDashboard.vue'
 import BasicDashboard from '@/shared/components/dashboards/BasicDashboard.vue'
+import { ROLES, isTeacherRole, normalizeRole } from '@/constants/roles'
 
 defineOptions({
   name: 'DashboardPage',
@@ -23,64 +26,52 @@ defineOptions({
 
 const router = useRouter()
 const currentUser = computed(() => getCurrentUser() || {})
-const normalizedRole = computed(() =>
-  String(currentUser.value?.role || '')
-    .trim()
-    .toLowerCase(),
-)
+const normalizedRole = computed(() => normalizeRole(currentUser.value?.role))
 
-function resolveDashboardKey() {
-  if (hasPermission('all:*', currentUser.value)) return 'superadmin'
-  if (normalizedRole.value === 'adminpreschool') return 'adminpreschool'
-  if (normalizedRole.value === 'adminscholaship') return 'adminscholaship'
-  if (normalizedRole.value === 'adminenglish') return 'adminenglish'
-  if (normalizedRole.value === 'adminsport') return 'adminsport'
-  if (normalizedRole.value === 'teacher' && hasPermission('tasks:write', currentUser.value))
-    return 'teacher'
-  if (normalizedRole.value === 'coach' && hasPermission('training:write', currentUser.value))
-    return 'coach'
-  if (hasPermission('users:write', currentUser.value)) return 'operations'
-  if (hasPermission('tasks:write', currentUser.value)) return 'delivery'
-  if (hasPermission('programs:write', currentUser.value)) return 'programs'
-  return 'basic'
+const dashboardByRole = Object.freeze({
+  [ROLES.SUPER_ADMIN]: SuperAdminDashboard,
+  [ROLES.ADMIN_ENGLISH]: EnglishAdminDashboard,
+  [ROLES.ADMIN_PRESCHOOL]: PreschoolAdminDashboard,
+  [ROLES.ADMIN_SCHOLARSHIP]: ScholarshipAdminDashboard,
+  [ROLES.ADMIN_SPORT]: SportAdminDashboard,
+  [ROLES.COACH]: CoachDashboard,
+  [ROLES.TEACHER_ENGLISH]: TeacherEnglishDashboard,
+  [ROLES.TEACHER_PRESCHOOL]: PreschoolTeacherDashboard,
+  [ROLES.TEACHER_SCHOLARSHIP]: ScholarshipTeacherDashboard,
+})
+
+const dashboardLabels = Object.freeze({
+  [ROLES.SUPER_ADMIN]: 'Super Admin',
+  [ROLES.ADMIN_ENGLISH]: 'English Admin',
+  [ROLES.ADMIN_PRESCHOOL]: 'Preschool Admin',
+  [ROLES.ADMIN_SCHOLARSHIP]: 'Scholarship Admin',
+  [ROLES.ADMIN_SPORT]: 'Sport Admin',
+  [ROLES.COACH]: 'Coach',
+  [ROLES.TEACHER_ENGLISH]: 'Teacher',
+  [ROLES.TEACHER_PRESCHOOL]: 'Preschool Teacher',
+  [ROLES.TEACHER_SCHOLARSHIP]: 'Scholarship Teacher',
+})
+
+const dashboardSeverities = Object.freeze({
+  [ROLES.SUPER_ADMIN]: 'contrast',
+  [ROLES.ADMIN_ENGLISH]: 'info',
+  [ROLES.ADMIN_PRESCHOOL]: 'success',
+  [ROLES.ADMIN_SCHOLARSHIP]: 'warn',
+  [ROLES.ADMIN_SPORT]: 'danger',
+  [ROLES.COACH]: 'danger',
+  [ROLES.TEACHER_ENGLISH]: 'success',
+  [ROLES.TEACHER_PRESCHOOL]: 'success',
+  [ROLES.TEACHER_SCHOLARSHIP]: 'success',
+})
+
+function canUseRoleDashboard(role) {
+  if (role === ROLES.SUPER_ADMIN) return true
+  if (isTeacherRole(role)) return hasPermission('tasks:write', currentUser.value)
+  if (role === ROLES.COACH) return hasPermission('training:write', currentUser.value)
+  return Boolean(dashboardByRole[role])
 }
 
 const dashboardRegistry = {
-  superadmin: {
-    component: SuperAdminDashboard,
-    label: 'Super Admin',
-    severity: 'contrast',
-  },
-  adminpreschool: {
-    component: PreschoolAdminDashboard,
-    label: 'Preschool Admin',
-    severity: 'success',
-  },
-  adminscholaship: {
-    component: ScholarshipAdminDashboard,
-    label: 'Scholarship Admin',
-    severity: 'warn',
-  },
-  adminenglish: {
-    component: EnglishAdminDashboard,
-    label: 'English Admin',
-    severity: 'info',
-  },
-  adminsport: {
-    component: SportAdminDashboard,
-    label: 'Sport Admin',
-    severity: 'danger',
-  },
-  teacher: {
-    component: TeacherDashboard,
-    label: 'Teacher',
-    severity: 'success',
-  },
-  coach: {
-    component: CoachDashboard,
-    label: 'Coach',
-    severity: 'danger',
-  },
   operations: {
     component: OperationsDashboard,
     label: 'Operations',
@@ -103,10 +94,23 @@ const dashboardRegistry = {
   },
 }
 
-const activeDashboardKey = computed(() => resolveDashboardKey())
-const activeDashboardConfig = computed(
-  () => dashboardRegistry[activeDashboardKey.value] || dashboardRegistry.basic,
-)
+const roleDashboardConfig = computed(() => {
+  const role = hasPermission('all:*', currentUser.value) ? ROLES.SUPER_ADMIN : normalizedRole.value
+  if (!canUseRoleDashboard(role)) return null
+
+  return {
+    component: dashboardByRole[role],
+    label: dashboardLabels[role] || role,
+    severity: dashboardSeverities[role] || 'secondary',
+  }
+})
+const fallbackDashboardKey = computed(() => {
+  if (hasPermission('users:write', currentUser.value)) return 'operations'
+  if (hasPermission('tasks:write', currentUser.value)) return 'delivery'
+  if (hasPermission('programs:write', currentUser.value)) return 'programs'
+  return 'basic'
+})
+const activeDashboardConfig = computed(() => roleDashboardConfig.value || dashboardRegistry[fallbackDashboardKey.value])
 const activeDashboardComponent = computed(() => activeDashboardConfig.value.component)
 const currentRoleLabel = computed(
   () => activeDashboardConfig.value.label || normalizedRole.value || 'User',

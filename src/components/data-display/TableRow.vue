@@ -4,6 +4,7 @@ import StatusBadge from '@/components/badges/StatusBadge.vue'
 import RolesBadge from '@/components/badges/RolesBadge.vue'
 import PermissionBadge from '@/components/badges/PermissionBadge.vue'
 import ActionsButton from '@/components/buttons/ActionsButton.vue'
+import { ROLES, isTeacherRole } from '@/constants/roles'
 
 const props = defineProps({
   user: {
@@ -110,38 +111,38 @@ function userInitials(row) {
 
 function getInitialBadgeClass(role) {
   const normalized = String(role || '').toLowerCase()
-  if (normalized === 'superadmin') return 'bg-indigo-600'
-  if (normalized === 'coach') return 'bg-hope-yellow'
+  if (normalized === ROLES.SUPER_ADMIN) return 'bg-indigo-600'
+  if (normalized === ROLES.COACH) return 'bg-hope-yellow'
   if (
-    normalized === 'teacher' ||
-    normalized === 'teacher-preschool' ||
-    normalized === 'adminpreschool'
+    normalized === ROLES.TEACHER_PRESCHOOL ||
+    normalized === ROLES.ADMIN_PRESCHOOL
   ) {
     return 'bg-hope-lime'
   }
-  if (normalized === 'teacher-english' || normalized === 'adminenglish') return 'bg-hope-cyan'
-  if (normalized === 'teacher-scholarship' || normalized === 'adminscholaship')
+  if (normalized === ROLES.TEACHER_ENGLISH || normalized === ROLES.ADMIN_ENGLISH)
+    return 'bg-hope-cyan'
+  if (normalized === ROLES.TEACHER_SCHOLARSHIP || normalized === ROLES.ADMIN_SCHOLARSHIP)
     return 'bg-hope-yellow'
-  if (normalized === 'adminsport') return 'bg-hope-red'
+  if (normalized === ROLES.ADMIN_SPORT) return 'bg-hope-red'
   if (normalized.startsWith('admin')) return 'bg-hope-cyan'
   return 'bg-surface-400'
 }
 
 function avatarRingClass(role) {
   const normalized = String(role || '').toLowerCase()
-  if (normalized === 'superadmin') return 'ring-indigo-300'
-  if (normalized === 'coach') return 'ring-amber-300'
+  if (normalized === ROLES.SUPER_ADMIN) return 'ring-indigo-300'
+  if (normalized === ROLES.COACH) return 'ring-amber-300'
   if (
-    normalized === 'teacher' ||
-    normalized === 'teacher-preschool' ||
-    normalized === 'adminpreschool'
+    normalized === ROLES.TEACHER_PRESCHOOL ||
+    normalized === ROLES.ADMIN_PRESCHOOL
   ) {
     return 'ring-lime-300'
   }
-  if (normalized === 'teacher-english' || normalized === 'adminenglish') return 'ring-cyan-300'
-  if (normalized === 'teacher-scholarship' || normalized === 'adminscholaship')
+  if (normalized === ROLES.TEACHER_ENGLISH || normalized === ROLES.ADMIN_ENGLISH)
+    return 'ring-cyan-300'
+  if (normalized === ROLES.TEACHER_SCHOLARSHIP || normalized === ROLES.ADMIN_SCHOLARSHIP)
     return 'ring-yellow-300'
-  if (normalized === 'adminsport') return 'ring-rose-300'
+  if (normalized === ROLES.ADMIN_SPORT) return 'ring-rose-300'
   if (normalized.startsWith('admin')) return 'ring-cyan-300'
   return 'ring-surface-300'
 }
@@ -149,10 +150,10 @@ function avatarRingClass(role) {
 function avatarTextClass(role) {
   const normalized = String(role || '').toLowerCase()
   if (
-    normalized === 'coach' ||
-    normalized === 'teacher' ||
-    normalized === 'teacher-preschool' ||
-    normalized === 'teacher-scholarship'
+    normalized === ROLES.COACH ||
+    normalized === ROLES.TEACHER_PRESCHOOL ||
+    normalized === ROLES.TEACHER_SCHOLARSHIP ||
+    isTeacherRole(normalized)
   ) {
     return 'text-gray-900'
   }
@@ -278,6 +279,4 @@ function onAvatarError() {
     </td>
   </tr>
 </template>
-
-
 

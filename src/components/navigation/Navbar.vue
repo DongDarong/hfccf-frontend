@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import Aavtar from '@/components/navigation/Aavtar.vue'
+import Avatar from '@/components/navigation/Avatar.vue'
 import Calendar from '@/assets/icons/Calendar.vue'
 import Notification from '@/assets/icons/Notification.vue'
 
@@ -145,11 +145,10 @@ const localePt = {
         aria-label="Language Switcher"
       />
 
-      <Aavtar name="HFCCF User" size="sm" status="online" :show-meta="false" compact />
+      <Avatar name="HFCCF User" size="sm" status="online" :show-meta="false" compact />
     </div>
   </nav>
 </template>
-
 
 
 

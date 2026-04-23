@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import Tag from 'primevue/tag'
 import { useLanguage } from '@/composables/useLanguage'
+import { ROLES, isTeacherRole } from '@/constants/roles'
 
 const props = defineProps({
   role: {
@@ -48,7 +49,7 @@ const sizeClass = computed(() => {
 })
 
 const toneClass = computed(() => {
-  if (normalizedRole.value === 'superadmin') {
+  if (normalizedRole.value === ROLES.SUPER_ADMIN) {
     return [
       '!border-indigo-200',
       '!bg-indigo-50',
@@ -57,7 +58,7 @@ const toneClass = computed(() => {
     ]
   }
 
-  if (normalizedRole.value.includes('sport') || normalizedRole.value === 'coach') {
+  if (normalizedRole.value.includes('sport') || normalizedRole.value === ROLES.COACH) {
     return [
       '!border-rose-200',
       '!bg-rose-50',
@@ -66,7 +67,10 @@ const toneClass = computed(() => {
     ]
   }
 
-  if (normalizedRole.value.includes('scholarship')) {
+  if (
+    normalizedRole.value.includes('scholarship') ||
+    normalizedRole.value === ROLES.ADMIN_SCHOLARSHIP
+  ) {
     return [
       '!border-amber-200',
       '!bg-amber-50',
@@ -84,7 +88,7 @@ const toneClass = computed(() => {
     ]
   }
 
-  if (normalizedRole.value.includes('preschool') || normalizedRole.value === 'teacher') {
+  if (normalizedRole.value.includes('preschool') || isTeacherRole(normalizedRole.value)) {
     return [
       '!border-lime-200',
       '!bg-lime-50',

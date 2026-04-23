@@ -7,11 +7,12 @@ import CreateNewPassword from '@/modules/auth/components/CreateNewPassword.vue'
 import VerifyCode from '@/modules/auth/components/VerifyCode.vue'
 import VerifyEmail from '@/modules/auth/components/VerifyEmail.vue'
 import users from '@/mocks/users.json'
+import { ROLES } from '@/constants/roles'
 
 const router = useRouter()
 
 const recoveryPolicy = Object.freeze({
-  role: 'superadmin',
+  role: ROLES.SUPER_ADMIN,
   requiredPermission: 'all:*',
   allowedStatuses: ['active'],
   otpLength: 6,

@@ -2,32 +2,33 @@
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import LoginForm from '@/modules/auth/components/LoginForm.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { ROLES } from '@/constants/roles'
 
 const loginAccessPolicy = Object.freeze({
   guestOnly: true,
   defaultRedirect: '/module/dashboard',
-  recoveryRole: 'superadmin',
+  recoveryRole: ROLES.SUPER_ADMIN,
   allowedRoles: [
-    'superadmin',
-    'adminenglish',
-    'adminpreschool',
-    'adminscholaship',
-    'adminsport',
-    'teacher-english',
-    'teacher-preschool',
-    'teacher-scholarship',
-    'coach',
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN_ENGLISH,
+    ROLES.ADMIN_PRESCHOOL,
+    ROLES.ADMIN_SCHOLARSHIP,
+    ROLES.ADMIN_SPORT,
+    ROLES.TEACHER_ENGLISH,
+    ROLES.TEACHER_PRESCHOOL,
+    ROLES.TEACHER_SCHOLARSHIP,
+    ROLES.COACH,
   ],
   requiredPermissionsByRole: {
-    superadmin: ['all:*'],
-    adminenglish: ['dashboard:read', 'users:read'],
-    adminpreschool: ['dashboard:read', 'users:read'],
-    adminscholaship: ['dashboard:read', 'users:read'],
-    adminsport: ['dashboard:read', 'users:read'],
-    'teacher-english': ['dashboard:read', 'tasks:read'],
-    'teacher-preschool': ['dashboard:read', 'tasks:read'],
-    'teacher-scholarship': ['dashboard:read', 'tasks:read'],
-    coach: ['dashboard:read', 'tasks:read'],
+    [ROLES.SUPER_ADMIN]: ['all:*'],
+    [ROLES.ADMIN_ENGLISH]: ['dashboard:read', 'users:read'],
+    [ROLES.ADMIN_PRESCHOOL]: ['dashboard:read', 'users:read'],
+    [ROLES.ADMIN_SCHOLARSHIP]: ['dashboard:read', 'users:read'],
+    [ROLES.ADMIN_SPORT]: ['dashboard:read', 'users:read'],
+    [ROLES.TEACHER_ENGLISH]: ['dashboard:read', 'tasks:read'],
+    [ROLES.TEACHER_PRESCHOOL]: ['dashboard:read', 'tasks:read'],
+    [ROLES.TEACHER_SCHOLARSHIP]: ['dashboard:read', 'tasks:read'],
+    [ROLES.COACH]: ['dashboard:read', 'tasks:read'],
   },
 })
 

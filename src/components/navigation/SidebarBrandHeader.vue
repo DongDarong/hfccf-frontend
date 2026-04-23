@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getCurrentUser } from '@/services/auth'
+import { ROLES } from '@/constants/roles'
 
 const route = useRoute()
 const currentUser = computed(() => getCurrentUser() || {})
@@ -19,28 +20,28 @@ const brandConfig = computed(() => {
   const path = route.path
   const role = normalizedRole.value
 
-  if (role === 'adminenglish' || role === 'teacher-english') {
+  if (role === ROLES.ADMIN_ENGLISH || role === ROLES.TEACHER_ENGLISH) {
     return {
       label: 'English',
       className: 'brand-header__line--english',
     }
   }
 
-  if (role === 'adminpreschool' || role === 'teacher-preschool') {
+  if (role === ROLES.ADMIN_PRESCHOOL || role === ROLES.TEACHER_PRESCHOOL) {
     return {
       label: 'Preschool',
       className: 'brand-header__line--preschool',
     }
   }
 
-  if (role === 'adminscholaship' || role === 'teacher-scholarship') {
+  if (role === ROLES.ADMIN_SCHOLARSHIP || role === ROLES.TEACHER_SCHOLARSHIP) {
     return {
       label: 'Scholarship',
       className: 'brand-header__line--scholarship',
     }
   }
 
-  if (role === 'adminsport' || role === 'coach') {
+  if (role === ROLES.ADMIN_SPORT || role === ROLES.COACH) {
     return {
       label: 'EduSportPro',
       className: 'brand-header__line--sport-pro',
