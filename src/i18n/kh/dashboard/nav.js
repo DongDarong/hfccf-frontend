@@ -27,6 +27,7 @@ export default {
     adminDashboard: 'ផ្ទាំងគ្រប់គ្រងអ្នកគ្រប់គ្រង',
     teachers: 'គ្រូបង្រៀន',
     coaches: 'គ្រូបង្វឹក',
+    teams: 'ក្រុម',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',

@@ -1,6 +1,7 @@
 import SportAdminDashboard from '@/modules/sport/admin/pages/Dashboard.vue'
 import SportCoachManagement from '@/modules/sport/admin/pages/CoachManagement.vue'
 import SportAddCoach from '@/modules/sport/admin/pages/AddCoach.vue'
+import SportTeamsManagement from '@/modules/sport/admin/pages/TeamsManagement.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
 import { ROLES } from '@/constants/roles'
 
@@ -21,6 +22,12 @@ export const sportRoutes = [
     path: '/module/sport-admin/users/add',
     name: 'dashboard-sport-admin-users-add',
     component: SportAddCoach,
+    meta: { requiresAuth: true, allowedRoles: [ROLES.ADMIN_SPORT] },
+  },
+  {
+    path: '/module/sport-admin/teams',
+    name: 'dashboard-sport-admin-teams',
+    component: SportTeamsManagement,
     meta: { requiresAuth: true, allowedRoles: [ROLES.ADMIN_SPORT] },
   },
   {

@@ -27,6 +27,7 @@ export default {
     adminDashboard: 'Admin Dashboard',
     teachers: 'Teachers',
     coaches: 'Coaches',
+    teams: 'Teams',
   },
   badges: {
     admin: 'Admin',

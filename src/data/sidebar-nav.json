@@ -21,6 +21,41 @@
           "badgeKey": "nav.badges.admin"
         }
       ]
+    },
+    {
+      "id": "sport-admin",
+      "labelKey": "nav.sections.sport",
+      "captionKey": "nav.sectionCaptions.sport",
+      "className": "sidebar-section--sport",
+      "collapsible": true,
+      "visibility": ["adminsport"],
+      "items": [
+        {
+          "id": "sport-admin-dashboard",
+          "to": "/module/sport-admin/dashboard",
+          "labelKey": "nav.items.adminDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin",
+          "children": [
+            {
+              "id": "sport-admin-coaches",
+              "to": "/module/sport-admin/users",
+              "labelKey": "nav.items.coaches",
+              "icon": "users",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            },
+            {
+              "id": "sport-admin-teams",
+              "to": "/module/sport-admin/teams",
+              "labelKey": "nav.items.teams",
+              "icon": "users",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            }
+          ]
+        }
+      ]
     }
   ],
   "superAdmin": [
@@ -148,6 +183,14 @@
               "id": "sport-coaches",
               "to": "/module/sport-admin/users",
               "labelKey": "nav.items.coaches",
+              "icon": "users",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
+            },
+            {
+              "id": "sport-teams",
+              "to": "/module/sport-admin/teams",
+              "labelKey": "nav.items.teams",
               "icon": "users",
               "secondary": true,
               "badgeKey": "nav.badges.staff"
