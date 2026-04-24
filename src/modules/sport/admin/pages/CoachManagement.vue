@@ -51,7 +51,7 @@ const tableColumns = computed(() => [
 ])
 
 function goToAddCoach() {
-  router.push({ path: '/module/super-admin/users/add', query: { role: ROLES.COACH } })
+  router.push({ path: '/module/sport-admin/users/add' })
 }
 
 const coachUsers = ref(
@@ -195,13 +195,13 @@ watch(
 function onViewUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/module/super-admin/users/add', query: { mode: 'view', id } })
+  router.push({ path: '/module/sport-admin/users/add', query: { mode: 'view', id } })
 }
 
 function onEditUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
-  router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
+  router.push({ path: '/module/sport-admin/users/add', query: { mode: 'edit', id } })
 }
 
 function onDeleteUser(user) {
