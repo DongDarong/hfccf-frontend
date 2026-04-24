@@ -6,35 +6,49 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import Button from '@/components/buttons/Button.vue'
+import CoachManagementSummaryGrid from '@/modules/sport/admin/components/coach-management/CoachManagementSummaryGrid.vue'
+import CoachManagementToolbar from '@/modules/sport/admin/components/coach-management/CoachManagementToolbar.vue'
+import CoachManagementHighlights from '@/modules/sport/admin/components/coach-management/CoachManagementHighlights.vue'
 import usersMock from '@/mocks/users.json'
 import { ROLES } from '@/constants/roles'
+import { useLanguage } from '@/composables/useLanguage'
 import { mapUser } from '@/services/mappers/userMapper'
 
 defineOptions({
-  name: 'SportAdminUsersPage',
+  name: 'SportCoachManagementPage',
 })
 
 const router = useRouter()
+const { t, language } = useLanguage()
 const searchQuery = ref('')
 const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
-const pageSize = 8
 
+const pageSize = 8
+const isKh = computed(() => language.value === 'KH')
 const roleOptions = [ROLES.COACH]
 const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
-const addCoachLabel = computed(() => 'Add Coach')
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'user', label: 'User', align: 'left' },
-  { key: 'email', label: 'Email', align: 'left' },
-  { key: 'role', label: 'Role', align: 'left' },
-  { key: 'permission', label: 'Permissions', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'phone', label: 'Phone', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const pageTitle = computed(() => t('sportCoachManagement.title'))
+const pageSubtitle = computed(
+  () => t('sportCoachManagement.subtitle'),
+)
+const addCoachLabel = computed(() => t('sportCoachManagement.addButton'))
+const addCoachCaption = computed(() => t('sportCoachManagement.addButtonCaption'))
+const searchPlaceholder = computed(() => t('sportCoachManagement.searchPlaceholder'))
+const toolbarEyebrow = computed(() => t('sportCoachManagement.toolbarEyebrow'))
+const tableEmptyText = computed(() => t('sportCoachManagement.tableEmpty'))
+const activeRateTitle = computed(() => t('sportCoachManagement.activeRateLabel'))
+const tableColumns = computed(() => [
+  { key: 'number', label: t('common.table.number'), align: 'left' },
+  { key: 'user', label: t('common.table.user'), align: 'left' },
+  { key: 'email', label: t('common.table.email'), align: 'left' },
+  { key: 'role', label: t('common.table.role'), align: 'left' },
+  { key: 'permission', label: t('common.table.permission'), align: 'left' },
+  { key: 'status', label: t('common.table.status'), align: 'left' },
+  { key: 'phone', label: t('common.table.phone'), align: 'left' },
+  { key: 'actions', label: t('common.table.actions'), align: 'right' },
+])
 
 function goToAddCoach() {
   router.push({ path: '/module/super-admin/users/add', query: { role: ROLES.COACH } })
@@ -81,6 +95,96 @@ const paginatedUsers = computed(() => {
   }))
 })
 
+const totalCoaches = computed(() => coachUsers.value.length)
+const activeCount = computed(
+  () => coachUsers.value.filter((user) => String(user.status).toLowerCase() === 'active').length,
+)
+const pendingCount = computed(
+  () => coachUsers.value.filter((user) => String(user.status).toLowerCase() === 'pending').length,
+)
+const attentionCount = computed(
+  () =>
+    coachUsers.value.filter((user) =>
+      ['inactive', 'suspended'].includes(String(user.status).toLowerCase()),
+    ).length,
+)
+const activeRateLabel = computed(() => {
+  if (!totalCoaches.value) return '0%'
+  return `${Math.round((activeCount.value / totalCoaches.value) * 100)}%`
+})
+const toolbarSummary = computed(() =>
+  t('sportCoachManagement.toolbarSummary', { count: filteredUsers.value.length }),
+)
+const visibleRangeLabel = computed(() => {
+  if (!filteredUsers.value.length) return t('sportCoachManagement.noResults')
+
+  const start = (currentPage.value - 1) * pageSize + 1
+  const end = Math.min(currentPage.value * pageSize, filteredUsers.value.length)
+  return t('sportCoachManagement.visibleRange', {
+    start,
+    end,
+    total: filteredUsers.value.length,
+  })
+})
+const summaryCards = computed(() => [
+  {
+    id: 'total',
+    title: t('sportCoachManagement.summary.total.title'),
+    value: totalCoaches.value,
+    badge: t('sportCoachManagement.summary.total.badge', { count: filteredUsers.value.length }),
+    caption: t('sportCoachManagement.summary.total.caption'),
+    tone: 'info',
+    icon:
+      'M17 20h5V4H2v16h5m10 0v-5.5a2.5 2.5 0 00-2.5-2.5h-5A2.5 2.5 0 007 14.5V20m10 0H7m7-12a3 3 0 11-6 0 3 3 0 016 0z',
+  },
+  {
+    id: 'active',
+    title: t('sportCoachManagement.summary.active.title'),
+    value: activeCount.value,
+    badge: t('sportCoachManagement.summary.active.badge', { rate: activeRateLabel.value }),
+    caption: t('sportCoachManagement.summary.active.caption'),
+    tone: 'success',
+    icon: 'M5 13l4 4L19 7',
+  },
+  {
+    id: 'pending',
+    title: t('sportCoachManagement.summary.pending.title'),
+    value: pendingCount.value,
+    badge: pendingCount.value
+      ? t('sportCoachManagement.summary.pending.badge')
+      : t('sportCoachManagement.summary.pending.badgeClear'),
+    caption: t('sportCoachManagement.summary.pending.caption'),
+    tone: 'warning',
+    icon:
+      'M12 8v4m0 4h.01M10.3 3.86l-7.5 13a1 1 0 00.87 1.5h16.66a1 1 0 00.87-1.5l-7.5-13a1 1 0 00-1.74 0z',
+  },
+  {
+    id: 'attention',
+    title: t('sportCoachManagement.summary.attention.title'),
+    value: attentionCount.value,
+    badge: attentionCount.value
+      ? t('sportCoachManagement.summary.attention.badge')
+      : t('sportCoachManagement.summary.attention.badgeClear'),
+    caption: t('sportCoachManagement.summary.attention.caption'),
+    tone: 'danger',
+    icon: 'M6 18L18 6M6 6l12 12',
+  },
+])
+const highlightItems = computed(() => [
+  {
+    label: t('sportCoachManagement.highlights.visibleRoster'),
+    value: filteredUsers.value.length,
+  },
+  {
+    label: t('sportCoachManagement.highlights.pendingReview'),
+    value: pendingCount.value,
+  },
+  {
+    label: t('sportCoachManagement.highlights.attentionItems'),
+    value: attentionCount.value,
+  },
+])
+
 watch(
   () => filteredUsers.value.length,
   () => {
@@ -109,51 +213,40 @@ function onDeleteUser(user) {
 
 <template>
   <MainLayout>
-    <section class="sport-users-page">
-      <HeaderSection title="Sport Coaches" subtitle="View coaches assigned to the sport program." />
+    <section class="coach-management-page">
+      <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <div class="sport-users-page__panel">
-        <div class="sport-users-page__actions">
-          <Button
-            variant="primary"
-            size="md"
-            rounded="xl"
-            class="sport-users-page__add-button"
-            @click="goToAddCoach"
-          >
-            <template #iconLeft>
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </template>
-            {{ addCoachLabel }}
-          </Button>
-        </div>
+      <CoachManagementSummaryGrid :cards="summaryCards" :is-kh="isKh" />
+
+      <div class="coach-management-page__shell">
+        <CoachManagementToolbar
+          :eyebrow="toolbarEyebrow"
+          :title="toolbarSummary"
+          :description="visibleRangeLabel"
+          :spotlight-label="activeRateTitle"
+          :spotlight-value="activeRateLabel"
+          :button-label="addCoachLabel"
+          :button-caption="addCoachCaption"
+          :is-kh="isKh"
+          @add="goToAddCoach"
+        />
 
         <SearchFilterBar
           class="w-full"
           v-model:searchQuery="searchQuery"
           v-model:roleFilter="roleFilter"
           v-model:statusFilter="statusFilter"
+          :search-placeholder="searchPlaceholder"
           :role-options="roleOptions"
           :status-options="statusOptions"
         />
 
+        <CoachManagementHighlights :items="highlightItems" :is-kh="isKh" />
+
         <Table
           :rows="paginatedUsers"
           :columns="tableColumns"
-          empty-text="No coaches found."
+          :empty-text="tableEmptyText"
           @view="onViewUser"
           @edit="onEditUser"
           @delete="onDeleteUser"
@@ -168,33 +261,22 @@ function onDeleteUser(user) {
 </template>
 
 <style scoped>
-.sport-users-page {
+.coach-management-page {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.35rem;
 }
 
-.sport-users-page__panel {
+.coach-management-page__shell {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.5rem;
+  gap: 1.15rem;
   padding: 1.5rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.96) 100%);
-  box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.45);
-}
-
-.sport-users-page__actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-.sport-users-page__add-button {
-  flex: 0 0 auto;
-  white-space: nowrap;
+  border-radius: 1.5rem;
+  border: 1px solid #dce6f2;
+  background:
+    radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+  box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 </style>
-
