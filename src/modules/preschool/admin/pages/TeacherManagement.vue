@@ -37,7 +37,7 @@ const tableColumns = [
 ]
 
 function goToAddTeacher() {
-  router.push({ path: '/module/super-admin/users/add', query: { role: ROLES.TEACHER_PRESCHOOL } })
+  router.push({ name: 'add-user', query: { role: ROLES.TEACHER_PRESCHOOL } })
 }
 
 const preschoolUsers = ref(
@@ -117,22 +117,15 @@ function onDeleteUser(user) {
 
       <div class="preschool-users-page__panel">
         <div class="preschool-users-page__actions">
-          <Button variant="primary" size="md" rounded="xl" @click="goToAddTeacher">
+          <Button
+            variant="primary"
+            size="lg"
+            rounded="full"
+            class="preschool-users-page__add-button"
+            @click="goToAddTeacher"
+          >
             <template #iconLeft>
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
+              <i class="pi pi-user-plus text-sm" aria-hidden="true" />
             </template>
             {{ addTeacherLabel }}
           </Button>
@@ -185,5 +178,19 @@ function onDeleteUser(user) {
 .preschool-users-page__actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.preschool-users-page__add-button {
+  min-width: 10.5rem;
+  box-shadow: 0 18px 30px -22px rgba(0, 174, 239, 0.55);
+}
+
+.preschool-users-page__add-button :deep(.p-button-label) {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.preschool-users-page__add-button :deep(.p-button-icon) {
+  font-size: 0.95rem;
 }
 </style>
