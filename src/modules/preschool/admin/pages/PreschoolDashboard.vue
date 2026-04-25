@@ -23,7 +23,3 @@ const cards = [
     ]"
   />
 </template>
-
-
-
-

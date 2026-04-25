@@ -1,4 +1,4 @@
-import PreschoolAdminDashboard from '@/modules/preschool/admin/pages/Dashboard.vue'
+import PreschoolAdminDashboard from '@/modules/preschool/admin/pages/PreschoolDashboard.vue'
 import PreschoolAddTeacher from '@/modules/preschool/admin/pages/AddTeacher.vue'
 import PreschoolTeacherManagement from '@/modules/preschool/admin/pages/TeacherManagement.vue'
 import { ROLES } from '@/constants/roles'
