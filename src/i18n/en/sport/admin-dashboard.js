@@ -158,6 +158,7 @@ export default {
   sportTeamsManagement: {
     title: 'Teams Management',
     subtitle: 'Monitor squad readiness, divisions, roster size, and match performance across the sport program.',
+    addButton: 'Add Team',
     searchPlaceholder: 'Search teams, coaches, captains, divisions, or venues',
     tableEmpty: 'No teams found.',
     toolbarEyebrow: 'Team directory',

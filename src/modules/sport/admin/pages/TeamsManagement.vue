@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
+import Button from 'primevue/button'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
@@ -26,6 +27,7 @@ const statusOptions = ['active', 'pending', 'inactive']
 
 const pageTitle = computed(() => t('sportTeamsManagement.title'))
 const pageSubtitle = computed(() => t('sportTeamsManagement.subtitle'))
+const addTeamLabel = computed(() => t('sportTeamsManagement.addButton'))
 const searchPlaceholder = computed(() => t('sportTeamsManagement.searchPlaceholder'))
 const tableEmptyText = computed(() => t('sportTeamsManagement.tableEmpty'))
 const toolbarEyebrow = computed(() => t('sportTeamsManagement.toolbarEyebrow'))
@@ -259,9 +261,18 @@ watch(
             <p class="teams-management-page__toolbar-text">{{ visibleRangeLabel }}</p>
           </div>
 
-          <div class="teams-management-page__spotlight">
-            <span class="teams-management-page__spotlight-label">{{ spotlightLabel }}</span>
-            <strong class="teams-management-page__spotlight-value">{{ activeTeams }}</strong>
+          <div class="teams-management-page__toolbar-actions">
+            <div class="teams-management-page__spotlight">
+              <span class="teams-management-page__spotlight-label">{{ spotlightLabel }}</span>
+              <strong class="teams-management-page__spotlight-value">{{ activeTeams }}</strong>
+            </div>
+
+            <Button
+              type="button"
+              :label="addTeamLabel"
+              icon="pi pi-plus"
+              class="teams-management-page__add-button"
+            />
           </div>
         </div>
 
@@ -534,6 +545,20 @@ watch(
   border-radius: 1rem;
   border: 1px solid rgba(14, 116, 144, 0.16);
   background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(255, 255, 255, 0.94) 100%);
+}
+
+.teams-management-page__toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.teams-management-page__add-button {
+  min-height: 2.8rem;
+  border-radius: 0.9rem;
+  font-weight: 800;
 }
 
 .teams-management-page__spotlight-label {

@@ -13,6 +13,7 @@ import { englishRoutes } from '@/modules/english/routes'
 import { preschoolRoutes } from '@/modules/preschool/routes'
 import { scholarshipRoutes } from '@/modules/scholarship/routes'
 import { sportRoutes } from '@/modules/sport/routes'
+import { productRoutes } from '@/modules/products/routes'
 import { normalizeRole } from '@/constants/roles'
 
 const routes = [
@@ -23,6 +24,7 @@ const routes = [
   ...preschoolRoutes,
   ...scholarshipRoutes,
   ...sportRoutes,
+  ...productRoutes,
   {
     path: '/:pathMatch(.*)*',
     redirect: '/module/dashboard',
