@@ -19,13 +19,6 @@
           "icon": "users",
           "visibility": ["program-admin"],
           "badgeKey": "nav.badges.admin"
-        },
-        {
-          "id": "products",
-          "to": "/module/products",
-          "label": "Products",
-          "icon": "reports",
-          "activePrefixes": ["/module/products"]
         }
       ]
     },
@@ -91,13 +84,6 @@
               "activePrefixes": ["/module/super-admin/users"]
             }
           ]
-        },
-        {
-          "id": "super-admin-products",
-          "to": "/module/products",
-          "label": "Products",
-          "icon": "reports",
-          "activePrefixes": ["/module/products"]
         }
       ]
     },

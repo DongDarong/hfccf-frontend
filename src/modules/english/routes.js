@@ -1,5 +1,4 @@
 import EnglishAdminDashboard from '@/modules/english/admin/pages/Dashboard.vue'
-import EnglishTeacherManagement from '@/modules/english/admin/pages/TeacherManagement.vue'
 import EnglishTeacherDashboard from '@/modules/english/teacher/pages/Dashboard.vue'
 import { ROLES } from '@/constants/roles'
 
@@ -8,12 +7,6 @@ export const englishRoutes = [
     path: '/module/english-admin/dashboard',
     name: 'dashboard-english-admin',
     component: EnglishAdminDashboard,
-    meta: { requiresAuth: true, allowedRoles: [ROLES.ADMIN_ENGLISH] },
-  },
-  {
-    path: '/module/english-admin/users',
-    name: 'dashboard-english-admin-users',
-    component: EnglishTeacherManagement,
     meta: { requiresAuth: true, allowedRoles: [ROLES.ADMIN_ENGLISH] },
   },
   {

@@ -86,8 +86,6 @@ npm run build
 
 The app can run with mock data without a backend API.
 
-The frontend now uses the Laravel products API through `VITE_API_BASE_URL`.
-
 Development defaults are committed in [.env.development](/D:/Thesis2026/frontend/hfccf-frontend/.env.development):
 
 ```env
@@ -109,28 +107,6 @@ npm run dev
 ```
 
 The app uses mock authentication data from [src/mocks/users.json](/D:/Thesis2026/frontend/hfccf-frontend/src/mocks/users.json).
-
-The products module is available after login at `/module/products`.
-
-If the browser reports CORS errors while calling `http://hfccf-backend.test/api/products`, update the Laravel backend to allow the Vite origin. Typical Laravel changes:
-
-```php
-// config/cors.php
-'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
-'allowed_methods' => ['*'],
-
-'allowed_origins' => ['http://localhost:5173', 'http://127.0.0.1:5173'],
-
-'allowed_headers' => ['*'],
-```
-
-```env
-# backend .env
-APP_URL=http://hfccf-backend.test
-```
-
-If `hfccf-backend.test` does not resolve on this machine, fix the local hostname or use a reachable backend URL in `VITE_API_BASE_URL`.
 
 ## PrimeVue
 
