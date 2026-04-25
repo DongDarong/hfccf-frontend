@@ -134,6 +134,14 @@
               "icon": "users",
               "secondary": true,
               "badgeKey": "nav.badges.staff"
+            },
+            {
+              "id": "preschool-classes",
+              "to": "/module/preschool-admin/classes",
+              "label": "Classes",
+              "icon": "reports",
+              "secondary": true,
+              "badgeKey": "nav.badges.staff"
             }
           ]
         }
