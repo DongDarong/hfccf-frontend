@@ -44,7 +44,7 @@ const classRows = ref([
   {
     id: 'preschool-class-3',
     code: 'PS-KB-01',
-    name: 'Kindergarten B Red',
+    name: 'Kindergarten B Red', 
     teacher: 'Malis',
     level: 'Kindergarten B',
     schedule: 'Mon-Fri, 1:00 PM',
