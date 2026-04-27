@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
@@ -15,13 +16,14 @@ defineOptions({
 })
 
 const { t, language } = useLanguage()
+const router = useRouter()
 const isKh = computed(() => language.value === 'KH')
 
 const searchQuery = ref('')
 const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
-const pageSize = 8
+const pageSize = 5
 
 const roleOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
 const statusOptions = ['active', 'pending', 'closed']
@@ -243,8 +245,12 @@ watch(
   },
 )
 
+watch([searchQuery, roleFilter, statusFilter], () => {
+  currentPage.value = 1
+})
+
 function onAddClass() {
-  console.log('Add Preschool class')
+  router.push({ path: '/module/preschool-admin/classes/add' })
 }
 
 function onViewClass(item) {
