@@ -6,17 +6,28 @@
 -- - src/services/auth.js
 -- - src/services/mappers/userMapper.js
 -- - src/constants/roles.js
+-- - src/constants/access.js
+-- - src/services/accessControl.js
+-- - src/mocks/sport/admin-dashboard-data.json
+-- - src/mocks/sport/teams-management-data.json
 --
 -- Important:
 -- 1. User IDs in this system are strings like `usr_001`, not bigint IDs.
 -- 2. The role code `adminscholaship` is intentionally kept as-is because the
 --    frontend currently uses that exact value.
--- 3. Sanctum-style tokens must therefore use a string `tokenable_id`.
+-- 3. Frontend RBAC is scope + domain based, so roles should persist both.
+-- 4. Sanctum-style tokens must therefore use a string `tokenable_id`.
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `personal_access_tokens`;
+DROP TABLE IF EXISTS `sport_standings`;
+DROP TABLE IF EXISTS `sport_top_scorers`;
+DROP TABLE IF EXISTS `sport_matches`;
+DROP TABLE IF EXISTS `sport_tournament_alerts`;
+DROP TABLE IF EXISTS `sport_teams`;
+DROP TABLE IF EXISTS `sport_tournaments`;
 DROP TABLE IF EXISTS `user_permissions`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `role_permissions`;
@@ -28,11 +39,15 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE `roles` (
   `code` VARCHAR(32) NOT NULL,
   `name` VARCHAR(100) NOT NULL,
+  `scope` ENUM('super_admin', 'admin', 'staff') NOT NULL,
+  `domain_code` ENUM('global', 'english', 'preschool', 'scholarship', 'sport') NOT NULL,
   `department` VARCHAR(32) NOT NULL,
   `sort_order` TINYINT UNSIGNED NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`code`)
+  PRIMARY KEY (`code`),
+  KEY `roles_scope_index` (`scope`),
+  KEY `roles_domain_code_index` (`domain_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `permissions` (
@@ -120,16 +135,137 @@ CREATE TABLE `personal_access_tokens` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `roles` (`code`, `name`, `department`, `sort_order`) VALUES
-  ('superadmin', 'Super Admin', 'Operations', 1),
-  ('adminenglish', 'English Admin', 'Education', 2),
-  ('adminpreschool', 'Preschool Admin', 'Education', 3),
-  ('adminscholaship', 'Scholarship Admin', 'Education', 4),
-  ('adminsport', 'Sport Admin', 'Sports', 5),
-  ('teacher-english', 'English Teacher', 'Education', 6),
-  ('teacher-preschool', 'Preschool Teacher', 'Education', 7),
-  ('teacher-scholarship', 'Scholarship Teacher', 'Education', 8),
-  ('coach', 'Coach', 'Sports', 9);
+-- Sport module source entities currently used by the frontend.
+-- Notes:
+-- 1. Coach accounts already live in `users` with role_code = 'coach'.
+-- 2. Dashboard "cards" such as total teams or upcoming matches are aggregate KPIs
+--    and should usually be derived from source tables instead of stored directly.
+-- 3. The current frontend mock data stores team/player names as strings, so the
+--    schema below keeps that shape instead of over-normalizing prematurely.
+
+CREATE TABLE `sport_tournaments` (
+  `id` VARCHAR(16) NOT NULL,
+  `title` VARCHAR(191) NOT NULL,
+  `subtitle` VARCHAR(255) DEFAULT NULL,
+  `location` VARCHAR(191) DEFAULT NULL,
+  `status` VARCHAR(32) NOT NULL,
+  `planned_matches` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_tournaments_status_index` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sport_teams` (
+  `id` VARCHAR(16) NOT NULL,
+  `name` VARCHAR(191) NOT NULL,
+  `division` VARCHAR(100) NOT NULL,
+  `coach_name` VARCHAR(191) DEFAULT NULL,
+  `captain_name` VARCHAR(191) DEFAULT NULL,
+  `players_count` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `status` ENUM('active', 'pending', 'inactive', 'suspended') NOT NULL DEFAULT 'active',
+  `venue` VARCHAR(191) DEFAULT NULL,
+  `wins` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `draws` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `losses` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `points` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_teams_status_index` (`status`),
+  KEY `sport_teams_division_index` (`division`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sport_tournament_alerts` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tournament_id` VARCHAR(16) NOT NULL,
+  `alert_type` ENUM('info', 'warning', 'error', 'success') NOT NULL,
+  `message` VARCHAR(255) NOT NULL,
+  `display_order` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_tournament_alerts_tournament_index` (`tournament_id`),
+  CONSTRAINT `fk_sport_tournament_alerts_tournament`
+    FOREIGN KEY (`tournament_id`) REFERENCES `sport_tournaments` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sport_matches` (
+  `id` VARCHAR(16) NOT NULL,
+  `tournament_id` VARCHAR(16) DEFAULT NULL,
+  `home_team_name` VARCHAR(191) NOT NULL,
+  `away_team_name` VARCHAR(191) NOT NULL,
+  `venue` VARCHAR(191) DEFAULT NULL,
+  `match_group` ENUM('live', 'today', 'general') NOT NULL DEFAULT 'general',
+  `status` ENUM('scheduled', 'live', 'completed', 'cancelled') NOT NULL DEFAULT 'scheduled',
+  `display_time_label` VARCHAR(64) DEFAULT NULL,
+  `live_minute` VARCHAR(16) DEFAULT NULL,
+  `display_order` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_matches_tournament_index` (`tournament_id`),
+  KEY `sport_matches_status_index` (`status`),
+  KEY `sport_matches_group_index` (`match_group`),
+  CONSTRAINT `fk_sport_matches_tournament`
+    FOREIGN KEY (`tournament_id`) REFERENCES `sport_tournaments` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sport_top_scorers` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tournament_id` VARCHAR(16) DEFAULT NULL,
+  `player_name` VARCHAR(191) NOT NULL,
+  `team_name` VARCHAR(191) NOT NULL,
+  `goals` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `display_order` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_top_scorers_tournament_index` (`tournament_id`),
+  CONSTRAINT `fk_sport_top_scorers_tournament`
+    FOREIGN KEY (`tournament_id`) REFERENCES `sport_tournaments` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sport_standings` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tournament_id` VARCHAR(16) DEFAULT NULL,
+  `position` SMALLINT UNSIGNED NOT NULL,
+  `team_name` VARCHAR(191) NOT NULL,
+  `played` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `wins` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `draws` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `losses` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `goals_for` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `goals_against` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `goal_difference` VARCHAR(16) NOT NULL DEFAULT '0',
+  `points` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sport_standings_tournament_position_unique` (`tournament_id`, `position`),
+  KEY `sport_standings_tournament_index` (`tournament_id`),
+  CONSTRAINT `fk_sport_standings_tournament`
+    FOREIGN KEY (`tournament_id`) REFERENCES `sport_tournaments` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `roles` (`code`, `name`, `scope`, `domain_code`, `department`, `sort_order`) VALUES
+  ('superadmin', 'Super Admin', 'super_admin', 'global', 'Operations', 1),
+  ('adminenglish', 'English Admin', 'admin', 'english', 'Education', 2),
+  ('adminpreschool', 'Preschool Admin', 'admin', 'preschool', 'Education', 3),
+  ('adminscholaship', 'Scholarship Admin', 'admin', 'scholarship', 'Education', 4),
+  ('adminsport', 'Sport Admin', 'admin', 'sport', 'Sports', 5),
+  ('teacher-english', 'English Teacher', 'staff', 'english', 'Education', 6),
+  ('teacher-preschool', 'Preschool Teacher', 'staff', 'preschool', 'Education', 7),
+  ('teacher-scholarship', 'Scholarship Teacher', 'staff', 'scholarship', 'Education', 8),
+  ('coach', 'Coach', 'staff', 'sport', 'Sports', 9);
 
 INSERT INTO `permissions` (`code`, `name`) VALUES
   ('all:*', 'Full system access'),
@@ -184,6 +320,92 @@ INSERT INTO `role_permissions` (`role_code`, `permission_code`) VALUES
   ('teacher-scholarship', 'dashboard:read'),
   ('teacher-scholarship', 'tasks:read'),
   ('teacher-scholarship', 'tasks:write');
+
+INSERT INTO `sport_tournaments` (`id`, `title`, `subtitle`, `location`, `status`, `planned_matches`) VALUES
+  (
+    'tour_001',
+    'Inter-Club Summer Showcase',
+    'Final week structure, fixtures, and broadcast-ready highlights.',
+    'Phnom Penh Sports Complex',
+    'live',
+    14
+  );
+
+INSERT INTO `sport_tournament_alerts` (`tournament_id`, `alert_type`, `message`, `display_order`) VALUES
+  ('tour_001', 'warning', 'Hydration stations require restocking before Saturday matches.', 1),
+  ('tour_001', 'info', 'Live stream overlay graphics are scheduled for deployment tomorrow.', 2);
+
+INSERT INTO `sport_matches` (
+  `id`,
+  `tournament_id`,
+  `home_team_name`,
+  `away_team_name`,
+  `venue`,
+  `match_group`,
+  `status`,
+  `display_time_label`,
+  `live_minute`,
+  `display_order`
+) VALUES
+  ('match_001', 'tour_001', 'Team A', 'Team B', 'City Stadium', 'live', 'live', NULL, '65', 1),
+  ('match_002', 'tour_001', 'Team C', 'Team D', 'National Arena', 'live', 'live', NULL, '42', 2),
+  ('match_003', 'tour_001', 'Team Q', 'Team R', 'West Wing', 'live', 'live', NULL, '12', 3),
+  ('match_004', 'tour_001', 'Team S', 'Team T', 'Main Field', 'live', 'live', NULL, '88', 4),
+  ('match_005', 'tour_001', 'Team U', 'Team V', 'North Park', 'live', 'live', NULL, '25', 5),
+  ('match_006', 'tour_001', 'Team E', 'Team F', NULL, 'today', 'scheduled', '3:00 PM', NULL, 1),
+  ('match_007', 'tour_001', 'Team G', 'Team H', NULL, 'today', 'scheduled', '5:30 PM', NULL, 2),
+  ('match_008', 'tour_001', 'Team I', 'Team J', NULL, 'today', 'scheduled', '7:00 PM', NULL, 3),
+  ('match_009', 'tour_001', 'Team K', 'Team L', NULL, 'today', 'scheduled', '8:30 PM', NULL, 4),
+  ('match_010', 'tour_001', 'Team M', 'Team N', NULL, 'today', 'scheduled', '9:00 PM', NULL, 5),
+  ('match_011', 'tour_001', 'Team O', 'Team P', NULL, 'today', 'scheduled', '10:30 PM', NULL, 6);
+
+INSERT INTO `sport_top_scorers` (`tournament_id`, `player_name`, `team_name`, `goals`, `display_order`) VALUES
+  ('tour_001', 'Player A', 'Team A', 6, 1),
+  ('tour_001', 'Player B', 'Team B', 5, 2),
+  ('tour_001', 'Player C', 'Team C', 4, 3);
+
+INSERT INTO `sport_standings` (
+  `tournament_id`,
+  `position`,
+  `team_name`,
+  `played`,
+  `wins`,
+  `draws`,
+  `losses`,
+  `goals_for`,
+  `goals_against`,
+  `goal_difference`,
+  `points`
+) VALUES
+  ('tour_001', 1, 'Team A', 4, 3, 1, 0, 9, 3, '+6', 10),
+  ('tour_001', 2, 'Team B', 4, 2, 2, 0, 7, 4, '+3', 8),
+  ('tour_001', 3, 'Team C', 4, 2, 1, 1, 6, 5, '+1', 7),
+  ('tour_001', 4, 'Team D', 4, 2, 0, 2, 5, 5, '0', 6);
+
+INSERT INTO `sport_teams` (
+  `id`,
+  `name`,
+  `division`,
+  `coach_name`,
+  `captain_name`,
+  `players_count`,
+  `status`,
+  `venue`,
+  `wins`,
+  `draws`,
+  `losses`,
+  `points`
+) VALUES
+  ('team_001', 'Falcon United', 'U-18 Premier', 'Dara Sok', 'Vanna Lim', 18, 'active', 'Main Field', 7, 1, 1, 22),
+  ('team_002', 'River Panthers', 'U-18 Premier', 'Kunthea Mean', 'Piseth Chan', 17, 'active', 'North Pitch', 6, 2, 1, 20),
+  ('team_003', 'Golden Tigers', 'U-16 Elite', 'Malis Kim', 'Sovann Roth', 16, 'pending', 'Training Hall B', 4, 2, 2, 14),
+  ('team_004', 'Blue Comets', 'U-16 Elite', 'Sreyleak Hong', 'Kanika Pov', 15, 'active', 'West Arena', 5, 1, 2, 16),
+  ('team_005', 'Summit Strikers', 'Senior Development', 'Panhara Lim', 'Ravy Hong', 20, 'active', 'South Stadium', 8, 0, 1, 24),
+  ('team_006', 'Harbor Rangers', 'Senior Development', 'Pisey Mean', 'Kimheng Pov', 19, 'inactive', 'Dockside Ground', 2, 3, 4, 9),
+  ('team_007', 'Victory Academy', 'U-14 Future', 'Nita Chhun', 'Mony Pen', 14, 'pending', 'Academy Court', 3, 2, 2, 11),
+  ('team_008', 'Lotus Warriors', 'U-14 Future', 'Sokunthea Nop', 'Thyda Keo', 13, 'active', 'East Pavilion', 6, 0, 1, 18),
+  ('team_009', 'Crown Legends', 'Girls Competitive', 'Mony Pov', 'Sophal Em', 16, 'active', 'Central Arena', 5, 2, 1, 17),
+  ('team_010', 'Skyline Youth', 'Girls Competitive', 'Thyda Pen', 'Bopha Meng', 15, 'inactive', 'Indoor Dome', 1, 2, 5, 5);
 
 -- Seed login accounts aligned to the current mock system.
 -- Passwords are bcrypt hashes of the frontend mock passwords.
@@ -365,6 +587,8 @@ INNER JOIN `role_permissions` AS `rp`
 --   u.email,
 --   u.phone,
 --   u.role_code AS role,
+--   r.scope,
+--   r.domain_code AS domain,
 --   u.department,
 --   u.status,
 --   u.avatar,
@@ -372,5 +596,12 @@ INNER JOIN `role_permissions` AS `rp`
 --   u.last_login_at AS lastLoginAt,
 --   JSON_ARRAYAGG(up.permission_code) AS role_permission
 -- FROM users u
+-- INNER JOIN roles r ON r.code = u.role_code
 -- LEFT JOIN user_permissions up ON up.user_id = u.id
 -- GROUP BY u.id;
+
+-- Current Sport frontend data shape:
+-- 1. Coaches come from `users` filtered by role_code = 'coach'.
+-- 2. Teams management comes from `sport_teams`.
+-- 3. Tournament banner, alerts, live matches, today's matches, top scorers,
+--    and standings come from the `sport_*` tournament tables above.
