@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'AddClassFormActions',
 })
@@ -19,17 +22,20 @@ defineProps({
 })
 
 defineEmits(['back', 'edit'])
+
+const { t, language } = useLanguage()
+const isKh = computed(() => language.value === 'KH')
 </script>
 
 <template>
-  <div class="add-class-form-actions">
+  <div :class="isKh ? 'add-class-form-actions add-class-form-actions--kh' : 'add-class-form-actions'">
     <button
       v-if="isViewMode"
       type="button"
       class="add-class-form-actions__action add-class-form-actions__action--secondary"
       @click="$emit('back')"
     >
-      Back to Classes
+      {{ t('preschoolAddClass.backToClasses') }}
     </button>
     <button
       v-if="isViewMode"
@@ -37,7 +43,7 @@ defineEmits(['back', 'edit'])
       class="add-class-form-actions__action add-class-form-actions__action--primary"
       @click="$emit('edit')"
     >
-      Edit Class
+      {{ t('preschoolAddClass.editAction') }}
     </button>
     <button
       v-else
@@ -45,7 +51,7 @@ defineEmits(['back', 'edit'])
       class="add-class-form-actions__action add-class-form-actions__action--secondary"
       @click="$emit('back')"
     >
-      Back to Classes
+      {{ t('preschoolAddClass.backToClasses') }}
     </button>
     <button
       v-if="isEditMode"
@@ -53,7 +59,7 @@ defineEmits(['back', 'edit'])
       class="add-class-form-actions__action add-class-form-actions__action--primary"
       :disabled="isSubmitting"
     >
-      {{ isSubmitting ? 'Saving...' : 'Update Class' }}
+      {{ isSubmitting ? t('preschoolAddClass.saving') : t('preschoolAddClass.updateAction') }}
     </button>
   </div>
 </template>
@@ -101,6 +107,11 @@ defineEmits(['back', 'edit'])
 .add-class-form-actions__action:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.add-class-form-actions--kh .add-class-form-actions__action {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
 @media (min-width: 640px) {

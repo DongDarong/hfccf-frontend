@@ -12,6 +12,7 @@ import AddClassIntro from '@/modules/preschool/admin/components/add-class/AddCla
 import AddClassFormFields from '@/modules/preschool/admin/components/add-class/AddClassFormFields.vue'
 import AddClassFormActions from '@/modules/preschool/admin/components/add-class/AddClassFormActions.vue'
 import { findClassRowById, upsertClassRow } from '@/modules/preschool/admin/utils/classStorage'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'PreschoolAdminAddClassPage',
@@ -19,6 +20,7 @@ defineOptions({
 
 const router = useRouter()
 const route = useRoute()
+const { t, language } = useLanguage()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
 const levelOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
@@ -40,6 +42,7 @@ const isSubmitting = ref(false)
 const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
+const isKh = computed(() => language.value === 'KH')
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
   if (route.query.mode === 'edit' || Boolean(route.query.id)) return 'edit'
@@ -50,71 +53,71 @@ const isEditMode = computed(() => mode.value === 'edit')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 
 const pageTitle = computed(() => {
-  if (isViewMode.value) return 'Class Details'
-  if (isEditMode.value) return 'Update Class'
-  return 'Add Class'
+  if (isViewMode.value) return t('preschoolAddClass.viewTitle')
+  if (isEditMode.value) return t('preschoolAddClass.updateTitle')
+  return t('preschoolAddClass.title')
 })
 const pageSubtitle = computed(() => {
-  if (isViewMode.value) return 'Review the class profile, teacher assignment, and schedule.'
-  if (isEditMode.value) return 'Update the class profile, teacher assignment, and schedule.'
-  return 'Create a preschool class and assign its schedule, teacher, and status.'
+  if (isViewMode.value) return t('preschoolAddClass.viewSubtitle')
+  if (isEditMode.value) return t('preschoolAddClass.updateSubtitle')
+  return t('preschoolAddClass.summary')
 })
 
 const summaryCards = computed(() => [
   {
     id: 'class-level',
-    title: 'Level',
+    title: t('preschoolAddClass.level'),
     value: form.level || '-',
-    label: 'Selected learning stage',
+    label: t('preschoolAddClass.selectedLearningStage'),
     status: 'info',
     statusLabel: 'Info',
     surfaceClass: 'bg-cyan-50/80 border-cyan-200',
   },
   {
     id: 'class-students',
-    title: 'Students',
+    title: t('preschoolAddClass.students'),
     value: Number(form.students || 0),
-    label: 'Planned enrollment',
+    label: t('preschoolAddClass.plannedEnrollment'),
     status: Number(form.students || 0) > 0 ? 'success' : 'warning',
     statusLabel: Number(form.students || 0) > 0 ? 'Success' : 'Warning',
     surfaceClass: 'bg-lime-50/80 border-lime-200',
   },
   {
     id: 'class-status',
-    title: 'Status',
+    title: t('preschoolAddClass.status'),
     value: form.status || '-',
-    label: 'Initial class state',
+    label: t('preschoolAddClass.initialClassState'),
     status: String(form.status || '').toLowerCase(),
     statusLabel: form.status || '',
     surfaceClass: 'bg-amber-50/80 border-amber-200',
   },
   {
     id: 'class-schedule',
-    title: 'Schedule',
-    value: form.schedule.trim() || 'Pending',
-    label: 'Teaching time slot',
+    title: t('preschoolAddClass.schedule'),
+    value: form.schedule.trim() || t('preschoolAddClass.pending'),
+    label: t('preschoolAddClass.teachingTimeSlot'),
     status: form.schedule.trim() ? 'success' : 'warning',
-    statusLabel: form.schedule.trim() ? 'Ready' : 'Pending',
+    statusLabel: form.schedule.trim() ? t('preschoolAddClass.ready') : t('preschoolAddClass.pending'),
     surfaceClass: 'bg-rose-50/80 border-rose-200',
   },
 ])
 
 const checklistItems = computed(() => [
   {
-    title: 'Identity',
-    text: 'Set a class code and class name that are easy for staff to recognize.',
+    title: t('preschoolAddClass.identity'),
+    text: t('preschoolAddClass.identityDetail'),
   },
   {
-    title: 'Assignment',
-    text: 'Choose the level, teacher, and room before publishing the class.',
+    title: t('preschoolAddClass.assignment'),
+    text: t('preschoolAddClass.assignmentDetail'),
   },
   {
-    title: 'Schedule',
-    text: 'Confirm the teaching schedule and expected student count.',
+    title: t('preschoolAddClass.schedule'),
+    text: t('preschoolAddClass.scheduleDetail'),
   },
   {
-    title: 'Review',
-    text: 'Check the class status and notes before saving.',
+    title: t('preschoolAddClass.review'),
+    text: t('preschoolAddClass.reviewDetail'),
   },
 ])
 
@@ -129,13 +132,13 @@ function normalizeNumber(value) {
 }
 
 function validateForm() {
-  if (!form.code.trim()) return 'Class code is required.'
-  if (!form.name.trim()) return 'Class name is required.'
-  if (!form.teacher.trim()) return 'Teacher name is required.'
-  if (!form.level) return 'Class level is required.'
-  if (!form.schedule.trim()) return 'Schedule is required.'
-  if (normalizeNumber(form.students) < 0) return 'Student count cannot be negative.'
-  if (!form.status) return 'Class status is required.'
+  if (!form.code.trim()) return t('preschoolAddClass.validation.classCodeRequired')
+  if (!form.name.trim()) return t('preschoolAddClass.validation.classNameRequired')
+  if (!form.teacher.trim()) return t('preschoolAddClass.validation.teacherRequired')
+  if (!form.level) return t('preschoolAddClass.validation.levelRequired')
+  if (!form.schedule.trim()) return t('preschoolAddClass.validation.scheduleRequired')
+  if (normalizeNumber(form.students) < 0) return t('preschoolAddClass.validation.studentsNegative')
+  if (!form.status) return t('preschoolAddClass.validation.statusRequired')
   return ''
 }
 
@@ -180,8 +183,8 @@ async function onSubmit() {
     showSuccess.value = true
   } catch {
     errorMessage.value = isEditMode.value
-      ? 'Failed to update the class.'
-      : 'Failed to create the class.'
+      ? t('preschoolAddClass.validation.updateFailed')
+      : t('preschoolAddClass.validation.createFailed')
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -221,7 +224,7 @@ onMounted(() => {
 
 <template>
   <MainLayout>
-    <section class="add-class-page">
+    <section :class="isKh ? 'add-class-page add-class-page--kh' : 'add-class-page'">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <AdminSummaryCards :cards="summaryCards" />
@@ -230,8 +233,8 @@ onMounted(() => {
         <Form
           class="add-class-page__form"
           :title="pageTitle"
-          description="Complete the class profile, assignment details, and schedule information."
-          cancel-text="Cancel"
+          :description="t('preschoolAddClass.formDescription')"
+          :cancel-text="t('common.cancel')"
           :loading="isSubmitting"
           :disabled="isViewMode"
           :show-cancel="true"
@@ -277,10 +280,10 @@ onMounted(() => {
 
         <div class="add-class-page__rail">
           <AdminChecklistPanel
-            title="Class Setup Checklist"
-            description="Review the essentials before creating the class."
+            :title="t('preschoolAddClass.sidebarTitle')"
+            :description="t('preschoolAddClass.sidebarText')"
             :items="checklistItems"
-            highlight-label="Selected Level"
+            :highlight-label="t('preschoolAddClass.selectedLevel')"
             :highlight-value="form.level"
           />
         </div>
@@ -289,21 +292,17 @@ onMounted(() => {
 
     <AlertError
       :show="showError"
-      title="Validation Error"
+      :title="t('preschoolAddClass.validationError')"
       :message="errorMessage"
-      button-text="Close"
+      :button-text="t('common.close')"
       @close="onErrorClose"
     />
 
     <AlertSuccess
       :show="showSuccess"
-      :title="isEditMode ? 'Class Updated' : 'Class Created'"
-      :message="
-        isEditMode
-          ? 'The preschool class has been updated successfully.'
-          : 'The preschool class has been created successfully.'
-      "
-      button-text="Back to Classes"
+      :title="isEditMode ? t('preschoolAddClass.classUpdated') : t('preschoolAddClass.classCreated')"
+      :message="isEditMode ? t('preschoolAddClass.updatedMessage') : t('preschoolAddClass.createdMessage')"
+      :button-text="t('preschoolAddClass.backToClasses')"
       @close="onSuccessClose"
     />
   </MainLayout>
@@ -333,6 +332,22 @@ onMounted(() => {
   gap: 1rem;
   position: sticky;
   top: 1rem;
+}
+
+.add-class-page--kh :deep(.admin-checklist-panel .p-card-title),
+.add-class-page--kh :deep(.admin-checklist-panel .p-card-content),
+.add-class-page--kh :deep(form header h3),
+.add-class-page--kh :deep(form header p),
+.add-class-page--kh :deep(.p-dialog-content),
+.add-class-page--kh :deep(.p-dialog-footer) {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+.add-class-page--kh :deep(form header p),
+.add-class-page--kh :deep(.admin-checklist-panel .p-card-content p),
+.add-class-page--kh :deep(.p-dialog-content p) {
+  line-height: 1.7;
 }
 
 @media (max-width: 1120px) {

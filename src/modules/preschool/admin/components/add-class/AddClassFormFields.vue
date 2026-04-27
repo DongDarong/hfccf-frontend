@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'AddClassFormFields',
 })
@@ -65,45 +68,48 @@ defineEmits([
   'update:room',
   'update:notes',
 ])
+
+const { t, language } = useLanguage()
+const isKh = computed(() => language.value === 'KH')
 </script>
 
 <template>
-  <div class="add-class-form-fields">
+  <div :class="isKh ? 'add-class-form-fields add-class-form-fields--kh' : 'add-class-form-fields'">
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Class Code</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.classCode') }}</span>
       <input
         :value="code"
         type="text"
-        placeholder="PS-NUR-03"
+        :placeholder="t('preschoolAddClass.classCodePlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:code', $event.target.value)"
       />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Class Name</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.className') }}</span>
       <input
         :value="name"
         type="text"
-        placeholder="Morning Nursery Blue"
+        :placeholder="t('preschoolAddClass.classNamePlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:name', $event.target.value)"
       />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Teacher</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.teacher') }}</span>
       <input
         :value="teacher"
         type="text"
-        placeholder="Teacher name"
+        :placeholder="t('preschoolAddClass.teacherPlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:teacher', $event.target.value)"
       />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Level</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.level') }}</span>
       <select :value="level" :disabled="isLocked" @change="$emit('update:level', $event.target.value)">
         <option v-for="option in levelOptions" :key="option" :value="option">
           {{ option }}
@@ -112,30 +118,30 @@ defineEmits([
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Schedule</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.schedule') }}</span>
       <input
         :value="schedule"
         type="text"
-        placeholder="Mon-Fri, 8:00 AM"
+        :placeholder="t('preschoolAddClass.schedulePlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:schedule', $event.target.value)"
       />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Students</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.students') }}</span>
       <input
         :value="students"
         type="number"
         min="0"
-        placeholder="0"
+        :placeholder="t('preschoolAddClass.studentsPlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:students', $event.target.value)"
       />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Status</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.status') }}</span>
       <select :value="status" :disabled="isLocked" @change="$emit('update:status', $event.target.value)">
         <option v-for="option in statusOptions" :key="option" :value="option">
           {{ option }}
@@ -144,22 +150,22 @@ defineEmits([
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">Room</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.room') }}</span>
       <input
         :value="room"
         type="text"
-        placeholder="Room A1"
+        :placeholder="t('preschoolAddClass.roomPlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:room', $event.target.value)"
       />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--full">
-      <span class="add-class-form-fields__label">Notes</span>
+      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.notes') }}</span>
       <textarea
         :value="notes"
         rows="4"
-        placeholder="Optional notes about the class, materials, or scheduling."
+        :placeholder="t('preschoolAddClass.notesPlaceholder')"
         :disabled="isLocked"
         @input="$emit('update:notes', $event.target.value)"
       />
@@ -192,6 +198,14 @@ defineEmits([
   color: #334155;
   font-size: 0.84rem;
   font-weight: 700;
+}
+
+.add-class-form-fields--kh .add-class-form-fields__label,
+.add-class-form-fields--kh :deep(input),
+.add-class-form-fields--kh :deep(select),
+.add-class-form-fields--kh :deep(textarea) {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
 @media (max-width: 720px) {

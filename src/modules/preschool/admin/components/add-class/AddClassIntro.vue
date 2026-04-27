@@ -1,16 +1,20 @@
 <script setup>
+import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'AddClassIntro',
 })
+
+const { t, language } = useLanguage()
+const isKh = computed(() => language.value === 'KH')
 </script>
 
 <template>
-  <section class="add-class-intro">
-    <p class="add-class-intro__eyebrow">Preschool Class</p>
-    <h3 class="add-class-intro__title">Class setup</h3>
-    <p class="add-class-intro__text">
-      Register a class, assign the teacher, and prepare the schedule before enrollment opens.
-    </p>
+  <section :class="isKh ? 'add-class-intro add-class-intro--kh' : 'add-class-intro'">
+    <p class="add-class-intro__eyebrow">{{ t('preschoolAddClass.introEyebrow') }}</p>
+    <h3 class="add-class-intro__title">{{ t('preschoolAddClass.introTitle') }}</h3>
+    <p class="add-class-intro__text">{{ t('preschoolAddClass.introText') }}</p>
   </section>
 </template>
 
@@ -46,5 +50,21 @@ defineOptions({
   color: #475569;
   font-size: 0.92rem;
   line-height: 1.6;
+}
+
+.add-class-intro--kh .add-class-intro__eyebrow,
+.add-class-intro--kh .add-class-intro__title,
+.add-class-intro--kh .add-class-intro__text {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+.add-class-intro--kh .add-class-intro__eyebrow {
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.add-class-intro--kh .add-class-intro__text {
+  line-height: 1.7;
 }
 </style>
