@@ -8,6 +8,9 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
+import AddClassIntro from '@/modules/preschool/admin/components/add-class/AddClassIntro.vue'
+import AddClassFormFields from '@/modules/preschool/admin/components/add-class/AddClassFormFields.vue'
+import AddClassFormActions from '@/modules/preschool/admin/components/add-class/AddClassFormActions.vue'
 import { findClassRowById, upsertClassRow } from '@/modules/preschool/admin/utils/classStorage'
 
 defineOptions({
@@ -235,125 +238,40 @@ onMounted(() => {
           @submit="onSubmit"
           @cancel="goBackToClasses"
         >
-          <section class="add-class-page__intro">
-            <p class="add-class-page__eyebrow">Preschool Class</p>
-            <h3 class="add-class-page__intro-title">Class setup</h3>
-            <p class="add-class-page__intro-text">
-              Register a class, assign the teacher, and prepare the schedule before enrollment opens.
-            </p>
-          </section>
+          <AddClassIntro />
 
-          <div class="add-class-page__fields">
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Class Code</span>
-              <input v-model="form.code" type="text" placeholder="PS-NUR-03" :disabled="isFormLocked" />
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Class Name</span>
-              <input
-                v-model="form.name"
-                type="text"
-                placeholder="Morning Nursery Blue"
-                :disabled="isFormLocked"
-              />
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Teacher</span>
-              <input v-model="form.teacher" type="text" placeholder="Teacher name" :disabled="isFormLocked" />
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Level</span>
-              <select v-model="form.level" :disabled="isFormLocked">
-                <option v-for="option in levelOptions" :key="option" :value="option">
-                  {{ option }}
-                </option>
-              </select>
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Schedule</span>
-              <input
-                v-model="form.schedule"
-                type="text"
-                placeholder="Mon-Fri, 8:00 AM"
-                :disabled="isFormLocked"
-              />
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Students</span>
-              <input
-                v-model="form.students"
-                type="number"
-                min="0"
-                placeholder="0"
-                :disabled="isFormLocked"
-              />
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Status</span>
-              <select v-model="form.status" :disabled="isFormLocked">
-                <option v-for="option in statusOptions" :key="option" :value="option">
-                  {{ option }}
-                </option>
-              </select>
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--half">
-              <span class="add-class-page__label">Room</span>
-              <input v-model="form.room" type="text" placeholder="Room A1" :disabled="isFormLocked" />
-            </label>
-
-            <label class="add-class-page__field add-class-page__field--full">
-              <span class="add-class-page__label">Notes</span>
-              <textarea
-                v-model="form.notes"
-                rows="4"
-                placeholder="Optional notes about the class, materials, or scheduling."
-                :disabled="isFormLocked"
-              />
-            </label>
-          </div>
+          <AddClassFormFields
+            :level-options="levelOptions"
+            :status-options="statusOptions"
+            :code="form.code"
+            :name="form.name"
+            :teacher="form.teacher"
+            :level="form.level"
+            :schedule="form.schedule"
+            :students="form.students"
+            :status="form.status"
+            :room="form.room"
+            :notes="form.notes"
+            :is-locked="isFormLocked"
+            @update:code="form.code = $event"
+            @update:name="form.name = $event"
+            @update:teacher="form.teacher = $event"
+            @update:level="form.level = $event"
+            @update:schedule="form.schedule = $event"
+            @update:students="form.students = $event"
+            @update:status="form.status = $event"
+            @update:room="form.room = $event"
+            @update:notes="form.notes = $event"
+          />
 
           <template v-if="isViewMode || isEditMode" #actions>
-            <div class="add-class-page__actions">
-              <button
-                v-if="isViewMode"
-                type="button"
-                class="add-class-page__action add-class-page__action--secondary"
-                @click="goBackToClasses"
-              >
-                Back to Classes
-              </button>
-              <button
-                v-if="isViewMode"
-                type="button"
-                class="add-class-page__action add-class-page__action--primary"
-                @click="goToEditMode"
-              >
-                Edit Class
-              </button>
-              <button
-                v-else
-                type="button"
-                class="add-class-page__action add-class-page__action--secondary"
-                @click="goBackToClasses"
-              >
-                Back to Classes
-              </button>
-              <button
-                v-if="isEditMode"
-                type="submit"
-                class="add-class-page__action add-class-page__action--primary"
-                :disabled="isSubmitting"
-              >
-                {{ isSubmitting ? 'Saving...' : 'Update Class' }}
-              </button>
-            </div>
+            <AddClassFormActions
+              :is-submitting="isSubmitting"
+              :is-view-mode="isViewMode"
+              :is-edit-mode="isEditMode"
+              @back="goBackToClasses"
+              @edit="goToEditMode"
+            />
           </template>
         </Form>
 
@@ -409,115 +327,12 @@ onMounted(() => {
   display: block;
 }
 
-.add-class-page__intro {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 1rem 1.1rem;
-  border: 1px solid #dbeafe;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(224, 242, 254, 0.7) 0%, rgba(255, 255, 255, 0.96) 100%);
-}
-
-.add-class-page__eyebrow {
-  margin: 0;
-  color: #0f6f8f;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.add-class-page__intro-title {
-  margin: 0;
-  color: #0f172a;
-  font-size: 1.15rem;
-  font-weight: 800;
-}
-
-.add-class-page__intro-text {
-  margin: 0;
-  color: #475569;
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-
-.add-class-page__fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.95rem;
-}
-
-.add-class-page__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.add-class-page__field--half {
-  grid-column: span 1;
-}
-
-.add-class-page__field--full {
-  grid-column: 1 / -1;
-}
-
-.add-class-page__label {
-  color: #334155;
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
 .add-class-page__rail {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   position: sticky;
   top: 1rem;
-}
-
-.add-class-page__actions {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.6rem;
-  width: 100%;
-}
-
-.add-class-page__action {
-  min-height: 2.8rem;
-  width: 100%;
-  border-radius: 0.9rem;
-  border: 1px solid transparent;
-  font-size: 0.95rem;
-  font-weight: 800;
-  transition: all 0.18s ease;
-}
-
-.add-class-page__action--primary {
-  background: #00aeef;
-  border-color: #00aeef;
-  color: #fff;
-}
-
-.add-class-page__action--primary:hover:enabled {
-  background: #0284c7;
-  border-color: #0284c7;
-}
-
-.add-class-page__action--secondary {
-  background: #fff;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-.add-class-page__action--secondary:hover:enabled {
-  background: #f8fafc;
-  border-color: #94a3b8;
-}
-
-.add-class-page__action:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
 }
 
 @media (max-width: 1120px) {
@@ -530,21 +345,4 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 720px) {
-  .add-class-page__fields {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (min-width: 640px) {
-  .add-class-page__actions {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-
-  .add-class-page__action {
-    width: auto;
-    min-width: 10rem;
-  }
-}
 </style>
