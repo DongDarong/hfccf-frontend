@@ -130,9 +130,6 @@ const pendingTeams = computed(
 const totalPlayers = computed(() =>
   teams.value.reduce((sum, team) => sum + Number(team.players || 0), 0),
 )
-const totalMatches = computed(() =>
-  teams.value.reduce((sum, team) => sum + Number(team.matches || 0), 0),
-)
 const activeRateLabel = computed(() => {
   if (!totalTeams.value) return '0%'
   return `${Math.round((activeTeams.value / totalTeams.value) * 100)}%`
