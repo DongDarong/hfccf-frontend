@@ -46,6 +46,7 @@ export default {
     sportDashboard: 'ផ្ទាំងកីឡា',
     teachers: 'គ្រូបង្រៀន',
     coaches: 'គ្រូបង្វឹក',
+    students: 'សិស្ស',
     teams: 'ក្រុម',
     classes: 'ថ្នាក់រៀន',
     applications: 'ពាក្យស្នើសុំ',

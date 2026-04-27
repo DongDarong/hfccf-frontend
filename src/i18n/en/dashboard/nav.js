@@ -46,6 +46,7 @@ export default {
     sportDashboard: 'Sport Dashboard',
     teachers: 'Teachers',
     coaches: 'Coaches',
+    students: 'Students',
     teams: 'Teams',
     classes: 'Classes',
     applications: 'Applications',
