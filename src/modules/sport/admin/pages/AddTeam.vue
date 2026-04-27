@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -7,6 +7,7 @@ import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import teamsManagementData from '@/mocks/sport/teams-management-data.json'
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
@@ -24,6 +25,8 @@ const { t, language } = useLanguage()
 
 const teamDirectoryPath = '/module/sport-admin/teams'
 const statusOptions = ['active', 'pending', 'inactive']
+const allowedLogoImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const maxLogoImageSizeBytes = 2 * 1024 * 1024
 const divisionOptions = Array.from(
   new Set(
     (Array.isArray(teamsManagementData) ? teamsManagementData : [])
@@ -43,12 +46,15 @@ const form = reactive({
   wins: 0,
   draws: 0,
   losses: 0,
+  logo: null,
 })
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
+const logoPreview = ref('')
+const logoObjectUrl = ref('')
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -61,6 +67,12 @@ const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 const isKh = computed(() => language.value === 'KH')
 const points = computed(() => Math.max(form.wins, 0) * 3 + Math.max(form.draws, 0))
+
+function cleanupLogoObjectUrl() {
+  if (!logoObjectUrl.value) return
+  URL.revokeObjectURL(logoObjectUrl.value)
+  logoObjectUrl.value = ''
+}
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -159,6 +171,37 @@ function validateForm() {
   return ''
 }
 
+function onLogoChange(event) {
+  if (isFormLocked.value) return
+
+  const [file] = event?.target?.files || []
+  if (!file) return
+
+  if (!allowedLogoImageTypes.includes(file.type)) {
+    errorMessage.value = t('sportAddTeam.validation.logoType')
+    showError.value = true
+    return
+  }
+
+  if (file.size > maxLogoImageSizeBytes) {
+    errorMessage.value = t('sportAddTeam.validation.logoSize')
+    showError.value = true
+    return
+  }
+
+  cleanupLogoObjectUrl()
+  logoObjectUrl.value = URL.createObjectURL(file)
+  logoPreview.value = logoObjectUrl.value
+  form.logo = file
+}
+
+function removeLogo() {
+  if (isFormLocked.value) return
+  cleanupLogoObjectUrl()
+  logoPreview.value = ''
+  form.logo = null
+}
+
 async function goBackToTeams() {
   await router.push(teamDirectoryPath)
 }
@@ -219,6 +262,9 @@ function populateFromTeam(team) {
   form.wins = Number(team.wins || 0)
   form.draws = Number(team.draws || 0)
   form.losses = Number(team.losses || 0)
+  form.logo = null
+  cleanupLogoObjectUrl()
+  logoPreview.value = String(team.logo || '').trim()
 }
 
 onMounted(() => {
@@ -231,6 +277,10 @@ onMounted(() => {
 
   if (!found) return
   populateFromTeam(found)
+})
+
+onBeforeUnmount(() => {
+  cleanupLogoObjectUrl()
 })
 </script>
 
@@ -256,6 +306,15 @@ onMounted(() => {
           <AddTeamIntro
             :division-label="selectedDivisionLabel"
             :status-label="statusLabel(form.status)"
+          />
+
+          <AddAdminProfileImageField
+            :title="t('sportAddTeam.logo')"
+            :preview="logoPreview"
+            :remove-label="t('sportAddTeam.removeLogo')"
+            :disabled="isFormLocked"
+            @change="onLogoChange"
+            @remove="removeLogo"
           />
 
           <AddTeamFormFields
@@ -378,4 +437,5 @@ onMounted(() => {
     position: static;
   }
 }
+
 </style>

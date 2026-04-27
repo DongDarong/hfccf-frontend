@@ -86,6 +86,10 @@ function teamInitials(name) {
   )
 }
 
+function teamLogoSrc(team) {
+  return String(team?.logo || team?.logoUrl || team?.image || '').trim()
+}
+
 const filteredTeams = computed(() => {
   const query = normalize(searchQuery.value)
 
@@ -343,7 +347,12 @@ watch(
           <Column field="name" :header="t('sportTeamsManagement.table.team')">
             <template #body="{ data }">
               <div class="flex items-center gap-3">
-                <Avatar :label="teamInitials(data.name)" shape="circle" class="teams-management-page__avatar" />
+                <Avatar
+                  :image="teamLogoSrc(data) || undefined"
+                  :label="teamLogoSrc(data) ? undefined : teamInitials(data.name)"
+                  shape="circle"
+                  class="teams-management-page__avatar"
+                />
                 <div>
                   <div class="text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
                     {{ data.name }}
@@ -645,9 +654,16 @@ watch(
 .teams-management-page__avatar.p-avatar {
   width: 2.75rem;
   height: 2.75rem;
+  box-shadow: 0 10px 18px -14px rgba(0, 174, 239, 0.55);
+}
+
+.teams-management-page__avatar.p-avatar:not(.p-avatar-image) {
   background: linear-gradient(135deg, var(--brand-primary-500) 0%, var(--brand-primary-700) 100%);
   color: #fff;
-  box-shadow: 0 10px 18px -14px rgba(0, 174, 239, 0.55);
+}
+
+.teams-management-page__avatar :deep(img) {
+  object-fit: cover;
 }
 
 .teams-management-page__division-chip {
@@ -682,9 +698,14 @@ watch(
 
 .teams-management-page--kh .teams-management-page__summary-caption,
 .teams-management-page--kh .teams-management-page__toolbar-text,
-.teams-management-page--kh .teams-management-page__highlight-label {
+.teams-management-page--kh .teams-management-page__highlight-label,
+.teams-management-page--kh :deep(.actions-button-menu.p-menu),
+.teams-management-page--kh :deep(.actions-button-menu .p-menu-item-link),
+.teams-management-page--kh :deep(.actions-button-menu .p-menu-item-icon) {
   font-size: 0.92rem;
   line-height: 1.65;
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
 @media (max-width: 640px) {
