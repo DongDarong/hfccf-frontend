@@ -6,12 +6,15 @@
 -- - src/services/auth.js
 -- - src/services/mappers/userMapper.js
 -- - src/constants/roles.js
+-- - src/constants/access.js
+-- - src/services/accessControl.js
 --
 -- Important:
 -- 1. User IDs in this system are strings like `usr_001`, not bigint IDs.
 -- 2. The role code `adminscholaship` is intentionally kept as-is because the
 --    frontend currently uses that exact value.
--- 3. Sanctum-style tokens must therefore use a string `tokenable_id`.
+-- 3. Frontend RBAC is scope + domain based, so roles should persist both.
+-- 4. Sanctum-style tokens must therefore use a string `tokenable_id`.
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -28,11 +31,15 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE `roles` (
   `code` VARCHAR(32) NOT NULL,
   `name` VARCHAR(100) NOT NULL,
+  `scope` ENUM('super_admin', 'admin', 'staff') NOT NULL,
+  `domain_code` ENUM('global', 'english', 'preschool', 'scholarship', 'sport') NOT NULL,
   `department` VARCHAR(32) NOT NULL,
   `sort_order` TINYINT UNSIGNED NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`code`)
+  PRIMARY KEY (`code`),
+  KEY `roles_scope_index` (`scope`),
+  KEY `roles_domain_code_index` (`domain_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `permissions` (
@@ -120,16 +127,16 @@ CREATE TABLE `personal_access_tokens` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `roles` (`code`, `name`, `department`, `sort_order`) VALUES
-  ('superadmin', 'Super Admin', 'Operations', 1),
-  ('adminenglish', 'English Admin', 'Education', 2),
-  ('adminpreschool', 'Preschool Admin', 'Education', 3),
-  ('adminscholaship', 'Scholarship Admin', 'Education', 4),
-  ('adminsport', 'Sport Admin', 'Sports', 5),
-  ('teacher-english', 'English Teacher', 'Education', 6),
-  ('teacher-preschool', 'Preschool Teacher', 'Education', 7),
-  ('teacher-scholarship', 'Scholarship Teacher', 'Education', 8),
-  ('coach', 'Coach', 'Sports', 9);
+INSERT INTO `roles` (`code`, `name`, `scope`, `domain_code`, `department`, `sort_order`) VALUES
+  ('superadmin', 'Super Admin', 'super_admin', 'global', 'Operations', 1),
+  ('adminenglish', 'English Admin', 'admin', 'english', 'Education', 2),
+  ('adminpreschool', 'Preschool Admin', 'admin', 'preschool', 'Education', 3),
+  ('adminscholaship', 'Scholarship Admin', 'admin', 'scholarship', 'Education', 4),
+  ('adminsport', 'Sport Admin', 'admin', 'sport', 'Sports', 5),
+  ('teacher-english', 'English Teacher', 'staff', 'english', 'Education', 6),
+  ('teacher-preschool', 'Preschool Teacher', 'staff', 'preschool', 'Education', 7),
+  ('teacher-scholarship', 'Scholarship Teacher', 'staff', 'scholarship', 'Education', 8),
+  ('coach', 'Coach', 'staff', 'sport', 'Sports', 9);
 
 INSERT INTO `permissions` (`code`, `name`) VALUES
   ('all:*', 'Full system access'),
@@ -365,6 +372,8 @@ INNER JOIN `role_permissions` AS `rp`
 --   u.email,
 --   u.phone,
 --   u.role_code AS role,
+--   r.scope,
+--   r.domain_code AS domain,
 --   u.department,
 --   u.status,
 --   u.avatar,
@@ -372,5 +381,6 @@ INNER JOIN `role_permissions` AS `rp`
 --   u.last_login_at AS lastLoginAt,
 --   JSON_ARRAYAGG(up.permission_code) AS role_permission
 -- FROM users u
+-- INNER JOIN roles r ON r.code = u.role_code
 -- LEFT JOIN user_permissions up ON up.user_id = u.id
 -- GROUP BY u.id;
