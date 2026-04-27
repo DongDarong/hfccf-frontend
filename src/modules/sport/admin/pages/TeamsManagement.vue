@@ -130,6 +130,9 @@ const pendingTeams = computed(
 const totalPlayers = computed(() =>
   teams.value.reduce((sum, team) => sum + Number(team.players || 0), 0),
 )
+const totalMatches = computed(() =>
+  teams.value.reduce((sum, team) => sum + Number(team.matches || 0), 0),
+)
 const activeRateLabel = computed(() => {
   if (!totalTeams.value) return '0%'
   return `${Math.round((activeTeams.value / totalTeams.value) * 100)}%`
@@ -195,6 +198,7 @@ const summaryCards = computed(() => [
 
 const highlightItems = computed(() => {
   const visiblePlayers = filteredTeams.value.reduce((sum, team) => sum + Number(team.players || 0), 0)
+  const visibleMatches = filteredTeams.value.reduce((sum, team) => sum + Number(team.matches || 0), 0)
   const topPoints = filteredTeams.value.reduce(
     (max, team) => Math.max(max, Number(team.points || 0)),
     0,
@@ -208,6 +212,10 @@ const highlightItems = computed(() => {
     {
       label: t('sportTeamsManagement.highlights.visiblePlayers'),
       value: visiblePlayers,
+    },
+    {
+      label: t('sportTeamsManagement.highlights.visibleMatches'),
+      value: visibleMatches,
     },
     {
       label: t('sportTeamsManagement.highlights.topPoints'),
@@ -376,6 +384,12 @@ watch(
           <Column field="players" :header="t('sportTeamsManagement.table.players')">
             <template #body="{ data }">
               <span class="font-semibold text-slate-700">{{ data.players }}</span>
+            </template>
+          </Column>
+
+          <Column field="matches" :header="t('sportTeamsManagement.table.matches')">
+            <template #body="{ data }">
+              <span class="font-semibold text-slate-700">{{ data.matches || 0 }}</span>
             </template>
           </Column>
 

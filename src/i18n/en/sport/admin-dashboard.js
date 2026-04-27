@@ -169,6 +169,7 @@ export default {
     highlights: {
       visibleTeams: 'Visible teams',
       visiblePlayers: 'Visible players',
+      visibleMatches: 'Visible matches',
       topPoints: 'Top points',
     },
     summary: {
@@ -199,6 +200,7 @@ export default {
       division: 'Division',
       coach: 'Coach',
       players: 'Players',
+      matches: 'Matches',
       record: 'Record',
       venue: 'Venue',
       captainPrefix: 'Captain: {captain}',
@@ -229,6 +231,7 @@ export default {
     coach: 'Coach',
     captain: 'Captain',
     players: 'Players',
+    matches: 'Matches',
     venue: 'Venue',
     status: 'Status',
     wins: 'Wins',
@@ -241,6 +244,7 @@ export default {
     coachPlaceholder: 'Head coach name',
     captainPlaceholder: 'Team captain name',
     playersPlaceholder: 'Number of players',
+    matchesPlaceholder: 'Total matches played',
     venuePlaceholder: 'Primary venue',
     divisionOverview: 'Division overview',
     teamTrack: 'Competition track',

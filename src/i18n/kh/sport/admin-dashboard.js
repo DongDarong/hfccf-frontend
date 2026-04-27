@@ -169,6 +169,7 @@ export default {
     highlights: {
       visibleTeams: 'ក្រុមកំពុងបង្ហាញ',
       visiblePlayers: 'កីឡាករកំពុងបង្ហាញ',
+      visibleMatches: 'ការប្រកួតកំពុងបង្ហាញ',
       topPoints: 'ពិន្ទុខ្ពស់បំផុត',
     },
     summary: {
@@ -199,6 +200,7 @@ export default {
       division: 'កម្រិត',
       coach: 'គ្រូបង្វឹក',
       players: 'កីឡាករ',
+      matches: 'ចំនួនប្រកួត',
       record: 'កំណត់ត្រា',
       venue: 'ទីលាន',
       captainPrefix: 'ប្រធានក្រុម: {captain}',
@@ -229,6 +231,7 @@ export default {
     coach: 'គ្រូបង្វឹក',
     captain: 'ប្រធានក្រុម',
     players: 'ចំនួនកីឡាករ',
+    matches: 'ចំនួនប្រកួត',
     venue: 'ទីតាំង',
     status: 'ស្ថានភាព',
     wins: 'ឈ្នះ',
@@ -241,6 +244,7 @@ export default {
     coachPlaceholder: 'ឈ្មោះគ្រូបង្វឹក',
     captainPlaceholder: 'ឈ្មោះប្រធានក្រុម',
     playersPlaceholder: 'ចំនួនកីឡាករ',
+    matchesPlaceholder: 'ចំនួនប្រកួតសរុប',
     venuePlaceholder: 'ទីតាំងសំខាន់',
     divisionOverview: 'ទិដ្ឋភាពកម្រិតប្រកួត',
     teamTrack: 'ផ្លូវប្រកួត',

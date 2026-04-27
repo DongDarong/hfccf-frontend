@@ -29,6 +29,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  matches: {
+    type: Number,
+    default: 0,
+  },
   venue: {
     type: String,
     default: '',
@@ -77,6 +81,7 @@ const emit = defineEmits([
   'update:coach',
   'update:captain',
   'update:players',
+  'update:matches',
   'update:venue',
   'update:status',
   'update:wins',
@@ -92,6 +97,7 @@ const labels = computed(() => ({
   coach: t('sportAddTeam.coach'),
   captain: t('sportAddTeam.captain'),
   players: t('sportAddTeam.players'),
+  matches: t('sportAddTeam.matches'),
   venue: t('sportAddTeam.venue'),
   status: t('sportAddTeam.status'),
   wins: t('sportAddTeam.wins'),
@@ -106,6 +112,7 @@ const placeholders = computed(() => ({
   coach: t('sportAddTeam.coachPlaceholder'),
   captain: t('sportAddTeam.captainPlaceholder'),
   players: t('sportAddTeam.playersPlaceholder'),
+  matches: t('sportAddTeam.matchesPlaceholder'),
   venue: t('sportAddTeam.venuePlaceholder'),
 }))
 
@@ -219,6 +226,19 @@ const selectPt = {
     </label>
 
     <label class="add-team-form-fields__field">
+      <span class="add-team-form-fields__label">{{ labels.matches }}</span>
+      <input
+        :value="matches"
+        :disabled="isLocked"
+        :placeholder="placeholders.matches"
+        type="number"
+        min="0"
+        class="add-team-form-fields__input"
+        @input="updateNumber('matches', $event)"
+      />
+    </label>
+
+    <label class="add-team-form-fields__field">
       <span class="add-team-form-fields__label">{{ labels.venue }}</span>
       <InputText
         :model-value="venue"
@@ -321,6 +341,21 @@ const selectPt = {
   width: 100%;
   min-height: 3rem;
   padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db; /* border-surface-300 */
+  border-radius: 0.75rem; /* rounded-xl */
+  font-size: 0.875rem; /* text-sm */
+  transition: all 0.2s;
+}
+
+.add-team-form-fields__input:focus {
+  outline: none;
+  border-color: #3b82f6; /* brand-400 */
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); /* shadow-focus */
+}
+
+.add-team-form-fields__input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
 }
 
 .add-team-form-fields__record-grid {

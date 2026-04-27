@@ -41,6 +41,7 @@ const form = reactive({
   coach: '',
   captain: '',
   players: 0,
+  matches: 0,
   venue: '',
   status: statusOptions[0],
   wins: 0,
@@ -163,6 +164,7 @@ function validateForm() {
   if (!form.coach.trim()) return t('sportAddTeam.validation.coachRequired')
   if (!form.captain.trim()) return t('sportAddTeam.validation.captainRequired')
   if (form.players <= 0) return t('sportAddTeam.validation.playersRequired')
+  if (form.matches < 0) return t('sportAddTeam.validation.recordInvalid')
   if (!form.venue.trim()) return t('sportAddTeam.validation.venueRequired')
   if (!form.status) return t('sportAddTeam.validation.statusRequired')
   if (form.wins < 0 || form.draws < 0 || form.losses < 0) {
@@ -252,6 +254,7 @@ function populateFromTeam(team) {
   form.coach = team.coach || ''
   form.captain = team.captain || ''
   form.players = Number(team.players || 0)
+  form.matches = Number(team.matches || 0)
   form.venue = team.venue || ''
 
   const normalizedStatus = String(team.status || '')
@@ -323,6 +326,7 @@ onBeforeUnmount(() => {
             :coach="form.coach"
             :captain="form.captain"
             :players="form.players"
+            :matches="form.matches"
             :venue="form.venue"
             :status="form.status"
             :wins="form.wins"
@@ -338,6 +342,7 @@ onBeforeUnmount(() => {
             @update:coach="form.coach = $event"
             @update:captain="form.captain = $event"
             @update:players="form.players = $event"
+            @update:matches="form.matches = $event"
             @update:venue="form.venue = $event"
             @update:status="form.status = $event"
             @update:wins="form.wins = $event"
