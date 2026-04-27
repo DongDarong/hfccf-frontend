@@ -5,6 +5,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
+import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
@@ -39,6 +40,24 @@ const teams = ref(Array.isArray(teamsManagementData) ? [...teamsManagementData] 
 
 async function goToAddTeam() {
   await router.push({ name: 'dashboard-sport-admin-teams-add' })
+}
+
+function onViewTeam(team) {
+  const id = String(team?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/module/sport-admin/teams/add', query: { mode: 'view', id } })
+}
+
+function onEditTeam(team) {
+  const id = String(team?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/module/sport-admin/teams/add', query: { mode: 'edit', id } })
+}
+
+function onDeleteTeam(team) {
+  const id = String(team?.id || '').trim()
+  if (!id) return
+  teams.value = teams.value.filter((item) => item.id !== id)
 }
 
 function normalize(value) {
@@ -369,6 +388,17 @@ watch(
           <Column field="status" :header="t('common.table.status')">
             <template #body="{ data }">
               <StatusBadge :status="statusType(data.status)" :label="data.status" size="sm" />
+            </template>
+          </Column>
+
+          <Column field="actions" :header="t('common.table.actions')" header-class="text-right">
+            <template #body="{ data }">
+              <ActionsButton
+                :item="data"
+                @view="onViewTeam"
+                @edit="onEditTeam"
+                @delete="onDeleteTeam"
+              />
             </template>
           </Column>
         </DataTable>
