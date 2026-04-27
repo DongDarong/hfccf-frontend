@@ -1,6 +1,6 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Form from '@/components/forms/Form.vue'
@@ -8,12 +8,14 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
+import { findClassRowById, upsertClassRow } from '@/modules/preschool/admin/utils/classStorage'
 
 defineOptions({
   name: 'PreschoolAdminAddClassPage',
 })
 
 const router = useRouter()
+const route = useRoute()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
 const levelOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
@@ -35,9 +37,25 @@ const isSubmitting = ref(false)
 const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
+const mode = computed(() => {
+  if (route.query.mode === 'view') return 'view'
+  if (route.query.mode === 'edit' || Boolean(route.query.id)) return 'edit'
+  return 'add'
+})
+const isViewMode = computed(() => mode.value === 'view')
+const isEditMode = computed(() => mode.value === 'edit')
+const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 
-const pageTitle = computed(() => 'Add Class')
-const pageSubtitle = computed(() => 'Create a preschool class and assign its schedule, teacher, and status.')
+const pageTitle = computed(() => {
+  if (isViewMode.value) return 'Class Details'
+  if (isEditMode.value) return 'Update Class'
+  return 'Add Class'
+})
+const pageSubtitle = computed(() => {
+  if (isViewMode.value) return 'Review the class profile, teacher assignment, and schedule.'
+  if (isEditMode.value) return 'Update the class profile, teacher assignment, and schedule.'
+  return 'Create a preschool class and assign its schedule, teacher, and status.'
+})
 
 const summaryCards = computed(() => [
   {
@@ -122,7 +140,15 @@ async function goBackToClasses() {
   await router.push(classesDirectoryPath)
 }
 
+async function goToEditMode() {
+  const id = String(route.query.id || '').trim()
+  if (!id) return
+  await router.push({ path: '/module/preschool-admin/classes/add', query: { mode: 'edit', id } })
+}
+
 async function onSubmit() {
+  if (isViewMode.value) return
+
   resetFeedback()
 
   const validationError = validateForm()
@@ -136,9 +162,23 @@ async function onSubmit() {
 
   try {
     await new Promise((resolve) => setTimeout(resolve, 700))
+    upsertClassRow({
+      id: isEditMode.value ? String(route.query.id || '').trim() : '',
+      code: form.code.trim(),
+      name: form.name.trim(),
+      teacher: form.teacher.trim(),
+      level: form.level,
+      schedule: form.schedule.trim(),
+      students: normalizeNumber(form.students),
+      status: form.status,
+      room: form.room.trim(),
+      notes: form.notes.trim(),
+    })
     showSuccess.value = true
   } catch {
-    errorMessage.value = 'Failed to create the class.'
+    errorMessage.value = isEditMode.value
+      ? 'Failed to update the class.'
+      : 'Failed to create the class.'
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -153,6 +193,27 @@ async function onSuccessClose() {
   showSuccess.value = false
   await goBackToClasses()
 }
+
+function populateFromClass(item) {
+  form.code = item.code || ''
+  form.name = item.name || ''
+  form.teacher = item.teacher || ''
+  form.level = item.level || levelOptions[0]
+  form.schedule = item.schedule || ''
+  form.students = Number(item.students || 0)
+  form.status = item.status || statusOptions[0]
+  form.room = item.room || ''
+  form.notes = item.notes || ''
+}
+
+onMounted(() => {
+  if (mode.value === 'add') return
+
+  const id = String(route.query.id || '').trim()
+  const found = findClassRowById(id)
+  if (!found) return
+  populateFromClass(found)
+})
 </script>
 
 <template>
@@ -169,6 +230,7 @@ async function onSuccessClose() {
           description="Complete the class profile, assignment details, and schedule information."
           cancel-text="Cancel"
           :loading="isSubmitting"
+          :disabled="isViewMode"
           :show-cancel="true"
           @submit="onSubmit"
           @cancel="goBackToClasses"
@@ -184,22 +246,27 @@ async function onSuccessClose() {
           <div class="add-class-page__fields">
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Class Code</span>
-              <input v-model="form.code" type="text" placeholder="PS-NUR-03" />
+              <input v-model="form.code" type="text" placeholder="PS-NUR-03" :disabled="isFormLocked" />
             </label>
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Class Name</span>
-              <input v-model="form.name" type="text" placeholder="Morning Nursery Blue" />
+              <input
+                v-model="form.name"
+                type="text"
+                placeholder="Morning Nursery Blue"
+                :disabled="isFormLocked"
+              />
             </label>
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Teacher</span>
-              <input v-model="form.teacher" type="text" placeholder="Teacher name" />
+              <input v-model="form.teacher" type="text" placeholder="Teacher name" :disabled="isFormLocked" />
             </label>
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Level</span>
-              <select v-model="form.level">
+              <select v-model="form.level" :disabled="isFormLocked">
                 <option v-for="option in levelOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -208,17 +275,28 @@ async function onSuccessClose() {
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Schedule</span>
-              <input v-model="form.schedule" type="text" placeholder="Mon-Fri, 8:00 AM" />
+              <input
+                v-model="form.schedule"
+                type="text"
+                placeholder="Mon-Fri, 8:00 AM"
+                :disabled="isFormLocked"
+              />
             </label>
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Students</span>
-              <input v-model="form.students" type="number" min="0" placeholder="0" />
+              <input
+                v-model="form.students"
+                type="number"
+                min="0"
+                placeholder="0"
+                :disabled="isFormLocked"
+              />
             </label>
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Status</span>
-              <select v-model="form.status">
+              <select v-model="form.status" :disabled="isFormLocked">
                 <option v-for="option in statusOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -227,7 +305,7 @@ async function onSuccessClose() {
 
             <label class="add-class-page__field add-class-page__field--half">
               <span class="add-class-page__label">Room</span>
-              <input v-model="form.room" type="text" placeholder="Room A1" />
+              <input v-model="form.room" type="text" placeholder="Room A1" :disabled="isFormLocked" />
             </label>
 
             <label class="add-class-page__field add-class-page__field--full">
@@ -236,9 +314,47 @@ async function onSuccessClose() {
                 v-model="form.notes"
                 rows="4"
                 placeholder="Optional notes about the class, materials, or scheduling."
+                :disabled="isFormLocked"
               />
             </label>
           </div>
+
+          <template v-if="isViewMode || isEditMode" #actions>
+            <div class="add-class-page__actions">
+              <button
+                v-if="isViewMode"
+                type="button"
+                class="add-class-page__action add-class-page__action--secondary"
+                @click="goBackToClasses"
+              >
+                Back to Classes
+              </button>
+              <button
+                v-if="isViewMode"
+                type="button"
+                class="add-class-page__action add-class-page__action--primary"
+                @click="goToEditMode"
+              >
+                Edit Class
+              </button>
+              <button
+                v-else
+                type="button"
+                class="add-class-page__action add-class-page__action--secondary"
+                @click="goBackToClasses"
+              >
+                Back to Classes
+              </button>
+              <button
+                v-if="isEditMode"
+                type="submit"
+                class="add-class-page__action add-class-page__action--primary"
+                :disabled="isSubmitting"
+              >
+                {{ isSubmitting ? 'Saving...' : 'Update Class' }}
+              </button>
+            </div>
+          </template>
         </Form>
 
         <div class="add-class-page__rail">
@@ -263,8 +379,12 @@ async function onSuccessClose() {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Class Created"
-      message="The preschool class has been created successfully."
+      :title="isEditMode ? 'Class Updated' : 'Class Created'"
+      :message="
+        isEditMode
+          ? 'The preschool class has been updated successfully.'
+          : 'The preschool class has been created successfully.'
+      "
       button-text="Back to Classes"
       @close="onSuccessClose"
     />
@@ -356,6 +476,50 @@ async function onSuccessClose() {
   top: 1rem;
 }
 
+.add-class-page__actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.add-class-page__action {
+  min-height: 2.8rem;
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 800;
+  transition: all 0.18s ease;
+}
+
+.add-class-page__action--primary {
+  background: #00aeef;
+  border-color: #00aeef;
+  color: #fff;
+}
+
+.add-class-page__action--primary:hover:enabled {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+.add-class-page__action--secondary {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.add-class-page__action--secondary:hover:enabled {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.add-class-page__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 @media (max-width: 1120px) {
   .add-class-page__layout {
     grid-template-columns: 1fr;
@@ -369,6 +533,18 @@ async function onSuccessClose() {
 @media (max-width: 720px) {
   .add-class-page__fields {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 640px) {
+  .add-class-page__actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .add-class-page__action {
+    width: auto;
+    min-width: 10rem;
   }
 }
 </style>

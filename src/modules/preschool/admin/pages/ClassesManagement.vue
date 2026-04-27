@@ -5,10 +5,13 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import ClassTable from '@/modules/classes/components/ClassTable.vue'
 import PreschoolClassesSummaryGrid from '@/modules/preschool/admin/components/classes-management/PreschoolClassesSummaryGrid.vue'
 import PreschoolClassesToolbar from '@/modules/preschool/admin/components/classes-management/PreschoolClassesToolbar.vue'
 import PreschoolClassesHighlights from '@/modules/preschool/admin/components/classes-management/PreschoolClassesHighlights.vue'
+import { getStoredClassRows, removeClassRow } from '@/modules/preschool/admin/utils/classStorage'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -24,82 +27,16 @@ const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 5
+const isDeleteOpen = ref(false)
+const selectedClassId = ref('')
+const selectedClassName = ref('')
+const showSuccess = ref(false)
+const successMessage = ref('')
 
 const roleOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
 const statusOptions = ['active', 'pending', 'closed']
 
-const classRows = ref([
-  {
-    id: 'preschool-class-1',
-    code: 'PS-NUR-01',
-    name: 'Morning Nursery',
-    teacher: 'Srey Pov',
-    level: 'Nursery',
-    schedule: 'Mon-Fri, 8:00 AM',
-    students: 18,
-    status: 'Active',
-  },
-  {
-    id: 'preschool-class-2',
-    code: 'PS-KA-02',
-    name: 'Kindergarten A Blue',
-    teacher: 'Dara',
-    level: 'Kindergarten A',
-    schedule: 'Mon-Fri, 9:30 AM',
-    students: 22,
-    status: 'Active',
-  },
-  {
-    id: 'preschool-class-3',
-    code: 'PS-KB-01',
-    name: 'Kindergarten B Red', 
-    teacher: 'Malis',
-    level: 'Kindergarten B',
-    schedule: 'Mon-Fri, 1:00 PM',
-    students: 20,
-    status: 'Pending',
-  },
-  {
-    id: 'preschool-class-4',
-    code: 'PS-PRE-01',
-    name: 'Prep Readiness Group',
-    teacher: 'Sokha',
-    level: 'Prep',
-    schedule: 'Mon-Fri, 2:30 PM',
-    students: 16,
-    status: 'Active',
-  },
-  {
-    id: 'preschool-class-5',
-    code: 'PS-NUR-02',
-    name: 'Afternoon Nursery',
-    teacher: 'Chanthy',
-    level: 'Nursery',
-    schedule: 'Mon-Fri, 1:30 PM',
-    students: 17,
-    status: 'Closed',
-  },
-  {
-    id: 'preschool-class-6',
-    code: 'PS-KA-03',
-    name: 'Kindergarten A Green',
-    teacher: 'Pisey',
-    level: 'Kindergarten A',
-    schedule: 'Sat, 8:30 AM',
-    students: 14,
-    status: 'Active',
-  },
-  {
-    id: 'preschool-class-7',
-    code: 'PS-KB-02',
-    name: 'Kindergarten B Yellow',
-    teacher: 'Ratha',
-    level: 'Kindergarten B',
-    schedule: 'Sat, 10:00 AM',
-    students: 15,
-    status: 'Pending',
-  },
-])
+const classRows = ref(getStoredClassRows())
 
 function normalize(value) {
   return String(value ?? '')
@@ -254,17 +191,35 @@ function onAddClass() {
 }
 
 function onViewClass(item) {
-  console.log('View Preschool class', item)
+  const id = String(item?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/module/preschool-admin/classes/add', query: { mode: 'view', id } })
 }
 
 function onEditClass(item) {
-  console.log('Edit Preschool class', item)
+  const id = String(item?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/module/preschool-admin/classes/add', query: { mode: 'edit', id } })
 }
 
 function onDeleteClass(item) {
-  const id = String(item?.id || '').trim()
-  if (!id) return
-  classRows.value = classRows.value.filter((row) => row.id !== id)
+  selectedClassId.value = String(item?.id || '').trim()
+  selectedClassName.value = String(item?.name || item?.code || '').trim()
+  if (!selectedClassId.value) return
+  isDeleteOpen.value = true
+}
+
+function onCancelDelete() {
+  isDeleteOpen.value = false
+  selectedClassId.value = ''
+  selectedClassName.value = ''
+}
+
+function onConfirmDelete() {
+  classRows.value = removeClassRow(selectedClassId.value)
+  successMessage.value = `${selectedClassName.value || 'Class'} deleted successfully.`
+  showSuccess.value = true
+  onCancelDelete()
 }
 </script>
 
@@ -319,6 +274,25 @@ function onDeleteClass(item) {
         </div>
       </div>
     </section>
+
+    <AlertQuestion
+      :show="isDeleteOpen"
+      title="Delete class?"
+      :message="`Are you sure you want to delete ${selectedClassName || 'this class'}?`"
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      type="danger"
+      @confirm="onConfirmDelete"
+      @cancel="onCancelDelete"
+    />
+
+    <AlertSuccess
+      :show="showSuccess"
+      title="Success"
+      :message="successMessage"
+      button-text="Close"
+      @close="showSuccess = false"
+    />
   </MainLayout>
 </template>
 
