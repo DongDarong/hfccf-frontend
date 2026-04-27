@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SidebarLink from '@/components/navigation/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar-nav.json'
 import HomeIcon from '@/assets/icons/Home.vue'
 import UsersIcon from '@/assets/icons/Users.vue'
 import ReportsIcon from '@/assets/icons/Reports.vue'
-import { getCurrentUser, isSuperAdmin } from '@/services/auth'
-import { ROLES, PROGRAM_ADMIN_ROLES, normalizeRole } from '@/constants/roles'
+import { getCurrentUser } from '@/services/auth'
+import { buildSidebarSections } from '@/components/navigation/sidebarNavigation'
 
 defineOptions({
   name: 'SidebarNavigation',
@@ -22,6 +22,7 @@ defineProps({
 })
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useLanguage()
 // Map icon keys from JSON config to concrete Vue components.
 const iconByName = {
@@ -32,24 +33,20 @@ const iconByName = {
 }
 
 const currentPath = computed(() => route.path)
-const currentUser = computed(() => getCurrentUser() || {})
-const currentRole = computed(() => normalizeRole(currentUser.value?.role))
-const userManagementRouteByRole = Object.freeze({
-  [ROLES.ADMIN_ENGLISH]: '/module/english-admin/users',
-  [ROLES.ADMIN_PRESCHOOL]: '/module/preschool-admin/users',
-  [ROLES.ADMIN_SCHOLARSHIP]: '/module/scholarship-admin/users',
-  [ROLES.ADMIN_SPORT]: '/module/sport-admin/users',
-})
-const isSuperAdminUser = computed(() => isSuperAdmin(currentUser.value))
-const userManagementRoute = computed(() => {
-  if (isSuperAdminUser.value) return '/module/super-admin/users/manage'
-  return userManagementRouteByRole[currentRole.value] || ''
-})
+const currentRouteName = computed(() => String(route.name || ''))
+const currentUser = computed(() => getCurrentUser() || null)
 const SECTION_STATE_STORAGE_KEY = 'sidebar-navigation-section-state'
 const sectionStateById = ref({})
 const navigationSections = computed(() => {
-  const source = isSuperAdminUser.value ? sidebarNavData.superAdmin : sidebarNavData.standard
-  return resolveSections(Array.isArray(source) ? source : [])
+  return buildSidebarSections({
+    config: sidebarNavData,
+    router,
+    user: currentUser.value,
+    t,
+  }).map((section) => ({
+    ...section,
+    items: section.items.map((item) => decorateNavItem(item)),
+  }))
 })
 
 function loadSectionState() {
@@ -78,76 +75,26 @@ function saveSectionState() {
 
 loadSectionState()
 
-function resolveText(key, fallback = '') {
-  if (!key) return fallback
-  const value = t(key)
-  return value && value !== key ? value : fallback || key
-}
-
-function resolveRoute(to) {
-  if (to === '/dashboard') return '/module/dashboard'
-  if (to === '/users') return userManagementRoute.value || to
-  return to
-}
-
-function canShowEntry(entry) {
-  const visibility = Array.isArray(entry.visibility) ? entry.visibility : []
-  const roles = Array.isArray(entry.roles) ? entry.roles.map((role) => normalizeRole(role)) : []
-
-  if (roles.length && !roles.includes(currentRole.value)) return false
-  if (!visibility.length) return true
-
-  return visibility.some((rule) => {
-    if (rule === 'super-admin') return isSuperAdminUser.value
-    if (rule === 'program-admin') return PROGRAM_ADMIN_ROLES.includes(currentRole.value)
-    return normalizeRole(rule) === currentRole.value
-  })
-}
-
-function resolveItem(item) {
-  if (!canShowEntry(item)) return null
-
-  const children = (Array.isArray(item.children) ? item.children : [])
-    .map((child) => resolveItem(child))
-    .filter(Boolean)
-
+function decorateNavItem(item) {
   return {
     ...item,
-    to: resolveRoute(item.to),
-    label: resolveText(item.labelKey, item.label || item.id),
-    badge: resolveText(item.badgeKey, item.badge || ''),
     iconComponent: iconByName[item.icon] || null,
-    children,
+    children: (item.children || []).map((child) => decorateNavItem(child)),
   }
 }
 
-function resolveSections(sections) {
-  return sections
-    .filter((section) => canShowEntry(section))
-    .map((section) => ({
-      ...section,
-      label: resolveText(section.labelKey, section.label || section.id),
-      caption: resolveText(section.captionKey, section.caption || ''),
-      badge: resolveText(section.badgeKey, section.badge || ''),
-      items: (Array.isArray(section.items) ? section.items : [])
-        .map((item) => resolveItem(item))
-        .filter(Boolean),
-    }))
-    .filter((section) => section.items.length)
-}
-
-function isPathActive(path, activePrefixes = []) {
+function isPathActive(path) {
   return (
     currentPath.value === path ||
-    activePrefixes.some(
-      (prefix) => currentPath.value === prefix || currentPath.value.startsWith(`${prefix}/`),
-    )
+    currentPath.value.startsWith(`${path}/`)
   )
 }
 
 function isNavItemActive(item) {
   return (
-    isPathActive(item.to, item.activePrefixes || []) ||
+    currentRouteName.value === item.routeName ||
+    (item.activeRouteNames || []).includes(currentRouteName.value) ||
+    isPathActive(item.routePath) ||
     (item.children || []).some((child) => isNavItemActive(child))
   )
 }

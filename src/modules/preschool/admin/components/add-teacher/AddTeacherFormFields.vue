@@ -1,13 +1,11 @@
 <script setup>
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
 import AddAdminPermissionsField from '@/modules/super-admin/components/admin-management/AddAdminPermissionsField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
 
 defineOptions({
-  name: 'AddCoachFormFields',
+  name: 'AddTeacherFormFields',
 })
 
 defineProps({
@@ -99,45 +97,22 @@ const emit = defineEmits([
   'toggle-password',
   'toggle-confirm-password',
 ])
-
-const { t } = useI18n()
-const labels = computed(() => ({
-  profileImage: t('sportAddCoach.profileImage'),
-  removeImage: t('sportAddCoach.removeImage'),
-  fullName: t('sportAddCoach.fullName'),
-  email: t('sportAddCoach.email'),
-  phone: t('sportAddCoach.phone'),
-  role: t('sportAddCoach.role'),
-  status: t('sportAddCoach.status'),
-  permissions: t('sportAddCoach.permissions'),
-  password: t('sportAddCoach.password'),
-  confirmPassword: t('sportAddCoach.confirmPassword'),
-  showPassword: t('sportAddCoach.showPassword'),
-  hidePassword: t('sportAddCoach.hidePassword'),
-}))
-const placeholders = computed(() => ({
-  fullName: t('sportAddCoach.enterFullName'),
-  email: t('sportAddCoach.emailPlaceholder'),
-  phone: t('sportAddCoach.phonePlaceholder'),
-  password: t('sportAddCoach.minimumPassword'),
-  confirmPassword: t('sportAddCoach.reenterPassword'),
-}))
 </script>
 
 <template>
-  <div class="add-coach-form-fields">
+  <div class="add-teacher-form-fields">
     <AddAdminProfileImageField
-      class="add-coach-form-fields__field add-coach-form-fields__field--full"
-      :title="labels.profileImage"
+      class="add-teacher-form-fields__field add-teacher-form-fields__field--full"
+      title="Profile Image"
       :preview="profileImagePreview"
-      :remove-label="labels.removeImage"
+      remove-label="Remove image"
       :disabled="isLocked"
       @change="emit('profile-image-change', $event)"
       @remove="emit('profile-image-remove')"
     />
 
     <AddAdminIdentityFields
-      class="add-coach-form-fields__field add-coach-form-fields__field--full"
+      class="add-teacher-form-fields__field add-teacher-form-fields__field--full"
       :name="name"
       :email="email"
       :phone="phone"
@@ -146,14 +121,14 @@ const placeholders = computed(() => ({
       :role-options="roleOptions"
       :status-options="statusOptions"
       :disabled="isLocked"
-      :name-label="labels.fullName"
-      :email-label="labels.email"
-      :phone-label="labels.phone"
-      :role-label-text="labels.role"
-      :status-label-text="labels.status"
-      :name-placeholder="placeholders.fullName"
-      :email-placeholder="placeholders.email"
-      :phone-placeholder="placeholders.phone"
+      name-label="Full Name"
+      email-label="Email"
+      phone-label="Phone"
+      role-label-text="Role"
+      status-label-text="Status"
+      name-placeholder="Enter full name"
+      email-placeholder="teacher@example.com"
+      phone-placeholder="Enter phone number"
       :role-label="roleLabel"
       :status-label="statusLabel"
       @update:name="emit('update:name', $event)"
@@ -164,8 +139,8 @@ const placeholders = computed(() => ({
     />
 
     <AddAdminPermissionsField
-      class="add-coach-form-fields__field add-coach-form-fields__field--full"
-      :title="labels.permissions"
+      class="add-teacher-form-fields__field add-teacher-form-fields__field--full"
+      title="Permissions"
       :permissions="permissions"
       :options="permissionOptions"
       :disabled="isLocked"
@@ -174,18 +149,18 @@ const placeholders = computed(() => ({
     />
 
     <AddAdminPasswordFields
-      class="add-coach-form-fields__field add-coach-form-fields__field--full"
+      class="add-teacher-form-fields__field add-teacher-form-fields__field--full"
       :password="password"
       :confirm-password="confirmPassword"
       :disabled="isLocked"
       :password-visible="isPasswordVisible"
       :confirm-password-visible="isConfirmPasswordVisible"
-      :password-label="labels.password"
-      :confirm-password-label="labels.confirmPassword"
-      :password-placeholder="placeholders.password"
-      :confirm-password-placeholder="placeholders.confirmPassword"
-      :show-password-label="labels.showPassword"
-      :hide-password-label="labels.hidePassword"
+      password-label="Password"
+      confirm-password-label="Confirm Password"
+      password-placeholder="Minimum 6 characters"
+      confirm-password-placeholder="Re-enter password"
+      show-password-label="Show password"
+      hide-password-label="Hide password"
       @update:password="emit('update:password', $event)"
       @update:confirm-password="emit('update:confirmPassword', $event)"
       @toggle-password="emit('toggle-password')"
@@ -195,24 +170,24 @@ const placeholders = computed(() => ({
 </template>
 
 <style scoped>
-.add-coach-form-fields {
+.add-teacher-form-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.add-coach-form-fields__field {
+.add-teacher-form-fields__field {
   display: flex;
   flex-direction: column;
   gap: 0.42rem;
 }
 
-.add-coach-form-fields__field--full {
+.add-teacher-form-fields__field--full {
   grid-column: 1 / -1;
 }
 
 @media (max-width: 768px) {
-  .add-coach-form-fields {
+  .add-teacher-form-fields {
     grid-template-columns: 1fr;
   }
 }

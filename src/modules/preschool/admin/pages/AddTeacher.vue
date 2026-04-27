@@ -7,27 +7,25 @@ import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { ROLES } from '@/constants/roles'
-import { useLanguage } from '@/composables/useLanguage'
 import { mapUser } from '@/services/mappers/userMapper'
 import usersMock from '@/mocks/users.json'
-import AddCoachIntro from '@/modules/sport/admin/components/add-coach/AddCoachIntro.vue'
-import AddCoachFormFields from '@/modules/sport/admin/components/add-coach/AddCoachFormFields.vue'
-import AddCoachFormActions from '@/modules/sport/admin/components/add-coach/AddCoachFormActions.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
+import AddTeacherIntro from '@/modules/preschool/admin/components/add-teacher/AddTeacherIntro.vue'
+import AddTeacherFormFields from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormFields.vue'
+import AddTeacherFormActions from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormActions.vue'
 
 defineOptions({
-  name: 'SportAdminAddCoachPage',
+  name: 'PreschoolAdminAddTeacherPage',
 })
 
 const router = useRouter()
 const route = useRoute()
-const { t, language } = useLanguage()
 
-const coachDirectoryPath = '/module/sport-admin/users'
-const roleOptions = [ROLES.COACH]
+const teacherDirectoryPath = '/module/preschool-admin/users'
+const roleOptions = [ROLES.TEACHER_PRESCHOOL]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const permissionOptions = ['dashboard:read', 'athletes:read', 'training:write', 'tasks:read']
+const permissionOptions = ['dashboard:read', 'classes:write', 'students:read', 'tasks:write']
 const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
@@ -35,7 +33,7 @@ const form = reactive({
   name: '',
   email: '',
   phone: '',
-  role: ROLES.COACH,
+  role: ROLES.TEACHER_PRESCHOOL,
   permissions: permissionOptions.slice(0, 3),
   status: statusOptions[0],
   password: '',
@@ -50,7 +48,6 @@ const showError = ref(false)
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const profileImagePreview = ref('')
-const profileImageObjectUrl = ref('')
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -61,36 +58,32 @@ const isViewMode = computed(() => mode.value === 'view')
 const isEditMode = computed(() => mode.value === 'edit')
 const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
-const isKh = computed(() => language.value === 'KH')
 
-function cleanupProfileImageObjectUrl() {
-  if (!profileImageObjectUrl.value) return
-  URL.revokeObjectURL(profileImageObjectUrl.value)
-  profileImageObjectUrl.value = ''
-}
+const pageTitle = computed(() => {
+  if (isViewMode.value) return 'Teacher Details'
+  if (isEditMode.value) return 'Update Teacher'
+  return 'Add Teacher'
+})
 
-function resetFeedback() {
-  errorMessage.value = ''
-  showError.value = false
-}
+const pageSubtitle = computed(() => {
+  if (isViewMode.value) return 'Review the teacher profile, permissions, and account status.'
+  if (isEditMode.value) return 'Update the teacher profile, permissions, and account details.'
+  return 'Create a Preschool teacher account and assign classroom access.'
+})
 
 function statusLabel(status) {
-  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(status || '')
+  const normalized = String(status || '').trim().toLowerCase()
+  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : ''
 }
 
 function roleLabel(value) {
-  const key = `common.role.${String(value || '').replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(value || '')
+  if (String(value || '').trim().toLowerCase() === ROLES.TEACHER_PRESCHOOL) {
+    return 'Preschool Teacher'
+  }
+  return String(value || '')
 }
 
 function permissionLabel(value) {
-  const key = `common.permission.${String(value || '').trim().toLowerCase()}`
-  const translated = t(key)
-  if (translated !== key) return translated
-
   return String(value || '')
     .replace(/[:_]/g, ' ')
     .split(/\s+/)
@@ -99,87 +92,10 @@ function permissionLabel(value) {
     .join(' ')
 }
 
-const pageTitle = computed(() => {
-  if (isViewMode.value) return t('sportAddCoach.viewTitle')
-  if (isEditMode.value) return t('sportAddCoach.updateTitle')
-  return t('sportAddCoach.title')
-})
-
-const pageSubtitle = computed(() => {
-  if (isViewMode.value) return t('sportAddCoach.viewSubtitle')
-  if (isEditMode.value) return t('sportAddCoach.updateSubtitle')
-  return t('sportAddCoach.summary')
-})
-
-const selectedRoleDescription = computed(() => roleLabel(form.role))
-
-const formSummaryCards = computed(() => {
-  const permissionCount = form.permissions.length
-  const securityStatus =
-    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
-
-  return [
-    {
-      id: 'coach-role',
-      title: t('sportAddCoach.roleScope'),
-      value: selectedRoleDescription.value,
-      label: t('sportAddCoach.programAccess'),
-      status: 'info',
-      statusLabel: statusLabel('info'),
-      surfaceClass: 'bg-cyan-50/80 border-cyan-200',
-    },
-    {
-      id: 'coach-permissions',
-      title: t('sportAddCoach.permissions'),
-      value: permissionCount,
-      label: permissionCount
-        ? t('sportAddCoach.configuredPermissions')
-        : t('sportAddCoach.noPermissionsSelected'),
-      status: permissionCount ? 'success' : 'warning',
-      statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
-      surfaceClass: 'bg-lime-50/80 border-lime-200',
-    },
-    {
-      id: 'coach-account-state',
-      title: t('sportAddCoach.accountState'),
-      value: statusLabel(form.status),
-      label: t('sportAddCoach.initialAccountState'),
-      status: form.status,
-      statusLabel: statusLabel(form.status),
-      surfaceClass: 'bg-amber-50/80 border-amber-200',
-    },
-    {
-      id: 'coach-security-review',
-      title: t('sportAddCoach.securityReview'),
-      value: profileImagePreview.value ? t('sportAddCoach.ready') : t('sportAddCoach.pending'),
-      label: profileImagePreview.value
-        ? t('sportAddCoach.profileImageSet')
-        : t('sportAddCoach.profileImagePending'),
-      status: securityStatus,
-      statusLabel: statusLabel(securityStatus),
-      surfaceClass: 'bg-rose-50/80 border-rose-200',
-    },
-  ]
-})
-
-const checklistItems = computed(() => [
-  {
-    title: t('sportAddCoach.sidebarItems.role'),
-    text: selectedRoleDescription.value,
-  },
-  {
-    title: t('sportAddCoach.sidebarItems.permissions'),
-    text: t('sportAddCoach.sidebarItems.permissionsDetail'),
-  },
-  {
-    title: t('sportAddCoach.sidebarItems.security'),
-    text: t('sportAddCoach.sidebarItems.securityDetail'),
-  },
-  {
-    title: t('sportAddCoach.sidebarItems.review'),
-    text: t('sportAddCoach.sidebarItems.reviewDetail'),
-  },
-])
+function resetFeedback() {
+  errorMessage.value = ''
+  showError.value = false
+}
 
 function togglePasswordVisibility() {
   isPasswordVisible.value = !isPasswordVisible.value
@@ -211,50 +127,55 @@ function onProfileImageChange(event) {
   if (!file) return
 
   if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = t('sportAddCoach.validation.imageType')
+    errorMessage.value = 'Profile image must be a JPG, PNG, WEBP, or GIF file.'
     showError.value = true
     return
   }
 
   if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = t('sportAddCoach.validation.imageSize')
+    errorMessage.value = 'Profile image must be smaller than 2MB.'
     showError.value = true
     return
   }
 
-  cleanupProfileImageObjectUrl()
-  profileImageObjectUrl.value = URL.createObjectURL(file)
-  profileImagePreview.value = profileImageObjectUrl.value
+  if (profileImagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(profileImagePreview.value)
+  }
+
   form.profileImage = file
+  profileImagePreview.value = URL.createObjectURL(file)
 }
 
 function removeProfileImage() {
   if (isFormLocked.value) return
-  cleanupProfileImageObjectUrl()
+
+  if (profileImagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(profileImagePreview.value)
+  }
+
   profileImagePreview.value = ''
   form.profileImage = null
 }
 
 function validateForm() {
-  if (!form.name.trim()) return t('sportAddCoach.validation.fullNameRequired')
-  if (!form.email.trim()) return t('sportAddCoach.validation.emailRequired')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('sportAddCoach.validation.emailInvalid')
-  if (!form.role) return t('sportAddCoach.validation.roleRequired')
-  if (!form.permissions.length) return t('sportAddCoach.validation.permissionsRequired')
-  if (!form.status) return t('sportAddCoach.validation.statusRequired')
-  if (form.password.length < 6) return t('sportAddCoach.validation.passwordLength')
-  if (form.password !== form.confirmPassword) return t('sportAddCoach.validation.passwordMismatch')
+  if (!form.name.trim()) return 'Full name is required.'
+  if (!form.email.trim()) return 'Email is required.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email.'
+  if (!form.permissions.length) return 'Select at least one permission.'
+  if (!form.status) return 'Status is required.'
+  if (form.password.length < 6) return 'Password must be at least 6 characters.'
+  if (form.password !== form.confirmPassword) return 'Passwords do not match.'
   return ''
 }
 
-async function goBackToCoaches() {
-  await router.push(coachDirectoryPath)
+async function goBackToTeachers() {
+  await router.push(teacherDirectoryPath)
 }
 
 async function goToEditMode() {
   const id = String(route.query.id || '').trim()
   if (!id) return
-  await router.push({ path: '/module/sport-admin/users/add', query: { mode: 'edit', id } })
+  await router.push({ path: '/module/preschool-admin/users/add', query: { mode: 'edit', id } })
 }
 
 async function onSubmit() {
@@ -262,6 +183,7 @@ async function onSubmit() {
 
   resetFeedback()
   const validationError = validateForm()
+
   if (validationError) {
     errorMessage.value = validationError
     showError.value = true
@@ -274,8 +196,8 @@ async function onSubmit() {
     showSuccess.value = true
   } catch {
     errorMessage.value = isEditMode.value
-      ? t('sportAddCoach.validation.updateFailed')
-      : t('sportAddCoach.validation.createFailed')
+      ? 'Failed to update the teacher account.'
+      : 'Failed to create the teacher account.'
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -288,14 +210,14 @@ function onErrorClose() {
 
 async function onSuccessClose() {
   showSuccess.value = false
-  await goBackToCoaches()
+  await goBackToTeachers()
 }
 
 function populateFromUser(user) {
   form.name = user.name || user.username || ''
   form.email = user.email || ''
   form.phone = user.phone || ''
-  form.role = user.role || ROLES.COACH
+  form.role = ROLES.TEACHER_PRESCHOOL
   form.permissions = Array.isArray(user.permissions) ? [...user.permissions] : permissionOptions.slice(0, 3)
 
   const normalizedStatus = String(user.status || '')
@@ -303,10 +225,9 @@ function populateFromUser(user) {
     (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
   )
   form.status = matchedStatus || statusOptions[0]
-  form.password = 'Coach@123'
-  form.confirmPassword = 'Coach@123'
+  form.password = 'Teacher@123'
+  form.confirmPassword = 'Teacher@123'
   form.profileImage = null
-  cleanupProfileImageObjectUrl()
   profileImagePreview.value = String(user.avatar || '').trim()
 }
 
@@ -316,7 +237,8 @@ onMounted(() => {
   const id = String(route.query.id || '').trim()
   const found = mapUser(
     usersMock.find(
-      (item) => String(item.id) === id && String(item.role || '').toLowerCase() === ROLES.COACH,
+      (item) =>
+        String(item.id) === id && String(item.role || '').toLowerCase() === ROLES.TEACHER_PRESCHOOL,
     ) || {},
   )
 
@@ -325,35 +247,103 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  cleanupProfileImageObjectUrl()
+  if (profileImagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(profileImagePreview.value)
+  }
 })
+
+const selectedRoleDescription = computed(() => roleLabel(form.role))
+
+const formSummaryCards = computed(() => {
+  const permissionCount = form.permissions.length
+  const securityStatus =
+    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
+
+  return [
+    {
+      id: 'teacher-role',
+      title: 'Role Scope',
+      value: selectedRoleDescription.value,
+      label: 'Program access',
+      status: 'info',
+      statusLabel: statusLabel('info'),
+      surfaceClass: 'bg-cyan-50/80 border-cyan-200',
+    },
+    {
+      id: 'teacher-permissions',
+      title: 'Permissions',
+      value: permissionCount,
+      label: permissionCount ? 'Configured permissions' : 'No permissions selected',
+      status: permissionCount ? 'success' : 'warning',
+      statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
+      surfaceClass: 'bg-lime-50/80 border-lime-200',
+    },
+    {
+      id: 'teacher-account-state',
+      title: 'Account State',
+      value: statusLabel(form.status),
+      label: 'Initial account status',
+      status: form.status,
+      statusLabel: statusLabel(form.status),
+      surfaceClass: 'bg-amber-50/80 border-amber-200',
+    },
+    {
+      id: 'teacher-security-review',
+      title: 'Security Review',
+      value: profileImagePreview.value ? 'Ready' : 'Pending',
+      label: profileImagePreview.value ? 'Profile image set' : 'Profile image pending',
+      status: securityStatus,
+      statusLabel: statusLabel(securityStatus),
+      surfaceClass: 'bg-rose-50/80 border-rose-200',
+    },
+  ]
+})
+
+const checklistItems = computed(() => [
+  {
+    title: 'Role',
+    text: selectedRoleDescription.value,
+  },
+  {
+    title: 'Permissions',
+    text: 'Grant access for classes, student records, and daily teaching tasks.',
+  },
+  {
+    title: 'Security',
+    text: 'Set a password and verify the teacher profile image before saving.',
+  },
+  {
+    title: 'Review',
+    text: 'Confirm the account status and contact details before submission.',
+  },
+])
 </script>
 
 <template>
   <MainLayout>
-    <section :class="isKh ? 'add-coach-page add-coach-page--kh' : 'add-coach-page'">
+    <section class="add-teacher-page">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <AdminSummaryCards :cards="formSummaryCards" />
 
-      <div class="add-coach-page__layout">
+      <div class="add-teacher-page__layout">
         <Form
-          class="add-coach-page__form"
+          class="add-teacher-page__form"
           :title="pageTitle"
-          :description="t('sportAddCoach.formDescription')"
-          :cancel-text="t('common.cancel')"
+          description="Complete the teacher profile, permissions, and sign-in details."
+          :cancel-text="'Cancel'"
           :loading="isSubmitting"
           :disabled="isViewMode"
           :show-cancel="true"
           @submit="onSubmit"
-          @cancel="goBackToCoaches"
+          @cancel="goBackToTeachers"
         >
-          <AddCoachIntro
+          <AddTeacherIntro
             :role-label="selectedRoleDescription"
             :status-label="statusLabel(form.status)"
           />
 
-          <AddCoachFormFields
+          <AddTeacherFormFields
             :profile-image-preview="profileImagePreview"
             :role-options="roleOptions"
             :status-options="statusOptions"
@@ -387,22 +377,22 @@ onBeforeUnmount(() => {
           />
 
           <template #actions>
-            <AddCoachFormActions
+            <AddTeacherFormActions
               :is-submitting="isSubmitting"
               :is-view-mode="isViewMode"
               :is-edit-mode="isEditMode"
-              @back="goBackToCoaches"
+              @back="goBackToTeachers"
               @edit="goToEditMode"
             />
           </template>
         </Form>
 
-        <div class="add-coach-page__rail">
+        <div class="add-teacher-page__rail">
           <AdminChecklistPanel
-            :title="t('sportAddCoach.sidebarTitle')"
-            :description="t('sportAddCoach.sidebarText')"
+            title="Teacher Setup Checklist"
+            description="Review the essentials before activating the account."
             :items="checklistItems"
-            :highlight-label="t('sportAddCoach.roleScope')"
+            highlight-label="Role Scope"
             :highlight-value="selectedRoleDescription"
           />
         </div>
@@ -411,41 +401,45 @@ onBeforeUnmount(() => {
 
     <AlertError
       :show="showError"
-      :title="t('sportAddCoach.validationError')"
+      title="Validation Error"
       :message="errorMessage"
-      :button-text="t('common.close')"
+      button-text="Close"
       @close="onErrorClose"
     />
 
     <AlertSuccess
       :show="showSuccess"
-      :title="isEditMode ? t('sportAddCoach.coachUpdated') : t('sportAddCoach.coachCreated')"
-      :message="isEditMode ? t('sportAddCoach.updatedMessage') : t('sportAddCoach.createdMessage')"
-      :button-text="t('sportAddCoach.backToCoaches')"
+      :title="isEditMode ? 'Teacher Updated' : 'Teacher Created'"
+      :message="
+        isEditMode
+          ? 'The teacher account has been updated successfully.'
+          : 'The teacher account has been created successfully.'
+      "
+      button-text="Back to Teachers"
       @close="onSuccessClose"
     />
   </MainLayout>
 </template>
 
 <style scoped>
-.add-coach-page {
+.add-teacher-page {
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
 }
 
-.add-coach-page__layout {
+.add-teacher-page__layout {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.95fr);
   gap: 1rem;
   align-items: start;
 }
 
-.add-coach-page__form {
+.add-teacher-page__form {
   display: block;
 }
 
-.add-coach-page__rail {
+.add-teacher-page__rail {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -453,28 +447,12 @@ onBeforeUnmount(() => {
   top: 1rem;
 }
 
-.add-coach-page--kh :deep(.admin-checklist-panel .p-card-title),
-.add-coach-page--kh :deep(.admin-checklist-panel .p-card-content),
-.add-coach-page--kh :deep(form header h3),
-.add-coach-page--kh :deep(form header p),
-.add-coach-page--kh :deep(.p-dialog-content),
-.add-coach-page--kh :deep(.p-dialog-footer) {
-  font-family:
-    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
-}
-
-.add-coach-page--kh :deep(form header p),
-.add-coach-page--kh :deep(.admin-checklist-panel .p-card-content p),
-.add-coach-page--kh :deep(.p-dialog-content p) {
-  line-height: 1.7;
-}
-
 @media (max-width: 1120px) {
-  .add-coach-page__layout {
+  .add-teacher-page__layout {
     grid-template-columns: 1fr;
   }
 
-  .add-coach-page__rail {
+  .add-teacher-page__rail {
     position: static;
   }
 }

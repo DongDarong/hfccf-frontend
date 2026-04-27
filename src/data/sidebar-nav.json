@@ -1,158 +1,269 @@
 {
-  "standard": [
+  "sections": [
     {
       "id": "main",
       "labelKey": "nav.sections.main",
       "captionKey": "nav.sectionCaptions.main",
       "className": "sidebar-section--default",
+      "access": {
+        "scopes": ["admin", "staff"],
+        "allowSuperAdmin": false
+      },
       "items": [
         {
-          "id": "dashboard",
-          "to": "/dashboard",
+          "id": "admin-dashboard",
           "labelKey": "nav.dashboard",
-          "icon": "home"
+          "icon": "home",
+          "access": {
+            "scopes": ["admin"]
+          },
+          "routeNameByDomain": {
+            "english": "dashboard-english-admin",
+            "preschool": "dashboard-preschool-admin",
+            "scholarship": "dashboard-scholarship-admin",
+            "sport": "dashboard-sport-admin"
+          }
         },
         {
-          "id": "users",
-          "to": "/users",
-          "labelKey": "nav.users",
+          "id": "staff-dashboard",
+          "labelKey": "nav.dashboard",
+          "icon": "home",
+          "access": {
+            "scopes": ["staff"]
+          },
+          "routeNameByDomain": {
+            "english": "dashboard-english-teacher",
+            "sport": "dashboard-sport-coach",
+            "default": "dashboard"
+          }
+        },
+        {
+          "id": "english-teachers",
+          "routeName": "dashboard-english-admin-users",
+          "labelKey": "nav.items.teachers",
           "icon": "users",
-          "visibility": ["program-admin"],
-          "badgeKey": "nav.badges.admin"
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["english"]
+          }
+        },
+        {
+          "id": "preschool-teachers",
+          "routeName": "dashboard-preschool-admin-users",
+          "labelKey": "nav.items.teachers",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["preschool"]
+          }
+        },
+        {
+          "id": "preschool-students",
+          "routeName": "dashboard-preschool-admin-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["preschool"]
+          }
+        },
+        {
+          "id": "preschool-classes",
+          "routeName": "dashboard-preschool-admin-classes",
+          "label": "Classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["preschool"]
+          }
+        },
+        {
+          "id": "scholarship-applications",
+          "routeName": "dashboard-scholarship-admin-users",
+          "label": "Applications",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["scholarship"]
+          }
+        },
+        {
+          "id": "sport-coaches",
+          "routeName": "dashboard-sport-admin-users",
+          "labelKey": "nav.items.coaches",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["sport"]
+          }
+        },
+        {
+          "id": "sport-teams",
+          "routeName": "dashboard-sport-admin-teams",
+          "labelKey": "nav.items.teams",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["sport"]
+          }
         }
       ]
-    }
-  ],
-  "superAdmin": [
+    },
     {
-      "id": "super-admin",
-      "labelKey": "nav.sections.superAdmin",
-      "captionKey": "nav.sectionCaptions.superAdmin",
+      "id": "command-center",
+      "labelKey": "nav.sections.commandCenter",
+      "captionKey": "nav.sectionCaptions.commandCenter",
       "className": "sidebar-section--super-admin",
-      "badgeKey": "nav.badges.fullAccess",
       "collapsible": true,
+      "access": {
+        "scopes": ["super_admin"]
+      },
       "items": [
         {
-          "id": "super-admin-dashboard",
-          "to": "/module/super-admin/dashboard",
-          "labelKey": "nav.items.commandCenter",
+          "id": "command-center-dashboard",
+          "routeName": "dashboard-super-admin",
+          "labelKey": "nav.dashboard",
           "icon": "home",
-          "badgeKey": "nav.badges.core",
-          "activePrefixes": ["/module/dashboard"],
-          "children": [
-            {
-              "id": "super-admin-users",
-              "to": "/module/super-admin/users/manage",
-              "labelKey": "nav.items.manageUsers",
-              "icon": "users",
-              "secondary": true,
-              "activePrefixes": ["/module/super-admin/users"]
-            }
-          ]
+          "badgeKey": "nav.badges.core"
+        },
+        {
+          "id": "admin-management",
+          "routeName": "dashboard-super-admin-users-manage",
+          "labelKey": "nav.items.adminManagement",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin"
         }
       ]
     },
     {
       "id": "english",
-      "labelKey": "nav.sections.english",
-      "captionKey": "nav.sectionCaptions.english",
+      "labelKey": "nav.sections.englishProgram",
+      "captionKey": "nav.sectionCaptions.englishProgram",
       "className": "sidebar-section--english",
       "collapsible": true,
+      "access": {
+        "scopes": ["super_admin"]
+      },
       "items": [
         {
           "id": "english-dashboard",
-          "to": "/module/english-admin/dashboard",
-          "labelKey": "nav.items.adminDashboard",
+          "routeName": "dashboard-english-admin",
+          "labelKey": "nav.items.englishDashboard",
           "icon": "home",
-          "badgeKey": "nav.badges.admin",
-          "children": [
-            {
-              "id": "english-teachers",
-              "to": "/module/english-admin/users",
-              "labelKey": "nav.items.teachers",
-              "icon": "users",
-              "secondary": true,
-              "badgeKey": "nav.badges.staff"
-            }
-          ]
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "english-teachers",
+          "routeName": "dashboard-english-admin-users",
+          "labelKey": "nav.items.teachers",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     },
     {
       "id": "preschool",
-      "labelKey": "nav.sections.preschool",
-      "captionKey": "nav.sectionCaptions.preschool",
+      "labelKey": "nav.sections.preschoolProgram",
+      "captionKey": "nav.sectionCaptions.preschoolProgram",
       "className": "sidebar-section--preschool",
       "collapsible": true,
+      "access": {
+        "scopes": ["super_admin"]
+      },
       "items": [
         {
           "id": "preschool-dashboard",
-          "to": "/module/preschool-admin/dashboard",
-          "labelKey": "nav.items.adminDashboard",
+          "routeName": "dashboard-preschool-admin",
+          "labelKey": "nav.items.preschoolDashboard",
           "icon": "home",
-          "badgeKey": "nav.badges.admin",
-          "children": [
-            {
-              "id": "preschool-teachers",
-              "to": "/module/preschool-admin/users",
-              "labelKey": "nav.items.teachers",
-              "icon": "users",
-              "secondary": true,
-              "badgeKey": "nav.badges.staff"
-            }
-          ]
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "preschool-teachers",
+          "routeName": "dashboard-preschool-admin-users",
+          "labelKey": "nav.items.teachers",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-students",
+          "routeName": "dashboard-preschool-admin-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-classes",
+          "routeName": "dashboard-preschool-admin-classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     },
     {
       "id": "scholarship",
-      "labelKey": "nav.sections.scholarship",
-      "captionKey": "nav.sectionCaptions.scholarship",
+      "labelKey": "nav.sections.scholarshipProgram",
+      "captionKey": "nav.sectionCaptions.scholarshipProgram",
       "className": "sidebar-section--scholarship",
       "collapsible": true,
+      "access": {
+        "scopes": ["super_admin"]
+      },
       "items": [
         {
           "id": "scholarship-dashboard",
-          "to": "/module/scholarship-admin/dashboard",
-          "labelKey": "nav.items.adminDashboard",
+          "routeName": "dashboard-scholarship-admin",
+          "labelKey": "nav.items.scholarshipDashboard",
           "icon": "home",
-          "badgeKey": "nav.badges.admin",
-          "children": [
-            {
-              "id": "scholarship-teachers",
-              "to": "/module/scholarship-admin/users",
-              "labelKey": "nav.items.teachers",
-              "icon": "reports",
-              "secondary": true,
-              "badgeKey": "nav.badges.staff"
-            }
-          ]
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "scholarship-applications",
+          "routeName": "dashboard-scholarship-admin-users",
+          "labelKey": "nav.items.applications",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     },
     {
       "id": "sport",
-      "labelKey": "nav.sections.sport",
-      "captionKey": "nav.sectionCaptions.sport",
+      "labelKey": "nav.sections.sportProgram",
+      "captionKey": "nav.sectionCaptions.sportProgram",
       "className": "sidebar-section--sport",
       "collapsible": true,
+      "access": {
+        "scopes": ["super_admin"]
+      },
       "items": [
         {
           "id": "sport-dashboard",
-          "to": "/module/sport-admin/dashboard",
-          "labelKey": "nav.items.adminDashboard",
+          "routeName": "dashboard-sport-admin",
+          "labelKey": "nav.items.sportDashboard",
           "icon": "home",
-          "badgeKey": "nav.badges.admin",
-          "children": [
-            {
-              "id": "sport-coaches",
-              "to": "/module/sport-admin/users",
-              "labelKey": "nav.items.coaches",
-              "icon": "users",
-              "secondary": true,
-              "badgeKey": "nav.badges.staff"
-            }
-          ]
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "sport-coaches",
+          "routeName": "dashboard-sport-admin-users",
+          "labelKey": "nav.items.coaches",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-teams",
+          "routeName": "dashboard-sport-admin-teams",
+          "labelKey": "nav.items.teams",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     }
