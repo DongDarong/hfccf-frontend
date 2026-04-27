@@ -31,9 +31,33 @@ defineProps({
     type: Array,
     default: () => [],
   },
-  form: {
-    type: Object,
-    required: true,
+  name: {
+    type: String,
+    default: '',
+  },
+  email: {
+    type: String,
+    default: '',
+  },
+  phone: {
+    type: String,
+    default: '',
+  },
+  role: {
+    type: String,
+    default: '',
+  },
+  status: {
+    type: String,
+    default: '',
+  },
+  password: {
+    type: String,
+    default: '',
+  },
+  confirmPassword: {
+    type: String,
+    default: '',
   },
   isLocked: {
     type: Boolean,
@@ -62,6 +86,13 @@ defineProps({
 })
 
 const emit = defineEmits([
+  'update:name',
+  'update:email',
+  'update:phone',
+  'update:role',
+  'update:status',
+  'update:password',
+  'update:confirmPassword',
   'profile-image-change',
   'profile-image-remove',
   'toggle-permission',
@@ -107,11 +138,11 @@ const placeholders = computed(() => ({
 
     <AddAdminIdentityFields
       class="add-coach-form-fields__field add-coach-form-fields__field--full"
-      v-model:name="form.name"
-      v-model:email="form.email"
-      v-model:phone="form.phone"
-      v-model:role="form.role"
-      v-model:status="form.status"
+      :name="name"
+      :email="email"
+      :phone="phone"
+      :role="role"
+      :status="status"
       :role-options="roleOptions"
       :status-options="statusOptions"
       :disabled="isLocked"
@@ -125,6 +156,11 @@ const placeholders = computed(() => ({
       :phone-placeholder="placeholders.phone"
       :role-label="roleLabel"
       :status-label="statusLabel"
+      @update:name="emit('update:name', $event)"
+      @update:email="emit('update:email', $event)"
+      @update:phone="emit('update:phone', $event)"
+      @update:role="emit('update:role', $event)"
+      @update:status="emit('update:status', $event)"
     />
 
     <AddAdminPermissionsField
@@ -139,8 +175,8 @@ const placeholders = computed(() => ({
 
     <AddAdminPasswordFields
       class="add-coach-form-fields__field add-coach-form-fields__field--full"
-      v-model:password="form.password"
-      v-model:confirmPassword="form.confirmPassword"
+      :password="password"
+      :confirm-password="confirmPassword"
       :disabled="isLocked"
       :password-visible="isPasswordVisible"
       :confirm-password-visible="isConfirmPasswordVisible"
@@ -150,6 +186,8 @@ const placeholders = computed(() => ({
       :confirm-password-placeholder="placeholders.confirmPassword"
       :show-password-label="labels.showPassword"
       :hide-password-label="labels.hidePassword"
+      @update:password="emit('update:password', $event)"
+      @update:confirm-password="emit('update:confirmPassword', $event)"
       @toggle-password="emit('toggle-password')"
       @toggle-confirm-password="emit('toggle-confirm-password')"
     />

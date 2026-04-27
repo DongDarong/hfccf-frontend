@@ -4,8 +4,8 @@ import PrimeButton from 'primevue/button'
 import Avatar from '@/components/navigation/Avatar.vue'
 import LogoutButton from '@/components/buttons/LogoutButton.vue'
 import SidebarNavigation from '@/components/navigation/SidebarNavigation.vue'
-import { getCurrentUser, isSuperAdmin } from '@/services/auth'
-import { ROLES, normalizeRole } from '@/constants/roles'
+import { getCurrentUser } from '@/services/auth'
+import { getSidebarToneClass } from '@/services/accessControl'
 
 defineOptions({
   name: 'MainSidebar',
@@ -35,31 +35,7 @@ const currentUserDisplayUsername = computed(() => {
   if (email.includes('@')) return email.split('@')[0]
   return email || 'user'
 })
-const currentRole = computed(() => normalizeRole(currentUser.value?.role))
-const isSuperAdminUser = computed(() => isSuperAdmin(currentUser.value))
-const sidebarToneClass = computed(() => {
-  if (isSuperAdminUser.value) return 'sidebar-shell--super-admin'
-
-  if (
-    currentRole.value === ROLES.ADMIN_PRESCHOOL ||
-    currentRole.value === ROLES.TEACHER_PRESCHOOL
-  ) {
-    return 'sidebar-shell--preschool'
-  }
-
-  if (
-    currentRole.value === ROLES.ADMIN_SCHOLARSHIP ||
-    currentRole.value === ROLES.TEACHER_SCHOLARSHIP
-  ) {
-    return 'sidebar-shell--scholarship'
-  }
-
-  if (currentRole.value === ROLES.ADMIN_SPORT || currentRole.value === ROLES.COACH) {
-    return 'sidebar-shell--sport'
-  }
-
-  return 'sidebar-shell--english'
-})
+const sidebarToneClass = computed(() => getSidebarToneClass(currentUser.value))
 const hasHeaderSlot = computed(() => Boolean(slots.header))
 const togglePt = {
   root: {

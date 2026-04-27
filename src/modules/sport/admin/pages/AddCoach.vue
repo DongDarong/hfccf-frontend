@@ -36,7 +36,7 @@ const form = reactive({
   email: '',
   phone: '',
   role: ROLES.COACH,
-  permissions: [...permissionOptions.slice(0, 3)],
+  permissions: permissionOptions.slice(0, 3),
   status: statusOptions[0],
   password: '',
   confirmPassword: '',
@@ -296,7 +296,7 @@ function populateFromUser(user) {
   form.email = user.email || ''
   form.phone = user.phone || ''
   form.role = user.role || ROLES.COACH
-  form.permissions = Array.isArray(user.permissions) ? [...user.permissions] : [...permissionOptions.slice(0, 3)]
+  form.permissions = Array.isArray(user.permissions) ? [...user.permissions] : permissionOptions.slice(0, 3)
 
   const normalizedStatus = String(user.status || '')
   const matchedStatus = statusOptions.find(
@@ -359,13 +359,26 @@ onBeforeUnmount(() => {
             :status-options="statusOptions"
             :permission-options="permissionOptions"
             :permissions="form.permissions"
-            :form="form"
+            :name="form.name"
+            :email="form.email"
+            :phone="form.phone"
+            :role="form.role"
+            :status="form.status"
+            :password="form.password"
+            :confirm-password="form.confirmPassword"
             :is-locked="isFormLocked"
             :is-password-visible="isPasswordVisible"
             :is-confirm-password-visible="isConfirmPasswordVisible"
             :role-label="roleLabel"
             :status-label="statusLabel"
             :permission-label="permissionLabel"
+            @update:name="form.name = $event"
+            @update:email="form.email = $event"
+            @update:phone="form.phone = $event"
+            @update:role="form.role = $event"
+            @update:status="form.status = $event"
+            @update:password="form.password = $event"
+            @update:confirm-password="form.confirmPassword = $event"
             @profile-image-change="onProfileImageChange"
             @profile-image-remove="removeProfileImage"
             @toggle-permission="togglePermission"
