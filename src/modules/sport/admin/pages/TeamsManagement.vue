@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
@@ -16,6 +17,7 @@ defineOptions({
   name: 'SportTeamsManagementPage',
 })
 
+const router = useRouter()
 const { t, language } = useLanguage()
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -34,6 +36,10 @@ const toolbarEyebrow = computed(() => t('sportTeamsManagement.toolbarEyebrow'))
 const spotlightLabel = computed(() => t('sportTeamsManagement.spotlightLabel'))
 
 const teams = ref(Array.isArray(teamsManagementData) ? [...teamsManagementData] : [])
+
+async function goToAddTeam() {
+  await router.push({ name: 'dashboard-sport-admin-teams-add' })
+}
 
 function normalize(value) {
   return String(value ?? '')
@@ -272,6 +278,7 @@ watch(
               :label="addTeamLabel"
               icon="pi pi-plus"
               class="teams-management-page__add-button"
+              @click="goToAddTeam"
             />
           </div>
         </div>
