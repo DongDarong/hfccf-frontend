@@ -4,8 +4,10 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import Button from 'primevue/button'
 import ClassTable from '@/modules/classes/components/ClassTable.vue'
+import PreschoolClassesSummaryGrid from '@/modules/preschool/admin/components/classes-management/PreschoolClassesSummaryGrid.vue'
+import PreschoolClassesToolbar from '@/modules/preschool/admin/components/classes-management/PreschoolClassesToolbar.vue'
+import PreschoolClassesHighlights from '@/modules/preschool/admin/components/classes-management/PreschoolClassesHighlights.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -272,58 +274,19 @@ function onDeleteClass(item) {
         :subtitle="t('preschoolClassesManagement.subtitle')"
       />
 
-      <div class="preschool-classes-page__summary-grid">
-        <article
-          v-for="card in summaryCards"
-          :key="card.id"
-          class="preschool-classes-page__summary-card"
-          :class="`preschool-classes-page__summary-card--${card.tone}`"
-        >
-          <div class="preschool-classes-page__summary-header">
-            <div>
-              <p class="preschool-classes-page__summary-title">{{ card.title }}</p>
-              <p class="preschool-classes-page__summary-value">{{ card.value }}</p>
-            </div>
-
-            <span class="preschool-classes-page__summary-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path :d="card.icon" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
-          </div>
-
-          <p class="preschool-classes-page__summary-badge">{{ card.badge }}</p>
-          <p class="preschool-classes-page__summary-caption">{{ card.caption }}</p>
-        </article>
-      </div>
+      <PreschoolClassesSummaryGrid :cards="summaryCards" :is-kh="isKh" />
 
       <div class="preschool-classes-page__shell">
-        <div class="preschool-classes-page__toolbar">
-          <div class="preschool-classes-page__toolbar-copy">
-            <p class="preschool-classes-page__eyebrow">
-              {{ t('preschoolClassesManagement.toolbarEyebrow') }}
-            </p>
-            <h2 class="preschool-classes-page__toolbar-title">{{ toolbarSummary }}</h2>
-            <p class="preschool-classes-page__toolbar-text">{{ visibleRangeLabel }}</p>
-          </div>
-
-          <div class="preschool-classes-page__toolbar-actions">
-            <div class="preschool-classes-page__spotlight">
-              <span class="preschool-classes-page__spotlight-label">
-                {{ t('preschoolClassesManagement.spotlightLabel') }}
-              </span>
-              <strong class="preschool-classes-page__spotlight-value">{{ activeClasses }}</strong>
-            </div>
-
-            <Button
-              type="button"
-              :label="t('preschoolClassesManagement.addButton')"
-              icon="pi pi-plus"
-              class="preschool-classes-page__add-button"
-              @click="onAddClass"
-            />
-          </div>
-        </div>
+        <PreschoolClassesToolbar
+          :eyebrow="t('preschoolClassesManagement.toolbarEyebrow')"
+          :title="toolbarSummary"
+          :description="visibleRangeLabel"
+          :spotlight-label="t('preschoolClassesManagement.spotlightLabel')"
+          :spotlight-value="activeClasses"
+          :add-button-label="t('preschoolClassesManagement.addButton')"
+          :is-kh="isKh"
+          @add="onAddClass"
+        />
 
         <SearchFilterBar
           class="w-full"
@@ -335,16 +298,7 @@ function onDeleteClass(item) {
           :search-placeholder="t('preschoolClassesManagement.searchPlaceholder')"
         />
 
-        <div class="preschool-classes-page__highlights">
-          <div
-            v-for="item in highlightItems"
-            :key="item.label"
-            class="preschool-classes-page__highlight"
-          >
-            <span class="preschool-classes-page__highlight-label">{{ item.label }}</span>
-            <strong class="preschool-classes-page__highlight-value">{{ item.value }}</strong>
-          </div>
-        </div>
+        <PreschoolClassesHighlights :items="highlightItems" :is-kh="isKh" />
 
         <ClassTable
           :classes="paginatedClasses"
@@ -369,113 +323,6 @@ function onDeleteClass(item) {
   gap: 1.35rem;
 }
 
-.preschool-classes-page__summary-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.preschool-classes-page__summary-card {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  min-height: 100%;
-  padding: 1.35rem;
-  border-radius: 1.35rem;
-  border: 1px solid #dbe6f4;
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.92), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 248, 252, 0.98) 100%);
-  box-shadow: 0 24px 48px -38px rgba(15, 23, 42, 0.45);
-}
-
-.preschool-classes-page__summary-card::after {
-  content: '';
-  position: absolute;
-  inset: auto 1.35rem 0.9rem 1.35rem;
-  height: 0.25rem;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.16;
-}
-
-.preschool-classes-page__summary-card--info {
-  color: #0f6f8f;
-}
-
-.preschool-classes-page__summary-card--success {
-  color: #2f7a42;
-}
-
-.preschool-classes-page__summary-card--warning {
-  color: #9a5d09;
-}
-
-.preschool-classes-page__summary-card--danger {
-  color: #b42318;
-}
-
-.preschool-classes-page__summary-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.9rem;
-}
-
-.preschool-classes-page__summary-title {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.preschool-classes-page__summary-value {
-  margin: 0.65rem 0 0;
-  color: #0f172a;
-  font-size: 2rem;
-  line-height: 1;
-  font-weight: 800;
-}
-
-.preschool-classes-page__summary-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.95rem;
-  background: color-mix(in srgb, currentColor 12%, white);
-  border: 1px solid color-mix(in srgb, currentColor 18%, white);
-}
-
-.preschool-classes-page__summary-icon svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.preschool-classes-page__summary-badge {
-  margin: 0;
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 0.38rem 0.72rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 10%, white);
-  color: color-mix(in srgb, currentColor 85%, black 10%);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.preschool-classes-page__summary-caption {
-  margin: 0;
-  color: #475569;
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
 .preschool-classes-page__shell {
   display: flex;
   flex-direction: column;
@@ -489,143 +336,9 @@ function onDeleteClass(item) {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.preschool-classes-page__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.preschool-classes-page__toolbar-copy {
-  min-width: 0;
-}
-
-.preschool-classes-page__eyebrow {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.preschool-classes-page__toolbar-title {
-  margin: 0.35rem 0 0;
-  color: #0f172a;
-  font-size: 1.4rem;
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-.preschool-classes-page__toolbar-text {
-  margin: 0.45rem 0 0;
-  color: #475569;
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-
-.preschool-classes-page__spotlight {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.8rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(14, 116, 144, 0.16);
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(255, 255, 255, 0.94) 100%);
-}
-
-.preschool-classes-page__toolbar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.preschool-classes-page__add-button {
-  min-height: 2.8rem;
-  border-radius: 0.9rem;
-  font-weight: 800;
-}
-
-.preschool-classes-page__spotlight-label {
-  color: #0f6f8f;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.preschool-classes-page__spotlight-value {
-  color: #0f172a;
-  font-size: 1.3rem;
-  line-height: 1;
-  font-weight: 800;
-}
-
-.preschool-classes-page__highlights {
-  display: grid;
-  gap: 0.85rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-.preschool-classes-page__highlight {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  background: rgba(255, 255, 255, 0.82);
-}
-
-.preschool-classes-page__highlight-label {
-  color: #475569;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.preschool-classes-page__highlight-value {
-  color: #0f172a;
-  font-size: 1.05rem;
-  font-weight: 800;
-}
-
-.preschool-classes-page--kh .preschool-classes-page__summary-title,
-.preschool-classes-page--kh .preschool-classes-page__summary-badge,
-.preschool-classes-page--kh .preschool-classes-page__eyebrow,
-.preschool-classes-page--kh .preschool-classes-page__spotlight-label,
-.preschool-classes-page--kh .preschool-classes-page__highlight-label,
-.preschool-classes-page--kh .preschool-classes-page__toolbar-text,
-.preschool-classes-page--kh .preschool-classes-page__summary-caption {
-  font-family:
-    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
-}
-
-.preschool-classes-page--kh .preschool-classes-page__summary-title,
-.preschool-classes-page--kh .preschool-classes-page__eyebrow,
-.preschool-classes-page--kh .preschool-classes-page__spotlight-label {
-  text-transform: none;
-  letter-spacing: 0.01em;
-}
-
-.preschool-classes-page--kh .preschool-classes-page__summary-caption,
-.preschool-classes-page--kh .preschool-classes-page__toolbar-text,
-.preschool-classes-page--kh .preschool-classes-page__highlight-label {
-  font-size: 0.92rem;
-  line-height: 1.65;
-}
-
 @media (max-width: 640px) {
-  .preschool-classes-page__summary-card,
   .preschool-classes-page__shell {
     padding: 1.1rem;
-  }
-
-  .preschool-classes-page__toolbar-title {
-    font-size: 1.2rem;
   }
 }
 </style>
