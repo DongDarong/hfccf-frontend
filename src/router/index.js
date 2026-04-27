@@ -1,11 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import {
-  ensureSessionIsValid,
-  getCurrentUser,
-  hasPermission,
-  isSuperAdmin,
-  touchActivity,
-} from '@/services/auth'
+import { ensureSessionIsValid, getCurrentUser, touchActivity } from '@/services/auth'
+import { canAccessRoute } from '@/services/accessControl'
 import { authRoutes } from '@/modules/auth/routes'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
 import { superAdminRoutes } from '@/modules/super-admin/routes'
@@ -13,8 +8,6 @@ import { englishRoutes } from '@/modules/english/routes'
 import { preschoolRoutes } from '@/modules/preschool/routes'
 import { scholarshipRoutes } from '@/modules/scholarship/routes'
 import { sportRoutes } from '@/modules/sport/routes'
-import { productRoutes } from '@/modules/products/routes'
-import { normalizeRole } from '@/constants/roles'
 
 const routes = [
   ...authRoutes,
@@ -24,25 +17,14 @@ const routes = [
   ...preschoolRoutes,
   ...scholarshipRoutes,
   ...sportRoutes,
-  ...productRoutes,
   {
     path: '/:pathMatch(.*)*',
     redirect: '/module/dashboard',
   },
 ]
 
-function hasAllowedRole(user, allowedRoles = []) {
-  if (!Array.isArray(allowedRoles) || !allowedRoles.length) return true
-  const role = normalizeRole(user?.role)
-  return allowedRoles.map((item) => normalizeRole(item)).includes(role)
-}
-
 function routeMetaMatches(to, key) {
   return to.matched.some((record) => record.meta[key])
-}
-
-function routeMetaList(to, key) {
-  return to.matched.flatMap((record) => record.meta[key] || [])
 }
 
 function requiresAuth(to) {
@@ -55,23 +37,6 @@ function isGuestOnly(to) {
 
 function hasValidSession() {
   return ensureSessionIsValid()
-}
-
-function isSuperAdminAllowed(to, user) {
-  if (!routeMetaMatches(to, 'superAdminOnly')) return true
-  return isSuperAdmin(user)
-}
-
-function isRoleAllowed(to, user) {
-  const allowedRoles = routeMetaList(to, 'allowedRoles')
-  if (!allowedRoles.length || isSuperAdmin(user)) return true
-  return hasAllowedRole(user, allowedRoles)
-}
-
-function isPermissionAllowed(to, user) {
-  const requiredPermissions = routeMetaList(to, 'requiredPermissions')
-  if (!requiredPermissions.length || isSuperAdmin(user)) return true
-  return requiredPermissions.every((permission) => hasPermission(permission, user))
 }
 
 const router = createRouter({
@@ -94,15 +59,7 @@ router.beforeEach((to) => {
     return { name: 'dashboard' }
   }
 
-  if (sessionValid && !isSuperAdminAllowed(to, currentUser)) {
-    return { name: 'dashboard' }
-  }
-
-  if (sessionValid && !isRoleAllowed(to, currentUser)) {
-    return { name: 'dashboard' }
-  }
-
-  if (sessionValid && !isPermissionAllowed(to, currentUser)) {
+  if (sessionValid && !canAccessRoute(currentUser, to)) {
     return { name: 'dashboard' }
   }
 
