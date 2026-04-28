@@ -1,0 +1,173 @@
+<script setup>
+import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
+import TeamSelector from '@/modules/dashboard/components/calendar/TeamSelector.vue'
+
+const emit = defineEmits(['update-field', 'update:teamQuery', 'update:selectedTeamIds'])
+
+defineProps({
+  form: {
+    type: Object,
+    required: true,
+  },
+  eventTypes: {
+    type: Array,
+    default: () => [],
+  },
+  teams: {
+    type: Array,
+    default: () => [],
+  },
+  teamQuery: {
+    type: String,
+    default: '',
+  },
+})
+
+function updateField(field, value) {
+  emit('update-field', { field, value })
+}
+</script>
+
+<template>
+  <div class="event-form-fields">
+    <div class="event-form-fields__grid">
+      <div class="event-form-fields__field">
+        <label class="event-form-fields__label" for="event-type">Event type</label>
+        <Select
+          id="event-type"
+          :model-value="form.type"
+          :options="eventTypes"
+          option-label="label"
+          option-value="value"
+          placeholder="Select event type"
+          @update:model-value="updateField('type', $event)"
+        />
+      </div>
+
+      <div class="event-form-fields__field">
+        <label class="event-form-fields__label" for="event-time">Time</label>
+        <input
+          id="event-time"
+          :value="form.time"
+          type="time"
+          class="event-form-fields__native-input"
+          @input="updateField('time', $event.target.value)"
+        />
+      </div>
+
+      <div class="event-form-fields__field event-form-fields__field--wide">
+        <label class="event-form-fields__label" for="event-title">Title</label>
+        <InputText
+          id="event-title"
+          :model-value="form.title"
+          placeholder="Enter event title"
+          @update:model-value="updateField('title', $event)"
+        />
+      </div>
+
+      <div class="event-form-fields__field">
+        <label class="event-form-fields__label" for="event-tournament">Tournament</label>
+        <InputText
+          id="event-tournament"
+          :model-value="form.tournament"
+          placeholder="Enter tournament name"
+          @update:model-value="updateField('tournament', $event)"
+        />
+      </div>
+
+      <div class="event-form-fields__field">
+        <label class="event-form-fields__label" for="event-date">Date</label>
+        <input
+          id="event-date"
+          :value="form.date"
+          type="date"
+          class="event-form-fields__native-input"
+          @input="updateField('date', $event.target.value)"
+        />
+      </div>
+
+      <div class="event-form-fields__field event-form-fields__field--wide">
+        <label class="event-form-fields__label" for="event-comment">Optional comment</label>
+        <textarea
+          id="event-comment"
+          :value="form.comment"
+          rows="4"
+          class="event-form-fields__textarea"
+          placeholder="Add context, notes, or any urgent reminders"
+          @input="updateField('comment', $event.target.value)"
+        ></textarea>
+      </div>
+    </div>
+
+    <TeamSelector
+      :teams="teams"
+      :selected-team-ids="form.teamIds"
+      :query="teamQuery"
+      @update:query="$emit('update:teamQuery', $event)"
+      @update:selected-team-ids="$emit('update:selectedTeamIds', $event)"
+    />
+  </div>
+</template>
+
+<style scoped>
+.event-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-form-fields__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.event-form-fields__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.event-form-fields__field--wide {
+  grid-column: 1 / -1;
+}
+
+.event-form-fields__label {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.event-form-fields__native-input,
+.event-form-fields__textarea {
+  width: 100%;
+  border: 1px solid #d7dee7;
+  border-radius: 0.9rem;
+  padding: 0.78rem 0.9rem;
+  background: #fff;
+  color: #1d1d1b;
+  font-size: 0.9rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.event-form-fields__native-input:focus,
+.event-form-fields__textarea:focus {
+  outline: none;
+  border-color: #00aeef;
+  box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.12);
+}
+
+.event-form-fields__textarea {
+  resize: vertical;
+  min-height: 6.25rem;
+}
+
+@media (max-width: 640px) {
+  .event-form-fields__grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
