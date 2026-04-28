@@ -54,22 +54,7 @@ const cards = computed(() => [
 ])
 
 const tournament = computed(() => adminDashboardData.tournament)
-const tournaments = computed(() => {
-  const item = adminDashboardData.tournament
-
-  if (!item) return []
-
-  return [
-    {
-      id: 'primary-tournament',
-      title: item.title,
-      subtitle: item.subtitle,
-      location: item.location,
-      matches: item.matches,
-      status: item.status,
-    },
-  ]
-})
+const tournaments = computed(() => adminDashboardData.tournaments || [])
 </script>
 
 <template>

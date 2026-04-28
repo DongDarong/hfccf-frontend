@@ -28,6 +28,7 @@ const props = defineProps({
 const { t } = useLanguage()
 
 const totalTournaments = computed(() => props.tournaments.length)
+const shouldScroll = computed(() => props.tournaments.length >= 4)
 
 function normalizeStatus(status) {
   return String(status ?? '')
@@ -49,6 +50,20 @@ function statusLabel(status) {
   const raw = String(status ?? '').trim()
   return raw || t('common.status.info')
 }
+
+function totalTeamsValue(tournament) {
+  if (Array.isArray(tournament?.teams)) return tournament.teams.length
+
+  const candidates = [
+    tournament?.totalTeams,
+    tournament?.teamCount,
+    tournament?.teamsCount,
+    tournament?.teams,
+  ]
+
+  const value = candidates.find((item) => item !== undefined && item !== null && item !== '')
+  return value ?? '-'
+}
 </script>
 
 <template>
@@ -68,7 +83,11 @@ function statusLabel(status) {
         </div>
       </div>
 
-      <div v-if="tournaments.length" class="tournament-list__items">
+      <div
+        v-if="tournaments.length"
+        class="tournament-list__items"
+        :class="{ 'tournament-list__items--scroll': shouldScroll }"
+      >
         <article
           v-for="(tournament, index) in tournaments"
           :key="tournament.id || `${tournament.title}-${index}`"
@@ -105,6 +124,14 @@ function statusLabel(status) {
               <span class="tournament-list__meta-label">{{ t('sportAddTeam.matches') }}</span>
               <strong class="tournament-list__meta-value">
                 {{ tournament.matches ?? 0 }}
+              </strong>
+            </div>
+            <div class="tournament-list__meta-item">
+              <span class="tournament-list__meta-label">
+                {{ t('sportAdminDashboard.cards.totalTeams.title') }}
+              </span>
+              <strong class="tournament-list__meta-value">
+                {{ totalTeamsValue(tournament) }}
               </strong>
             </div>
           </div>
@@ -183,6 +210,29 @@ function statusLabel(status) {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+}
+
+.tournament-list__items--scroll {
+  max-height: 31rem;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.tournament-list__items--scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.tournament-list__items--scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tournament-list__items--scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.tournament-list__items--scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .tournament-list__item {
@@ -277,7 +327,7 @@ function statusLabel(status) {
 
 .tournament-list__meta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(90px, auto));
+  grid-template-columns: repeat(3, minmax(90px, auto));
   gap: 0.75rem;
   flex-shrink: 0;
 }
@@ -320,7 +370,7 @@ function statusLabel(status) {
 
   .tournament-list__meta {
     width: 100%;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -341,6 +391,12 @@ function statusLabel(status) {
     font-size: 0.86rem;
   }
 
+  .tournament-list__meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
   .tournament-list__meta {
     grid-template-columns: 1fr;
   }
