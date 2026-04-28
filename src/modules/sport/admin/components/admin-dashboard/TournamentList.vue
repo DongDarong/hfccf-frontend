@@ -9,11 +9,11 @@ defineOptions({
 const props = defineProps({
   title: {
     type: String,
-    default: 'Tournament list',
+    default: '',
   },
   subtitle: {
     type: String,
-    default: 'Track active competitions, venues, and match volume at a glance.',
+    default: '',
   },
   tournaments: {
     type: Array,
@@ -21,14 +21,30 @@ const props = defineProps({
   },
   emptyText: {
     type: String,
-    default: 'No tournaments available.',
+    default: '',
   },
 })
 
-const { t } = useLanguage()
+const { t, language } = useLanguage()
 
+const isKh = computed(() => language.value === 'KH')
 const totalTournaments = computed(() => props.tournaments.length)
 const shouldScroll = computed(() => props.tournaments.length >= 4)
+const sectionLabel = computed(() => (isKh.value ? 'បញ្ជីព្រឹត្តិការណ៍' : 'Tournament list'))
+const resolvedTitle = computed(() => props.title || sectionLabel.value)
+const resolvedSubtitle = computed(() =>
+  props.subtitle || (
+    isKh.value
+      ? 'តាមដានការប្រកួត ទីតាំង និងចំនួនការប្រកួតសរុបក្នុងមួយព្រឹត្តិការណ៍បានភ្លាមៗ។'
+      : 'Track active competitions, venues, and match volume at a glance.'
+  ),
+)
+const resolvedEmptyText = computed(() =>
+  props.emptyText || (isKh.value ? 'មិនមានព្រឹត្តិការណ៍សម្រាប់បង្ហាញទេ។' : 'No tournaments available.'),
+)
+const totalTournamentsLabel = computed(() =>
+  isKh.value ? `${totalTournaments.value} ព្រឹត្តិការណ៍` : `${totalTournaments.value} tournaments`,
+)
 
 function normalizeStatus(status) {
   return String(status ?? '')
@@ -47,6 +63,28 @@ function statusClass(status) {
 }
 
 function statusLabel(status) {
+  const key = normalizeStatus(status)
+
+  if (key === 'live') {
+    return isKh.value ? 'កំពុងប្រកួត' : 'Live'
+  }
+
+  if (key === 'active') {
+    return t('common.status.active')
+  }
+
+  if (key === 'upcoming') {
+    return isKh.value ? 'នាពេលខាងមុខ' : 'Upcoming'
+  }
+
+  if (key === 'pending') {
+    return t('common.status.pending')
+  }
+
+  if (key === 'completed' || key === 'closed') {
+    return isKh.value ? 'បានបញ្ចប់' : 'Completed'
+  }
+
   const raw = String(status ?? '').trim()
   return raw || t('common.status.info')
 }
@@ -64,16 +102,22 @@ function totalTeamsValue(tournament) {
   const value = candidates.find((item) => item !== undefined && item !== null && item !== '')
   return value ?? '-'
 }
+
+function tournamentName(tournament) {
+  const raw = String(tournament?.title || tournament?.name || '').trim()
+  if (raw) return raw
+  return isKh.value ? 'ព្រឹត្តិការណ៍មិនទាន់មានចំណងជើង' : 'Untitled tournament'
+}
 </script>
 
 <template>
-  <section class="tournament-list" aria-label="Tournament list">
+  <section :class="isKh ? 'tournament-list tournament-list--kh' : 'tournament-list'" :aria-label="sectionLabel">
     <div class="tournament-list__card">
       <div class="tournament-list__head">
         <div>
-          <p class="tournament-list__eyebrow">{{ title }}</p>
-          <h3 class="tournament-list__title">{{ totalTournaments }} tournaments</h3>
-          <p class="tournament-list__subtitle">{{ subtitle }}</p>
+          <p class="tournament-list__eyebrow">{{ resolvedTitle }}</p>
+          <h3 class="tournament-list__title">{{ totalTournamentsLabel }}</h3>
+          <p class="tournament-list__subtitle">{{ resolvedSubtitle }}</p>
         </div>
         <div class="tournament-list__badge" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -98,7 +142,7 @@ function totalTeamsValue(tournament) {
             <div class="tournament-list__copy">
               <div class="tournament-list__row">
                 <h4 class="tournament-list__item-title">
-                  {{ tournament.title || tournament.name || 'Untitled tournament' }}
+                  {{ tournamentName(tournament) }}
                 </h4>
                 <span
                   class="tournament-list__status"
@@ -139,7 +183,7 @@ function totalTeamsValue(tournament) {
       </div>
 
       <div v-else class="tournament-list__empty">
-        {{ emptyText }}
+        {{ resolvedEmptyText }}
       </div>
     </div>
   </section>
@@ -361,6 +405,25 @@ function totalTeamsValue(tournament) {
   font-size: 0.9rem;
   color: #64748b;
   background: rgba(248, 250, 252, 0.7);
+}
+
+.tournament-list--kh .tournament-list__eyebrow,
+.tournament-list--kh .tournament-list__meta-label {
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.tournament-list--kh .tournament-list__eyebrow,
+.tournament-list--kh .tournament-list__title,
+.tournament-list--kh .tournament-list__subtitle,
+.tournament-list--kh .tournament-list__item-title,
+.tournament-list--kh .tournament-list__item-subtitle,
+.tournament-list--kh .tournament-list__meta-label,
+.tournament-list--kh .tournament-list__meta-value,
+.tournament-list--kh .tournament-list__empty,
+.tournament-list--kh .tournament-list__status {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
 @media (max-width: 768px) {
