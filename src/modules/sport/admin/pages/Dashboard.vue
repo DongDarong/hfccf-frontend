@@ -65,7 +65,10 @@ const tournament = computed(() => adminDashboardData.tournament)
         </div>
         <TournamentBanner
           :tournamentTitle="tournament.title"
-          :tournamentSubtitle="`${tournament.subtitle} � ${tournament.location}`"
+          :tournamentSubtitle="tournament.subtitle"
+          :tournamentLocation="tournament.location"
+          :tournamentMatches="tournament.matches"
+          :tournamentStatus="tournament.status"
           :actionLabel="t('sportAdminDashboard.tournamentBanner.action')"
         />
         <TournamentQuickPanels />
@@ -93,8 +96,3 @@ const tournament = computed(() => adminDashboardData.tournament)
   gap: 1.25rem;
 }
 </style>
-
-
-
-
-
