@@ -12,14 +12,14 @@ import CalendarPageHeader from '@/modules/dashboard/components/calendar/Calendar
 import EventFormModal from '@/modules/dashboard/components/calendar/EventFormModal.vue'
 import UpcomingEventsCard from '@/modules/dashboard/components/calendar/UpcomingEventsCard.vue'
 
-const { language } = useLanguage()
+const { t, language } = useLanguage()
 const userStore = useUserStore()
 
 const EVENT_TYPE_OPTIONS = [
-  { value: 'match', label: 'Match', color: '#00AEEF' },
-  { value: 'training', label: 'Training', color: '#8DC63F' },
-  { value: 'meeting', label: 'Meeting', color: '#FDC116' },
-  { value: 'urgent', label: 'Urgent', color: '#ED1C24' },
+  { value: 'match', labelKey: 'match', color: '#00AEEF' },
+  { value: 'training', labelKey: 'training', color: '#8DC63F' },
+  { value: 'meeting', labelKey: 'meeting', color: '#FDC116' },
+  { value: 'urgent', labelKey: 'urgent', color: '#ED1C24' },
 ]
 
 const teams = [
@@ -31,55 +31,58 @@ const teams = [
   { id: 6, name: 'Yellow Tactics', group: 'Staff & Coaches' },
 ]
 
-const ROLE_CALENDAR_CONFIG = {
+const ROLE_CALENDAR_CONFIG = computed(() => ({
   [DOMAINS.SPORT]: {
-    title: 'Sport schedule',
-    createTitle: 'Create Sport Event',
-    editTitle: 'Edit Sport Event',
-    description: 'Choose the activity, date, and team groups that need to see this event.',
-    eventTypes: EVENT_TYPE_OPTIONS,
-    contextLabel: 'Competition or program',
-    contextPlaceholder: 'Enter competition, camp, or department',
-    titlePlaceholder: 'Example: Falcons vs River Academy',
-    notePlaceholder: 'Add venue, kit, roster, or urgent reminders',
-    audienceLabel: 'Teams',
-    audienceSearchPlaceholder: 'Search teams',
-    audienceEmptyLabel: 'No teams match your search.',
-    upcomingTitle: 'Upcoming Sport Events',
-    upcomingSubtitle: 'Monthly view of training sessions, matches, meetings, and team commitments.',
-    upcomingEmptyLabel: 'No sport events scheduled for this month.',
+    title: t('pages.calendar.roles.sport.title'),
+    createTitle: t('pages.calendar.roles.sport.createTitle'),
+    editTitle: t('pages.calendar.roles.sport.editTitle'),
+    description: t('pages.calendar.roles.sport.description'),
+    eventTypes: EVENT_TYPE_OPTIONS.map((item) => ({
+      ...item,
+      label: t(`pages.calendar.roles.sport.eventTypes.${item.labelKey}`),
+    })),
+    contextLabel: t('pages.calendar.roles.sport.contextLabel'),
+    contextPlaceholder: t('pages.calendar.roles.sport.contextPlaceholder'),
+    titlePlaceholder: t('pages.calendar.roles.sport.titlePlaceholder'),
+    notePlaceholder: t('pages.calendar.roles.sport.notePlaceholder'),
+    audienceLabel: t('pages.calendar.roles.sport.audienceLabel'),
+    audienceSearchPlaceholder: t('pages.calendar.roles.sport.audienceSearchPlaceholder'),
+    audienceEmptyLabel: t('pages.calendar.roles.sport.audienceEmptyLabel'),
+    upcomingTitle: t('pages.calendar.roles.sport.upcomingTitle'),
+    upcomingSubtitle: t('pages.calendar.roles.sport.upcomingSubtitle'),
+    upcomingEmptyLabel: t('pages.calendar.roles.sport.upcomingEmptyLabel'),
     targetIcon: 'pi pi-users',
     contextIcon: 'pi pi-flag',
-    targetSummaryLabel: 'Teams involved',
-    defaultContext: 'General Schedule',
+    targetSummaryLabel: t('pages.calendar.summary.teamsInvolved'),
+    defaultContext: t('pages.calendar.roles.sport.defaultContext'),
     defaultType: 'match',
     targets: teams,
   },
   [DOMAINS.ENGLISH]: {
-    title: 'English class schedule',
-    createTitle: 'Create English Schedule Event',
-    editTitle: 'Edit English Schedule Event',
-    description: 'Create events for classes, teachers, exams, or program activities.',
+    title: t('pages.calendar.roles.english.title'),
+    createTitle: t('pages.calendar.roles.english.createTitle'),
+    editTitle: t('pages.calendar.roles.english.editTitle'),
+    description: t('pages.calendar.roles.english.description'),
     eventTypes: [
-      { value: 'training', label: 'Class', color: '#8DC63F' },
-      { value: 'meeting', label: 'Meeting', color: '#FDC116' },
-      { value: 'match', label: 'Assessment', color: '#00AEEF' },
-      { value: 'urgent', label: 'Urgent', color: '#ED1C24' },
+      { value: 'training', label: t('pages.calendar.roles.english.eventTypes.training'), color: '#8DC63F' },
+      { value: 'meeting', label: t('pages.calendar.roles.english.eventTypes.meeting'), color: '#FDC116' },
+      { value: 'match', label: t('pages.calendar.roles.english.eventTypes.match'), color: '#00AEEF' },
+      { value: 'urgent', label: t('pages.calendar.roles.english.eventTypes.urgent'), color: '#ED1C24' },
     ],
-    contextLabel: 'Class or program',
-    contextPlaceholder: 'Enter class, level, or program',
-    titlePlaceholder: 'Example: Level 3 speaking assessment',
-    notePlaceholder: 'Add classroom, materials, teacher notes, or reminders',
-    audienceLabel: 'Classes and staff',
-    audienceSearchPlaceholder: 'Search classes or staff',
-    audienceEmptyLabel: 'No classes or staff match your search.',
-    upcomingTitle: 'Upcoming English Events',
-    upcomingSubtitle: 'Monthly view of classes, assessments, meetings, and staff commitments.',
-    upcomingEmptyLabel: 'No English program events scheduled for this month.',
+    contextLabel: t('pages.calendar.roles.english.contextLabel'),
+    contextPlaceholder: t('pages.calendar.roles.english.contextPlaceholder'),
+    titlePlaceholder: t('pages.calendar.roles.english.titlePlaceholder'),
+    notePlaceholder: t('pages.calendar.roles.english.notePlaceholder'),
+    audienceLabel: t('pages.calendar.roles.english.audienceLabel'),
+    audienceSearchPlaceholder: t('pages.calendar.roles.english.audienceSearchPlaceholder'),
+    audienceEmptyLabel: t('pages.calendar.roles.english.audienceEmptyLabel'),
+    upcomingTitle: t('pages.calendar.roles.english.upcomingTitle'),
+    upcomingSubtitle: t('pages.calendar.roles.english.upcomingSubtitle'),
+    upcomingEmptyLabel: t('pages.calendar.roles.english.upcomingEmptyLabel'),
     targetIcon: 'pi pi-book',
     contextIcon: 'pi pi-building',
-    targetSummaryLabel: 'Classes involved',
-    defaultContext: 'English Program',
+    targetSummaryLabel: t('pages.calendar.summary.teamsInvolved'),
+    defaultContext: t('pages.calendar.roles.english.defaultContext'),
     defaultType: 'training',
     targets: [
       { id: 101, name: 'English Level 1', group: 'Morning class' },
@@ -89,30 +92,30 @@ const ROLE_CALENDAR_CONFIG = {
     ],
   },
   [DOMAINS.PRESCHOOL]: {
-    title: 'Preschool schedule',
-    createTitle: 'Create Preschool Schedule Event',
-    editTitle: 'Edit Preschool Schedule Event',
-    description: 'Plan class activities, parent meetings, care routines, and staff events.',
+    title: t('pages.calendar.roles.preschool.title'),
+    createTitle: t('pages.calendar.roles.preschool.createTitle'),
+    editTitle: t('pages.calendar.roles.preschool.editTitle'),
+    description: t('pages.calendar.roles.preschool.description'),
     eventTypes: [
-      { value: 'training', label: 'Class Activity', color: '#8DC63F' },
-      { value: 'meeting', label: 'Parent Meeting', color: '#FDC116' },
-      { value: 'match', label: 'School Event', color: '#00AEEF' },
-      { value: 'urgent', label: 'Urgent', color: '#ED1C24' },
+      { value: 'training', label: t('pages.calendar.roles.preschool.eventTypes.training'), color: '#8DC63F' },
+      { value: 'meeting', label: t('pages.calendar.roles.preschool.eventTypes.meeting'), color: '#FDC116' },
+      { value: 'match', label: t('pages.calendar.roles.preschool.eventTypes.match'), color: '#00AEEF' },
+      { value: 'urgent', label: t('pages.calendar.roles.preschool.eventTypes.urgent'), color: '#ED1C24' },
     ],
-    contextLabel: 'Class or area',
-    contextPlaceholder: 'Enter class, room, or learning area',
-    titlePlaceholder: 'Example: Parent progress meeting',
-    notePlaceholder: 'Add room, care notes, materials, or reminders',
-    audienceLabel: 'Classes and staff',
-    audienceSearchPlaceholder: 'Search classes or staff',
-    audienceEmptyLabel: 'No classes or staff match your search.',
-    upcomingTitle: 'Upcoming Preschool Events',
-    upcomingSubtitle: 'Monthly view of class activities, parent meetings, routines, and staff events.',
-    upcomingEmptyLabel: 'No preschool events scheduled for this month.',
+    contextLabel: t('pages.calendar.roles.preschool.contextLabel'),
+    contextPlaceholder: t('pages.calendar.roles.preschool.contextPlaceholder'),
+    titlePlaceholder: t('pages.calendar.roles.preschool.titlePlaceholder'),
+    notePlaceholder: t('pages.calendar.roles.preschool.notePlaceholder'),
+    audienceLabel: t('pages.calendar.roles.preschool.audienceLabel'),
+    audienceSearchPlaceholder: t('pages.calendar.roles.preschool.audienceSearchPlaceholder'),
+    audienceEmptyLabel: t('pages.calendar.roles.preschool.audienceEmptyLabel'),
+    upcomingTitle: t('pages.calendar.roles.preschool.upcomingTitle'),
+    upcomingSubtitle: t('pages.calendar.roles.preschool.upcomingSubtitle'),
+    upcomingEmptyLabel: t('pages.calendar.roles.preschool.upcomingEmptyLabel'),
     targetIcon: 'pi pi-home',
     contextIcon: 'pi pi-building',
-    targetSummaryLabel: 'Classes involved',
-    defaultContext: 'Preschool Program',
+    targetSummaryLabel: t('pages.calendar.summary.teamsInvolved'),
+    defaultContext: t('pages.calendar.roles.preschool.defaultContext'),
     defaultType: 'training',
     targets: [
       { id: 201, name: 'Nursery A', group: 'Preschool' },
@@ -122,30 +125,30 @@ const ROLE_CALENDAR_CONFIG = {
     ],
   },
   [DOMAINS.SCHOLARSHIP]: {
-    title: 'Scholarship schedule',
-    createTitle: 'Create Scholarship Schedule Event',
-    editTitle: 'Edit Scholarship Schedule Event',
-    description: 'Schedule student reviews, document deadlines, interviews, and follow-up tasks.',
+    title: t('pages.calendar.roles.scholarship.title'),
+    createTitle: t('pages.calendar.roles.scholarship.createTitle'),
+    editTitle: t('pages.calendar.roles.scholarship.editTitle'),
+    description: t('pages.calendar.roles.scholarship.description'),
     eventTypes: [
-      { value: 'meeting', label: 'Review', color: '#FDC116' },
-      { value: 'match', label: 'Interview', color: '#00AEEF' },
-      { value: 'training', label: 'Workshop', color: '#8DC63F' },
-      { value: 'urgent', label: 'Deadline', color: '#ED1C24' },
+      { value: 'meeting', label: t('pages.calendar.roles.scholarship.eventTypes.meeting'), color: '#FDC116' },
+      { value: 'match', label: t('pages.calendar.roles.scholarship.eventTypes.match'), color: '#00AEEF' },
+      { value: 'training', label: t('pages.calendar.roles.scholarship.eventTypes.training'), color: '#8DC63F' },
+      { value: 'urgent', label: t('pages.calendar.roles.scholarship.eventTypes.urgent'), color: '#ED1C24' },
     ],
-    contextLabel: 'Scholarship cycle',
-    contextPlaceholder: 'Enter cycle, cohort, or review round',
-    titlePlaceholder: 'Example: Final document deadline',
-    notePlaceholder: 'Add document requirements, location, or follow-up details',
-    audienceLabel: 'Cohorts and staff',
-    audienceSearchPlaceholder: 'Search cohorts or staff',
-    audienceEmptyLabel: 'No cohorts or staff match your search.',
-    upcomingTitle: 'Upcoming Scholarship Events',
-    upcomingSubtitle: 'Monthly view of reviews, interviews, workshops, deadlines, and follow-up tasks.',
-    upcomingEmptyLabel: 'No scholarship events scheduled for this month.',
+    contextLabel: t('pages.calendar.roles.scholarship.contextLabel'),
+    contextPlaceholder: t('pages.calendar.roles.scholarship.contextPlaceholder'),
+    titlePlaceholder: t('pages.calendar.roles.scholarship.titlePlaceholder'),
+    notePlaceholder: t('pages.calendar.roles.scholarship.notePlaceholder'),
+    audienceLabel: t('pages.calendar.roles.scholarship.audienceLabel'),
+    audienceSearchPlaceholder: t('pages.calendar.roles.scholarship.audienceSearchPlaceholder'),
+    audienceEmptyLabel: t('pages.calendar.roles.scholarship.audienceEmptyLabel'),
+    upcomingTitle: t('pages.calendar.roles.scholarship.upcomingTitle'),
+    upcomingSubtitle: t('pages.calendar.roles.scholarship.upcomingSubtitle'),
+    upcomingEmptyLabel: t('pages.calendar.roles.scholarship.upcomingEmptyLabel'),
     targetIcon: 'pi pi-users',
     contextIcon: 'pi pi-id-card',
-    targetSummaryLabel: 'Cohorts involved',
-    defaultContext: 'Scholarship Program',
+    targetSummaryLabel: t('pages.calendar.summary.teamsInvolved'),
+    defaultContext: t('pages.calendar.roles.scholarship.defaultContext'),
     defaultType: 'meeting',
     targets: [
       { id: 301, name: 'New Applicants', group: '2026 cycle' },
@@ -155,30 +158,30 @@ const ROLE_CALENDAR_CONFIG = {
     ],
   },
   [DOMAINS.GLOBAL]: {
-    title: 'Super admin schedule',
-    createTitle: 'Create Organization Event',
-    editTitle: 'Edit Organization Event',
-    description: 'Create organization-wide events and choose which programs need visibility.',
+    title: t('pages.calendar.roles.global.title'),
+    createTitle: t('pages.calendar.roles.global.createTitle'),
+    editTitle: t('pages.calendar.roles.global.editTitle'),
+    description: t('pages.calendar.roles.global.description'),
     eventTypes: [
-      { value: 'meeting', label: 'Leadership Meeting', color: '#FDC116' },
-      { value: 'training', label: 'Cross-program Activity', color: '#8DC63F' },
-      { value: 'match', label: 'Public Event', color: '#00AEEF' },
-      { value: 'urgent', label: 'Urgent Notice', color: '#ED1C24' },
+      { value: 'meeting', label: t('pages.calendar.roles.global.eventTypes.meeting'), color: '#FDC116' },
+      { value: 'training', label: t('pages.calendar.roles.global.eventTypes.training'), color: '#8DC63F' },
+      { value: 'match', label: t('pages.calendar.roles.global.eventTypes.match'), color: '#00AEEF' },
+      { value: 'urgent', label: t('pages.calendar.roles.global.eventTypes.urgent'), color: '#ED1C24' },
     ],
-    contextLabel: 'Owner or department',
-    contextPlaceholder: 'Enter owner, department, or initiative',
-    titlePlaceholder: 'Example: Monthly leadership review',
-    notePlaceholder: 'Add agenda, location, responsible owner, or follow-up details',
-    audienceLabel: 'Visible to',
-    audienceSearchPlaceholder: 'Search programs or departments',
-    audienceEmptyLabel: 'No programs or departments match your search.',
-    upcomingTitle: 'Upcoming Organization Events',
-    upcomingSubtitle: 'Monthly view of organization-wide events, leadership meetings, and program notices.',
-    upcomingEmptyLabel: 'No organization events scheduled for this month.',
+    contextLabel: t('pages.calendar.roles.global.contextLabel'),
+    contextPlaceholder: t('pages.calendar.roles.global.contextPlaceholder'),
+    titlePlaceholder: t('pages.calendar.roles.global.titlePlaceholder'),
+    notePlaceholder: t('pages.calendar.roles.global.notePlaceholder'),
+    audienceLabel: t('pages.calendar.roles.global.audienceLabel'),
+    audienceSearchPlaceholder: t('pages.calendar.roles.global.audienceSearchPlaceholder'),
+    audienceEmptyLabel: t('pages.calendar.roles.global.audienceEmptyLabel'),
+    upcomingTitle: t('pages.calendar.roles.global.upcomingTitle'),
+    upcomingSubtitle: t('pages.calendar.roles.global.upcomingSubtitle'),
+    upcomingEmptyLabel: t('pages.calendar.roles.global.upcomingEmptyLabel'),
     targetIcon: 'pi pi-sitemap',
     contextIcon: 'pi pi-briefcase',
-    targetSummaryLabel: 'Programs involved',
-    defaultContext: 'Organization Schedule',
+    targetSummaryLabel: t('pages.calendar.summary.teamsInvolved'),
+    defaultContext: t('pages.calendar.roles.global.defaultContext'),
     defaultType: 'meeting',
     defaultTargetIds: [400],
     targets: [
@@ -190,7 +193,7 @@ const ROLE_CALENDAR_CONFIG = {
       { id: 405, name: 'Operations Team', group: 'Administration' },
     ],
   },
-}
+}))
 
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -206,7 +209,9 @@ const teamSearchQuery = ref('')
 
 const currentRole = computed(() => normalizeRole(userStore.currentUser?.role))
 const currentDomain = computed(() => getRoleAccess(currentRole.value)?.domain || DOMAINS.SPORT)
-const calendarConfig = computed(() => ROLE_CALENDAR_CONFIG[currentDomain.value] || ROLE_CALENDAR_CONFIG[DOMAINS.SPORT])
+const calendarConfig = computed(
+  () => ROLE_CALENDAR_CONFIG.value[currentDomain.value] || ROLE_CALENDAR_CONFIG.value[DOMAINS.SPORT],
+)
 const eventTypeOptions = computed(() => calendarConfig.value.eventTypes)
 const scheduleTargets = computed(() => calendarConfig.value.targets)
 const formState = ref(createEmptyForm(formatDate(today)))
@@ -218,23 +223,34 @@ const typeLookup = computed(() =>
 const teamLookup = computed(() => Object.fromEntries(scheduleTargets.value.map((team) => [team.id, team])))
 
 const locale = computed(() => (language.value === 'KH' ? 'km-KH' : 'en-US'))
-const pageTitle = computed(() =>
-  language.value === 'KH' ? 'Schedule & Events' : 'Schedule & Events',
-)
-const pageSubtitle = computed(() =>
-  language.value === 'KH'
-    ? 'Plan training sessions, matches, meetings, and urgent sport activities.'
-    : calendarConfig.value.description,
-)
-const addEventLabel = computed(() => (language.value === 'KH' ? 'Add Event' : 'Add Event'))
-const upcomingTitle = computed(() =>
-  language.value === 'KH' ? 'Upcoming Events' : calendarConfig.value.upcomingTitle,
-)
-const upcomingSubtitle = computed(() =>
-  language.value === 'KH'
-    ? 'A quick monthly view of scheduled sessions, meetings, and match commitments.'
-    : calendarConfig.value.upcomingSubtitle,
-)
+const pageTitle = computed(() => t('pages.calendar.pageTitle'))
+const pageSubtitle = computed(() => calendarConfig.value.description)
+const addEventLabel = computed(() => t('pages.calendar.addEvent'))
+const upcomingTitle = computed(() => calendarConfig.value.upcomingTitle)
+const upcomingSubtitle = computed(() => calendarConfig.value.upcomingSubtitle)
+const highlightEyebrow = computed(() => t('pages.calendar.highlight.monthSnapshot'))
+const highlightSubtitle = computed(() => t('pages.calendar.highlight.subtitle'))
+const nextEventLabel = computed(() => t('pages.calendar.highlight.nextEvent'))
+
+const plannerLabel = computed(() => t('pages.calendar.planner'))
+const timelineLabel = computed(() => t('pages.calendar.timeline'))
+const monthlyViewLabel = computed(() => t('pages.calendar.monthlyView'))
+const todayLabel = computed(() => t('pages.calendar.today'))
+const prevMonthLabel = computed(() => t('pages.calendar.previousMonth'))
+const nextMonthLabel = computed(() => t('pages.calendar.nextMonth'))
+
+const updateLabel = computed(() => t('pages.calendar.update'))
+const createLabel = computed(() => t('pages.calendar.create'))
+const saveChangesLabel = computed(() => t('pages.calendar.saveChanges'))
+const saveEventLabel = computed(() => t('pages.calendar.saveEvent'))
+
+const scheduleForLabel = computed(() => t('pages.calendar.scheduleFor'))
+const eventTypeLabel = computed(() => t('pages.calendar.eventType'))
+const timeLabel = computed(() => t('pages.calendar.time'))
+const titleLabel = computed(() => t('pages.calendar.title'))
+const dateLabel = computed(() => t('pages.calendar.date'))
+const optionalCommentLabel = computed(() => t('pages.calendar.optionalComment'))
+const selectEventTypeLabel = computed(() => t('pages.calendar.selectEventType'))
 
 const monthLabel = computed(() =>
   new Intl.DateTimeFormat(locale.value, { month: 'long', year: 'numeric' }).format(currentMonth.value),
@@ -318,14 +334,14 @@ const summaryCards = computed(() => {
   return [
     {
       key: 'events',
-      label: 'Monthly events',
+      label: t('pages.calendar.summary.monthlyEvents'),
       value: monthEvents.value.length,
       tone: 'cyan',
       icon: 'pi pi-calendar',
     },
     {
       key: 'matches',
-      label: 'Matches',
+      label: t('pages.calendar.summary.matches'),
       value: matchCount,
       tone: 'lime',
       icon: 'pi pi-flag',
@@ -339,7 +355,7 @@ const summaryCards = computed(() => {
     },
     {
       key: 'urgent',
-      label: 'Urgent items',
+      label: t('pages.calendar.summary.urgentItems'),
       value: urgentCount,
       tone: 'red',
       icon: 'pi pi-bolt',
@@ -357,7 +373,7 @@ const nextEvent = computed(() => {
 })
 
 const nextEventDateLabel = computed(() => {
-  if (!nextEvent.value) return 'No scheduled events yet'
+  if (!nextEvent.value) return t('pages.calendar.noScheduledEvents')
 
   return new Intl.DateTimeFormat(locale.value, {
     weekday: 'short',
@@ -371,8 +387,8 @@ const pendingDeleteEvent = computed(() =>
 )
 
 const deleteConfirmMessage = computed(() => {
-  const title = pendingDeleteEvent.value?.title || 'this event'
-  return `Are you sure you want to delete "${title}"? This action cannot be undone.`
+  const title = pendingDeleteEvent.value?.title || t('pages.calendar.nextEvent.none')
+  return t('pages.calendar.deleteConfirmMessage', { title })
 })
 
 function createEmptyForm(defaultDate) {
@@ -558,7 +574,7 @@ function updateTeamSearchQuery(value) {
 function saveEvent() {
   const payload = {
     ...formState.value,
-    title: formState.value.title.trim() || 'Untitled Event',
+    title: formState.value.title.trim() || t('pages.calendar.untitledEvent'),
     tournament: formState.value.tournament.trim() || calendarConfig.value.defaultContext,
     comment: formState.value.comment.trim(),
     time: formState.value.time || '09:00',
@@ -616,6 +632,7 @@ function goToToday() {
           :title="pageTitle"
           :subtitle="pageSubtitle"
           :action-label="addEventLabel"
+          :eyebrow-label="plannerLabel"
           @action="openCreateModal()"
         />
       </template>
@@ -623,18 +640,15 @@ function goToToday() {
       <section class="calendar-dashboard">
         <article class="calendar-highlight">
           <div class="calendar-highlight__copy">
-            <p class="calendar-highlight__eyebrow">Month snapshot</p>
+            <p class="calendar-highlight__eyebrow">{{ highlightEyebrow }}</p>
             <h2 class="calendar-highlight__title">{{ monthLabel }}</h2>
-            <p class="calendar-highlight__subtitle">
-              Keep the full sport calendar in one place for training sessions, matches, staff meetings,
-              and urgent operations follow-up.
-            </p>
+            <p class="calendar-highlight__subtitle">{{ highlightSubtitle }}</p>
           </div>
 
           <div class="calendar-highlight__next">
-            <span class="calendar-highlight__next-label">Next event</span>
+            <span class="calendar-highlight__next-label">{{ nextEventLabel }}</span>
             <strong class="calendar-highlight__next-title">
-              {{ nextEvent?.title || 'No event scheduled' }}
+              {{ nextEvent?.title || t('pages.calendar.nextEvent.none') }}
             </strong>
             <span class="calendar-highlight__next-meta">
               {{ nextEventDateLabel }}
@@ -671,6 +685,10 @@ function goToToday() {
             :weekdays="weekdayLabels"
             :days="calendarDays"
             :legend-items="legendItems"
+            :today-label="todayLabel"
+            :prev-label="prevMonthLabel"
+            :next-label="nextMonthLabel"
+            :monthly-view-label="monthlyViewLabel"
             @previous="goToPreviousMonth"
             @next="goToNextMonth"
             @today="goToToday"
@@ -683,6 +701,7 @@ function goToToday() {
             :subtitle="upcomingSubtitle"
             :events="upcomingEvents"
             :locale="locale"
+            :eyebrow-label="timelineLabel"
             :context-icon="calendarConfig.contextIcon"
             :context-label="calendarConfig.contextLabel"
             :empty-label="calendarConfig.upcomingEmptyLabel"
@@ -711,6 +730,19 @@ function goToToday() {
         :target-label="calendarConfig.audienceLabel"
         :target-search-placeholder="calendarConfig.audienceSearchPlaceholder"
         :title-placeholder="calendarConfig.titlePlaceholder"
+        :update-label="updateLabel"
+        :create-label="createLabel"
+        :save-changes-label="saveChangesLabel"
+        :save-event-label="saveEventLabel"
+        :cancel-label="t('common.cancel')"
+        :delete-label="t('common.delete')"
+        :schedule-for-label="scheduleForLabel"
+        :event-type-label="eventTypeLabel"
+        :time-label="timeLabel"
+        :title-label="titleLabel"
+        :date-label="dateLabel"
+        :optional-comment-label="optionalCommentLabel"
+        :select-event-type-label="selectEventTypeLabel"
         @update:visible="updateDialogVisible"
         @update-field="updateFormField"
         @update:team-query="updateTeamSearchQuery"
@@ -722,10 +754,10 @@ function goToToday() {
 
       <AlertQuestion
         :show="deleteConfirmVisible"
-        title="Delete schedule event?"
+        :title="t('pages.calendar.deleteConfirmTitle')"
         :message="deleteConfirmMessage"
-        confirm-text="Delete"
-        cancel-text="Cancel"
+        :confirm-text="t('common.delete')"
+        :cancel-text="t('common.cancel')"
         type="danger"
         @confirm="confirmDeleteEvent"
         @cancel="closeDeleteConfirm"

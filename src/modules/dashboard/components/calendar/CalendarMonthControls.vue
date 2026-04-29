@@ -8,31 +8,47 @@ defineProps({
     type: String,
     required: true,
   },
+  todayLabel: {
+    type: String,
+    default: 'Today',
+  },
+  prevLabel: {
+    type: String,
+    default: 'Previous month',
+  },
+  nextLabel: {
+    type: String,
+    default: 'Next month',
+  },
+  eyebrowLabel: {
+    type: String,
+    default: 'Monthly view',
+  },
 })
 </script>
 
 <template>
   <div class="calendar-month-controls">
     <div>
-      <p class="calendar-month-controls__eyebrow">Monthly view</p>
+      <p class="calendar-month-controls__eyebrow">{{ eyebrowLabel }}</p>
       <h2 class="calendar-month-controls__title">{{ monthLabel }}</h2>
     </div>
 
     <div class="calendar-month-controls__actions">
       <IconButton
         icon="pi pi-angle-left"
-        aria-label="Previous month"
+        :aria-label="prevLabel"
         variant="soft"
         @click="$emit('previous')"
       />
       <IconButton
         icon="pi pi-angle-right"
-        aria-label="Next month"
+        :aria-label="nextLabel"
         variant="soft"
         @click="$emit('next')"
       />
       <button type="button" class="calendar-month-controls__today" @click="$emit('today')">
-        Today
+        {{ todayLabel }}
       </button>
     </div>
   </div>

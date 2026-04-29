@@ -23,6 +23,22 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  todayLabel: {
+    type: String,
+    default: 'Today',
+  },
+  prevLabel: {
+    type: String,
+    default: 'Previous month',
+  },
+  nextLabel: {
+    type: String,
+    default: 'Next month',
+  },
+  monthlyViewLabel: {
+    type: String,
+    default: 'Monthly view',
+  },
 })
 </script>
 
@@ -30,6 +46,10 @@ defineProps({
   <section class="calendar-card">
     <CalendarMonthControls
       :month-label="monthLabel"
+      :today-label="todayLabel"
+      :prev-label="prevLabel"
+      :next-label="nextLabel"
+      :eyebrow-label="monthlyViewLabel"
       @previous="$emit('previous')"
       @next="$emit('next')"
       @today="$emit('today')"

@@ -24,6 +24,10 @@ defineProps({
     type: String,
     default: 'Teams',
   },
+  eyebrowLabel: {
+    type: String,
+    default: 'Timeline',
+  },
   targetIcon: {
     type: String,
     default: 'pi pi-users',
@@ -47,7 +51,7 @@ defineProps({
   <section class="upcoming-events-card">
     <header class="upcoming-events-card__header">
       <div>
-        <p class="upcoming-events-card__eyebrow">Timeline</p>
+        <p class="upcoming-events-card__eyebrow">{{ eyebrowLabel }}</p>
         <h2 class="upcoming-events-card__title">{{ title }}</h2>
       </div>
       <p class="upcoming-events-card__subtitle">{{ subtitle }}</p>

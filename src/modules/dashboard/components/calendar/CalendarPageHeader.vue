@@ -14,13 +14,17 @@ defineProps({
     type: String,
     required: true,
   },
+  eyebrowLabel: {
+    type: String,
+    default: 'Planner',
+  },
 })
 </script>
 
 <template>
   <section class="calendar-page-header">
     <div class="calendar-page-header__copy">
-      <p class="calendar-page-header__eyebrow">Planner</p>
+      <p class="calendar-page-header__eyebrow">{{ eyebrowLabel }}</p>
       <h1 class="calendar-page-header__title">{{ title }}</h1>
       <p class="calendar-page-header__subtitle">{{ subtitle }}</p>
     </div>
