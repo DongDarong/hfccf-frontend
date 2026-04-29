@@ -20,6 +20,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  time: {
+    type: String,
+    default: '',
+  },
+  relativeTime: {
+    type: String,
+    default: '',
+  },
 })
 
 const toneIcon = computed(() => {
@@ -37,18 +45,24 @@ const toneIcon = computed(() => {
       { 'notification-list-item--read': item.read },
     ]"
   >
-    <span class="notification-list-item__icon" aria-hidden="true">
-      <i :class="toneIcon" />
-    </span>
+    <div class="notification-list-item__main">
+      <span class="notification-list-item__icon" aria-hidden="true">
+        <i :class="toneIcon" />
+      </span>
 
-    <div class="notification-list-item__pill">{{ item.label }}</div>
-
-    <div class="notification-list-item__content">
       <div>
+        <div class="notification-list-item__pill">{{ item.label }}</div>
         <p class="notification-list-item__title">{{ item.title }}</p>
         <p class="notification-list-item__detail">{{ item.detail }}</p>
+        <p v-if="time" class="notification-list-item__time">
+          <span>{{ time }}</span>
+          <span v-if="relativeTime" class="notification-list-item__time-separator">•</span>
+          <span v-if="relativeTime">{{ relativeTime }}</span>
+        </p>
       </div>
+    </div>
 
+    <div class="notification-list-item__actions-wrap">
       <div class="notification-list-item__actions">
         <button
           type="button"
@@ -77,6 +91,7 @@ const toneIcon = computed(() => {
 <style scoped>
 .notification-list-item {
   display: flex;
+  justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
@@ -114,6 +129,13 @@ const toneIcon = computed(() => {
   font-size: 0.95rem;
 }
 
+.notification-list-item__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
 .notification-list-item--danger .notification-list-item__icon {
   background: #fff1f2;
   color: #be123c;
@@ -130,44 +152,54 @@ const toneIcon = computed(() => {
 }
 
 .notification-list-item__pill {
-  min-width: 7.2rem;
-  padding: 0.35rem 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  padding: 0.28rem 0.7rem;
   border-radius: 9999px;
   background: #eef6fb;
   color: #0f6e96;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-align: center;
 }
 
-.notification-list-item__content {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 .notification-list-item__title {
   margin: 0;
-  font-size: 0.94rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #122f43;
 }
 
 .notification-list-item__detail {
   margin: 0.25rem 0 0;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
   line-height: 1.6;
   color: #64748b;
+}
+
+.notification-list-item__time {
+  margin: 0.35rem 0 0;
+  color: #0f6e96;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.notification-list-item__time-separator {
+  margin-inline: 0.35rem;
+  color: #94a3b8;
+}
+
+.notification-list-item__actions-wrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .notification-list-item__actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-shrink: 0;
 }
 
 .notification-list-item__button {
@@ -222,7 +254,7 @@ const toneIcon = computed(() => {
 @media (max-width: 640px) {
   .notification-list-item {
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 1rem;
   }
 
   .notification-list-item__pill {
@@ -234,14 +266,14 @@ const toneIcon = computed(() => {
     height: 2.2rem;
   }
 
-  .notification-list-item__content,
+  .notification-list-item__main,
+  .notification-list-item__actions-wrap,
   .notification-list-item__actions {
     width: 100%;
   }
 
-  .notification-list-item__content {
-    flex-direction: column;
-    gap: 0.85rem;
+  .notification-list-item__main {
+    gap: 0.9rem;
   }
 
   .notification-list-item__button {
