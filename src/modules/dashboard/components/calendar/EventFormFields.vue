@@ -54,6 +54,34 @@ defineProps({
     type: String,
     default: 'No teams match your search.',
   },
+  scheduleForLabel: {
+    type: String,
+    default: 'Schedule for',
+  },
+  eventTypeLabel: {
+    type: String,
+    default: 'Event type',
+  },
+  timeLabel: {
+    type: String,
+    default: 'Time',
+  },
+  titleLabel: {
+    type: String,
+    default: 'Title',
+  },
+  dateLabel: {
+    type: String,
+    default: 'Date',
+  },
+  optionalCommentLabel: {
+    type: String,
+    default: 'Optional comment',
+  },
+  selectEventTypeLabel: {
+    type: String,
+    default: 'Select event type',
+  },
 })
 
 function updateField(field, value) {
@@ -68,27 +96,27 @@ function updateField(field, value) {
         <i class="pi pi-calendar-plus" aria-hidden="true" />
       </span>
       <div>
-        <p class="event-form-fields__section-kicker">Schedule for</p>
+        <p class="event-form-fields__section-kicker">{{ scheduleForLabel }}</p>
         <h3 class="event-form-fields__section-title">{{ roleTitle }}</h3>
       </div>
     </div>
 
     <div class="event-form-fields__grid">
       <div class="event-form-fields__field">
-        <label class="event-form-fields__label" for="event-type">Event type</label>
+        <label class="event-form-fields__label" for="event-type">{{ eventTypeLabel }}</label>
         <Select
           id="event-type"
           :model-value="form.type"
           :options="eventTypes"
           option-label="label"
           option-value="value"
-          placeholder="Select event type"
+          :placeholder="selectEventTypeLabel"
           @update:model-value="updateField('type', $event)"
         />
       </div>
 
       <div class="event-form-fields__field">
-        <label class="event-form-fields__label" for="event-time">Time</label>
+        <label class="event-form-fields__label" for="event-time">{{ timeLabel }}</label>
         <input
           id="event-time"
           :value="form.time"
@@ -99,7 +127,7 @@ function updateField(field, value) {
       </div>
 
       <div class="event-form-fields__field event-form-fields__field--wide">
-        <label class="event-form-fields__label" for="event-title">Title</label>
+        <label class="event-form-fields__label" for="event-title">{{ titleLabel }}</label>
         <InputText
           id="event-title"
           :model-value="form.title"
@@ -119,7 +147,7 @@ function updateField(field, value) {
       </div>
 
       <div class="event-form-fields__field">
-        <label class="event-form-fields__label" for="event-date">Date</label>
+        <label class="event-form-fields__label" for="event-date">{{ dateLabel }}</label>
         <input
           id="event-date"
           :value="form.date"
@@ -130,7 +158,7 @@ function updateField(field, value) {
       </div>
 
       <div class="event-form-fields__field event-form-fields__field--wide">
-        <label class="event-form-fields__label" for="event-comment">Optional comment</label>
+        <label class="event-form-fields__label" for="event-comment">{{ optionalCommentLabel }}</label>
         <textarea
           id="event-comment"
           :value="form.comment"

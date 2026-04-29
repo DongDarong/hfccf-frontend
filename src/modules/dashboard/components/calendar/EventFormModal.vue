@@ -82,11 +82,63 @@ const props = defineProps({
     type: String,
     default: 'No teams match your search.',
   },
+  updateLabel: {
+    type: String,
+    default: 'Update',
+  },
+  createLabel: {
+    type: String,
+    default: 'Create',
+  },
+  saveChangesLabel: {
+    type: String,
+    default: 'Save Changes',
+  },
+  saveEventLabel: {
+    type: String,
+    default: 'Save Event',
+  },
+  cancelLabel: {
+    type: String,
+    default: 'Cancel',
+  },
+  deleteLabel: {
+    type: String,
+    default: 'Delete',
+  },
+  scheduleForLabel: {
+    type: String,
+    default: 'Schedule for',
+  },
+  eventTypeLabel: {
+    type: String,
+    default: 'Event type',
+  },
+  timeLabel: {
+    type: String,
+    default: 'Time',
+  },
+  titleLabel: {
+    type: String,
+    default: 'Title',
+  },
+  dateLabel: {
+    type: String,
+    default: 'Date',
+  },
+  optionalCommentLabel: {
+    type: String,
+    default: 'Optional comment',
+  },
+  selectEventTypeLabel: {
+    type: String,
+    default: 'Select event type',
+  },
 })
 
 const dialogTitle = computed(() => (props.mode === 'edit' ? props.editTitle : props.createTitle))
 
-const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Save Event'))
+const submitLabel = computed(() => (props.mode === 'edit' ? props.saveChangesLabel : props.saveEventLabel))
 </script>
 
 <template>
@@ -107,7 +159,7 @@ const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Sa
   >
     <template #header>
       <div class="event-form-modal__header">
-        <p class="event-form-modal__eyebrow">{{ mode === 'edit' ? 'Update' : 'Create' }}</p>
+        <p class="event-form-modal__eyebrow">{{ mode === 'edit' ? updateLabel : createLabel }}</p>
         <h2 class="event-form-modal__title">{{ dialogTitle }}</h2>
         <p v-if="description" class="event-form-modal__description">{{ description }}</p>
       </div>
@@ -126,6 +178,13 @@ const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Sa
       :target-label="targetLabel"
       :target-search-placeholder="targetSearchPlaceholder"
       :title-placeholder="titlePlaceholder"
+      :schedule-for-label="scheduleForLabel"
+      :event-type-label="eventTypeLabel"
+      :time-label="timeLabel"
+      :title-label="titleLabel"
+      :date-label="dateLabel"
+      :optional-comment-label="optionalCommentLabel"
+      :select-event-type-label="selectEventTypeLabel"
       @update-field="$emit('update-field', $event)"
       @update:team-query="$emit('update:teamQuery', $event)"
       @update:selected-team-ids="$emit('update:selectedTeamIds', $event)"
@@ -139,12 +198,12 @@ const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Sa
           class="event-form-modal__delete"
           @click="$emit('delete')"
         >
-          Delete
+          {{ deleteLabel }}
         </button>
 
         <div class="event-form-modal__actions">
           <button type="button" class="event-form-modal__cancel" @click="$emit('cancel')">
-            Cancel
+            {{ cancelLabel }}
           </button>
           <button type="button" class="event-form-modal__save" @click="$emit('save')">
             {{ submitLabel }}
