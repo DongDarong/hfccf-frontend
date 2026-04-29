@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import NotificationFilterTabs from '@/modules/dashboard/components/notifications/NotificationFilterTabs.vue'
 import NotificationInboxCard from '@/modules/dashboard/components/notifications/NotificationInboxCard.vue'
 
 const { t, language } = useLanguage()
@@ -15,6 +16,7 @@ const deletedNotificationIds = ref([])
 const confirmAction = ref(null)
 const pendingNotification = ref(null)
 const isLoading = ref(false)
+const activeFilter = ref('all')
 const subtitle = computed(() =>
   isKh.value
     ? 'មើលការជូនដំណឹងថ្មីៗ និងសកម្មភាពដែលត្រូវការតាមដានពីគ្រប់ផ្នែកការងារ។'
@@ -62,6 +64,41 @@ const visibleNotifications = computed(() =>
       read: readNotificationIds.value.includes(item.id),
     })),
 )
+const unreadNotifications = computed(() => visibleNotifications.value.filter((item) => !item.read))
+const readNotifications = computed(() => visibleNotifications.value.filter((item) => item.read))
+const filteredNotifications = computed(() => {
+  if (activeFilter.value === 'unread') return unreadNotifications.value
+  if (activeFilter.value === 'read') return readNotifications.value
+  return visibleNotifications.value
+})
+const filterTabs = computed(() => [
+  {
+    value: 'all',
+    label: isKh.value ? 'ទាំងអស់' : 'All',
+    count: visibleNotifications.value.length,
+  },
+  {
+    value: 'unread',
+    label: isKh.value ? 'មិនទាន់អាន' : 'Unread',
+    count: unreadNotifications.value.length,
+  },
+  {
+    value: 'read',
+    label: isKh.value ? 'បានអាន' : 'Read',
+    count: readNotifications.value.length,
+  },
+])
+const filteredEmptyText = computed(() => {
+  if (activeFilter.value === 'unread') {
+    return isKh.value ? 'មិនមានការជូនដំណឹងមិនទាន់អានទេ។' : 'No unread notifications to show.'
+  }
+
+  if (activeFilter.value === 'read') {
+    return isKh.value ? 'មិនមានការជូនដំណឹងដែលបានអានទេ។' : 'No read notifications to show.'
+  }
+
+  return emptyText.value
+})
 const alertTitle = computed(() => {
   if (confirmAction.value === 'clear-all') {
     return isKh.value ? 'លុបការជូនដំណឹងទាំងអស់?' : 'Clear all notifications?'
@@ -141,10 +178,16 @@ function runNotificationAction(callback) {
     <section :class="isKh ? 'global-page global-page--kh' : 'global-page'">
       <HeaderSection :title="title" :subtitle="subtitle" />
 
+      <NotificationFilterTabs
+        v-model:active-tab="activeFilter"
+        :tabs="filterTabs"
+        :disabled="isLoading"
+      />
+
       <NotificationInboxCard
         :eyebrow="inboxLabel"
-        :notifications="visibleNotifications"
-        :empty-text="emptyText"
+        :notifications="filteredNotifications"
+        :empty-text="filteredEmptyText"
         :mark-read-label="markReadLabel"
         :delete-label="deleteLabel"
         :clear-all-label="clearAllLabel"
@@ -178,6 +221,7 @@ function runNotificationAction(callback) {
 
 .global-page--kh :deep(.notification-inbox-card__eyebrow),
 .global-page--kh :deep(.notification-inbox-card__empty),
+.global-page--kh :deep(.notification-filter-tabs__button),
 .global-page--kh :deep(.notification-list-item__pill),
 .global-page--kh :deep(.notification-list-item__title),
 .global-page--kh :deep(.notification-list-item__detail) {
