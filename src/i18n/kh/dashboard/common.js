@@ -69,6 +69,7 @@ export default {
   view: 'មើល',
   edit: 'កែសម្រួល',
   delete: 'លុប',
+  saveChanges: 'រក្សាទុកការផ្លាស់ប្តូរ',
   dashboardOverview: 'ទិដ្ឋភាពទូទៅនៃផ្ទាំងគ្រប់គ្រង',
   dashboardOverviewSubtitle: 'តាមដានព័ត៌មានសំខាន់ៗ និងសកម្មភាពថ្មីៗនៅកន្លែងតែមួយ។',
   dashboardStats: {

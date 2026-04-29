@@ -162,5 +162,22 @@ export default {
       },
     },
   },
+  profile: {
+    general: {
+      title: 'General Information',
+      description: 'Update your personal details and contact information.',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email address',
+      phone: 'Phone number',
+      department: 'Department',
+      bio: 'Bio',
+      bioPlaceholder: 'Brief description about yourself...',
+      firstNamePlaceholder: 'Enter first name',
+      lastNamePlaceholder: 'Enter last name',
+      emailPlaceholder: 'email{\'@\'}example.com',
+      phonePlaceholder: '+855 12 345 678',
+      departmentPlaceholder: 'Select department',
+    },
+  },
 }
-

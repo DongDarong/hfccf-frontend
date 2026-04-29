@@ -69,6 +69,7 @@ export default {
   view: 'View',
   edit: 'Edit',
   delete: 'Delete',
+  saveChanges: 'Save Changes',
   dashboardOverview: 'Dashboard Overview',
   dashboardOverviewSubtitle: 'Track key updates and recent activity in one place.',
   dashboardStats: {
