@@ -1,13 +1,20 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import NotificationInboxCard from '@/modules/dashboard/components/notifications/NotificationInboxCard.vue'
 
 const { t, language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
 
 const title = computed(() => t('common.notifications'))
+const readNotificationIds = ref([])
+const deletedNotificationIds = ref([])
+const confirmAction = ref(null)
+const pendingNotification = ref(null)
+const isLoading = ref(false)
 const subtitle = computed(() =>
   isKh.value
     ? 'មើលការជូនដំណឹងថ្មីៗ និងសកម្មភាពដែលត្រូវការតាមដានពីគ្រប់ផ្នែកការងារ។'
@@ -16,24 +23,117 @@ const subtitle = computed(() =>
 
 const notifications = computed(() => [
   {
+    id: 'approval-requests',
     tone: 'danger',
     label: isKh.value ? 'ត្រូវការឆ្លើយតប' : 'Needs action',
     title: isKh.value ? 'មានសំណើអនុម័តថ្មី 4' : '4 new approval requests are waiting',
-    detail: isKh.value ? 'តាមដានពីផ្ទាំងការងាររដ្ឋបាល និងកម្មវិធី' : 'Follow up from administration and program dashboards',
+    detail: isKh.value
+      ? 'តាមដានពីផ្ទាំងការងាររដ្ឋបាល និងកម្មវិធី'
+      : 'Follow up from administration and program dashboards',
   },
   {
+    id: 'schedule-updated',
     tone: 'info',
     label: isKh.value ? 'ព័ត៌មាន' : 'Update',
     title: isKh.value ? 'កាលវិភាគប្រចាំថ្ងៃត្រូវបានធ្វើបច្ចុប្បន្នភាព' : 'The shared daily schedule was updated',
     detail: isKh.value ? 'ពិនិត្យព្រឹត្តិការណ៍ និងកិច្ចប្រជុំបន្ថែម' : 'Check new meetings and event changes',
   },
   {
+    id: 'backup-completed',
     tone: 'success',
     label: isKh.value ? 'បានបញ្ចប់' : 'Completed',
     title: isKh.value ? 'ការបម្រុងទុកប្រព័ន្ធបានសម្រេច' : 'System backup completed successfully',
     detail: isKh.value ? 'មិនត្រូវការសកម្មភាពបន្ថែម' : 'No further action is required',
   },
 ])
+
+const inboxLabel = computed(() => (isKh.value ? 'ប្រអប់ជូនដំណឹង' : 'Inbox'))
+const emptyText = computed(() => (isKh.value ? 'មិនមានការជូនដំណឹងត្រូវបង្ហាញ។' : 'No notifications to show.'))
+const markReadLabel = computed(() => (isKh.value ? 'បានអាន' : 'Mark Read'))
+const deleteLabel = computed(() => (isKh.value ? 'លុប' : 'Delete'))
+const clearAllLabel = computed(() => (isKh.value ? 'លុបទាំងអស់' : 'Clear All'))
+const cancelLabel = computed(() => (isKh.value ? 'បោះបង់' : 'Cancel'))
+const loadingLabel = computed(() => (isKh.value ? 'កំពុងដំណើរការ' : 'Updating notifications'))
+const visibleNotifications = computed(() =>
+  notifications.value
+    .filter((item) => !deletedNotificationIds.value.includes(item.id))
+    .map((item) => ({
+      ...item,
+      read: readNotificationIds.value.includes(item.id),
+    })),
+)
+const alertTitle = computed(() => {
+  if (confirmAction.value === 'clear-all') {
+    return isKh.value ? 'លុបការជូនដំណឹងទាំងអស់?' : 'Clear all notifications?'
+  }
+
+  return isKh.value ? 'លុបការជូនដំណឹង?' : 'Delete notification?'
+})
+const alertMessage = computed(() => {
+  if (confirmAction.value === 'clear-all') {
+    return isKh.value
+      ? 'តើអ្នកពិតជាចង់លុបការជូនដំណឹងទាំងអស់មែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។'
+      : 'Are you sure you want to clear all notifications? This action cannot be undone.'
+  }
+
+  const notificationTitle = pendingNotification.value?.title || (isKh.value ? 'ការជូនដំណឹងនេះ' : 'this notification')
+  return isKh.value
+    ? `តើអ្នកពិតជាចង់លុប "${notificationTitle}" មែនទេ?`
+    : `Are you sure you want to delete "${notificationTitle}"?`
+})
+
+function markNotificationRead(item) {
+  if (isLoading.value) return
+  if (!item?.id || readNotificationIds.value.includes(item.id)) return
+  runNotificationAction(() => {
+    readNotificationIds.value = [...readNotificationIds.value, item.id]
+  })
+}
+
+function deleteNotification(item) {
+  if (isLoading.value) return
+  if (!item?.id || deletedNotificationIds.value.includes(item.id)) return
+  pendingNotification.value = item
+  confirmAction.value = 'delete'
+}
+
+function clearAllNotifications() {
+  if (isLoading.value) return
+  if (!visibleNotifications.value.length) return
+  pendingNotification.value = null
+  confirmAction.value = 'clear-all'
+}
+
+function cancelQuestion() {
+  confirmAction.value = null
+  pendingNotification.value = null
+}
+
+function confirmQuestion() {
+  if (isLoading.value) return
+  const action = confirmAction.value
+  const notificationId = pendingNotification.value?.id
+
+  cancelQuestion()
+
+  runNotificationAction(() => {
+    if (action === 'delete' && notificationId) {
+      deletedNotificationIds.value = [...deletedNotificationIds.value, notificationId]
+    }
+
+    if (action === 'clear-all') {
+      deletedNotificationIds.value = notifications.value.map((item) => item.id)
+    }
+  })
+}
+
+function runNotificationAction(callback) {
+  isLoading.value = true
+  window.setTimeout(() => {
+    callback()
+    isLoading.value = false
+  }, 350)
+}
 </script>
 
 <template>
@@ -41,23 +141,30 @@ const notifications = computed(() => [
     <section :class="isKh ? 'global-page global-page--kh' : 'global-page'">
       <HeaderSection :title="title" :subtitle="subtitle" />
 
-      <article class="global-card">
-        <p class="global-card__eyebrow">{{ isKh ? 'ប្រអប់ជូនដំណឹង' : 'Inbox' }}</p>
-        <div class="notification-list">
-          <div
-            v-for="item in notifications"
-            :key="item.title"
-            class="notification-list__item"
-            :class="`notification-list__item--${item.tone}`"
-          >
-            <div class="notification-list__pill">{{ item.label }}</div>
-            <div>
-              <p class="notification-list__title">{{ item.title }}</p>
-              <p class="notification-list__detail">{{ item.detail }}</p>
-            </div>
-          </div>
-        </div>
-      </article>
+      <NotificationInboxCard
+        :eyebrow="inboxLabel"
+        :notifications="visibleNotifications"
+        :empty-text="emptyText"
+        :mark-read-label="markReadLabel"
+        :delete-label="deleteLabel"
+        :clear-all-label="clearAllLabel"
+        :loading="isLoading"
+        :loading-label="loadingLabel"
+        @clear-all="clearAllNotifications"
+        @mark-notification-read="markNotificationRead"
+        @delete-notification="deleteNotification"
+      />
+
+      <AlertQuestion
+        :show="Boolean(confirmAction)"
+        :title="alertTitle"
+        :message="alertMessage"
+        :confirm-text="confirmAction === 'clear-all' ? clearAllLabel : deleteLabel"
+        :cancel-text="cancelLabel"
+        type="danger"
+        @confirm="confirmQuestion"
+        @cancel="cancelQuestion"
+      />
     </section>
   </MainLayout>
 </template>
@@ -69,97 +176,17 @@ const notifications = computed(() => [
   gap: 1.25rem;
 }
 
-.global-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.05);
-}
-
-.global-card__eyebrow {
-  margin: 0 0 1rem;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--hope-cyan);
-}
-
-.notification-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.notification-list__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 1rem;
-  border: 1px solid #e7eef6;
-  background: white;
-}
-
-.notification-list__item--danger {
-  border-left: 4px solid var(--hope-red);
-}
-
-.notification-list__item--info {
-  border-left: 4px solid var(--hope-cyan);
-}
-
-.notification-list__item--success {
-  border-left: 4px solid var(--hope-lime);
-}
-
-.notification-list__pill {
-  min-width: 7.2rem;
-  padding: 0.35rem 0.7rem;
-  border-radius: 9999px;
-  background: #eef6fb;
-  color: #0f6e96;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-align: center;
-}
-
-.notification-list__title {
-  margin: 0;
-  font-size: 0.94rem;
-  font-weight: 800;
-  color: #122f43;
-}
-
-.notification-list__detail {
-  margin: 0.25rem 0 0;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  color: #64748b;
-}
-
-.global-page--kh .global-card__eyebrow,
-.global-page--kh .notification-list__pill,
-.global-page--kh .notification-list__title,
-.global-page--kh .notification-list__detail {
+.global-page--kh :deep(.notification-inbox-card__eyebrow),
+.global-page--kh :deep(.notification-inbox-card__empty),
+.global-page--kh :deep(.notification-list-item__pill),
+.global-page--kh :deep(.notification-list-item__title),
+.global-page--kh :deep(.notification-list-item__detail) {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
-.global-page--kh .global-card__eyebrow {
+.global-page--kh :deep(.notification-inbox-card__eyebrow) {
   text-transform: none;
   letter-spacing: 0.01em;
-}
-
-@media (max-width: 640px) {
-  .notification-list__item {
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-
-  .notification-list__pill {
-    min-width: 0;
-  }
 }
 </style>
