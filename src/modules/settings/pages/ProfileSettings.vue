@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import ProfileSettingsGrid from '@/modules/settings/components/profile-settings/ProfileSettingsGrid.vue'
 
 const { language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
@@ -41,12 +42,7 @@ const sections = computed(() => [
     <section :class="isKh ? 'global-page global-page--kh' : 'global-page'">
       <HeaderSection :title="title" :subtitle="subtitle" />
 
-      <div class="global-page__grid">
-        <article v-for="section in sections" :key="section.title" class="global-card">
-          <h3 class="global-card__title">{{ section.title }}</h3>
-          <p class="global-card__copy">{{ section.copy }}</p>
-        </article>
-      </div>
+      <ProfileSettingsGrid :sections="sections" />
     </section>
   </MainLayout>
 </template>
@@ -58,43 +54,9 @@ const sections = computed(() => [
   gap: 1.25rem;
 }
 
-.global-page__grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.global-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.05);
-}
-
-.global-card__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #122f43;
-}
-
-.global-card__copy {
-  margin: 0.55rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: #64748b;
-}
-
-.global-page--kh .global-card__title,
-.global-page--kh .global-card__copy {
+.global-page--kh :deep(.profile-settings-card__title),
+.global-page--kh :deep(.profile-settings-card__copy) {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
-}
-
-@media (max-width: 1000px) {
-  .global-page__grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>
