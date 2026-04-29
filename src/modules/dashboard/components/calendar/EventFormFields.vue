@@ -22,6 +22,38 @@ defineProps({
     type: String,
     default: '',
   },
+  roleTitle: {
+    type: String,
+    default: 'Schedule details',
+  },
+  contextLabel: {
+    type: String,
+    default: 'Tournament',
+  },
+  contextPlaceholder: {
+    type: String,
+    default: 'Enter tournament name',
+  },
+  titlePlaceholder: {
+    type: String,
+    default: 'Enter event title',
+  },
+  notePlaceholder: {
+    type: String,
+    default: 'Add context, notes, or any urgent reminders',
+  },
+  targetLabel: {
+    type: String,
+    default: 'Teams',
+  },
+  targetSearchPlaceholder: {
+    type: String,
+    default: 'Search teams',
+  },
+  targetEmptyLabel: {
+    type: String,
+    default: 'No teams match your search.',
+  },
 })
 
 function updateField(field, value) {
@@ -31,6 +63,16 @@ function updateField(field, value) {
 
 <template>
   <div class="event-form-fields">
+    <div class="event-form-fields__section-header">
+      <span class="event-form-fields__section-icon">
+        <i class="pi pi-calendar-plus" aria-hidden="true" />
+      </span>
+      <div>
+        <p class="event-form-fields__section-kicker">Schedule for</p>
+        <h3 class="event-form-fields__section-title">{{ roleTitle }}</h3>
+      </div>
+    </div>
+
     <div class="event-form-fields__grid">
       <div class="event-form-fields__field">
         <label class="event-form-fields__label" for="event-type">Event type</label>
@@ -61,17 +103,17 @@ function updateField(field, value) {
         <InputText
           id="event-title"
           :model-value="form.title"
-          placeholder="Enter event title"
+          :placeholder="titlePlaceholder"
           @update:model-value="updateField('title', $event)"
         />
       </div>
 
       <div class="event-form-fields__field">
-        <label class="event-form-fields__label" for="event-tournament">Tournament</label>
+        <label class="event-form-fields__label" for="event-tournament">{{ contextLabel }}</label>
         <InputText
           id="event-tournament"
           :model-value="form.tournament"
-          placeholder="Enter tournament name"
+          :placeholder="contextPlaceholder"
           @update:model-value="updateField('tournament', $event)"
         />
       </div>
@@ -94,7 +136,7 @@ function updateField(field, value) {
           :value="form.comment"
           rows="4"
           class="event-form-fields__textarea"
-          placeholder="Add context, notes, or any urgent reminders"
+          :placeholder="notePlaceholder"
           @input="updateField('comment', $event.target.value)"
         ></textarea>
       </div>
@@ -104,6 +146,9 @@ function updateField(field, value) {
       :teams="teams"
       :selected-team-ids="form.teamIds"
       :query="teamQuery"
+      :empty-label="targetEmptyLabel"
+      :label="targetLabel"
+      :search-placeholder="targetSearchPlaceholder"
       @update:query="$emit('update:teamQuery', $event)"
       @update:selected-team-ids="$emit('update:selectedTeamIds', $event)"
     />
@@ -115,6 +160,43 @@ function updateField(field, value) {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.event-form-fields__section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid #dce8ef;
+  border-radius: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  background: #f8fbfd;
+}
+
+.event-form-fields__section-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: #e9f9ff;
+  color: #0089bc;
+  font-size: 0.95rem;
+}
+
+.event-form-fields__section-kicker {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.event-form-fields__section-title {
+  margin: 0.12rem 0 0;
+  color: #1d1d1b;
+  font-size: 0.98rem;
+  font-weight: 900;
 }
 
 .event-form-fields__grid {

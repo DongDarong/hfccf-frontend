@@ -20,6 +20,26 @@ defineProps({
     type: String,
     default: 'en-US',
   },
+  targetLabel: {
+    type: String,
+    default: 'Teams',
+  },
+  targetIcon: {
+    type: String,
+    default: 'pi pi-users',
+  },
+  contextLabel: {
+    type: String,
+    default: 'Tournament',
+  },
+  contextIcon: {
+    type: String,
+    default: 'pi pi-trophy',
+  },
+  emptyLabel: {
+    type: String,
+    default: 'No upcoming events scheduled for this month.',
+  },
 })
 </script>
 
@@ -39,11 +59,15 @@ defineProps({
         :key="event.id"
         :event="event"
         :locale="locale"
+        :context-icon="contextIcon"
+        :context-label="contextLabel"
+        :target-icon="targetIcon"
+        :target-label="targetLabel"
         @select="$emit('select-event', $event)"
       />
 
       <div v-if="!events.length" class="upcoming-events-card__empty">
-        No upcoming events scheduled for this month.
+        {{ emptyLabel }}
       </div>
     </div>
   </section>

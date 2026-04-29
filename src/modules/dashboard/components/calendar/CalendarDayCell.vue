@@ -1,7 +1,7 @@
 <script setup>
 import CalendarEventPill from '@/modules/dashboard/components/calendar/CalendarEventPill.vue'
 
-const emit = defineEmits(['select-event', 'add-event'])
+defineEmits(['select-event', 'add-event'])
 
 const props = defineProps({
   day: {

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import EventFormFields from '@/modules/dashboard/components/calendar/EventFormFields.vue'
 
-const emit = defineEmits([
+defineEmits([
   'update:visible',
   'save',
   'cancel',
@@ -38,11 +38,53 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  createTitle: {
+    type: String,
+    default: 'Create Schedule Event',
+  },
+  editTitle: {
+    type: String,
+    default: 'Edit Schedule Event',
+  },
+  roleTitle: {
+    type: String,
+    default: 'Schedule details',
+  },
+  description: {
+    type: String,
+    default: '',
+  },
+  contextLabel: {
+    type: String,
+    default: 'Tournament',
+  },
+  contextPlaceholder: {
+    type: String,
+    default: 'Enter tournament name',
+  },
+  titlePlaceholder: {
+    type: String,
+    default: 'Enter event title',
+  },
+  notePlaceholder: {
+    type: String,
+    default: 'Add context, notes, or any urgent reminders',
+  },
+  targetLabel: {
+    type: String,
+    default: 'Teams',
+  },
+  targetSearchPlaceholder: {
+    type: String,
+    default: 'Search teams',
+  },
+  targetEmptyLabel: {
+    type: String,
+    default: 'No teams match your search.',
+  },
 })
 
-const dialogTitle = computed(() =>
-  props.mode === 'edit' ? 'Edit Schedule Event' : 'Create Schedule Event',
-)
+const dialogTitle = computed(() => (props.mode === 'edit' ? props.editTitle : props.createTitle))
 
 const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Save Event'))
 </script>
@@ -67,6 +109,7 @@ const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Sa
       <div class="event-form-modal__header">
         <p class="event-form-modal__eyebrow">{{ mode === 'edit' ? 'Update' : 'Create' }}</p>
         <h2 class="event-form-modal__title">{{ dialogTitle }}</h2>
+        <p v-if="description" class="event-form-modal__description">{{ description }}</p>
       </div>
     </template>
 
@@ -75,6 +118,14 @@ const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Sa
       :event-types="eventTypes"
       :teams="teams"
       :team-query="teamQuery"
+      :context-label="contextLabel"
+      :context-placeholder="contextPlaceholder"
+      :note-placeholder="notePlaceholder"
+      :role-title="roleTitle"
+      :target-empty-label="targetEmptyLabel"
+      :target-label="targetLabel"
+      :target-search-placeholder="targetSearchPlaceholder"
+      :title-placeholder="titlePlaceholder"
       @update-field="$emit('update-field', $event)"
       @update:team-query="$emit('update:teamQuery', $event)"
       @update:selected-team-ids="$emit('update:selectedTeamIds', $event)"
@@ -124,6 +175,14 @@ const submitLabel = computed(() => (props.mode === 'edit' ? 'Save Changes' : 'Sa
   color: #1d1d1b;
   font-size: 1.3rem;
   font-weight: 900;
+}
+
+.event-form-modal__description {
+  margin: 0.55rem 0 0;
+  max-width: 36rem;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 
 .event-form-modal__footer {

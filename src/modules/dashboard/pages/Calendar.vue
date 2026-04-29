@@ -2,6 +2,10 @@
 import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { DOMAINS, getRoleAccess } from '@/constants/access'
+import { normalizeRole } from '@/constants/roles'
+import { useUserStore } from '@/store/userStore'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import CalendarCard from '@/modules/dashboard/components/calendar/CalendarCard.vue'
 import CalendarLayoutShell from '@/modules/dashboard/components/calendar/CalendarLayoutShell.vue'
 import CalendarPageHeader from '@/modules/dashboard/components/calendar/CalendarPageHeader.vue'
@@ -9,6 +13,7 @@ import EventFormModal from '@/modules/dashboard/components/calendar/EventFormMod
 import UpcomingEventsCard from '@/modules/dashboard/components/calendar/UpcomingEventsCard.vue'
 
 const { language } = useLanguage()
+const userStore = useUserStore()
 
 const EVENT_TYPE_OPTIONS = [
   { value: 'match', label: 'Match', color: '#00AEEF' },
@@ -26,6 +31,167 @@ const teams = [
   { id: 6, name: 'Yellow Tactics', group: 'Staff & Coaches' },
 ]
 
+const ROLE_CALENDAR_CONFIG = {
+  [DOMAINS.SPORT]: {
+    title: 'Sport schedule',
+    createTitle: 'Create Sport Event',
+    editTitle: 'Edit Sport Event',
+    description: 'Choose the activity, date, and team groups that need to see this event.',
+    eventTypes: EVENT_TYPE_OPTIONS,
+    contextLabel: 'Competition or program',
+    contextPlaceholder: 'Enter competition, camp, or department',
+    titlePlaceholder: 'Example: Falcons vs River Academy',
+    notePlaceholder: 'Add venue, kit, roster, or urgent reminders',
+    audienceLabel: 'Teams',
+    audienceSearchPlaceholder: 'Search teams',
+    audienceEmptyLabel: 'No teams match your search.',
+    upcomingTitle: 'Upcoming Sport Events',
+    upcomingSubtitle: 'Monthly view of training sessions, matches, meetings, and team commitments.',
+    upcomingEmptyLabel: 'No sport events scheduled for this month.',
+    targetIcon: 'pi pi-users',
+    contextIcon: 'pi pi-flag',
+    targetSummaryLabel: 'Teams involved',
+    defaultContext: 'General Schedule',
+    defaultType: 'match',
+    targets: teams,
+  },
+  [DOMAINS.ENGLISH]: {
+    title: 'English class schedule',
+    createTitle: 'Create English Schedule Event',
+    editTitle: 'Edit English Schedule Event',
+    description: 'Create events for classes, teachers, exams, or program activities.',
+    eventTypes: [
+      { value: 'training', label: 'Class', color: '#8DC63F' },
+      { value: 'meeting', label: 'Meeting', color: '#FDC116' },
+      { value: 'match', label: 'Assessment', color: '#00AEEF' },
+      { value: 'urgent', label: 'Urgent', color: '#ED1C24' },
+    ],
+    contextLabel: 'Class or program',
+    contextPlaceholder: 'Enter class, level, or program',
+    titlePlaceholder: 'Example: Level 3 speaking assessment',
+    notePlaceholder: 'Add classroom, materials, teacher notes, or reminders',
+    audienceLabel: 'Classes and staff',
+    audienceSearchPlaceholder: 'Search classes or staff',
+    audienceEmptyLabel: 'No classes or staff match your search.',
+    upcomingTitle: 'Upcoming English Events',
+    upcomingSubtitle: 'Monthly view of classes, assessments, meetings, and staff commitments.',
+    upcomingEmptyLabel: 'No English program events scheduled for this month.',
+    targetIcon: 'pi pi-book',
+    contextIcon: 'pi pi-building',
+    targetSummaryLabel: 'Classes involved',
+    defaultContext: 'English Program',
+    defaultType: 'training',
+    targets: [
+      { id: 101, name: 'English Level 1', group: 'Morning class' },
+      { id: 102, name: 'English Level 2', group: 'Afternoon class' },
+      { id: 103, name: 'English Level 3', group: 'Exam preparation' },
+      { id: 104, name: 'English Teachers', group: 'Staff' },
+    ],
+  },
+  [DOMAINS.PRESCHOOL]: {
+    title: 'Preschool schedule',
+    createTitle: 'Create Preschool Schedule Event',
+    editTitle: 'Edit Preschool Schedule Event',
+    description: 'Plan class activities, parent meetings, care routines, and staff events.',
+    eventTypes: [
+      { value: 'training', label: 'Class Activity', color: '#8DC63F' },
+      { value: 'meeting', label: 'Parent Meeting', color: '#FDC116' },
+      { value: 'match', label: 'School Event', color: '#00AEEF' },
+      { value: 'urgent', label: 'Urgent', color: '#ED1C24' },
+    ],
+    contextLabel: 'Class or area',
+    contextPlaceholder: 'Enter class, room, or learning area',
+    titlePlaceholder: 'Example: Parent progress meeting',
+    notePlaceholder: 'Add room, care notes, materials, or reminders',
+    audienceLabel: 'Classes and staff',
+    audienceSearchPlaceholder: 'Search classes or staff',
+    audienceEmptyLabel: 'No classes or staff match your search.',
+    upcomingTitle: 'Upcoming Preschool Events',
+    upcomingSubtitle: 'Monthly view of class activities, parent meetings, routines, and staff events.',
+    upcomingEmptyLabel: 'No preschool events scheduled for this month.',
+    targetIcon: 'pi pi-home',
+    contextIcon: 'pi pi-building',
+    targetSummaryLabel: 'Classes involved',
+    defaultContext: 'Preschool Program',
+    defaultType: 'training',
+    targets: [
+      { id: 201, name: 'Nursery A', group: 'Preschool' },
+      { id: 202, name: 'Nursery B', group: 'Preschool' },
+      { id: 203, name: 'Kindergarten', group: 'Preschool' },
+      { id: 204, name: 'Preschool Teachers', group: 'Staff' },
+    ],
+  },
+  [DOMAINS.SCHOLARSHIP]: {
+    title: 'Scholarship schedule',
+    createTitle: 'Create Scholarship Schedule Event',
+    editTitle: 'Edit Scholarship Schedule Event',
+    description: 'Schedule student reviews, document deadlines, interviews, and follow-up tasks.',
+    eventTypes: [
+      { value: 'meeting', label: 'Review', color: '#FDC116' },
+      { value: 'match', label: 'Interview', color: '#00AEEF' },
+      { value: 'training', label: 'Workshop', color: '#8DC63F' },
+      { value: 'urgent', label: 'Deadline', color: '#ED1C24' },
+    ],
+    contextLabel: 'Scholarship cycle',
+    contextPlaceholder: 'Enter cycle, cohort, or review round',
+    titlePlaceholder: 'Example: Final document deadline',
+    notePlaceholder: 'Add document requirements, location, or follow-up details',
+    audienceLabel: 'Cohorts and staff',
+    audienceSearchPlaceholder: 'Search cohorts or staff',
+    audienceEmptyLabel: 'No cohorts or staff match your search.',
+    upcomingTitle: 'Upcoming Scholarship Events',
+    upcomingSubtitle: 'Monthly view of reviews, interviews, workshops, deadlines, and follow-up tasks.',
+    upcomingEmptyLabel: 'No scholarship events scheduled for this month.',
+    targetIcon: 'pi pi-users',
+    contextIcon: 'pi pi-id-card',
+    targetSummaryLabel: 'Cohorts involved',
+    defaultContext: 'Scholarship Program',
+    defaultType: 'meeting',
+    targets: [
+      { id: 301, name: 'New Applicants', group: '2026 cycle' },
+      { id: 302, name: 'Shortlisted Students', group: 'Review stage' },
+      { id: 303, name: 'Current Scholars', group: 'Active support' },
+      { id: 304, name: 'Scholarship Staff', group: 'Staff' },
+    ],
+  },
+  [DOMAINS.GLOBAL]: {
+    title: 'Super admin schedule',
+    createTitle: 'Create Organization Event',
+    editTitle: 'Edit Organization Event',
+    description: 'Create organization-wide events and choose which programs need visibility.',
+    eventTypes: [
+      { value: 'meeting', label: 'Leadership Meeting', color: '#FDC116' },
+      { value: 'training', label: 'Cross-program Activity', color: '#8DC63F' },
+      { value: 'match', label: 'Public Event', color: '#00AEEF' },
+      { value: 'urgent', label: 'Urgent Notice', color: '#ED1C24' },
+    ],
+    contextLabel: 'Owner or department',
+    contextPlaceholder: 'Enter owner, department, or initiative',
+    titlePlaceholder: 'Example: Monthly leadership review',
+    notePlaceholder: 'Add agenda, location, responsible owner, or follow-up details',
+    audienceLabel: 'Visible to',
+    audienceSearchPlaceholder: 'Search programs or departments',
+    audienceEmptyLabel: 'No programs or departments match your search.',
+    upcomingTitle: 'Upcoming Organization Events',
+    upcomingSubtitle: 'Monthly view of organization-wide events, leadership meetings, and program notices.',
+    upcomingEmptyLabel: 'No organization events scheduled for this month.',
+    targetIcon: 'pi pi-sitemap',
+    contextIcon: 'pi pi-briefcase',
+    targetSummaryLabel: 'Programs involved',
+    defaultContext: 'Organization Schedule',
+    defaultType: 'meeting',
+    defaultTargetIds: [400],
+    targets: [
+      { id: 400, name: 'All Programs', group: 'Organization-wide' },
+      { id: 401, name: 'English Program', group: 'Education' },
+      { id: 402, name: 'Preschool Program', group: 'Education' },
+      { id: 403, name: 'Scholarship Program', group: 'Education' },
+      { id: 404, name: 'Sport Program', group: 'Athletics' },
+      { id: 405, name: 'Operations Team', group: 'Administration' },
+    ],
+  },
+}
+
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 const currentMonth = ref(new Date(today.getFullYear(), today.getMonth(), 1))
@@ -34,14 +200,22 @@ const events = ref(buildMockEvents(today))
 const dialogVisible = ref(false)
 const dialogMode = ref('create')
 const editingEventId = ref(null)
+const deleteConfirmVisible = ref(false)
+const pendingDeleteEventId = ref(null)
 const teamSearchQuery = ref('')
+
+const currentRole = computed(() => normalizeRole(userStore.currentUser?.role))
+const currentDomain = computed(() => getRoleAccess(currentRole.value)?.domain || DOMAINS.SPORT)
+const calendarConfig = computed(() => ROLE_CALENDAR_CONFIG[currentDomain.value] || ROLE_CALENDAR_CONFIG[DOMAINS.SPORT])
+const eventTypeOptions = computed(() => calendarConfig.value.eventTypes)
+const scheduleTargets = computed(() => calendarConfig.value.targets)
 const formState = ref(createEmptyForm(formatDate(today)))
 
 const typeLookup = computed(() =>
-  Object.fromEntries(EVENT_TYPE_OPTIONS.map((item) => [item.value, item])),
+  Object.fromEntries(eventTypeOptions.value.map((item) => [item.value, item])),
 )
 
-const teamLookup = computed(() => Object.fromEntries(teams.map((team) => [team.id, team])))
+const teamLookup = computed(() => Object.fromEntries(scheduleTargets.value.map((team) => [team.id, team])))
 
 const locale = computed(() => (language.value === 'KH' ? 'km-KH' : 'en-US'))
 const pageTitle = computed(() =>
@@ -50,16 +224,16 @@ const pageTitle = computed(() =>
 const pageSubtitle = computed(() =>
   language.value === 'KH'
     ? 'Plan training sessions, matches, meetings, and urgent sport activities.'
-    : 'Plan training sessions, matches, meetings, and urgent sport activities.',
+    : calendarConfig.value.description,
 )
 const addEventLabel = computed(() => (language.value === 'KH' ? 'Add Event' : 'Add Event'))
 const upcomingTitle = computed(() =>
-  language.value === 'KH' ? 'Upcoming Events' : 'Upcoming Events',
+  language.value === 'KH' ? 'Upcoming Events' : calendarConfig.value.upcomingTitle,
 )
 const upcomingSubtitle = computed(() =>
   language.value === 'KH'
     ? 'A quick monthly view of scheduled sessions, meetings, and match commitments.'
-    : 'A quick monthly view of scheduled sessions, meetings, and match commitments.',
+    : calendarConfig.value.upcomingSubtitle,
 )
 
 const monthLabel = computed(() =>
@@ -89,7 +263,7 @@ const normalizedEvents = computed(() =>
       const teamLabel =
         selectedTeams.length > 1
           ? `${selectedTeams[0].name} +${selectedTeams.length - 1}`
-          : selectedTeams[0]?.name || 'General group'
+          : selectedTeams[0]?.name || calendarConfig.value.defaultContext
 
       return {
         ...event,
@@ -126,7 +300,7 @@ const upcomingEvents = computed(() =>
 )
 
 const legendItems = computed(() =>
-  EVENT_TYPE_OPTIONS.map((item) => ({
+  eventTypeOptions.value.map((item) => ({
     label: item.label,
     color: item.color,
   })),
@@ -158,10 +332,10 @@ const summaryCards = computed(() => {
     },
     {
       key: 'teams',
-      label: 'Teams involved',
+      label: calendarConfig.value.targetSummaryLabel,
       value: teamCount,
       tone: 'yellow',
-      icon: 'pi pi-users',
+      icon: calendarConfig.value.targetIcon,
     },
     {
       key: 'urgent',
@@ -192,11 +366,20 @@ const nextEventDateLabel = computed(() => {
   }).format(new Date(`${nextEvent.value.date}T00:00:00`))
 })
 
+const pendingDeleteEvent = computed(() =>
+  events.value.find((event) => event.id === pendingDeleteEventId.value) || null,
+)
+
+const deleteConfirmMessage = computed(() => {
+  const title = pendingDeleteEvent.value?.title || 'this event'
+  return `Are you sure you want to delete "${title}"? This action cannot be undone.`
+})
+
 function createEmptyForm(defaultDate) {
   return {
-    type: 'match',
+    type: calendarConfig.value?.defaultType || 'match',
     comment: '',
-    teamIds: [],
+    teamIds: [...(calendarConfig.value?.defaultTargetIds || [])],
     title: '',
     tournament: '',
     date: defaultDate,
@@ -345,6 +528,11 @@ function closeModal() {
   teamSearchQuery.value = ''
 }
 
+function closeDeleteConfirm() {
+  deleteConfirmVisible.value = false
+  pendingDeleteEventId.value = null
+}
+
 function updateFormField({ field, value }) {
   formState.value = {
     ...formState.value,
@@ -371,7 +559,7 @@ function saveEvent() {
   const payload = {
     ...formState.value,
     title: formState.value.title.trim() || 'Untitled Event',
-    tournament: formState.value.tournament.trim() || 'General Schedule',
+    tournament: formState.value.tournament.trim() || calendarConfig.value.defaultContext,
     comment: formState.value.comment.trim(),
     time: formState.value.time || '09:00',
   }
@@ -396,7 +584,14 @@ function saveEvent() {
 
 function deleteEvent() {
   if (editingEventId.value === null) return
-  events.value = events.value.filter((event) => event.id !== editingEventId.value)
+  pendingDeleteEventId.value = editingEventId.value
+  deleteConfirmVisible.value = true
+}
+
+function confirmDeleteEvent() {
+  if (pendingDeleteEventId.value === null) return
+  events.value = events.value.filter((event) => event.id !== pendingDeleteEventId.value)
+  closeDeleteConfirm()
   closeModal()
 }
 
@@ -488,6 +683,11 @@ function goToToday() {
             :subtitle="upcomingSubtitle"
             :events="upcomingEvents"
             :locale="locale"
+            :context-icon="calendarConfig.contextIcon"
+            :context-label="calendarConfig.contextLabel"
+            :empty-label="calendarConfig.upcomingEmptyLabel"
+            :target-icon="calendarConfig.targetIcon"
+            :target-label="calendarConfig.audienceLabel"
             @select-event="openEditModal"
           />
         </div>
@@ -497,9 +697,20 @@ function goToToday() {
         :visible="dialogVisible"
         :mode="dialogMode"
         :form="formState"
-        :event-types="EVENT_TYPE_OPTIONS"
-        :teams="teams"
+        :event-types="eventTypeOptions"
+        :teams="scheduleTargets"
         :team-query="teamSearchQuery"
+        :context-label="calendarConfig.contextLabel"
+        :context-placeholder="calendarConfig.contextPlaceholder"
+        :create-title="calendarConfig.createTitle"
+        :description="calendarConfig.description"
+        :edit-title="calendarConfig.editTitle"
+        :note-placeholder="calendarConfig.notePlaceholder"
+        :role-title="calendarConfig.title"
+        :target-empty-label="calendarConfig.audienceEmptyLabel"
+        :target-label="calendarConfig.audienceLabel"
+        :target-search-placeholder="calendarConfig.audienceSearchPlaceholder"
+        :title-placeholder="calendarConfig.titlePlaceholder"
         @update:visible="updateDialogVisible"
         @update-field="updateFormField"
         @update:team-query="updateTeamSearchQuery"
@@ -507,6 +718,17 @@ function goToToday() {
         @cancel="closeModal"
         @save="saveEvent"
         @delete="deleteEvent"
+      />
+
+      <AlertQuestion
+        :show="deleteConfirmVisible"
+        title="Delete schedule event?"
+        :message="deleteConfirmMessage"
+        confirm-text="Delete"
+        cancel-text="Cancel"
+        type="danger"
+        @confirm="confirmDeleteEvent"
+        @cancel="closeDeleteConfirm"
       />
     </CalendarLayoutShell>
   </MainLayout>

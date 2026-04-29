@@ -4,7 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
-const { t, language } = useLanguage()
+const { language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
 
 const title = computed(() => (isKh.value ? 'ប្រវត្តិរូប និងការកំណត់' : 'Profile & Settings'))

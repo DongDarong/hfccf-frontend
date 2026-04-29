@@ -13,6 +13,22 @@ const props = defineProps({
     type: String,
     default: 'en-US',
   },
+  targetLabel: {
+    type: String,
+    default: 'Teams',
+  },
+  targetIcon: {
+    type: String,
+    default: 'pi pi-users',
+  },
+  contextLabel: {
+    type: String,
+    default: 'Tournament',
+  },
+  contextIcon: {
+    type: String,
+    default: 'pi pi-trophy',
+  },
 })
 
 const dateValue = computed(() => new Date(`${props.event.date}T00:00:00`))
@@ -39,12 +55,14 @@ const dayLabel = computed(() => String(dateValue.value.getDate()).padStart(2, '0
         <i class="pi pi-clock" aria-hidden="true" />
         <span>{{ event.time }}</span>
         <span class="upcoming-event-item__separator">•</span>
-        <i class="pi pi-users" aria-hidden="true" />
+        <i :class="targetIcon" aria-hidden="true" />
+        <span class="upcoming-event-item__meta-label">{{ targetLabel }}:</span>
         <span>{{ event.teamLabel }}</span>
       </p>
 
       <p class="upcoming-event-item__meta upcoming-event-item__meta--secondary">
-        <i class="pi pi-trophy" aria-hidden="true" />
+        <i :class="contextIcon" aria-hidden="true" />
+        <span class="upcoming-event-item__meta-label">{{ contextLabel }}:</span>
         <span>{{ event.tournament }}</span>
       </p>
     </div>
@@ -132,6 +150,11 @@ const dayLabel = computed(() => String(dateValue.value.getDate()).padStart(2, '0
 
 .upcoming-event-item__meta--secondary {
   margin-top: 0.35rem;
+}
+
+.upcoming-event-item__meta-label {
+  color: #475569;
+  font-weight: 800;
 }
 
 .upcoming-event-item__separator {

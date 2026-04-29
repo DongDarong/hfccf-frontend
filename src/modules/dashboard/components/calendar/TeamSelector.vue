@@ -18,6 +18,18 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  label: {
+    type: String,
+    default: 'Teams',
+  },
+  searchPlaceholder: {
+    type: String,
+    default: 'Search teams',
+  },
+  emptyLabel: {
+    type: String,
+    default: 'No teams match your search.',
+  },
 })
 
 const filteredTeams = computed(() => {
@@ -41,11 +53,11 @@ function toggleTeam(teamId, checked) {
 
 <template>
   <div class="team-selector">
-    <label class="team-selector__label" for="event-team-search">Teams</label>
+    <label class="team-selector__label" for="event-team-search">{{ label }}</label>
     <InputText
       id="event-team-search"
       :model-value="query"
-      placeholder="Search teams"
+      :placeholder="searchPlaceholder"
       class="team-selector__search"
       @update:model-value="$emit('update:query', $event)"
     />
@@ -62,7 +74,7 @@ function toggleTeam(teamId, checked) {
         <span v-if="team.group" class="team-selector__group">{{ team.group }}</span>
       </label>
 
-      <div v-if="!filteredTeams.length" class="team-selector__empty">No teams match your search.</div>
+      <div v-if="!filteredTeams.length" class="team-selector__empty">{{ emptyLabel }}</div>
     </div>
   </div>
 </template>
