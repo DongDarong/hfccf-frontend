@@ -123,6 +123,26 @@ defineProps({
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  max-height: 29.5rem;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
+.upcoming-events-card__list::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.upcoming-events-card__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.upcoming-events-card__list::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #e2e8f0;
+}
+
+.upcoming-events-card__list::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
 }
 
 .upcoming-events-card__empty {
