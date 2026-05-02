@@ -207,6 +207,47 @@ export default {
       pointsPrefix: '{points} pts',
     },
   },
+  sportPlayerInformation: {
+    title: 'Player Information',
+    subtitle: 'Track athlete-facing records, readiness, and permission coverage for the sport program.',
+    searchPlaceholder: 'Search players, emails, departments, or permissions',
+    tableEmpty: 'No player records found.',
+    toolbarEyebrow: 'Player directory',
+    toolbarSummary: '{count} players in view',
+    visibleRange: 'Showing {start}-{end} of {total} players',
+    noResults: 'No players match the current filters.',
+    activeRateLabel: 'Active rate',
+    highlights: {
+      visiblePlayers: 'Visible players',
+      departments: 'Departments',
+      permissions: 'Permission count',
+      attentionItems: 'Attention items',
+    },
+    summary: {
+      total: {
+        title: 'Total players',
+        badge: '{count} visible',
+        caption: 'Player-facing records currently prepared for the sport program.',
+      },
+      active: {
+        title: 'Active players',
+        badge: '{rate} roster ready',
+        caption: 'Profiles marked ready for current planning, training, and coordination work.',
+      },
+      pending: {
+        title: 'Pending review',
+        badge: 'Needs follow-up',
+        badgeClear: 'No backlog',
+        caption: 'Records still waiting on profile review, confirmation, or permission checks.',
+      },
+      attention: {
+        title: 'Needs attention',
+        badge: 'Inactive or suspended',
+        badgeClear: 'All clear',
+        caption: 'Profiles that may need follow-up before they can be used in operations.',
+      },
+    },
+  },
   sportAddTeam: {
     title: 'Add Team',
     updateTitle: 'Update Team',
