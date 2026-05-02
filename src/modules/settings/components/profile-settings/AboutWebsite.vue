@@ -1,11 +1,9 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
-import Button from '@/components/buttons/Button.vue'
 
 const { t } = useLanguage()
-const router = useRouter()
 
 // Keep all display copy together because this component is informational and has no form state.
 const content = computed(() => ({
@@ -29,11 +27,6 @@ const content = computed(() => ({
   noteTitle: t('pages.profile.aboutWebsite.supportTitle'),
   note: t('pages.profile.aboutWebsite.supportMessage'),
 }))
-
-function goToAboutWebsitePage() {
-  // Navigate by route name so the button stays stable even if the path changes later.
-  router.push({ name: 'settings-about-website' })
-}
 </script>
 
 <template>
@@ -70,9 +63,13 @@ function goToAboutWebsitePage() {
       </div>
 
       <div class="flex justify-end">
-        <Button type="button" variant="outline" rounded="xl" @click="goToAboutWebsitePage">
+        <!-- Use a link here because this action is navigation only. -->
+        <RouterLink
+          :to="{ name: 'settings-about-website' }"
+          class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4.5 py-2.5 text-sm font-bold text-surface-700 shadow-[0_8px_18px_-18px_rgba(15,23,42,0.16)] transition-all duration-200 hover:border-slate-400 hover:bg-slate-50 hover:text-surface-900 focus-visible:outline-none focus-visible:shadow-focus active:scale-[0.98]"
+        >
           {{ content.detailsButton }}
-        </Button>
+        </RouterLink>
       </div>
     </div>
   </section>
