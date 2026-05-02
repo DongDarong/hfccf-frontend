@@ -79,7 +79,7 @@ const emit = defineEmits([
   'update:statusFilter',
   'clear',
 ])
-const { t } = useLanguage()
+const { t, te } = useLanguage()
 
 const hasRoleOptions = computed(() => props.showRoleFilter && props.roleOptions.length > 0)
 const hasDivisionOptions = computed(
@@ -100,27 +100,24 @@ function normalizeKey(value) {
 
 function roleLabel(role) {
   const key = `common.role.${normalizeKey(role)}`
-  const localized = t(key)
-  return localized !== key ? localized : role
+  // Avoid `[intlify] Not found ...` warnings by checking key existence first.
+  return te(key) ? t(key) : role
 }
 
 function statusLabel(status) {
   // Allow each domain to own its own status vocabulary (users != players).
   const key = `${props.statusKeyPrefix}.${normalizeKey(status)}`
-  const localized = t(key)
-  return localized !== key ? localized : status
+  return te(key) ? t(key) : status
 }
 
 function divisionLabel(division) {
   const key = `common.division.${normalizeKey(division)}`
-  const localized = t(key)
-  return localized !== key ? localized : division
+  return te(key) ? t(key) : division
 }
 
 function teamLabel(team) {
   const key = `common.team.${normalizeKey(team)}`
-  const localized = t(key)
-  return localized !== key ? localized : team
+  return te(key) ? t(key) : team
 }
 
 const mappedRoleOptions = computed(() => [

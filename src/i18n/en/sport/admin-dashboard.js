@@ -225,7 +225,8 @@ export default {
       position: 'Position',
       jersey: 'Jersey No.',
       age: 'Age',
-      stats: 'Matches / Goals',
+      matches: 'Matches',
+      goals: 'Goals',
     },
     // Player status vocabulary is owned by the sport module (players are data, not users).
     status: {

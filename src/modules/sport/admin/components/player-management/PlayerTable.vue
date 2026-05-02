@@ -9,6 +9,7 @@ import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import ActionsButton from '@/components/buttons/ActionsButton.vue'
 
 const props = defineProps({
   /** Array of player records for the current page */
@@ -46,7 +47,13 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:currentPage'])
+const emit = defineEmits([
+  'update:currentPage',
+  // Player actions are handled by the parent page (this table stays presentation-focused).
+  'view',
+  'edit',
+  'delete',
+])
 
 /**
  * Normalizes a string for comparison.
@@ -147,15 +154,24 @@ function onPageChange(newPage) {
       <!-- Basic Info Columns -->
       <Column field="team" :header="t('sportPlayerInformation.table.team')" />
       <Column field="division" :header="t('sportPlayerInformation.table.division')" />
-      <Column field="position" :header="t('sportPlayerInformation.table.position')" />
+
+      <!-- Show match appearances instead of position in the table (position still appears under the name). -->
+      <Column field="matchesPlayed" :header="t('sportPlayerInformation.table.matches')">
+        <template #body="{ data }">
+          <span class="font-semibold text-slate-700">
+            {{ data.matchesPlayed }}
+          </span>
+        </template>
+      </Column>
+
       <Column field="jerseyNumber" :header="t('sportPlayerInformation.table.jersey')" />
       <Column field="age" :header="t('sportPlayerInformation.table.age')" />
 
-      <!-- Performance Stats Column -->
-      <Column field="stats" :header="t('sportPlayerInformation.table.stats')">
+      <!-- Goals Column -->
+      <Column field="goalsScored" :header="t('sportPlayerInformation.table.goals')">
         <template #body="{ data }">
           <span class="font-semibold text-slate-700">
-            {{ data.matchesPlayed }} / {{ data.goalsScored }}
+            {{ data.goalsScored }}
           </span>
         </template>
       </Column>
@@ -164,6 +180,23 @@ function onPageChange(newPage) {
       <Column field="status" :header="t('common.table.status')">
         <template #body="{ data }">
           <StatusBadge :status="statusType(data.status)" :label="statusText(data.status)" size="sm" />
+        </template>
+      </Column>
+
+      <Column
+        field="actions"
+        :header="t('common.table.actions')"
+        header-class="text-right"
+      >
+        <template #body="{ data }">
+          <div class="flex justify-end">
+            <ActionsButton
+              :item="data"
+              @view="emit('view', $event)"
+              @edit="emit('edit', $event)"
+              @delete="emit('delete', $event)"
+            />
+          </div>
         </template>
       </Column>
     </DataTable>
