@@ -79,6 +79,8 @@ export default {
   },
   searchUsersPlaceholder: 'Search users by name, email, role, or permission',
   allRoles: 'All roles',
+  allDivisions: 'All divisions',
+  allTeams: 'All teams',
   allStatus: 'All statuses',
   actions: {
     viewAll: 'View All',

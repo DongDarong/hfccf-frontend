@@ -30,13 +30,21 @@ const isKh = computed(() => language.value === 'KH')
 const searchQuery = ref('')
 const statusFilter = ref('')
 const divisionFilter = ref('')
+const teamFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 8
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
+// Player status is localized from the sport module, not `common.status.*` (user/account status).
+const statusKeyPrefix = 'sportPlayerInformation.status'
 
 const divisionOptions = computed(() => {
   const divisions = playerRecords.value.map((p) => p.division).filter(Boolean)
   return [...new Set(divisions)].sort()
+})
+
+const teamOptions = computed(() => {
+  const teams = playerRecords.value.map((p) => p.team).filter(Boolean)
+  return [...new Set(teams)].sort()
 })
 
 // Computed labels for i18n
@@ -79,6 +87,10 @@ const filteredPlayers = computed(() => {
 
     if (isMatch && divisionFilter.value) {
       isMatch = normalize(player.division) === normalize(divisionFilter.value)
+    }
+
+    if (isMatch && teamFilter.value) {
+      isMatch = normalize(player.team) === normalize(teamFilter.value)
     }
 
     return isMatch
@@ -238,17 +250,21 @@ watch(
         </PlayerInfoToolbar>
 
         <!-- Filter Bar -->
-        <SearchFilterBar
-          class="w-full"
-          v-model:searchQuery="searchQuery"
-          v-model:statusFilter="statusFilter"
-          v-model:divisionFilter="divisionFilter"
-          :search-placeholder="searchPlaceholder"
-          :status-options="statusOptions"
-          :division-options="divisionOptions"
-          :show-role-filter="false"
-          :show-division-filter="true"
-        />
+      <SearchFilterBar
+        class="w-full"
+        v-model:searchQuery="searchQuery"
+        v-model:statusFilter="statusFilter"
+        v-model:divisionFilter="divisionFilter"
+        v-model:teamFilter="teamFilter"
+        :search-placeholder="searchPlaceholder"
+        :status-options="statusOptions"
+        :status-key-prefix="statusKeyPrefix"
+        :division-options="divisionOptions"
+        :team-options="teamOptions"
+        :show-role-filter="false"
+        :show-division-filter="true"
+        :show-team-filter="true"
+      />
 
         <!-- Quick Stats Highlights -->
         <PlayerHighlights :items="highlightItems" />
@@ -260,6 +276,7 @@ watch(
           :t="t"
           :empty-text="tableEmptyText"
           :total-pages="totalPages"
+          :status-key-prefix="statusKeyPrefix"
         />
       </div>
     </section>

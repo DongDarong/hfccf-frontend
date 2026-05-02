@@ -13,6 +13,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  teamFilter: {
+    type: String,
+    default: '',
+  },
   statusFilter: {
     type: String,
     default: '',
@@ -25,9 +29,22 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  teamOptions: {
+    type: Array,
+    default: () => [],
+  },
   statusOptions: {
     type: Array,
     default: () => [],
+  },
+  /**
+   * Controls where status labels are localized from.
+   * Default stays on `common.status.*` for user/account screens.
+   * Sport/player screens can override (ex: `sportPlayerInformation.status`).
+   */
+  statusKeyPrefix: {
+    type: String,
+    default: 'common.status',
   },
   disabled: {
     type: Boolean,
@@ -38,6 +55,10 @@ const props = defineProps({
     default: true,
   },
   showDivisionFilter: {
+    type: Boolean,
+    default: false,
+  },
+  showTeamFilter: {
     type: Boolean,
     default: false,
   },
@@ -54,6 +75,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:roleFilter',
   'update:divisionFilter',
+  'update:teamFilter',
   'update:statusFilter',
   'clear',
 ])
@@ -63,9 +85,10 @@ const hasRoleOptions = computed(() => props.showRoleFilter && props.roleOptions.
 const hasDivisionOptions = computed(
   () => props.showDivisionFilter && props.divisionOptions.length > 0,
 )
+const hasTeamOptions = computed(() => props.showTeamFilter && props.teamOptions.length > 0)
 const hasStatusOptions = computed(() => props.showStatusFilter && props.statusOptions.length > 0)
 const hasActiveFilters = computed(
-  () => Boolean(props.roleFilter || props.divisionFilter || props.statusFilter),
+  () => Boolean(props.roleFilter || props.divisionFilter || props.teamFilter || props.statusFilter),
 )
 
 function normalizeKey(value) {
@@ -82,7 +105,8 @@ function roleLabel(role) {
 }
 
 function statusLabel(status) {
-  const key = `common.status.${normalizeKey(status)}`
+  // Allow each domain to own its own status vocabulary (users != players).
+  const key = `${props.statusKeyPrefix}.${normalizeKey(status)}`
   const localized = t(key)
   return localized !== key ? localized : status
 }
@@ -91,6 +115,12 @@ function divisionLabel(division) {
   const key = `common.division.${normalizeKey(division)}`
   const localized = t(key)
   return localized !== key ? localized : division
+}
+
+function teamLabel(team) {
+  const key = `common.team.${normalizeKey(team)}`
+  const localized = t(key)
+  return localized !== key ? localized : team
 }
 
 const mappedRoleOptions = computed(() => [
@@ -106,6 +136,14 @@ const mappedDivisionOptions = computed(() => [
   ...props.divisionOptions.map((division) => ({
     label: divisionLabel(division),
     value: division,
+  })),
+])
+
+const mappedTeamOptions = computed(() => [
+  { label: t('common.allTeams') || 'All Teams', value: '' },
+  ...props.teamOptions.map((team) => ({
+    label: teamLabel(team),
+    value: team,
   })),
 ])
 
@@ -157,6 +195,7 @@ const selectPt = {
 function clearFilters() {
   emit('update:roleFilter', '')
   emit('update:divisionFilter', '')
+  emit('update:teamFilter', '')
   emit('update:statusFilter', '')
   emit('clear')
 }
@@ -193,6 +232,20 @@ function clearFilters() {
     />
 
     <Select
+      v-if="hasTeamOptions"
+      input-id="userTeamFilter"
+      :model-value="teamFilter"
+      :options="mappedTeamOptions"
+      option-label="label"
+      option-value="value"
+      :disabled="disabled"
+      append-to="self"
+      class="ui-filter-select w-full sm:w-44"
+      :pt="selectPt"
+      @update:model-value="emit('update:teamFilter', $event)"
+    />
+
+    <Select
       v-if="hasStatusOptions"
       input-id="userStatusFilter"
       :model-value="statusFilter"
@@ -218,4 +271,3 @@ function clearFilters() {
     </Button>
   </div>
 </template>
-

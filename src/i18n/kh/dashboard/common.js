@@ -80,6 +80,8 @@ export default {
   searchUsersPlaceholder:
     'ស្វែងរកអ្នកប្រើប្រាស់តាមឈ្មោះ អ៊ីមែល តួនាទី ឬសិទ្ធិ',
   allRoles: 'តួនាទីទាំងអស់',
+  allDivisions: 'កម្រិតប្រកួតទាំងអស់',
+  allTeams: 'ក្រុមទាំងអស់',
   allStatus: 'ស្ថានភាពទាំងអស់',
   actions: {
     viewAll: 'មើលទាំងអស់',

@@ -16,6 +16,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  teamFilter: {
+    type: String,
+    default: '',
+  },
   statusFilter: {
     type: String,
     default: '',
@@ -28,9 +32,21 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  teamOptions: {
+    type: Array,
+    default: () => [],
+  },
   statusOptions: {
     type: Array,
     default: () => ['Active', 'Pending', 'Inactive', 'Suspended'],
+  },
+  /**
+   * Optional override for status label localization.
+   * Passed through to `FilterSelectGroup`.
+   */
+  statusKeyPrefix: {
+    type: String,
+    default: 'common.status',
   },
   disabled: {
     type: Boolean,
@@ -48,6 +64,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showTeamFilter: {
+    type: Boolean,
+    default: false,
+  },
   showStatusFilter: {
     type: Boolean,
     default: true,
@@ -62,6 +82,7 @@ const emit = defineEmits([
   'update:searchQuery',
   'update:roleFilter',
   'update:divisionFilter',
+  'update:teamFilter',
   'update:statusFilter',
   'clear',
 ])
@@ -70,6 +91,7 @@ const hasFilterControls = computed(
   () =>
     props.showRoleFilter ||
     props.showDivisionFilter ||
+    props.showTeamFilter ||
     props.showStatusFilter ||
     props.showClearButton,
 )
@@ -78,6 +100,7 @@ function clearFilters() {
   emit('update:searchQuery', '')
   emit('update:roleFilter', '')
   emit('update:divisionFilter', '')
+  emit('update:teamFilter', '')
   emit('update:statusFilter', '')
   emit('clear')
 }
@@ -102,17 +125,22 @@ function clearFilters() {
         <FilterSelectGroup
           :role-filter="props.roleFilter"
           :division-filter="props.divisionFilter"
+          :team-filter="props.teamFilter"
           :status-filter="props.statusFilter"
           :role-options="props.roleOptions"
           :division-options="props.divisionOptions"
+          :team-options="props.teamOptions"
           :status-options="props.statusOptions"
+          :status-key-prefix="props.statusKeyPrefix"
           :disabled="props.disabled"
           :show-role-filter="props.showRoleFilter"
           :show-division-filter="props.showDivisionFilter"
+          :show-team-filter="props.showTeamFilter"
           :show-status-filter="props.showStatusFilter"
           :show-clear-button="props.showClearButton"
           @update:role-filter="emit('update:roleFilter', $event)"
           @update:division-filter="emit('update:divisionFilter', $event)"
+          @update:team-filter="emit('update:teamFilter', $event)"
           @update:status-filter="emit('update:statusFilter', $event)"
           @clear="clearFilters"
         />
@@ -126,4 +154,3 @@ function clearFilters() {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 </style>
-

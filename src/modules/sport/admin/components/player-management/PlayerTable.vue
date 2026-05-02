@@ -36,6 +36,14 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  /**
+   * Status label namespace for i18n.
+   * Players are not users, so player screens should not use `common.status.*` by default.
+   */
+  statusKeyPrefix: {
+    type: String,
+    default: 'sportPlayerInformation.status',
+  },
 })
 
 const emit = defineEmits(['update:currentPage'])
@@ -59,6 +67,13 @@ function statusType(status) {
   if (value === 'inactive') return 'warning'
   if (value === 'suspended') return 'danger'
   return 'info'
+}
+
+function statusText(status) {
+  // Keep the label fully domain-owned (player status != user status).
+  const key = `${props.statusKeyPrefix}.${normalize(status).replace(/[\s-]+/g, '_')}`
+  const localized = props.t(key)
+  return localized !== key ? localized : status
 }
 
 /**
@@ -148,7 +163,7 @@ function onPageChange(newPage) {
       <!-- Status Column -->
       <Column field="status" :header="t('common.table.status')">
         <template #body="{ data }">
-          <StatusBadge :status="statusType(data.status)" :label="data.status" size="sm" />
+          <StatusBadge :status="statusType(data.status)" :label="statusText(data.status)" size="sm" />
         </template>
       </Column>
     </DataTable>

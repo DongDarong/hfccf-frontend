@@ -227,6 +227,13 @@ export default {
       age: 'Age',
       stats: 'Matches / Goals',
     },
+    // Player status vocabulary is owned by the sport module (players are data, not users).
+    status: {
+      active: 'Active',
+      pending: 'Pending',
+      inactive: 'Inactive',
+      suspended: 'Suspended',
+    },
     highlights: {
       visiblePlayers: 'Visible players',
       divisions: 'Divisions',
