@@ -12,6 +12,7 @@ const props = defineProps({
     required: true,
   },
 })
+const emit = defineEmits(['submit'])
 
 const { t } = useLanguage()
 
@@ -34,6 +35,7 @@ const departments = [
 function handleSubmit() {
   // In a real app, we would call an API here
   console.log('Form submitted:', form.value)
+  emit('submit', { ...form.value })
 }
 </script>
 

@@ -85,6 +85,10 @@ const statusLabel = computed(() => {
     </div>
 
     <div class="space-y-3 border-t border-gray-100 pt-4 text-left">
+      <div v-if="user.bio" class="space-y-1 text-sm text-gray-600">
+        <p class="font-semibold text-hope-dark">{{ t('pages.profile.general.bio') }}</p>
+        <p id="profileDisplayBio" class="whitespace-pre-line break-words">{{ user.bio }}</p>
+      </div>
       <div class="flex items-center gap-3 text-sm text-gray-600">
         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

@@ -1,16 +1,18 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import ProfileCard from '@/modules/settings/components/profile-settings/ProfileCard.vue'
 import GeneralInformation from '@/modules/settings/components/profile-settings/GeneralInformation.vue'
 import { useUserStore } from '@/store/userStore'
 
-const { language } = useLanguage()
+const { language, t } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
 const userStore = useUserStore()
 const currentUser = computed(() => userStore.currentUser)
+const isSuccessAlertVisible = ref(false)
 
 const title = computed(() => (isKh.value ? 'ប្រវត្តិរូប និងការកំណត់' : 'Profile & Settings'))
 const subtitle = computed(() =>
@@ -18,6 +20,21 @@ const subtitle = computed(() =>
     ? 'គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន ចំណូលចិត្តភាសា និងសុវត្ថិភាពគណនីរបស់អ្នក។'
     : 'Manage your personal details, language preferences, and account security settings.',
 )
+const successAlertTitle = computed(() => (isKh.value ? 'បានរក្សាទុកការផ្លាស់ប្តូរ' : 'Changes saved'))
+const successAlertMessage = computed(() =>
+  isKh.value
+    ? 'ព័ត៌មានប្រវត្តិរូបរបស់អ្នកត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។'
+    : 'Your profile information was updated successfully.',
+)
+
+function handleGeneralInformationSubmit(formData) {
+  console.log('Profile settings submitted:', formData)
+  isSuccessAlertVisible.value = true
+}
+
+function handleSuccessAlertClose() {
+  isSuccessAlertVisible.value = false
+}
 </script>
 
 <template>
@@ -31,9 +48,21 @@ const subtitle = computed(() =>
         </aside>
 
         <main class="profile-settings-layout__content">
-          <GeneralInformation v-if="currentUser" :user="currentUser" />
+          <GeneralInformation
+            v-if="currentUser"
+            :user="currentUser"
+            @submit="handleGeneralInformationSubmit"
+          />
         </main>
       </div>
+      <AlertSuccess
+        :show="isSuccessAlertVisible"
+        :title="successAlertTitle"
+        :message="successAlertMessage"
+        :button-text="t('common.continue')"
+        :auto-close="2500"
+        @close="handleSuccessAlertClose"
+      />
     </section>
   </MainLayout>
 </template>
