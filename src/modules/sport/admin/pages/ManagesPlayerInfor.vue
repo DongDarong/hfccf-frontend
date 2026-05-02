@@ -5,13 +5,15 @@
  * Handles data fetching (mock), filtering, and coordination between sub-components.
  */
 import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Button from 'primevue/button'
 import { useLanguage } from '@/composables/useLanguage'
 import playersData from '@/mocks/sport/players-management-data.json'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 
 // Sub-components
 import PlayerStatsCards from '../components/player-management/PlayerStatsCards.vue'
@@ -24,6 +26,7 @@ defineOptions({
 })
 
 const router = useRouter()
+const route = useRoute()
 
 // i18n and global state
 const { t, language } = useLanguage()
@@ -40,9 +43,72 @@ const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 // Player status is localized from the sport module, not `common.status.*` (user/account status).
 const statusKeyPrefix = 'sportPlayerInformation.status'
 
+const isDeleteOpen = ref(false)
+const selectedPlayer = ref(null)
+const isDeleting = ref(false)
+const showDeleteSuccess = ref(false)
+const deleteSuccessMessage = ref('')
+
 async function goToAddPlayer() {
   // Use the route name so the link survives future path refactors.
   await router.push({ name: 'dashboard-sport-admin-players-add' })
+}
+
+function onViewPlayer(player) {
+  const id = String(player?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/module/sport-admin/players/add', query: { mode: 'view', id } })
+}
+
+function onEditPlayer(player) {
+  const id = String(player?.id || '').trim()
+  if (!id) return
+  router.push({ path: '/module/sport-admin/players/add', query: { mode: 'edit', id } })
+}
+
+function onDeletePlayer(player) {
+  const id = String(player?.id || '').trim()
+  if (!id) return
+
+  // Confirm destructive actions before removing from the in-memory list.
+  selectedPlayer.value = player
+  isDeleteOpen.value = true
+}
+
+function applyDeleteFromQuery() {
+  // Allow deletes initiated from the Add Player page to be applied in the list without a backend yet.
+  const id = String(route.query.delete || '').trim()
+  if (!id) return
+  playerRecords.value = playerRecords.value.filter((item) => item.id !== id)
+  router.replace({ query: { ...route.query, delete: undefined } })
+}
+
+function onCancelDelete() {
+  isDeleteOpen.value = false
+  selectedPlayer.value = null
+}
+
+function onConfirmDelete() {
+  if (isDeleting.value) return
+  isDeleting.value = true
+
+  const id = String(selectedPlayer.value?.id || '').trim()
+  if (!id) {
+    isDeleting.value = false
+    return onCancelDelete()
+  }
+
+  const name = String(selectedPlayer.value?.name || '').trim()
+  playerRecords.value = playerRecords.value.filter((item) => item.id !== id)
+
+  // Feedback stays on the list page since there is no backend yet.
+  deleteSuccessMessage.value = t('sportPlayerInformation.confirm.deletedMessage', {
+    name: name || t('sportPlayerInformation.confirm.defaultName'),
+  })
+  showDeleteSuccess.value = true
+
+  onCancelDelete()
+  isDeleting.value = false
 }
 
 const divisionOptions = computed(() => {
@@ -227,6 +293,14 @@ watch(
     if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
   },
 )
+
+watch(
+  () => route.query.delete,
+  () => {
+    applyDeleteFromQuery()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -285,9 +359,34 @@ watch(
           :empty-text="tableEmptyText"
           :total-pages="totalPages"
           :status-key-prefix="statusKeyPrefix"
+          @view="onViewPlayer"
+          @edit="onEditPlayer"
+          @delete="onDeletePlayer"
         />
       </div>
     </section>
+
+    <AlertQuestion
+      :show="isDeleteOpen"
+      :loading="isDeleting"
+      :title="t('sportPlayerInformation.confirm.deleteTitle')"
+      :message="t('sportPlayerInformation.confirm.deleteMessage', {
+        name: String(selectedPlayer?.name || '').trim() || t('sportPlayerInformation.confirm.defaultName'),
+      })"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      type="danger"
+      @confirm="onConfirmDelete"
+      @cancel="onCancelDelete"
+    />
+
+    <AlertSuccess
+      :show="showDeleteSuccess"
+      :title="t('common.success')"
+      :message="deleteSuccessMessage || t('common.actionCompleted')"
+      :button-text="t('common.close')"
+      @close="showDeleteSuccess = false"
+    />
   </MainLayout>
 </template>
 

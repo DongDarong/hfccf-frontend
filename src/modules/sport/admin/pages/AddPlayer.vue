@@ -6,12 +6,12 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-import Select from 'primevue/select'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import teamsManagementData from '@/mocks/sport/teams-management-data.json'
 import playersManagementData from '@/mocks/sport/players-management-data.json'
+import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
+import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
 
 defineOptions({
   name: 'SportAdminAddPlayerPage',
@@ -42,6 +42,19 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const isKh = computed(() => language.value === 'KH')
 
+const isDeleteOpen = ref(false)
+const isDeleting = ref(false)
+
+const mode = computed(() => {
+  if (route.query.mode === 'view') return 'view'
+  if (route.query.mode === 'edit' || Boolean(route.query.id)) return 'edit'
+  return 'add'
+})
+const isViewMode = computed(() => mode.value === 'view')
+const isEditMode = computed(() => mode.value === 'edit')
+const isAddMode = computed(() => mode.value === 'add')
+const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
+
 // Build select options from sport team data first; fall back to player mock data if needed.
 const teamOptions = computed(() => {
   const fromTeams = (Array.isArray(teamsManagementData) ? teamsManagementData : [])
@@ -68,8 +81,17 @@ function playerStatusLabel(status) {
   return te(key) ? t(key) : String(status || '')
 }
 
-const pageTitle = computed(() => t('sportAddPlayer.title'))
-const pageSubtitle = computed(() => t('sportAddPlayer.summary'))
+const pageTitle = computed(() => {
+  if (isViewMode.value) return t('sportAddPlayer.viewTitle')
+  if (isEditMode.value) return t('sportAddPlayer.updateTitle')
+  return t('sportAddPlayer.title')
+})
+
+const pageSubtitle = computed(() => {
+  if (isViewMode.value) return t('sportAddPlayer.viewSubtitle')
+  if (isEditMode.value) return t('sportAddPlayer.updateSubtitle')
+  return t('sportAddPlayer.summary')
+})
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -91,6 +113,19 @@ async function goBackToPlayers() {
   await router.push(playersDirectoryPath)
 }
 
+function goToEditMode() {
+  const id = String(route.query.id || '').trim()
+  if (!id) return
+  router.replace({ query: { ...route.query, mode: 'edit' } })
+}
+
+function onDelete() {
+  const id = String(route.query.id || '').trim()
+  if (!id) return
+  // Confirm destructive actions before handing off the delete to the list page.
+  isDeleteOpen.value = true
+}
+
 async function onSubmit() {
   resetFeedback()
   const message = validate()
@@ -106,7 +141,9 @@ async function onSubmit() {
     await new Promise((resolve) => setTimeout(resolve, 450))
     showSuccess.value = true
   } catch {
-    errorMessage.value = t('sportAddPlayer.validation.createFailed')
+    errorMessage.value = isEditMode.value
+      ? t('sportAddPlayer.validation.updateFailed')
+      : t('sportAddPlayer.validation.createFailed')
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -120,6 +157,23 @@ function onSuccessClose() {
 
 function onErrorClose() {
   showError.value = false
+}
+
+function onCancelDelete() {
+  isDeleteOpen.value = false
+}
+
+function onConfirmDelete() {
+  if (isDeleting.value) return
+  isDeleting.value = true
+
+  const id = String(route.query.id || '').trim()
+  if (!id) {
+    isDeleting.value = false
+    return onCancelDelete()
+  }
+  // No persistence yet: deletion is applied by the list page via query handoff.
+  router.push({ path: playersDirectoryPath, query: { delete: id } })
 }
 
 onMounted(() => {
@@ -154,127 +208,50 @@ onMounted(() => {
           class="add-player-page__form"
           :title="pageTitle"
           :description="t('sportAddPlayer.formDescription')"
-          :submit-text="t('sportAddPlayer.createAction')"
           :cancel-text="t('common.cancel')"
           :loading="isSubmitting"
-          :disabled="false"
+          :disabled="isViewMode"
           :show-cancel="true"
           @submit="onSubmit"
           @cancel="goBackToPlayers"
         >
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="sm:col-span-2">
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.fullName') }}
-              </label>
-              <InputText
-                v-model="form.name"
-                class="w-full"
-                :placeholder="t('sportAddPlayer.fullNamePlaceholder')"
-              />
-            </div>
+          <AddPlayerFormFields
+            :name="form.name"
+            :team="form.team"
+            :division="form.division"
+            :position="form.position"
+            :jersey-number="form.jerseyNumber"
+            :age="form.age"
+            :status="form.status"
+            :matches-played="form.matchesPlayed"
+            :goals-scored="form.goalsScored"
+            :team-options="teamOptions"
+            :division-options="divisionOptions"
+            :status-options="statusOptions"
+            :is-locked="isFormLocked"
+            :status-label="playerStatusLabel"
+            @update:name="form.name = $event"
+            @update:team="form.team = $event"
+            @update:division="form.division = $event"
+            @update:position="form.position = $event"
+            @update:jerseyNumber="form.jerseyNumber = $event"
+            @update:age="form.age = $event"
+            @update:status="form.status = $event"
+            @update:matchesPlayed="form.matchesPlayed = $event"
+            @update:goalsScored="form.goalsScored = $event"
+          />
 
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.team') }}
-              </label>
-              <Select
-                v-model="form.team"
-                class="w-full"
-                :options="teamOptions"
-                :placeholder="t('sportAddPlayer.teamPlaceholder')"
-                append-to="self"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.division') }}
-              </label>
-              <Select
-                v-model="form.division"
-                class="w-full"
-                :options="divisionOptions"
-                :placeholder="t('sportAddPlayer.divisionPlaceholder')"
-                append-to="self"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.position') }}
-              </label>
-              <InputText
-                v-model="form.position"
-                class="w-full"
-                :placeholder="t('sportAddPlayer.positionPlaceholder')"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.status') }}
-              </label>
-              <Select
-                v-model="form.status"
-                class="w-full"
-                :options="statusOptions"
-                :option-label="(value) => playerStatusLabel(value)"
-                :option-value="(value) => value"
-                append-to="self"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.jerseyNumber') }}
-              </label>
-              <InputNumber
-                v-model="form.jerseyNumber"
-                class="w-full"
-                :min="0"
-                :placeholder="t('sportAddPlayer.jerseyNumberPlaceholder')"
-                input-class="w-full"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.age') }}
-              </label>
-              <InputNumber
-                v-model="form.age"
-                class="w-full"
-                :min="0"
-                :placeholder="t('sportAddPlayer.agePlaceholder')"
-                input-class="w-full"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.matchesPlayed') }}
-              </label>
-              <InputNumber
-                v-model="form.matchesPlayed"
-                class="w-full"
-                :min="0"
-                input-class="w-full"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-sm font-semibold text-surface-800">
-                {{ t('sportAddPlayer.goalsScored') }}
-              </label>
-              <InputNumber
-                v-model="form.goalsScored"
-                class="w-full"
-                :min="0"
-                input-class="w-full"
-              />
-            </div>
-          </div>
+          <template #actions>
+            <AddPlayerFormActions
+              :is-submitting="isSubmitting"
+              :is-view-mode="isViewMode"
+              :is-edit-mode="isEditMode"
+              :can-delete="!isAddMode && Boolean(route.query.id)"
+              @back="goBackToPlayers"
+              @edit="goToEditMode"
+              @delete="onDelete"
+            />
+          </template>
         </Form>
       </div>
     </section>
@@ -289,10 +266,24 @@ onMounted(() => {
 
     <AlertSuccess
       :show="showSuccess"
-      :title="t('sportAddPlayer.playerCreated')"
-      :message="t('sportAddPlayer.createdMessage')"
+      :title="isEditMode ? t('sportAddPlayer.playerUpdated') : t('sportAddPlayer.playerCreated')"
+      :message="isEditMode ? t('sportAddPlayer.updatedMessage') : t('sportAddPlayer.createdMessage')"
       :button-text="t('sportAddPlayer.backToPlayers')"
       @close="onSuccessClose"
+    />
+
+    <AlertQuestion
+      :show="isDeleteOpen"
+      :loading="isDeleting"
+      :title="t('sportAddPlayer.confirm.deleteTitle')"
+      :message="t('sportAddPlayer.confirm.deleteMessage', {
+        name: form.name?.trim() || t('sportAddPlayer.confirm.defaultName'),
+      })"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      type="danger"
+      @confirm="onConfirmDelete"
+      @cancel="onCancelDelete"
     />
   </MainLayout>
 </template>
@@ -324,4 +315,3 @@ onMounted(() => {
   line-height: 1.7;
 }
 </style>
-
