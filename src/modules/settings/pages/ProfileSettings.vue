@@ -6,6 +6,7 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import ProfileCard from '@/modules/settings/components/profile-settings/ProfileCard.vue'
 import GeneralInformation from '@/modules/settings/components/profile-settings/GeneralInformation.vue'
+import SecuritySettings from '@/modules/settings/components/profile-settings/SecuritySettings.vue'
 import { useUserStore } from '@/store/userStore'
 
 const { language, t } = useLanguage()
@@ -13,6 +14,7 @@ const isKh = computed(() => language.value === 'KH')
 const userStore = useUserStore()
 const currentUser = computed(() => userStore.currentUser)
 const isSuccessAlertVisible = ref(false)
+const activeAlertMode = ref('profile')
 
 const title = computed(() => (isKh.value ? 'ប្រវត្តិរូប និងការកំណត់' : 'Profile & Settings'))
 const subtitle = computed(() =>
@@ -29,8 +31,31 @@ const successAlertMessage = computed(() =>
 
 function handleGeneralInformationSubmit(formData) {
   console.log('Profile settings submitted:', formData)
+  activeAlertMode.value = 'profile'
   isSuccessAlertVisible.value = true
 }
+
+function handleSecuritySubmit(formData) {
+  console.log('Security settings submitted:', formData)
+  activeAlertMode.value = 'security'
+  isSuccessAlertVisible.value = true
+}
+
+// Route-level success copy switches by section while reusing one alert component.
+const resolvedSuccessAlertTitle = computed(() =>
+  activeAlertMode.value === 'security'
+    ? isKh.value
+      ? 'បានធ្វើបច្ចុប្បន្នភាពសុវត្ថិភាព'
+      : 'Security updated'
+    : successAlertTitle.value,
+)
+const resolvedSuccessAlertMessage = computed(() =>
+  activeAlertMode.value === 'security'
+    ? isKh.value
+      ? 'ការផ្លាស់ប្តូរពាក្យសម្ងាត់របស់អ្នកត្រូវបានដាក់ស្នើដោយជោគជ័យ។'
+      : 'Your password changes were submitted successfully.'
+    : successAlertMessage.value,
+)
 
 function handleSuccessAlertClose() {
   isSuccessAlertVisible.value = false
@@ -48,17 +73,25 @@ function handleSuccessAlertClose() {
         </aside>
 
         <main class="profile-settings-layout__content">
-          <GeneralInformation
-            v-if="currentUser"
-            :user="currentUser"
-            @submit="handleGeneralInformationSubmit"
-          />
+          <!-- Let settings cards participate in a shared page grid instead of relying on implicit block flow. -->
+          <div class="profile-settings-layout__content-grid">
+            <div class="profile-settings-layout__content-item profile-settings-layout__content-item--wide">
+              <GeneralInformation
+                v-if="currentUser"
+                :user="currentUser"
+                @submit="handleGeneralInformationSubmit"
+              />
+            </div>
+            <div class="profile-settings-layout__content-item">
+              <SecuritySettings @submit="handleSecuritySubmit" />
+            </div>
+          </div>
         </main>
       </div>
       <AlertSuccess
         :show="isSuccessAlertVisible"
-        :title="successAlertTitle"
-        :message="successAlertMessage"
+        :title="resolvedSuccessAlertTitle"
+        :message="resolvedSuccessAlertMessage"
         :button-text="t('common.continue')"
         :auto-close="2500"
         @close="handleSuccessAlertClose"
@@ -81,6 +114,21 @@ function handleSuccessAlertClose() {
   gap: 1.25rem;
 }
 
+.profile-settings-layout__content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.25rem;
+}
+
+.profile-settings-layout__content-item {
+  min-width: 0;
+}
+
+.profile-settings-layout__content-item--wide {
+  grid-column: span 2;
+}
+
 @media (max-width: 1200px) {
   .profile-settings-layout {
     grid-template-columns: 1fr;
@@ -88,6 +136,14 @@ function handleSuccessAlertClose() {
 
   .profile-settings-layout__sidebar {
     max-width: 100%;
+  }
+
+  .profile-settings-layout__content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-settings-layout__content-item--wide {
+    grid-column: auto;
   }
 }
 
