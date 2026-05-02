@@ -7,6 +7,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import ProfileCard from '@/modules/settings/components/profile-settings/ProfileCard.vue'
 import GeneralInformation from '@/modules/settings/components/profile-settings/GeneralInformation.vue'
 import SecuritySettings from '@/modules/settings/components/profile-settings/SecuritySettings.vue'
+import AboutWebsite from '@/modules/settings/components/profile-settings/AboutWebsite.vue'
 import { useUserStore } from '@/store/userStore'
 
 const { language, t } = useLanguage()
@@ -84,6 +85,9 @@ function handleSuccessAlertClose() {
             </div>
             <div class="profile-settings-layout__content-item">
               <SecuritySettings @submit="handleSecuritySubmit" />
+            </div>
+            <div class="profile-settings-layout__content-item">
+              <AboutWebsite />
             </div>
           </div>
         </main>
