@@ -162,5 +162,82 @@ export default {
       },
     },
   },
+  profile: {
+    pageTitle: 'Profile & Settings',
+    pageSubtitle:
+      'Manage your personal details, language preferences, and account security settings.',
+    alerts: {
+      profileUpdatedTitle: 'Changes saved',
+      profileUpdatedMessage: 'Your profile information was updated successfully.',
+      securityUpdatedTitle: 'Security updated',
+      securityApprovalPending:
+        'Your password change request was submitted and is waiting for Super Admin approval.',
+    },
+    general: {
+      title: 'General Information',
+      description: 'Update your personal details and contact information.',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email address',
+      phone: 'Phone number',
+      department: 'Department',
+      bio: 'Bio',
+      bioPlaceholder: 'Brief description about yourself...',
+      firstNamePlaceholder: 'Enter first name',
+      lastNamePlaceholder: 'Enter last name',
+      emailPlaceholder: 'email{\'@\'}example.com',
+      phonePlaceholder: '+855 12 345 678',
+      departmentPlaceholder: 'Select department',
+    },
+    security: {
+      title: 'Security',
+      description: 'Update your password to keep your account protected.',
+      currentPassword: 'Current Password',
+      newPassword: 'New Password',
+      confirmNewPassword: 'Confirm New Password',
+      currentPasswordPlaceholder: 'Enter your current password',
+      newPasswordPlaceholder: 'Enter a new password',
+      confirmNewPasswordPlaceholder: 'Re-enter your new password',
+      approvalNote:
+        'The password change will only succeed after the Super Admin approves it.',
+    },
+    aboutWebsite: {
+      title: 'About Website',
+      description:
+        'A quick summary of the platform, current system status, and help information for users.',
+      detailsButton: 'Details',
+      platform: 'Platform',
+      version: 'Version',
+      status: 'Status',
+      statusValue: 'Operational',
+      supportTitle: 'Support Note',
+      supportMessage:
+        'If you have trouble accessing features or changing settings, contact your system administrator.',
+      pageTitle: 'About This Website',
+      pageSubtitle:
+        'Learn more about the platform purpose, release state, and where to get help.',
+      overviewTitle: 'Overview',
+      overviewText:
+        'HFCCF Frontend brings together profile settings, program tools, and daily operations into one dashboard experience.',
+      releaseTitle: 'Release Information',
+      releaseText:
+        'This build is currently marked as operational and is intended to support staff workflows across modules.',
+      teamTitle: 'Website Development Team',
+      teamText:
+        'The website development team includes designers, frontend developers, backend engineers, and project coordinators who maintain the platform experience.',
+      teamDepartmentsTitle: 'Departments',
+      teamMembersTitle: 'Team Members',
+      teamExpertiseTitle: 'Expertise',
+      teamDepartments: [
+        'UI/UX Design',
+        'Frontend Development',
+        'Backend Development',
+        'Quality Assurance',
+        'Project Coordination',
+      ],
+      supportDetailTitle: 'Support and Guidance',
+      supportDetailText:
+        'For account issues, permission changes, or configuration questions, coordinate with your system administrator or Super Admin.',
+    },
+  },
 }
-

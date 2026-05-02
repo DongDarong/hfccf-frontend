@@ -1,39 +1,54 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import ProfileCard from '@/modules/settings/components/profile-settings/ProfileCard.vue'
+import GeneralInformation from '@/modules/settings/components/profile-settings/GeneralInformation.vue'
+import SecuritySettings from '@/modules/settings/components/profile-settings/SecuritySettings.vue'
+import AboutWebsite from '@/modules/settings/components/profile-settings/AboutWebsite.vue'
+import { useUserStore } from '@/store/userStore'
 
-const { language } = useLanguage()
+const { language, t } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
+const userStore = useUserStore()
+const currentUser = computed(() => userStore.currentUser)
+const isSuccessAlertVisible = ref(false)
+const activeAlertMode = ref('profile')
 
-const title = computed(() => (isKh.value ? 'ប្រវត្តិរូប និងការកំណត់' : 'Profile & Settings'))
-const subtitle = computed(() =>
-  isKh.value
-    ? 'គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន ចំណូលចិត្តភាសា និងសុវត្ថិភាពគណនីរបស់អ្នក។'
-    : 'Manage your personal details, language preferences, and account security settings.',
+const title = computed(() => t('pages.profile.pageTitle'))
+const subtitle = computed(() => t('pages.profile.pageSubtitle'))
+const successAlertTitle = computed(() => t('pages.profile.alerts.profileUpdatedTitle'))
+const successAlertMessage = computed(() => t('pages.profile.alerts.profileUpdatedMessage'))
+
+function handleGeneralInformationSubmit(formData) {
+  console.log('Profile settings submitted:', formData)
+  activeAlertMode.value = 'profile'
+  isSuccessAlertVisible.value = true
+}
+
+function handleSecuritySubmit(formData) {
+  console.log('Security settings submitted:', formData)
+  activeAlertMode.value = 'security'
+  isSuccessAlertVisible.value = true
+}
+
+// Route-level success copy switches by section while reusing one alert component.
+const resolvedSuccessAlertTitle = computed(() =>
+  activeAlertMode.value === 'security'
+    ? t('pages.profile.alerts.securityUpdatedTitle')
+    : successAlertTitle.value,
+)
+const resolvedSuccessAlertMessage = computed(() =>
+  activeAlertMode.value === 'security'
+    ? t('pages.profile.alerts.securityApprovalPending')
+    : successAlertMessage.value,
 )
 
-const sections = computed(() => [
-  {
-    title: isKh.value ? 'ព័ត៌មានគណនី' : 'Account details',
-    copy: isKh.value
-      ? 'ទីតាំងសម្រាប់កែសម្រួលឈ្មោះ អ៊ីមែល និងព័ត៌មានទំនាក់ទំនងរបស់អ្នក។'
-      : 'A place to update your display name, email address, and contact details.',
-  },
-  {
-    title: isKh.value ? 'ចំណូលចិត្ត' : 'Preferences',
-    copy: isKh.value
-      ? 'គ្រប់គ្រងភាសា ការជូនដំណឹង និងរបៀបបង្ហាញក្នុងការងារប្រចាំថ្ងៃ។'
-      : 'Control language, alerts, and workspace presentation preferences.',
-  },
-  {
-    title: isKh.value ? 'សុវត្ថិភាព' : 'Security',
-    copy: isKh.value
-      ? 'ពិនិត្យពាក្យសម្ងាត់ សកម្មភាពចុងក្រោយ និងជម្រើសការពារគណនីបន្ថែម។'
-      : 'Review password status, recent activity, and additional account protection options.',
-  },
-])
+function handleSuccessAlertClose() {
+  isSuccessAlertVisible.value = false
+}
 </script>
 
 <template>
@@ -41,12 +56,38 @@ const sections = computed(() => [
     <section :class="isKh ? 'global-page global-page--kh' : 'global-page'">
       <HeaderSection :title="title" :subtitle="subtitle" />
 
-      <div class="global-page__grid">
-        <article v-for="section in sections" :key="section.title" class="global-card">
-          <h3 class="global-card__title">{{ section.title }}</h3>
-          <p class="global-card__copy">{{ section.copy }}</p>
-        </article>
+      <div class="profile-settings-layout">
+        <aside class="profile-settings-layout__sidebar">
+          <ProfileCard v-if="currentUser" :user="currentUser" />
+        </aside>
+
+        <main class="profile-settings-layout__content">
+          <!-- Let settings cards participate in a shared page grid instead of relying on implicit block flow. -->
+          <div class="profile-settings-layout__content-grid">
+            <div class="profile-settings-layout__content-item profile-settings-layout__content-item--wide">
+              <GeneralInformation
+                v-if="currentUser"
+                :user="currentUser"
+                @submit="handleGeneralInformationSubmit"
+              />
+            </div>
+            <div class="profile-settings-layout__content-item">
+              <SecuritySettings @submit="handleSecuritySubmit" />
+            </div>
+            <div class="profile-settings-layout__content-item">
+              <AboutWebsite />
+            </div>
+          </div>
+        </main>
       </div>
+      <AlertSuccess
+        :show="isSuccessAlertVisible"
+        :title="resolvedSuccessAlertTitle"
+        :message="resolvedSuccessAlertMessage"
+        :button-text="t('common.continue')"
+        :auto-close="2500"
+        @close="handleSuccessAlertClose"
+      />
     </section>
   </MainLayout>
 </template>
@@ -58,43 +99,49 @@ const sections = computed(() => [
   gap: 1.25rem;
 }
 
-.global-page__grid {
+.profile-settings-layout {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 20rem 1fr;
+  align-items: start;
+  gap: 1.25rem;
 }
 
-.global-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.05);
+.profile-settings-layout__content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.25rem;
 }
 
-.global-card__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #122f43;
+.profile-settings-layout__content-item {
+  min-width: 0;
 }
 
-.global-card__copy {
-  margin: 0.55rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: #64748b;
+.profile-settings-layout__content-item--wide {
+  grid-column: span 2;
 }
 
-.global-page--kh .global-card__title,
-.global-page--kh .global-card__copy {
-  font-family:
-    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
-}
-
-@media (max-width: 1000px) {
-  .global-page__grid {
+@media (max-width: 1200px) {
+  .profile-settings-layout {
     grid-template-columns: 1fr;
   }
+
+  .profile-settings-layout__sidebar {
+    max-width: 100%;
+  }
+
+  .profile-settings-layout__content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-settings-layout__content-item--wide {
+    grid-column: auto;
+  }
+}
+
+.global-page--kh :deep(.profile-settings-card__title),
+.global-page--kh :deep(.profile-settings-card__copy) {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 </style>
