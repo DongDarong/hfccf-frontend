@@ -30,6 +30,9 @@ const labels = computed(() => ({
   confirmNewPasswordPlaceholder: isKh.value
     ? 'បញ្ចូលពាក្យសម្ងាត់ថ្មីម្តងទៀត'
     : 'Re-enter your new password',
+  approvalNote: isKh.value
+    ? 'ការប្តូរពាក្យសម្ងាត់នឹងជោគជ័យ បន្ទាប់ពី Super Admin អនុញ្ញាតសិន។'
+    : 'The password change will only succeed after the Super Admin approves it.',
 }))
 
 function handleSubmit() {
@@ -47,6 +50,13 @@ function handleSubmit() {
     @submit="handleSubmit"
   >
     <div class="grid grid-cols-1 gap-6">
+      <!-- Surface the approval dependency near the inputs so users understand the actual workflow. -->
+      <div
+        class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900"
+      >
+        {{ labels.approvalNote }}
+      </div>
+
       <div class="flex flex-col gap-2">
         <label class="text-sm font-bold text-surface-900" for="currentPassword">
           {{ labels.currentPassword }}

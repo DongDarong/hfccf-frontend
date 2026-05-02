@@ -53,7 +53,7 @@ const resolvedSuccessAlertMessage = computed(() =>
   activeAlertMode.value === 'security'
     ? isKh.value
       ? 'ការផ្លាស់ប្តូរពាក្យសម្ងាត់របស់អ្នកត្រូវបានដាក់ស្នើដោយជោគជ័យ។'
-      : 'Your password changes were submitted successfully.'
+      : 'Your password change request was submitted and is waiting for Super Admin approval.'
     : successAlertMessage.value,
 )
 
