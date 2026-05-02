@@ -17,17 +17,23 @@
 --    frontend currently uses that exact value.
 -- 3. Frontend RBAC is scope + domain based, so roles should persist both.
 -- 4. Sanctum-style tokens must therefore use a string `tokenable_id`.
+-- 5. Profile, settings, and website-team data below are the backend contract for
+--    the current frontend, so keep them aligned when the UI changes later.
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `personal_access_tokens`;
+DROP TABLE IF EXISTS `password_change_requests`;
 DROP TABLE IF EXISTS `sport_standings`;
 DROP TABLE IF EXISTS `sport_top_scorers`;
 DROP TABLE IF EXISTS `sport_matches`;
 DROP TABLE IF EXISTS `sport_tournament_alerts`;
 DROP TABLE IF EXISTS `sport_teams`;
 DROP TABLE IF EXISTS `sport_tournaments`;
+DROP TABLE IF EXISTS `website_team_expertise`;
+DROP TABLE IF EXISTS `website_team_departments`;
+DROP TABLE IF EXISTS `departments`;
 DROP TABLE IF EXISTS `user_permissions`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `role_permissions`;
@@ -82,6 +88,7 @@ CREATE TABLE `users` (
   `phone` VARCHAR(32) DEFAULT NULL,
   `role_code` VARCHAR(32) NOT NULL,
   `department` VARCHAR(32) NOT NULL,
+  `bio` TEXT DEFAULT NULL,
   `status` ENUM('active', 'pending', 'inactive', 'suspended') NOT NULL DEFAULT 'active',
   `avatar` VARCHAR(2048) DEFAULT NULL,
   `password` VARCHAR(255) NOT NULL,
@@ -97,6 +104,72 @@ CREATE TABLE `users` (
   KEY `users_department_index` (`department`),
   CONSTRAINT `fk_users_role`
     FOREIGN KEY (`role_code`) REFERENCES `roles` (`code`)
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `departments` (
+  `code` VARCHAR(32) NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `display_order` TINYINT UNSIGNED NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`code`),
+  KEY `departments_is_active_index` (`is_active`),
+  KEY `departments_display_order_index` (`display_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `website_team_departments` (
+  `code` VARCHAR(64) NOT NULL,
+  `name` VARCHAR(120) NOT NULL,
+  `expertise` JSON NOT NULL,
+  `display_order` TINYINT UNSIGNED NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`code`),
+  KEY `website_team_departments_is_active_index` (`is_active`),
+  KEY `website_team_departments_display_order_index` (`display_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `website_team_expertise` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `department_code` VARCHAR(64) NOT NULL,
+  `expertise_text` VARCHAR(191) NOT NULL,
+  `display_order` TINYINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `website_team_expertise_department_order_unique` (`department_code`, `display_order`),
+  KEY `website_team_expertise_department_index` (`department_code`),
+  CONSTRAINT `fk_website_team_expertise_department`
+    FOREIGN KEY (`department_code`) REFERENCES `website_team_departments` (`code`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `password_change_requests` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` VARCHAR(16) NOT NULL,
+  `new_password_hash` VARCHAR(255) NOT NULL,
+  `status` ENUM('pending', 'approved', 'rejected', 'cancelled') NOT NULL DEFAULT 'pending',
+  `approval_note` VARCHAR(255) DEFAULT NULL,
+  `requested_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `reviewed_by` VARCHAR(16) DEFAULT NULL,
+  `reviewed_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `password_change_requests_user_index` (`user_id`),
+  KEY `password_change_requests_status_index` (`status`),
+  KEY `password_change_requests_reviewed_by_index` (`reviewed_by`),
+  CONSTRAINT `fk_password_change_requests_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_password_change_requests_reviewed_by`
+    FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -320,6 +393,86 @@ INSERT INTO `role_permissions` (`role_code`, `permission_code`) VALUES
   ('teacher-scholarship', 'dashboard:read'),
   ('teacher-scholarship', 'tasks:read'),
   ('teacher-scholarship', 'tasks:write');
+
+INSERT INTO `departments` (`code`, `name`, `display_order`, `is_active`) VALUES
+  ('operations', 'Operations', 1, 1),
+  ('education', 'Education', 2, 1),
+  ('sports', 'Sports', 3, 1),
+  ('administration', 'Administration', 4, 1);
+
+INSERT INTO `website_team_departments` (`code`, `name`, `expertise`, `display_order`, `is_active`) VALUES
+  (
+    'ui-ux-design',
+    'UI/UX Design',
+    JSON_ARRAY(
+      'Interface layout and visual hierarchy',
+      'User journey planning and wireframing',
+      'Accessibility-focused design review'
+    ),
+    1,
+    1
+  ),
+  (
+    'frontend-development',
+    'Frontend Development',
+    JSON_ARRAY(
+      'Reusable Vue components and page structure',
+      'Responsive layouts and interaction states',
+      'State handling and UI integration'
+    ),
+    2,
+    1
+  ),
+  (
+    'backend-development',
+    'Backend Development',
+    JSON_ARRAY(
+      'API design and data flow',
+      'Authentication and permission logic',
+      'System integration and maintenance'
+    ),
+    3,
+    1
+  ),
+  (
+    'quality-assurance',
+    'Quality Assurance',
+    JSON_ARRAY(
+      'Functional testing and regression checks',
+      'Bug reporting and verification',
+      'Release readiness review'
+    ),
+    4,
+    1
+  ),
+  (
+    'project-coordination',
+    'Project Coordination',
+    JSON_ARRAY(
+      'Feature planning and delivery tracking',
+      'Cross-team communication',
+      'Scope, timeline, and handoff coordination'
+    ),
+    5,
+    1
+  );
+
+INSERT INTO `website_team_expertise` (`department_code`, `expertise_text`, `display_order`) VALUES
+  ('ui-ux-design', 'Interface layout and visual hierarchy', 1),
+  ('ui-ux-design', 'User journey planning and wireframing', 2),
+  ('ui-ux-design', 'Accessibility-focused design review', 3),
+  ('frontend-development', 'Reusable Vue components and page structure', 1),
+  ('frontend-development', 'Responsive layouts and interaction states', 2),
+  ('frontend-development', 'State handling and UI integration', 3),
+  ('backend-development', 'API design and data flow', 1),
+  ('backend-development', 'Authentication and permission logic', 2),
+  ('backend-development', 'System integration and maintenance', 3),
+  ('quality-assurance', 'Functional testing and regression checks', 1),
+  ('quality-assurance', 'Bug reporting and verification', 2),
+  ('quality-assurance', 'Release readiness review', 3),
+  ('project-coordination', 'Feature planning and delivery tracking', 1),
+  ('project-coordination', 'Cross-team communication', 2),
+  ('project-coordination', 'Scope, timeline, and handoff coordination', 3);
 
 INSERT INTO `sport_tournaments` (`id`, `title`, `subtitle`, `location`, `status`, `planned_matches`) VALUES
   (
@@ -590,6 +743,7 @@ INNER JOIN `role_permissions` AS `rp`
 --   r.scope,
 --   r.domain_code AS domain,
 --   u.department,
+--   u.bio,
 --   u.status,
 --   u.avatar,
 --   u.created_at AS createdAt,
