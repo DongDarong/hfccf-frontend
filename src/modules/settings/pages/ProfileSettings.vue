@@ -17,18 +17,10 @@ const currentUser = computed(() => userStore.currentUser)
 const isSuccessAlertVisible = ref(false)
 const activeAlertMode = ref('profile')
 
-const title = computed(() => (isKh.value ? 'ប្រវត្តិរូប និងការកំណត់' : 'Profile & Settings'))
-const subtitle = computed(() =>
-  isKh.value
-    ? 'គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន ចំណូលចិត្តភាសា និងសុវត្ថិភាពគណនីរបស់អ្នក។'
-    : 'Manage your personal details, language preferences, and account security settings.',
-)
-const successAlertTitle = computed(() => (isKh.value ? 'បានរក្សាទុកការផ្លាស់ប្តូរ' : 'Changes saved'))
-const successAlertMessage = computed(() =>
-  isKh.value
-    ? 'ព័ត៌មានប្រវត្តិរូបរបស់អ្នកត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។'
-    : 'Your profile information was updated successfully.',
-)
+const title = computed(() => t('pages.profile.pageTitle'))
+const subtitle = computed(() => t('pages.profile.pageSubtitle'))
+const successAlertTitle = computed(() => t('pages.profile.alerts.profileUpdatedTitle'))
+const successAlertMessage = computed(() => t('pages.profile.alerts.profileUpdatedMessage'))
 
 function handleGeneralInformationSubmit(formData) {
   console.log('Profile settings submitted:', formData)
@@ -45,16 +37,12 @@ function handleSecuritySubmit(formData) {
 // Route-level success copy switches by section while reusing one alert component.
 const resolvedSuccessAlertTitle = computed(() =>
   activeAlertMode.value === 'security'
-    ? isKh.value
-      ? 'បានធ្វើបច្ចុប្បន្នភាពសុវត្ថិភាព'
-      : 'Security updated'
+    ? t('pages.profile.alerts.securityUpdatedTitle')
     : successAlertTitle.value,
 )
 const resolvedSuccessAlertMessage = computed(() =>
   activeAlertMode.value === 'security'
-    ? isKh.value
-      ? 'ការផ្លាស់ប្តូរពាក្យសម្ងាត់របស់អ្នកត្រូវបានដាក់ស្នើដោយជោគជ័យ។'
-      : 'Your password change request was submitted and is waiting for Super Admin approval.'
+    ? t('pages.profile.alerts.securityApprovalPending')
     : successAlertMessage.value,
 )
 

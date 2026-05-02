@@ -5,8 +5,7 @@ import UiForm from '@/components/forms/Form.vue'
 import InputText from 'primevue/inputtext'
 
 const emit = defineEmits(['submit'])
-const { language, t } = useLanguage()
-const isKh = computed(() => language.value === 'KH')
+const { t } = useLanguage()
 
 const form = ref({
   currentPassword: '',
@@ -16,23 +15,15 @@ const form = ref({
 
 // Group labels in one computed block so the template stays lean and the copy is easy to update later.
 const labels = computed(() => ({
-  title: isKh.value ? 'សុវត្ថិភាព' : 'Security',
-  description: isKh.value
-    ? 'ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់របស់អ្នកដើម្បីរក្សាគណនីឱ្យមានសុវត្ថិភាព។'
-    : 'Update your password to keep your account protected.',
-  currentPassword: isKh.value ? 'ពាក្យសម្ងាត់បច្ចុប្បន្ន' : 'Current Password',
-  newPassword: isKh.value ? 'ពាក្យសម្ងាត់ថ្មី' : 'New Password',
-  confirmNewPassword: isKh.value ? 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី' : 'Confirm New Password',
-  currentPasswordPlaceholder: isKh.value
-    ? 'បញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្នរបស់អ្នក'
-    : 'Enter your current password',
-  newPasswordPlaceholder: isKh.value ? 'បញ្ចូលពាក្យសម្ងាត់ថ្មី' : 'Enter a new password',
-  confirmNewPasswordPlaceholder: isKh.value
-    ? 'បញ្ចូលពាក្យសម្ងាត់ថ្មីម្តងទៀត'
-    : 'Re-enter your new password',
-  approvalNote: isKh.value
-    ? 'ការប្តូរពាក្យសម្ងាត់នឹងជោគជ័យ បន្ទាប់ពី Super Admin អនុញ្ញាតសិន។'
-    : 'The password change will only succeed after the Super Admin approves it.',
+  title: t('pages.profile.security.title'),
+  description: t('pages.profile.security.description'),
+  currentPassword: t('pages.profile.security.currentPassword'),
+  newPassword: t('pages.profile.security.newPassword'),
+  confirmNewPassword: t('pages.profile.security.confirmNewPassword'),
+  currentPasswordPlaceholder: t('pages.profile.security.currentPasswordPlaceholder'),
+  newPasswordPlaceholder: t('pages.profile.security.newPasswordPlaceholder'),
+  confirmNewPasswordPlaceholder: t('pages.profile.security.confirmNewPasswordPlaceholder'),
+  approvalNote: t('pages.profile.security.approvalNote'),
 }))
 
 function handleSubmit() {

@@ -2,33 +2,28 @@
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
-const { language } = useLanguage()
-const isKh = computed(() => language.value === 'KH')
+const { t } = useLanguage()
 
 // Keep all display copy together because this component is informational and has no form state.
 const content = computed(() => ({
-  title: isKh.value ? 'អំពីគេហទំព័រ' : 'About Website',
-  description: isKh.value
-    ? 'ទិដ្ឋភាពសង្ខេបអំពីវេទិកា ស្ថានភាពប្រព័ន្ធ និងព័ត៌មានជំនួយសម្រាប់អ្នកប្រើប្រាស់។'
-    : 'A quick summary of the platform, current system status, and help information for users.',
+  title: t('pages.profile.aboutWebsite.title'),
+  description: t('pages.profile.aboutWebsite.description'),
   items: [
     {
-      label: isKh.value ? 'វេទិកា' : 'Platform',
+      label: t('pages.profile.aboutWebsite.platform'),
       value: 'HFCCF Frontend',
     },
     {
-      label: isKh.value ? 'កំណែ' : 'Version',
+      label: t('pages.profile.aboutWebsite.version'),
       value: 'v1.0.0',
     },
     {
-      label: isKh.value ? 'ស្ថានភាព' : 'Status',
-      value: isKh.value ? 'កំពុងដំណើរការ' : 'Operational',
+      label: t('pages.profile.aboutWebsite.status'),
+      value: t('pages.profile.aboutWebsite.statusValue'),
     },
   ],
-  noteTitle: isKh.value ? 'ព័ត៌មានជំនួយ' : 'Support Note',
-  note: isKh.value
-    ? 'ប្រសិនបើមានបញ្ហាក្នុងការចូលប្រើ ឬការផ្លាស់ប្តូរការកំណត់ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។'
-    : 'If you have trouble accessing features or changing settings, contact your system administrator.',
+  noteTitle: t('pages.profile.aboutWebsite.supportTitle'),
+  note: t('pages.profile.aboutWebsite.supportMessage'),
 }))
 </script>
 
