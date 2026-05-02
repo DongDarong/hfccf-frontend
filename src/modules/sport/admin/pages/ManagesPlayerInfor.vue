@@ -5,6 +5,7 @@
  * Handles data fetching (mock), filtering, and coordination between sub-components.
  */
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
@@ -22,6 +23,8 @@ defineOptions({
   name: 'SportAdminManagesPlayerInforPage',
 })
 
+const router = useRouter()
+
 // i18n and global state
 const { t, language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
@@ -36,6 +39,11 @@ const pageSize = 8
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 // Player status is localized from the sport module, not `common.status.*` (user/account status).
 const statusKeyPrefix = 'sportPlayerInformation.status'
+
+async function goToAddPlayer() {
+  // Use the route name so the link survives future path refactors.
+  await router.push({ name: 'dashboard-sport-admin-players-add' })
+}
 
 const divisionOptions = computed(() => {
   const divisions = playerRecords.value.map((p) => p.division).filter(Boolean)
@@ -244,7 +252,7 @@ watch(
               :label="t('sportPlayerInformation.addButton')"
               icon="pi pi-plus"
               class="player-info-page__add-button"
-              @click="() => {}"
+              @click="goToAddPlayer"
             />
           </template>
         </PlayerInfoToolbar>
