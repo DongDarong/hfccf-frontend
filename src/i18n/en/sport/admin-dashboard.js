@@ -210,7 +210,7 @@ export default {
   sportPlayerInformation: {
     title: 'Player Information',
     subtitle: 'Track player records, readiness, and team assignment across the sport program.',
-    searchPlaceholder: 'Search players, teams, divisions, positions, jersey numbers, or status',
+    searchPlaceholder: 'Search players...',
     tableEmpty: 'No player records found.',
     toolbarEyebrow: 'Player records',
     toolbarSummary: '{count} player records in view',

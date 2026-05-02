@@ -210,7 +210,7 @@ export default {
   sportPlayerInformation: {
     title: 'ព័ត៌មានកីឡាករ',
     subtitle: 'តាមដានកំណត់ត្រាកីឡាករ ភាពរួចរាល់ និងការបែងចែកតាមក្រុមក្នុងកម្មវិធីកីឡា។',
-    searchPlaceholder: 'ស្វែងរកកីឡាករ ក្រុម កម្រិតប្រកួត តួនាទី លេខអាវ ឬស្ថានភាព',
+    searchPlaceholder: 'ស្វែងរកកីឡាករ...',
     tableEmpty: 'មិនមានកំណត់ត្រាកីឡាករទេ។',
     toolbarEyebrow: 'កំណត់ត្រាកីឡាករ',
     toolbarSummary: 'កំណត់ត្រាកីឡាករ {count} កំពុងបង្ហាញ',

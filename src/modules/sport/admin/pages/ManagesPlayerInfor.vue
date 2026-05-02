@@ -28,9 +28,15 @@ const isKh = computed(() => language.value === 'KH')
 // Filter and Pagination state
 const searchQuery = ref('')
 const statusFilter = ref('')
+const divisionFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 8
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
+
+const divisionOptions = computed(() => {
+  const divisions = playerRecords.value.map((p) => p.division).filter(Boolean)
+  return [...new Set(divisions)].sort()
+})
 
 // Computed labels for i18n
 const pageTitle = computed(() => t('sportPlayerInformation.title'))
@@ -62,14 +68,16 @@ const filteredPlayers = computed(() => {
     let isMatch = true
 
     if (query) {
-      const haystack = normalize(
-        `${player.name} ${player.team} ${player.division} ${player.position} ${player.jerseyNumber} ${player.age} ${player.status}`,
-      )
+      const haystack = normalize(player.name)
       isMatch = haystack.includes(query)
     }
 
     if (isMatch && statusFilter.value) {
       isMatch = normalize(player.status) === normalize(statusFilter.value)
+    }
+
+    if (isMatch && divisionFilter.value) {
+      isMatch = normalize(player.division) === normalize(divisionFilter.value)
     }
 
     return isMatch
@@ -227,9 +235,12 @@ watch(
           class="w-full"
           v-model:searchQuery="searchQuery"
           v-model:statusFilter="statusFilter"
+          v-model:divisionFilter="divisionFilter"
           :search-placeholder="searchPlaceholder"
           :status-options="statusOptions"
+          :division-options="divisionOptions"
           :show-role-filter="false"
+          :show-division-filter="true"
         />
 
         <!-- Quick Stats Highlights -->

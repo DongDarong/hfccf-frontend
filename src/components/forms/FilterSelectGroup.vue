@@ -9,11 +9,19 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  divisionFilter: {
+    type: String,
+    default: '',
+  },
   statusFilter: {
     type: String,
     default: '',
   },
   roleOptions: {
+    type: Array,
+    default: () => [],
+  },
+  divisionOptions: {
     type: Array,
     default: () => [],
   },
@@ -29,6 +37,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showDivisionFilter: {
+    type: Boolean,
+    default: false,
+  },
   showStatusFilter: {
     type: Boolean,
     default: true,
@@ -39,12 +51,22 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:roleFilter', 'update:statusFilter', 'clear'])
+const emit = defineEmits([
+  'update:roleFilter',
+  'update:divisionFilter',
+  'update:statusFilter',
+  'clear',
+])
 const { t } = useLanguage()
 
 const hasRoleOptions = computed(() => props.showRoleFilter && props.roleOptions.length > 0)
+const hasDivisionOptions = computed(
+  () => props.showDivisionFilter && props.divisionOptions.length > 0,
+)
 const hasStatusOptions = computed(() => props.showStatusFilter && props.statusOptions.length > 0)
-const hasActiveFilters = computed(() => Boolean(props.roleFilter || props.statusFilter))
+const hasActiveFilters = computed(
+  () => Boolean(props.roleFilter || props.divisionFilter || props.statusFilter),
+)
 
 function normalizeKey(value) {
   return String(value ?? '')
@@ -65,11 +87,25 @@ function statusLabel(status) {
   return localized !== key ? localized : status
 }
 
+function divisionLabel(division) {
+  const key = `common.division.${normalizeKey(division)}`
+  const localized = t(key)
+  return localized !== key ? localized : division
+}
+
 const mappedRoleOptions = computed(() => [
   { label: t('common.allRoles'), value: '' },
   ...props.roleOptions.map((role) => ({
     label: roleLabel(role),
     value: role,
+  })),
+])
+
+const mappedDivisionOptions = computed(() => [
+  { label: t('common.allDivisions') || 'All Divisions', value: '' },
+  ...props.divisionOptions.map((division) => ({
+    label: divisionLabel(division),
+    value: division,
   })),
 ])
 
@@ -120,6 +156,7 @@ const selectPt = {
 
 function clearFilters() {
   emit('update:roleFilter', '')
+  emit('update:divisionFilter', '')
   emit('update:statusFilter', '')
   emit('clear')
 }
@@ -139,6 +176,20 @@ function clearFilters() {
       class="ui-filter-select w-full sm:w-40"
       :pt="selectPt"
       @update:model-value="emit('update:roleFilter', $event)"
+    />
+
+    <Select
+      v-if="hasDivisionOptions"
+      input-id="userDivisionFilter"
+      :model-value="divisionFilter"
+      :options="mappedDivisionOptions"
+      option-label="label"
+      option-value="value"
+      :disabled="disabled"
+      append-to="self"
+      class="ui-filter-select w-full sm:w-44"
+      :pt="selectPt"
+      @update:model-value="emit('update:divisionFilter', $event)"
     />
 
     <Select

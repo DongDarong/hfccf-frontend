@@ -12,6 +12,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  divisionFilter: {
+    type: String,
+    default: '',
+  },
   statusFilter: {
     type: String,
     default: '',
@@ -19,6 +23,10 @@ const props = defineProps({
   roleOptions: {
     type: Array,
     default: () => ['Admin', 'Coach', 'Player'],
+  },
+  divisionOptions: {
+    type: Array,
+    default: () => [],
   },
   statusOptions: {
     type: Array,
@@ -36,6 +44,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showDivisionFilter: {
+    type: Boolean,
+    default: false,
+  },
   showStatusFilter: {
     type: Boolean,
     default: true,
@@ -49,16 +61,24 @@ const props = defineProps({
 const emit = defineEmits([
   'update:searchQuery',
   'update:roleFilter',
+  'update:divisionFilter',
   'update:statusFilter',
   'clear',
 ])
 
 const hasFilterControls = computed(
-  () => props.showRoleFilter || props.showStatusFilter || props.showClearButton,
+  () =>
+    props.showRoleFilter ||
+    props.showDivisionFilter ||
+    props.showStatusFilter ||
+    props.showClearButton,
 )
 
 function clearFilters() {
   emit('update:searchQuery', '')
+  emit('update:roleFilter', '')
+  emit('update:divisionFilter', '')
+  emit('update:statusFilter', '')
   emit('clear')
 }
 </script>
@@ -81,14 +101,18 @@ function clearFilters() {
       <div v-if="hasFilterControls" class="flex w-full xl:w-auto xl:justify-end">
         <FilterSelectGroup
           :role-filter="props.roleFilter"
+          :division-filter="props.divisionFilter"
           :status-filter="props.statusFilter"
           :role-options="props.roleOptions"
+          :division-options="props.divisionOptions"
           :status-options="props.statusOptions"
           :disabled="props.disabled"
           :show-role-filter="props.showRoleFilter"
+          :show-division-filter="props.showDivisionFilter"
           :show-status-filter="props.showStatusFilter"
           :show-clear-button="props.showClearButton"
           @update:role-filter="emit('update:roleFilter', $event)"
+          @update:division-filter="emit('update:divisionFilter', $event)"
           @update:status-filter="emit('update:statusFilter', $event)"
           @clear="clearFilters"
         />
