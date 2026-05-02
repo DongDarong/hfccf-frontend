@@ -47,6 +47,7 @@ defineProps({
         <span class="player-info-toolbar__spotlight-label">{{ spotlightLabel }}</span>
         <strong class="player-info-toolbar__spotlight-value">{{ spotlightValue }}</strong>
       </div>
+      <slot name="actions"></slot>
     </div>
   </div>
 </template>

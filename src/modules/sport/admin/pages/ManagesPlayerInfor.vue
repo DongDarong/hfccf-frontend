@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
+import Button from 'primevue/button'
 import { useLanguage } from '@/composables/useLanguage'
 import playersData from '@/mocks/sport/players-management-data.json'
 
@@ -188,10 +189,6 @@ const highlightItems = computed(() => [
     value: filteredPlayers.value.length,
   },
   {
-    label: t('sportPlayerInformation.highlights.teams'),
-    value: new Set(filteredPlayers.value.map((player) => player.team).filter(Boolean)).size,
-  },
-  {
     label: t('sportPlayerInformation.highlights.divisions'),
     value: new Set(filteredPlayers.value.map((player) => player.division).filter(Boolean)).size,
   },
@@ -228,7 +225,17 @@ watch(
           :text="visibleRangeLabel"
           :spotlight-label="activeRateTitle"
           :spotlight-value="activeRateLabel"
-        />
+        >
+          <template #actions>
+            <Button
+              type="button"
+              :label="t('sportPlayerInformation.addButton')"
+              icon="pi pi-plus"
+              class="player-info-page__add-button"
+              @click="() => {}"
+            />
+          </template>
+        </PlayerInfoToolbar>
 
         <!-- Filter Bar -->
         <SearchFilterBar
@@ -277,6 +284,12 @@ watch(
     radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
+}
+
+.player-info-page__add-button {
+  min-height: 2.8rem;
+  border-radius: 0.9rem;
+  font-weight: 800;
 }
 
 /* Khmer Support Styles */

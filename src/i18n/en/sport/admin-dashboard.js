@@ -217,6 +217,7 @@ export default {
     visibleRange: 'Showing {start}-{end} of {total} player records',
     noResults: 'No player records match the current filters.',
     activeRateLabel: 'Active rate',
+    addButton: 'Add Player',
     table: {
       player: 'Player',
       team: 'Team',
@@ -228,7 +229,6 @@ export default {
     },
     highlights: {
       visiblePlayers: 'Visible players',
-      teams: 'Teams',
       divisions: 'Divisions',
       attentionItems: 'Attention items',
     },
