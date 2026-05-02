@@ -9,8 +9,7 @@ import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import usersMock from '@/mocks/users.json'
-import { mapUser } from '@/services/mappers/userMapper'
+import playersData from '@/mocks/sport/players-management-data.json'
 
 defineOptions({
   name: 'SportAdminManagesPlayerInforPage',
@@ -32,16 +31,8 @@ const tableEmptyText = computed(() => t('sportPlayerInformation.tableEmpty'))
 const toolbarEyebrow = computed(() => t('sportPlayerInformation.toolbarEyebrow'))
 const activeRateTitle = computed(() => t('sportPlayerInformation.activeRateLabel'))
 
-// Build the screen from the current mock user model so the future backend API can
-// plug into the same table shape without changing the view layer later.
-const playerRecords = ref(
-  usersMock
-    .filter(
-      (item) =>
-        Array.isArray(item.role_permission) && item.role_permission.includes('athletes:read'),
-    )
-    .map((item) => mapUser(item)),
-)
+// Keep players as standalone data records so the future API can replace this mock file directly.
+const playerRecords = ref(Array.isArray(playersData) ? [...playersData] : [])
 
 function normalize(value) {
   return String(value ?? '')
@@ -78,7 +69,7 @@ const filteredPlayers = computed(() => {
 
     if (query) {
       const haystack = normalize(
-        `${player.name} ${player.email} ${player.role} ${player.department} ${player.permissions.join(' ')}`,
+        `${player.name} ${player.team} ${player.division} ${player.position} ${player.jerseyNumber} ${player.age} ${player.status}`,
       )
       isMatch = haystack.includes(query)
     }
@@ -181,16 +172,18 @@ const highlightItems = computed(() => [
     value: filteredPlayers.value.length,
   },
   {
-    label: t('sportPlayerInformation.highlights.departments'),
-    value: new Set(filteredPlayers.value.map((player) => player.department).filter(Boolean)).size,
+    label: t('sportPlayerInformation.highlights.teams'),
+    value: new Set(filteredPlayers.value.map((player) => player.team).filter(Boolean)).size,
   },
   {
-    label: t('sportPlayerInformation.highlights.permissions'),
-    value: filteredPlayers.value.reduce((sum, player) => sum + player.permissions.length, 0),
+    label: t('sportPlayerInformation.highlights.divisions'),
+    value: new Set(filteredPlayers.value.map((player) => player.division).filter(Boolean)).size,
   },
   {
     label: t('sportPlayerInformation.highlights.attentionItems'),
-    value: attentionPlayers.value,
+    value: filteredPlayers.value.filter((player) =>
+      ['inactive', 'suspended'].includes(normalize(player.status)),
+    ).length,
   },
 ])
 
@@ -285,7 +278,7 @@ watch(
             </template>
           </Column>
 
-          <Column field="name" :header="t('common.table.user')">
+          <Column field="name" :header="t('sportPlayerInformation.table.player')">
             <template #body="{ data }">
               <div class="flex items-center gap-3">
                 <Avatar
@@ -298,20 +291,28 @@ watch(
                     {{ data.name }}
                   </div>
                   <div class="text-[11px] text-surface-500 sm:text-xs">
-                    {{ data.role }}
+                    {{ data.position }}
                   </div>
                 </div>
               </div>
             </template>
           </Column>
 
-          <Column field="email" :header="t('common.table.email')" />
+          <Column field="team" :header="t('sportPlayerInformation.table.team')" />
 
-          <Column field="department" :header="t('common.table.department')" />
+          <Column field="division" :header="t('sportPlayerInformation.table.division')" />
 
-          <Column field="permission" :header="t('common.table.permission')">
+          <Column field="position" :header="t('sportPlayerInformation.table.position')" />
+
+          <Column field="jerseyNumber" :header="t('sportPlayerInformation.table.jersey')" />
+
+          <Column field="age" :header="t('sportPlayerInformation.table.age')" />
+
+          <Column field="stats" :header="t('sportPlayerInformation.table.stats')">
             <template #body="{ data }">
-              <span class="font-semibold text-slate-700">{{ data.permissions.length }}</span>
+              <span class="font-semibold text-slate-700">
+                {{ data.matchesPlayed }} / {{ data.goalsScored }}
+              </span>
             </template>
           </Column>
 
@@ -320,8 +321,6 @@ watch(
               <StatusBadge :status="statusType(data.status)" :label="data.status" size="sm" />
             </template>
           </Column>
-
-          <Column field="phone" :header="t('common.table.phone')" />
         </DataTable>
 
         <div v-if="totalPages > 1" class="flex justify-end">

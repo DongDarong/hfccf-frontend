@@ -48,6 +48,7 @@ export default {
     coaches: 'គ្រូបង្វឹក',
     students: 'សិស្ស',
     teams: 'ក្រុម',
+    players: 'កីឡាករ',
     classes: 'ថ្នាក់រៀន',
     applications: 'ពាក្យស្នើសុំ',
   },
