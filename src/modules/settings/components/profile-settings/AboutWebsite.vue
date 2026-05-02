@@ -1,13 +1,17 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
+import Button from '@/components/buttons/Button.vue'
 
 const { t } = useLanguage()
+const router = useRouter()
 
 // Keep all display copy together because this component is informational and has no form state.
 const content = computed(() => ({
   title: t('pages.profile.aboutWebsite.title'),
   description: t('pages.profile.aboutWebsite.description'),
+  detailsButton: t('pages.profile.aboutWebsite.detailsButton'),
   items: [
     {
       label: t('pages.profile.aboutWebsite.platform'),
@@ -25,6 +29,11 @@ const content = computed(() => ({
   noteTitle: t('pages.profile.aboutWebsite.supportTitle'),
   note: t('pages.profile.aboutWebsite.supportMessage'),
 }))
+
+function goToAboutWebsitePage() {
+  // Navigate by route name so the button stays stable even if the path changes later.
+  router.push({ name: 'settings-about-website' })
+}
 </script>
 
 <template>
@@ -58,6 +67,12 @@ const content = computed(() => ({
       <div class="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3">
         <p class="text-sm font-bold text-sky-900">{{ content.noteTitle }}</p>
         <p class="mt-1 text-sm leading-6 text-sky-800">{{ content.note }}</p>
+      </div>
+
+      <div class="flex justify-end">
+        <Button type="button" variant="outline" rounded="xl" @click="goToAboutWebsitePage">
+          {{ content.detailsButton }}
+        </Button>
       </div>
     </div>
   </section>

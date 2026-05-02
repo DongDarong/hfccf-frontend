@@ -205,6 +205,7 @@ export default {
       title: 'About Website',
       description:
         'A quick summary of the platform, current system status, and help information for users.',
+      detailsButton: 'Details',
       platform: 'Platform',
       version: 'Version',
       status: 'Status',
@@ -212,6 +213,18 @@ export default {
       supportTitle: 'Support Note',
       supportMessage:
         'If you have trouble accessing features or changing settings, contact your system administrator.',
+      pageTitle: 'About This Website',
+      pageSubtitle:
+        'Learn more about the platform purpose, release state, and where to get help.',
+      overviewTitle: 'Overview',
+      overviewText:
+        'HFCCF Frontend brings together profile settings, program tools, and daily operations into one dashboard experience.',
+      releaseTitle: 'Release Information',
+      releaseText:
+        'This build is currently marked as operational and is intended to support staff workflows across modules.',
+      supportDetailTitle: 'Support and Guidance',
+      supportDetailText:
+        'For account issues, permission changes, or configuration questions, coordinate with your system administrator or Super Admin.',
     },
   },
 }
