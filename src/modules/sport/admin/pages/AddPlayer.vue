@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -23,9 +23,14 @@ const { t, language, te } = useLanguage()
 
 const playersDirectoryPath = '/module/sport-admin/players'
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
+// Keep these aligned with the shared upload field accept types.
+const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
 const form = reactive({
   name: '',
+  phone: '',
+  gender: '',
   team: '',
   division: '',
   position: '',
@@ -34,6 +39,7 @@ const form = reactive({
   status: statusOptions[0],
   matchesPlayed: 0,
   goalsScored: 0,
+  profileImage: null,
 })
 
 const isSubmitting = ref(false)
@@ -41,6 +47,8 @@ const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
 const isKh = computed(() => language.value === 'KH')
+const profileImagePreview = ref('')
+const profileImageObjectUrl = ref('')
 
 const isDeleteOpen = ref(false)
 const isDeleting = ref(false)
@@ -76,6 +84,14 @@ const divisionOptions = computed(() => {
   return [...new Set([...fromTeams, ...fromPlayers])].sort()
 })
 
+// Positions belong to the player record (data), so we derive a stable set of options from the mock dataset.
+const positionOptions = computed(() => {
+  const fromPlayers = (Array.isArray(playersManagementData) ? playersManagementData : [])
+    .map((item) => String(item?.position || '').trim())
+    .filter(Boolean)
+  return [...new Set(fromPlayers)].sort()
+})
+
 function playerStatusLabel(status) {
   const key = `sportPlayerInformation.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
   return te(key) ? t(key) : String(status || '')
@@ -96,6 +112,44 @@ const pageSubtitle = computed(() => {
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
+}
+
+function cleanupProfileImageObjectUrl() {
+  if (!profileImageObjectUrl.value) return
+  URL.revokeObjectURL(profileImageObjectUrl.value)
+  profileImageObjectUrl.value = ''
+}
+
+function onProfileImageChange(event) {
+  if (isFormLocked.value) return
+
+  const [file] = event?.target?.files || []
+  if (!file) return
+
+  // Basic client-side guardrails; actual enforcement should be done again on the backend.
+  if (!allowedProfileImageTypes.includes(file.type)) {
+    errorMessage.value = t('sportAddPlayer.validation.imageType')
+    showError.value = true
+    return
+  }
+
+  if (file.size > maxProfileImageSizeBytes) {
+    errorMessage.value = t('sportAddPlayer.validation.imageSize')
+    showError.value = true
+    return
+  }
+
+  cleanupProfileImageObjectUrl()
+  profileImageObjectUrl.value = URL.createObjectURL(file)
+  profileImagePreview.value = profileImageObjectUrl.value
+  form.profileImage = file
+}
+
+function removeProfileImage() {
+  if (isFormLocked.value) return
+  cleanupProfileImageObjectUrl()
+  profileImagePreview.value = ''
+  form.profileImage = null
 }
 
 function validate() {
@@ -187,6 +241,10 @@ onMounted(() => {
   if (!found) return
 
   form.name = String(found.name || '')
+  form.phone = String(found.phone || '')
+  form.gender = String(found.gender || '')
+  // When mock/API provides an image URL, allow read-only preview in view/edit modes.
+  profileImagePreview.value = String(found.profileImage || found.avatar || found.photo || '').trim()
   form.team = String(found.team || '')
   form.division = String(found.division || '')
   form.position = String(found.position || '')
@@ -195,6 +253,10 @@ onMounted(() => {
   form.status = String(found.status || statusOptions[0])
   form.matchesPlayed = Number(found.matchesPlayed ?? 0)
   form.goalsScored = Number(found.goalsScored ?? 0)
+})
+
+onBeforeUnmount(() => {
+  cleanupProfileImageObjectUrl()
 })
 </script>
 
@@ -216,7 +278,10 @@ onMounted(() => {
           @cancel="goBackToPlayers"
         >
           <AddPlayerFormFields
+            :profile-image-preview="profileImagePreview"
             :name="form.name"
+            :phone="form.phone"
+            :gender="form.gender"
             :team="form.team"
             :division="form.division"
             :position="form.position"
@@ -227,10 +292,15 @@ onMounted(() => {
             :goals-scored="form.goalsScored"
             :team-options="teamOptions"
             :division-options="divisionOptions"
+            :position-options="positionOptions"
             :status-options="statusOptions"
             :is-locked="isFormLocked"
             :status-label="playerStatusLabel"
+            @profile-image-change="onProfileImageChange"
+            @profile-image-remove="removeProfileImage"
             @update:name="form.name = $event"
+            @update:phone="form.phone = $event"
+            @update:gender="form.gender = $event"
             @update:team="form.team = $event"
             @update:division="form.division = $event"
             @update:position="form.position = $event"

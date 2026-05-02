@@ -4,13 +4,26 @@ import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
+import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 
 defineOptions({
   name: 'AddPlayerFormFields',
 })
 
 const props = defineProps({
+  profileImagePreview: {
+    type: String,
+    default: '',
+  },
   name: {
+    type: String,
+    default: '',
+  },
+  phone: {
+    type: String,
+    default: '',
+  },
+  gender: {
     type: String,
     default: '',
   },
@@ -54,9 +67,18 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  positionOptions: {
+    type: Array,
+    // Default to common football positions so the form still works without passing options.
+    default: () => ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'],
+  },
   statusOptions: {
     type: Array,
     default: () => [],
+  },
+  genderOptions: {
+    type: Array,
+    default: () => ['male', 'female', 'other'],
   },
   isLocked: {
     type: Boolean,
@@ -70,6 +92,8 @@ const props = defineProps({
 
 const emit = defineEmits([
   'update:name',
+  'update:phone',
+  'update:gender',
   'update:team',
   'update:division',
   'update:position',
@@ -78,12 +102,19 @@ const emit = defineEmits([
   'update:status',
   'update:matchesPlayed',
   'update:goalsScored',
+  // Keep upload side-effects (validation, object URL cleanup) in the page layer.
+  'profile-image-change',
+  'profile-image-remove',
 ])
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 
 const labels = computed(() => ({
+  profileImage: t('sportAddPlayer.profileImage'),
+  removeImage: t('sportAddPlayer.removeImage'),
   fullName: t('sportAddPlayer.fullName'),
+  phone: t('sportAddPlayer.phone'),
+  gender: t('sportAddPlayer.gender'),
   team: t('sportAddPlayer.team'),
   division: t('sportAddPlayer.division'),
   position: t('sportAddPlayer.position'),
@@ -96,6 +127,8 @@ const labels = computed(() => ({
 
 const placeholders = computed(() => ({
   fullName: t('sportAddPlayer.fullNamePlaceholder'),
+  phone: t('sportAddPlayer.phonePlaceholder'),
+  gender: t('sportAddPlayer.genderPlaceholder'),
   team: t('sportAddPlayer.teamPlaceholder'),
   division: t('sportAddPlayer.divisionPlaceholder'),
   position: t('sportAddPlayer.positionPlaceholder'),
@@ -117,9 +150,28 @@ const divisionSelectOptions = computed(() =>
   })),
 )
 
+const positionSelectOptions = computed(() =>
+  props.positionOptions.map((value) => ({
+    label: value,
+    value,
+  })),
+)
+
 const statusSelectOptions = computed(() =>
   props.statusOptions.map((value) => ({
     label: props.statusLabel(value),
+    value,
+  })),
+)
+
+function genderLabel(value) {
+  const key = `sportAddPlayer.genderOptions.${String(value || '').trim().toLowerCase()}`
+  return te(key) ? t(key) : String(value || '')
+}
+
+const genderSelectOptions = computed(() =>
+  props.genderOptions.map((value) => ({
+    label: genderLabel(value),
     value,
   })),
 )
@@ -157,6 +209,16 @@ const selectPt = {
 
 <template>
   <div class="add-player-form-fields">
+    <AddAdminProfileImageField
+      class="add-player-form-fields__field add-player-form-fields__field--full"
+      :title="labels.profileImage"
+      :preview="profileImagePreview"
+      :remove-label="labels.removeImage"
+      :disabled="isLocked"
+      @change="emit('profile-image-change', $event)"
+      @remove="emit('profile-image-remove')"
+    />
+
     <label class="add-player-form-fields__field add-player-form-fields__field--full">
       <span class="add-player-form-fields__label">{{ labels.fullName }}</span>
       <InputText
@@ -165,6 +227,33 @@ const selectPt = {
         :placeholder="placeholders.fullName"
         class="w-full"
         @update:model-value="emit('update:name', $event)"
+      />
+    </label>
+
+    <label class="add-player-form-fields__field">
+      <span class="add-player-form-fields__label">{{ labels.phone }}</span>
+      <InputText
+        :model-value="phone"
+        :disabled="isLocked"
+        :placeholder="placeholders.phone"
+        class="w-full"
+        @update:model-value="emit('update:phone', $event)"
+      />
+    </label>
+
+    <label class="add-player-form-fields__field">
+      <span class="add-player-form-fields__label">{{ labels.gender }}</span>
+      <Select
+        :model-value="gender"
+        :options="genderSelectOptions"
+        option-label="label"
+        option-value="value"
+        :disabled="isLocked"
+        :placeholder="placeholders.gender"
+        append-to="self"
+        class="w-full"
+        :pt="selectPt"
+        @update:model-value="emit('update:gender', $event)"
       />
     </label>
 
@@ -202,11 +291,16 @@ const selectPt = {
 
     <label class="add-player-form-fields__field">
       <span class="add-player-form-fields__label">{{ labels.position }}</span>
-      <InputText
+      <Select
         :model-value="position"
+        :options="positionSelectOptions"
+        option-label="label"
+        option-value="value"
         :disabled="isLocked"
         :placeholder="placeholders.position"
+        append-to="self"
         class="w-full"
+        :pt="selectPt"
         @update:model-value="emit('update:position', $event)"
       />
     </label>
@@ -307,4 +401,3 @@ const selectPt = {
   }
 }
 </style>
-
