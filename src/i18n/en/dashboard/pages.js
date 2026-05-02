@@ -222,6 +222,19 @@ export default {
       releaseTitle: 'Release Information',
       releaseText:
         'This build is currently marked as operational and is intended to support staff workflows across modules.',
+      teamTitle: 'Website Development Team',
+      teamText:
+        'The website development team includes designers, frontend developers, backend engineers, and project coordinators who maintain the platform experience.',
+      teamDepartmentsTitle: 'Departments',
+      teamMembersTitle: 'Team Members',
+      teamExpertiseTitle: 'Expertise',
+      teamDepartments: [
+        'UI/UX Design',
+        'Frontend Development',
+        'Backend Development',
+        'Quality Assurance',
+        'Project Coordination',
+      ],
       supportDetailTitle: 'Support and Guidance',
       supportDetailText:
         'For account issues, permission changes, or configuration questions, coordinate with your system administrator or Super Admin.',
