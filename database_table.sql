@@ -29,6 +29,7 @@ DROP TABLE IF EXISTS `sport_standings`;
 DROP TABLE IF EXISTS `sport_top_scorers`;
 DROP TABLE IF EXISTS `sport_matches`;
 DROP TABLE IF EXISTS `sport_tournament_alerts`;
+DROP TABLE IF EXISTS `sport_players`;
 DROP TABLE IF EXISTS `sport_teams`;
 DROP TABLE IF EXISTS `sport_tournaments`;
 DROP TABLE IF EXISTS `website_team_expertise`;
@@ -247,6 +248,32 @@ CREATE TABLE `sport_teams` (
   PRIMARY KEY (`id`),
   KEY `sport_teams_status_index` (`status`),
   KEY `sport_teams_division_index` (`division`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Players are data records (not system users). Keep player lifecycle separate from user/account lifecycle.
+-- This table is the backend contract for the Sport Admin "Player Information" UI.
+CREATE TABLE `sport_players` (
+  `id` VARCHAR(16) NOT NULL,
+  `name` VARCHAR(191) NOT NULL,
+  `team_id` VARCHAR(16) DEFAULT NULL,
+  `team_name` VARCHAR(191) NOT NULL,
+  `division` VARCHAR(100) NOT NULL,
+  `position` VARCHAR(64) DEFAULT NULL,
+  `jersey_number` SMALLINT UNSIGNED DEFAULT NULL,
+  `age` TINYINT UNSIGNED DEFAULT NULL,
+  `status` ENUM('active', 'pending', 'inactive', 'suspended') NOT NULL DEFAULT 'active',
+  `matches_played` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `goals_scored` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_players_team_index` (`team_id`),
+  KEY `sport_players_status_index` (`status`),
+  KEY `sport_players_division_index` (`division`),
+  CONSTRAINT `fk_sport_players_team`
+    FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `sport_tournament_alerts` (
@@ -757,5 +784,6 @@ INNER JOIN `role_permissions` AS `rp`
 -- Current Sport frontend data shape:
 -- 1. Coaches come from `users` filtered by role_code = 'coach'.
 -- 2. Teams management comes from `sport_teams`.
--- 3. Tournament banner, alerts, live matches, today's matches, top scorers,
+-- 3. Player information comes from `sport_players` (players are not users).
+-- 4. Tournament banner, alerts, live matches, today's matches, top scorers,
 --    and standings come from the `sport_*` tournament tables above.
