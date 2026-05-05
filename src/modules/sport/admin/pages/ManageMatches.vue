@@ -4,10 +4,11 @@
  * Placeholder page for match management (fixtures / live match feeds).
  * UI-only for now: future backend integration will use `sport_matches` and related tournament tables.
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-management/MatchesSearchFilterBar.vue'
 
 defineOptions({
   name: 'SportAdminManageMatchesPage',
@@ -18,6 +19,16 @@ const isKh = computed(() => language.value === 'KH')
 
 const title = computed(() => t('sportMatchesManagement.title'))
 const subtitle = computed(() => t('sportMatchesManagement.subtitle'))
+
+// Filter state (UI-only until the matches table/list is implemented).
+const searchQuery = ref('')
+const competition = ref('')
+const tournament = ref('')
+const matchDateInput = ref('')
+
+// Placeholder options: these will come from the backend/API later.
+const competitionOptions = ['U-18 Premier', 'U-16 Elite', 'Senior Development']
+const tournamentOptions = ['HFCCF Cup 2026', 'Friendly League']
 </script>
 
 <template>
@@ -26,8 +37,17 @@ const subtitle = computed(() => t('sportMatchesManagement.subtitle'))
       <HeaderSection :title="title" :subtitle="subtitle" />
 
       <div class="manage-matches-page__shell">
+        <MatchesSearchFilterBar
+          v-model:searchQuery="searchQuery"
+          v-model:competition="competition"
+          v-model:tournament="tournament"
+          v-model:matchDateInput="matchDateInput"
+          :competition-options="competitionOptions"
+          :tournament-options="tournamentOptions"
+        />
+
         <!-- Keep the copy i18n-owned so future UI iterations won't hardcode strings. -->
-        <p class="manage-matches-page__hint">
+        <p class="manage-matches-page__hint mt-5">
           {{ t('sportMatchesManagement.placeholder') }}
         </p>
       </div>
@@ -64,4 +84,3 @@ const subtitle = computed(() => t('sportMatchesManagement.subtitle'))
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 </style>
-
