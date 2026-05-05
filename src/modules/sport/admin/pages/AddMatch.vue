@@ -13,6 +13,7 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FormMatche from '@/modules/sport/admin/components/add-match/FormMatche.vue'
+import teamsManagementData from '@/mocks/sport/teams-management-data.json'
 
 defineOptions({
   name: 'SportAdminAddMatchPage',
@@ -29,6 +30,8 @@ const showError = ref(false)
 const errorMessage = ref('')
 const competitionType = ref('')
 const tournament = ref('')
+const homeTeam = ref('')
+const awayTeam = ref('')
 
 const competitionTypeOptions = computed(() => [
   { value: 'tournament', label: t('sportMatchesManagement.competitionTypes.tournament') },
@@ -40,6 +43,15 @@ const tournamentOptions = computed(() => [
   { value: 'friendly_league', label: 'Friendly League' },
   { value: 'summer_showcase', label: 'Summer Showcase' },
 ])
+
+const teamOptions = computed(() => {
+  // Reuse the live team directory so match team selection stays aligned with sport data.
+  const teams = Array.isArray(teamsManagementData) ? teamsManagementData : []
+  const values = teams
+    .map((item) => String(item?.name || '').trim())
+    .filter(Boolean)
+  return [...new Set(values)].sort()
+})
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -86,8 +98,13 @@ function onSuccessClose() {
           :competition-type-options="competitionTypeOptions"
           :tournament="tournament"
           :tournament-options="tournamentOptions"
+          :home-team="homeTeam"
+          :away-team="awayTeam"
+          :team-options="teamOptions"
           @update:competition-type="competitionType = $event"
           @update:tournament="tournament = $event"
+          @update:home-team="homeTeam = $event"
+          @update:away-team="awayTeam = $event"
           @submit="onSubmit"
         />
       </div>

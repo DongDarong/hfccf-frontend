@@ -49,9 +49,27 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  homeTeam: {
+    type: String,
+    default: '',
+  },
+  awayTeam: {
+    type: String,
+    default: '',
+  },
+  teamOptions: {
+    type: Array,
+    default: () => [],
+  },
 })
 
-const emit = defineEmits(['submit', 'update:competitionType', 'update:tournament'])
+const emit = defineEmits([
+  'submit',
+  'update:competitionType',
+  'update:tournament',
+  'update:homeTeam',
+  'update:awayTeam',
+])
 
 const showTournamentField = computed(
   () => props.competitionType === 'tournament' || props.competitionType === 'friendly',
@@ -75,6 +93,30 @@ const tournamentSelectOptions = computed(() => [
   { value: '', label: t('sportMatchesManagement.tournamentSelectPlaceholder') },
   ...props.tournamentOptions.map((option) => normalizeOption(option)),
 ])
+
+const homeTeamOptions = computed(() =>
+  props.teamOptions
+    .map((option) => normalizeOption(option))
+    .filter((option) => option.value !== props.awayTeam),
+)
+
+const awayTeamOptions = computed(() =>
+  props.teamOptions
+    .map((option) => normalizeOption(option))
+    .filter((option) => option.value !== props.homeTeam),
+)
+
+function onHomeTeamChange(value) {
+  emit('update:homeTeam', value)
+  // Never allow the same team to stay selected on both sides.
+  if (value && value === props.awayTeam) emit('update:awayTeam', '')
+}
+
+function onAwayTeamChange(value) {
+  emit('update:awayTeam', value)
+  // Never allow the same team to stay selected on both sides.
+  if (value && value === props.homeTeam) emit('update:homeTeam', '')
+}
 
 const selectPt = {
   root: {
@@ -150,6 +192,38 @@ function onSubmit(event) {
           @update:model-value="emit('update:tournament', $event)"
         />
       </label>
+
+      <div class="form-matche__grid">
+        <label class="form-matche__field">
+          <span class="form-matche__label">{{ t('sportMatchesManagement.homeTeamLabel') }}</span>
+          <Select
+            :model-value="homeTeam"
+            :options="homeTeamOptions"
+            option-label="label"
+            option-value="value"
+            :placeholder="t('sportMatchesManagement.homeTeamPlaceholder')"
+            append-to="self"
+            class="w-full"
+            :pt="selectPt"
+            @update:model-value="onHomeTeamChange"
+          />
+        </label>
+
+        <label class="form-matche__field">
+          <span class="form-matche__label">{{ t('sportMatchesManagement.awayTeamLabel') }}</span>
+          <Select
+            :model-value="awayTeam"
+            :options="awayTeamOptions"
+            option-label="label"
+            option-value="value"
+            :placeholder="t('sportMatchesManagement.awayTeamPlaceholder')"
+            append-to="self"
+            class="w-full"
+            :pt="selectPt"
+          @update:model-value="onAwayTeamChange"
+        />
+      </label>
+      </div>
     </div>
   </Form>
 </template>
@@ -164,6 +238,12 @@ function onSubmit(event) {
   gap: 1rem;
 }
 
+.form-matche__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .form-matche__field {
   display: grid;
   gap: 0.45rem;
@@ -175,5 +255,11 @@ function onSubmit(event) {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .form-matche__grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
