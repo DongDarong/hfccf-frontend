@@ -119,7 +119,13 @@ function onResults(match) {
 
       <Column field="status" :header="t('sportMatchesManagement.table.status')">
         <template #body="{ data }">
-          <StatusBadge :status="statusTone(data.status)" :label="statusLabel(data.status)" size="sm" />
+          <!-- Label is already localized by this table (`sportMatchesManagement.status.*`). -->
+          <StatusBadge
+            :status="statusTone(data.status)"
+            :label="statusLabel(data.status)"
+            :translate-label="false"
+            size="sm"
+          />
         </template>
       </Column>
 
@@ -145,4 +151,3 @@ function onResults(match) {
     </DataTable>
   </div>
 </template>
-

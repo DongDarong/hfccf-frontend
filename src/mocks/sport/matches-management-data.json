@@ -1,0 +1,101 @@
+[
+  {
+    "id": "M-0001",
+    "competition": "U-18 Premier",
+    "tournament": "HFCCF Cup 2026",
+    "homeTeam": "Victory Academy",
+    "awayTeam": "HFCCF Juniors",
+    "score": "2 - 1",
+    "schedule": "2026-05-06 15:30",
+    "venue": "Main Stadium",
+    "status": "completed"
+  },
+  {
+    "id": "M-0002",
+    "competition": "U-16 Elite",
+    "tournament": "Friendly League",
+    "homeTeam": "Youth Stars",
+    "awayTeam": "Victory Academy",
+    "score": "- - -",
+    "schedule": "2026-05-09 09:00",
+    "venue": "Training Ground A",
+    "status": "scheduled"
+  },
+  {
+    "id": "M-0003",
+    "competition": "Senior Development",
+    "tournament": "HFCCF Cup 2026",
+    "homeTeam": "HFCCF Seniors",
+    "awayTeam": "City Academy",
+    "score": "0 - 0",
+    "schedule": "2026-05-10 18:00",
+    "venue": "City Stadium",
+    "status": "live"
+  },
+  {
+    "id": "M-0004",
+    "competition": "U-18 Premier",
+    "tournament": "Friendly League",
+    "homeTeam": "Panther FC",
+    "awayTeam": "River Youth",
+    "score": "1 - 1",
+    "schedule": "2026-05-12 14:00",
+    "venue": "North Ground",
+    "status": "postponed"
+  },
+  {
+    "id": "M-0005",
+    "competition": "U-16 Elite",
+    "tournament": "HFCCF Cup 2026",
+    "homeTeam": "Blue Hawks",
+    "awayTeam": "Golden Lions",
+    "score": "3 - 0",
+    "schedule": "2026-05-13 16:30",
+    "venue": "Main Stadium",
+    "status": "completed"
+  },
+  {
+    "id": "M-0006",
+    "competition": "Senior Development",
+    "tournament": "Friendly League",
+    "homeTeam": "City Academy",
+    "awayTeam": "Victory Academy",
+    "score": "- - -",
+    "schedule": "2026-05-15 19:00",
+    "venue": "City Stadium",
+    "status": "scheduled"
+  },
+  {
+    "id": "M-0007",
+    "competition": "U-18 Premier",
+    "tournament": "HFCCF Cup 2026",
+    "homeTeam": "HFCCF Juniors",
+    "awayTeam": "Panther FC",
+    "score": "0 - 2",
+    "schedule": "2026-05-16 15:30",
+    "venue": "South Pitch",
+    "status": "completed"
+  },
+  {
+    "id": "M-0008",
+    "competition": "U-16 Elite",
+    "tournament": "Friendly League",
+    "homeTeam": "River Youth",
+    "awayTeam": "Blue Hawks",
+    "score": "1 - 0",
+    "schedule": "2026-05-18 08:30",
+    "venue": "Training Ground A",
+    "status": "scheduled"
+  },
+  {
+    "id": "M-0009",
+    "competition": "Senior Development",
+    "tournament": "HFCCF Cup 2026",
+    "homeTeam": "Golden Lions",
+    "awayTeam": "HFCCF Seniors",
+    "score": "- - -",
+    "schedule": "2026-05-20 18:15",
+    "venue": "North Ground",
+    "status": "live"
+  }
+]

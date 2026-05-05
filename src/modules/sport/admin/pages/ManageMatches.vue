@@ -4,13 +4,15 @@
  * Placeholder page for match management (fixtures / live match feeds).
  * UI-only for now: future backend integration will use `sport_matches` and related tournament tables.
  */
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-management/MatchesSearchFilterBar.vue'
 import MatchesTable from '@/modules/sport/admin/components/matches-management/MatchesTable.vue'
 import PlayerInfoToolbar from '@/modules/sport/admin/components/player-management/PlayerInfoToolbar.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
+import matchesData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
   name: 'SportAdminManageMatchesPage',
@@ -28,47 +30,23 @@ const searchQuery = ref('')
 const competition = ref('')
 const tournament = ref('')
 const matchDateInput = ref('')
+const currentPage = ref(1)
+
+// Keep pagination consistent with other Sport Admin list pages.
+const pageSize = 8
 
 // Placeholder options: these will come from the backend/API later.
-const competitionOptions = ['U-18 Premier', 'U-16 Elite', 'Senior Development']
-const tournamentOptions = ['HFCCF Cup 2026', 'Friendly League']
+const matches = ref(Array.isArray(matchesData) ? [...matchesData] : [])
 
-// UI-only mock data until backend API is connected.
-const matches = ref([
-  {
-    id: 'M-0001',
-    competition: 'U-18 Premier',
-    tournament: 'HFCCF Cup 2026',
-    homeTeam: 'Victory Academy',
-    awayTeam: 'HFCCF Juniors',
-    score: '2 - 1',
-    schedule: '2026-05-06 15:30',
-    venue: 'Main Stadium',
-    status: 'completed',
-  },
-  {
-    id: 'M-0002',
-    competition: 'U-16 Elite',
-    tournament: 'Friendly League',
-    homeTeam: 'Youth Stars',
-    awayTeam: 'Victory Academy',
-    score: '- - -',
-    schedule: '2026-05-09 09:00',
-    venue: 'Training Ground A',
-    status: 'scheduled',
-  },
-  {
-    id: 'M-0003',
-    competition: 'Senior Development',
-    tournament: 'HFCCF Cup 2026',
-    homeTeam: 'HFCCF Seniors',
-    awayTeam: 'City Academy',
-    score: '0 - 0',
-    schedule: '2026-05-10 18:00',
-    venue: 'City Stadium',
-    status: 'live',
-  },
-])
+const competitionOptions = computed(() => {
+  const options = matches.value.map((match) => match.competition).filter(Boolean)
+  return [...new Set(options)].sort()
+})
+
+const tournamentOptions = computed(() => {
+  const options = matches.value.map((match) => match.tournament).filter(Boolean)
+  return [...new Set(options)].sort()
+})
 
 function normalize(value) {
   return String(value ?? '')
@@ -108,6 +86,20 @@ const filteredMatches = computed(() => {
     return isMatch
   })
 })
+
+const totalPages = computed(() => Math.max(Math.ceil(filteredMatches.value.length / pageSize), 1))
+const paginatedMatches = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredMatches.value.slice(start, start + pageSize)
+})
+
+// Reset pagination when filters change (avoids landing on an empty page).
+watch(
+  () => filteredMatches.value.length,
+  () => {
+    if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+  },
+)
 
 const totalMatches = computed(() => matches.value.length)
 const liveMatches = computed(
@@ -172,13 +164,18 @@ function onDelete(match) {
 
         <div class="mt-5">
           <MatchesTable
-            :matches="filteredMatches"
+            :matches="paginatedMatches"
             :t="t"
             :empty-text="tableEmptyText"
             @results="onResults"
             @edit="onEdit"
             @delete="onDelete"
           />
+
+          <!-- Pagination stays outside the table so the table component stays presentation-only. -->
+          <div v-if="totalPages > 1" class="mt-4 flex justify-end">
+            <Pagination v-model="currentPage" :total-pages="totalPages" />
+          </div>
         </div>
       </div>
     </section>
