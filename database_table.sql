@@ -10,6 +10,7 @@
 -- - src/services/accessControl.js
 -- - src/mocks/sport/admin-dashboard-data.json
 -- - src/mocks/sport/teams-management-data.json
+-- - src/mocks/sport/matches-management-data.json
 --
 -- Important:
 -- 1. User IDs in this system are strings like `usr_001`, not bigint IDs.
@@ -29,6 +30,7 @@ DROP TABLE IF EXISTS `sport_standings`;
 DROP TABLE IF EXISTS `sport_top_scorers`;
 DROP TABLE IF EXISTS `sport_matches`;
 DROP TABLE IF EXISTS `sport_tournament_alerts`;
+DROP TABLE IF EXISTS `sport_player_documents`;
 DROP TABLE IF EXISTS `sport_players`;
 DROP TABLE IF EXISTS `sport_teams`;
 DROP TABLE IF EXISTS `sport_tournaments`;
@@ -273,6 +275,16 @@ CREATE TABLE `sport_players` (
   `current_school` VARCHAR(191) DEFAULT NULL,
   `grade_year` VARCHAR(64) DEFAULT NULL,
 
+  -- Parent / guardian information (UI section #3).
+  `father_name` VARCHAR(191) DEFAULT NULL,
+  `father_age` TINYINT UNSIGNED DEFAULT NULL,
+  `father_occupation` VARCHAR(191) DEFAULT NULL,
+  `mother_name` VARCHAR(191) DEFAULT NULL,
+  `mother_age` TINYINT UNSIGNED DEFAULT NULL,
+  `mother_occupation` VARCHAR(191) DEFAULT NULL,
+  `guardian_phone` VARCHAR(32) DEFAULT NULL,
+  `guardian_relationship` ENUM('father', 'mother', 'guardian') DEFAULT NULL,
+
   -- Sports profile & administrative status.
   `team_id` VARCHAR(16) DEFAULT NULL,
   `team_name` VARCHAR(191) NOT NULL,
@@ -293,10 +305,31 @@ CREATE TABLE `sport_players` (
   KEY `sport_players_status_index` (`status`),
   KEY `sport_players_registration_status_index` (`registration_status`),
   KEY `sport_players_gender_index` (`gender`),
+  KEY `sport_players_guardian_relationship_index` (`guardian_relationship`),
   KEY `sport_players_division_index` (`division`),
   CONSTRAINT `fk_sport_players_team`
     FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`)
     ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Player documents (UI section #4: signed contract upload).
+-- Store file metadata separately so multiple files can be attached to a single player record.
+CREATE TABLE `sport_player_documents` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `player_id` VARCHAR(16) NOT NULL,
+  `document_type` ENUM('signed_contract') NOT NULL,
+  `file_name` VARCHAR(255) NOT NULL,
+  `file_url` VARCHAR(2048) NOT NULL,
+  `mime_type` VARCHAR(100) NOT NULL,
+  `file_size_bytes` BIGINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_player_documents_player_index` (`player_id`),
+  KEY `sport_player_documents_type_index` (`document_type`),
+  CONSTRAINT `fk_sport_player_documents_player`
+    FOREIGN KEY (`player_id`) REFERENCES `sport_players` (`id`)
+    ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -319,11 +352,14 @@ CREATE TABLE `sport_tournament_alerts` (
 CREATE TABLE `sport_matches` (
   `id` VARCHAR(16) NOT NULL,
   `tournament_id` VARCHAR(16) DEFAULT NULL,
+  `competition` VARCHAR(100) NOT NULL,
   `home_team_name` VARCHAR(191) NOT NULL,
   `away_team_name` VARCHAR(191) NOT NULL,
+  `score` VARCHAR(32) DEFAULT NULL,
+  `scheduled_at` DATETIME DEFAULT NULL,
   `venue` VARCHAR(191) DEFAULT NULL,
   `match_group` ENUM('live', 'today', 'general') NOT NULL DEFAULT 'general',
-  `status` ENUM('scheduled', 'live', 'completed', 'cancelled') NOT NULL DEFAULT 'scheduled',
+  `status` ENUM('scheduled', 'live', 'completed', 'postponed', 'cancelled') NOT NULL DEFAULT 'scheduled',
   `display_time_label` VARCHAR(64) DEFAULT NULL,
   `live_minute` VARCHAR(16) DEFAULT NULL,
   `display_order` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -331,6 +367,7 @@ CREATE TABLE `sport_matches` (
   `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `sport_matches_tournament_index` (`tournament_id`),
+  KEY `sport_matches_competition_index` (`competition`),
   KEY `sport_matches_status_index` (`status`),
   KEY `sport_matches_group_index` (`match_group`),
   CONSTRAINT `fk_sport_matches_tournament`
@@ -532,7 +569,7 @@ INSERT INTO `sport_tournaments` (`id`, `title`, `subtitle`, `location`, `status`
     'Final week structure, fixtures, and broadcast-ready highlights.',
     'Phnom Penh Sports Complex',
     'live',
-    14
+    9
   );
 
 INSERT INTO `sport_tournament_alerts` (`tournament_id`, `alert_type`, `message`, `display_order`) VALUES
@@ -542,8 +579,11 @@ INSERT INTO `sport_tournament_alerts` (`tournament_id`, `alert_type`, `message`,
 INSERT INTO `sport_matches` (
   `id`,
   `tournament_id`,
+  `competition`,
   `home_team_name`,
   `away_team_name`,
+  `score`,
+  `scheduled_at`,
   `venue`,
   `match_group`,
   `status`,
@@ -551,17 +591,15 @@ INSERT INTO `sport_matches` (
   `live_minute`,
   `display_order`
 ) VALUES
-  ('match_001', 'tour_001', 'Team A', 'Team B', 'City Stadium', 'live', 'live', NULL, '65', 1),
-  ('match_002', 'tour_001', 'Team C', 'Team D', 'National Arena', 'live', 'live', NULL, '42', 2),
-  ('match_003', 'tour_001', 'Team Q', 'Team R', 'West Wing', 'live', 'live', NULL, '12', 3),
-  ('match_004', 'tour_001', 'Team S', 'Team T', 'Main Field', 'live', 'live', NULL, '88', 4),
-  ('match_005', 'tour_001', 'Team U', 'Team V', 'North Park', 'live', 'live', NULL, '25', 5),
-  ('match_006', 'tour_001', 'Team E', 'Team F', NULL, 'today', 'scheduled', '3:00 PM', NULL, 1),
-  ('match_007', 'tour_001', 'Team G', 'Team H', NULL, 'today', 'scheduled', '5:30 PM', NULL, 2),
-  ('match_008', 'tour_001', 'Team I', 'Team J', NULL, 'today', 'scheduled', '7:00 PM', NULL, 3),
-  ('match_009', 'tour_001', 'Team K', 'Team L', NULL, 'today', 'scheduled', '8:30 PM', NULL, 4),
-  ('match_010', 'tour_001', 'Team M', 'Team N', NULL, 'today', 'scheduled', '9:00 PM', NULL, 5),
-  ('match_011', 'tour_001', 'Team O', 'Team P', NULL, 'today', 'scheduled', '10:30 PM', NULL, 6);
+  ('match_001', 'tour_001', 'U-18 Premier', 'Victory Academy', 'HFCCF Juniors', '2 - 1', '2026-05-06 15:30:00', 'Main Stadium', 'general', 'completed', NULL, NULL, 1),
+  ('match_002', 'tour_001', 'U-16 Elite', 'Youth Stars', 'Victory Academy', '- - -', '2026-05-09 09:00:00', 'Training Ground A', 'today', 'scheduled', '9:00 AM', NULL, 2),
+  ('match_003', 'tour_001', 'Senior Development', 'HFCCF Seniors', 'City Academy', '0 - 0', '2026-05-10 18:00:00', 'City Stadium', 'live', 'live', NULL, NULL, 3),
+  ('match_004', 'tour_001', 'U-18 Premier', 'Panther FC', 'River Youth', '1 - 1', '2026-05-12 14:00:00', 'North Ground', 'today', 'postponed', '2:00 PM', NULL, 4),
+  ('match_005', 'tour_001', 'U-16 Elite', 'Blue Hawks', 'Golden Lions', '3 - 0', '2026-05-13 16:30:00', 'Main Stadium', 'general', 'completed', NULL, NULL, 5),
+  ('match_006', 'tour_001', 'Senior Development', 'City Academy', 'Victory Academy', NULL, '2026-05-15 19:00:00', 'City Stadium', 'today', 'scheduled', '7:00 PM', NULL, 6),
+  ('match_007', 'tour_001', 'U-18 Premier', 'HFCCF Juniors', 'Panther FC', '0 - 2', '2026-05-16 15:30:00', 'South Pitch', 'general', 'completed', NULL, NULL, 7),
+  ('match_008', 'tour_001', 'U-16 Elite', 'River Youth', 'Blue Hawks', '1 - 0', '2026-05-18 08:30:00', 'Training Ground A', 'today', 'scheduled', '8:30 AM', NULL, 8),
+  ('match_009', 'tour_001', 'Senior Development', 'Golden Lions', 'HFCCF Seniors', '- - -', '2026-05-20 18:15:00', 'North Ground', 'live', 'live', NULL, NULL, 9);
 
 INSERT INTO `sport_top_scorers` (`tournament_id`, `player_name`, `team_name`, `goals`, `display_order`) VALUES
   ('tour_001', 'Player A', 'Team A', 6, 1),

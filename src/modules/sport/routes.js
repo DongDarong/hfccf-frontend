@@ -7,6 +7,8 @@ import SportTeamsManagement from '@/modules/sport/admin/pages/TeamsManagement.vu
 import SportAddTeam from '@/modules/sport/admin/pages/AddTeam.vue'
 import SportManagesPlayerInfor from '@/modules/sport/admin/pages/ManagesPlayerInfor.vue'
 import SportAddPlayer from '@/modules/sport/admin/pages/AddPlayer.vue'
+import SportManageMatches from '@/modules/sport/admin/pages/ManageMatches.vue'
+import SportAddMatch from '@/modules/sport/admin/pages/AddMatch.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
 
 export const sportRoutes = [
@@ -68,6 +70,33 @@ export const sportRoutes = [
     path: '/module/sport-admin/players/add',
     name: 'dashboard-sport-admin-players-add',
     component: SportAddPlayer,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/matches',
+    name: 'dashboard-sport-admin-matches',
+    component: SportManageMatches,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/matches/add',
+    name: 'dashboard-sport-admin-matches-add',
+    component: SportAddMatch,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/matches/:id/edit',
+    name: 'dashboard-sport-admin-matches-edit',
+    component: SportAddMatch,
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.ADMIN],
