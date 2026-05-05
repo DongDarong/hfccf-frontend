@@ -26,6 +26,8 @@ const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 // Keep these aligned with the shared upload field accept types.
 const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
+// Sports profile/admin status fields (separate from the "record status" used by the table).
+const registrationStatusOptions = ['registered', 'pending', 'unregistered']
 
 const form = reactive({
   name: '',
@@ -33,7 +35,6 @@ const form = reactive({
   gender: '',
   team: '',
   division: '',
-  position: '',
   jerseyNumber: null,
   age: null,
   status: statusOptions[0],
@@ -51,6 +52,10 @@ const form = reactive({
   province: '',
   currentSchool: '',
   gradeYear: '',
+
+  // Sports profile & status (domain data, not system user fields).
+  primaryPosition: '',
+  registrationStatus: registrationStatusOptions[0],
 })
 
 const isSubmitting = ref(false)
@@ -262,7 +267,6 @@ onMounted(() => {
   profileImagePreview.value = String(found.profileImage || found.avatar || found.photo || '').trim()
   form.team = String(found.team || '')
   form.division = String(found.division || '')
-  form.position = String(found.position || '')
   form.jerseyNumber = found.jerseyNumber ?? null
   form.age = found.age ?? null
   form.status = String(found.status || statusOptions[0])
@@ -280,6 +284,9 @@ onMounted(() => {
   form.province = String(found.province || '')
   form.currentSchool = String(found.currentSchool || '')
   form.gradeYear = String(found.gradeYear || '')
+
+  form.primaryPosition = String(found.primaryPosition || found.position || '')
+  form.registrationStatus = String(found.registrationStatus || registrationStatusOptions[0])
 })
 
 onBeforeUnmount(() => {
@@ -311,7 +318,6 @@ onBeforeUnmount(() => {
             :gender="form.gender"
             :team="form.team"
             :division="form.division"
-            :position="form.position"
             :jersey-number="form.jerseyNumber"
             :age="form.age"
             :status="form.status"
@@ -327,12 +333,15 @@ onBeforeUnmount(() => {
             :province="form.province"
             :current-school="form.currentSchool"
             :grade-year="form.gradeYear"
+            :primary-position="form.primaryPosition"
+            :registration-status="form.registrationStatus"
             :team-options="teamOptions"
             :division-options="divisionOptions"
             :position-options="positionOptions"
             :status-options="statusOptions"
             :preferred-foot-options="preferredFootOptions"
             :blood-type-options="bloodTypeOptions"
+            :registration-status-options="registrationStatusOptions"
             :is-locked="isFormLocked"
             :status-label="playerStatusLabel"
             @profile-image-change="onProfileImageChange"
@@ -342,7 +351,6 @@ onBeforeUnmount(() => {
             @update:gender="form.gender = $event"
             @update:team="form.team = $event"
             @update:division="form.division = $event"
-            @update:position="form.position = $event"
             @update:jerseyNumber="form.jerseyNumber = $event"
             @update:age="form.age = $event"
             @update:status="form.status = $event"
@@ -358,6 +366,8 @@ onBeforeUnmount(() => {
             @update:province="form.province = $event"
             @update:currentSchool="form.currentSchool = $event"
             @update:gradeYear="form.gradeYear = $event"
+            @update:primaryPosition="form.primaryPosition = $event"
+            @update:registrationStatus="form.registrationStatus = $event"
           />
 
           <template #actions>

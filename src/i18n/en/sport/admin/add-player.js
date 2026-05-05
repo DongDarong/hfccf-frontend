@@ -85,5 +85,19 @@ export default {
       currentSchoolPlaceholder: 'Enter current school',
       gradeYearPlaceholder: 'Ex: Grade 10 / Year 1',
     },
+
+    // Sports profile (positions) and administrative status fields.
+    sportsProfileStatus: {
+      title: 'Sports Profile & Status',
+      primaryPosition: 'Primary Position',
+      registrationStatus: 'Reg. Status',
+      primaryPositionPlaceholder: 'Select primary position',
+      registrationStatusPlaceholder: 'Select registration status',
+      registrationStatusOptions: {
+        registered: 'Registered',
+        pending: 'Pending',
+        unregistered: 'Unregistered',
+      },
+    },
   },
 }

@@ -6,6 +6,7 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import PersonalInformationFields from '@/modules/sport/admin/components/add-player/PersonalInformationFields.vue'
+import SportsProfileStatusFields from '@/modules/sport/admin/components/add-player/SportsProfileStatusFields.vue'
 
 defineOptions({
   name: 'AddPlayerFormFields',
@@ -27,6 +28,9 @@ const props = defineProps({
   province: { type: String, default: '' },
   currentSchool: { type: String, default: '' },
   gradeYear: { type: String, default: '' },
+  // Sports profile & status
+  primaryPosition: { type: String, default: '' },
+  registrationStatus: { type: String, default: '' },
   name: {
     type: String,
     default: '',
@@ -44,10 +48,6 @@ const props = defineProps({
     default: '',
   },
   division: {
-    type: String,
-    default: '',
-  },
-  position: {
     type: String,
     default: '',
   },
@@ -92,6 +92,14 @@ const props = defineProps({
     type: Array,
     default: () => ['A', 'B', 'AB', 'O'],
   },
+  activityStatusOptions: {
+    type: Array,
+    default: () => ['active', 'inactive'],
+  },
+  registrationStatusOptions: {
+    type: Array,
+    default: () => ['registered', 'pending', 'unregistered'],
+  },
   statusOptions: {
     type: Array,
     default: () => [],
@@ -116,7 +124,6 @@ const emit = defineEmits([
   'update:gender',
   'update:team',
   'update:division',
-  'update:position',
   'update:jerseyNumber',
   'update:age',
   'update:status',
@@ -132,12 +139,14 @@ const emit = defineEmits([
   'update:province',
   'update:currentSchool',
   'update:gradeYear',
+  'update:primaryPosition',
+  'update:registrationStatus',
   // Keep upload side-effects (validation, object URL cleanup) in the page layer.
   'profile-image-change',
   'profile-image-remove',
 ])
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 
 const labels = computed(() => ({
   profileImage: t('sportAddPlayer.profileImage'),
@@ -147,7 +156,6 @@ const labels = computed(() => ({
   gender: t('sportAddPlayer.gender'),
   team: t('sportAddPlayer.team'),
   division: t('sportAddPlayer.division'),
-  position: t('sportAddPlayer.position'),
   status: t('sportAddPlayer.status'),
   jerseyNumber: t('sportAddPlayer.jerseyNumber'),
   age: t('sportAddPlayer.age'),
@@ -161,7 +169,6 @@ const placeholders = computed(() => ({
   gender: t('sportAddPlayer.genderPlaceholder'),
   team: t('sportAddPlayer.teamPlaceholder'),
   division: t('sportAddPlayer.divisionPlaceholder'),
-  position: t('sportAddPlayer.positionPlaceholder'),
   jerseyNumber: t('sportAddPlayer.jerseyNumberPlaceholder'),
   age: t('sportAddPlayer.agePlaceholder'),
 }))
@@ -180,28 +187,9 @@ const divisionSelectOptions = computed(() =>
   })),
 )
 
-const positionSelectOptions = computed(() =>
-  props.positionOptions.map((value) => ({
-    label: value,
-    value,
-  })),
-)
-
 const statusSelectOptions = computed(() =>
   props.statusOptions.map((value) => ({
     label: props.statusLabel(value),
-    value,
-  })),
-)
-
-function genderLabel(value) {
-  const key = `sportAddPlayer.genderOptions.${String(value || '').trim().toLowerCase()}`
-  return te(key) ? t(key) : String(value || '')
-}
-
-const genderSelectOptions = computed(() =>
-  props.genderOptions.map((value) => ({
-    label: genderLabel(value),
     value,
   })),
 )
@@ -262,6 +250,9 @@ const selectPt = {
 
     <PersonalInformationFields
       class="add-player-form-fields__field--full"
+      :phone="phone"
+      :gender="gender"
+      :age="age"
       :height-cm="heightCm"
       :weight-kg="weightKg"
       :preferred-foot="preferredFoot"
@@ -274,7 +265,11 @@ const selectPt = {
       :grade-year="gradeYear"
       :preferred-foot-options="preferredFootOptions"
       :blood-type-options="bloodTypeOptions"
+      :gender-options="genderOptions"
       :is-locked="isLocked"
+      @update:phone="emit('update:phone', $event)"
+      @update:gender="emit('update:gender', $event)"
+      @update:age="emit('update:age', $event)"
       @update:height-cm="emit('update:heightCm', $event)"
       @update:weight-kg="emit('update:weightKg', $event)"
       @update:preferred-foot="emit('update:preferredFoot', $event)"
@@ -287,32 +282,16 @@ const selectPt = {
       @update:grade-year="emit('update:gradeYear', $event)"
     />
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.phone }}</span>
-      <InputText
-        :model-value="phone"
-        :disabled="isLocked"
-        :placeholder="placeholders.phone"
-        class="w-full"
-        @update:model-value="emit('update:phone', $event)"
-      />
-    </label>
-
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.gender }}</span>
-      <Select
-        :model-value="gender"
-        :options="genderSelectOptions"
-        option-label="label"
-        option-value="value"
-        :disabled="isLocked"
-        :placeholder="placeholders.gender"
-        append-to="self"
-        class="w-full"
-        :pt="selectPt"
-        @update:model-value="emit('update:gender', $event)"
-      />
-    </label>
+    <SportsProfileStatusFields
+      class="add-player-form-fields__field--full"
+      :primary-position="primaryPosition"
+      :registration-status="registrationStatus"
+      :position-options="positionOptions"
+      :registration-status-options="registrationStatusOptions"
+      :is-locked="isLocked"
+      @update:primary-position="emit('update:primaryPosition', $event)"
+      @update:registration-status="emit('update:registrationStatus', $event)"
+    />
 
     <label class="add-player-form-fields__field">
       <span class="add-player-form-fields__label">{{ labels.team }}</span>
@@ -347,22 +326,6 @@ const selectPt = {
     </label>
 
     <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.position }}</span>
-      <Select
-        :model-value="position"
-        :options="positionSelectOptions"
-        option-label="label"
-        option-value="value"
-        :disabled="isLocked"
-        :placeholder="placeholders.position"
-        append-to="self"
-        class="w-full"
-        :pt="selectPt"
-        @update:model-value="emit('update:position', $event)"
-      />
-    </label>
-
-    <label class="add-player-form-fields__field">
       <span class="add-player-form-fields__label">{{ labels.status }}</span>
       <Select
         :model-value="status"
@@ -387,19 +350,6 @@ const selectPt = {
         class="w-full"
         input-class="w-full"
         @update:model-value="emit('update:jerseyNumber', $event)"
-      />
-    </label>
-
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.age }}</span>
-      <InputNumber
-        :model-value="age"
-        :disabled="isLocked"
-        :min="0"
-        :placeholder="placeholders.age"
-        class="w-full"
-        input-class="w-full"
-        @update:model-value="emit('update:age', $event)"
       />
     </label>
 

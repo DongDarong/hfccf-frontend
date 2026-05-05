@@ -10,6 +10,11 @@ defineOptions({
 })
 
 const props = defineProps({
+  // Contact & demographics (part of personal information).
+  phone: { type: String, default: '' },
+  gender: { type: String, default: '' },
+  age: { type: [Number, null], default: null },
+
   // Values
   heightCm: { type: [Number, null], default: null },
   weightKg: { type: [Number, null], default: null },
@@ -25,12 +30,16 @@ const props = defineProps({
   // Options
   preferredFootOptions: { type: Array, default: () => ['Right', 'Left', 'Both'] },
   bloodTypeOptions: { type: Array, default: () => ['A', 'B', 'AB', 'O'] },
+  genderOptions: { type: Array, default: () => ['male', 'female', 'other'] },
 
   // State
   isLocked: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
+  'update:phone',
+  'update:gender',
+  'update:age',
   'update:heightCm',
   'update:weightKg',
   'update:preferredFoot',
@@ -43,11 +52,14 @@ const emit = defineEmits([
   'update:gradeYear',
 ])
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 
 const labels = computed(() => ({
   sectionTitle: t('sportAddPlayer.personalInformation.title'),
   physicalAttributes: t('sportAddPlayer.personalInformation.physicalAttributes'),
+  phone: t('sportAddPlayer.phone'),
+  gender: t('sportAddPlayer.gender'),
+  age: t('sportAddPlayer.age'),
   heightCm: t('sportAddPlayer.personalInformation.heightCm'),
   weightKg: t('sportAddPlayer.personalInformation.weightKg'),
   preferredFoot: t('sportAddPlayer.personalInformation.preferredFoot'),
@@ -61,6 +73,8 @@ const labels = computed(() => ({
 }))
 
 const placeholders = computed(() => ({
+  phone: t('sportAddPlayer.phonePlaceholder'),
+  gender: t('sportAddPlayer.genderPlaceholder'),
   preferredFoot: t('sportAddPlayer.personalInformation.preferredFootPlaceholder'),
   bloodType: t('sportAddPlayer.personalInformation.bloodTypePlaceholder'),
   village: t('sportAddPlayer.personalInformation.villagePlaceholder'),
@@ -77,6 +91,15 @@ const preferredFootSelectOptions = computed(() =>
 
 const bloodTypeSelectOptions = computed(() =>
   props.bloodTypeOptions.map((value) => ({ label: value, value })),
+)
+
+function genderLabel(value) {
+  const key = `sportAddPlayer.genderOptions.${String(value || '').trim().toLowerCase()}`
+  return te(key) ? t(key) : String(value || '')
+}
+
+const genderSelectOptions = computed(() =>
+  props.genderOptions.map((value) => ({ label: genderLabel(value), value })),
 )
 
 // Keep select styling consistent with the other fields on the Add Player form.
@@ -106,7 +129,46 @@ const selectPt = {
       <div class="add-player-personal-info__hint">{{ labels.physicalAttributes }}</div>
     </div>
 
-    <!-- Arrange by what is typically collected first: body metrics, then birthplace/address, then school info. -->
+    <!-- Arrange by what is typically collected first: contact/demographics, then body metrics, then address, then school info. -->
+    <label class="add-player-personal-info__field add-player-personal-info__field--full">
+      <span class="add-player-personal-info__label">{{ labels.phone }}</span>
+      <InputText
+        :model-value="phone"
+        :disabled="isLocked"
+        :placeholder="placeholders.phone"
+        class="w-full"
+        @update:model-value="emit('update:phone', $event)"
+      />
+    </label>
+
+    <label class="add-player-personal-info__field">
+      <span class="add-player-personal-info__label">{{ labels.gender }}</span>
+      <Select
+        :model-value="gender"
+        :options="genderSelectOptions"
+        option-label="label"
+        option-value="value"
+        :disabled="isLocked"
+        :placeholder="placeholders.gender"
+        append-to="self"
+        class="w-full"
+        :pt="selectPt"
+        @update:model-value="emit('update:gender', $event)"
+      />
+    </label>
+
+    <label class="add-player-personal-info__field">
+      <span class="add-player-personal-info__label">{{ labels.age }}</span>
+      <InputNumber
+        :model-value="age"
+        :disabled="isLocked"
+        :min="0"
+        class="w-full"
+        input-class="w-full"
+        @update:model-value="emit('update:age', $event)"
+      />
+    </label>
+
     <label class="add-player-personal-info__field">
       <span class="add-player-personal-info__label">{{ labels.heightCm }}</span>
       <InputNumber

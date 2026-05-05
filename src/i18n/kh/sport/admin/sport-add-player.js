@@ -83,5 +83,17 @@ export default {
         currentSchoolPlaceholder: 'បញ្ចូលសាលាបច្ចុប្បន្ន',
         gradeYearPlaceholder: 'ឧ: ថ្នាក់ទី 10 / ឆ្នាំទី 1',
       },
+      sportsProfileStatus: {
+        title: 'ប្រវត្តិកីឡា និងស្ថានភាព',
+        primaryPosition: 'តួនាទីចម្បង',
+        registrationStatus: 'ស្ថានភាពចុះឈ្មោះ',
+        primaryPositionPlaceholder: 'ជ្រើសរើសតួនាទីចម្បង',
+        registrationStatusPlaceholder: 'ជ្រើសរើសស្ថានភាពចុះឈ្មោះ',
+        registrationStatusOptions: {
+          registered: 'បានចុះឈ្មោះ',
+          pending: 'កំពុងរង់ចាំ',
+          unregistered: 'មិនបានចុះឈ្មោះ',
+        },
+      },
     },
 }
