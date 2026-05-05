@@ -8,6 +8,8 @@ import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import Button from '@/components/buttons/Button.vue'
 import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-management/MatchesSearchFilterBar.vue'
@@ -35,6 +37,11 @@ const competition = ref('')
 const tournament = ref('')
 const matchDateInput = ref('')
 const currentPage = ref(1)
+const isDeleteOpen = ref(false)
+const isDeleting = ref(false)
+const showDeleteSuccess = ref(false)
+const deleteSuccessMessage = ref('')
+const selectedMatch = ref(null)
 
 // Keep pagination consistent with other Sport Admin list pages.
 const pageSize = 8
@@ -186,12 +193,42 @@ function onEdit(match) {
 function onDelete(match) {
   const id = String(match?.id || '').trim()
   if (!id) return
-  matches.value = matches.value.filter((item) => item.id !== id)
+  selectedMatch.value = match
+  isDeleteOpen.value = true
 }
 
 async function goToAddMatch() {
   // Keep navigation explicit so the future match form can live on its own page.
   await router.push({ name: 'dashboard-sport-admin-matches-add' })
+}
+
+function onCancelDelete() {
+  isDeleteOpen.value = false
+  selectedMatch.value = null
+}
+
+function onConfirmDelete() {
+  if (isDeleting.value) return
+  isDeleting.value = true
+
+  const id = String(selectedMatch.value?.id || '').trim()
+  if (!id) {
+    isDeleting.value = false
+    return onCancelDelete()
+  }
+
+  const homeTeam = String(selectedMatch.value?.homeTeam || '').trim()
+  const awayTeam = String(selectedMatch.value?.awayTeam || '').trim()
+  matches.value = matches.value.filter((item) => item.id !== id)
+
+  deleteSuccessMessage.value = t('sportMatchesManagement.confirm.deletedMessage', {
+    homeTeam: homeTeam || t('sportMatchesManagement.confirm.defaultTeam'),
+    awayTeam: awayTeam || t('sportMatchesManagement.confirm.defaultTeam'),
+  })
+  showDeleteSuccess.value = true
+
+  onCancelDelete()
+  isDeleting.value = false
 }
 </script>
 
@@ -272,6 +309,29 @@ async function goToAddMatch() {
       </div>
     </section>
   </MainLayout>
+
+  <AlertQuestion
+    :show="isDeleteOpen"
+    :loading="isDeleting"
+    :title="t('sportMatchesManagement.confirm.deleteTitle')"
+    :message="t('sportMatchesManagement.confirm.deleteMessage', {
+      homeTeam: String(selectedMatch?.homeTeam || '').trim() || t('sportMatchesManagement.confirm.defaultTeam'),
+      awayTeam: String(selectedMatch?.awayTeam || '').trim() || t('sportMatchesManagement.confirm.defaultTeam'),
+    })"
+    :confirm-text="t('common.delete')"
+    :cancel-text="t('common.cancel')"
+    type="danger"
+    @confirm="onConfirmDelete"
+    @cancel="onCancelDelete"
+  />
+
+  <AlertSuccess
+    :show="showDeleteSuccess"
+    :title="t('common.success')"
+    :message="deleteSuccessMessage || t('common.actionCompleted')"
+    :button-text="t('common.close')"
+    @close="showDeleteSuccess = false"
+  />
 </template>
 
 <style scoped>

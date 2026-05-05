@@ -8,6 +8,16 @@ export default {
     addSubtitle: 'បង្កើតកាលវិភាគប្រកួតថ្មីសម្រាប់បញ្ជីការប្រកួត។',
     addPlaceholder:
       'ទំព័រនេះត្រូវបានរក្សាទុកសម្រាប់ទម្រង់បន្ថែមការប្រកួតនៅពេលក្រោយ។ ប៊ូតុង Add Match ឥឡូវនេះមានទីតាំងត្រឹមត្រូវហើយ។',
+    addDescription: 'ទម្រង់បន្ថែមការប្រកួតពិតប្រាកដនឹងដាក់នៅទីនេះក្រោយពេលសែល frontend រួចរាល់។',
+    addSuccessTitle: 'បានរក្សាទុកពង្រាងការប្រកួត',
+    addSuccessMessage: 'លំហូរបន្ថែមការប្រកួតបណ្ដោះអាសន្នបានដំណើរការជោគជ័យ។',
+    addErrorTitle: 'មិនអាចបង្កើតការប្រកួតបានទេ',
+    addFailed: 'មិនអាចបង្កើតការប្រកួតបានទេ សូមព្យាយាមម្តងទៀត។',
+    addChecklist: [
+      'ការភ្ជាប់ Competition និង Tournament នឹងបន្ថែមពេលក្រោយ។',
+      'Home Team, Away Team, Score និង Schedule ជាផ្នែករបស់ backend form។',
+      'សែលនេះរក្សាទុកតែ navigation និងលំហូរឆ្លើយតបប៉ុណ្ណោះ។',
+    ],
     toolbarEyebrow: 'ការគ្រប់គ្រងការប្រកួត',
     toolbarSummary: 'ការប្រកួត ({count})',
     visibleRange: 'បង្ហាញ {shown} ក្នុងចំណោម {total} ការប្រកួត',
@@ -61,6 +71,12 @@ export default {
       results: 'លទ្ធផល',
       edit: 'កែប្រែ',
       delete: 'លុប',
+    },
+    confirm: {
+      deleteTitle: 'លុបការប្រកួត',
+      deleteMessage: 'លុប {homeTeam} ទល់នឹង {awayTeam} មែនទេ? សកម្មភាពនេះមិនអាចយកត្រឡប់វិញបានទេ។',
+      deletedMessage: 'បានយក {homeTeam} ទល់នឹង {awayTeam} ចេញពីបញ្ជីការប្រកួត។',
+      defaultTeam: 'ក្រុមនេះ',
     },
     status: {
       scheduled: 'បានកំណត់ពេល',

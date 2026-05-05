@@ -8,6 +8,16 @@ export default {
     addSubtitle: 'Create a new fixture entry for the match list.',
     addPlaceholder:
       'This page is reserved for the future match creation form. The Add Match button now has a valid destination.',
+    addDescription: 'The real match form will be added here after the frontend shell is finalized.',
+    addSuccessTitle: 'Match draft saved',
+    addSuccessMessage: 'The placeholder add-match flow completed successfully.',
+    addErrorTitle: 'Unable to create match',
+    addFailed: 'The match could not be created. Please try again.',
+    addChecklist: [
+      'Competition and tournament mapping will be connected later.',
+      'Home team, away team, score, and schedule belong to the backend form.',
+      'This shell only keeps the navigation and feedback flow ready.',
+    ],
     toolbarEyebrow: 'Match Management',
     toolbarSummary: 'Matches ({count})',
     visibleRange: 'Showing {shown} of {total} matches',
@@ -61,6 +71,12 @@ export default {
       results: 'Results',
       edit: 'Edit',
       delete: 'Delete',
+    },
+    confirm: {
+      deleteTitle: 'Delete match',
+      deleteMessage: 'Delete {homeTeam} vs {awayTeam}? This cannot be undone.',
+      deletedMessage: 'Removed {homeTeam} vs {awayTeam} from the match list.',
+      defaultTeam: 'this team',
     },
     status: {
       scheduled: 'Scheduled',
