@@ -94,6 +94,15 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/matches/:id/edit',
+    name: 'dashboard-sport-admin-matches-edit',
+    component: SportAddMatch,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/coach',
     name: 'dashboard-sport-coach',
     component: CoachDashboard,

@@ -79,10 +79,19 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  showDelete: {
+    type: Boolean,
+    default: false,
+  },
+  cancelText: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits([
   'submit',
+  'cancel',
   'update:competitionType',
   'update:tournament',
   'update:dateTime',
@@ -303,9 +312,23 @@ function onSubmit(event) {
 
     <template #actions>
       <!-- The shared Form wrapper only renders its footer when an actions slot exists. -->
-      <Button type="submit" variant="primary" size="md" rounded="xl" :loading="loading">
-        {{ submitText }}
-      </Button>
+      <div class="form-matche__actions">
+        <Button
+          v-if="showDelete"
+          type="button"
+          variant="outline"
+          size="md"
+          rounded="xl"
+          :disabled="loading"
+          @click="emit('cancel')"
+        >
+          {{ cancelText }}
+        </Button>
+
+        <Button type="submit" variant="primary" size="md" rounded="xl" :loading="loading">
+          {{ submitText }}
+        </Button>
+      </div>
     </template>
   </Form>
 </template>
@@ -339,9 +362,21 @@ function onSubmit(event) {
   text-transform: uppercase;
 }
 
+.form-matche__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  width: 100%;
+}
+
 @media (max-width: 640px) {
   .form-matche__grid {
     grid-template-columns: 1fr;
+  }
+
+  .form-matche__actions {
+    justify-content: stretch;
   }
 }
 </style>

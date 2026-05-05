@@ -1,12 +1,13 @@
 <script setup>
 /**
  * SportAdminAddMatchPage
- * Placeholder shell for creating a new match record.
+ * Placeholder shell for creating or editing a match record.
  *
- * The full match form will be introduced later; for now this page exists so the
- * Manage Matches "Add Match" action has a valid destination.
+ * The page stays UI-only, but it now supports add/edit/delete flows so the
+ * Manage Matches table can route to a real destination immediately.
  */
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
@@ -14,20 +15,41 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FormMatche from '@/modules/sport/admin/components/add-match/FormMatche.vue'
 import teamsManagementData from '@/mocks/sport/teams-management-data.json'
+import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
   name: 'SportAdminAddMatchPage',
 })
 
+const router = useRouter()
+const route = useRoute()
 const { t, language } = useLanguage()
-const isKh = computed(() => language.value === 'KH')
 
-const pageTitle = computed(() => t('sportMatchesManagement.addTitle'))
-const pageSubtitle = computed(() => t('sportMatchesManagement.addSubtitle'))
+const isKh = computed(() => language.value === 'KH')
+const matchId = computed(() => String(route.params.id || route.query.id || '').trim())
+const mode = computed(() => {
+  if (route.query.mode === 'view') return 'view'
+  if (route.query.mode === 'edit' || Boolean(matchId.value)) return 'edit'
+  return 'add'
+})
+const isEditMode = computed(() => mode.value === 'edit')
+
+const pageTitle = computed(() => {
+  if (isEditMode.value) return t('sportMatchesManagement.updateTitle')
+  return t('sportMatchesManagement.addTitle')
+})
+
+const pageSubtitle = computed(() => {
+  if (isEditMode.value) return t('sportMatchesManagement.updateSubtitle')
+  return t('sportMatchesManagement.addSubtitle')
+})
+
 const isSubmitting = ref(false)
 const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
+const feedbackMessage = ref('')
+
 const competitionType = ref('')
 const tournament = ref('')
 const dateTime = ref('')
@@ -64,15 +86,67 @@ const teamOptions = computed(() => {
   return [...new Set(values)].sort()
 })
 
+const selectedMatch = computed(() => {
+  if (!matchId.value) return null
+  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
+  return matches.find((item) => String(item?.id || '').trim() === matchId.value) || null
+})
+
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
+  feedbackMessage.value = ''
 }
+
+function parseSchedule(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+  const [datePart, timePart = ''] = raw.split(/\s+/)
+  if (!datePart || !timePart) return raw
+  return `${datePart}T${timePart.slice(0, 5)}`
+}
+
+function inferCompetitionType(match) {
+  const tournamentName = String(match?.tournament || '').trim().toLowerCase()
+  return tournamentName.includes('friendly') ? 'friendly' : 'tournament'
+}
+
+function applySelectedMatch(match) {
+  if (!match) return
+
+  // Hydrate the form from the mock row so edit mode behaves like a real record view.
+  competitionType.value = inferCompetitionType(match)
+  tournament.value = String(match.tournament || '')
+  dateTime.value = parseSchedule(match.schedule)
+  venue.value = String(match.venue || '')
+  status.value = String(match.status || 'scheduled')
+  homeTeam.value = String(match.homeTeam || '')
+  awayTeam.value = String(match.awayTeam || '')
+}
+
+watch(
+  selectedMatch,
+  (match) => {
+    if (match) {
+      applySelectedMatch(match)
+      return
+    }
+
+    // Keep the add flow clean when there is no record to hydrate.
+    competitionType.value = ''
+    tournament.value = ''
+    dateTime.value = ''
+    venue.value = ''
+    status.value = 'scheduled'
+    homeTeam.value = ''
+    awayTeam.value = ''
+  },
+  { immediate: true },
+)
 
 async function onSubmit() {
   resetFeedback()
 
-  // Keep the placeholder form honest: a match cannot use the same team twice.
   if (homeTeam.value && homeTeam.value === awayTeam.value) {
     errorMessage.value = t('sportMatchesManagement.teamSelectionError')
     showError.value = true
@@ -84,6 +158,9 @@ async function onSubmit() {
   try {
     // Placeholder submit: the real match form will replace this shell later.
     await new Promise((resolve) => setTimeout(resolve, 700))
+    feedbackMessage.value = isEditMode.value
+      ? t('sportMatchesManagement.updateSuccessMessage')
+      : t('sportMatchesManagement.addSuccessMessage')
     showSuccess.value = true
   } catch {
     errorMessage.value = t('sportMatchesManagement.addFailed')
@@ -100,6 +177,10 @@ function onErrorClose() {
 function onSuccessClose() {
   showSuccess.value = false
 }
+
+function onCancel() {
+  router.push({ name: 'dashboard-sport-admin-matches' })
+}
 </script>
 
 <template>
@@ -111,7 +192,11 @@ function onSuccessClose() {
         <FormMatche
           :title="pageTitle"
           :description="''"
-          :submit-text="t('sportMatchesManagement.actions.addButton')"
+          :submit-text="
+            isEditMode
+              ? t('sportMatchesManagement.actions.updateButton')
+              : t('sportMatchesManagement.actions.addButton')
+          "
           :loading="isSubmitting"
           :competition-type="competitionType"
           :competition-type-options="competitionTypeOptions"
@@ -124,6 +209,8 @@ function onSuccessClose() {
           :away-team="awayTeam"
           :team-options="teamOptions"
           :status-options="statusOptions"
+          :show-delete="isEditMode"
+          :cancel-text="t('common.cancel')"
           @update:competition-type="competitionType = $event"
           @update:tournament="tournament = $event"
           @update:date-time="dateTime = $event"
@@ -132,6 +219,7 @@ function onSuccessClose() {
           @update:home-team="homeTeam = $event"
           @update:away-team="awayTeam = $event"
           @submit="onSubmit"
+          @cancel="onCancel"
         />
       </div>
     </section>
@@ -146,8 +234,8 @@ function onSuccessClose() {
 
     <AlertSuccess
       :show="showSuccess"
-      :title="t('sportMatchesManagement.addSuccessTitle')"
-      :message="t('sportMatchesManagement.addSuccessMessage')"
+      :title="isEditMode ? t('sportMatchesManagement.updateSuccessTitle') : t('sportMatchesManagement.addSuccessTitle')"
+      :message="feedbackMessage || t('common.actionCompleted')"
       :button-text="t('common.close')"
       @close="onSuccessClose"
     />

@@ -186,8 +186,10 @@ function onResults(match) {
 }
 
 function onEdit(match) {
-  // UI-only placeholder: future implementation can open an edit dialog or navigate to edit page.
-  void match
+  const id = String(match?.id || '').trim()
+  if (!id) return
+  // Keep edit navigation explicit so the Add Match shell can reuse the same form in edit mode.
+  router.push({ name: 'dashboard-sport-admin-matches-edit', params: { id } })
 }
 
 function onDelete(match) {
