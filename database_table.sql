@@ -255,12 +255,33 @@ CREATE TABLE `sport_teams` (
 CREATE TABLE `sport_players` (
   `id` VARCHAR(16) NOT NULL,
   `name` VARCHAR(191) NOT NULL,
+  -- Profile image is stored as a URL/path (actual file storage handled by the backend).
+  `profile_image` VARCHAR(2048) DEFAULT NULL,
+  `phone` VARCHAR(32) DEFAULT NULL,
+  `gender` ENUM('male', 'female', 'other') DEFAULT NULL,
+  `age` TINYINT UNSIGNED DEFAULT NULL,
+
+  -- Personal information (captured on the player record).
+  `height_cm` SMALLINT UNSIGNED DEFAULT NULL,
+  `weight_kg` DECIMAL(5, 2) UNSIGNED DEFAULT NULL,
+  `preferred_foot` ENUM('Right', 'Left', 'Both') DEFAULT NULL,
+  `blood_type` ENUM('A', 'B', 'AB', 'O') DEFAULT NULL,
+  `village` VARCHAR(100) DEFAULT NULL,
+  `commune` VARCHAR(100) DEFAULT NULL,
+  `district` VARCHAR(100) DEFAULT NULL,
+  `province` VARCHAR(100) DEFAULT NULL,
+  `current_school` VARCHAR(191) DEFAULT NULL,
+  `grade_year` VARCHAR(64) DEFAULT NULL,
+
+  -- Sports profile & administrative status.
   `team_id` VARCHAR(16) DEFAULT NULL,
   `team_name` VARCHAR(191) NOT NULL,
   `division` VARCHAR(100) NOT NULL,
-  `position` VARCHAR(64) DEFAULT NULL,
+  `primary_position` VARCHAR(64) DEFAULT NULL,
+  `registration_status` ENUM('registered', 'pending', 'unregistered') NOT NULL DEFAULT 'registered',
+
+  -- Player record status (separate from system users).
   `jersey_number` SMALLINT UNSIGNED DEFAULT NULL,
-  `age` TINYINT UNSIGNED DEFAULT NULL,
   `status` ENUM('active', 'pending', 'inactive', 'suspended') NOT NULL DEFAULT 'active',
   `matches_played` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `goals_scored` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -268,7 +289,10 @@ CREATE TABLE `sport_players` (
   `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `sport_players_team_index` (`team_id`),
+  KEY `sport_players_primary_position_index` (`primary_position`),
   KEY `sport_players_status_index` (`status`),
+  KEY `sport_players_registration_status_index` (`registration_status`),
+  KEY `sport_players_gender_index` (`gender`),
   KEY `sport_players_division_index` (`division`),
   CONSTRAINT `fk_sport_players_team`
     FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`)
