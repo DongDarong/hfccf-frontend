@@ -10,6 +10,7 @@ import { computed, ref } from 'vue'
 import AutoComplete from 'primevue/autocomplete'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import Button from '@/components/buttons/Button.vue'
 import Form from '@/components/forms/Form.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -299,6 +300,13 @@ function onSubmit(event) {
         </label>
       </div>
     </div>
+
+    <template #actions>
+      <!-- The shared Form wrapper only renders its footer when an actions slot exists. -->
+      <Button type="submit" variant="primary" size="md" rounded="xl" :loading="loading">
+        {{ submitText }}
+      </Button>
+    </template>
   </Form>
 </template>
 
