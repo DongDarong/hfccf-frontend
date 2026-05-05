@@ -9,6 +9,28 @@ export default {
     visibleRange: 'បង្ហាញ {shown} ក្នុងចំណោម {total} ការប្រកួត',
     noResults: 'រកមិនឃើញការប្រកួតទេ។',
     spotlightLabel: 'កំពុងប្រកួត',
+    summary: {
+      total: {
+        title: 'សរុបការប្រកួត',
+        badge: 'បង្ហាញ {count} នៅពេលនេះ',
+        caption: 'ការប្រកួតទាំងអស់ពី mock data បច្ចុប្បន្ន។',
+      },
+      live: {
+        title: 'កំពុងប្រកួត',
+        badge: 'កំពុងដំណើរការ',
+        caption: 'ការប្រកួតដែលមានស្ថានភាព live នៅក្នុងបញ្ជីនេះ។',
+      },
+      scheduled: {
+        title: 'បានកំណត់ពេល',
+        badge: 'ការប្រកួតខាងមុខ',
+        caption: 'ការប្រកួតដែលរង់ចាំដល់ថ្ងៃប្រកួត។',
+      },
+      completed: {
+        title: 'បានបញ្ចប់',
+        badge: 'លទ្ធផលរួចរាល់',
+        caption: 'ការប្រកួតដែលបញ្ចប់រួចហើយ។',
+      },
+    },
     filters: {
       searchLabel: 'ស្វែងរក',
       searchPlaceholder: 'ស្វែងរកតាមក្រុម ទីលាន ឬលេខប្រកួត',

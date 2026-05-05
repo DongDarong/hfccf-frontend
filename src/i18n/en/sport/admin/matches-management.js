@@ -9,6 +9,28 @@ export default {
     visibleRange: 'Showing {shown} of {total} matches',
     noResults: 'No matches found.',
     spotlightLabel: 'Live Now',
+    summary: {
+      total: {
+        title: 'Total Matches',
+        badge: '{count} visible now',
+        caption: 'All matches loaded from the current mock set.',
+      },
+      live: {
+        title: 'Live Matches',
+        badge: 'Currently active',
+        caption: 'Matches marked as live in the current list.',
+      },
+      scheduled: {
+        title: 'Scheduled',
+        badge: 'Upcoming fixtures',
+        caption: 'Matches waiting to be played.',
+      },
+      completed: {
+        title: 'Completed',
+        badge: 'Finished results',
+        caption: 'Matches already concluded.',
+      },
+    },
     filters: {
       searchLabel: 'Search',
       searchPlaceholder: 'Search by team, venue, or match id',

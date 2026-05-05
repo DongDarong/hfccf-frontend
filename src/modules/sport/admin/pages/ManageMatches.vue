@@ -105,6 +105,12 @@ const totalMatches = computed(() => matches.value.length)
 const liveMatches = computed(
   () => matches.value.filter((match) => normalize(match.status) === 'live').length,
 )
+const scheduledMatches = computed(
+  () => matches.value.filter((match) => normalize(match.status) === 'scheduled').length,
+)
+const completedMatches = computed(
+  () => matches.value.filter((match) => normalize(match.status) === 'completed').length,
+)
 
 const toolbarSummary = computed(() =>
   t('sportMatchesManagement.toolbarSummary', { count: filteredMatches.value.length }),
@@ -119,6 +125,48 @@ const visibleRangeLabel = computed(() => {
 })
 
 const spotlightLabel = computed(() => t('sportMatchesManagement.spotlightLabel'))
+
+const summaryCards = computed(() => [
+  {
+    id: 'matches',
+    title: t('sportMatchesManagement.summary.total.title'),
+    value: totalMatches.value,
+    badge: t('sportMatchesManagement.summary.total.badge', { count: filteredMatches.value.length }),
+    caption: t('sportMatchesManagement.summary.total.caption'),
+    tone: 'info',
+    icon:
+      'M9 11V9a3 3 0 116 0v2m-7 0h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zm4 4v2m0-6v1',
+  },
+  {
+    id: 'live',
+    title: t('sportMatchesManagement.summary.live.title'),
+    value: liveMatches.value,
+    badge: t('sportMatchesManagement.summary.live.badge'),
+    caption: t('sportMatchesManagement.summary.live.caption'),
+    tone: 'success',
+    icon: 'M5 12l4 4L19 7',
+  },
+  {
+    id: 'scheduled',
+    title: t('sportMatchesManagement.summary.scheduled.title'),
+    value: scheduledMatches.value,
+    badge: t('sportMatchesManagement.summary.scheduled.badge'),
+    caption: t('sportMatchesManagement.summary.scheduled.caption'),
+    tone: 'warning',
+    icon:
+      'M12 8v4m0 4h.01M10.3 3.86l-7.5 13a1 1 0 00.87 1.5h16.66a1 1 0 00.87-1.5l-7.5-13a1 1 0 00-1.74 0z',
+  },
+  {
+    id: 'completed',
+    title: t('sportMatchesManagement.summary.completed.title'),
+    value: completedMatches.value,
+    badge: t('sportMatchesManagement.summary.completed.badge'),
+    caption: t('sportMatchesManagement.summary.completed.caption'),
+    tone: 'danger',
+    icon:
+      'M12 2a10 10 0 100 20 10 10 0 000-20zm-1 5h2v6h-2V7zm0 8h2v2h-2v-2z',
+  },
+])
 
 function onResults(match) {
   // UI-only placeholder: future implementation can route to a match details/results page.
@@ -142,6 +190,31 @@ function onDelete(match) {
   <MainLayout>
     <section :class="isKh ? 'manage-matches-page manage-matches-page--kh' : 'manage-matches-page'">
       <HeaderSection :title="title" :subtitle="subtitle" />
+
+      <div class="manage-matches-page__summary-grid">
+        <article
+          v-for="card in summaryCards"
+          :key="card.id"
+          class="manage-matches-page__summary-card"
+          :class="`manage-matches-page__summary-card--${card.tone}`"
+        >
+          <div class="manage-matches-page__summary-header">
+            <div>
+              <p class="manage-matches-page__summary-title">{{ card.title }}</p>
+              <p class="manage-matches-page__summary-value">{{ card.value }}</p>
+            </div>
+
+            <span class="manage-matches-page__summary-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path :d="card.icon" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </div>
+
+          <p class="manage-matches-page__summary-badge">{{ card.badge }}</p>
+          <p class="manage-matches-page__summary-caption">{{ card.caption }}</p>
+        </article>
+      </div>
 
       <div class="manage-matches-page__shell">
         <!-- Toolbar matches the hierarchy used by Teams/Players pages for consistent UX. -->
@@ -189,6 +262,113 @@ function onDelete(match) {
   gap: 1.35rem;
 }
 
+.manage-matches-page__summary-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.manage-matches-page__summary-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 100%;
+  padding: 1.35rem;
+  border-radius: 1.35rem;
+  border: 1px solid #dbe6f4;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.92), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 248, 252, 0.98) 100%);
+  box-shadow: 0 24px 48px -38px rgba(15, 23, 42, 0.45);
+}
+
+.manage-matches-page__summary-card::after {
+  content: '';
+  position: absolute;
+  inset: auto 1.35rem 0.9rem 1.35rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.16;
+}
+
+.manage-matches-page__summary-card--info {
+  color: #0f6f8f;
+}
+
+.manage-matches-page__summary-card--success {
+  color: #2f7a42;
+}
+
+.manage-matches-page__summary-card--warning {
+  color: #9a5d09;
+}
+
+.manage-matches-page__summary-card--danger {
+  color: #b42318;
+}
+
+.manage-matches-page__summary-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.manage-matches-page__summary-title {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.manage-matches-page__summary-value {
+  margin: 0.65rem 0 0;
+  color: #0f172a;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.manage-matches-page__summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, currentColor 12%, white);
+  border: 1px solid color-mix(in srgb, currentColor 18%, white);
+}
+
+.manage-matches-page__summary-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.manage-matches-page__summary-badge {
+  margin: 0;
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.38rem 0.72rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 10%, white);
+  color: color-mix(in srgb, currentColor 85%, black 10%);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.manage-matches-page__summary-caption {
+  margin: 0;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
 .manage-matches-page__shell {
   padding: 1.5rem;
   border-radius: 1.5rem;
@@ -209,5 +389,22 @@ function onDelete(match) {
 .manage-matches-page--kh .manage-matches-page__shell {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+.manage-matches-page--kh .manage-matches-page__summary-title,
+.manage-matches-page--kh .manage-matches-page__summary-badge,
+.manage-matches-page--kh .manage-matches-page__summary-caption,
+.manage-matches-page--kh .manage-matches-page__summary-value,
+.manage-matches-page--kh .manage-matches-page__summary-grid,
+.manage-matches-page--kh .manage-matches-page__summary-icon {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+@media (max-width: 640px) {
+  .manage-matches-page__summary-card,
+  .manage-matches-page__shell {
+    padding: 1.1rem;
+  }
 }
 </style>
