@@ -80,6 +80,8 @@ export default {
   searchUsersPlaceholder:
     'ស្វែងរកអ្នកប្រើប្រាស់តាមឈ្មោះ អ៊ីមែល តួនាទី ឬសិទ្ធិ',
   allRoles: 'តួនាទីទាំងអស់',
+  allDivisions: 'កម្រិតប្រកួតទាំងអស់',
+  allTeams: 'ក្រុមទាំងអស់',
   allStatus: 'ស្ថានភាពទាំងអស់',
   actions: {
     viewAll: 'មើលទាំងអស់',
@@ -127,15 +129,16 @@ export default {
     manage_programs: 'គ្រប់គ្រងកម្មវិធី',
     approve_requests: 'អនុម័តសំណើ',
   },
-  table: {
-    number: 'ល.រ',
-    user: 'អ្នកប្រើប្រាស់',
-    email: 'អ៊ីមែល',
-    role: 'តួនាទី',
-    permission: 'សិទ្ធិ',
-    status: 'ស្ថានភាព',
-    phone: 'លេខទូរស័ព្ទ',
-    actions: 'សកម្មភាព',
+    table: {
+      number: 'ល.រ',
+      user: 'អ្នកប្រើប្រាស់',
+      email: 'អ៊ីមែល',
+      department: 'ផ្នែក',
+      role: 'តួនាទី',
+      permission: 'សិទ្ធិ',
+      status: 'ស្ថានភាព',
+      phone: 'លេខទូរស័ព្ទ',
+      actions: 'សកម្មភាព',
   },
   pagination: {
     previous: 'មុន',

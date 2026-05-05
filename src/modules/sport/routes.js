@@ -5,6 +5,8 @@ import SportCoachManagement from '@/modules/sport/admin/pages/CoachManagement.vu
 import SportAddCoach from '@/modules/sport/admin/pages/AddCoach.vue'
 import SportTeamsManagement from '@/modules/sport/admin/pages/TeamsManagement.vue'
 import SportAddTeam from '@/modules/sport/admin/pages/AddTeam.vue'
+import SportManagesPlayerInfor from '@/modules/sport/admin/pages/ManagesPlayerInfor.vue'
+import SportAddPlayer from '@/modules/sport/admin/pages/AddPlayer.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
 
 export const sportRoutes = [
@@ -48,6 +50,24 @@ export const sportRoutes = [
     path: '/module/sport-admin/teams/add',
     name: 'dashboard-sport-admin-teams-add',
     component: SportAddTeam,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/players',
+    name: 'dashboard-sport-admin-players',
+    component: SportManagesPlayerInfor,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/players/add',
+    name: 'dashboard-sport-admin-players-add',
+    component: SportAddPlayer,
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.ADMIN],
