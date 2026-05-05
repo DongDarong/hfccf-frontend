@@ -6,7 +6,6 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
-import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import teamsManagementData from '@/mocks/sport/teams-management-data.json'
 import playersManagementData from '@/mocks/sport/players-management-data.json'
@@ -68,9 +67,6 @@ const isKh = computed(() => language.value === 'KH')
 const profileImagePreview = ref('')
 const profileImageObjectUrl = ref('')
 
-const isDeleteOpen = ref(false)
-const isDeleting = ref(false)
-
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
   if (route.query.mode === 'edit' || Boolean(route.query.id)) return 'edit'
@@ -78,7 +74,6 @@ const mode = computed(() => {
 })
 const isViewMode = computed(() => mode.value === 'view')
 const isEditMode = computed(() => mode.value === 'edit')
-const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 
 // Build select options from sport team data first; fall back to player mock data if needed.
@@ -196,13 +191,6 @@ function goToEditMode() {
   router.replace({ query: { ...route.query, mode: 'edit' } })
 }
 
-function onDelete() {
-  const id = String(route.query.id || '').trim()
-  if (!id) return
-  // Confirm destructive actions before handing off the delete to the list page.
-  isDeleteOpen.value = true
-}
-
 async function onSubmit() {
   resetFeedback()
   const message = validate()
@@ -234,23 +222,6 @@ function onSuccessClose() {
 
 function onErrorClose() {
   showError.value = false
-}
-
-function onCancelDelete() {
-  isDeleteOpen.value = false
-}
-
-function onConfirmDelete() {
-  if (isDeleting.value) return
-  isDeleting.value = true
-
-  const id = String(route.query.id || '').trim()
-  if (!id) {
-    isDeleting.value = false
-    return onCancelDelete()
-  }
-  // No persistence yet: deletion is applied by the list page via query handoff.
-  router.push({ path: playersDirectoryPath, query: { delete: id } })
 }
 
 onMounted(() => {
@@ -388,10 +359,8 @@ onBeforeUnmount(() => {
               :is-submitting="isSubmitting"
               :is-view-mode="isViewMode"
               :is-edit-mode="isEditMode"
-              :can-delete="!isAddMode && Boolean(route.query.id)"
-              @back="goBackToPlayers"
               @edit="goToEditMode"
-              @delete="onDelete"
+              @cancel="goBackToPlayers"
             />
           </template>
         </Form>
@@ -414,19 +383,6 @@ onBeforeUnmount(() => {
       @close="onSuccessClose"
     />
 
-    <AlertQuestion
-      :show="isDeleteOpen"
-      :loading="isDeleting"
-      :title="t('sportAddPlayer.confirm.deleteTitle')"
-      :message="t('sportAddPlayer.confirm.deleteMessage', {
-        name: form.name?.trim() || t('sportAddPlayer.confirm.defaultName'),
-      })"
-      :confirm-text="t('common.delete')"
-      :cancel-text="t('common.cancel')"
-      type="danger"
-      @confirm="onConfirmDelete"
-      @cancel="onCancelDelete"
-    />
   </MainLayout>
 </template>
 
