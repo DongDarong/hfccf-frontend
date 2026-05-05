@@ -13,6 +13,7 @@ import playersManagementData from '@/mocks/sport/players-management-data.json'
 import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
 import ParentGuardianInformation from '@/modules/sport/admin/components/add-player/ParentGuardianInformation.vue'
+import DocumentsContractsUpload from '@/modules/sport/admin/components/add-player/DocumentsContractsUpload.vue'
 
 defineOptions({
   name: 'SportAdminAddPlayerPage',
@@ -104,7 +105,8 @@ const divisionOptions = computed(() => {
 // Positions belong to the player record (data), so we derive a stable set of options from the mock dataset.
 const positionOptions = computed(() => {
   const fromPlayers = (Array.isArray(playersManagementData) ? playersManagementData : [])
-    .map((item) => String(item?.position || '').trim())
+    // Position was refactored into Primary Position; keep a fallback for older mock records.
+    .map((item) => String(item?.primaryPosition || item?.position || '').trim())
     .filter(Boolean)
   return [...new Set(fromPlayers)].sort()
 })
@@ -374,6 +376,11 @@ onBeforeUnmount(() => {
           <!-- UI-only section: parent/guardian details (no backend persistence yet). -->
           <div class="mt-6">
             <ParentGuardianInformation />
+          </div>
+
+          <!-- UI-only section: documents upload (mock drag/drop, no backend persistence yet). -->
+          <div class="mt-6">
+            <DocumentsContractsUpload />
           </div>
 
           <template #actions>

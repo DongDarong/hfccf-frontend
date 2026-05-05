@@ -177,6 +177,9 @@ const paginatedPlayers = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   return filteredPlayers.value.slice(start, start + pageSize).map((player, index) => ({
     ...player,
+    // Table identity line expects `position`; UI now uses Primary Position.
+    // Keep a fallback for older mock records that still use `position`.
+    position: String(player?.primaryPosition || player?.position || '').trim(),
     rowNumber: start + index + 1,
   }))
 })

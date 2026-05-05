@@ -117,5 +117,18 @@ export default {
         guardian: 'Guardian',
       },
     },
+
+    documentsContracts: {
+      title: 'Documents & Contracts',
+      signedContract: 'Signed Contract (Image or PDF)',
+      uploadFiles: 'Upload files',
+      dragAndDrop: 'or drag and drop',
+      helper: 'PNG, JPG, PDF up to 10MB (Multiple allowed)',
+      errors: {
+        empty: 'Please select a file.',
+        type: 'Only PNG, JPG, and PDF files are allowed.',
+        size: 'File is too large. Max size is 10MB per file.',
+      },
+    },
   },
 }

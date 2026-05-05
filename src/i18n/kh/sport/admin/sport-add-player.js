@@ -112,5 +112,17 @@ export default {
           guardian: 'អាណាព្យាបាល',
         },
       },
+      documentsContracts: {
+        title: 'ឯកសារ និងកិច្ចសន្យា',
+        signedContract: 'កិច្ចសន្យាដែលបានចុះហត្ថលេខា (រូបភាព ឬ PDF)',
+        uploadFiles: 'អាប់ឡូដឯកសារ',
+        dragAndDrop: 'ឬអូស និងទម្លាក់',
+        helper: 'PNG, JPG, PDF ទំហំអតិបរមា 10MB (អនុញ្ញាតច្រើនឯកសារ)',
+        errors: {
+          empty: 'សូមជ្រើសរើសឯកសារ។',
+          type: 'អនុញ្ញាតតែ PNG, JPG និង PDF ប៉ុណ្ណោះ។',
+          size: 'ឯកសារធំពេក។ អតិបរមា 10MB ក្នុងមួយឯកសារ។',
+        },
+      },
     },
 }
