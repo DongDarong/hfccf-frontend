@@ -60,5 +60,30 @@ export default {
       female: 'Female',
       other: 'Other',
     },
+
+    // Personal Information (used by the Add Player form sections)
+    personalInformation: {
+      title: 'Personal Information',
+      physicalAttributes: 'Physical Attributes',
+      heightCm: 'Height (cm)',
+      weightKg: 'Weight (kg)',
+      preferredFoot: 'Preferred Foot',
+      bloodType: 'Blood Type',
+      village: 'Village',
+      commune: 'Commune',
+      district: 'District',
+      province: 'Province',
+      currentSchool: 'Current school',
+      gradeYear: 'Grade/year',
+      // Placeholders keep inputs consistent and avoid hardcoded strings in components.
+      preferredFootPlaceholder: 'Select preferred foot',
+      bloodTypePlaceholder: 'Select blood type',
+      villagePlaceholder: 'Enter village',
+      communePlaceholder: 'Enter commune',
+      districtPlaceholder: 'Enter district',
+      provincePlaceholder: 'Enter province',
+      currentSchoolPlaceholder: 'Enter current school',
+      gradeYearPlaceholder: 'Ex: Grade 10 / Year 1',
+    },
   },
 }

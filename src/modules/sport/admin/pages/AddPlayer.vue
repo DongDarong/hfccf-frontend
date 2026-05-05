@@ -40,6 +40,17 @@ const form = reactive({
   matchesPlayed: 0,
   goalsScored: 0,
   profileImage: null,
+  // Personal information (player record data, not tied to system users).
+  heightCm: null,
+  weightKg: null,
+  preferredFoot: '',
+  bloodType: '',
+  village: '',
+  commune: '',
+  district: '',
+  province: '',
+  currentSchool: '',
+  gradeYear: '',
 })
 
 const isSubmitting = ref(false)
@@ -91,6 +102,10 @@ const positionOptions = computed(() => {
     .filter(Boolean)
   return [...new Set(fromPlayers)].sort()
 })
+
+// Keep these small and stable; can be moved to constants / fetched from API later.
+const preferredFootOptions = ['Right', 'Left', 'Both']
+const bloodTypeOptions = ['A', 'B', 'AB', 'O']
 
 function playerStatusLabel(status) {
   const key = `sportPlayerInformation.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
@@ -253,6 +268,18 @@ onMounted(() => {
   form.status = String(found.status || statusOptions[0])
   form.matchesPlayed = Number(found.matchesPlayed ?? 0)
   form.goalsScored = Number(found.goalsScored ?? 0)
+
+  // Personal information is optional in the mock dataset, so default safely.
+  form.heightCm = found.heightCm ?? null
+  form.weightKg = found.weightKg ?? null
+  form.preferredFoot = String(found.preferredFoot || '')
+  form.bloodType = String(found.bloodType || '')
+  form.village = String(found.village || '')
+  form.commune = String(found.commune || '')
+  form.district = String(found.district || '')
+  form.province = String(found.province || '')
+  form.currentSchool = String(found.currentSchool || '')
+  form.gradeYear = String(found.gradeYear || '')
 })
 
 onBeforeUnmount(() => {
@@ -290,10 +317,22 @@ onBeforeUnmount(() => {
             :status="form.status"
             :matches-played="form.matchesPlayed"
             :goals-scored="form.goalsScored"
+            :height-cm="form.heightCm"
+            :weight-kg="form.weightKg"
+            :preferred-foot="form.preferredFoot"
+            :blood-type="form.bloodType"
+            :village="form.village"
+            :commune="form.commune"
+            :district="form.district"
+            :province="form.province"
+            :current-school="form.currentSchool"
+            :grade-year="form.gradeYear"
             :team-options="teamOptions"
             :division-options="divisionOptions"
             :position-options="positionOptions"
             :status-options="statusOptions"
+            :preferred-foot-options="preferredFootOptions"
+            :blood-type-options="bloodTypeOptions"
             :is-locked="isFormLocked"
             :status-label="playerStatusLabel"
             @profile-image-change="onProfileImageChange"
@@ -309,6 +348,16 @@ onBeforeUnmount(() => {
             @update:status="form.status = $event"
             @update:matchesPlayed="form.matchesPlayed = $event"
             @update:goalsScored="form.goalsScored = $event"
+            @update:heightCm="form.heightCm = $event"
+            @update:weightKg="form.weightKg = $event"
+            @update:preferredFoot="form.preferredFoot = $event"
+            @update:bloodType="form.bloodType = $event"
+            @update:village="form.village = $event"
+            @update:commune="form.commune = $event"
+            @update:district="form.district = $event"
+            @update:province="form.province = $event"
+            @update:currentSchool="form.currentSchool = $event"
+            @update:gradeYear="form.gradeYear = $event"
           />
 
           <template #actions>

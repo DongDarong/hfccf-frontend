@@ -5,6 +5,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
+import PersonalInformationFields from '@/modules/sport/admin/components/add-player/PersonalInformationFields.vue'
 
 defineOptions({
   name: 'AddPlayerFormFields',
@@ -15,6 +16,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  // Personal Information (data fields stored on the player record).
+  heightCm: { type: [Number, null], default: null },
+  weightKg: { type: [Number, null], default: null },
+  preferredFoot: { type: String, default: '' },
+  bloodType: { type: String, default: '' },
+  village: { type: String, default: '' },
+  commune: { type: String, default: '' },
+  district: { type: String, default: '' },
+  province: { type: String, default: '' },
+  currentSchool: { type: String, default: '' },
+  gradeYear: { type: String, default: '' },
   name: {
     type: String,
     default: '',
@@ -72,6 +84,14 @@ const props = defineProps({
     // Default to common football positions so the form still works without passing options.
     default: () => ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'],
   },
+  preferredFootOptions: {
+    type: Array,
+    default: () => ['Right', 'Left', 'Both'],
+  },
+  bloodTypeOptions: {
+    type: Array,
+    default: () => ['A', 'B', 'AB', 'O'],
+  },
   statusOptions: {
     type: Array,
     default: () => [],
@@ -102,6 +122,16 @@ const emit = defineEmits([
   'update:status',
   'update:matchesPlayed',
   'update:goalsScored',
+  'update:heightCm',
+  'update:weightKg',
+  'update:preferredFoot',
+  'update:bloodType',
+  'update:village',
+  'update:commune',
+  'update:district',
+  'update:province',
+  'update:currentSchool',
+  'update:gradeYear',
   // Keep upload side-effects (validation, object URL cleanup) in the page layer.
   'profile-image-change',
   'profile-image-remove',
@@ -229,6 +259,33 @@ const selectPt = {
         @update:model-value="emit('update:name', $event)"
       />
     </label>
+
+    <PersonalInformationFields
+      class="add-player-form-fields__field--full"
+      :height-cm="heightCm"
+      :weight-kg="weightKg"
+      :preferred-foot="preferredFoot"
+      :blood-type="bloodType"
+      :village="village"
+      :commune="commune"
+      :district="district"
+      :province="province"
+      :current-school="currentSchool"
+      :grade-year="gradeYear"
+      :preferred-foot-options="preferredFootOptions"
+      :blood-type-options="bloodTypeOptions"
+      :is-locked="isLocked"
+      @update:height-cm="emit('update:heightCm', $event)"
+      @update:weight-kg="emit('update:weightKg', $event)"
+      @update:preferred-foot="emit('update:preferredFoot', $event)"
+      @update:blood-type="emit('update:bloodType', $event)"
+      @update:village="emit('update:village', $event)"
+      @update:commune="emit('update:commune', $event)"
+      @update:district="emit('update:district', $event)"
+      @update:province="emit('update:province', $event)"
+      @update:current-school="emit('update:currentSchool', $event)"
+      @update:grade-year="emit('update:gradeYear', $event)"
+    />
 
     <label class="add-player-form-fields__field">
       <span class="add-player-form-fields__label">{{ labels.phone }}</span>
