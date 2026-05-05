@@ -29,6 +29,7 @@ DROP TABLE IF EXISTS `sport_standings`;
 DROP TABLE IF EXISTS `sport_top_scorers`;
 DROP TABLE IF EXISTS `sport_matches`;
 DROP TABLE IF EXISTS `sport_tournament_alerts`;
+DROP TABLE IF EXISTS `sport_player_documents`;
 DROP TABLE IF EXISTS `sport_players`;
 DROP TABLE IF EXISTS `sport_teams`;
 DROP TABLE IF EXISTS `sport_tournaments`;
@@ -273,6 +274,16 @@ CREATE TABLE `sport_players` (
   `current_school` VARCHAR(191) DEFAULT NULL,
   `grade_year` VARCHAR(64) DEFAULT NULL,
 
+  -- Parent / guardian information (UI section #3).
+  `father_name` VARCHAR(191) DEFAULT NULL,
+  `father_age` TINYINT UNSIGNED DEFAULT NULL,
+  `father_occupation` VARCHAR(191) DEFAULT NULL,
+  `mother_name` VARCHAR(191) DEFAULT NULL,
+  `mother_age` TINYINT UNSIGNED DEFAULT NULL,
+  `mother_occupation` VARCHAR(191) DEFAULT NULL,
+  `guardian_phone` VARCHAR(32) DEFAULT NULL,
+  `guardian_relationship` ENUM('father', 'mother', 'guardian') DEFAULT NULL,
+
   -- Sports profile & administrative status.
   `team_id` VARCHAR(16) DEFAULT NULL,
   `team_name` VARCHAR(191) NOT NULL,
@@ -293,10 +304,31 @@ CREATE TABLE `sport_players` (
   KEY `sport_players_status_index` (`status`),
   KEY `sport_players_registration_status_index` (`registration_status`),
   KEY `sport_players_gender_index` (`gender`),
+  KEY `sport_players_guardian_relationship_index` (`guardian_relationship`),
   KEY `sport_players_division_index` (`division`),
   CONSTRAINT `fk_sport_players_team`
     FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`)
     ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Player documents (UI section #4: signed contract upload).
+-- Store file metadata separately so multiple files can be attached to a single player record.
+CREATE TABLE `sport_player_documents` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `player_id` VARCHAR(16) NOT NULL,
+  `document_type` ENUM('signed_contract') NOT NULL,
+  `file_name` VARCHAR(255) NOT NULL,
+  `file_url` VARCHAR(2048) NOT NULL,
+  `mime_type` VARCHAR(100) NOT NULL,
+  `file_size_bytes` BIGINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_player_documents_player_index` (`player_id`),
+  KEY `sport_player_documents_type_index` (`document_type`),
+  CONSTRAINT `fk_sport_player_documents_player`
+    FOREIGN KEY (`player_id`) REFERENCES `sport_players` (`id`)
+    ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
