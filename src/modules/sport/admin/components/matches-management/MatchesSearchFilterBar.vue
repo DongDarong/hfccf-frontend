@@ -8,9 +8,10 @@
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
-import SearchInputField from '@/components/forms/SearchInputField.vue'
 import Button from '@/components/buttons/Button.vue'
 
 defineOptions({
@@ -107,6 +108,31 @@ function clearFilters() {
 
 // Avoid duplicate IDs across pages and keep label association accessible.
 const searchInputId = 'matchSearchInput'
+
+// Search input styling is defined locally because the matches page uses a slightly
+// different layout than the shared `SearchFilterBar` (filters are denser on the right).
+const searchInputPt = {
+  root: {
+    class: [
+      '!w-full',
+      '!min-h-[2.9rem]',
+      '!rounded-[0.9rem]',
+      '!border',
+      '!border-surface-300',
+      '!bg-white',
+      '!py-[0.85rem]',
+      '!pr-4',
+      '!pl-11',
+      '!text-surface-900',
+      '!shadow-[0_1px_2px_rgba(15,23,42,0.05)]',
+      'transition-all',
+      'duration-200',
+      'hover:enabled:!border-surface-400',
+      'focus:!border-brand-500',
+      'focus:!shadow-focus',
+    ],
+  },
+}
 </script>
 
 <template>
@@ -115,14 +141,25 @@ const searchInputId = 'matchSearchInput'
   >
     <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
       <div class="min-w-0 flex-1">
-        <SearchInputField
-          :model-value="searchQuery"
-          :disabled="disabled"
-          :placeholder="placeholders.search"
-          :input-id="searchInputId"
-          input-class="matches-search-filter-bar__search-input"
-          @update:model-value="emit('update:searchQuery', $event)"
-        />
+        <label class="block w-full" :for="searchInputId">
+          <!-- Screen-reader label: the placeholder is the visible copy. -->
+          <span class="sr-only">{{ placeholders.search }}</span>
+          <IconField icon-position="left" class="w-full">
+            <InputIcon class="pi pi-search" />
+            <InputText
+              :id="searchInputId"
+              :model-value="searchQuery"
+              type="search"
+              :disabled="disabled"
+              :placeholder="placeholders.search"
+              class="matches-search-filter-bar__search-input w-full"
+              :pt="searchInputPt"
+              autocomplete="off"
+              spellcheck="false"
+              @update:model-value="emit('update:searchQuery', $event)"
+            />
+          </IconField>
+        </label>
       </div>
 
       <div class="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -180,11 +217,27 @@ const searchInputId = 'matchSearchInput'
 </template>
 
 <style scoped>
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:deep(.p-iconfield .p-inputicon) {
+  /* Keep the search icon readable but subtle. */
+  color: var(--brand-surface-500);
+}
+
 :deep(.matches-search-filter-bar__search-input) {
   /*
    * UI polish for the matches page only.
-   * We keep the shared `SearchInputField` component generic, and tune the
-   * final look here so it visually aligns with the match filter selects.
+   * This keeps the input feeling consistent with the select controls.
    */
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
