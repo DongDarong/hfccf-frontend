@@ -4,6 +4,10 @@ export default {
     subtitle: 'Create fixtures, update live match details, and publish results.',
     placeholder:
       'This page will manage sport match fixtures and live match data. Connect it to the `sport_matches` tables once the backend API is ready.',
+    addTitle: 'Add Match',
+    addSubtitle: 'Create a new fixture entry for the match list.',
+    addPlaceholder:
+      'This page is reserved for the future match creation form. The Add Match button now has a valid destination.',
     toolbarEyebrow: 'Match Management',
     toolbarSummary: 'Matches ({count})',
     visibleRange: 'Showing {shown} of {total} matches',
@@ -53,6 +57,7 @@ export default {
       empty: 'No matches found.',
     },
     actions: {
+      addButton: 'Add Match',
       results: 'Results',
       edit: 'Edit',
       delete: 'Delete',

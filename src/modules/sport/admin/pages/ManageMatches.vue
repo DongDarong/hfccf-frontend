@@ -5,9 +5,11 @@
  * UI-only for now: future backend integration will use `sport_matches` and related tournament tables.
  */
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import Button from '@/components/buttons/Button.vue'
 import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-management/MatchesSearchFilterBar.vue'
 import MatchesTable from '@/modules/sport/admin/components/matches-management/MatchesTable.vue'
 import PlayerInfoToolbar from '@/modules/sport/admin/components/player-management/PlayerInfoToolbar.vue'
@@ -18,12 +20,14 @@ defineOptions({
   name: 'SportAdminManageMatchesPage',
 })
 
+const router = useRouter()
 const { t, language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
 
 const title = computed(() => t('sportMatchesManagement.title'))
 const subtitle = computed(() => t('sportMatchesManagement.subtitle'))
 const tableEmptyText = computed(() => t('sportMatchesManagement.table.empty'))
+const addMatchLabel = computed(() => t('sportMatchesManagement.actions.addButton'))
 
 // Filter state (UI-only until the matches table/list is implemented).
 const searchQuery = ref('')
@@ -184,6 +188,11 @@ function onDelete(match) {
   if (!id) return
   matches.value = matches.value.filter((item) => item.id !== id)
 }
+
+async function goToAddMatch() {
+  // Keep navigation explicit so the future match form can live on its own page.
+  await router.push({ name: 'dashboard-sport-admin-matches-add' })
+}
 </script>
 
 <template>
@@ -224,7 +233,17 @@ function onDelete(match) {
           :text="visibleRangeLabel"
           :spotlight-label="spotlightLabel"
           :spotlight-value="String(liveMatches)"
-        />
+        >
+          <template #actions>
+            <Button
+              type="button"
+              :label="addMatchLabel"
+              icon="pi pi-plus"
+              class="manage-matches-page__add-button"
+              @click="goToAddMatch"
+            />
+          </template>
+        </PlayerInfoToolbar>
 
         <MatchesSearchFilterBar
           v-model:searchQuery="searchQuery"
@@ -367,6 +386,12 @@ function onDelete(match) {
   color: #475569;
   font-size: 0.88rem;
   line-height: 1.55;
+}
+
+.manage-matches-page__add-button {
+  min-height: 2.8rem;
+  border-radius: 0.9rem;
+  font-weight: 800;
 }
 
 .manage-matches-page__shell {
