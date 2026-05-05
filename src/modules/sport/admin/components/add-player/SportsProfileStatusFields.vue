@@ -74,14 +74,29 @@ const selectPt = {
 </script>
 
 <template>
-  <div class="add-player-sports-profile">
-    <div class="add-player-sports-profile__section">
-      <div class="add-player-sports-profile__title">{{ labels.sectionTitle }}</div>
-    </div>
+  <section class="rounded-[14px] border border-[#e5e7eb] bg-white p-6 sm:p-7">
+    <header class="flex items-start gap-3">
+      <div
+        class="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-[8px] bg-orange-500 text-[0.8rem] font-bold text-white"
+        aria-hidden="true"
+      >
+        2
+      </div>
 
-    <!-- Arrange by typical entry flow: positions, team, then status fields. -->
-    <label class="add-player-sports-profile__field">
-      <span class="add-player-sports-profile__label">{{ labels.primaryPosition }}</span>
+      <div class="min-w-0 flex-1">
+        <h2 class="text-[1.05rem] font-semibold text-slate-900">
+          {{ labels.sectionTitle }}
+        </h2>
+        <div class="mt-3 h-px w-full bg-[#e5e7eb]" role="presentation"></div>
+      </div>
+    </header>
+
+    <div class="mt-7 grid grid-cols-1 gap-6 md:grid-cols-2">
+      <!-- Arrange by typical entry flow: positions, then status fields. -->
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.primaryPosition }}
+        </span>
       <Select
         :model-value="primaryPosition"
         :options="positionSelectOptions"
@@ -90,14 +105,16 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.primaryPosition"
         append-to="self"
-        class="w-full"
+          class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:primaryPosition', $event)"
       />
     </label>
 
-    <label class="add-player-sports-profile__field">
-      <span class="add-player-sports-profile__label">{{ labels.registrationStatus }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.registrationStatus }}
+        </span>
       <Select
         :model-value="registrationStatus"
         :options="registrationStatusSelectOptions"
@@ -106,55 +123,11 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.registrationStatus"
         append-to="self"
-        class="w-full"
+          class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:registrationStatus', $event)"
       />
     </label>
-  </div>
+    </div>
+  </section>
 </template>
-
-<style scoped>
-.add-player-sports-profile {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.add-player-sports-profile__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.add-player-sports-profile__field--full {
-  grid-column: 1 / -1;
-}
-
-.add-player-sports-profile__label {
-  color: #334155;
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-.add-player-sports-profile__section {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  margin-top: 0.25rem;
-}
-
-.add-player-sports-profile__title {
-  color: #0f172a;
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-@media (max-width: 768px) {
-  .add-player-sports-profile {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

@@ -123,26 +123,45 @@ const selectPt = {
 </script>
 
 <template>
-  <div class="add-player-personal-info">
-    <div class="add-player-personal-info__section">
-      <div class="add-player-personal-info__title">{{ labels.sectionTitle }}</div>
-      <div class="add-player-personal-info__hint">{{ labels.physicalAttributes }}</div>
-    </div>
+  <section class="rounded-[14px] border border-[#e5e7eb] bg-white p-6 sm:p-7">
+    <header class="flex items-start gap-3">
+      <div
+        class="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-[8px] bg-orange-500 text-[0.8rem] font-bold text-white"
+        aria-hidden="true"
+      >
+        1
+      </div>
 
-    <!-- Arrange by what is typically collected first: contact/demographics, then body metrics, then address, then school info. -->
-    <label class="add-player-personal-info__field add-player-personal-info__field--full">
-      <span class="add-player-personal-info__label">{{ labels.phone }}</span>
+      <div class="min-w-0 flex-1">
+        <h2 class="text-[1.05rem] font-semibold text-slate-900">
+          {{ labels.sectionTitle }}
+        </h2>
+        <div class="mt-3 h-px w-full bg-[#e5e7eb]" role="presentation"></div>
+        <p class="mt-3 text-[0.85rem] font-semibold uppercase tracking-[0.08em] text-slate-500">
+          {{ labels.physicalAttributes }}
+        </p>
+      </div>
+    </header>
+
+    <div class="mt-7 grid grid-cols-1 gap-6 md:grid-cols-2">
+      <!-- Arrange by what is typically collected first: contact/demographics, then body metrics, then address, then school info. -->
+      <label class="md:col-span-2">
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.phone }}
+        </span>
       <InputText
         :model-value="phone"
         :disabled="isLocked"
         :placeholder="placeholders.phone"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:phone', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.gender }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.gender }}
+        </span>
       <Select
         :model-value="gender"
         :options="genderSelectOptions"
@@ -151,50 +170,58 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.gender"
         append-to="self"
-        class="w-full"
+          class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:gender', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.age }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.age }}
+        </span>
       <InputNumber
         :model-value="age"
         :disabled="isLocked"
         :min="0"
-        class="w-full"
+          class="mt-2 w-full"
         input-class="w-full"
         @update:model-value="emit('update:age', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.heightCm }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.heightCm }}
+        </span>
       <InputNumber
         :model-value="heightCm"
         :disabled="isLocked"
         :min="0"
-        class="w-full"
+          class="mt-2 w-full"
         input-class="w-full"
         @update:model-value="emit('update:heightCm', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.weightKg }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.weightKg }}
+        </span>
       <InputNumber
         :model-value="weightKg"
         :disabled="isLocked"
         :min="0"
-        class="w-full"
+          class="mt-2 w-full"
         input-class="w-full"
         @update:model-value="emit('update:weightKg', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.preferredFoot }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.preferredFoot }}
+        </span>
       <Select
         :model-value="preferredFoot"
         :options="preferredFootSelectOptions"
@@ -203,14 +230,16 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.preferredFoot"
         append-to="self"
-        class="w-full"
+          class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:preferredFoot', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.bloodType }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.bloodType }}
+        </span>
       <Select
         :model-value="bloodType"
         :options="bloodTypeSelectOptions"
@@ -219,129 +248,89 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.bloodType"
         append-to="self"
-        class="w-full"
+          class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:bloodType', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.province }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.province }}
+        </span>
       <InputText
         :model-value="province"
         :disabled="isLocked"
         :placeholder="placeholders.province"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:province', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.district }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.district }}
+        </span>
       <InputText
         :model-value="district"
         :disabled="isLocked"
         :placeholder="placeholders.district"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:district', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.commune }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.commune }}
+        </span>
       <InputText
         :model-value="commune"
         :disabled="isLocked"
         :placeholder="placeholders.commune"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:commune', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field">
-      <span class="add-player-personal-info__label">{{ labels.village }}</span>
+      <label>
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.village }}
+        </span>
       <InputText
         :model-value="village"
         :disabled="isLocked"
         :placeholder="placeholders.village"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:village', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field add-player-personal-info__field--full">
-      <span class="add-player-personal-info__label">{{ labels.currentSchool }}</span>
+      <label class="md:col-span-2">
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.currentSchool }}
+        </span>
       <InputText
         :model-value="currentSchool"
         :disabled="isLocked"
         :placeholder="placeholders.currentSchool"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:currentSchool', $event)"
       />
     </label>
 
-    <label class="add-player-personal-info__field add-player-personal-info__field--full">
-      <span class="add-player-personal-info__label">{{ labels.gradeYear }}</span>
+      <label class="md:col-span-2">
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600">
+          {{ labels.gradeYear }}
+        </span>
       <InputText
         :model-value="gradeYear"
         :disabled="isLocked"
         :placeholder="placeholders.gradeYear"
-        class="w-full"
+          class="mt-2 w-full"
         @update:model-value="emit('update:gradeYear', $event)"
       />
     </label>
-  </div>
+    </div>
+  </section>
 </template>
-
-<style scoped>
-.add-player-personal-info {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.add-player-personal-info__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.add-player-personal-info__field--full {
-  grid-column: 1 / -1;
-}
-
-.add-player-personal-info__label {
-  color: #334155;
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-.add-player-personal-info__section {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  margin-top: 0.25rem;
-}
-
-.add-player-personal-info__title {
-  color: #0f172a;
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-.add-player-personal-info__hint {
-  color: #64748b;
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-@media (max-width: 768px) {
-  .add-player-personal-info {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

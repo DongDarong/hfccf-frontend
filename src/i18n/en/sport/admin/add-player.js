@@ -99,5 +99,23 @@ export default {
         unregistered: 'Unregistered',
       },
     },
+
+    parentGuardian: {
+      title: 'Parent / Guardian Information',
+      fatherTitle: "Father's Information",
+      motherTitle: "Mother's Information",
+      fields: {
+        name: 'Name',
+        age: 'Age',
+        occupation: 'Occupation',
+        guardianPhone: 'Guardian Contact Phone',
+        relationship: 'Relationship to Player',
+      },
+      relationshipOptions: {
+        father: 'Father',
+        mother: 'Mother',
+        guardian: 'Guardian',
+      },
+    },
   },
 }

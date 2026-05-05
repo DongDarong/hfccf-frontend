@@ -92,10 +92,6 @@ const props = defineProps({
     type: Array,
     default: () => ['A', 'B', 'AB', 'O'],
   },
-  activityStatusOptions: {
-    type: Array,
-    default: () => ['active', 'inactive'],
-  },
   registrationStatusOptions: {
     type: Array,
     default: () => ['registered', 'pending', 'unregistered'],
@@ -200,6 +196,9 @@ function clampNonNegativeNumber(value) {
   return Math.max(parsed, 0)
 }
 
+// Shared label style for PrimeVue field wrappers.
+const labelClass = 'text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-slate-600'
+
 const selectPt = {
   root: {
     class:
@@ -226,9 +225,9 @@ const selectPt = {
 </script>
 
 <template>
-  <div class="add-player-form-fields">
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
     <AddAdminProfileImageField
-      class="add-player-form-fields__field add-player-form-fields__field--full"
+      class="md:col-span-2"
       :title="labels.profileImage"
       :preview="profileImagePreview"
       :remove-label="labels.removeImage"
@@ -237,19 +236,19 @@ const selectPt = {
       @remove="emit('profile-image-remove')"
     />
 
-    <label class="add-player-form-fields__field add-player-form-fields__field--full">
-      <span class="add-player-form-fields__label">{{ labels.fullName }}</span>
+    <label class="md:col-span-2">
+      <span :class="labelClass">{{ labels.fullName }}</span>
       <InputText
         :model-value="name"
         :disabled="isLocked"
         :placeholder="placeholders.fullName"
-        class="w-full"
+        class="mt-2 w-full"
         @update:model-value="emit('update:name', $event)"
       />
     </label>
 
     <PersonalInformationFields
-      class="add-player-form-fields__field--full"
+      class="md:col-span-2"
       :phone="phone"
       :gender="gender"
       :age="age"
@@ -283,7 +282,7 @@ const selectPt = {
     />
 
     <SportsProfileStatusFields
-      class="add-player-form-fields__field--full"
+      class="md:col-span-2"
       :primary-position="primaryPosition"
       :registration-status="registrationStatus"
       :position-options="positionOptions"
@@ -293,8 +292,8 @@ const selectPt = {
       @update:registration-status="emit('update:registrationStatus', $event)"
     />
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.team }}</span>
+    <label>
+      <span :class="labelClass">{{ labels.team }}</span>
       <Select
         :model-value="team"
         :options="teamSelectOptions"
@@ -303,14 +302,14 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.team"
         append-to="self"
-        class="w-full"
+        class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:team', $event)"
       />
     </label>
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.division }}</span>
+    <label>
+      <span :class="labelClass">{{ labels.division }}</span>
       <Select
         :model-value="division"
         :options="divisionSelectOptions"
@@ -319,14 +318,14 @@ const selectPt = {
         :disabled="isLocked"
         :placeholder="placeholders.division"
         append-to="self"
-        class="w-full"
+        class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:division', $event)"
       />
     </label>
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.status }}</span>
+    <label>
+      <span :class="labelClass">{{ labels.status }}</span>
       <Select
         :model-value="status"
         :options="statusSelectOptions"
@@ -334,77 +333,47 @@ const selectPt = {
         option-value="value"
         :disabled="isLocked"
         append-to="self"
-        class="w-full"
+        class="mt-2 w-full"
         :pt="selectPt"
         @update:model-value="emit('update:status', $event)"
       />
     </label>
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.jerseyNumber }}</span>
+    <label>
+      <span :class="labelClass">{{ labels.jerseyNumber }}</span>
       <InputNumber
         :model-value="jerseyNumber"
         :disabled="isLocked"
         :min="0"
         :placeholder="placeholders.jerseyNumber"
-        class="w-full"
+        class="mt-2 w-full"
         input-class="w-full"
         @update:model-value="emit('update:jerseyNumber', $event)"
       />
     </label>
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.matchesPlayed }}</span>
+    <label>
+      <span :class="labelClass">{{ labels.matchesPlayed }}</span>
       <InputNumber
         :model-value="matchesPlayed"
         :disabled="isLocked"
         :min="0"
-        class="w-full"
+        class="mt-2 w-full"
         input-class="w-full"
         @update:model-value="emit('update:matchesPlayed', clampNonNegativeNumber($event))"
       />
     </label>
 
-    <label class="add-player-form-fields__field">
-      <span class="add-player-form-fields__label">{{ labels.goalsScored }}</span>
+    <label>
+      <span :class="labelClass">{{ labels.goalsScored }}</span>
       <InputNumber
         :model-value="goalsScored"
         :disabled="isLocked"
         :min="0"
-        class="w-full"
+        class="mt-2 w-full"
         input-class="w-full"
         @update:model-value="emit('update:goalsScored', clampNonNegativeNumber($event))"
       />
     </label>
   </div>
 </template>
-
-<style scoped>
-.add-player-form-fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.add-player-form-fields__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.add-player-form-fields__field--full {
-  grid-column: 1 / -1;
-}
-
-.add-player-form-fields__label {
-  color: #334155;
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-@media (max-width: 768px) {
-  .add-player-form-fields {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

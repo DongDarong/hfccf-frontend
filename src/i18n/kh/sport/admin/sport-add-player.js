@@ -95,5 +95,22 @@ export default {
           unregistered: 'មិនបានចុះឈ្មោះ',
         },
       },
+      parentGuardian: {
+        title: 'ព័ត៌មានឪពុកម្តាយ/អាណាព្យាបាល',
+        fatherTitle: 'ព័ត៌មានឪពុក',
+        motherTitle: 'ព័ត៌មានម្តាយ',
+        fields: {
+          name: 'ឈ្មោះ',
+          age: 'អាយុ',
+          occupation: 'មុខរបរ',
+          guardianPhone: 'លេខទូរស័ព្ទអាណាព្យាបាល',
+          relationship: 'ទំនាក់ទំនងជាមួយកីឡាករ',
+        },
+        relationshipOptions: {
+          father: 'ឪពុក',
+          mother: 'ម្តាយ',
+          guardian: 'អាណាព្យាបាល',
+        },
+      },
     },
 }

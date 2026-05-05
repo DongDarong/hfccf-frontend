@@ -12,6 +12,7 @@ import teamsManagementData from '@/mocks/sport/teams-management-data.json'
 import playersManagementData from '@/mocks/sport/players-management-data.json'
 import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
+import ParentGuardianInformation from '@/modules/sport/admin/components/add-player/ParentGuardianInformation.vue'
 
 defineOptions({
   name: 'SportAdminAddPlayerPage',
@@ -369,6 +370,11 @@ onBeforeUnmount(() => {
             @update:primaryPosition="form.primaryPosition = $event"
             @update:registrationStatus="form.registrationStatus = $event"
           />
+
+          <!-- UI-only section: parent/guardian details (no backend persistence yet). -->
+          <div class="mt-6">
+            <ParentGuardianInformation />
+          </div>
 
           <template #actions>
             <AddPlayerFormActions
