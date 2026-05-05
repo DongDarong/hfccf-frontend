@@ -6,7 +6,8 @@
  * The page owns alerts and submission state; this component owns the form body
  * so the page stays easier to scan and future fields can be added in one place.
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import AutoComplete from 'primevue/autocomplete'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Form from '@/components/forms/Form.vue'
@@ -49,6 +50,18 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  dateTime: {
+    type: String,
+    default: '',
+  },
+  venue: {
+    type: String,
+    default: '',
+  },
+  status: {
+    type: String,
+    default: '',
+  },
   homeTeam: {
     type: String,
     default: '',
@@ -61,12 +74,19 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  statusOptions: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits([
   'submit',
   'update:competitionType',
   'update:tournament',
+  'update:dateTime',
+  'update:venue',
+  'update:status',
   'update:homeTeam',
   'update:awayTeam',
 ])
@@ -77,6 +97,8 @@ const showTournamentField = computed(
 const isTournamentMode = computed(() => props.competitionType === 'tournament')
 const isFriendlyMode = computed(() => props.competitionType === 'friendly')
 const { t } = useLanguage()
+const homeTeamSuggestions = ref([])
+const awayTeamSuggestions = ref([])
 
 function normalizeOption(option) {
   if (option && typeof option === 'object' && 'value' in option) return option
@@ -94,28 +116,45 @@ const tournamentSelectOptions = computed(() => [
   ...props.tournamentOptions.map((option) => normalizeOption(option)),
 ])
 
-const homeTeamOptions = computed(() =>
+const statusSelectOptions = computed(() => [
+  { value: '', label: t('sportMatchesManagement.statusPlaceholder') },
+  ...props.statusOptions.map((option) => normalizeOption(option)),
+])
+
+const allTeamOptions = computed(() =>
   props.teamOptions
-    .map((option) => normalizeOption(option))
-    .filter((option) => option.value !== props.awayTeam),
+    .map((option) => String(option ?? '').trim())
+    .filter(Boolean),
 )
 
-const awayTeamOptions = computed(() =>
-  props.teamOptions
-    .map((option) => normalizeOption(option))
-    .filter((option) => option.value !== props.homeTeam),
-)
+function searchHomeTeam(event) {
+  const query = String(event?.query || '').trim().toLowerCase()
+  const available = allTeamOptions.value.filter((option) => option !== props.awayTeam)
+
+  homeTeamSuggestions.value = query
+    ? available.filter((option) => option.toLowerCase().includes(query))
+    : available
+}
+
+function searchAwayTeam(event) {
+  const query = String(event?.query || '').trim().toLowerCase()
+  const available = allTeamOptions.value.filter((option) => option !== props.homeTeam)
+
+  awayTeamSuggestions.value = query
+    ? available.filter((option) => option.toLowerCase().includes(query))
+    : available
+}
 
 function onHomeTeamChange(value) {
-  emit('update:homeTeam', value)
-  // Never allow the same team to stay selected on both sides.
-  if (value && value === props.awayTeam) emit('update:awayTeam', '')
+  const nextValue = String(value ?? '').trim()
+  emit('update:homeTeam', nextValue)
+  if (nextValue && nextValue === props.awayTeam) emit('update:awayTeam', '')
 }
 
 function onAwayTeamChange(value) {
-  emit('update:awayTeam', value)
-  // Never allow the same team to stay selected on both sides.
-  if (value && value === props.homeTeam) emit('update:homeTeam', '')
+  const nextValue = String(value ?? '').trim()
+  emit('update:awayTeam', nextValue)
+  if (nextValue && nextValue === props.homeTeam) emit('update:homeTeam', '')
 }
 
 const selectPt = {
@@ -196,33 +235,68 @@ function onSubmit(event) {
       <div class="form-matche__grid">
         <label class="form-matche__field">
           <span class="form-matche__label">{{ t('sportMatchesManagement.homeTeamLabel') }}</span>
-          <Select
+          <AutoComplete
             :model-value="homeTeam"
-            :options="homeTeamOptions"
-            option-label="label"
-            option-value="value"
             :placeholder="t('sportMatchesManagement.homeTeamPlaceholder')"
-            append-to="self"
+            dropdown
+            :suggestions="homeTeamSuggestions"
             class="w-full"
-            :pt="selectPt"
+            @complete="searchHomeTeam"
             @update:model-value="onHomeTeamChange"
           />
         </label>
 
         <label class="form-matche__field">
           <span class="form-matche__label">{{ t('sportMatchesManagement.awayTeamLabel') }}</span>
-          <Select
+          <AutoComplete
             :model-value="awayTeam"
-            :options="awayTeamOptions"
+            :placeholder="t('sportMatchesManagement.awayTeamPlaceholder')"
+            dropdown
+            :suggestions="awayTeamSuggestions"
+            class="w-full"
+            @complete="searchAwayTeam"
+            @update:model-value="onAwayTeamChange"
+          />
+        </label>
+      </div>
+
+      <label class="form-matche__field">
+        <span class="form-matche__label">{{ t('sportMatchesManagement.dateTimeLabel') }}</span>
+        <InputText
+          :model-value="dateTime"
+          type="datetime-local"
+          :placeholder="t('sportMatchesManagement.dateTimePlaceholder')"
+          class="w-full"
+          @update:model-value="emit('update:dateTime', $event)"
+        />
+      </label>
+
+      <div class="form-matche__grid">
+        <label class="form-matche__field">
+          <span class="form-matche__label">{{ t('sportMatchesManagement.venueLabel') }}</span>
+          <InputText
+            :model-value="venue"
+            type="text"
+            :placeholder="t('sportMatchesManagement.venuePlaceholder')"
+            class="w-full"
+            @update:model-value="emit('update:venue', $event)"
+          />
+        </label>
+
+        <label class="form-matche__field">
+          <span class="form-matche__label">{{ t('sportMatchesManagement.statusLabel') }}</span>
+          <Select
+            :model-value="status"
+            :options="statusSelectOptions"
             option-label="label"
             option-value="value"
-            :placeholder="t('sportMatchesManagement.awayTeamPlaceholder')"
+            :placeholder="t('sportMatchesManagement.statusPlaceholder')"
             append-to="self"
             class="w-full"
             :pt="selectPt"
-          @update:model-value="onAwayTeamChange"
-        />
-      </label>
+            @update:model-value="emit('update:status', $event)"
+          />
+        </label>
       </div>
     </div>
   </Form>

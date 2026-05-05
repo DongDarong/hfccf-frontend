@@ -30,6 +30,9 @@ const showError = ref(false)
 const errorMessage = ref('')
 const competitionType = ref('')
 const tournament = ref('')
+const dateTime = ref('')
+const venue = ref('')
+const status = ref('scheduled')
 const homeTeam = ref('')
 const awayTeam = ref('')
 
@@ -42,6 +45,14 @@ const tournamentOptions = computed(() => [
   { value: 'hfccf_cup_2026', label: 'HFCCF Cup 2026' },
   { value: 'friendly_league', label: 'Friendly League' },
   { value: 'summer_showcase', label: 'Summer Showcase' },
+])
+
+const statusOptions = computed(() => [
+  { value: 'scheduled', label: t('sportMatchesManagement.status.scheduled') },
+  { value: 'live', label: t('sportMatchesManagement.status.live') },
+  { value: 'completed', label: t('sportMatchesManagement.status.completed') },
+  { value: 'postponed', label: t('sportMatchesManagement.status.postponed') },
+  { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
 ])
 
 const teamOptions = computed(() => {
@@ -60,6 +71,14 @@ function resetFeedback() {
 
 async function onSubmit() {
   resetFeedback()
+
+  // Keep the placeholder form honest: a match cannot use the same team twice.
+  if (homeTeam.value && homeTeam.value === awayTeam.value) {
+    errorMessage.value = t('sportMatchesManagement.teamSelectionError')
+    showError.value = true
+    return
+  }
+
   isSubmitting.value = true
 
   try {
@@ -98,11 +117,18 @@ function onSuccessClose() {
           :competition-type-options="competitionTypeOptions"
           :tournament="tournament"
           :tournament-options="tournamentOptions"
+          :date-time="dateTime"
+          :venue="venue"
+          :status="status"
           :home-team="homeTeam"
           :away-team="awayTeam"
           :team-options="teamOptions"
+          :status-options="statusOptions"
           @update:competition-type="competitionType = $event"
           @update:tournament="tournament = $event"
+          @update:date-time="dateTime = $event"
+          @update:venue="venue = $event"
+          @update:status="status = $event"
           @update:home-team="homeTeam = $event"
           @update:away-team="awayTeam = $event"
           @submit="onSubmit"
