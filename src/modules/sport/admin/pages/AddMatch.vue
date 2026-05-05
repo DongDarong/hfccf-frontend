@@ -14,6 +14,7 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FormMatche from '@/modules/sport/admin/components/add-match/FormMatche.vue'
+import MatchChecklist from '@/modules/sport/admin/components/add-match/MatchChecklist.vue'
 import teamsManagementData from '@/mocks/sport/teams-management-data.json'
 import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
@@ -85,6 +86,47 @@ const teamOptions = computed(() => {
     .filter(Boolean)
   return [...new Set(values)].sort()
 })
+
+const selectedCompetitionLabel = computed(() => {
+  const selected = competitionTypeOptions.value.find((option) => option.value === competitionType.value)
+  return selected?.label || t('sportMatchesManagement.competitionTypePlaceholder')
+})
+
+const selectedTournamentLabel = computed(() => {
+  if (competitionType.value === 'friendly') {
+    return tournament.value || t('sportMatchesManagement.tournamentNamePlaceholder')
+  }
+
+  const selected = tournamentOptions.value.find((option) => option.value === tournament.value)
+  return selected?.label || t('sportMatchesManagement.tournamentSelectPlaceholder')
+})
+
+const matchChecklistItems = computed(() => [
+  {
+    title: t('sportMatchesManagement.sidebarItems.competition'),
+    text: selectedCompetitionLabel.value,
+  },
+  {
+    title: t('sportMatchesManagement.sidebarItems.tournament'),
+    text: selectedTournamentLabel.value,
+  },
+  {
+    title: t('sportMatchesManagement.sidebarItems.teams'),
+    text:
+      homeTeam.value && awayTeam.value
+        ? `${homeTeam.value} vs ${awayTeam.value}`
+        : t('sportMatchesManagement.sidebarItems.teamsDetail'),
+  },
+  {
+    title: t('sportMatchesManagement.sidebarItems.schedule'),
+    text: dateTime.value || t('sportMatchesManagement.sidebarItems.scheduleDetail'),
+  },
+])
+
+const checklistHighlightLabel = computed(() => t('sportMatchesManagement.sidebarHighlightLabel'))
+const checklistHighlightValue = computed(() =>
+  isEditMode.value ? t('sportMatchesManagement.sidebarHighlightEdit') : t('sportMatchesManagement.sidebarHighlightAdd'),
+)
 
 const selectedMatch = computed(() => {
   if (!matchId.value) return null
@@ -189,38 +231,50 @@ function onCancel() {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <div class="add-match-page__shell">
-        <FormMatche
-          :title="pageTitle"
-          :description="''"
-          :submit-text="
-            isEditMode
-              ? t('sportMatchesManagement.actions.updateButton')
-              : t('sportMatchesManagement.actions.addButton')
-          "
-          :loading="isSubmitting"
-          :competition-type="competitionType"
-          :competition-type-options="competitionTypeOptions"
-          :tournament="tournament"
-          :tournament-options="tournamentOptions"
-          :date-time="dateTime"
-          :venue="venue"
-          :status="status"
-          :home-team="homeTeam"
-          :away-team="awayTeam"
-          :team-options="teamOptions"
-          :status-options="statusOptions"
-          :show-delete="isEditMode"
-          :cancel-text="t('common.cancel')"
-          @update:competition-type="competitionType = $event"
-          @update:tournament="tournament = $event"
-          @update:date-time="dateTime = $event"
-          @update:venue="venue = $event"
-          @update:status="status = $event"
-          @update:home-team="homeTeam = $event"
-          @update:away-team="awayTeam = $event"
-          @submit="onSubmit"
-          @cancel="onCancel"
-        />
+        <div class="add-match-page__layout">
+          <FormMatche
+            :title="pageTitle"
+            :description="''"
+            :submit-text="
+              isEditMode
+                ? t('sportMatchesManagement.actions.updateButton')
+                : t('sportMatchesManagement.actions.addButton')
+            "
+            :loading="isSubmitting"
+            :competition-type="competitionType"
+            :competition-type-options="competitionTypeOptions"
+            :tournament="tournament"
+            :tournament-options="tournamentOptions"
+            :date-time="dateTime"
+            :venue="venue"
+            :status="status"
+            :home-team="homeTeam"
+            :away-team="awayTeam"
+            :team-options="teamOptions"
+            :status-options="statusOptions"
+            :show-delete="isEditMode"
+            :cancel-text="t('common.cancel')"
+            @update:competition-type="competitionType = $event"
+            @update:tournament="tournament = $event"
+            @update:date-time="dateTime = $event"
+            @update:venue="venue = $event"
+            @update:status="status = $event"
+            @update:home-team="homeTeam = $event"
+            @update:away-team="awayTeam = $event"
+            @submit="onSubmit"
+            @cancel="onCancel"
+          />
+
+          <div class="add-match-page__rail">
+            <MatchChecklist
+              :title="t('sportMatchesManagement.sidebarTitle')"
+              :description="t('sportMatchesManagement.sidebarText')"
+              :items="matchChecklistItems"
+              :highlight-label="checklistHighlightLabel"
+              :highlight-value="checklistHighlightValue"
+            />
+          </div>
+        </div>
       </div>
     </section>
 
@@ -259,8 +313,42 @@ function onCancel() {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
+.add-match-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.95fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.add-match-page__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
 .add-match-page--kh .add-match-page__shell {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+.add-match-page--kh :deep(.match-checklist .p-card-title),
+.add-match-page--kh :deep(.match-checklist .p-card-content),
+.add-match-page--kh :deep(.match-checklist .p-card-body),
+.add-match-page--kh :deep(.match-checklist .p-card),
+.add-match-page--kh :deep(.match-checklist p) {
+  font-family:
+    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+@media (max-width: 1024px) {
+  .add-match-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .add-match-page__rail {
+    position: static;
+  }
 }
 </style>

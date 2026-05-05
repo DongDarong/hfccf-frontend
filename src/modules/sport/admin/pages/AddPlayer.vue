@@ -13,6 +13,7 @@ import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/Add
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
 import ParentGuardianInformation from '@/modules/sport/admin/components/add-player/ParentGuardianInformation.vue'
 import DocumentsContractsUpload from '@/modules/sport/admin/components/add-player/DocumentsContractsUpload.vue'
+import PlayerChecklist from '@/modules/sport/admin/components/add-player/PlayerChecklist.vue'
 
 defineOptions({
   name: 'SportAdminAddPlayerPage',
@@ -126,6 +127,43 @@ const pageSubtitle = computed(() => {
   if (isEditMode.value) return t('sportAddPlayer.updateSubtitle')
   return t('sportAddPlayer.summary')
 })
+
+const selectedTeamLabel = computed(() => form.team || t('sportAddPlayer.teamPlaceholder'))
+const selectedDivisionLabel = computed(() => form.division || t('sportAddPlayer.divisionPlaceholder'))
+const selectedStatusLabel = computed(() => playerStatusLabel(form.status))
+const selectedRegistrationStatusLabel = computed(() =>
+  playerStatusLabel(form.registrationStatus),
+)
+
+const checklistItems = computed(() => [
+  {
+    title: t('sportAddPlayer.sidebarItems.identity'),
+    text: `${selectedTeamLabel.value} • ${selectedDivisionLabel.value}`,
+  },
+  {
+    title: t('sportAddPlayer.sidebarItems.personal'),
+    text:
+      form.currentSchool.trim() || form.gradeYear.trim()
+        ? `${form.currentSchool || t('sportAddPlayer.sidebarItems.personalDetail')} • ${form.gradeYear || t('sportAddPlayer.sidebarItems.personalDetail')}`
+        : t('sportAddPlayer.sidebarItems.personalDetail'),
+  },
+  {
+    title: t('sportAddPlayer.sidebarItems.sports'),
+    text:
+      form.primaryPosition || form.registrationStatus
+        ? `${form.primaryPosition || t('sportAddPlayer.sidebarItems.sportsDetail')} • ${selectedRegistrationStatusLabel.value}`
+        : t('sportAddPlayer.sidebarItems.sportsDetail'),
+  },
+  {
+    title: t('sportAddPlayer.sidebarItems.record'),
+    text: selectedStatusLabel.value,
+  },
+])
+
+const checklistHighlightLabel = computed(() => t('sportAddPlayer.sidebarHighlightLabel'))
+const checklistHighlightValue = computed(() =>
+  isEditMode.value ? t('sportAddPlayer.sidebarHighlightEdit') : t('sportAddPlayer.sidebarHighlightAdd'),
+)
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -364,6 +402,16 @@ onBeforeUnmount(() => {
             />
           </template>
         </Form>
+
+        <div class="add-player-page__rail">
+          <PlayerChecklist
+            :title="t('sportAddPlayer.sidebarTitle')"
+            :description="t('sportAddPlayer.sidebarText')"
+            :items="checklistItems"
+            :highlight-label="checklistHighlightLabel"
+            :highlight-value="checklistHighlightValue"
+          />
+        </div>
       </div>
     </section>
 
@@ -395,8 +443,17 @@ onBeforeUnmount(() => {
 
 .add-player-page__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.95fr);
   gap: 1rem;
+  align-items: start;
+}
+
+.add-player-page__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
 }
 
 .add-player-page--kh :deep(form header h3),
@@ -411,5 +468,15 @@ onBeforeUnmount(() => {
 .add-player-page--kh :deep(form header p),
 .add-player-page--kh :deep(.p-dialog-content p) {
   line-height: 1.7;
+}
+
+@media (max-width: 1024px) {
+  .add-player-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .add-player-page__rail {
+    position: static;
+  }
 }
 </style>
