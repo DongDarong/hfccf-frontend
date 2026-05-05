@@ -9,10 +9,10 @@
 import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import FormMatche from '@/modules/sport/admin/components/add-match/FormMatche.vue'
 
 defineOptions({
   name: 'SportAdminAddMatchPage',
@@ -27,11 +27,18 @@ const isSubmitting = ref(false)
 const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
+const competitionType = ref('')
+const tournament = ref('')
 
-const checklistItems = computed(() => [
-  t('sportMatchesManagement.addChecklist.0'),
-  t('sportMatchesManagement.addChecklist.1'),
-  t('sportMatchesManagement.addChecklist.2'),
+const competitionTypeOptions = computed(() => [
+  { value: 'tournament', label: t('sportMatchesManagement.competitionTypes.tournament') },
+  { value: 'friendly', label: t('sportMatchesManagement.competitionTypes.friendly') },
+])
+
+const tournamentOptions = computed(() => [
+  { value: 'hfccf_cup_2026', label: 'HFCCF Cup 2026' },
+  { value: 'friendly_league', label: 'Friendly League' },
+  { value: 'summer_showcase', label: 'Summer Showcase' },
 ])
 
 function resetFeedback() {
@@ -70,25 +77,19 @@ function onSuccessClose() {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <div class="add-match-page__shell">
-        <Form
-          class="add-match-page__form"
+        <FormMatche
           :title="pageTitle"
-          :description="t('sportMatchesManagement.addPlaceholder')"
+          :description="''"
           :submit-text="t('sportMatchesManagement.actions.addButton')"
-          :cancel-text="t('common.cancel')"
           :loading="isSubmitting"
-          :show-cancel="false"
+          :competition-type="competitionType"
+          :competition-type-options="competitionTypeOptions"
+          :tournament="tournament"
+          :tournament-options="tournamentOptions"
+          @update:competition-type="competitionType = $event"
+          @update:tournament="tournament = $event"
           @submit="onSubmit"
-        >
-          <div class="add-match-page__callout">
-            <p class="add-match-page__hint">
-              {{ t('sportMatchesManagement.addDescription') }}
-            </p>
-            <ul class="add-match-page__checklist">
-              <li v-for="item in checklistItems" :key="item">{{ item }}</li>
-            </ul>
-          </div>
-        </Form>
+        />
       </div>
     </section>
 
@@ -125,29 +126,6 @@ function onSuccessClose() {
     radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
-}
-
-.add-match-page__form {
-  display: block;
-}
-
-.add-match-page__callout {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.add-match-page__hint {
-  margin: 0;
-  color: #475569;
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
-
-.add-match-page__checklist {
-  margin: 0;
-  padding-left: 1.15rem;
-  color: #334155;
-  line-height: 1.7;
 }
 
 .add-match-page--kh .add-match-page__shell {

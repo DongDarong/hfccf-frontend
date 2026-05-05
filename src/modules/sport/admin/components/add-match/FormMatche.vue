@@ -1,0 +1,179 @@
+<script setup>
+/**
+ * FormMatche
+ * Reusable placeholder form shell for creating a new match record.
+ *
+ * The page owns alerts and submission state; this component owns the form body
+ * so the page stays easier to scan and future fields can be added in one place.
+ */
+import { computed } from 'vue'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Form from '@/components/forms/Form.vue'
+import { useLanguage } from '@/composables/useLanguage'
+
+defineOptions({
+  name: 'FormMatche',
+})
+
+const props = defineProps({
+  title: {
+    type: String,
+    default: '',
+  },
+  description: {
+    type: String,
+    default: '',
+  },
+  submitText: {
+    type: String,
+    default: '',
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  competitionType: {
+    type: String,
+    default: '',
+  },
+  competitionTypeOptions: {
+    type: Array,
+    default: () => [],
+  },
+  tournament: {
+    type: String,
+    default: '',
+  },
+  tournamentOptions: {
+    type: Array,
+    default: () => [],
+  },
+})
+
+const emit = defineEmits(['submit', 'update:competitionType', 'update:tournament'])
+
+const showTournamentField = computed(
+  () => props.competitionType === 'tournament' || props.competitionType === 'friendly',
+)
+const isTournamentMode = computed(() => props.competitionType === 'tournament')
+const isFriendlyMode = computed(() => props.competitionType === 'friendly')
+const { t } = useLanguage()
+
+function normalizeOption(option) {
+  if (option && typeof option === 'object' && 'value' in option) return option
+  const value = String(option ?? '').trim()
+  return { value, label: value }
+}
+
+const competitionTypeSelectOptions = computed(() => [
+  { value: '', label: t('sportMatchesManagement.competitionTypePlaceholder') },
+  ...props.competitionTypeOptions.map((option) => normalizeOption(option)),
+])
+
+const tournamentSelectOptions = computed(() => [
+  { value: '', label: t('sportMatchesManagement.tournamentSelectPlaceholder') },
+  ...props.tournamentOptions.map((option) => normalizeOption(option)),
+])
+
+const selectPt = {
+  root: {
+    class:
+      '!min-h-[2.9rem] !rounded-[0.9rem] !border !border-surface-300 !bg-white !shadow-none transition-all duration-200 hover:enabled:!border-surface-400 focus-within:!border-brand-400 focus-within:!shadow-focus',
+  },
+  label: {
+    class:
+      '!flex !min-h-[2.9rem] !items-center !bg-transparent !px-[0.9rem] !py-[0.8rem] !text-[0.9rem] !text-surface-900 max-sm:!min-h-11 max-sm:!text-[0.88rem]',
+  },
+  dropdown: { class: '!w-[2.8rem] !bg-transparent !text-surface-500' },
+  overlay: {
+    class:
+      '!mt-[0.3rem] !rounded-[0.9rem] !border !border-surface-200 !bg-white !shadow-[0_12px_24px_-18px_rgba(15,23,42,0.16)]',
+  },
+  listContainer: { class: '!bg-white !p-[0.35rem]' },
+  option: {
+    class:
+      '!rounded-[0.65rem] !bg-white !text-surface-900 hover:!bg-slate-50 data-[p-selected=true]:!bg-brand-50 data-[p-selected=true]:!text-brand-700',
+  },
+}
+
+function onSubmit(event) {
+  // Delegate submit handling back to the page so alerts/loading stay centralized there.
+  emit('submit', event)
+}
+</script>
+
+<template>
+  <Form
+    class="form-matche"
+    :title="title"
+    :description="description"
+    :submit-text="submitText"
+    :loading="loading"
+    :show-cancel="false"
+    @submit="onSubmit"
+  >
+    <div class="form-matche__callout">
+      <label class="form-matche__field">
+        <span class="form-matche__label">{{ t('sportMatchesManagement.competitionTypeLabel') }}</span>
+        <Select
+          :model-value="competitionType"
+          :options="competitionTypeSelectOptions"
+          option-label="label"
+          option-value="value"
+          append-to="self"
+          class="w-full"
+          :pt="selectPt"
+          @update:model-value="emit('update:competitionType', $event)"
+        />
+      </label>
+
+      <label v-if="showTournamentField" class="form-matche__field">
+        <span class="form-matche__label">{{ t('sportMatchesManagement.tournamentNameLabel') }}</span>
+        <Select
+          v-if="isTournamentMode"
+          :model-value="tournament"
+          :options="tournamentSelectOptions"
+          option-label="label"
+          option-value="value"
+          append-to="self"
+          class="w-full"
+          :pt="selectPt"
+          @update:model-value="emit('update:tournament', $event)"
+        />
+        <InputText
+          v-else-if="isFriendlyMode"
+          :model-value="tournament"
+          type="text"
+          :placeholder="t('sportMatchesManagement.tournamentNamePlaceholder')"
+          class="w-full"
+          @update:model-value="emit('update:tournament', $event)"
+        />
+      </label>
+    </div>
+  </Form>
+</template>
+
+<style scoped>
+.form-matche {
+  display: block;
+}
+
+.form-matche__callout {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-matche__field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.form-matche__label {
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+</style>
