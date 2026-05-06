@@ -77,7 +77,7 @@ const { t } = useLanguage()
                 {{ Number(homeScore || 0) }}
               </span>
               <span class="flex h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-brand-400"></span>
-                <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
+              <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
                 {{ Number(awayScore || 0) }}
               </span>
             </div>

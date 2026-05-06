@@ -394,6 +394,8 @@ CREATE TABLE `sport_matches` (
   `away_score` TINYINT UNSIGNED DEFAULT NULL,
   `scheduled_at` DATETIME DEFAULT NULL,
   `venue` VARCHAR(191) DEFAULT NULL,
+  -- Result-entry note/report saved from the Sport Admin result form.
+  `result_report` TEXT DEFAULT NULL,
   `match_group` ENUM('live', 'today', 'general') NOT NULL DEFAULT 'general',
   `status` ENUM('scheduled', 'live', 'completed', 'postponed', 'cancelled') NOT NULL DEFAULT 'scheduled',
   `display_time_label` VARCHAR(64) DEFAULT NULL,
@@ -911,4 +913,5 @@ INNER JOIN `role_permissions` AS `rp`
 --    and standings come from the `sport_*` tournament tables above.
 -- 5. Match API responses should format score text from home_score/away_score:
 --    both NULL => "- - -", otherwise "{home_score} - {away_score}".
--- 6. Standings API responses should format positive goal_difference values with "+".
+-- 6. Match result reports should map to sport_matches.result_report.
+-- 7. Standings API responses should format positive goal_difference values with "+".

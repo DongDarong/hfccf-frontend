@@ -63,8 +63,7 @@ const emit = defineEmits([
 
 <template>
   <div class="match-result-fields">
-
-        <label class="match-result-fields__field">
+    <label class="match-result-fields__field">
       <span class="match-result-fields__label">{{ labels.homeTeam }}: {{ homeTeam }}</span>
       <InputText
         :model-value="homeScore"
@@ -88,7 +87,6 @@ const emit = defineEmits([
       />
     </label>
 
-
     <label class="match-result-fields__field">
       <span class="match-result-fields__label">{{ labels.resultStatus }}</span>
       <Select
@@ -103,11 +101,11 @@ const emit = defineEmits([
     </label>
 
     <label class="match-result-fields__field">
-      <span class="match-result-fields__label">{{ labels.report || labels.resultNote }}</span>
+      <span class="match-result-fields__label">{{ labels.report }}</span>
       <InputText
         :model-value="report"
         type="text"
-        :placeholder="placeholders.report || placeholders.resultNote"
+        :placeholder="placeholders.report"
         class="w-full"
         :disabled="readonly"
         @update:model-value="emit('update:report', $event)"
@@ -115,7 +113,6 @@ const emit = defineEmits([
     </label>
   </div>
 </template>
-
 
 <style scoped>
 .match-result-fields {

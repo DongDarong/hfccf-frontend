@@ -54,10 +54,10 @@ const combinedEvents = computed(() => {
   const home = props.homeEvents.map((e) => ({ ...e, team: props.homeTeam, teamType: 'home' }))
   const away = props.awayEvents.map((e) => ({ ...e, team: props.awayTeam, teamType: 'away' }))
 
-  // Sort by minute (assuming numeric or comparable string)
+  // Keep the incident timeline readable by ordering all team events by match minute.
   return [...home, ...away].sort((a, b) => {
-    const minA = parseInt(a.minute) || 0
-    const minB = parseInt(b.minute) || 0
+    const minA = Number.parseInt(a.minute, 10) || 0
+    const minB = Number.parseInt(b.minute, 10) || 0
     return minA - minB
   })
 })
@@ -77,9 +77,13 @@ function confirmDelete(event) {
 function onDelete() {
   if (eventToDelete.value) {
     emit('delete', eventToDelete.value)
-    showDeleteConfirm.value = false
-    eventToDelete.value = null
   }
+  cancelDelete()
+}
+
+function cancelDelete() {
+  showDeleteConfirm.value = false
+  eventToDelete.value = null
 }
 </script>
 
@@ -87,7 +91,7 @@ function onDelete() {
   <section class="goal-events-list">
     <div class="mb-4 flex items-center justify-between">
       <h3 class="text-lg font-black text-slate-800">
-        {{ t('sportMatchesManagement.resultsEntry.goalEvents.listTitle') || 'Match Incident Timeline' }}
+        {{ t('sportMatchesManagement.resultsEntry.goalEvents.listTitle') }}
       </h3>
     </div>
 
@@ -135,7 +139,7 @@ function onDelete() {
         </template>
       </Column>
 
-      <Column :header="t('common.type') || 'Cards'">
+      <Column :header="t('common.type')">
         <template #body="{ data }">
           <div class="flex flex-wrap gap-1.5">
             <Tag
@@ -191,10 +195,13 @@ function onDelete() {
 
     <AlertQuestion
       :show="showDeleteConfirm"
-      title="Delete incident"
-      message="Are you sure you want to delete this incident? This action cannot be undone."
+      :title="t('sportMatchesManagement.resultsEntry.goalEvents.deleteTitle')"
+      :message="t('sportMatchesManagement.resultsEntry.goalEvents.deleteMessage')"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      type="danger"
       @confirm="onDelete"
-      @cancel="showDeleteConfirm = false"
+      @cancel="cancelDelete"
     />
   </section>
 </template>

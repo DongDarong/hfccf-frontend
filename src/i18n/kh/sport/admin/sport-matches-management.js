@@ -174,6 +174,8 @@ export default {
         minute: 'នាទី',
         minutePlaceholder: 'ឧ. 42',
         remove: 'យកចេញ',
+        deleteTitle: 'លុបព្រឹត្តិការណ៍',
+        deleteMessage: 'តើអ្នកប្រាកដថាចង់លុបព្រឹត្តិការណ៍នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។',
       },
       validation: {
         matchRequired: 'សូមជ្រើសរើសការប្រកួតមុនបញ្ចូលលទ្ធផល។',

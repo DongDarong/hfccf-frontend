@@ -60,7 +60,7 @@ const goalEventLabels = computed(() => ({
   empty: t('sportMatchesManagement.resultsEntry.goalEvents.empty'),
   playerName: t('sportMatchesManagement.resultsEntry.goalEvents.playerName'),
   minute: t('sportMatchesManagement.resultsEntry.goalEvents.minute'),
-  goalTypes: t('common.type') || 'Type',
+  goalTypes: t('common.type'),
   remove: t('sportMatchesManagement.resultsEntry.goalEvents.remove'),
 }))
 const goalEventPlaceholders = computed(() => ({
@@ -106,19 +106,28 @@ function snapshot() {
   return createResultValue(form)
 }
 
-function commit(field, value) {
-  form[field] = value
+function commitPatch(patch) {
+  Object.assign(form, patch)
   const nextValue = snapshot()
   emit('update:modelValue', nextValue)
-  emit('field-update', { field, value, result: nextValue })
+
+  Object.entries(patch).forEach(([field, value]) => {
+    emit('field-update', { field, value, result: nextValue })
+  })
+}
+
+function commit(field, value) {
+  commitPatch({ [field]: value })
 }
 
 function addGoalEvent(team) {
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
+  const scoreField = team === 'home' ? 'homeScore' : 'awayScore'
   const event = normalizeGoalEvent()
   const updatedEvents = [...form[field], event]
-  commit(field, updatedEvents)
-  syncScore(team, updatedEvents.length)
+
+  // Adding/removing goal rows is score-affecting, so commit the events and score together.
+  commitPatch({ [field]: updatedEvents, [scoreField]: updatedEvents.length })
 }
 
 function updateGoalEvent(team, updatedEvent) {
@@ -132,14 +141,9 @@ function updateGoalEvent(team, updatedEvent) {
 
 function removeGoalEvent(team, id) {
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
+  const scoreField = team === 'home' ? 'homeScore' : 'awayScore'
   const updatedEvents = form[field].filter((event) => event.id !== id)
-  commit(field, updatedEvents)
-  syncScore(team, updatedEvents.length)
-}
-
-function syncScore(team, count) {
-  const field = team === 'home' ? 'homeScore' : 'awayScore'
-  commit(field, count)
+  commitPatch({ [field]: updatedEvents, [scoreField]: updatedEvents.length })
 }
 
 function onSubmit() {
@@ -166,7 +170,6 @@ function onSubmit() {
       @update:report="commit('report', $event)"
     />
 
-
     <div class="grid gap-4 lg:grid-cols-2">
       <GoalEventsEditor
         :events="form.homeEvents"
@@ -189,8 +192,6 @@ function onSubmit() {
       />
     </div>
 
-
-
     <MatchResultActions
       :loading="loading"
       :cancel-text="t('common.cancel')"
@@ -199,7 +200,6 @@ function onSubmit() {
     />
   </form>
 </template>
-
 
 <style scoped>
 .result-entry-panel {

@@ -174,6 +174,8 @@ export default {
         minute: 'Minute',
         minutePlaceholder: 'Ex: 42',
         remove: 'Remove',
+        deleteTitle: 'Delete incident',
+        deleteMessage: 'Are you sure you want to delete this incident? This action cannot be undone.',
       },
       validation: {
         matchRequired: 'Please select a valid match before entering results.',
