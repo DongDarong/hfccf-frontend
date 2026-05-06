@@ -105,15 +105,16 @@ export default {
     resultList: {
       title: 'Result List',
       exportLabel: 'JSON DATA',
-      searchLabel: 'Search results',
-      searchPlaceholder: 'Search by team, venue or player...',
-      statusLabel: 'Result status filter',
-      statuses: {
-        all: 'All Status',
-        finished: 'Finished',
-        pending: 'Pending',
-        verified: 'Verified',
-        rejected: 'Rejected',
+      searchTeamNameLabel: 'Search Team Name',
+      searchTeamNamePlaceholder: 'Search team name...',
+      matchDateLabel: 'Select Date',
+      matchDatePlaceholder: 'Select date',
+      matchTypeLabel: 'Select Match Type',
+      matchTypePlaceholder: 'Tournament or Friendly',
+      matchTypes: {
+        all: 'All Match Types',
+        tournament: 'Tournament',
+        friendly: 'Friendly',
       },
       table: {
         match: 'Match',
@@ -124,6 +125,7 @@ export default {
         actions: 'Action',
       },
       empty: 'No results found.',
+      clearLabel: 'Clear',
       actionLabel: 'Update',
     },
     resultsEntry: {

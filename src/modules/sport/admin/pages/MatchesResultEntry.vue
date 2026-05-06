@@ -32,8 +32,9 @@ const showError = ref(false)
 const errorMessage = ref('')
 const resultEntryValue = ref(createResultValue())
 const resultListFilters = ref({
-  search: '',
-  status: '',
+  searchTeamName: '',
+  matchDate: '',
+  matchType: '',
 })
 
 const selectedMatch = computed(() => {
@@ -57,12 +58,10 @@ const statusOptions = computed(() => [
   { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
 ])
 
-const resultListStatusOptions = computed(() => [
-  { value: '', label: t('sportMatchesManagement.resultList.statuses.all') },
-  { value: 'Finished', label: t('sportMatchesManagement.resultList.statuses.finished') },
-  { value: 'Pending', label: t('sportMatchesManagement.resultList.statuses.pending') },
-  { value: 'Verified', label: t('sportMatchesManagement.resultList.statuses.verified') },
-  { value: 'Rejected', label: t('sportMatchesManagement.resultList.statuses.rejected') },
+const resultListMatchTypeOptions = computed(() => [
+  { value: '', label: t('sportMatchesManagement.resultList.matchTypes.all') },
+  { value: 'tournament', label: t('sportMatchesManagement.resultList.matchTypes.tournament') },
+  { value: 'friendly', label: t('sportMatchesManagement.resultList.matchTypes.friendly') },
 ])
 
 const resultListLabels = computed(() => ({
@@ -73,6 +72,12 @@ const resultListLabels = computed(() => ({
   status: t('sportMatchesManagement.resultList.table.status'),
   actions: t('sportMatchesManagement.resultList.table.actions'),
 }))
+
+function resolveMatchType(match) {
+  const tournament = normalize(match?.tournament)
+  if (tournament.includes('friendly')) return 'friendly'
+  return 'tournament'
+}
 
 const fixtureSummary = computed(() => {
   const match = selectedMatch.value || {}
@@ -106,8 +111,9 @@ function normalize(value) {
 }
 
 const resultListMatches = computed(() => {
-  const query = normalize(resultListFilters.value.search)
-  const status = String(resultListFilters.value.status || '')
+  const query = normalize(resultListFilters.value.searchTeamName)
+  const matchDate = normalize(resultListFilters.value.matchDate)
+  const matchType = String(resultListFilters.value.matchType || '')
 
   const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
   return matches
@@ -121,6 +127,7 @@ const resultListMatches = computed(() => {
       datetime: String(match.schedule || ''),
       venue: String(match.venue || ''),
       status: mapResultStatus(match.status),
+      matchType: resolveMatchType(match),
     }))
     .filter((match) => {
       let isMatch = true
@@ -133,8 +140,12 @@ const resultListMatches = computed(() => {
         isMatch = haystack.includes(query)
       }
 
-      if (isMatch && status) {
-        isMatch = match.status === status
+      if (isMatch && matchDate) {
+        isMatch = normalize(match.datetime).startsWith(matchDate)
+      }
+
+      if (isMatch && matchType) {
+        isMatch = match.matchType === matchType
       }
 
       return isMatch
@@ -264,10 +275,14 @@ function onUpdateMatch(match) {
           :filters="resultListFilters"
           :title="t('sportMatchesManagement.resultList.title')"
           :export-label="t('sportMatchesManagement.resultList.exportLabel')"
-          :search-placeholder="t('sportMatchesManagement.resultList.searchPlaceholder')"
-          :search-label="t('sportMatchesManagement.resultList.searchLabel')"
-          :status-label="t('sportMatchesManagement.resultList.statusLabel')"
-          :status-options="resultListStatusOptions"
+          :search-team-name-label="t('sportMatchesManagement.resultList.searchTeamNameLabel')"
+          :search-team-name-placeholder="t('sportMatchesManagement.resultList.searchTeamNamePlaceholder')"
+          :match-date-label="t('sportMatchesManagement.resultList.matchDateLabel')"
+          :match-date-placeholder="t('sportMatchesManagement.resultList.matchDatePlaceholder')"
+          :match-type-label="t('sportMatchesManagement.resultList.matchTypeLabel')"
+          :match-type-placeholder="t('sportMatchesManagement.resultList.matchTypePlaceholder')"
+          :match-type-options="resultListMatchTypeOptions"
+          :clear-label="t('sportMatchesManagement.resultList.clearLabel')"
           :empty-text="t('sportMatchesManagement.resultList.empty')"
           :table-labels="resultListLabels"
           :action-label="t('sportMatchesManagement.resultList.actionLabel')"

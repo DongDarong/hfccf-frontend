@@ -105,15 +105,16 @@ export default {
     resultList: {
       title: 'បញ្ជីលទ្ធផល',
       exportLabel: 'JSON DATA',
-      searchLabel: 'ស្វែងរកលទ្ធផល',
-      searchPlaceholder: 'ស្វែងរកតាមក្រុម ទីតាំង ឬអ្នកលេង...',
-      statusLabel: 'តម្រងស្ថានភាពលទ្ធផល',
-      statuses: {
-        all: 'ស្ថានភាពទាំងអស់',
-        finished: 'បានបញ្ចប់',
-        pending: 'កំពុងរង់ចាំ',
-        verified: 'បានផ្ទៀងផ្ទាត់',
-        rejected: 'បានបដិសេធ',
+      searchTeamNameLabel: 'ស្វែងរកឈ្មោះក្រុម',
+      searchTeamNamePlaceholder: 'ស្វែងរកឈ្មោះក្រុម...',
+      matchDateLabel: 'ជ្រើសរើសកាលបរិច្ឆេទ',
+      matchDatePlaceholder: 'ជ្រើសរើសកាលបរិច្ឆេទ',
+      matchTypeLabel: 'ជ្រើសរើសប្រភេទការប្រកួត',
+      matchTypePlaceholder: 'ពានរង្វាន់ ឬ មិត្តភាព',
+      matchTypes: {
+        all: 'ប្រភេទទាំងអស់',
+        tournament: 'ពានរង្វាន់',
+        friendly: 'មិត្តភាព',
       },
       table: {
         match: 'ការប្រកួត',
@@ -124,6 +125,7 @@ export default {
         actions: 'សកម្មភាព',
       },
       empty: 'រកមិនឃើញលទ្ធផលទេ។',
+      clearLabel: 'សម្អាត',
       actionLabel: 'កែប្រែ',
     },
     resultsEntry: {

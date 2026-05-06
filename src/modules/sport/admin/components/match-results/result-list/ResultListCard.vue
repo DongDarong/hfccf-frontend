@@ -32,20 +32,36 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  searchPlaceholder: {
+  searchTeamNameLabel: {
     type: String,
     required: true,
   },
-  searchLabel: {
+  searchTeamNamePlaceholder: {
     type: String,
     required: true,
   },
-  statusLabel: {
+  matchDateLabel: {
     type: String,
     required: true,
   },
-  statusOptions: {
+  matchDatePlaceholder: {
+    type: String,
+    required: true,
+  },
+  matchTypeLabel: {
+    type: String,
+    required: true,
+  },
+  matchTypePlaceholder: {
+    type: String,
+    required: true,
+  },
+  matchTypeOptions: {
     type: Array,
+    required: true,
+  },
+  clearLabel: {
+    type: String,
     required: true,
   },
   emptyText: {
@@ -76,14 +92,21 @@ function updateFilters(patch) {
 
     <div class="mt-4">
       <ResultListFilters
-        :search="filters.search"
-        :status="filters.status"
-        :search-placeholder="searchPlaceholder"
-        :search-label="searchLabel"
-        :status-label="statusLabel"
-        :status-options="statusOptions"
-        @update:search="updateFilters({ search: $event })"
-        @update:status="updateFilters({ status: $event })"
+        :search-team-name="filters.searchTeamName"
+        :match-date="filters.matchDate"
+        :match-type="filters.matchType"
+        :search-team-name-label="searchTeamNameLabel"
+        :search-team-name-placeholder="searchTeamNamePlaceholder"
+        :match-date-label="matchDateLabel"
+        :match-date-placeholder="matchDatePlaceholder"
+        :match-type-label="matchTypeLabel"
+        :match-type-placeholder="matchTypePlaceholder"
+        :match-type-options="matchTypeOptions"
+        :clear-label="clearLabel"
+        @update:search-team-name="updateFilters({ searchTeamName: $event })"
+        @update:match-date="updateFilters({ matchDate: $event })"
+        @update:match-type="updateFilters({ matchType: $event })"
+        @clear="$emit('update:filters', { searchTeamName: '', matchDate: '', matchType: '' })"
       />
     </div>
 
