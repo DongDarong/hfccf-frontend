@@ -333,6 +333,23 @@ CREATE TABLE `sport_player_documents` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `sport_match_goal_events` (
+  `id` VARCHAR(36) NOT NULL,
+  `match_id` VARCHAR(16) NOT NULL,
+  `team_type` ENUM('home', 'away') NOT NULL,
+  `player_name` VARCHAR(191) NOT NULL,
+  `minute` SMALLINT UNSIGNED NOT NULL,
+  `goal_types` JSON NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sport_match_goal_events_match_index` (`match_id`),
+  CONSTRAINT `fk_sport_match_goal_events_match`
+    FOREIGN KEY (`match_id`) REFERENCES `sport_matches` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `sport_tournament_alerts` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `tournament_id` VARCHAR(16) NOT NULL,
