@@ -64,6 +64,19 @@ const resultListMatchTypeOptions = computed(() => [
   { value: 'friendly', label: t('sportMatchesManagement.resultList.matchTypes.friendly') },
 ])
 
+const resultListTeamSuggestions = computed(() => {
+  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
+  const teams = new Set()
+
+  // The autocomplete stays driven by the same mock fixture source used for the list.
+  matches.forEach((match) => {
+    if (match?.homeTeam) teams.add(String(match.homeTeam))
+    if (match?.awayTeam) teams.add(String(match.awayTeam))
+  })
+
+  return Array.from(teams).sort((left, right) => left.localeCompare(right))
+})
+
 const resultListLabels = computed(() => ({
   match: t('sportMatchesManagement.resultList.table.match'),
   score: t('sportMatchesManagement.resultList.table.score'),
@@ -277,6 +290,7 @@ function onUpdateMatch(match) {
           :export-label="t('sportMatchesManagement.resultList.exportLabel')"
           :search-team-name-label="t('sportMatchesManagement.resultList.searchTeamNameLabel')"
           :search-team-name-placeholder="t('sportMatchesManagement.resultList.searchTeamNamePlaceholder')"
+          :search-team-suggestions="resultListTeamSuggestions"
           :match-date-label="t('sportMatchesManagement.resultList.matchDateLabel')"
           :match-date-placeholder="t('sportMatchesManagement.resultList.matchDatePlaceholder')"
           :match-type-label="t('sportMatchesManagement.resultList.matchTypeLabel')"

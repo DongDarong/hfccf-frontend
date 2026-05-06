@@ -41,6 +41,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  searchTeamSuggestions: {
+    type: Array,
+    default: () => [],
+  },
   matchDateLabel: {
     type: String,
     required: true,
@@ -108,6 +112,7 @@ function clearFilters() {
         :match-type="normalizedFilters.matchType"
         :search-team-name-label="searchTeamNameLabel"
         :search-team-name-placeholder="searchTeamNamePlaceholder"
+        :search-team-suggestions="searchTeamSuggestions"
         :match-date-label="matchDateLabel"
         :match-date-placeholder="matchDatePlaceholder"
         :match-type-label="matchTypeLabel"

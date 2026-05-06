@@ -3,7 +3,8 @@
  * ResultListFilters
  * Controlled filters: the parent owns all state and clears through emits.
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import AutoComplete from 'primevue/autocomplete'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
@@ -32,6 +33,10 @@ const props = defineProps({
   searchTeamNamePlaceholder: {
     type: String,
     required: true,
+  },
+  searchTeamSuggestions: {
+    type: Array,
+    default: () => [],
   },
   matchDateLabel: {
     type: String,
@@ -65,6 +70,26 @@ const hasActiveFilters = computed(
   () => Boolean(props.searchTeamName.trim()) || Boolean(props.matchDate) || Boolean(props.matchType),
 )
 
+const searchSuggestions = ref([])
+
+function normalize(value) {
+  return String(value ?? '').trim().toLowerCase()
+}
+
+function completeSearchTeamName(event) {
+  const query = normalize(event?.query)
+  const base = Array.isArray(props.searchTeamSuggestions) ? props.searchTeamSuggestions : []
+
+  // Suggestions stay page-owned; the child only filters the provided source list.
+  searchSuggestions.value = query
+    ? base.filter((option) => normalize(option).includes(query))
+    : base.slice(0, 10)
+}
+
+function onSearchUpdate(value) {
+  emit('update:searchTeamName', String(value ?? ''))
+}
+
 function onClear() {
   // The filter state is owned by the parent, so the child only requests a reset.
   if (!hasActiveFilters.value) return
@@ -82,16 +107,21 @@ function onClear() {
         {{ searchTeamNameLabel }}
       </label>
 
-      <span class="p-input-icon-left block w-full">
-        <i class="pi pi-search text-slate-400" aria-hidden="true" />
-        <InputText
-          id="result-list-search-team"
-          :model-value="searchTeamName"
-          class="w-full rounded-xl border-slate-300 bg-white py-3 pl-10 text-sm text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 focus:border-brand-400"
-          :placeholder="searchTeamNamePlaceholder"
-          @update:model-value="emit('update:searchTeamName', $event)"
-        />
-      </span>
+      <AutoComplete
+        id="result-list-search-team"
+        :model-value="searchTeamName"
+        dropdown
+        :suggestions="searchSuggestions"
+        :placeholder="searchTeamNamePlaceholder"
+        class="w-full"
+        input-class="w-full rounded-xl border-slate-300 bg-white py-3 pl-10 text-sm text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 focus:border-brand-400"
+        @complete="completeSearchTeamName"
+        @update:model-value="onSearchUpdate"
+      >
+        <template #dropdownicon>
+          <i class="pi pi-search text-slate-400" aria-hidden="true" />
+        </template>
+      </AutoComplete>
     </div>
 
     <div class="w-full">
