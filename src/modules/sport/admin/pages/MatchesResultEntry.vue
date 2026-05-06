@@ -83,22 +83,46 @@ function createResultValue(value = {}) {
   }
 }
 
-function parseScore(score) {
+function toScoreNumber(value) {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : 0
+}
+
+function parseDisplayScore(score) {
   const [home = '0', away = '0'] = String(score || '')
     .split('-')
     .map((value) => value.trim())
 
   return {
-    home: Number.isFinite(Number(home)) ? Number(home) : 0,
-    away: Number.isFinite(Number(away)) ? Number(away) : 0,
+    home: toScoreNumber(home),
+    away: toScoreNumber(away),
   }
+}
+
+function resolveScore(match = {}) {
+  if ('homeScore' in match || 'awayScore' in match) {
+    return {
+      home: toScoreNumber(match.homeScore),
+      away: toScoreNumber(match.awayScore),
+    }
+  }
+
+  if ('home_score' in match || 'away_score' in match) {
+    return {
+      home: toScoreNumber(match.home_score),
+      away: toScoreNumber(match.away_score),
+    }
+  }
+
+  // Backward-compatible while older frontend mock rows still expose display score text.
+  return parseDisplayScore(match.score)
 }
 
 watch(
   selectedMatch,
   (match) => {
     if (!match) return
-    const score = parseScore(match.score)
+    const score = resolveScore(match)
     resultEntryValue.value = createResultValue({
       homeTeam: match.homeTeam,
       awayTeam: match.awayTeam,
@@ -157,13 +181,12 @@ function goBackToMatches() {
 function onDeleteEvent(event) {
   const team = event.teamType
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
-  resultEntryValue.value[field] = resultEntryValue.value[field].filter((e) => e.id !== event.id)
-  syncScore(team, resultEntryValue.value[field].length)
-}
-
-function syncScore(team, count) {
-  const field = team === 'home' ? 'homeScore' : 'awayScore'
-  resultEntryValue.value[field] = count
+  const nextEvents = resultEntryValue.value[field].filter((e) => e.id !== event.id)
+  resultEntryValue.value = {
+    ...resultEntryValue.value,
+    [field]: nextEvents,
+    [team === 'home' ? 'homeScore' : 'awayScore']: nextEvents.length,
+  }
 }
 
 function onEditEvent() {

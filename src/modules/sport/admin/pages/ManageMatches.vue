@@ -49,6 +49,27 @@ const pageSize = 8
 // Placeholder options: these will come from the backend/API later.
 const matches = ref(Array.isArray(matchesData) ? [...matchesData] : [])
 
+function toScoreNumber(value) {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : null
+}
+
+function formatDisplayScore(match = {}) {
+  const homeScore = toScoreNumber(match.homeScore ?? match.home_score)
+  const awayScore = toScoreNumber(match.awayScore ?? match.away_score)
+
+  // Score text is display-only; the database/API contract stores normalized numeric columns.
+  if (homeScore === null || awayScore === null) return '- - -'
+  return `${homeScore} - ${awayScore}`
+}
+
+function toTableMatch(match) {
+  return {
+    ...match,
+    score: String(match.score || formatDisplayScore(match)),
+  }
+}
+
 const competitionOptions = computed(() => {
   const options = matches.value.map((match) => match.competition).filter(Boolean)
   return [...new Set(options)].sort()
@@ -101,7 +122,7 @@ const filteredMatches = computed(() => {
 const totalPages = computed(() => Math.max(Math.ceil(filteredMatches.value.length / pageSize), 1))
 const paginatedMatches = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return filteredMatches.value.slice(start, start + pageSize)
+  return filteredMatches.value.slice(start, start + pageSize).map((match) => toTableMatch(match))
 })
 
 // Reset pagination when filters change (avoids landing on an empty page).
