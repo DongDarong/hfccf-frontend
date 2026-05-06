@@ -12,8 +12,7 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FixtureSummaryCard from '@/modules/sport/admin/components/match-results/FixtureSummaryCard.vue'
-import MatchResultActions from '@/modules/sport/admin/components/match-results/MatchResultActions.vue'
-import MatchResultFields from '@/modules/sport/admin/components/match-results/MatchResultFields.vue'
+import ResultEntryPanel from '@/modules/sport/admin/components/match-results/ResultEntryPanel.vue'
 import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
@@ -30,10 +29,7 @@ const isSubmitting = ref(false)
 const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
-const homeScore = ref(0)
-const awayScore = ref(0)
-const resultStatus = ref('completed')
-const resultNote = ref('')
+const resultEntryValue = ref(createResultValue())
 
 const selectedMatch = computed(() => {
   const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
@@ -56,7 +52,6 @@ const statusOptions = computed(() => [
   { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
 ])
 
-const scorePreview = computed(() => `${Number(homeScore.value || 0)} - ${Number(awayScore.value || 0)}`)
 const fixtureSummary = computed(() => {
   const match = selectedMatch.value || {}
   const [matchDate = '-', matchTime = '-'] = String(match.schedule || '')
@@ -73,15 +68,18 @@ const fixtureSummary = computed(() => {
     competition: String(match.competition || '-'),
   }
 })
-const fieldLabels = computed(() => ({
-  homeScore: t('sportMatchesManagement.resultsEntry.homeScore'),
-  awayScore: t('sportMatchesManagement.resultsEntry.awayScore'),
-  resultStatus: t('sportMatchesManagement.resultsEntry.resultStatus'),
-  resultNote: t('sportMatchesManagement.resultsEntry.resultNote'),
-}))
-const fieldPlaceholders = computed(() => ({
-  resultNote: t('sportMatchesManagement.resultsEntry.resultNotePlaceholder'),
-}))
+
+function createResultValue(value = {}) {
+  return {
+    homeTeam: String(value.homeTeam || ''),
+    awayTeam: String(value.awayTeam || ''),
+    homeScore: Number(value.homeScore || 0),
+    awayScore: Number(value.awayScore || 0),
+    status: String(value.status || 'completed'),
+    report: String(value.report || ''),
+    events: Array.isArray(value.events) ? value.events : [],
+  }
+}
 
 function parseScore(score) {
   const [home = '0', away = '0'] = String(score || '')
@@ -99,9 +97,15 @@ watch(
   (match) => {
     if (!match) return
     const score = parseScore(match.score)
-    homeScore.value = score.home
-    awayScore.value = score.away
-    resultStatus.value = String(match.status || 'completed')
+    resultEntryValue.value = createResultValue({
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
+      homeScore: score.home,
+      awayScore: score.away,
+      status: match.status || 'completed',
+      report: '',
+      events: [],
+    })
   },
   { immediate: true },
 )
@@ -111,18 +115,18 @@ function resetFeedback() {
   showError.value = false
 }
 
-function validateResult() {
+function validateResult(result) {
   if (!selectedMatch.value) return t('sportMatchesManagement.resultsEntry.validation.matchRequired')
-  if (Number(homeScore.value) < 0 || Number(awayScore.value) < 0) {
+  if (Number(result.homeScore) < 0 || Number(result.awayScore) < 0) {
     return t('sportMatchesManagement.resultsEntry.validation.scoreInvalid')
   }
-  if (!resultStatus.value) return t('sportMatchesManagement.resultsEntry.validation.statusRequired')
+  if (!result.status) return t('sportMatchesManagement.resultsEntry.validation.statusRequired')
   return ''
 }
 
-async function onSubmit() {
+async function onSaveResult(result) {
   resetFeedback()
-  const validationError = validateResult()
+  const validationError = validateResult(result)
   if (validationError) {
     errorMessage.value = validationError
     showError.value = true
@@ -133,6 +137,7 @@ async function onSubmit() {
   try {
     // UI-only save: backend result persistence will replace this simulated delay.
     await new Promise((resolve) => setTimeout(resolve, 600))
+    resultEntryValue.value = createResultValue(result)
     showSuccess.value = true
   } catch {
     errorMessage.value = t('sportMatchesManagement.resultsEntry.saveFailed')
@@ -152,7 +157,7 @@ function goBackToMatches() {
     <section :class="isKh ? 'matches-result-entry matches-result-entry--kh' : 'matches-result-entry'">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <form class="matches-result-entry__shell" @submit.prevent="onSubmit">
+      <div class="matches-result-entry__shell">
         <FixtureSummaryCard
           :home-team="fixtureSummary.homeTeam"
           :away-team="fixtureSummary.awayTeam"
@@ -162,28 +167,15 @@ function goBackToMatches() {
           :competition="fixtureSummary.competition"
         />
 
-        <div class="matches-result-entry__score-preview" aria-live="polite">
-          <span>{{ t('sportMatchesManagement.resultsEntry.scorePreview') }}</span>
-          <strong>{{ scorePreview }}</strong>
-        </div>
-
-        <MatchResultFields
-          v-model:home-score="homeScore"
-          v-model:away-score="awayScore"
-          v-model:result-status="resultStatus"
-          v-model:result-note="resultNote"
-          :status-options="statusOptions"
-          :labels="fieldLabels"
-          :placeholders="fieldPlaceholders"
-        />
-
-        <MatchResultActions
+        <ResultEntryPanel
+          v-model="resultEntryValue"
           :loading="isSubmitting"
-          :cancel-text="t('common.cancel')"
-          :submit-text="t('sportMatchesManagement.resultsEntry.saveButton')"
+          :readonly="isSubmitting"
+          :status-options="statusOptions"
+          @save="onSaveResult"
           @cancel="goBackToMatches"
         />
-      </form>
+      </div>
 
       <AlertError
         :show="showError"
@@ -223,32 +215,6 @@ function goBackToMatches() {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.matches-result-entry__score-preview {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  background: #ffffff;
-  color: #1d1d1b;
-}
-
-.matches-result-entry__score-preview span {
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.matches-result-entry__score-preview strong {
-  color: #00aeef;
-  font-size: 1.2rem;
-  font-weight: 900;
-}
-
 .matches-result-entry--kh,
 .matches-result-entry--kh :deep(input),
 .matches-result-entry--kh :deep(.p-select-label) {
@@ -256,10 +222,4 @@ function goBackToMatches() {
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
-@media (max-width: 720px) {
-  .matches-result-entry__score-preview {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
 </style>

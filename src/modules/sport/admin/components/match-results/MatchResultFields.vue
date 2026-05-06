@@ -1,7 +1,7 @@
 <script setup>
 /**
  * MatchResultFields
- * Owns the editable result controls only; page-level validation remains in the route page.
+ * Owns the editable result controls only; parent containers own form state and validation.
  */
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -23,9 +23,13 @@ defineProps({
     type: String,
     default: '',
   },
-  resultNote: {
+  report: {
     type: String,
     default: '',
+  },
+  readonly: {
+    type: Boolean,
+    default: false,
   },
   statusOptions: {
     type: Array,
@@ -45,7 +49,7 @@ const emit = defineEmits([
   'update:homeScore',
   'update:awayScore',
   'update:resultStatus',
-  'update:resultNote',
+  'update:report',
 ])
 </script>
 
@@ -58,6 +62,7 @@ const emit = defineEmits([
         type="number"
         min="0"
         class="w-full"
+        :disabled="readonly"
         @update:model-value="emit('update:homeScore', $event)"
       />
     </label>
@@ -69,6 +74,7 @@ const emit = defineEmits([
         type="number"
         min="0"
         class="w-full"
+        :disabled="readonly"
         @update:model-value="emit('update:awayScore', $event)"
       />
     </label>
@@ -81,18 +87,20 @@ const emit = defineEmits([
         option-label="label"
         option-value="value"
         class="w-full"
+        :disabled="readonly"
         @update:model-value="emit('update:resultStatus', $event)"
       />
     </label>
 
     <label class="match-result-fields__field">
-      <span class="match-result-fields__label">{{ labels.resultNote }}</span>
+      <span class="match-result-fields__label">{{ labels.report || labels.resultNote }}</span>
       <InputText
-        :model-value="resultNote"
+        :model-value="report"
         type="text"
-        :placeholder="placeholders.resultNote"
+        :placeholder="placeholders.report || placeholders.resultNote"
         class="w-full"
-        @update:model-value="emit('update:resultNote', $event)"
+        :disabled="readonly"
+        @update:model-value="emit('update:report', $event)"
       />
     </label>
   </div>
