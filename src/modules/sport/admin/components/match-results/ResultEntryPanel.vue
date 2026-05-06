@@ -42,8 +42,10 @@ const { t } = useLanguage()
 
 const form = reactive(createResultValue(props.modelValue))
 
-const scorePreview = computed(() => `${Number(form.homeScore || 0)} - ${Number(form.awayScore || 0)}`)
+const scorePreview = computed(() => `${Number(form.awayScore || 0)} - ${Number(form.homeScore || 0)}`)
 const fieldLabels = computed(() => ({
+  homeTeam: t('sportMatchesManagement.homeTeamLabel'),
+  awayTeam: t('sportMatchesManagement.awayTeamLabel'),
   homeScore: t('sportMatchesManagement.resultsEntry.homeScore'),
   awayScore: t('sportMatchesManagement.resultsEntry.awayScore'),
   resultStatus: t('sportMatchesManagement.resultsEntry.resultStatus'),
@@ -59,6 +61,7 @@ const goalEventLabels = computed(() => ({
   empty: t('sportMatchesManagement.resultsEntry.goalEvents.empty'),
   playerName: t('sportMatchesManagement.resultsEntry.goalEvents.playerName'),
   minute: t('sportMatchesManagement.resultsEntry.goalEvents.minute'),
+  goalTypes: t('common.type') || 'Type',
   remove: t('sportMatchesManagement.resultsEntry.goalEvents.remove'),
 }))
 const goalEventPlaceholders = computed(() => ({
@@ -82,7 +85,12 @@ function createResultValue(value = {}) {
     awayScore: Number(value.awayScore || 0),
     status: String(value.status || 'completed'),
     report: String(value.report || ''),
-    events: Array.isArray(value.events) ? value.events.map((event) => normalizeGoalEvent(event)) : [],
+    homeEvents: Array.isArray(value.homeEvents)
+      ? value.homeEvents.map((event) => normalizeGoalEvent(event))
+      : [],
+    awayEvents: Array.isArray(value.awayEvents)
+      ? value.awayEvents.map((event) => normalizeGoalEvent(event))
+      : [],
   }
 }
 
@@ -91,6 +99,7 @@ function normalizeGoalEvent(event = {}) {
     id: event.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     playerName: String(event.playerName || ''),
     minute: String(event.minute || ''),
+    goalTypes: Array.isArray(event.goalTypes) ? event.goalTypes : [],
   }
 }
 
@@ -105,22 +114,25 @@ function commit(field, value) {
   emit('field-update', { field, value, result: nextValue })
 }
 
-function addGoalEvent() {
+function addGoalEvent(team) {
+  const field = team === 'home' ? 'homeEvents' : 'awayEvents'
   const event = normalizeGoalEvent()
-  commit('events', [...form.events, event])
+  commit(field, [...form[field], event])
 }
 
-function updateGoalEvent(updatedEvent) {
+function updateGoalEvent(team, updatedEvent) {
+  const field = team === 'home' ? 'homeEvents' : 'awayEvents'
   commit(
-    'events',
-    form.events.map((event) => (event.id === updatedEvent.id ? normalizeGoalEvent(updatedEvent) : event)),
+    field,
+    form[field].map((event) => (event.id === updatedEvent.id ? normalizeGoalEvent(updatedEvent) : event)),
   )
 }
 
-function removeGoalEvent(id) {
+function removeGoalEvent(team, id) {
+  const field = team === 'home' ? 'homeEvents' : 'awayEvents'
   commit(
-    'events',
-    form.events.filter((event) => event.id !== id),
+    field,
+    form[field].filter((event) => event.id !== id),
   )
 }
 
@@ -133,10 +145,12 @@ function onSubmit() {
   <form class="result-entry-panel" @submit.prevent="onSubmit">
     <div class="result-entry-panel__score-preview" aria-live="polite">
       <span>{{ t('sportMatchesManagement.resultsEntry.scorePreview') }}</span>
-      <strong>{{ scorePreview }}</strong>
+      <strong class="font-mono">{{ scorePreview }}</strong>
     </div>
 
     <MatchResultFields
+      :home-team="form.homeTeam"
+      :away-team="form.awayTeam"
       :home-score="form.homeScore"
       :away-score="form.awayScore"
       :result-status="form.status"
@@ -151,15 +165,27 @@ function onSubmit() {
       @update:report="commit('report', $event)"
     />
 
-    <GoalEventsEditor
-      :events="form.events"
-      :labels="goalEventLabels"
-      :placeholders="goalEventPlaceholders"
-      :readonly="readonly"
-      @add="addGoalEvent"
-      @update="updateGoalEvent"
-      @remove="removeGoalEvent"
-    />
+    <div class="grid gap-4 lg:grid-cols-2">
+      <GoalEventsEditor
+        :events="form.homeEvents"
+        :labels="{ ...goalEventLabels, title: `${goalEventLabels.title} (${form.homeTeam})` }"
+        :placeholders="goalEventPlaceholders"
+        :readonly="readonly"
+        @add="addGoalEvent('home')"
+        @update="updateGoalEvent('home', $event)"
+        @remove="removeGoalEvent('home', $event)"
+      />
+
+      <GoalEventsEditor
+        :events="form.awayEvents"
+        :labels="{ ...goalEventLabels, title: `${goalEventLabels.title} (${form.awayTeam})` }"
+        :placeholders="goalEventPlaceholders"
+        :readonly="readonly"
+        @add="addGoalEvent('away')"
+        @update="updateGoalEvent('away', $event)"
+        @remove="removeGoalEvent('away', $event)"
+      />
+    </div>
 
     <MatchResultActions
       :loading="loading"
@@ -169,6 +195,7 @@ function onSubmit() {
     />
   </form>
 </template>
+
 
 <style scoped>
 .result-entry-panel {

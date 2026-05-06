@@ -11,6 +11,14 @@ defineOptions({
 })
 
 defineProps({
+  homeTeam: {
+    type: String,
+    default: '',
+  },
+  awayTeam: {
+    type: String,
+    default: '',
+  },
   homeScore: {
     type: [Number, String],
     default: 0,
@@ -56,26 +64,26 @@ const emit = defineEmits([
 <template>
   <div class="match-result-fields">
     <label class="match-result-fields__field">
-      <span class="match-result-fields__label">{{ labels.homeScore }}</span>
-      <InputText
-        :model-value="homeScore"
-        type="number"
-        min="0"
-        class="w-full"
-        :disabled="readonly"
-        @update:model-value="emit('update:homeScore', $event)"
-      />
-    </label>
-
-    <label class="match-result-fields__field">
-      <span class="match-result-fields__label">{{ labels.awayScore }}</span>
+      <span class="match-result-fields__label">{{ labels.awayTeam }}: {{ awayTeam }}</span>
       <InputText
         :model-value="awayScore"
         type="number"
         min="0"
-        class="w-full"
+        class="w-full font-mono text-lg font-bold"
         :disabled="readonly"
         @update:model-value="emit('update:awayScore', $event)"
+      />
+    </label>
+
+    <label class="match-result-fields__field">
+      <span class="match-result-fields__label">{{ labels.homeTeam }}: {{ homeTeam }}</span>
+      <InputText
+        :model-value="homeScore"
+        type="number"
+        min="0"
+        class="w-full font-mono text-lg font-bold"
+        :disabled="readonly"
+        @update:model-value="emit('update:homeScore', $event)"
       />
     </label>
 
@@ -105,6 +113,7 @@ const emit = defineEmits([
     </label>
   </div>
 </template>
+
 
 <style scoped>
 .match-result-fields {
