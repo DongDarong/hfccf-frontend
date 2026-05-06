@@ -57,13 +57,13 @@ const { t } = useLanguage()
     <template #content>
       <div class="grid gap-5">
         <div class="grid items-center gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-          <!-- Away Team (Left) -->
+          <!-- Home Team (Right) -->
           <div class="min-w-0">
             <span class="fixture-summary-card__label">
-              {{ t('sportMatchesManagement.resultsEntry.fixture.away') }}
+              {{ t('sportMatchesManagement.resultsEntry.fixture.home') }}
             </span>
             <h3 class="mt-1 text-[1.15rem] leading-tight font-black break-words text-[#1D1D1B]">
-              {{ awayTeam }}
+              {{ homeTeam }}
             </h3>
           </div>
 
@@ -74,11 +74,11 @@ const { t } = useLanguage()
               class="flex h-14 w-32 items-center justify-between rounded-2xl bg-slate-900 px-5 text-white shadow-[0_12px_24px_-10px_rgba(15,23,42,0.6)]"
             >
               <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
-                {{ Number(awayScore || 0) }}
+                {{ Number(homeScore || 0) }}
               </span>
               <span class="flex h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-brand-400"></span>
-              <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
-                {{ Number(homeScore || 0) }}
+                <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
+                {{ Number(awayScore || 0) }}
               </span>
             </div>
             <div
@@ -92,13 +92,13 @@ const { t } = useLanguage()
             </span>
           </div>
 
-          <!-- Home Team (Right) -->
+          <!-- Away Team (Left) -->
           <div class="min-w-0 md:text-right">
             <span class="fixture-summary-card__label">
-              {{ t('sportMatchesManagement.resultsEntry.fixture.home') }}
+              {{ t('sportMatchesManagement.resultsEntry.fixture.away') }}
             </span>
             <h3 class="mt-1 text-[1.15rem] leading-tight font-black break-words text-[#1D1D1B]">
-              {{ homeTeam }}
+              {{ awayTeam }}
             </h3>
           </div>
         </div>
