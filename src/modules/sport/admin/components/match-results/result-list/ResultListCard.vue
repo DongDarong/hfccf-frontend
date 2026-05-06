@@ -3,6 +3,7 @@
  * ResultListCard
  * Composes header + filters + table. Parent owns filtering logic and passes `matches`.
  */
+import { computed } from 'vue'
 import ResultListFilters from '@/modules/sport/admin/components/match-results/result-list/ResultListFilters.vue'
 import ResultListHeader from '@/modules/sport/admin/components/match-results/result-list/ResultListHeader.vue'
 import ResultListTable from '@/modules/sport/admin/components/match-results/result-list/ResultListTable.vue'
@@ -80,9 +81,19 @@ const props = defineProps({
 
 const emit = defineEmits(['update:filters', 'update-match'])
 
+const normalizedFilters = computed(() => ({
+  searchTeamName: String(props.filters?.searchTeamName || ''),
+  matchDate: String(props.filters?.matchDate || ''),
+  matchType: String(props.filters?.matchType || ''),
+}))
+
 function updateFilters(patch) {
   // Important: we always emit a new object to keep v-model patterns predictable.
   emit('update:filters', { ...props.filters, ...patch })
+}
+
+function clearFilters() {
+  updateFilters({ searchTeamName: '', matchDate: '', matchType: '' })
 }
 </script>
 
@@ -92,9 +103,9 @@ function updateFilters(patch) {
 
     <div class="mt-4">
       <ResultListFilters
-        :search-team-name="filters.searchTeamName"
-        :match-date="filters.matchDate"
-        :match-type="filters.matchType"
+        :search-team-name="normalizedFilters.searchTeamName"
+        :match-date="normalizedFilters.matchDate"
+        :match-type="normalizedFilters.matchType"
         :search-team-name-label="searchTeamNameLabel"
         :search-team-name-placeholder="searchTeamNamePlaceholder"
         :match-date-label="matchDateLabel"
@@ -106,7 +117,7 @@ function updateFilters(patch) {
         @update:search-team-name="updateFilters({ searchTeamName: $event })"
         @update:match-date="updateFilters({ matchDate: $event })"
         @update:match-type="updateFilters({ matchType: $event })"
-        @clear="$emit('update:filters', { searchTeamName: '', matchDate: '', matchType: '' })"
+        @clear="clearFilters"
       />
     </div>
 

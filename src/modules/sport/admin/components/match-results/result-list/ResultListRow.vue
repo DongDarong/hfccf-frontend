@@ -3,13 +3,14 @@
  * ResultListRow
  * Single responsive row for the result list. Emits `update-match` for the action button.
  */
+import { computed } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 
 defineOptions({
   name: 'ResultListRow',
 })
 
-defineProps({
+const props = defineProps({
   match: {
     type: Object,
     required: true,
@@ -25,6 +26,9 @@ defineProps({
 })
 
 defineEmits(['update-match'])
+
+const reportText = computed(() => String(props.match?.report || '-'))
+const teamsText = computed(() => `${props.match?.homeTeam || '-'} vs ${props.match?.awayTeam || '-'}`)
 
 function statusTone(status) {
   // Tone mapping is UI-only; backend can define canonical statuses later.
@@ -48,7 +52,7 @@ function statusTone(status) {
 
       <div>
         <p class="font-black text-[#1D1D1B] break-words">
-          {{ match.homeTeam }} vs {{ match.awayTeam }}
+          {{ teamsText }}
         </p>
         <p class="mt-1 text-[0.86rem] text-slate-600 break-words">
           {{ match.venue }}
@@ -68,12 +72,12 @@ function statusTone(status) {
           {{ labels.report }}
         </p>
         <p class="text-[0.86rem] leading-6 text-slate-700 break-words">
-          {{ match.report || '—' }}
+          {{ reportText }}
         </p>
       </div>
 
       <p class="hidden text-[0.86rem] leading-6 text-slate-700 break-words line-clamp-2 md:block">
-        {{ match.report || '—' }}
+        {{ reportText }}
       </p>
     </div>
 
@@ -108,6 +112,7 @@ function statusTone(status) {
         variant="primary"
         size="sm"
         rounded="xl"
+        :aria-label="`${actionLabel}: ${teamsText}`"
         @click="$emit('update-match', match)"
       >
         {{ actionLabel }}

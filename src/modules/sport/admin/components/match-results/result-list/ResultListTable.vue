@@ -3,6 +3,7 @@
  * ResultListTable
  * Presentation-only list: parent handles filtering/pagination and passes `matches`.
  */
+import { computed } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import ResultListRow from '@/modules/sport/admin/components/match-results/result-list/ResultListRow.vue'
 
@@ -10,7 +11,7 @@ defineOptions({
   name: 'ResultListTable',
 })
 
-defineProps({
+const props = defineProps({
   matches: {
     type: Array,
     default: () => [],
@@ -34,6 +35,8 @@ defineProps({
 })
 
 defineEmits(['update-match'])
+
+const hasMatches = computed(() => props.matches.length > 0)
 </script>
 
 <template>
@@ -53,7 +56,7 @@ defineEmits(['update-match'])
       <ProgressSpinner style="width: 42px; height: 42px" strokeWidth="4" />
     </div>
 
-    <div v-else-if="!matches.length" class="px-4 py-10 text-center text-sm text-slate-500">
+    <div v-else-if="!hasMatches" class="px-4 py-10 text-center text-sm text-slate-500">
       {{ emptyText }}
     </div>
 

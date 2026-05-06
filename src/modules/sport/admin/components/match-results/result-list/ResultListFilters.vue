@@ -3,6 +3,7 @@
  * ResultListFilters
  * Controlled filters: the parent owns all state and clears through emits.
  */
+import { computed } from 'vue'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
@@ -11,7 +12,7 @@ defineOptions({
   name: 'ResultListFilters',
 })
 
-defineProps({
+const props = defineProps({
   searchTeamName: {
     type: String,
     default: '',
@@ -60,8 +61,13 @@ defineProps({
 
 const emit = defineEmits(['update:searchTeamName', 'update:matchDate', 'update:matchType', 'clear'])
 
+const hasActiveFilters = computed(
+  () => Boolean(props.searchTeamName.trim()) || Boolean(props.matchDate) || Boolean(props.matchType),
+)
+
 function onClear() {
   // The filter state is owned by the parent, so the child only requests a reset.
+  if (!hasActiveFilters.value) return
   emit('clear')
 }
 </script>
@@ -69,7 +75,10 @@ function onClear() {
 <template>
   <div class="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_180px_220px_auto] lg:items-end">
     <div class="w-full">
-      <label class="mb-1.5 block text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500" for="result-list-search-team">
+      <label
+        class="mb-1.5 block text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500"
+        for="result-list-search-team"
+      >
         {{ searchTeamNameLabel }}
       </label>
 
@@ -86,7 +95,10 @@ function onClear() {
     </div>
 
     <div class="w-full">
-      <label class="mb-1.5 block text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500" for="result-list-match-date">
+      <label
+        class="mb-1.5 block text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500"
+        for="result-list-match-date"
+      >
         {{ matchDateLabel }}
       </label>
 
@@ -101,7 +113,10 @@ function onClear() {
     </div>
 
     <div class="w-full">
-      <label class="mb-1.5 block text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500" for="result-list-match-type">
+      <label
+        class="mb-1.5 block text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500"
+        for="result-list-match-type"
+      >
         {{ matchTypeLabel }}
       </label>
 
@@ -118,7 +133,18 @@ function onClear() {
     </div>
 
     <div class="flex lg:justify-end">
-      <Button type="button" variant="outline" rounded="xl" size="sm" class="w-full lg:w-auto" @click="onClear">
+      <Button
+        type="button"
+        variant="outline"
+        rounded="xl"
+        size="sm"
+        class="w-full lg:w-auto"
+        :disabled="!hasActiveFilters"
+        @click="onClear"
+      >
+        <template #iconLeft>
+          <i class="pi pi-filter-slash" aria-hidden="true" />
+        </template>
         {{ clearLabel }}
       </Button>
     </div>
