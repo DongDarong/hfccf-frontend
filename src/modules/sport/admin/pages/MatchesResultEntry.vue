@@ -155,8 +155,15 @@ function goBackToMatches() {
 }
 
 function onDeleteEvent(event) {
-  const field = event.teamType === 'home' ? 'homeEvents' : 'awayEvents'
+  const team = event.teamType
+  const field = team === 'home' ? 'homeEvents' : 'awayEvents'
   resultEntryValue.value[field] = resultEntryValue.value[field].filter((e) => e.id !== event.id)
+  syncScore(team, resultEntryValue.value[field].length)
+}
+
+function syncScore(team, count) {
+  const field = team === 'home' ? 'homeScore' : 'awayScore'
+  resultEntryValue.value[field] = count
 }
 
 function onEditEvent() {

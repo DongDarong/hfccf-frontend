@@ -116,23 +116,30 @@ function commit(field, value) {
 function addGoalEvent(team) {
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
   const event = normalizeGoalEvent()
-  commit(field, [...form[field], event])
+  const updatedEvents = [...form[field], event]
+  commit(field, updatedEvents)
+  syncScore(team, updatedEvents.length)
 }
 
 function updateGoalEvent(team, updatedEvent) {
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
-  commit(
-    field,
-    form[field].map((event) => (event.id === updatedEvent.id ? normalizeGoalEvent(updatedEvent) : event)),
+  const updatedEvents = form[field].map((event) =>
+    event.id === updatedEvent.id ? normalizeGoalEvent(updatedEvent) : event,
   )
+  commit(field, updatedEvents)
+  // Note: changing player/minute doesn't change score; only adding/removing does.
 }
 
 function removeGoalEvent(team, id) {
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
-  commit(
-    field,
-    form[field].filter((event) => event.id !== id),
-  )
+  const updatedEvents = form[field].filter((event) => event.id !== id)
+  commit(field, updatedEvents)
+  syncScore(team, updatedEvents.length)
+}
+
+function syncScore(team, count) {
+  const field = team === 'home' ? 'homeScore' : 'awayScore'
+  commit(field, count)
 }
 
 function onSubmit() {
