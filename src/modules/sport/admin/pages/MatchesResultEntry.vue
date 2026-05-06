@@ -13,6 +13,7 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FixtureSummaryCard from '@/modules/sport/admin/components/match-results/FixtureSummaryCard.vue'
 import ResultEntryPanel from '@/modules/sport/admin/components/match-results/ResultEntryPanel.vue'
+import GoalEventsList from '@/modules/sport/admin/components/match-results/GoalEventsList.vue'
 import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
@@ -77,7 +78,8 @@ function createResultValue(value = {}) {
     awayScore: Number(value.awayScore || 0),
     status: String(value.status || 'completed'),
     report: String(value.report || ''),
-    events: Array.isArray(value.events) ? value.events : [],
+    homeEvents: Array.isArray(value.homeEvents) ? value.homeEvents : [],
+    awayEvents: Array.isArray(value.awayEvents) ? value.awayEvents : [],
   }
 }
 
@@ -104,7 +106,8 @@ watch(
       awayScore: score.away,
       status: match.status || 'completed',
       report: '',
-      events: [],
+      homeEvents: [],
+      awayEvents: [],
     })
   },
   { immediate: true },
@@ -150,6 +153,15 @@ async function onSaveResult(result) {
 function goBackToMatches() {
   router.push({ name: 'dashboard-sport-admin-matches' })
 }
+
+function onDeleteEvent(event) {
+  const field = event.teamType === 'home' ? 'homeEvents' : 'awayEvents'
+  resultEntryValue.value[field] = resultEntryValue.value[field].filter((e) => e.id !== event.id)
+}
+
+function onEditEvent() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -179,6 +191,18 @@ function goBackToMatches() {
         />
       </div>
 
+      <div v-if="resultEntryValue.homeEvents.length || resultEntryValue.awayEvents.length" class="mt-6">
+        <GoalEventsList
+          :home-events="resultEntryValue.homeEvents"
+          :away-events="resultEntryValue.awayEvents"
+          :home-team="resultEntryValue.homeTeam"
+          :away-team="resultEntryValue.awayTeam"
+          :readonly="isSubmitting"
+          @edit="onEditEvent"
+          @delete="onDeleteEvent"
+        />
+      </div>
+
       <AlertError
         :show="showError"
         :title="t('sportMatchesManagement.resultsEntry.errorTitle')"
@@ -197,6 +221,7 @@ function goBackToMatches() {
     </section>
   </MainLayout>
 </template>
+
 
 <style scoped>
 .matches-result-entry {

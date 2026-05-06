@@ -166,6 +166,7 @@ export default {
       goalEvents: {
         title: 'Goal Events',
         description: 'Add each scorer and the minute they scored.',
+        listTitle: 'Match Incident Timeline',
         add: 'Add Goal',
         empty: 'No goal events added yet.',
         playerName: 'Player Name',
