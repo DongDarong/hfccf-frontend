@@ -5,6 +5,8 @@
  */
 import { computed } from 'vue'
 import Button from '@/components/buttons/Button.vue'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'ResultListRow',
@@ -27,17 +29,23 @@ const props = defineProps({
 
 defineEmits(['update-match'])
 
+const { t } = useLanguage()
 const reportText = computed(() => String(props.match?.report || '-'))
 const teamsText = computed(() => `${props.match?.homeTeam || '-'} vs ${props.match?.awayTeam || '-'}`)
+const statusLabel = computed(() => {
+  const key = String(props.match?.status || '').trim().toLowerCase()
+  const statusKey = `sportMatchesManagement.resultList.statusLabels.${key}`
+  return t(statusKey)
+})
 
 function statusTone(status) {
   // Tone mapping is UI-only; backend can define canonical statuses later.
   const value = String(status || '')
-  if (value === 'Finished') return 'bg-lime-50 text-lime-700 border-lime-200'
-  if (value === 'Pending') return 'bg-amber-50 text-amber-700 border-amber-200'
-  if (value === 'Verified') return 'bg-cyan-50 text-cyan-700 border-cyan-200'
-  if (value === 'Rejected') return 'bg-rose-50 text-rose-700 border-rose-200'
-  return 'bg-slate-50 text-slate-700 border-slate-200'
+  if (value === 'Finished') return 'success'
+  if (value === 'Pending') return 'warning'
+  if (value === 'Verified') return 'info'
+  if (value === 'Rejected') return 'error'
+  return 'neutral'
 }
 </script>
 
@@ -97,13 +105,8 @@ function statusTone(status) {
     </div>
 
     <div class="md:justify-self-start">
-      <span
-        class="inline-flex items-center rounded-full border px-3 py-1 text-[0.78rem] font-extrabold"
-        :class="statusTone(match.status)"
-      >
-        <span class="mr-2 inline-block h-2 w-2 rounded-full bg-current opacity-75" aria-hidden="true" />
-        {{ match.status }}
-      </span>
+      <!-- The row owns the visible status label so it can stay localized per language. -->
+      <StatusBadge :status="statusTone(match.status)" :label="statusLabel" :translate-label="false" size="sm" />
     </div>
 
     <div class="flex md:justify-end">

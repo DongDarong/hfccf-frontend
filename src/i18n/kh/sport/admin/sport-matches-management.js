@@ -116,6 +116,12 @@ export default {
         tournament: 'ពានរង្វាន់',
         friendly: 'មិត្តភាព',
       },
+      statusLabels: {
+        finished: 'បញ្ចប់',
+        pending: 'កំពុងរង់ចាំ',
+        verified: 'បានផ្ទៀងផ្ទាត់',
+        rejected: 'បានបដិសេធ',
+      },
       table: {
         match: 'ការប្រកួត',
         score: 'ពិន្ទុ',

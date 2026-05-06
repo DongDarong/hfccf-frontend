@@ -116,6 +116,12 @@ export default {
         tournament: 'Tournament',
         friendly: 'Friendly',
       },
+      statusLabels: {
+        finished: 'Finished',
+        pending: 'Pending',
+        verified: 'Verified',
+        rejected: 'Rejected',
+      },
       table: {
         match: 'Match',
         score: 'Score',
