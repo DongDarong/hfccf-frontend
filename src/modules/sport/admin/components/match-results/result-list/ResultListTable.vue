@@ -40,9 +40,10 @@ const hasMatches = computed(() => props.matches.length > 0)
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_45px_-40px_rgba(29,29,27,0.38)]">
+  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <!-- Header -->
     <div
-      class="hidden grid-cols-[minmax(220px,1.2fr)_140px_minmax(220px,1.2fr)_190px_140px_110px] gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-3 text-[0.72rem] font-extrabold tracking-[0.12em] uppercase text-slate-500 md:grid"
+      class="hidden grid-cols-[minmax(240px,1.3fr)_100px_minmax(240px,1.1fr)_180px_130px_100px] items-center gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3.5 text-[0.7rem] font-bold tracking-[0.1em] uppercase text-slate-500 md:grid"
     >
       <div>{{ labels.match }}</div>
       <div class="text-center">{{ labels.score }}</div>
@@ -52,15 +53,24 @@ const hasMatches = computed(() => props.matches.length > 0)
       <div class="text-right">{{ labels.actions }}</div>
     </div>
 
-    <div v-if="loading" class="flex items-center justify-center px-4 py-12">
-      <ProgressSpinner style="width: 42px; height: 42px" strokeWidth="4" />
+    <!-- Loading State -->
+    <div v-if="loading" class="flex flex-col items-center justify-center space-y-4 px-4 py-16">
+      <ProgressSpinner style="width: 38px; height: 38px" strokeWidth="4" />
+      <p class="animate-pulse text-xs font-medium text-slate-400">Loading results...</p>
     </div>
 
-    <div v-else-if="!hasMatches" class="px-4 py-10 text-center text-sm text-slate-500">
-      {{ emptyText }}
+    <!-- Empty State -->
+    <div v-else-if="!hasMatches" class="flex flex-col items-center justify-center px-4 py-14 text-center">
+      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+        <i class="pi pi-inbox text-2xl"></i>
+      </div>
+      <p class="text-sm font-medium text-slate-500">
+        {{ emptyText }}
+      </p>
     </div>
 
-    <div v-else>
+    <!-- Content -->
+    <div v-else class="divide-y divide-slate-100">
       <ResultListRow
         v-for="match in matches"
         :key="match.id"
@@ -72,3 +82,4 @@ const hasMatches = computed(() => props.matches.length > 0)
     </div>
   </div>
 </template>
+
