@@ -49,6 +49,13 @@ function updateField(field, value) {
     [field]: value,
   })
 }
+
+function onMinuteUpdate(val) {
+  const sanitized = String(val)
+    .replace(/[^0-9]/g, '')
+    .slice(0, 3)
+  updateField('minute', sanitized)
+}
 </script>
 
 <template>
@@ -75,7 +82,7 @@ function updateField(field, value) {
         :placeholder="placeholders.minute"
         class="w-full"
         :disabled="readonly"
-        @update:model-value="updateField('minute', $event)"
+        @update:model-value="onMinuteUpdate"
       />
     </label>
 
