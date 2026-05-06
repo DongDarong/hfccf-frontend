@@ -13,7 +13,6 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FixtureSummaryCard from '@/modules/sport/admin/components/match-results/FixtureSummaryCard.vue'
 import ResultEntryPanel from '@/modules/sport/admin/components/match-results/ResultEntryPanel.vue'
-import ResultListCard from '@/modules/sport/admin/components/match-results/result-list/ResultListCard.vue'
 import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
@@ -31,11 +30,6 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
 const resultEntryValue = ref(createResultValue())
-const resultListFilters = ref({
-  searchTeamName: '',
-  matchDate: '',
-  matchType: '',
-})
 
 const selectedMatch = computed(() => {
   const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
@@ -58,40 +52,6 @@ const statusOptions = computed(() => [
   { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
 ])
 
-const resultListMatchTypeOptions = computed(() => [
-  { value: '', label: t('sportMatchesManagement.resultList.matchTypes.all') },
-  { value: 'tournament', label: t('sportMatchesManagement.resultList.matchTypes.tournament') },
-  { value: 'friendly', label: t('sportMatchesManagement.resultList.matchTypes.friendly') },
-])
-
-const resultListTeamSuggestions = computed(() => {
-  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
-  const teams = new Set()
-
-  // The autocomplete stays driven by the same mock fixture source used for the list.
-  matches.forEach((match) => {
-    if (match?.homeTeam) teams.add(String(match.homeTeam))
-    if (match?.awayTeam) teams.add(String(match.awayTeam))
-  })
-
-  return Array.from(teams).sort((left, right) => left.localeCompare(right))
-})
-
-const resultListLabels = computed(() => ({
-  match: t('sportMatchesManagement.resultList.table.match'),
-  score: t('sportMatchesManagement.resultList.table.score'),
-  report: t('sportMatchesManagement.resultList.table.report'),
-  schedule: t('sportMatchesManagement.resultList.table.schedule'),
-  status: t('sportMatchesManagement.resultList.table.status'),
-  actions: t('sportMatchesManagement.resultList.table.actions'),
-}))
-
-function resolveMatchType(match) {
-  const tournament = normalize(match?.tournament)
-  if (tournament.includes('friendly')) return 'friendly'
-  return 'tournament'
-}
-
 const fixtureSummary = computed(() => {
   const match = selectedMatch.value || {}
   const [matchDate = '-', matchTime = '-'] = String(match.schedule || '')
@@ -107,62 +67,6 @@ const fixtureSummary = computed(() => {
     venue: String(match.venue || '-'),
     competition: String(match.competition || '-'),
   }
-})
-
-function mapResultStatus(matchStatus) {
-  // Result list uses admin-oriented status labels (separate from fixture lifecycle).
-  const value = String(matchStatus || '').trim().toLowerCase()
-  if (value === 'completed') return 'Finished'
-  if (value === 'scheduled') return 'Pending'
-  if (value === 'live') return 'Verified'
-  if (value === 'postponed' || value === 'cancelled' || value === 'canceled') return 'Rejected'
-  return 'Pending'
-}
-
-function normalize(value) {
-  return String(value ?? '').trim().toLowerCase()
-}
-
-const resultListMatches = computed(() => {
-  const query = normalize(resultListFilters.value.searchTeamName)
-  const matchDate = normalize(resultListFilters.value.matchDate)
-  const matchType = String(resultListFilters.value.matchType || '')
-
-  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
-  return matches
-    .map((match) => ({
-      id: String(match.id || ''),
-      homeTeam: String(match.homeTeam || ''),
-      awayTeam: String(match.awayTeam || ''),
-      competition: String(match.competition || ''),
-      score: String(match.score || ''),
-      report: null,
-      datetime: String(match.schedule || ''),
-      venue: String(match.venue || ''),
-      status: mapResultStatus(match.status),
-      matchType: resolveMatchType(match),
-    }))
-    .filter((match) => {
-      let isMatch = true
-
-      if (query) {
-        // Search is page-owned so it can evolve into backend parameters later.
-        const haystack = normalize(
-          `${match.homeTeam} ${match.awayTeam} ${match.venue} ${match.competition} ${match.score} ${match.datetime} ${match.report || ''}`,
-        )
-        isMatch = haystack.includes(query)
-      }
-
-      if (isMatch && matchDate) {
-        isMatch = normalize(match.datetime).startsWith(matchDate)
-      }
-
-      if (isMatch && matchType) {
-        isMatch = match.matchType === matchType
-      }
-
-      return isMatch
-    })
 })
 
 function createResultValue(value = {}) {
@@ -246,13 +150,6 @@ async function onSaveResult(result) {
 function goBackToMatches() {
   router.push({ name: 'dashboard-sport-admin-matches' })
 }
-
-function onUpdateMatch(match) {
-  const id = String(match?.id || '').trim()
-  if (!id) return
-  // Route back into the per-match result entry flow.
-  router.push({ name: 'dashboard-sport-admin-matches-results', params: { id } })
-}
 </script>
 
 <template>
@@ -279,31 +176,6 @@ function onUpdateMatch(match) {
           :status-options="statusOptions"
           @save="onSaveResult"
           @cancel="goBackToMatches"
-        />
-      </div>
-
-      <!-- Result list is included here for quick navigation across fixtures while entering results. -->
-      <div class="mt-6">
-        <ResultListCard
-          :matches="resultListMatches"
-          :loading="false"
-          :filters="resultListFilters"
-          :title="t('sportMatchesManagement.resultList.title')"
-          :export-label="t('sportMatchesManagement.resultList.exportLabel')"
-          :search-team-name-label="t('sportMatchesManagement.resultList.searchTeamNameLabel')"
-          :search-team-name-placeholder="t('sportMatchesManagement.resultList.searchTeamNamePlaceholder')"
-          :search-team-suggestions="resultListTeamSuggestions"
-          :match-date-label="t('sportMatchesManagement.resultList.matchDateLabel')"
-          :match-date-placeholder="t('sportMatchesManagement.resultList.matchDatePlaceholder')"
-          :match-type-label="t('sportMatchesManagement.resultList.matchTypeLabel')"
-          :match-type-placeholder="t('sportMatchesManagement.resultList.matchTypePlaceholder')"
-          :match-type-options="resultListMatchTypeOptions"
-          :clear-label="t('sportMatchesManagement.resultList.clearLabel')"
-          :empty-text="t('sportMatchesManagement.resultList.empty')"
-          :table-labels="resultListLabels"
-          :action-label="t('sportMatchesManagement.resultList.actionLabel')"
-          @update:filters="resultListFilters = $event"
-          @update-match="onUpdateMatch"
         />
       </div>
 
