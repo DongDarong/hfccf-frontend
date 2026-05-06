@@ -4,11 +4,13 @@
  * A structured table view for all goal and card events in the match.
  * Combines home and away events for a unified timeline view.
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Button from '@/components/buttons/Button.vue'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import Loading from '@/components/feedback/Loading.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -32,6 +34,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
   readonly: {
     type: Boolean,
     default: false,
@@ -40,6 +46,9 @@ const props = defineProps({
 
 const emit = defineEmits(['edit', 'delete'])
 const { t } = useLanguage()
+
+const eventToDelete = ref(null)
+const showDeleteConfirm = ref(false)
 
 const combinedEvents = computed(() => {
   const home = props.homeEvents.map((e) => ({ ...e, team: props.homeTeam, teamType: 'home' }))
@@ -59,6 +68,19 @@ function getTagSeverity(type) {
   if (type === 'Green') return 'success'
   return 'info'
 }
+
+function confirmDelete(event) {
+  eventToDelete.value = event
+  showDeleteConfirm.value = true
+}
+
+function onDelete() {
+  if (eventToDelete.value) {
+    emit('delete', eventToDelete.value)
+    showDeleteConfirm.value = false
+    eventToDelete.value = null
+  }
+}
 </script>
 
 <template>
@@ -71,6 +93,7 @@ function getTagSeverity(type) {
 
     <DataTable
       :value="combinedEvents"
+      :loading="loading"
       class="p-datatable-sm overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
       responsive-layout="scroll"
       :pt="{
@@ -80,6 +103,12 @@ function getTagSeverity(type) {
         bodyCell: { class: 'px-4 py-3 text-sm text-slate-700 border-b border-slate-100' },
       }"
     >
+      <Column header="#">
+        <template #body="{ index }">
+          <span class="text-slate-400 font-mono text-xs">{{ index + 1 }}</span>
+        </template>
+      </Column>
+
       <Column field="minute" :header="t('sportMatchesManagement.resultsEntry.goalEvents.minute')">
         <template #body="{ data }">
           <span class="font-mono font-bold text-brand-500">{{ data.minute }}'</span>
@@ -141,11 +170,17 @@ function getTagSeverity(type) {
               icon="pi pi-trash"
               class="!text-hope-red hover:!bg-rose-50"
               :disabled="readonly"
-              @click="emit('delete', data)"
+              @click="confirmDelete(data)"
             />
           </div>
         </template>
       </Column>
+
+      <template #loading>
+        <div class="flex justify-center p-8">
+          <Loading />
+        </div>
+      </template>
 
       <template #empty>
         <div class="px-4 py-8 text-center text-slate-400">
@@ -153,6 +188,14 @@ function getTagSeverity(type) {
         </div>
       </template>
     </DataTable>
+
+    <AlertQuestion
+      :show="showDeleteConfirm"
+      title="Delete incident"
+      message="Are you sure you want to delete this incident? This action cannot be undone."
+      @confirm="onDelete"
+      @cancel="showDeleteConfirm = false"
+    />
   </section>
 </template>
 

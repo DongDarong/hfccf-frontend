@@ -197,6 +197,7 @@ function onEditEvent() {
           :away-events="resultEntryValue.awayEvents"
           :home-team="resultEntryValue.homeTeam"
           :away-team="resultEntryValue.awayTeam"
+          :loading="isSubmitting"
           :readonly="isSubmitting"
           @edit="onEditEvent"
           @delete="onDeleteEvent"
