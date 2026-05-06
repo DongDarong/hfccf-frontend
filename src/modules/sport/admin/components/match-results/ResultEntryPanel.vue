@@ -42,7 +42,6 @@ const { t } = useLanguage()
 
 const form = reactive(createResultValue(props.modelValue))
 
-const scorePreview = computed(() => `${Number(form.awayScore || 0)} - ${Number(form.homeScore || 0)}`)
 const fieldLabels = computed(() => ({
   homeTeam: t('sportMatchesManagement.homeTeamLabel'),
   awayTeam: t('sportMatchesManagement.awayTeamLabel'),
@@ -143,11 +142,6 @@ function onSubmit() {
 
 <template>
   <form class="result-entry-panel" @submit.prevent="onSubmit">
-    <div class="result-entry-panel__score-preview" aria-live="polite">
-      <span>{{ t('sportMatchesManagement.resultsEntry.scorePreview') }}</span>
-      <strong class="font-mono">{{ scorePreview }}</strong>
-    </div>
-
     <MatchResultFields
       :home-team="form.homeTeam"
       :away-team="form.awayTeam"
@@ -164,6 +158,7 @@ function onSubmit() {
       @update:result-status="commit('status', $event)"
       @update:report="commit('report', $event)"
     />
+
 
     <div class="grid gap-4 lg:grid-cols-2">
       <GoalEventsEditor

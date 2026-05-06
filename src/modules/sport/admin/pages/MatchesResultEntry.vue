@@ -264,6 +264,8 @@ function onUpdateMatch(match) {
         <FixtureSummaryCard
           :home-team="fixtureSummary.homeTeam"
           :away-team="fixtureSummary.awayTeam"
+          :home-score="resultEntryValue.homeScore"
+          :away-score="resultEntryValue.awayScore"
           :match-date="fixtureSummary.matchDate"
           :match-time="fixtureSummary.matchTime"
           :venue="fixtureSummary.venue"

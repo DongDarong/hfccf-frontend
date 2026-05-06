@@ -19,6 +19,14 @@ defineProps({
     type: String,
     required: true,
   },
+  homeScore: {
+    type: [Number, String],
+    default: 0,
+  },
+  awayScore: {
+    type: [Number, String],
+    default: 0,
+  },
   matchDate: {
     type: String,
     required: true,
@@ -35,6 +43,10 @@ defineProps({
     type: String,
     required: true,
   },
+  showScore: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const { t } = useLanguage()
@@ -45,28 +57,48 @@ const { t } = useLanguage()
     <template #content>
       <div class="grid gap-5">
         <div class="grid items-center gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+          <!-- Away Team (Left) -->
           <div class="min-w-0">
-            <span class="fixture-summary-card__label">
-              {{ t('sportMatchesManagement.resultsEntry.fixture.home') }}
-            </span>
-            <h3 class="mt-1 text-[1.15rem] leading-tight font-black break-words text-[#1D1D1B]">
-              {{ homeTeam }}
-            </h3>
-          </div>
-
-          <div
-            class="inline-flex min-h-12 min-w-12 items-center justify-center justify-self-start rounded-full border border-cyan-200 bg-cyan-50 px-3 text-[0.82rem] font-black text-[#00AEEF] md:justify-self-center"
-            :aria-label="t('sportMatchesManagement.resultsEntry.fixture.versus')"
-          >
-            {{ t('sportMatchesManagement.resultsEntry.fixture.vs') }}
-          </div>
-
-          <div class="min-w-0 md:text-right">
             <span class="fixture-summary-card__label">
               {{ t('sportMatchesManagement.resultsEntry.fixture.away') }}
             </span>
             <h3 class="mt-1 text-[1.15rem] leading-tight font-black break-words text-[#1D1D1B]">
               {{ awayTeam }}
+            </h3>
+          </div>
+
+          <!-- Score Center -->
+          <div class="flex flex-col items-center gap-1.5 md:justify-self-center">
+            <div
+              v-if="showScore"
+              class="flex h-14 w-32 items-center justify-between rounded-2xl bg-slate-900 px-5 text-white shadow-[0_12px_24px_-10px_rgba(15,23,42,0.6)]"
+            >
+              <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
+                {{ Number(awayScore || 0) }}
+              </span>
+              <span class="flex h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-brand-400"></span>
+              <span class="w-8 text-center font-mono text-2xl font-black tracking-tighter">
+                {{ Number(homeScore || 0) }}
+              </span>
+            </div>
+            <div
+              v-else
+              class="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-3 text-[0.82rem] font-black text-[#00AEEF]"
+            >
+              {{ t('sportMatchesManagement.resultsEntry.fixture.vs') }}
+            </div>
+            <span class="text-[0.62rem] font-bold tracking-[0.15em] uppercase text-slate-400">
+              {{ t('sportMatchesManagement.resultsEntry.scorePreview') }}
+            </span>
+          </div>
+
+          <!-- Home Team (Right) -->
+          <div class="min-w-0 md:text-right">
+            <span class="fixture-summary-card__label">
+              {{ t('sportMatchesManagement.resultsEntry.fixture.home') }}
+            </span>
+            <h3 class="mt-1 text-[1.15rem] leading-tight font-black break-words text-[#1D1D1B]">
+              {{ homeTeam }}
             </h3>
           </div>
         </div>
