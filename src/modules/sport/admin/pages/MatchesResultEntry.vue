@@ -1,21 +1,19 @@
 <script setup>
 /**
  * SportAdminMatchesResultEntryPage
- * UI-only result entry page for a selected match.
- *
- * Future backend integration should persist these fields against `sport_matches`
- * and related match result/stat tables.
+ * Keeps route lookup, validation, alerts, and simulated persistence in one place.
+ * Presentational sections live in smaller components under `components/match-results`.
  */
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import InputText from 'primevue/inputtext'
-import Select from 'primevue/select'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import FixtureSummaryCard from '@/modules/sport/admin/components/match-results/FixtureSummaryCard.vue'
+import MatchResultActions from '@/modules/sport/admin/components/match-results/MatchResultActions.vue'
+import MatchResultFields from '@/modules/sport/admin/components/match-results/MatchResultFields.vue'
 import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
@@ -59,6 +57,31 @@ const statusOptions = computed(() => [
 ])
 
 const scorePreview = computed(() => `${Number(homeScore.value || 0)} - ${Number(awayScore.value || 0)}`)
+const fixtureSummary = computed(() => {
+  const match = selectedMatch.value || {}
+  const [matchDate = '-', matchTime = '-'] = String(match.schedule || '')
+    .trim()
+    .split(/\s+/)
+
+  // The card is reusable and expects display-ready strings, so the page handles mock data shaping.
+  return {
+    homeTeam: String(match.homeTeam || '-'),
+    awayTeam: String(match.awayTeam || '-'),
+    matchDate,
+    matchTime,
+    venue: String(match.venue || '-'),
+    competition: String(match.competition || '-'),
+  }
+})
+const fieldLabels = computed(() => ({
+  homeScore: t('sportMatchesManagement.resultsEntry.homeScore'),
+  awayScore: t('sportMatchesManagement.resultsEntry.awayScore'),
+  resultStatus: t('sportMatchesManagement.resultsEntry.resultStatus'),
+  resultNote: t('sportMatchesManagement.resultsEntry.resultNote'),
+}))
+const fieldPlaceholders = computed(() => ({
+  resultNote: t('sportMatchesManagement.resultsEntry.resultNotePlaceholder'),
+}))
 
 function parseScore(score) {
   const [home = '0', away = '0'] = String(score || '')
@@ -130,70 +153,36 @@ function goBackToMatches() {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <form class="matches-result-entry__shell" @submit.prevent="onSubmit">
-        <div class="matches-result-entry__summary">
-          <div>
-            <p class="matches-result-entry__eyebrow">
-              {{ selectedMatch?.id || t('sportMatchesManagement.resultsEntry.noMatch') }}
-            </p>
-            <h3 class="matches-result-entry__teams">
-              {{ selectedMatch?.homeTeam || '-' }} vs {{ selectedMatch?.awayTeam || '-' }}
-            </h3>
-            <p class="matches-result-entry__meta">
-              {{ selectedMatch?.schedule || '-' }} · {{ selectedMatch?.venue || '-' }}
-            </p>
-          </div>
-          <span class="matches-result-entry__score">{{ scorePreview }}</span>
+        <FixtureSummaryCard
+          :home-team="fixtureSummary.homeTeam"
+          :away-team="fixtureSummary.awayTeam"
+          :match-date="fixtureSummary.matchDate"
+          :match-time="fixtureSummary.matchTime"
+          :venue="fixtureSummary.venue"
+          :competition="fixtureSummary.competition"
+        />
+
+        <div class="matches-result-entry__score-preview" aria-live="polite">
+          <span>{{ t('sportMatchesManagement.resultsEntry.scorePreview') }}</span>
+          <strong>{{ scorePreview }}</strong>
         </div>
 
-        <div class="matches-result-entry__grid">
-          <label class="matches-result-entry__field">
-            <span class="matches-result-entry__label">
-              {{ t('sportMatchesManagement.resultsEntry.homeScore') }}
-            </span>
-            <InputText v-model="homeScore" type="number" min="0" class="w-full" />
-          </label>
+        <MatchResultFields
+          v-model:home-score="homeScore"
+          v-model:away-score="awayScore"
+          v-model:result-status="resultStatus"
+          v-model:result-note="resultNote"
+          :status-options="statusOptions"
+          :labels="fieldLabels"
+          :placeholders="fieldPlaceholders"
+        />
 
-          <label class="matches-result-entry__field">
-            <span class="matches-result-entry__label">
-              {{ t('sportMatchesManagement.resultsEntry.awayScore') }}
-            </span>
-            <InputText v-model="awayScore" type="number" min="0" class="w-full" />
-          </label>
-
-          <label class="matches-result-entry__field">
-            <span class="matches-result-entry__label">
-              {{ t('sportMatchesManagement.resultsEntry.resultStatus') }}
-            </span>
-            <Select
-              v-model="resultStatus"
-              :options="statusOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
-
-          <label class="matches-result-entry__field">
-            <span class="matches-result-entry__label">
-              {{ t('sportMatchesManagement.resultsEntry.resultNote') }}
-            </span>
-            <InputText
-              v-model="resultNote"
-              type="text"
-              :placeholder="t('sportMatchesManagement.resultsEntry.resultNotePlaceholder')"
-              class="w-full"
-            />
-          </label>
-        </div>
-
-        <div class="matches-result-entry__actions">
-          <Button type="button" variant="outline" rounded="xl" :disabled="isSubmitting" @click="goBackToMatches">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button type="submit" variant="primary" rounded="xl" :loading="isSubmitting">
-            {{ t('sportMatchesManagement.resultsEntry.saveButton') }}
-          </Button>
-        </div>
+        <MatchResultActions
+          :loading="isSubmitting"
+          :cancel-text="t('common.cancel')"
+          :submit-text="t('sportMatchesManagement.resultsEntry.saveButton')"
+          @cancel="goBackToMatches"
+        />
       </form>
 
       <AlertError
@@ -234,68 +223,30 @@ function goBackToMatches() {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.matches-result-entry__summary {
+.matches-result-entry__score-preview {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem;
-  border-radius: 1rem;
-  border: 1px solid #dbe6f4;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
   background: #ffffff;
+  color: #1d1d1b;
 }
 
-.matches-result-entry__eyebrow,
-.matches-result-entry__label {
-  margin: 0;
-  color: #475569;
-  font-size: 0.72rem;
-  font-weight: 700;
+.matches-result-entry__score-preview span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.matches-result-entry__teams {
-  margin: 0.35rem 0 0;
-  color: #0f172a;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.matches-result-entry__meta {
-  margin: 0.3rem 0 0;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.matches-result-entry__score {
-  flex: 0 0 auto;
-  border-radius: 0.9rem;
-  background: #f8fafc;
-  padding: 0.75rem 1rem;
-  color: #0f172a;
-  font-size: 1.35rem;
+.matches-result-entry__score-preview strong {
+  color: #00aeef;
+  font-size: 1.2rem;
   font-weight: 900;
-}
-
-.matches-result-entry__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.matches-result-entry__field {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.matches-result-entry__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 1rem;
 }
 
 .matches-result-entry--kh,
@@ -306,17 +257,9 @@ function goBackToMatches() {
 }
 
 @media (max-width: 720px) {
-  .matches-result-entry__summary {
+  .matches-result-entry__score-preview {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .matches-result-entry__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .matches-result-entry__actions {
-    justify-content: stretch;
   }
 }
 </style>
