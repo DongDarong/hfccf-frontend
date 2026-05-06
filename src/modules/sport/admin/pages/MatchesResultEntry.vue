@@ -13,6 +13,7 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FixtureSummaryCard from '@/modules/sport/admin/components/match-results/FixtureSummaryCard.vue'
 import ResultEntryPanel from '@/modules/sport/admin/components/match-results/ResultEntryPanel.vue'
+import ResultListCard from '@/modules/sport/admin/components/match-results/result-list/ResultListCard.vue'
 import matchesManagementData from '@/mocks/sport/matches-management-data.json'
 
 defineOptions({
@@ -30,6 +31,10 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
 const resultEntryValue = ref(createResultValue())
+const resultListFilters = ref({
+  search: '',
+  status: '',
+})
 
 const selectedMatch = computed(() => {
   const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
@@ -52,6 +57,23 @@ const statusOptions = computed(() => [
   { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
 ])
 
+const resultListStatusOptions = computed(() => [
+  { value: '', label: t('sportMatchesManagement.resultList.statuses.all') },
+  { value: 'Finished', label: t('sportMatchesManagement.resultList.statuses.finished') },
+  { value: 'Pending', label: t('sportMatchesManagement.resultList.statuses.pending') },
+  { value: 'Verified', label: t('sportMatchesManagement.resultList.statuses.verified') },
+  { value: 'Rejected', label: t('sportMatchesManagement.resultList.statuses.rejected') },
+])
+
+const resultListLabels = computed(() => ({
+  match: t('sportMatchesManagement.resultList.table.match'),
+  score: t('sportMatchesManagement.resultList.table.score'),
+  report: t('sportMatchesManagement.resultList.table.report'),
+  schedule: t('sportMatchesManagement.resultList.table.schedule'),
+  status: t('sportMatchesManagement.resultList.table.status'),
+  actions: t('sportMatchesManagement.resultList.table.actions'),
+}))
+
 const fixtureSummary = computed(() => {
   const match = selectedMatch.value || {}
   const [matchDate = '-', matchTime = '-'] = String(match.schedule || '')
@@ -67,6 +89,56 @@ const fixtureSummary = computed(() => {
     venue: String(match.venue || '-'),
     competition: String(match.competition || '-'),
   }
+})
+
+function mapResultStatus(matchStatus) {
+  // Result list uses admin-oriented status labels (separate from fixture lifecycle).
+  const value = String(matchStatus || '').trim().toLowerCase()
+  if (value === 'completed') return 'Finished'
+  if (value === 'scheduled') return 'Pending'
+  if (value === 'live') return 'Verified'
+  if (value === 'postponed' || value === 'cancelled' || value === 'canceled') return 'Rejected'
+  return 'Pending'
+}
+
+function normalize(value) {
+  return String(value ?? '').trim().toLowerCase()
+}
+
+const resultListMatches = computed(() => {
+  const query = normalize(resultListFilters.value.search)
+  const status = String(resultListFilters.value.status || '')
+
+  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
+  return matches
+    .map((match) => ({
+      id: String(match.id || ''),
+      homeTeam: String(match.homeTeam || ''),
+      awayTeam: String(match.awayTeam || ''),
+      competition: String(match.competition || ''),
+      score: String(match.score || ''),
+      report: null,
+      datetime: String(match.schedule || ''),
+      venue: String(match.venue || ''),
+      status: mapResultStatus(match.status),
+    }))
+    .filter((match) => {
+      let isMatch = true
+
+      if (query) {
+        // Search is page-owned so it can evolve into backend parameters later.
+        const haystack = normalize(
+          `${match.homeTeam} ${match.awayTeam} ${match.venue} ${match.competition} ${match.score} ${match.datetime} ${match.report || ''}`,
+        )
+        isMatch = haystack.includes(query)
+      }
+
+      if (isMatch && status) {
+        isMatch = match.status === status
+      }
+
+      return isMatch
+    })
 })
 
 function createResultValue(value = {}) {
@@ -150,6 +222,13 @@ async function onSaveResult(result) {
 function goBackToMatches() {
   router.push({ name: 'dashboard-sport-admin-matches' })
 }
+
+function onUpdateMatch(match) {
+  const id = String(match?.id || '').trim()
+  if (!id) return
+  // Route back into the per-match result entry flow.
+  router.push({ name: 'dashboard-sport-admin-matches-results', params: { id } })
+}
 </script>
 
 <template>
@@ -174,6 +253,26 @@ function goBackToMatches() {
           :status-options="statusOptions"
           @save="onSaveResult"
           @cancel="goBackToMatches"
+        />
+      </div>
+
+      <!-- Result list is included here for quick navigation across fixtures while entering results. -->
+      <div class="mt-6">
+        <ResultListCard
+          :matches="resultListMatches"
+          :loading="false"
+          :filters="resultListFilters"
+          :title="t('sportMatchesManagement.resultList.title')"
+          :export-label="t('sportMatchesManagement.resultList.exportLabel')"
+          :search-placeholder="t('sportMatchesManagement.resultList.searchPlaceholder')"
+          :search-label="t('sportMatchesManagement.resultList.searchLabel')"
+          :status-label="t('sportMatchesManagement.resultList.statusLabel')"
+          :status-options="resultListStatusOptions"
+          :empty-text="t('sportMatchesManagement.resultList.empty')"
+          :table-labels="resultListLabels"
+          :action-label="t('sportMatchesManagement.resultList.actionLabel')"
+          @update:filters="resultListFilters = $event"
+          @update-match="onUpdateMatch"
         />
       </div>
 
