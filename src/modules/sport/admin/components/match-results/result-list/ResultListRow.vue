@@ -40,6 +40,13 @@ const statusLabel = computed(() => {
   return t(statusKey)
 })
 
+const splitScore = computed(() => {
+  const score = String(props.match?.score || '')
+  if (!score || score === '- - -') return { home: '-', away: '-', isPending: true }
+  const [home = '0', away = '0'] = score.split('-').map((s) => s.trim())
+  return { home, away, isPending: false }
+})
+
 function statusTone(status) {
   // Tone mapping is UI-only; backend can define canonical statuses later.
   const value = String(status || '')
@@ -86,9 +93,18 @@ function statusTone(status) {
 
     <!-- Score Center -->
     <div class="flex md:justify-center">
-      <div class="flex h-10 w-20 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
-        <span class="font-mono text-sm font-black tracking-widest">
-          {{ match.score }}
+      <div
+        class="flex h-10 w-24 items-center justify-between rounded-xl bg-slate-900 px-3 text-white shadow-[0_4px_12px_-4px_rgba(15,23,42,0.4)] transition-transform hover:scale-105"
+      >
+        <span class="w-6 text-center font-mono text-[1.05rem] font-black tracking-tighter">
+          {{ splitScore.home }}
+        </span>
+        <span
+          class="flex h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-700"
+          :class="{ '!bg-brand-400 animate-pulse': !splitScore.isPending && match.status === 'Verified' }"
+        ></span>
+        <span class="w-6 text-center font-mono text-[1.05rem] font-black tracking-tighter">
+          {{ splitScore.away }}
         </span>
       </div>
     </div>
@@ -148,4 +164,3 @@ function statusTone(status) {
     </div>
   </article>
 </template>
-
