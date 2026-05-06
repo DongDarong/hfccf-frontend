@@ -180,9 +180,10 @@ const summaryCards = computed(() => [
 ])
 
 function onResults(match) {
-  // UI-only placeholder: future implementation can route to a match details/results page.
-  // Keeping the handler here avoids baking navigation into the table component.
-  void match
+  const id = String(match?.id || '').trim()
+  if (!id) return
+  // Keep navigation in the page so the table remains presentation-only.
+  router.push({ name: 'dashboard-sport-admin-matches-results', params: { id } })
 }
 
 function onEdit(match) {
