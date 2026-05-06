@@ -9,6 +9,7 @@ import SportManagesPlayerInfor from '@/modules/sport/admin/pages/ManagesPlayerIn
 import SportAddPlayer from '@/modules/sport/admin/pages/AddPlayer.vue'
 import SportManageMatches from '@/modules/sport/admin/pages/ManageMatches.vue'
 import SportAddMatch from '@/modules/sport/admin/pages/AddMatch.vue'
+import SportMatchesResultEntry from '@/modules/sport/admin/pages/MatchesResultEntry.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
 
 export const sportRoutes = [
@@ -97,6 +98,15 @@ export const sportRoutes = [
     path: '/module/sport-admin/matches/:id/edit',
     name: 'dashboard-sport-admin-matches-edit',
     component: SportAddMatch,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/matches/:id/results',
+    name: 'dashboard-sport-admin-matches-results',
+    component: SportMatchesResultEntry,
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.ADMIN],
