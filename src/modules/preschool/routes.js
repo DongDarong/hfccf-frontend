@@ -6,8 +6,10 @@ import PreschoolAddClass from '@/modules/preschool/admin/pages/AddClass.vue'
 import PreschoolAddPayment from '@/modules/preschool/admin/pages/AddPayment.vue'
 import PreschoolClassesManagement from '@/modules/preschool/admin/pages/ClassesManagement.vue'
 import PreschoolTeacherManagement from '@/modules/preschool/admin/pages/TeacherManagement.vue'
-import PreschoolStudentInfo from '@/modules/preschool/admin/pages/StuduntInfor.vue'
-
+import PreschoolStudentInfo from '@/modules/preschool/admin/pages/StudentInfo.vue'
+import PreschoolTeacherDashboard from '@/modules/preschool/teacher/pages/Dashboard.vue'
+import PreschoolTeacherAttendance from '@/modules/preschool/teacher/pages/Attendance.vue'
+import PreschoolTeacherMyStudents from '@/modules/preschool/teacher/pages/MyStudents.vue'
 
 export const preschoolRoutes = [
   defineAppRoute({
@@ -71,6 +73,33 @@ export const preschoolRoutes = [
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher',
+    name: 'dashboard-preschool-teacher',
+    component: PreschoolTeacherDashboard,
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/students',
+    name: 'dashboard-preschool-teacher-students',
+    component: PreschoolTeacherMyStudents,
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/attendance',
+    name: 'dashboard-preschool-teacher-attendance',
+    component: PreschoolTeacherAttendance,
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
 ]

@@ -47,6 +47,8 @@ export default {
     teachers: 'Teachers',
     coaches: 'Coaches',
     students: 'Students',
+    myStudents: 'My Students',
+    attendance: 'Attendance',
     teams: 'Teams',
     players: 'Players',
     matches: 'Matches',
