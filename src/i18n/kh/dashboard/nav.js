@@ -55,6 +55,7 @@ export default {
     classes: 'ថ្នាក់រៀន',
     applications: 'ពាក្យស្នើសុំ',
     payments: 'ការទូទាត់',
+    trainingSchedule: 'កាលវិភាគហ្វឹកហាត់',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',

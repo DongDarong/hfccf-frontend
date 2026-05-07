@@ -11,6 +11,7 @@ import SportManageMatches from '@/modules/sport/admin/pages/ManageMatches.vue'
 import SportAddMatch from '@/modules/sport/admin/pages/AddMatch.vue'
 import SportMatchesResultEntry from '@/modules/sport/admin/pages/MatchesResultEntry.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
+import CoachTrainingSchedule from '@/modules/sport/coach/pages/TrainingSchedule.vue'
 
 export const sportRoutes = [
   defineAppRoute({
@@ -116,6 +117,15 @@ export const sportRoutes = [
     path: '/module/sport-admin/coach',
     name: 'dashboard-sport-coach',
     component: CoachDashboard,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/training-schedule',
+    name: 'dashboard-sport-coach-training',
+    component: CoachTrainingSchedule,
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.STAFF],

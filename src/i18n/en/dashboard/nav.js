@@ -55,6 +55,7 @@ export default {
     classes: 'Classes',
     applications: 'Applications',
     payments: 'Payments',
+    trainingSchedule: 'Training Schedule',
   },
   badges: {
     admin: 'Admin',

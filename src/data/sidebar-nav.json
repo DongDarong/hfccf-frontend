@@ -39,6 +39,17 @@
           }
         },
         {
+          "id": "sport-training-schedule",
+          "routeName": "dashboard-sport-coach-training",
+          "labelKey": "nav.items.trainingSchedule",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["staff"],
+            "domains": ["sport"]
+          }
+        },
+        {
           "id": "preschool-teacher-students",
           "routeName": "dashboard-preschool-teacher-students",
           "labelKey": "nav.items.myStudents",
@@ -169,7 +180,7 @@
             "scopes": ["admin"],
             "domains": ["sport"]
           }
-        }
+        },
       ]
     },
     {

@@ -8,8 +8,8 @@ Email    : sport.admin01@hfccf.org
 Password : sportAdmin@123
 
 Role     : Coach
-Email    : coach03@hfccf.org
-Password : Coach@123"
+Email    : coach13@hfccf.org
+Password : Coach@123
 _______________________________________
 Role     : Scholarship Admin
 Email    : scholarship.admin02@hfccf.org
