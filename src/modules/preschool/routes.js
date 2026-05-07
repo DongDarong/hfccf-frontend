@@ -3,9 +3,11 @@ import { defineAppRoute } from '@/router/defineAppRoute'
 import PreschoolAdminDashboard from '@/modules/preschool/admin/pages/PreschoolDashboard.vue'
 import PreschoolAddTeacher from '@/modules/preschool/admin/pages/AddTeacher.vue'
 import PreschoolAddClass from '@/modules/preschool/admin/pages/AddClass.vue'
+import PreschoolAddPayment from '@/modules/preschool/admin/pages/AddPayment.vue'
 import PreschoolClassesManagement from '@/modules/preschool/admin/pages/ClassesManagement.vue'
 import PreschoolTeacherManagement from '@/modules/preschool/admin/pages/TeacherManagement.vue'
 import PreschoolStudentInfo from '@/modules/preschool/admin/pages/StuduntInfor.vue'
+
 
 export const preschoolRoutes = [
   defineAppRoute({
@@ -57,6 +59,15 @@ export const preschoolRoutes = [
     path: '/module/preschool-admin/classes/add',
     name: 'dashboard-preschool-admin-classes-add',
     component: PreschoolAddClass,
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/payment',
+    name: 'dashboard-preschool-admin-payment',
+    component: PreschoolAddPayment,
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

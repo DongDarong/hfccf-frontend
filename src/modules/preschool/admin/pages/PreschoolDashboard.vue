@@ -6,6 +6,7 @@ import PreschoolDashboardSpotlight from '@/modules/preschool/admin/components/da
 import PreschoolDashboardActionList from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActionList.vue'
 import PreschoolDashboardActivity from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActivity.vue'
 
+
 const cards = [
   { title: 'New enrollments', value: 14, label: 'This week', status: 'success' },
   { title: 'Classrooms at capacity', value: 3, label: 'Requires rebalancing', status: 'warning' },

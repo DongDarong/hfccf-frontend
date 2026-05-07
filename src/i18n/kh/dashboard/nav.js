@@ -50,6 +50,7 @@ export default {
     teams: 'ក្រុម',
     classes: 'ថ្នាក់រៀន',
     applications: 'ពាក្យស្នើសុំ',
+    payments: 'ការទូទាត់',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',

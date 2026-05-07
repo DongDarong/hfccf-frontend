@@ -82,6 +82,17 @@
           }
         },
         {
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "label": "Payments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["preschool"]
+          }
+        },
+        {
           "id": "scholarship-applications",
           "routeName": "dashboard-scholarship-admin-users",
           "label": "Applications",
@@ -203,6 +214,13 @@
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
           "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "labelKey": "nav.items.payments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
         }

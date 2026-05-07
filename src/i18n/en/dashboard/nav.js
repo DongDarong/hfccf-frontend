@@ -50,6 +50,7 @@ export default {
     teams: 'Teams',
     classes: 'Classes',
     applications: 'Applications',
+    payments: 'Payments',
   },
   badges: {
     admin: 'Admin',
