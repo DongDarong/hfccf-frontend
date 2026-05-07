@@ -48,6 +48,8 @@ export default {
     coaches: 'Coaches',
     students: 'Students',
     teams: 'Teams',
+    players: 'Players',
+    matches: 'Matches',
     classes: 'Classes',
     applications: 'Applications',
     payments: 'Payments',
