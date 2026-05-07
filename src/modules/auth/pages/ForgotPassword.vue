@@ -6,23 +6,18 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import CreateNewPassword from '@/modules/auth/components/CreateNewPassword.vue'
 import VerifyCode from '@/modules/auth/components/VerifyCode.vue'
 import VerifyEmail from '@/modules/auth/components/VerifyEmail.vue'
-import users from '@/mocks/users.json'
-import { ROLES } from '@/constants/roles'
 import { useLanguage } from '@/composables/useLanguage'
+import { requestPasswordReset, resetPassword, verifyPasswordResetOtp } from '@/services/auth'
 
 const router = useRouter()
 const { t, language } = useLanguage()
 
 const recoveryPolicy = Object.freeze({
-  role: ROLES.SUPER_ADMIN,
-  requiredPermission: 'all:*',
-  allowedStatuses: ['active'],
   otpLength: 6,
   minPasswordLength: 8,
 })
 
 const email = ref('')
-const recoveryAccount = ref(null)
 const emailVerified = ref(false)
 const otpVerified = ref(false)
 const isOtpStep = ref(false)
@@ -32,7 +27,8 @@ const isResending = ref(false)
 const isSavingPassword = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
-const currentOtp = ref(generateOtp())
+const currentOtp = ref('')
+const verifiedCode = ref('')
 
 const isRecoveryLoading = computed(() => isResending.value || isVerifying.value || isSavingPassword.value)
 const recoveryLoadingLabel = computed(() => {
@@ -48,14 +44,6 @@ const stepTitle = computed(() => {
   return t('auth.forgotPassword.steps.email')
 })
 
-function wait(ms = 450) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function generateOtp() {
-  return String(Math.floor(100000 + Math.random() * 900000))
-}
-
 function normalizeEmail(value) {
   return String(value || '')
     .trim()
@@ -64,52 +52,43 @@ function normalizeEmail(value) {
 
 function resetRecoveryState({ keepEmail = false } = {}) {
   if (!keepEmail) email.value = ''
-  recoveryAccount.value = null
   emailVerified.value = false
   otpVerified.value = false
   isOtpStep.value = false
   isPasswordStep.value = false
-  currentOtp.value = generateOtp()
-}
-
-function hasRequiredPermission(user) {
-  return Array.isArray(user?.role_permission) && user.role_permission.includes(recoveryPolicy.requiredPermission)
-}
-
-function findEligibleRecoveryAccount(value) {
-  const normalizedEmail = normalizeEmail(value)
-
-  return users.find(
-    (user) =>
-      normalizeEmail(user.email) === normalizedEmail &&
-      String(user.role || '').trim().toLowerCase() === recoveryPolicy.role &&
-      recoveryPolicy.allowedStatuses.includes(String(user.status || '').trim().toLowerCase()) &&
-      hasRequiredPermission(user),
-  )
+  currentOtp.value = ''
+  verifiedCode.value = ''
 }
 
 function isRecoverySessionReady() {
-  return Boolean(recoveryAccount.value && emailVerified.value && normalizeEmail(email.value))
+  return Boolean(emailVerified.value && normalizeEmail(email.value))
 }
 
 async function onEmailAccepted(payload) {
-  const matchedAccount = findEligibleRecoveryAccount(payload?.email)
+  errorMessage.value = ''
+  successMessage.value = ''
 
-  if (!matchedAccount) {
+  const requestEmail = normalizeEmail(payload?.email)
+  isResending.value = true
+
+  try {
+    const result = await requestPasswordReset(requestEmail)
+
+    // The backend is responsible for Super Admin eligibility and account-status checks.
+    email.value = normalizeEmail(result.email || requestEmail)
+    currentOtp.value = String(result.demoOtp || '')
+    verifiedCode.value = ''
+    emailVerified.value = true
+    otpVerified.value = false
+    isOtpStep.value = true
+    isPasswordStep.value = false
+    successMessage.value = t('auth.forgotPassword.success.codeSent', { email: email.value })
+  } catch (error) {
     resetRecoveryState({ keepEmail: true })
-    errorMessage.value = t('auth.forgotPassword.errors.inactiveAccount')
-    successMessage.value = ''
-    return
+    errorMessage.value = error.message || t('auth.forgotPassword.errors.inactiveAccount')
+  } finally {
+    isResending.value = false
   }
-
-  email.value = normalizeEmail(matchedAccount.email)
-  recoveryAccount.value = matchedAccount
-  emailVerified.value = true
-  otpVerified.value = false
-  isOtpStep.value = true
-  isPasswordStep.value = false
-  currentOtp.value = generateOtp()
-  await onResend({ email: email.value })
 }
 
 function onBackToEmail() {
@@ -122,6 +101,7 @@ function onBackToOtp() {
   isOtpStep.value = true
   isPasswordStep.value = false
   otpVerified.value = false
+  verifiedCode.value = ''
   errorMessage.value = ''
   successMessage.value = ''
 }
@@ -140,7 +120,6 @@ async function onVerify(payload) {
 
   if (
     normalizeEmail(payload?.email) !== normalizeEmail(email.value) ||
-    submittedCode !== currentOtp.value ||
     submittedCode.length !== recoveryPolicy.otpLength
   ) {
     errorMessage.value = t('auth.forgotPassword.errors.invalidOtp')
@@ -150,10 +129,16 @@ async function onVerify(payload) {
   isVerifying.value = true
 
   try {
-    await wait()
+    await verifyPasswordResetOtp({
+      email: email.value,
+      code: submittedCode,
+    })
     otpVerified.value = true
+    verifiedCode.value = submittedCode
     isPasswordStep.value = true
     successMessage.value = ''
+  } catch (error) {
+    errorMessage.value = error.message || t('auth.forgotPassword.errors.invalidOtp')
   } finally {
     isVerifying.value = false
   }
@@ -163,7 +148,7 @@ async function onCreatePassword(payload) {
   errorMessage.value = ''
   successMessage.value = ''
 
-  if (!isRecoverySessionReady() || !otpVerified.value) {
+  if (!isRecoverySessionReady() || !otpVerified.value || !verifiedCode.value) {
     errorMessage.value = t('auth.forgotPassword.errors.verifyBeforePassword')
     isOtpStep.value = true
     isPasswordStep.value = false
@@ -182,8 +167,15 @@ async function onCreatePassword(payload) {
   isSavingPassword.value = true
 
   try {
-    await wait()
+    await resetPassword({
+      email: email.value,
+      code: verifiedCode.value,
+      password: newPassword,
+      password_confirmation: newPassword,
+    })
     successMessage.value = t('auth.forgotPassword.success.passwordUpdated')
+  } catch (error) {
+    errorMessage.value = error.message || t('auth.forgotPassword.errors.verifyBeforePassword')
   } finally {
     isSavingPassword.value = false
   }
@@ -207,9 +199,13 @@ async function onResend(payload) {
   isResending.value = true
 
   try {
-    currentOtp.value = generateOtp()
-    await wait()
+    const result = await requestPasswordReset(requestEmail)
+    currentOtp.value = String(result.demoOtp || '')
+    verifiedCode.value = ''
+    otpVerified.value = false
     successMessage.value = t('auth.forgotPassword.success.codeSent', { email: requestEmail })
+  } catch (error) {
+    errorMessage.value = error.message || t('auth.forgotPassword.errors.verifiedEmailRequired')
   } finally {
     isResending.value = false
   }

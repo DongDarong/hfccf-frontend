@@ -1,18 +1,10 @@
-import users from '@/mocks/users.json'
+import http from '@/services/http'
 import { mapUser } from '@/services/mappers/userMapper'
 
 const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
 const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
 const LAST_ACTIVITY_STORAGE_KEY = 'hfccf-last-activity-at'
 const INACTIVITY_TIMEOUT_MS = 12 * 60 * 60 * 1000
-
-function createSessionToken() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID()
-  }
-
-  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`
-}
 
 function getStorage(remember = false) {
   return remember ? window.localStorage : window.sessionStorage
@@ -32,6 +24,15 @@ function sanitizeUser(user) {
   const safeUser = mapUser(user)
   delete safeUser.password
   return safeUser
+}
+
+function getApiErrorMessage(error, fallbackMessage) {
+  const apiMessage = error?.response?.data?.message || error?.response?.data?.error
+  return apiMessage || fallbackMessage
+}
+
+function getApiPayload(response) {
+  return response?.data?.data || response?.data || {}
 }
 
 function hasToken(storage) {
@@ -57,11 +58,8 @@ function getLastActivityRaw() {
   )
 }
 
-export async function login({ email, password, remember = false, role = '' }) {
+export async function login({ email, password, remember = false }) {
   const normalizedEmail = String(email || '')
-    .trim()
-    .toLowerCase()
-  const normalizedRole = String(role || '')
     .trim()
     .toLowerCase()
 
@@ -69,29 +67,99 @@ export async function login({ email, password, remember = false, role = '' }) {
     throw new Error('Please enter both email and password.')
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 450))
+  try {
+    const response = await http.post('/auth/login', {
+      email: normalizedEmail,
+      password,
+    })
+    const payload = getApiPayload(response)
+    const token = payload.token
+    const user = payload.user
 
-  const matchedUser = users.find(
-    (user) =>
-      user.email.toLowerCase() === normalizedEmail &&
-      user.password === password &&
-      (!normalizedRole || String(user.role || '').trim().toLowerCase() === normalizedRole),
-  )
+    if (!token || !user) {
+      throw new Error('Login response is missing session data.')
+    }
 
-  if (!matchedUser) {
-    throw new Error(normalizedRole ? 'Invalid user type, email, or password.' : 'Invalid email or password.')
+    const storage = getStorage(remember)
+    const fallbackStorage = getFallbackStorage(remember)
+    const safeUser = sanitizeUser(user)
+
+    // Store the API token in the selected browser storage so the shared HTTP client can attach it to protected requests.
+    clearSessionStorage(fallbackStorage)
+    storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
+    storage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
+    storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
+
+    return safeUser
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Invalid email or password.'), { cause: error })
+  }
+}
+
+export async function requestPasswordReset(email) {
+  const normalizedEmail = String(email || '')
+    .trim()
+    .toLowerCase()
+
+  if (!normalizedEmail) {
+    throw new Error('Please enter your email address.')
   }
 
-  const storage = getStorage(remember)
-  const fallbackStorage = getFallbackStorage(remember)
+  try {
+    const response = await http.post('/auth/forgot-password', {
+      email: normalizedEmail,
+    })
 
-  clearSessionStorage(fallbackStorage)
+    return getApiPayload(response)
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Unable to send reset code right now.'), { cause: error })
+  }
+}
 
-  storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(sanitizeUser(matchedUser)))
-  storage.setItem(AUTH_TOKEN_STORAGE_KEY, createSessionToken())
-  storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
+export async function verifyPasswordResetOtp({ email, code }) {
+  const normalizedEmail = String(email || '')
+    .trim()
+    .toLowerCase()
+  const normalizedCode = String(code || '').replace(/\D/g, '').slice(0, 6)
 
-  return sanitizeUser(matchedUser)
+  if (!normalizedEmail || normalizedCode.length !== 6) {
+    throw new Error('Please enter a valid verification code.')
+  }
+
+  try {
+    const response = await http.post('/auth/verify-otp', {
+      email: normalizedEmail,
+      code: normalizedCode,
+    })
+
+    return getApiPayload(response)
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Invalid or expired verification code.'), { cause: error })
+  }
+}
+
+export async function resetPassword({ email, code, password, password_confirmation }) {
+  const normalizedEmail = String(email || '')
+    .trim()
+    .toLowerCase()
+  const normalizedCode = String(code || '').replace(/\D/g, '').slice(0, 6)
+
+  if (!normalizedEmail || normalizedCode.length !== 6 || !password) {
+    throw new Error('Please complete the password reset form.')
+  }
+
+  try {
+    const response = await http.post('/auth/reset-password', {
+      email: normalizedEmail,
+      code: normalizedCode,
+      password,
+      password_confirmation: password_confirmation || password,
+    })
+
+    return getApiPayload(response)
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Unable to reset password right now.'), { cause: error })
+  }
 }
 
 export function logout() {

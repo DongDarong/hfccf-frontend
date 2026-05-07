@@ -60,7 +60,9 @@ const codeError = computed(() => {
   if (!touched.code) return ''
   if (!normalizedCode.value) return props.t('auth.forgotPassword.verifyCode.errors.required')
   if (normalizedCode.value.length !== 6) return props.t('auth.forgotPassword.verifyCode.errors.length')
-  if (normalizedCode.value !== expectedCode.value) return props.t('auth.forgotPassword.verifyCode.errors.mismatch')
+  if (expectedCode.value && normalizedCode.value !== expectedCode.value) {
+    return props.t('auth.forgotPassword.verifyCode.errors.mismatch')
+  }
   return ''
 })
 
@@ -170,7 +172,7 @@ function onResend() {
             {{ t('auth.forgotPassword.verifyCode.copy') }} <strong>{{ email }}</strong>.
           </p>
 
-          <div class="verify-code-random" aria-live="polite">
+          <div v-if="expectedCode" class="verify-code-random" aria-live="polite">
             <span>{{ t('auth.forgotPassword.verifyCode.demoOtp') }}</span>
             <strong>{{ expectedCode }}</strong>
           </div>

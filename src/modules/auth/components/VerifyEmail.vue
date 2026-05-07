@@ -4,8 +4,6 @@ import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Button from '@/components/buttons/Button.vue'
-import users from '@/mocks/users.json'
-import { ROLES } from '@/constants/roles'
 
 const props = defineProps({
   email: {
@@ -59,15 +57,6 @@ watch(
 )
 
 const normalizedEmail = computed(() => form.email.trim())
-const normalizedEmailKey = computed(() => normalizedEmail.value.toLowerCase())
-
-const matchedSuperAdmin = computed(() =>
-  users.find(
-    (user) =>
-      String(user.email || '').trim().toLowerCase() === normalizedEmailKey.value &&
-      String(user.role || '').trim().toLowerCase() === ROLES.SUPER_ADMIN,
-  ),
-)
 
 const emailError = computed(() => {
   if (!touched.email) return ''
@@ -75,15 +64,8 @@ const emailError = computed(() => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value)) {
     return props.t('auth.forgotPassword.verifyEmail.errors.invalid')
   }
-  if (!matchedSuperAdmin.value) {
-    return props.t('auth.forgotPassword.verifyEmail.errors.superAdminOnly')
-  }
   return ''
 })
-
-const canContinueToOtp = computed(
-  () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value) && Boolean(matchedSuperAdmin.value),
-)
 
 const canSubmitCurrentStep = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value))
 
@@ -94,7 +76,7 @@ function touchField(field) {
 function onSubmit() {
   touched.email = true
 
-  if (!canContinueToOtp.value) return
+  if (!canSubmitCurrentStep.value) return
 
   emit('resend', {
     email: normalizedEmail.value,
