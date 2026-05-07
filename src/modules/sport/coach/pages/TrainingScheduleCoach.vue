@@ -1,6 +1,6 @@
 <script setup>
 /**
- * CoachTrainingSchedulePage
+ * TrainingScheduleCoachPage
  * Dedicated page for sport coaches to manage their training sessions.
  */
 import { computed, ref, watch } from 'vue'
@@ -17,7 +17,7 @@ import TrainingSessionsTable from '../components/TrainingSessionsTable.vue'
 import trainingSessionsData from '@/mocks/sport/training-sessions.json'
 
 defineOptions({
-  name: 'CoachTrainingSchedulePage',
+  name: 'TrainingScheduleCoachPage',
 })
 
 const { t, language } = useLanguage()

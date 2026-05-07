@@ -10,8 +10,9 @@ import SportAddPlayer from '@/modules/sport/admin/pages/AddPlayer.vue'
 import SportManageMatches from '@/modules/sport/admin/pages/ManageMatches.vue'
 import SportAddMatch from '@/modules/sport/admin/pages/AddMatch.vue'
 import SportMatchesResultEntry from '@/modules/sport/admin/pages/MatchesResultEntry.vue'
+import SportTrainingSchedule from '@/modules/sport/admin/pages/TrainingSchedule.vue'
 import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
-import CoachTrainingSchedule from '@/modules/sport/coach/pages/TrainingSchedule.vue'
+import CoachTrainingSchedule from '@/modules/sport/coach/pages/TrainingScheduleCoach.vue'
 
 export const sportRoutes = [
   defineAppRoute({
@@ -114,6 +115,15 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/training-schedule',
+    name: 'dashboard-sport-admin-training',
+    component: SportTrainingSchedule,
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/coach',
     name: 'dashboard-sport-coach',
     component: CoachDashboard,
@@ -123,7 +133,7 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
-    path: '/module/sport-admin/training-schedule',
+    path: '/module/sport-coach/training-schedule',
     name: 'dashboard-sport-coach-training',
     component: CoachTrainingSchedule,
     access: {

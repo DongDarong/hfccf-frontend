@@ -181,6 +181,17 @@
             "domains": ["sport"]
           }
         },
+        {
+          "id": "sport-training-schedule-admin",
+          "routeName": "dashboard-sport-admin-training",
+          "labelKey": "nav.items.trainingSchedule",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["sport"]
+          }
+        }
       ]
     },
     {
