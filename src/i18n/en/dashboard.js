@@ -4,6 +4,7 @@ import nav from './dashboard/nav'
 import pages from './dashboard/pages'
 import commandCenter from './dashboard/command-center'
 import users from './users'
+import auth from './auth'
 import sportAdminDashboard from './sport/admin-dashboard'
 import preschoolAdminDashboard from './preschool/admin-dashboard'
 
@@ -14,6 +15,7 @@ export default {
   pages,
   commandCenter,
   users,
+  auth,
   dashboard: {
     nav: {
       logoutCaption: nav.logoutCaption,

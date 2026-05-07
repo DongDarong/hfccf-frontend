@@ -28,6 +28,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  t: {
+    type: Function,
+    required: true,
+  },
 })
 
 const emit = defineEmits(['resend', 'update:email'])
@@ -67,12 +71,12 @@ const matchedSuperAdmin = computed(() =>
 
 const emailError = computed(() => {
   if (!touched.email) return ''
-  if (!normalizedEmail.value) return 'Email is required.'
+  if (!normalizedEmail.value) return props.t('auth.forgotPassword.verifyEmail.errors.required')
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value)) {
-    return 'Enter a valid email address.'
+    return props.t('auth.forgotPassword.verifyEmail.errors.invalid')
   }
   if (!matchedSuperAdmin.value) {
-    return 'Use a Super Admin email registered in the system.'
+    return props.t('auth.forgotPassword.verifyEmail.errors.superAdminOnly')
   }
   return ''
 })
@@ -104,7 +108,11 @@ function onSubmit() {
       <template #content>
         <form class="verify-email-fields" @submit.prevent="onSubmit">
           <div class="verify-email-header">
-            <RouterLink :to="{ name: 'login' }" class="verify-email-back" aria-label="Back to login">
+            <RouterLink
+              :to="{ name: 'login' }"
+              class="verify-email-back"
+              :aria-label="t('auth.forgotPassword.verifyEmail.backToLogin')"
+            >
               <i class="pi pi-arrow-left" aria-hidden="true"></i>
             </RouterLink>
 
@@ -112,13 +120,13 @@ function onSubmit() {
               <i class="pi pi-envelope"></i>
             </div>
             <div>
-              <p class="verify-email-eyebrow">Email verification</p>
-              <h2>Find account</h2>
+              <p class="verify-email-eyebrow">{{ t('auth.forgotPassword.verifyEmail.eyebrow') }}</p>
+              <h2>{{ t('auth.forgotPassword.verifyEmail.title') }}</h2>
             </div>
           </div>
 
           <div class="verify-email-field">
-            <label for="verifyEmail">Email</label>
+            <label for="verifyEmail">{{ t('auth.forgotPassword.verifyEmail.label') }}</label>
             <div class="verify-email-control">
               <i class="pi pi-at verify-email-control-icon" aria-hidden="true"></i>
               <InputText
@@ -130,7 +138,7 @@ function onSubmit() {
                 :class="{ 'verify-email-input--invalid': emailError }"
                 :aria-invalid="Boolean(emailError)"
                 :aria-describedby="emailError ? 'verify-email-error' : undefined"
-                placeholder="name@hfccf.org"
+                :placeholder="t('auth.forgotPassword.verifyEmail.placeholder')"
                 @blur="touchField('email')"
               />
             </div>
@@ -159,7 +167,7 @@ function onSubmit() {
             <template #iconLeft>
               <i class="pi pi-check-circle" aria-hidden="true"></i>
             </template>
-            Continue
+            {{ t('auth.forgotPassword.verifyEmail.continue') }}
           </Button>
         </form>
       </template>

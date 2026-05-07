@@ -30,6 +30,14 @@ const props = defineProps({
     type: Number,
     default: 60,
   },
+  demoCode: {
+    type: String,
+    default: '',
+  },
+  t: {
+    type: Function,
+    required: true,
+  },
 })
 
 const emit = defineEmits(['verify', 'resend', 'back'])
@@ -42,17 +50,17 @@ const touched = reactive({
   code: false,
 })
 
-const randomCode = ref(generateRandomCode())
 const secondsLeft = ref(0)
 let countdownTimer = null
 
 const normalizedCode = computed(() => form.code.replace(/\D/g, '').slice(0, 6))
+const expectedCode = computed(() => String(props.demoCode || '').replace(/\D/g, '').slice(0, 6))
 
 const codeError = computed(() => {
   if (!touched.code) return ''
-  if (!normalizedCode.value) return 'OTP code is required.'
-  if (normalizedCode.value.length !== 6) return 'Enter the 6-digit OTP.'
-  if (normalizedCode.value !== randomCode.value) return 'Enter the displayed OTP code.'
+  if (!normalizedCode.value) return props.t('auth.forgotPassword.verifyCode.errors.required')
+  if (normalizedCode.value.length !== 6) return props.t('auth.forgotPassword.verifyCode.errors.length')
+  if (normalizedCode.value !== expectedCode.value) return props.t('auth.forgotPassword.verifyCode.errors.mismatch')
   return ''
 })
 
@@ -63,10 +71,6 @@ const formattedTimer = computed(() => {
   const seconds = String(secondsLeft.value % 60).padStart(2, '0')
   return `${minutes}:${seconds}`
 })
-
-function generateRandomCode() {
-  return String(Math.floor(100000 + Math.random() * 900000))
-}
 
 function clearCountdown() {
   if (!countdownTimer) return
@@ -94,13 +98,11 @@ watch(
   () => {
     form.code = ''
     touched.code = false
-    randomCode.value = generateRandomCode()
     startCountdown()
   },
 )
 
 onMounted(() => {
-  randomCode.value = generateRandomCode()
   startCountdown()
 })
 
@@ -132,7 +134,6 @@ function onResend() {
 
   form.code = ''
   touched.code = false
-  randomCode.value = generateRandomCode()
   emit('resend', {
     email: props.email,
   })
@@ -146,7 +147,12 @@ function onResend() {
       <template #content>
         <form class="verify-code-fields" @submit.prevent="onSubmit">
           <div class="verify-code-header">
-            <button type="button" class="verify-code-back" aria-label="Change email" @click="$emit('back')">
+            <button
+              type="button"
+              class="verify-code-back"
+              :aria-label="t('auth.forgotPassword.verifyCode.changeEmail')"
+              @click="$emit('back')"
+            >
               <i class="pi pi-arrow-left" aria-hidden="true"></i>
             </button>
 
@@ -155,18 +161,18 @@ function onResend() {
             </div>
 
             <div>
-              <p class="verify-code-eyebrow">Verify code</p>
-              <h2>Enter OTP</h2>
+              <p class="verify-code-eyebrow">{{ t('auth.forgotPassword.verifyCode.eyebrow') }}</p>
+              <h2>{{ t('auth.forgotPassword.verifyCode.title') }}</h2>
             </div>
           </div>
 
           <p class="verify-code-copy">
-            We sent a 6-digit code to <strong>{{ email }}</strong>.
+            {{ t('auth.forgotPassword.verifyCode.copy') }} <strong>{{ email }}</strong>.
           </p>
 
           <div class="verify-code-random" aria-live="polite">
-            <span>Demo OTP</span>
-            <strong>{{ randomCode }}</strong>
+            <span>{{ t('auth.forgotPassword.verifyCode.demoOtp') }}</span>
+            <strong>{{ expectedCode }}</strong>
           </div>
 
           <Message v-if="errorMessage" severity="error" :closable="false">
@@ -177,7 +183,7 @@ function onResend() {
           </Message>
 
           <div class="verify-code-field">
-            <label for="verifyCode">OTP</label>
+            <label for="verifyCode">{{ t('auth.forgotPassword.verifyCode.label') }}</label>
             <div class="verify-code-control">
               <i class="pi pi-lock verify-code-control-icon" aria-hidden="true"></i>
               <InputText
@@ -190,7 +196,7 @@ function onResend() {
                 :class="{ 'verify-code-input--invalid': codeError }"
                 :aria-invalid="Boolean(codeError)"
                 :aria-describedby="codeError ? 'verify-code-error' : undefined"
-                placeholder="000000"
+                :placeholder="t('auth.forgotPassword.verifyCode.placeholder')"
                 @update:model-value="onCodeInput"
                 @blur="touchCode"
               />
@@ -213,11 +219,17 @@ function onResend() {
             <template #iconLeft>
               <i class="pi pi-check-circle" aria-hidden="true"></i>
             </template>
-            Verify OTP
+            {{ t('auth.forgotPassword.verifyCode.submit') }}
           </Button>
 
           <button type="button" class="verify-code-resend" :disabled="!canResend" @click="onResend">
-            {{ resendLoading ? 'Sending...' : secondsLeft > 0 ? `Resend in ${formattedTimer}` : 'Resend OTP' }}
+            {{
+              resendLoading
+                ? t('auth.forgotPassword.verifyCode.sending')
+                : secondsLeft > 0
+                  ? t('auth.forgotPassword.verifyCode.resendIn', { time: formattedTimer })
+                  : t('auth.forgotPassword.verifyCode.resend')
+            }}
           </button>
         </form>
       </template>
