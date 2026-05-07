@@ -28,6 +28,11 @@ DROP TABLE IF EXISTS `personal_access_tokens`;
 DROP TABLE IF EXISTS `password_reset_otps`;
 DROP TABLE IF EXISTS `password_change_requests`;
 DROP TABLE IF EXISTS `admin_audit_logs`;
+DROP TABLE IF EXISTS `preschool_payments`;
+DROP TABLE IF EXISTS `preschool_attendance_records`;
+DROP TABLE IF EXISTS `preschool_class_students`;
+DROP TABLE IF EXISTS `preschool_students`;
+DROP TABLE IF EXISTS `preschool_classes`;
 DROP TABLE IF EXISTS `sport_standings`;
 DROP TABLE IF EXISTS `sport_top_scorers`;
 DROP TABLE IF EXISTS `sport_match_goal_events`;
@@ -264,6 +269,143 @@ CREATE TABLE `admin_audit_logs` (
   KEY `admin_audit_logs_created_at_index` (`created_at`),
   CONSTRAINT `fk_admin_audit_logs_actor_user`
     FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Preschool module source entities currently used by the frontend.
+-- Notes:
+-- 1. Preschool teacher accounts live in `users` with role_code = 'teacher-preschool'.
+-- 2. Class rows preserve `teacher_display_name` because the current frontend mock stores
+--    teacher names as text; `teacher_user_id` is nullable for future normalized assignment.
+-- 3. Student records are preschool data records, not system users.
+
+CREATE TABLE `preschool_classes` (
+  `id` VARCHAR(32) NOT NULL,
+  `code` VARCHAR(32) NOT NULL,
+  `name` VARCHAR(191) NOT NULL,
+  `teacher_user_id` VARCHAR(16) DEFAULT NULL,
+  `teacher_display_name` VARCHAR(191) DEFAULT NULL,
+  `level` ENUM('Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep') NOT NULL,
+  `schedule` VARCHAR(191) NOT NULL,
+  -- Cached denormalized count for the current class table UI. Recalculate from preschool_class_students when assignments change.
+  `students_count` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `status` ENUM('active', 'pending', 'closed') NOT NULL DEFAULT 'active',
+  `room` VARCHAR(100) DEFAULT NULL,
+  `notes` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `preschool_classes_code_unique` (`code`),
+  KEY `preschool_classes_teacher_index` (`teacher_user_id`),
+  KEY `preschool_classes_level_index` (`level`),
+  KEY `preschool_classes_status_index` (`status`),
+  KEY `preschool_classes_deleted_at_index` (`deleted_at`),
+  CONSTRAINT `fk_preschool_classes_teacher`
+    FOREIGN KEY (`teacher_user_id`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `preschool_students` (
+  `id` VARCHAR(32) NOT NULL,
+  `student_code` VARCHAR(32) DEFAULT NULL,
+  `first_name` VARCHAR(100) NOT NULL,
+  `last_name` VARCHAR(100) NOT NULL,
+  `gender` ENUM('male', 'female', 'other') DEFAULT NULL,
+  `date_of_birth` DATE DEFAULT NULL,
+  `guardian_name` VARCHAR(191) DEFAULT NULL,
+  `guardian_phone` VARCHAR(32) DEFAULT NULL,
+  `address` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM('active', 'pending', 'inactive', 'graduated') NOT NULL DEFAULT 'active',
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `preschool_students_code_unique` (`student_code`),
+  KEY `preschool_students_status_index` (`status`),
+  KEY `preschool_students_gender_index` (`gender`),
+  KEY `preschool_students_deleted_at_index` (`deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `preschool_class_students` (
+  `class_id` VARCHAR(32) NOT NULL,
+  `student_id` VARCHAR(32) NOT NULL,
+  `enrolled_at` DATE DEFAULT NULL,
+  `status` ENUM('active', 'transferred', 'completed', 'dropped') NOT NULL DEFAULT 'active',
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`class_id`, `student_id`),
+  KEY `preschool_class_students_student_index` (`student_id`),
+  KEY `preschool_class_students_status_index` (`status`),
+  CONSTRAINT `fk_preschool_class_students_class`
+    FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_preschool_class_students_student`
+    FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `preschool_attendance_records` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `class_id` VARCHAR(32) NOT NULL,
+  `student_id` VARCHAR(32) NOT NULL,
+  `recorded_by_user_id` VARCHAR(16) DEFAULT NULL,
+  `attendance_date` DATE NOT NULL,
+  `status` ENUM('present', 'absent', 'late', 'excused') NOT NULL DEFAULT 'present',
+  `note` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `preschool_attendance_unique` (`class_id`, `student_id`, `attendance_date`),
+  KEY `preschool_attendance_student_index` (`student_id`),
+  KEY `preschool_attendance_recorded_by_index` (`recorded_by_user_id`),
+  KEY `preschool_attendance_date_index` (`attendance_date`),
+  KEY `preschool_attendance_status_index` (`status`),
+  CONSTRAINT `fk_preschool_attendance_class`
+    FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_preschool_attendance_student`
+    FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_preschool_attendance_recorded_by`
+    FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `preschool_payments` (
+  `id` VARCHAR(32) NOT NULL,
+  `student_id` VARCHAR(32) DEFAULT NULL,
+  `class_id` VARCHAR(32) DEFAULT NULL,
+  `payment_reference` VARCHAR(64) DEFAULT NULL,
+  `amount` DECIMAL(10, 2) UNSIGNED NOT NULL DEFAULT 0.00,
+  `currency` CHAR(3) NOT NULL DEFAULT 'USD',
+  `payment_method` ENUM('cash', 'bank_transfer', 'mobile_payment', 'other') NOT NULL DEFAULT 'cash',
+  `payment_status` ENUM('pending', 'paid', 'overdue', 'cancelled', 'refunded') NOT NULL DEFAULT 'pending',
+  `paid_at` DATETIME DEFAULT NULL,
+  `due_date` DATE DEFAULT NULL,
+  `note` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `preschool_payments_student_index` (`student_id`),
+  KEY `preschool_payments_class_index` (`class_id`),
+  KEY `preschool_payments_status_index` (`payment_status`),
+  KEY `preschool_payments_due_date_index` (`due_date`),
+  KEY `preschool_payments_deleted_at_index` (`deleted_at`),
+  CONSTRAINT `fk_preschool_payments_student`
+    FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_preschool_payments_class`
+    FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -519,10 +661,14 @@ INSERT INTO `roles` (`code`, `name`, `scope`, `domain_code`, `department`, `sort
 INSERT INTO `permissions` (`code`, `name`) VALUES
   ('all:*', 'Full system access'),
   ('athletes:read', 'Read athletes'),
+  ('attendance:write', 'Manage attendance'),
+  ('classes:write', 'Manage classes'),
   ('dashboard:read', 'Read dashboard'),
   ('programs:write', 'Manage programs'),
   ('reports:read', 'Read reports'),
   ('settings:read', 'Read settings'),
+  ('students:read', 'Read students'),
+  ('students:write', 'Manage students'),
   ('tasks:read', 'Read tasks'),
   ('tasks:write', 'Manage tasks'),
   ('training:write', 'Manage training'),
@@ -541,6 +687,10 @@ INSERT INTO `role_permissions` (`role_code`, `permission_code`) VALUES
   ('adminpreschool', 'users:read'),
   ('adminpreschool', 'users:write'),
   ('adminpreschool', 'reports:read'),
+  ('adminpreschool', 'classes:write'),
+  ('adminpreschool', 'students:read'),
+  ('adminpreschool', 'students:write'),
+  ('adminpreschool', 'attendance:write'),
   ('adminpreschool', 'settings:read'),
 
   ('adminscholaship', 'dashboard:read'),
@@ -563,6 +713,9 @@ INSERT INTO `role_permissions` (`role_code`, `permission_code`) VALUES
   ('teacher-english', 'tasks:write'),
 
   ('teacher-preschool', 'dashboard:read'),
+  ('teacher-preschool', 'classes:write'),
+  ('teacher-preschool', 'students:read'),
+  ('teacher-preschool', 'attendance:write'),
   ('teacher-preschool', 'tasks:read'),
   ('teacher-preschool', 'tasks:write'),
 
@@ -649,6 +802,27 @@ INSERT INTO `website_team_expertise` (`department_code`, `expertise_text`, `disp
   ('project-coordination', 'Feature planning and delivery tracking', 1),
   ('project-coordination', 'Cross-team communication', 2),
   ('project-coordination', 'Scope, timeline, and handoff coordination', 3);
+
+INSERT INTO `preschool_classes` (
+  `id`,
+  `code`,
+  `name`,
+  `teacher_user_id`,
+  `teacher_display_name`,
+  `level`,
+  `schedule`,
+  `students_count`,
+  `status`,
+  `room`,
+  `notes`
+) VALUES
+  ('preschool-class-1', 'PS-NUR-01', 'Morning Nursery', NULL, 'Srey Pov', 'Nursery', 'Mon-Fri, 8:00 AM', 18, 'active', 'Room A1', ''),
+  ('preschool-class-2', 'PS-KA-02', 'Kindergarten A Blue', NULL, 'Dara', 'Kindergarten A', 'Mon-Fri, 9:30 AM', 22, 'active', 'Room B2', ''),
+  ('preschool-class-3', 'PS-KB-01', 'Kindergarten B Red', NULL, 'Malis', 'Kindergarten B', 'Mon-Fri, 1:00 PM', 20, 'pending', 'Room C1', ''),
+  ('preschool-class-4', 'PS-PRE-01', 'Prep Readiness Group', NULL, 'Sokha', 'Prep', 'Mon-Fri, 2:30 PM', 16, 'active', 'Room D1', ''),
+  ('preschool-class-5', 'PS-NUR-02', 'Afternoon Nursery', NULL, 'Chanthy', 'Nursery', 'Mon-Fri, 1:30 PM', 17, 'closed', 'Room A2', ''),
+  ('preschool-class-6', 'PS-KA-03', 'Kindergarten A Green', NULL, 'Pisey', 'Kindergarten A', 'Sat, 8:30 AM', 14, 'active', 'Room B1', ''),
+  ('preschool-class-7', 'PS-KB-02', 'Kindergarten B Yellow', NULL, 'Ratha', 'Kindergarten B', 'Sat, 10:00 AM', 15, 'pending', 'Room C2', '');
 
 INSERT INTO `sport_tournaments` (`id`, `title`, `subtitle`, `location`, `status`, `planned_matches`) VALUES
   (
@@ -934,6 +1108,7 @@ INNER JOIN `role_permissions` AS `rp`
 -- LEFT JOIN user_permissions up ON up.user_id = u.id
 -- GROUP BY u.id;
 
+<<<<<<< HEAD
 -- Auth recovery API shape:
 -- 1. Forgot-password email verification should find an active Super Admin user.
 -- 2. Sending/resending OTP should create a password_reset_otps row with otp_hash,
@@ -943,6 +1118,18 @@ INNER JOIN `role_permissions` AS `rp`
 --    then mark the OTP status = 'used' and set used_at.
 -- 5. password_change_requests is separate: use it for admin-approved password changes,
 --    not for the public forgot-password OTP flow.
+=======
+-- Current Preschool frontend data shape:
+-- 1. Preschool teachers are system users with role_code = 'teacher-preschool'.
+-- 2. Class management comes from `preschool_classes`; status values should be mapped
+--    between API lowercase values and frontend labels such as Active/Pending/Closed.
+-- 3. Student information comes from `preschool_students`; students are data records,
+--    not system users.
+-- 4. Teacher "My Students" should join users -> preschool_classes.teacher_user_id
+--    -> preschool_class_students -> preschool_students when teacher assignments exist.
+-- 5. Attendance pages should read/write `preschool_attendance_records`.
+-- 6. Payment pages should read/write `preschool_payments`.
+>>>>>>> main
 
 -- Current Sport frontend data shape:
 -- 1. Coaches come from `users` filtered by role_code = 'coach'.

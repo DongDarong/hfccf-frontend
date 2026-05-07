@@ -5,7 +5,7 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
-  name: 'PreschoolAdminStuduntInforPage',
+  name: 'PreschoolAdminStudentInfoPage',
 })
 
 const { language } = useLanguage()
@@ -14,7 +14,7 @@ const isKh = computed(() => language.value === 'KH')
 
 <template>
   <MainLayout>
-    <section :class="isKh ? 'studunt-infor-page studunt-infor-page--kh' : 'studunt-infor-page'">
+    <section :class="isKh ? 'student-info-page student-info-page--kh' : 'student-info-page'">
       <HeaderSection
         :title="isKh ? 'ព័ត៌មានសិស្ស' : 'Student Information'"
         :subtitle="
@@ -24,8 +24,8 @@ const isKh = computed(() => language.value === 'KH')
         "
       />
 
-      <div class="studunt-infor-page__panel">
-        <p class="studunt-infor-page__text">
+      <div class="student-info-page__panel">
+        <p class="student-info-page__text">
           {{
             isKh
               ? 'អ្នកអាចបន្ថែមតារាងព័ត៌មានសិស្ស ការស្វែងរក ឬទម្រង់លម្អិតនៅទីនេះ។'
@@ -38,13 +38,13 @@ const isKh = computed(() => language.value === 'KH')
 </template>
 
 <style scoped>
-.studunt-infor-page {
+.student-info-page {
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
 }
 
-.studunt-infor-page__panel {
+.student-info-page__panel {
   padding: 1.5rem;
   border-radius: 1.5rem;
   border: 1px solid #dce6f2;
@@ -54,21 +54,21 @@ const isKh = computed(() => language.value === 'KH')
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.studunt-infor-page__text {
+.student-info-page__text {
   margin: 0;
   color: #475569;
   font-size: 0.96rem;
   line-height: 1.65;
 }
 
-.studunt-infor-page--kh .studunt-infor-page__text {
+.student-info-page--kh .student-info-page__text {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
   line-height: 1.75;
 }
 
 @media (max-width: 640px) {
-  .studunt-infor-page__panel {
+  .student-info-page__panel {
     padding: 1.1rem;
   }
 }
