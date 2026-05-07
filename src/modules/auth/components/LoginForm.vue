@@ -49,24 +49,39 @@ const touched = reactive({
   userType: false,
 })
 
+const USER_TYPE_GROUPS = Object.freeze({
+  ADMIN: 'admin',
+  STAFF: 'staff',
+})
+
+const adminRoleValues = [
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN_ENGLISH,
+  ROLES.ADMIN_PRESCHOOL,
+  ROLES.ADMIN_SCHOLARSHIP,
+  ROLES.ADMIN_SPORT,
+]
+
+const staffRoleValues = [
+  ROLES.TEACHER_ENGLISH,
+  ROLES.TEACHER_PRESCHOOL,
+  ROLES.TEACHER_SCHOLARSHIP,
+  ROLES.COACH,
+]
+
 const userTypeOptions = [
-  { label: 'Super Admin', khLabel: 'អ្នកគ្រប់គ្រងធំ', value: ROLES.SUPER_ADMIN },
-  { label: 'English Admin', khLabel: 'អ្នកគ្រប់គ្រងអង់គ្លេស', value: ROLES.ADMIN_ENGLISH },
-  { label: 'Preschool Admin', khLabel: 'អ្នកគ្រប់គ្រងមត្តេយ្យ', value: ROLES.ADMIN_PRESCHOOL },
   {
-    label: 'Scholarship Admin',
-    khLabel: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍',
-    value: ROLES.ADMIN_SCHOLARSHIP,
+    label: 'Admin',
+    khLabel: 'អ្នកគ្រប់គ្រង',
+    value: USER_TYPE_GROUPS.ADMIN,
+    roles: adminRoleValues,
   },
-  { label: 'Sport Admin', khLabel: 'អ្នកគ្រប់គ្រងកីឡា', value: ROLES.ADMIN_SPORT },
-  { label: 'English Teacher', khLabel: 'គ្រូអង់គ្លេស', value: ROLES.TEACHER_ENGLISH },
-  { label: 'Preschool Teacher', khLabel: 'គ្រូមត្តេយ្យ', value: ROLES.TEACHER_PRESCHOOL },
   {
-    label: 'Scholarship Teacher',
-    khLabel: 'គ្រូអាហារូបករណ៍',
-    value: ROLES.TEACHER_SCHOLARSHIP,
+    label: 'Staff',
+    khLabel: 'បុគ្គលិក',
+    value: USER_TYPE_GROUPS.STAFF,
+    roles: staffRoleValues,
   },
-  { label: 'Coach', khLabel: 'គ្រូបង្វឹក', value: ROLES.COACH },
 ]
 
 const allowedRoleValues = computed(() =>
@@ -81,8 +96,17 @@ const normalizedUserType = computed(() =>
     .toLowerCase(),
 )
 
+const selectedUserTypeOption = computed(() =>
+  userTypeOptions.find((option) => option.value === normalizedUserType.value),
+)
+
+function optionMatchesAllowedRoles(option) {
+  if (!allowedRoleValues.value.length) return true
+  return option.roles.some((role) => allowedRoleValues.value.includes(role))
+}
+
 const isRoleAllowed = computed(
-  () => !allowedRoleValues.value.length || allowedRoleValues.value.includes(normalizedUserType.value),
+  () => Boolean(selectedUserTypeOption.value) && optionMatchesAllowedRoles(selectedUserTypeOption.value),
 )
 
 const recoveryRole = computed(() =>
@@ -91,9 +115,13 @@ const recoveryRole = computed(() =>
     .toLowerCase(),
 )
 
+const canUsePasswordRecovery = computed(() =>
+  Boolean(selectedUserTypeOption.value?.roles.includes(recoveryRole.value)),
+)
+
 const localizedUserTypeOptions = computed(() =>
   userTypeOptions
-    .filter((option) => !allowedRoleValues.value.length || allowedRoleValues.value.includes(option.value))
+    .filter((option) => optionMatchesAllowedRoles(option))
     .map((option) => ({
       ...option,
       displayLabel: isKhmer.value ? option.khLabel : option.label,
@@ -155,6 +183,15 @@ function hasRequiredPermissionsForRole(user) {
   return requiredPermissions.every((permission) => userPermissions.includes(permission))
 }
 
+function userMatchesSelectedType(user) {
+  const role = String(user?.role || '')
+    .trim()
+    .toLowerCase()
+
+  // The dropdown is intentionally broad, but the signed-in account must still match its real role group.
+  return Boolean(selectedUserTypeOption.value?.roles.includes(role))
+}
+
 async function onSubmit() {
   touched.email = true
   touched.password = true
@@ -169,9 +206,13 @@ async function onSubmit() {
     const authenticatedUser = await login({
       email: form.email.trim().toLowerCase(),
       password: form.password,
-      role: normalizedUserType.value,
       remember: form.remember,
     })
+
+    if (!userMatchesSelectedType(authenticatedUser) || !isRoleAllowed.value) {
+      logout()
+      throw new Error('This account does not match the selected user type.')
+    }
 
     if (!hasRequiredPermissionsForRole(authenticatedUser)) {
       logout()
@@ -299,7 +340,7 @@ async function onLoginSuccessClose() {
             </label>
 
             <RouterLink
-              v-if="normalizedUserType === recoveryRole"
+              v-if="canUsePasswordRecovery"
               :to="{ name: 'forgot-password' }"
               class="font-semibold text-sky-700 transition hover:text-sky-800 max-sm:self-start"
             >

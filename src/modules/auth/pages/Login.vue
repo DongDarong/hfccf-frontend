@@ -8,6 +8,7 @@ const loginAccessPolicy = Object.freeze({
   guestOnly: true,
   defaultRedirect: '/module/dashboard',
   recoveryRole: ROLES.SUPER_ADMIN,
+  // Keep exact backend roles here; LoginForm groups them into Admin and Staff for the UI.
   allowedRoles: [
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN_ENGLISH,
@@ -28,7 +29,7 @@ const loginAccessPolicy = Object.freeze({
     [ROLES.TEACHER_ENGLISH]: ['dashboard:read', 'tasks:read'],
     [ROLES.TEACHER_PRESCHOOL]: ['dashboard:read', 'tasks:read'],
     [ROLES.TEACHER_SCHOLARSHIP]: ['dashboard:read', 'tasks:read'],
-    [ROLES.COACH]: ['dashboard:read', 'tasks:read'],
+    [ROLES.COACH]: ['dashboard:read', 'training:write'],
   },
 })
 
