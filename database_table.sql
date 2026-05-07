@@ -25,6 +25,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `personal_access_tokens`;
+DROP TABLE IF EXISTS `password_reset_otps`;
 DROP TABLE IF EXISTS `password_change_requests`;
 DROP TABLE IF EXISTS `admin_audit_logs`;
 DROP TABLE IF EXISTS `sport_standings`;
@@ -181,6 +182,35 @@ CREATE TABLE `password_change_requests` (
   CONSTRAINT `fk_password_change_requests_reviewed_by`
     FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`)
     ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `password_reset_otps` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` VARCHAR(16) NOT NULL,
+  `email` VARCHAR(191) NOT NULL,
+  -- Store only a hash of the OTP; never persist the 6-digit code in plain text.
+  `otp_hash` VARCHAR(255) NOT NULL,
+  `purpose` ENUM('forgot_password') NOT NULL DEFAULT 'forgot_password',
+  `status` ENUM('pending', 'verified', 'used', 'expired', 'cancelled') NOT NULL DEFAULT 'pending',
+  `attempts` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `max_attempts` TINYINT UNSIGNED NOT NULL DEFAULT 5,
+  `expires_at` TIMESTAMP NOT NULL,
+  `verified_at` TIMESTAMP NULL DEFAULT NULL,
+  `used_at` TIMESTAMP NULL DEFAULT NULL,
+  `last_sent_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `request_ip` VARCHAR(45) DEFAULT NULL,
+  `user_agent` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `password_reset_otps_user_index` (`user_id`),
+  KEY `password_reset_otps_email_index` (`email`),
+  KEY `password_reset_otps_status_index` (`status`),
+  KEY `password_reset_otps_expires_at_index` (`expires_at`),
+  CONSTRAINT `fk_password_reset_otps_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -903,6 +933,16 @@ INNER JOIN `role_permissions` AS `rp`
 -- INNER JOIN departments d ON d.code = u.department_code
 -- LEFT JOIN user_permissions up ON up.user_id = u.id
 -- GROUP BY u.id;
+
+-- Auth recovery API shape:
+-- 1. Forgot-password email verification should find an active Super Admin user.
+-- 2. Sending/resending OTP should create a password_reset_otps row with otp_hash,
+--    expires_at, request_ip, and user_agent. The plain OTP is only sent to the user.
+-- 3. OTP verification should increment attempts, mark status = 'verified', and set verified_at.
+-- 4. Creating the new password should require a verified, unexpired OTP, update users.password,
+--    then mark the OTP status = 'used' and set used_at.
+-- 5. password_change_requests is separate: use it for admin-approved password changes,
+--    not for the public forgot-password OTP flow.
 
 -- Current Sport frontend data shape:
 -- 1. Coaches come from `users` filtered by role_code = 'coach'.
