@@ -33,8 +33,31 @@
           },
           "routeNameByDomain": {
             "english": "dashboard-english-teacher",
+            "preschool": "dashboard-preschool-teacher",
             "sport": "dashboard-sport-coach",
             "default": "dashboard"
+          }
+        },
+        {
+          "id": "preschool-teacher-students",
+          "routeName": "dashboard-preschool-teacher-students",
+          "labelKey": "nav.items.myStudents",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["staff"],
+            "domains": ["preschool"]
+          }
+        },
+        {
+          "id": "preschool-teacher-attendance",
+          "routeName": "dashboard-preschool-teacher-attendance",
+          "labelKey": "nav.items.attendance",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["staff"],
+            "domains": ["preschool"]
           }
         },
         {
@@ -73,7 +96,18 @@
         {
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
-          "label": "Classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": ["admin"],
+            "domains": ["preschool"]
+          }
+        },
+        {
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "labelKey": "nav.items.payments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff",
           "access": {
@@ -225,6 +259,13 @@
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
           "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "labelKey": "nav.items.payments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
         }
