@@ -59,6 +59,8 @@ Use the smallest valid scope first. For example:
 - Avoid duplicating existing UI logic.
 - Update English and Khmer i18n keys together.
 - Run lint after structural or template changes when practical.
+- When a task creates or changes implementation files, stage the result with `git add` and create a commit before closing the task.
+- If the task needs a branch name or branch split, create the branch that matches the requested scope before committing.
 
 ## 6. Database and Contract Alignment
 

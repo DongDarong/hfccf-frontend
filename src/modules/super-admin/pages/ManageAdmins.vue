@@ -43,9 +43,6 @@ const searchPlaceholder = computed(() => t('users.manageAdmins.searchPlaceholder
 const addButtonLabel = computed(() => t('users.manageAdmins.addButton'))
 const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
 const refreshButtonLabel = computed(() => t('common.refresh'))
-const toolbarCountText = computed(() =>
-  t('users.manageAdmins.accountsInView', { count: filteredAdmins.value.length }),
-)
 const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
 const loadingLabel = computed(() => t('users.manageAdmins.loading'))
 
@@ -253,9 +250,6 @@ onMounted(() => {
         />
 
         <AdminManagementListPanel
-          :title="pageTitle"
-          :note="toolbarCountText"
-          :records-text="toolbarNote"
           :refresh-label="refreshButtonLabel"
           :search-query="searchQuery"
           :role-filter="roleFilter"

@@ -9,18 +9,6 @@ defineOptions({
 })
 
 defineProps({
-  title: {
-    type: String,
-    default: '',
-  },
-  note: {
-    type: String,
-    default: '',
-  },
-  recordsText: {
-    type: String,
-    default: '',
-  },
   refreshLabel: {
     type: String,
     default: '',
@@ -93,26 +81,15 @@ const emit = defineEmits([
 
 <template>
   <section class="rounded-2xl border border-surface-200/90 bg-white p-4 shadow-[0_22px_56px_-40px_rgba(15,23,42,0.42)] md:p-5">
-    <div class="mb-4 flex flex-col gap-2 border-b border-slate-100 pb-4">
-      <div class="flex items-center justify-between gap-3">
-        <p class="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
-          {{ title }}
-        </p>
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-slate-500 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-800"
-          @click="emit('refresh')"
-        >
-          <i class="pi pi-sync" aria-hidden="true"></i>
-          {{ refreshLabel }}
-        </button>
-      </div>
-      <p class="text-[0.9rem] leading-6 text-slate-600">
-        {{ note }}
-      </p>
-      <p v-if="recordsText" class="text-[0.84rem] font-semibold text-cyan-700">
-        {{ recordsText }}
-      </p>
+    <div class="mb-4 flex justify-end">
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-slate-500 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-800"
+        @click="emit('refresh')"
+      >
+        <i class="pi pi-sync" aria-hidden="true"></i>
+        {{ refreshLabel }}
+      </button>
     </div>
 
     <SearchFilterBar
