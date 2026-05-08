@@ -16,8 +16,10 @@ This file defines the conditions Codex should follow when generating code or cre
 - Use Tailwind CSS for layout, spacing, and responsive styling.
 - Use i18n for all user-facing text. Do not hardcode labels, placeholders, or alerts.
 - Keep mock data in `src/mocks/` when the feature is frontend-driven.
+- Put API calls in service files instead of calling `http` directly from page components.
 - Preserve existing route names, role codes, and domain codes unless the task explicitly requires a change.
 - Keep players, coaches, staff, and system users separate when the domain model treats them separately.
+- Keep frontend-only persistence behind a service layer so it can be replaced by backend API calls later.
 
 ## 3. File Creation Rules
 
@@ -65,3 +67,60 @@ Use the smallest valid scope first. For example:
 - If a field is intentionally denormalized, document it in the schema or code comment.
 - If a new UI field needs persistence later, add the schema note now and keep the frontend mapper clear.
 
+## 7. Backend API Connection Rules
+
+- Use `src/services/http.js` for shared API requests.
+- In local development, `VITE_API_BASE_URL=/api` is proxied by Vite to `http://hfccf-backend.test`.
+- Do not bypass the shared HTTP client for authenticated frontend requests.
+- Store backend bearer tokens only through `src/services/auth.js`.
+- Keep auth response mapping compatible with the backend `AuthUserResource` shape:
+  - `id`
+  - `firstName`
+  - `lastName`
+  - `username`
+  - `email`
+  - `phone`
+  - `role`
+  - `scope`
+  - `domain`
+  - `departmentCode`
+  - `department`
+  - `bio`
+  - `status`
+  - `avatar`
+  - `createdAt`
+  - `lastLoginAt`
+  - `role_permission`
+- Current connected auth endpoints:
+  - `POST /auth/login`
+  - `GET /auth/me`
+  - `POST /auth/logout`
+  - `POST /auth/forgot-password`
+  - `POST /auth/verify-otp`
+  - `POST /auth/reset-password`
+- Restart `npm run dev` after changing `.env.*` or Vite proxy settings.
+
+## 8. Current Frontend-Only Persistence
+
+- Super Admin user add/edit/delete is currently frontend-only.
+- The storage service is `src/modules/super-admin/services/adminUsersStorage.js`.
+- It persists admin users in `localStorage` using the key `hfccf-super-admin-users`.
+- Keep all Super Admin user CRUD page logic routed through this service until a backend users API exists.
+- When the backend users CRUD API is created, replace this service implementation with API calls and keep page components unchanged where possible.
+
+## 9. Domain Boundaries
+
+- System users are authentication/RBAC accounts.
+- Players are sport data records, not system users.
+- Preschool students are preschool data records, not system users.
+- Coaches can be system users because they log in, but player records must not be modeled as users.
+- User status and player status must stay separate because they represent different workflows.
+
+## 10. Backend Schema Notes To Preserve
+
+- Keep string IDs such as `usr_001`, `team_001`, and `preschool-class-1`.
+- Do not rename the role code `adminscholaship`; the frontend depends on that exact value.
+- Keep `roles.department_code` and `users.department_code` normalized against `departments.code`.
+- Keep `sport_matches.home_score` and `sport_matches.away_score` normalized; format display scores in the frontend/API layer.
+- Keep `sport_standings.goal_difference` numeric; format positive values with `+` in the frontend/API layer.
+- If team names are needed for players, prefer joining through `team_id` instead of duplicating `team_name`.
