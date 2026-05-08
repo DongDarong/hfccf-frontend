@@ -6,9 +6,9 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
-import AdminManagementToolbar from '@/modules/super-admin/components/admin-management/AdminManagementToolbar.vue'
-import AdminManagementListPanel from '@/modules/super-admin/components/admin-management/AdminManagementListPanel.vue'
-import AdminManagementDialogs from '@/modules/super-admin/components/admin-management/AdminManagementDialogs.vue'
+import AdminManagementToolbar from '@/modules/super-admin/components/admin-management/list/AdminManagementToolbar.vue'
+import AdminManagementListPanel from '@/modules/super-admin/components/admin-management/list/AdminManagementListPanel.vue'
+import AdminManagementDialogs from '@/modules/super-admin/components/admin-management/dialogs/AdminManagementDialogs.vue'
 import {
   deleteAdminUser,
   listAdminUsers,
@@ -42,6 +42,7 @@ const pageSubtitle = computed(() => t('users.manageAdmins.summary'))
 const searchPlaceholder = computed(() => t('users.manageAdmins.searchPlaceholder'))
 const addButtonLabel = computed(() => t('users.manageAdmins.addButton'))
 const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
+const refreshButtonLabel = computed(() => t('common.refresh'))
 const toolbarCountText = computed(() =>
   t('users.manageAdmins.accountsInView', { count: filteredAdmins.value.length }),
 )
@@ -293,7 +294,7 @@ onMounted(() => {
       :success-message="successMessage"
       :success-button-text="t('common.close')"
       :error-show="showError"
-      :error-title="t('common.error') || 'Error'"
+      :error-title="t('common.error')"
       :error-message="errorMessage"
       :error-button-text="t('common.close')"
       @confirm-delete="onConfirmDelete"
