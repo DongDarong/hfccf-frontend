@@ -19,7 +19,7 @@ import {
   createAdminUser,
   findAdminUserById,
   updateAdminUser,
-} from '@/modules/super-admin/services/adminUsersStorage'
+} from '@/modules/super-admin/services/adminUsersApi'
 
 defineOptions({
   name: 'AddAdminPage',
@@ -116,8 +116,8 @@ function validateForm() {
   if (!form.role) return t('users.addAdmin.validation.roleRequired')
   if (!form.permissions.length) return t('users.addAdmin.validation.permissionsRequired')
   if (!form.status) return t('users.addAdmin.validation.statusRequired')
-  if (!isEditMode.value && form.password.length < 6) return t('users.addAdmin.validation.passwordLength')
-  if (isEditMode.value && form.password && form.password.length < 6) return t('users.addAdmin.validation.passwordLength')
+  if (!isEditMode.value && form.password.length < 8) return t('users.addAdmin.validation.passwordLength')
+  if (isEditMode.value && form.password && form.password.length < 8) return t('users.addAdmin.validation.passwordLength')
   if (form.password || form.confirmPassword) {
     if (form.password !== form.confirmPassword) return t('users.addAdmin.validation.passwordMismatch')
   }
@@ -199,13 +199,14 @@ async function onSubmit() {
       permissions: form.permissions,
       status: form.status,
       avatar: profileImagePreview.value,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
     }
 
-    // This is frontend persistence only; replace with Super Admin users API calls when backend CRUD is ready.
     if (isEditMode.value) {
-      updateAdminUser(editingUserId.value, payload)
+      await updateAdminUser(editingUserId.value, payload)
     } else {
-      createAdminUser(payload)
+      await createAdminUser(payload)
     }
 
     showSuccess.value = true
@@ -232,7 +233,7 @@ function onErrorClose() {
   showError.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (!isEditMode.value) {
     const requestedRole = String(route.query.role || '').trim()
     if (roleOptions.includes(requestedRole)) {
@@ -241,7 +242,7 @@ onMounted(() => {
     return
   }
 
-  const found = findAdminUserById(editingUserId.value)
+  const found = await findAdminUserById(editingUserId.value)
   if (!found) return
   form.name = found.name || found.username || ''
   form.email = found.email || ''

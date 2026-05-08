@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -10,10 +10,14 @@ import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import AlertError from '@/components/alerts/AlertError.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
-import { deleteAdminUser, getAdminUsers } from '@/modules/super-admin/services/adminUsersStorage'
+import {
+  deleteAdminUser,
+  listAdminUsers,
+} from '@/modules/super-admin/services/adminUsersApi'
 
 defineOptions({
   name: 'AdminManagementPage',
@@ -31,6 +35,8 @@ const selectedUserId = ref('')
 const selectedUserName = ref('')
 const showSuccess = ref(false)
 const successMessage = ref('')
+const showError = ref(false)
+const errorMessage = ref('')
 
 const pageSize = 10
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
@@ -44,7 +50,7 @@ const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
 const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
 const loadingLabel = computed(() => t('users.manageAdmins.loading'))
 
-const admins = ref(getAdminUsers())
+const admins = ref([])
 
 function statusLabel(status) {
   const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
@@ -173,13 +179,17 @@ function onCancelDelete() {
 
 async function onConfirmDelete() {
   isLoading.value = true
+  showError.value = false
+  errorMessage.value = ''
 
   try {
-    // Persist the frontend-only delete so the table stays in sync across page navigation.
-    deleteAdminUser(selectedUserId.value)
-    admins.value = getAdminUsers()
+    await deleteAdminUser(selectedUserId.value)
+    admins.value = await listAdminUsers()
     successMessage.value = t('users.manageAdmins.removeSuccess')
     showSuccess.value = true
+  } catch (error) {
+    errorMessage.value = error?.message || 'Unable to delete admin right now.'
+    showError.value = true
   } finally {
     isLoading.value = false
   }
@@ -198,6 +208,25 @@ const deleteConfirmMessage = computed(() => {
   return translated !== 'users.deleteConfirmMessage'
     ? translated
     : `Are you sure you want to delete ${name}?`
+})
+
+async function loadAdmins() {
+  isLoading.value = true
+  showError.value = false
+  errorMessage.value = ''
+
+  try {
+    admins.value = await listAdminUsers()
+  } catch (error) {
+    errorMessage.value = error?.message || 'Unable to load admin accounts right now.'
+    showError.value = true
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadAdmins()
 })
 </script>
 
@@ -290,6 +319,14 @@ const deleteConfirmMessage = computed(() => {
       :message="successMessage"
       :button-text="t('common.close')"
       @close="showSuccess = false"
+    />
+
+    <AlertError
+      :show="showError"
+      :title="t('common.error') || 'Error'"
+      :message="errorMessage"
+      :button-text="t('common.close')"
+      @close="showError = false"
     />
   </MainLayout>
 </template>
