@@ -11,10 +11,9 @@ import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
-import { PROGRAM_ADMIN_ROLES, ROLES, isProgramAdminRole, isSuperAdminRole } from '@/constants/roles'
-import { mapUsers } from '@/services/mappers/userMapper'
-import usersMock from '@/mocks/users.json'
+import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
+import { deleteAdminUser, getAdminUsers } from '@/modules/super-admin/services/adminUsersStorage'
 
 defineOptions({
   name: 'AdminManagementPage',
@@ -45,9 +44,7 @@ const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
 const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
 const loadingLabel = computed(() => t('users.manageAdmins.loading'))
 
-const admins = ref(
-  mapUsers(usersMock).filter((user) => isSuperAdminRole(user.role) || isProgramAdminRole(user.role)),
-)
+const admins = ref(getAdminUsers())
 
 function statusLabel(status) {
   const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
@@ -174,13 +171,22 @@ function onCancelDelete() {
   selectedUserName.value = ''
 }
 
-function onConfirmDelete() {
-  admins.value = admins.value.filter((user) => user.id !== selectedUserId.value)
+async function onConfirmDelete() {
+  isLoading.value = true
+
+  try {
+    // Persist the frontend-only delete so the table stays in sync across page navigation.
+    deleteAdminUser(selectedUserId.value)
+    admins.value = getAdminUsers()
+    successMessage.value = t('users.manageAdmins.removeSuccess')
+    showSuccess.value = true
+  } finally {
+    isLoading.value = false
+  }
+
   isDeleteOpen.value = false
   selectedUserId.value = ''
   selectedUserName.value = ''
-  successMessage.value = t('users.manageAdmins.removeSuccess')
-  showSuccess.value = true
 }
 
 const deleteConfirmTitle = computed(() => t('users.deleteConfirmTitle') || 'Delete admin?')

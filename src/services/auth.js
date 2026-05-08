@@ -27,12 +27,20 @@ function sanitizeUser(user) {
 }
 
 function getApiErrorMessage(error, fallbackMessage) {
+  if (error?.code === 'ERR_NETWORK') {
+    return 'Unable to reach the backend API. Check that the backend is running and the API URL is correct.'
+  }
+
   const apiMessage = error?.response?.data?.message || error?.response?.data?.error
   return apiMessage || fallbackMessage
 }
 
 function getApiPayload(response) {
   return response?.data?.data || response?.data || {}
+}
+
+function isHttpClientError(error) {
+  return Boolean(error?.response || error?.request)
 }
 
 function hasToken(storage) {
@@ -92,6 +100,7 @@ export async function login({ email, password, remember = false }) {
 
     return safeUser
   } catch (error) {
+    if (!isHttpClientError(error)) throw error
     throw new Error(getApiErrorMessage(error, 'Invalid email or password.'), { cause: error })
   }
 }
@@ -162,11 +171,40 @@ export async function resetPassword({ email, code, password, password_confirmati
   }
 }
 
+export async function getAuthenticatedUser() {
+  try {
+    const response = await http.get('/auth/me')
+    const payload = getApiPayload(response)
+    const user = payload.user || payload
+    const safeUser = sanitizeUser(user)
+    const storage = getSessionStorage()
+
+    // Keep stored profile data aligned with the backend after page refreshes or profile updates.
+    storage?.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
+    touchActivity()
+
+    return safeUser
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Unable to load authenticated user.'), { cause: error })
+  }
+}
+
 export function logout() {
   if (typeof window === 'undefined') return
 
   clearSessionStorage(window.localStorage)
   clearSessionStorage(window.sessionStorage)
+}
+
+export async function logoutFromApi() {
+  try {
+    if (getAuthToken()) {
+      await http.post('/auth/logout')
+    }
+  } finally {
+    // Local cleanup must always run even if the API token was already expired or revoked.
+    logout()
+  }
 }
 
 function getStoredUser() {

@@ -77,6 +77,14 @@ export default defineConfig(({ command }) => {
     plugins: [vue(), tailwindcss(), securityHeadersPlugin()],
     server: {
       headers: securityHeaders,
+      proxy: {
+        // Keep local API requests same-origin in the browser; Vite forwards them to the Laravel backend.
+        '/api': {
+          target: 'http://hfccf-backend.test',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
     preview: {
       headers: createSecurityHeaders({ isDev: false }),

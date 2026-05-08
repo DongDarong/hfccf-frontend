@@ -7,7 +7,7 @@ import BlockUI from 'primevue/blockui'
 import Navbar from '@/components/navigation/Navbar.vue'
 import Sidebar from '@/components/navigation/Sidebar.vue'
 import Loading from '@/components/feedback/Loading.vue'
-import { logout as clearAuthSession } from '@/services/auth'
+import { logoutFromApi } from '@/services/auth'
 
 const props = defineProps({
   mobileBreakpoint: {
@@ -86,7 +86,7 @@ function onContentClick() {
 }
 
 async function onSidebarLogout() {
-  clearAuthSession()
+  await logoutFromApi()
   closeSidebar()
   if (route.name !== 'login') {
     await router.push({ name: 'login' })

@@ -9,14 +9,17 @@ import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { ROLES } from '@/constants/roles'
-import { mapUser } from '@/services/mappers/userMapper'
-import usersMock from '@/mocks/users.json'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
 import AddAdminPermissionsField from '@/modules/super-admin/components/admin-management/AddAdminPermissionsField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
+import {
+  createAdminUser,
+  findAdminUserById,
+  updateAdminUser,
+} from '@/modules/super-admin/services/adminUsersStorage'
 
 defineOptions({
   name: 'AddAdminPage',
@@ -34,7 +37,7 @@ const roleOptions = [
   ROLES.SUPER_ADMIN,
 ]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const permissionOptions = ['manage_users', 'view_reports', 'manage_programs', 'approve_requests']
+const permissionOptions = ['all:*', 'users:read', 'users:write', 'reports:read', 'programs:write', 'settings:read']
 const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
@@ -59,6 +62,7 @@ const isConfirmPasswordVisible = ref(false)
 const profileImagePreview = ref('')
 
 const isEditMode = computed(() => route.query.mode === 'edit' || Boolean(route.query.id))
+const editingUserId = computed(() => String(route.query.id || '').trim())
 
 function resolvedText(key, fallback) {
   const translated = t(key)
@@ -112,8 +116,11 @@ function validateForm() {
   if (!form.role) return t('users.addAdmin.validation.roleRequired')
   if (!form.permissions.length) return t('users.addAdmin.validation.permissionsRequired')
   if (!form.status) return t('users.addAdmin.validation.statusRequired')
-  if (form.password.length < 6) return t('users.addAdmin.validation.passwordLength')
-  if (form.password !== form.confirmPassword) return t('users.addAdmin.validation.passwordMismatch')
+  if (!isEditMode.value && form.password.length < 6) return t('users.addAdmin.validation.passwordLength')
+  if (isEditMode.value && form.password && form.password.length < 6) return t('users.addAdmin.validation.passwordLength')
+  if (form.password || form.confirmPassword) {
+    if (form.password !== form.confirmPassword) return t('users.addAdmin.validation.passwordMismatch')
+  }
   return ''
 }
 
@@ -131,18 +138,7 @@ function togglePermission(permission) {
 
 function permissionLabel(value) {
   const normalized = String(value ?? '').trim().toLowerCase()
-  const permissionKeyMap = {
-    manage_users: 'users:write',
-    view_reports: 'reports:read',
-    manage_programs: 'programs:write',
-  }
-
-  if (normalized === 'approve_requests') {
-    return t('users.addAdmin.permissionLabels.approveRequests')
-  }
-
-  const mappedPermissionKey = permissionKeyMap[normalized] || normalized
-  const key = `common.permission.${mappedPermissionKey}`
+  const key = `common.permission.${normalized}`
   const translated = t(key)
   if (translated !== key) return translated
 
@@ -195,12 +191,28 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const payload = {
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      role: form.role,
+      permissions: form.permissions,
+      status: form.status,
+      avatar: profileImagePreview.value,
+    }
+
+    // This is frontend persistence only; replace with Super Admin users API calls when backend CRUD is ready.
+    if (isEditMode.value) {
+      updateAdminUser(editingUserId.value, payload)
+    } else {
+      createAdminUser(payload)
+    }
+
     showSuccess.value = true
-  } catch {
+  } catch (error) {
     errorMessage.value = isEditMode.value
-      ? t('users.addAdmin.validation.updateFailed')
-      : t('users.addAdmin.validation.createFailed')
+      ? error?.message || t('users.addAdmin.validation.updateFailed')
+      : error?.message || t('users.addAdmin.validation.createFailed')
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -221,9 +233,15 @@ function onErrorClose() {
 }
 
 onMounted(() => {
-  if (!isEditMode.value) return
-  const id = String(route.query.id || '')
-  const found = mapUser(usersMock.find((item) => String(item.id) === id) || usersMock[0])
+  if (!isEditMode.value) {
+    const requestedRole = String(route.query.role || '').trim()
+    if (roleOptions.includes(requestedRole)) {
+      form.role = requestedRole
+    }
+    return
+  }
+
+  const found = findAdminUserById(editingUserId.value)
   if (!found) return
   form.name = found.name || found.username || ''
   form.email = found.email || ''
@@ -235,6 +253,7 @@ onMounted(() => {
     (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
   )
   form.status = matchedStatus || statusOptions[0]
+  profileImagePreview.value = found.avatar || ''
 })
 
 onBeforeUnmount(() => {
@@ -247,7 +266,9 @@ const formSummaryCards = computed(() => {
   const selectedRole = roleLabel(form.role)
   const permissionCount = form.permissions.length
   const securityStatus =
-    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
+    isEditMode.value || (form.password.length >= 6 && form.confirmPassword === form.password)
+      ? 'success'
+      : 'warning'
 
   return [
     {
