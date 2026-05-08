@@ -1,7 +1,6 @@
 <script setup>
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Table from '@/components/data-display/Table.vue'
-import Pagination from '@/components/data-display/Pagination.vue'
 import Loading from '@/components/feedback/Loading.vue'
 
 defineOptions({
@@ -53,25 +52,12 @@ defineProps({
     type: String,
     default: '',
   },
-  currentPage: {
-    type: Number,
-    default: 1,
-  },
-  totalPages: {
-    type: Number,
-    default: 1,
-  },
-  totalCount: {
-    type: Number,
-    default: 0,
-  },
 })
 
 const emit = defineEmits([
   'update:searchQuery',
   'update:roleFilter',
   'update:statusFilter',
-  'update:currentPage',
   'edit',
   'delete',
   'refresh',
@@ -121,15 +107,6 @@ const emit = defineEmits([
           @edit="emit('edit', $event)"
           @delete="emit('delete', $event)"
         />
-
-        <div v-if="totalPages > 1" class="mt-4 flex justify-end">
-          <Pagination
-            :model-value="currentPage"
-            :total-pages="totalPages"
-            :disabled="!totalCount"
-            @update:model-value="emit('update:currentPage', $event)"
-          />
-        </div>
       </template>
     </div>
   </section>

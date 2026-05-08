@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminManagementToolbar from '@/modules/super-admin/components/admin-management/list/AdminManagementToolbar.vue'
@@ -43,8 +45,27 @@ const searchPlaceholder = computed(() => t('users.manageAdmins.searchPlaceholder
 const addButtonLabel = computed(() => t('users.manageAdmins.addButton'))
 const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
 const refreshButtonLabel = computed(() => t('common.refresh'))
+const toolbarCountText = computed(() =>
+  t('users.manageAdmins.accountsInView', { count: filteredAdmins.value.length }),
+)
 const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
 const loadingLabel = computed(() => t('users.manageAdmins.loading'))
+
+const statusBadges = computed(() => {
+  const statuses = ['active', 'pending', 'inactive', 'suspended']
+
+  return statuses.map((status) => {
+    const count = filteredAdmins.value.filter(
+      (user) => String(user.status || '').toLowerCase() === status,
+    ).length
+
+    return {
+      status,
+      label: `${statusLabel(status)} (${count})`,
+      count,
+    }
+  })
+})
 
 const admins = ref([])
 
@@ -241,6 +262,18 @@ onMounted(() => {
       <AdminSummaryCards :cards="summaryCards" />
 
       <div class="admin-directory-shell">
+        <div class="admin-directory-shell__badges">
+          <StatusBadge
+            v-for="badge in statusBadges"
+            :key="badge.status"
+            :status="badge.status"
+            :label="badge.label"
+            :translate-label="false"
+            size="sm"
+            :dot="false"
+          />
+        </div>
+
         <AdminManagementToolbar
           :title="toolbarNote"
           :note="pageSubtitle"
@@ -261,18 +294,18 @@ onMounted(() => {
           :empty-text="tableEmptyText"
           :loading="isLoading"
           :loading-label="loadingLabel"
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          :total-count="filteredAdmins.length"
           @update:search-query="searchQuery = $event"
           @update:role-filter="roleFilter = $event"
           @update:status-filter="statusFilter = $event"
-          @update:current-page="currentPage = $event"
           @edit="onEditAdmin"
           @delete="onDeleteAdmin"
           @refresh="loadAdmins"
           @clear="onClearFilters"
         />
+
+        <div v-if="totalPages > 1" class="flex justify-end pt-1">
+          <Pagination v-model="currentPage" :total-pages="totalPages" />
+        </div>
       </div>
     </section>
 
@@ -315,6 +348,12 @@ onMounted(() => {
   border: 1px solid #e7eaf3;
   padding: 1.25rem;
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
+}
+
+.admin-directory-shell__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
 }
 
 </style>
