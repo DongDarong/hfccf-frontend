@@ -4,16 +4,11 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
-import Table from '@/components/data-display/Table.vue'
-import Pagination from '@/components/data-display/Pagination.vue'
-import Button from '@/components/buttons/Button.vue'
-import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
-import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
-import AlertError from '@/components/alerts/AlertError.vue'
-import Loading from '@/components/feedback/Loading.vue'
 import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
+import AdminManagementToolbar from '@/modules/super-admin/components/admin-management/AdminManagementToolbar.vue'
+import AdminManagementListPanel from '@/modules/super-admin/components/admin-management/AdminManagementListPanel.vue'
+import AdminManagementDialogs from '@/modules/super-admin/components/admin-management/AdminManagementDialogs.vue'
 import {
   deleteAdminUser,
   listAdminUsers,
@@ -47,6 +42,9 @@ const pageSubtitle = computed(() => t('users.manageAdmins.summary'))
 const searchPlaceholder = computed(() => t('users.manageAdmins.searchPlaceholder'))
 const addButtonLabel = computed(() => t('users.manageAdmins.addButton'))
 const toolbarNote = computed(() => t('users.manageAdmins.toolbarNote'))
+const toolbarCountText = computed(() =>
+  t('users.manageAdmins.accountsInView', { count: filteredAdmins.value.length }),
+)
 const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
 const loadingLabel = computed(() => t('users.manageAdmins.loading'))
 
@@ -171,6 +169,13 @@ function onDeleteAdmin(admin) {
   isDeleteOpen.value = true
 }
 
+function onClearFilters() {
+  searchQuery.value = ''
+  roleFilter.value = ''
+  statusFilter.value = ''
+  currentPage.value = 1
+}
+
 function onCancelDelete() {
   isDeleteOpen.value = false
   selectedUserId.value = ''
@@ -238,95 +243,63 @@ onMounted(() => {
       <AdminSummaryCards :cards="summaryCards" />
 
       <div class="admin-directory-shell">
-        <div class="admin-directory-shell__toolbar">
-          <div class="min-w-0">
-            <p class="text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-surface-500">
-              {{ toolbarNote }}
-            </p>
-            <p class="mt-1 text-[0.9rem] leading-6 text-slate-600">
-              {{ t('users.manageAdmins.accountsInView', { count: filteredAdmins.length }) }}
-            </p>
-          </div>
+        <AdminManagementToolbar
+          :title="toolbarNote"
+          :note="pageSubtitle"
+          :count-text="toolbarCountText"
+          :add-label="addButtonLabel"
+          @add="goToAddAdmin"
+        />
 
-          <Button variant="primary" size="md" rounded="xl" @click="goToAddAdmin">
-            <template #iconLeft>
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </template>
-            {{ addButtonLabel }}
-          </Button>
-        </div>
-
-        <SearchFilterBar
-          class="w-full"
-          v-model:searchQuery="searchQuery"
-          v-model:roleFilter="roleFilter"
-          v-model:statusFilter="statusFilter"
+        <AdminManagementListPanel
+          :title="pageTitle"
+          :note="toolbarCountText"
+          :records-text="toolbarNote"
+          :refresh-label="refreshButtonLabel"
+          :search-query="searchQuery"
+          :role-filter="roleFilter"
+          :status-filter="statusFilter"
           :search-placeholder="searchPlaceholder"
           :role-options="roleOptions"
           :status-options="statusOptions"
-        />
-
-        <div v-if="isLoading" class="admin-directory-shell__loading">
-          <Loading :label="loadingLabel" size="md" />
-        </div>
-
-        <Table
-          v-else
           :users="paginatedAdmins"
           :empty-text="tableEmptyText"
+          :loading="isLoading"
+          :loading-label="loadingLabel"
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :total-count="filteredAdmins.length"
+          @update:search-query="searchQuery = $event"
+          @update:role-filter="roleFilter = $event"
+          @update:status-filter="statusFilter = $event"
+          @update:current-page="currentPage = $event"
           @edit="onEditAdmin"
           @delete="onDeleteAdmin"
+          @refresh="loadAdmins"
+          @clear="onClearFilters"
         />
-
-        <div v-if="totalPages > 1" class="flex justify-end">
-          <Pagination
-            v-model="currentPage"
-            :total-pages="totalPages"
-            :disabled="!filteredAdmins.length"
-            class="mt-3"
-          />
-        </div>
       </div>
     </section>
 
-    <AlertQuestion
-      :show="isDeleteOpen"
-      :title="deleteConfirmTitle"
-      :message="deleteConfirmMessage"
-      :confirm-text="deleteConfirmText"
-      :cancel-text="cancelLabel"
-      type="danger"
-      @confirm="onConfirmDelete"
-      @cancel="onCancelDelete"
-    />
-
-    <AlertSuccess
-      :show="showSuccess"
-      :title="t('common.success')"
-      :message="successMessage"
-      :button-text="t('common.close')"
-      @close="showSuccess = false"
-    />
-
-    <AlertError
-      :show="showError"
-      :title="t('common.error') || 'Error'"
-      :message="errorMessage"
-      :button-text="t('common.close')"
-      @close="showError = false"
+    <AdminManagementDialogs
+      :delete-show="isDeleteOpen"
+      :delete-loading="isLoading"
+      :delete-title="deleteConfirmTitle"
+      :delete-message="deleteConfirmMessage"
+      :delete-confirm-text="deleteConfirmText"
+      :delete-cancel-text="cancelLabel"
+      :success-show="showSuccess"
+      :success-title="t('common.success')"
+      :success-message="successMessage"
+      :success-button-text="t('common.close')"
+      :error-show="showError"
+      :error-title="t('common.error') || 'Error'"
+      :error-message="errorMessage"
+      :error-button-text="t('common.close')"
+      @confirm-delete="onConfirmDelete"
+      @cancel-delete="onCancelDelete"
+      @close-success="showSuccess = false"
+      @close-error="showError = false"
     />
   </MainLayout>
 </template>
@@ -341,23 +314,12 @@ onMounted(() => {
 .admin-directory-shell {
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
-  border-radius: 1.5rem;
+  gap: 1rem;
+  border-radius: 1.75rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.98) 100%);
   border: 1px solid #e7eaf3;
-  padding: 1.5rem;
+  padding: 1.25rem;
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.admin-directory-shell__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.admin-directory-shell__loading {
-  padding: 1.5rem 0.5rem;
-}
 </style>
