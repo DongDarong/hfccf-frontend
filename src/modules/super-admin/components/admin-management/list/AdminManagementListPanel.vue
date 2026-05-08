@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Table from '@/components/data-display/Table.vue'
 import Loading from '@/components/feedback/Loading.vue'
@@ -7,7 +9,9 @@ defineOptions({
   name: 'AdminManagementListPanel',
 })
 
-defineProps({
+const { t } = useI18n()
+
+const props = defineProps({
   refreshLabel: {
     type: String,
     default: '',
@@ -63,6 +67,10 @@ const emit = defineEmits([
   'refresh',
   'clear',
 ])
+
+const pageCountLabel = computed(() =>
+  t('users.manageAdmins.accountsInView', { count: Array.isArray(props.users) ? props.users.length : 0 }),
+)
 </script>
 
 <template>
@@ -92,22 +100,38 @@ const emit = defineEmits([
       @clear="emit('clear')"
     />
 
-    <div class="mt-4 min-h-[16rem]">
-      <Loading
-        v-if="loading"
-        class="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 py-8"
-        :label="loadingLabel"
-        size="md"
-      />
+    <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/60">
+      <div class="flex flex-col gap-2 border-b border-slate-200/80 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            {{ t('users.manageAdmins.title') }}
+          </p>
+          <p class="mt-1 text-[0.82rem] font-medium text-cyan-700">
+            {{ pageCountLabel }}
+          </p>
+        </div>
+        <p class="text-[0.78rem] leading-5 text-slate-500">
+          {{ t('users.manageAdmins.toolbarNote') }}
+        </p>
+      </div>
 
-      <template v-else>
-        <Table
-          :users="users"
-          :empty-text="emptyText"
-          @edit="emit('edit', $event)"
-          @delete="emit('delete', $event)"
+      <div class="min-h-[16rem] p-3 md:p-4">
+        <Loading
+          v-if="loading"
+          class="rounded-2xl border border-dashed border-slate-200 bg-white/90 py-8"
+          :label="loadingLabel"
+          size="md"
         />
-      </template>
+
+        <template v-else>
+          <Table
+            :users="users"
+            :empty-text="emptyText"
+            @edit="emit('edit', $event)"
+            @delete="emit('delete', $event)"
+          />
+        </template>
+      </div>
     </div>
   </section>
 </template>
