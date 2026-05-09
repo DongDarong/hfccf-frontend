@@ -334,10 +334,16 @@ async function onLoginSuccessClose() {
           </div>
 
           <div class="login-form-actions">
-            <label class="login-form-remember">
-              <Checkbox v-model="form.remember" binary input-id="rememberMe" />
-              <span>{{ isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me' }}</span>
-            </label>
+            <div class="login-form-remember">
+              <Checkbox
+                v-model="form.remember"
+                binary
+                input-id="rememberMe"
+                name="rememberMe"
+                aria-label="Remember me"
+              />
+              <label for="rememberMe">{{ isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me' }}</label>
+            </div>
 
             <RouterLink
               v-if="canUsePasswordRecovery"
@@ -598,6 +604,11 @@ async function onLoginSuccessClose() {
   gap: 0.55rem;
   color: #475569;
   font-weight: 700;
+}
+
+.login-form-remember,
+.login-form-remember label {
+  cursor: pointer;
 }
 
 .login-form-actions a {
