@@ -168,6 +168,10 @@ function touchField(field) {
   touched[field] = true
 }
 
+function toggleRemember() {
+  form.remember = !form.remember
+}
+
 function hasRequiredPermissionsForRole(user) {
   const role = String(user?.role || '')
     .trim()
@@ -334,15 +338,24 @@ async function onLoginSuccessClose() {
           </div>
 
           <div class="login-form-actions">
-            <div class="login-form-remember">
+            <div
+              class="login-form-remember"
+              role="checkbox"
+              tabindex="0"
+              :aria-checked="form.remember"
+              @click="toggleRemember"
+              @keydown.enter.prevent="toggleRemember"
+              @keydown.space.prevent="toggleRemember"
+            >
               <Checkbox
                 v-model="form.remember"
                 binary
                 input-id="rememberMe"
                 name="rememberMe"
                 aria-label="Remember me"
+                @click.stop
               />
-              <label for="rememberMe">{{ isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me' }}</label>
+              <span>{{ isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me' }}</span>
             </div>
 
             <RouterLink
@@ -607,8 +620,14 @@ async function onLoginSuccessClose() {
 }
 
 .login-form-remember,
-.login-form-remember label {
+.login-form-remember span {
   cursor: pointer;
+}
+
+.login-form-remember:focus-visible {
+  border-radius: 0.6rem;
+  outline: 2px solid rgba(14, 165, 233, 0.45);
+  outline-offset: 0.25rem;
 }
 
 .login-form-actions a {
