@@ -79,6 +79,8 @@ export async function login({ email, password, remember = false }) {
     const response = await http.post('/auth/login', {
       email: normalizedEmail,
       password,
+      // Backend can use this to issue longer-lived tokens/sessions when requested.
+      remember: Boolean(remember),
     })
     const payload = getApiPayload(response)
     const token = payload.token
