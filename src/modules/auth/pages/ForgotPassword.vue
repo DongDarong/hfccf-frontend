@@ -20,27 +20,50 @@ const recoveryPolicy = Object.freeze({
 const email = ref('')
 const emailVerified = ref(false)
 const otpVerified = ref(false)
+
 const isOtpStep = ref(false)
 const isPasswordStep = ref(false)
+
 const isVerifying = ref(false)
 const isResending = ref(false)
 const isSavingPassword = ref(false)
+
 const errorMessage = ref('')
 const successMessage = ref('')
-const currentOtp = ref('')
+
 const verifiedCode = ref('')
 
-const isRecoveryLoading = computed(() => isResending.value || isVerifying.value || isSavingPassword.value)
+const isRecoveryLoading = computed(
+  () => isResending.value || isVerifying.value || isSavingPassword.value,
+)
+
 const recoveryLoadingLabel = computed(() => {
-  if (isSavingPassword.value) return t('auth.forgotPassword.loading.savingPassword')
-  if (isVerifying.value) return t('auth.forgotPassword.loading.verifyingOtp')
-  if (isResending.value) return t('auth.forgotPassword.loading.sendingOtp')
+  if (isSavingPassword.value) {
+    return t('auth.forgotPassword.loading.savingPassword')
+  }
+
+  if (isVerifying.value) {
+    return t('auth.forgotPassword.loading.verifyingOtp')
+  }
+
+  if (isResending.value) {
+    return t('auth.forgotPassword.loading.sendingOtp')
+  }
+
   return t('auth.forgotPassword.loading.default')
 })
+
 const isKhmer = computed(() => language.value === 'KH')
+
 const stepTitle = computed(() => {
-  if (isPasswordStep.value) return t('auth.forgotPassword.steps.password')
-  if (isOtpStep.value) return t('auth.forgotPassword.steps.otp')
+  if (isPasswordStep.value) {
+    return t('auth.forgotPassword.steps.password')
+  }
+
+  if (isOtpStep.value) {
+    return t('auth.forgotPassword.steps.otp')
+  }
+
   return t('auth.forgotPassword.steps.email')
 })
 
@@ -51,12 +74,16 @@ function normalizeEmail(value) {
 }
 
 function resetRecoveryState({ keepEmail = false } = {}) {
-  if (!keepEmail) email.value = ''
+  if (!keepEmail) {
+    email.value = ''
+  }
+
   emailVerified.value = false
   otpVerified.value = false
+
   isOtpStep.value = false
   isPasswordStep.value = false
-  currentOtp.value = ''
+
   verifiedCode.value = ''
 }
 
@@ -69,23 +96,34 @@ async function onEmailAccepted(payload) {
   successMessage.value = ''
 
   const requestEmail = normalizeEmail(payload?.email)
+
   isResending.value = true
 
   try {
     const result = await requestPasswordReset(requestEmail)
 
-    // The backend is responsible for Super Admin eligibility and account-status checks.
     email.value = normalizeEmail(result.email || requestEmail)
-    currentOtp.value = String(result.demoOtp || '')
+
     verifiedCode.value = ''
+
     emailVerified.value = true
     otpVerified.value = false
+
     isOtpStep.value = true
     isPasswordStep.value = false
-    successMessage.value = t('auth.forgotPassword.success.codeSent', { email: email.value })
+
+    successMessage.value = t(
+      'auth.forgotPassword.success.codeSent',
+      {
+        email: email.value,
+      },
+    )
   } catch (error) {
     resetRecoveryState({ keepEmail: true })
-    errorMessage.value = error.message || t('auth.forgotPassword.errors.inactiveAccount')
+
+    errorMessage.value =
+      error.message ||
+      t('auth.forgotPassword.errors.inactiveAccount')
   } finally {
     isResending.value = false
   }
@@ -93,6 +131,7 @@ async function onEmailAccepted(payload) {
 
 function onBackToEmail() {
   resetRecoveryState({ keepEmail: true })
+
   errorMessage.value = ''
   successMessage.value = ''
 }
@@ -100,8 +139,10 @@ function onBackToEmail() {
 function onBackToOtp() {
   isOtpStep.value = true
   isPasswordStep.value = false
+
   otpVerified.value = false
   verifiedCode.value = ''
+
   errorMessage.value = ''
   successMessage.value = ''
 }
@@ -112,17 +153,25 @@ async function onVerify(payload) {
 
   if (!isRecoverySessionReady()) {
     resetRecoveryState({ keepEmail: true })
-    errorMessage.value = t('auth.forgotPassword.errors.startWithEmail')
+
+    errorMessage.value = t(
+      'auth.forgotPassword.errors.startWithEmail',
+    )
+
     return
   }
 
-  const submittedCode = String(payload?.code || '').replace(/\D/g, '')
+  const submittedCode = String(payload?.code || '')
+    .replace(/\D/g, '')
 
   if (
     normalizeEmail(payload?.email) !== normalizeEmail(email.value) ||
     submittedCode.length !== recoveryPolicy.otpLength
   ) {
-    errorMessage.value = t('auth.forgotPassword.errors.invalidOtp')
+    errorMessage.value = t(
+      'auth.forgotPassword.errors.invalidOtp',
+    )
+
     return
   }
 
@@ -133,12 +182,17 @@ async function onVerify(payload) {
       email: email.value,
       code: submittedCode,
     })
+
     otpVerified.value = true
     verifiedCode.value = submittedCode
+
     isPasswordStep.value = true
+
     successMessage.value = ''
   } catch (error) {
-    errorMessage.value = error.message || t('auth.forgotPassword.errors.invalidOtp')
+    errorMessage.value =
+      error.message ||
+      t('auth.forgotPassword.errors.invalidOtp')
   } finally {
     isVerifying.value = false
   }
@@ -148,19 +202,34 @@ async function onCreatePassword(payload) {
   errorMessage.value = ''
   successMessage.value = ''
 
-  if (!isRecoverySessionReady() || !otpVerified.value || !verifiedCode.value) {
-    errorMessage.value = t('auth.forgotPassword.errors.verifyBeforePassword')
+  if (
+    !isRecoverySessionReady() ||
+    !otpVerified.value ||
+    !verifiedCode.value
+  ) {
+    errorMessage.value = t(
+      'auth.forgotPassword.errors.verifyBeforePassword',
+    )
+
     isOtpStep.value = true
     isPasswordStep.value = false
+
     return
   }
 
   const newPassword = String(payload?.password || '')
 
-  if (newPassword.length < recoveryPolicy.minPasswordLength) {
-    errorMessage.value = t('auth.forgotPassword.errors.minPassword', {
-      count: recoveryPolicy.minPasswordLength,
-    })
+  if (
+    newPassword.length <
+    recoveryPolicy.minPasswordLength
+  ) {
+    errorMessage.value = t(
+      'auth.forgotPassword.errors.minPassword',
+      {
+        count: recoveryPolicy.minPasswordLength,
+      },
+    )
+
     return
   }
 
@@ -173,16 +242,23 @@ async function onCreatePassword(payload) {
       password: newPassword,
       password_confirmation: newPassword,
     })
-    successMessage.value = t('auth.forgotPassword.success.passwordUpdated')
+
+    successMessage.value = t(
+      'auth.forgotPassword.success.passwordUpdated',
+    )
   } catch (error) {
-    errorMessage.value = error.message || t('auth.forgotPassword.errors.verifyBeforePassword')
+    errorMessage.value =
+      error.message ||
+      t('auth.forgotPassword.errors.verifyBeforePassword')
   } finally {
     isSavingPassword.value = false
   }
 }
 
 async function onPasswordSuccessClose() {
-  await router.push({ name: 'login' })
+  await router.push({
+    name: 'login',
+  })
 }
 
 async function onResend(payload) {
@@ -191,21 +267,35 @@ async function onResend(payload) {
 
   const requestEmail = normalizeEmail(payload?.email)
 
-  if (!isRecoverySessionReady() || requestEmail !== normalizeEmail(email.value)) {
-    errorMessage.value = t('auth.forgotPassword.errors.verifiedEmailRequired')
+  if (
+    !isRecoverySessionReady() ||
+    requestEmail !== normalizeEmail(email.value)
+  ) {
+    errorMessage.value = t(
+      'auth.forgotPassword.errors.verifiedEmailRequired',
+    )
+
     return
   }
 
   isResending.value = true
 
   try {
-    const result = await requestPasswordReset(requestEmail)
-    currentOtp.value = String(result.demoOtp || '')
+    await requestPasswordReset(requestEmail)
+
     verifiedCode.value = ''
     otpVerified.value = false
-    successMessage.value = t('auth.forgotPassword.success.codeSent', { email: requestEmail })
+
+    successMessage.value = t(
+      'auth.forgotPassword.success.codeSent',
+      {
+        email: requestEmail,
+      },
+    )
   } catch (error) {
-    errorMessage.value = error.message || t('auth.forgotPassword.errors.verifiedEmailRequired')
+    errorMessage.value =
+      error.message ||
+      t('auth.forgotPassword.errors.verifiedEmailRequired')
   } finally {
     isResending.value = false
   }
