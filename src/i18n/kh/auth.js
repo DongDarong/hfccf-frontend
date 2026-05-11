@@ -12,7 +12,7 @@ export default {
 
   loginForm: {
     emailLabel: 'អ៊ីមែល',
-    placeholder: "name{'@'}hfccf.org",
+    placeholder: "name{'@'}gmail.com",
     emailRequired: 'សូមបញ្ចូលអ៊ីមែល។',
     emailInvalid: 'សូមបញ្ចូលអ៊ីមែលឱ្យបានត្រឹមត្រូវ។',
     passwordLabel: 'ពាក្យសម្ងាត់',
@@ -80,7 +80,7 @@ export default {
       eyebrow: 'ផ្ទៀងផ្ទាត់អ៊ីមែល',
       title: 'ស្វែងរកគណនី',
       label: 'អ៊ីមែល',
-      placeholder: 'name@hfccf.org',
+      placeholder: "name{'@'}gmail.com",
       continue: 'បន្ត',
       errors: {
         required: 'ត្រូវការអ៊ីមែល។',

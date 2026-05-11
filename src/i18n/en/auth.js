@@ -12,7 +12,7 @@ export default {
 
   loginForm: {
     emailLabel: 'Email',
-    emailPlaceholder: "name{'@'}hfccf.org",
+    emailPlaceholder: "name{'@'}gmail.com",
     emailRequired: 'Email is required.',
     emailInvalid: 'Enter a valid email address.',
     passwordLabel: 'Password',
@@ -75,7 +75,7 @@ export default {
       eyebrow: 'Email verification',
       title: 'Find account',
       label: 'Email',
-      placeholder: 'name@hfccf.org',
+      placeholder: "name{'@'}gmail.com",
       continue: 'Continue',
       errors: {
         required: 'Email is required.',

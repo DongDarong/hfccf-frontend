@@ -14,10 +14,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  resendLoading: {
-    type: Boolean,
-    default: false,
-  },
   errorMessage: {
     type: String,
     default: '',
@@ -32,7 +28,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['resend', 'update:email'])
+const emit = defineEmits(['submit', 'update:email'])
 
 const form = reactive({
   email: props.email,
@@ -78,9 +74,9 @@ function onSubmit() {
 
   if (!canSubmitCurrentStep.value) return
 
-  emit('resend', {
-    email: normalizedEmail.value,
-  })
+emit('submit', {
+  email: normalizedEmail.value,
+})
 }
 </script>
 
@@ -144,7 +140,7 @@ function onSubmit() {
             rounded="xl"
             block
             :disabled="!canSubmitCurrentStep"
-            :loading="resendLoading"
+            :loading="loading"
           >
             <template #iconLeft>
               <i class="pi pi-check-circle" aria-hidden="true"></i>

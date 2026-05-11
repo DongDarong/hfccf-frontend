@@ -354,26 +354,25 @@ async function onResend(payload) {
             <VerifyEmail
               v-if="!isOtpStep && !isPasswordStep"
               v-model:email="email"
-              :resend-loading="isResending"
+              :loading="isResending"
               :error-message="errorMessage"
               :success-message="successMessage"
               :t="t"
-              @resend="onEmailAccepted"
+              @submit="onEmailAccepted"
             />
 
             <VerifyCode
-              v-else-if="isOtpStep && !isPasswordStep"
-              :email="email"
-              :loading="isVerifying"
-              :resend-loading="isResending"
-              :error-message="errorMessage"
-              :success-message="successMessage"
-              :demo-code="currentOtp"
-              :t="t"
-              @verify="onVerify"
-              @resend="onResend"
-              @back="onBackToEmail"
-            />
+                v-else-if="isOtpStep && !isPasswordStep"
+                :email="email"
+                :loading="isVerifying"
+                :resend-loading="isResending"
+                :error-message="errorMessage"
+                :success-message="successMessage"
+                :t="t"
+                @verify="onVerify"
+                @resend="onResend"
+                @back="onBackToEmail"
+              />
 
             <CreateNewPassword
               v-else
