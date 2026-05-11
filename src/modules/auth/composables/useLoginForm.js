@@ -148,9 +148,6 @@ export function useLoginForm({ accessPolicy, language }) {
     touched[field] = true
   }
 
-  function toggleRemember() {
-    form.remember = !form.remember
-  }
 
   function hasRequiredPermissionsForRole(user) {
     const role = String(user?.role || '')
@@ -247,7 +244,6 @@ export function useLoginForm({ accessPolicy, language }) {
     isFormValid,
     localizedSubmitLabel,
     touchField,
-    toggleRemember,
     onSubmit,
     onLoginSuccessClose,
   }

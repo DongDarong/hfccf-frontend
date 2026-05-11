@@ -41,7 +41,6 @@ const {
   isFormValid,
   localizedSubmitLabel,
   touchField,
-  toggleRemember,
   onSubmit,
   onLoginSuccessClose,
 } = useLoginForm({
@@ -135,25 +134,22 @@ const {
           </div>
 
           <div class="login-form-actions">
-            <div
-              class="login-form-remember"
-              role="checkbox"
-              tabindex="0"
-              :aria-checked="form.remember"
-              @click="toggleRemember"
-              @keydown.enter.prevent="toggleRemember"
-              @keydown.space.prevent="toggleRemember"
-            >
-              <Checkbox
-                v-model="form.remember"
-                binary
-                input-id="rememberMe"
-                name="rememberMe"
-                :aria-label="t('auth.loginForm.rememberMe')"
-                @click.stop
-              />
-              <span>{{ t('auth.loginForm.rememberMe') }}</span>
-            </div>
+              <label
+                for="rememberMe"
+                class="login-form-remember"
+              >
+                <Checkbox
+                  v-model="form.remember"
+                  binary
+                  input-id="rememberMe"
+                  name="rememberMe"
+                  :aria-label="t('auth.loginForm.rememberMe')"
+                />
+
+                <span>
+                  {{ t('auth.loginForm.rememberMe') }}
+                </span>
+              </label>
 
             <RouterLink
               v-if="canUsePasswordRecovery"
@@ -338,10 +334,35 @@ const {
   width: 100%;
 }
 
-:deep(.login-form-card .p-checkbox .p-checkbox-box) {
+/* PrimeVue Checkbox */
+:deep(.login-form-card .p-checkbox) {
+  display: inline-flex;
+  width: 1.2rem;
+  height: 1.2rem;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+:deep(.login-form-card .p-checkbox-input) {
+  cursor: pointer;
+}
+
+:deep(.login-form-card .p-checkbox-box) {
+  display: flex;
+  width: 1.2rem;
+  height: 1.2rem;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #cbd5e1;
+  border-radius: 0.35rem;
   background: #ffffff;
   box-shadow: none;
+  color: #ffffff;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 :deep(.login-form-card .p-checkbox:not(.p-disabled) .p-checkbox-box:hover) {
@@ -349,18 +370,34 @@ const {
   background: #ffffff;
 }
 
-:deep(.login-form-card .p-checkbox.p-focus .p-checkbox-box) {
+:deep(.login-form-card .p-checkbox.p-focus .p-checkbox-box),
+:deep(.login-form-card .p-checkbox:has(.p-checkbox-input:focus-visible) .p-checkbox-box) {
   border-color: #38bdf8;
   box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.18);
 }
 
-:deep(.login-form-card .p-checkbox.p-highlight .p-checkbox-box) {
+:deep(.login-form-card .p-checkbox.p-highlight .p-checkbox-box),
+:deep(.login-form-card .p-checkbox.p-checkbox-checked .p-checkbox-box),
+:deep(.login-form-card .p-checkbox:has(.p-checkbox-input:checked) .p-checkbox-box) {
   border-color: #0ea5e9;
   background: #0ea5e9;
 }
 
-:deep(.login-form-card .p-checkbox.p-highlight .p-checkbox-icon) {
+:deep(.login-form-card .p-checkbox-icon) {
+  display: inline-flex;
   color: #ffffff;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+:deep(.login-form-card .p-checkbox:not(.p-checkbox-checked):not(.p-highlight) .p-checkbox-icon) {
+  opacity: 0;
+}
+
+:deep(.login-form-card .p-checkbox.p-checkbox-checked .p-checkbox-icon),
+:deep(.login-form-card .p-checkbox.p-highlight .p-checkbox-icon),
+:deep(.login-form-card .p-checkbox:has(.p-checkbox-input:checked) .p-checkbox-icon) {
+  opacity: 1;
 }
 
 :deep(.login-form-card .login-form-input.p-select .p-select-overlay) {
