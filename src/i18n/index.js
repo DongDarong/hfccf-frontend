@@ -1,13 +1,22 @@
 import { createI18n } from 'vue-i18n'
-import enMessages from './en/dashboard'
-import khMessages from './kh/dashboard'
+
+import enDashboard from './en/dashboard'
+import khDashboard from './kh/dashboard'
+import enAuth from './en/auth'
+import khAuth from './kh/auth'
 
 const savedLocale = localStorage.getItem('locale')
 const locale = savedLocale === 'kh' ? 'kh' : 'en'
 
 const messages = {
-  en: enMessages,
-  kh: khMessages,
+  en: {
+    ...enDashboard,
+    auth: enAuth,
+  },
+  kh: {
+    ...khDashboard,
+    auth: khAuth,
+  },
 }
 
 const i18n = createI18n({
@@ -18,5 +27,3 @@ const i18n = createI18n({
 })
 
 export default i18n
-
-

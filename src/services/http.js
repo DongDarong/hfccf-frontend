@@ -1,20 +1,23 @@
 import axios from 'axios'
-import { ensureSessionIsValid, getAuthToken, logout } from '@/services/auth'
+
+const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
+const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
+const LAST_ACTIVITY_STORAGE_KEY = 'hfccf-last-activity-at'
 
 function isLocalHostname(hostname) {
   return (
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
     hostname === '::1' ||
-    hostname.endsWith('.local')
+    hostname.endsWith('.local') ||
+    hostname.endsWith('.test')
   )
 }
 
 function assertSafeHttpUrl(rawUrl, fallbackOrigin = window.location.origin) {
   const parsedUrl = new URL(String(rawUrl || '').trim(), fallbackOrigin)
-  const isHttpProtocol = parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:'
 
-  if (!isHttpProtocol) {
+  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
     throw new Error('Only HTTP and HTTPS URLs are allowed.')
   }
 
@@ -35,14 +38,24 @@ function getValidatedApiBaseUrl() {
   return parsedUrl.toString().replace(/\/$/, '')
 }
 
+function getAuthToken() {
+  return (
+    window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ||
+    window.sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ||
+    ''
+  )
+}
+
+function clearAuthStorage() {
+  for (const storage of [window.localStorage, window.sessionStorage]) {
+    storage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+    storage.removeItem(AUTH_USER_STORAGE_KEY)
+    storage.removeItem(LAST_ACTIVITY_STORAGE_KEY)
+  }
+}
+
 const apiBaseUrl = getValidatedApiBaseUrl()
 const apiOrigin = apiBaseUrl ? new URL(apiBaseUrl).origin : ''
-
-function resolveRequestUrl(config) {
-  const target = config.url || ''
-  const base = config.baseURL || apiBaseUrl || window.location.origin
-  return assertSafeHttpUrl(target, base)
-}
 
 const http = axios.create({
   baseURL: apiBaseUrl,
@@ -54,24 +67,19 @@ const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const requestUrl = resolveRequestUrl(config)
+  const requestUrl = assertSafeHttpUrl(config.url || '', config.baseURL || apiBaseUrl || window.location.origin)
   const isSameOrigin = requestUrl.origin === window.location.origin
   const isTrustedApiOrigin = apiOrigin ? requestUrl.origin === apiOrigin : isSameOrigin
-
-  if (!isSameOrigin && !isTrustedApiOrigin) {
-    return config
-  }
 
   config.headers = config.headers || {}
   config.headers['X-Requested-With'] = 'XMLHttpRequest'
 
-  if (!ensureSessionIsValid()) {
-    return config
-  }
+  if (isSameOrigin || isTrustedApiOrigin) {
+    const token = getAuthToken()
 
-  const token = getAuthToken()
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
 
   return config
@@ -81,7 +89,7 @@ http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      logout()
+      clearAuthStorage()
     }
 
     return Promise.reject(error)
@@ -89,5 +97,3 @@ http.interceptors.response.use(
 )
 
 export default http
-
-

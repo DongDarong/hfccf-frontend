@@ -1,4 +1,44 @@
 export default {
+  login: {
+    staffPortal: 'Staff Portal',
+    welcome: 'Welcome back to your HFCCF workspace.',
+    subtitle: 'Sign in to continue your daily work with the right access for your role.',
+    portal: 'HFCCF Portal',
+    staff: 'Staff',
+    signIn: 'Sign in',
+    accessMetric: 'Access',
+    areasMetric: 'Areas',
+  },
+
+  loginForm: {
+    emailLabel: 'Email',
+    emailPlaceholder: "name{'@'}hfccf.org",
+    emailRequired: 'Email is required.',
+    emailInvalid: 'Enter a valid email address.',
+    passwordLabel: 'Password',
+    passwordPlaceholder: 'Enter your password',
+    passwordRequired: 'Password is required.',
+    userTypeLabel: 'User type',
+    userTypePlaceholder: 'Select user type',
+    userTypeRequired: 'Please choose your user type.',
+    userTypeNotAllowed: 'This user type is not allowed.',
+    adminOption: 'Admin',
+    staffOption: 'Staff',
+    rememberMe: 'Remember me',
+    forgot: 'Forgot?',
+    signingIn: 'Signing in...',
+    signIn: 'Sign in',
+    loading: 'Signing in...',
+    signedInTitle: 'Signed in',
+    redirecting: 'Redirecting...',
+    continue: 'Continue',
+    invalidCredentials: 'Invalid login information.',
+    unableToLogin: 'Unable to login right now.',
+    accountTypeMismatch: 'This account does not match the selected user type.',
+    missingRequiredPermissions:
+      'Your account does not have the required permissions for this access type.',
+  },
+
   forgotPassword: {
     brand: {
       eyebrow: 'Super Admin',

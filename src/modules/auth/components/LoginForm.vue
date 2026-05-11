@@ -1,6 +1,4 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -11,11 +9,9 @@ import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { login, logout } from '@/modules/auth/services/authService'
+import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
 import { ROLES } from '@/constants/roles'
 
-const router = useRouter()
-const route = useRoute()
 const { language } = useLanguage()
 
 const props = defineProps({
@@ -30,227 +26,28 @@ const props = defineProps({
   },
 })
 
-const isKhmer = computed(() => language.value === 'KH')
-
-const form = reactive({
-  email: '',
-  password: '',
-  userType: '',
-  remember: false,
+const {
+  t,
+  isKhmer,
+  form,
+  isSubmitting,
+  errorMessage,
+  showLoginSuccess,
+  canUsePasswordRecovery,
+  localizedUserTypeOptions,
+  emailError,
+  passwordError,
+  userTypeError,
+  isFormValid,
+  localizedSubmitLabel,
+  touchField,
+  toggleRemember,
+  onSubmit,
+  onLoginSuccessClose,
+} = useLoginForm({
+  accessPolicy: props.accessPolicy,
+  language,
 })
-
-const isSubmitting = ref(false)
-const errorMessage = ref('')
-const showLoginSuccess = ref(false)
-const shouldRedirectAfterSuccess = ref(false)
-const touched = reactive({
-  email: false,
-  password: false,
-  userType: false,
-})
-
-const USER_TYPE_GROUPS = Object.freeze({
-  ADMIN: 'admin',
-  STAFF: 'staff',
-})
-
-const adminRoleValues = [
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN_ENGLISH,
-  ROLES.ADMIN_PRESCHOOL,
-  ROLES.ADMIN_SCHOLARSHIP,
-  ROLES.ADMIN_SPORT,
-]
-
-const staffRoleValues = [
-  ROLES.TEACHER_ENGLISH,
-  ROLES.TEACHER_PRESCHOOL,
-  ROLES.TEACHER_SCHOLARSHIP,
-  ROLES.COACH,
-]
-
-const userTypeOptions = [
-  {
-    label: 'Admin',
-    khLabel: 'អ្នកគ្រប់គ្រង',
-    value: USER_TYPE_GROUPS.ADMIN,
-    roles: adminRoleValues,
-  },
-  {
-    label: 'Staff',
-    khLabel: 'បុគ្គលិក',
-    value: USER_TYPE_GROUPS.STAFF,
-    roles: staffRoleValues,
-  },
-]
-
-const allowedRoleValues = computed(() =>
-  Array.isArray(props.accessPolicy.allowedRoles)
-    ? props.accessPolicy.allowedRoles.map((role) => String(role || '').trim().toLowerCase()).filter(Boolean)
-    : [],
-)
-
-const normalizedUserType = computed(() =>
-  String(form.userType || '')
-    .trim()
-    .toLowerCase(),
-)
-
-const selectedUserTypeOption = computed(() =>
-  userTypeOptions.find((option) => option.value === normalizedUserType.value),
-)
-
-function optionMatchesAllowedRoles(option) {
-  if (!allowedRoleValues.value.length) return true
-  return option.roles.some((role) => allowedRoleValues.value.includes(role))
-}
-
-const isRoleAllowed = computed(
-  () => Boolean(selectedUserTypeOption.value) && optionMatchesAllowedRoles(selectedUserTypeOption.value),
-)
-
-const recoveryRole = computed(() =>
-  String(props.accessPolicy.recoveryRole || ROLES.SUPER_ADMIN)
-    .trim()
-    .toLowerCase(),
-)
-
-const canUsePasswordRecovery = computed(() =>
-  Boolean(selectedUserTypeOption.value?.roles.includes(recoveryRole.value)),
-)
-
-const localizedUserTypeOptions = computed(() =>
-  userTypeOptions
-    .filter((option) => optionMatchesAllowedRoles(option))
-    .map((option) => ({
-      ...option,
-      displayLabel: isKhmer.value ? option.khLabel : option.label,
-    })),
-)
-
-const emailError = computed(() => {
-  if (!touched.email) return ''
-  if (!form.email.trim()) return isKhmer.value ? 'សូមបញ្ចូលអ៊ីមែល។' : 'Email is required.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-    return isKhmer.value ? 'សូមបញ្ចូលអ៊ីមែលឱ្យបានត្រឹមត្រូវ។' : 'Enter a valid email address.'
-  }
-  return ''
-})
-
-const passwordError = computed(() => {
-  if (!touched.password) return ''
-  if (!form.password) return isKhmer.value ? 'សូមបញ្ចូលពាក្យសម្ងាត់។' : 'Password is required.'
-  return ''
-})
-
-const userTypeError = computed(() => {
-  if (!touched.userType) return ''
-  if (!form.userType) return isKhmer.value ? 'សូមជ្រើសរើសប្រភេទអ្នកប្រើ។' : 'Please choose your user type.'
-  if (!isRoleAllowed.value) return isKhmer.value ? 'អ្នកប្រើនេះមិនមានសិទ្ធិចូលប្រើទេ។' : 'This user type is not allowed.'
-  return ''
-})
-
-const isFormValid = computed(
-  () =>
-    Boolean(form.email.trim()) &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) &&
-    Boolean(form.password) &&
-    Boolean(form.userType) &&
-    isRoleAllowed.value,
-)
-
-const localizedSubmitLabel = computed(() => {
-  if (isSubmitting.value) return isKhmer.value ? 'កំពុងចូល...' : 'Signing in...'
-  return isKhmer.value ? 'ចូលប្រើ' : 'Sign in'
-})
-
-function touchField(field) {
-  touched[field] = true
-}
-
-function toggleRemember() {
-  form.remember = !form.remember
-}
-
-function hasRequiredPermissionsForRole(user) {
-  const role = String(user?.role || '')
-    .trim()
-    .toLowerCase()
-  const requiredPermissions = Array.isArray(props.accessPolicy.requiredPermissionsByRole?.[role])
-    ? props.accessPolicy.requiredPermissionsByRole[role]
-    : []
-  const userPermissions = Array.isArray(user?.role_permission) ? user.role_permission : []
-
-  if (!requiredPermissions.length) return true
-  if (userPermissions.includes('all:*')) return true
-
-  return requiredPermissions.every((permission) => userPermissions.includes(permission))
-}
-
-function userMatchesSelectedType(user) {
-  const role = String(user?.role || '')
-    .trim()
-    .toLowerCase()
-
-  // The dropdown is intentionally broad, but the signed-in account must still match its real role group.
-  return Boolean(selectedUserTypeOption.value?.roles.includes(role))
-}
-
-async function onSubmit() {
-  touched.email = true
-  touched.password = true
-  touched.userType = true
-  errorMessage.value = ''
-
-  if (!isFormValid.value) return
-
-  isSubmitting.value = true
-
-  try {
-    const authenticatedUser = await login({
-      email: form.email.trim().toLowerCase(),
-      password: form.password,
-      remember: form.remember,
-    })
-
-    if (!userMatchesSelectedType(authenticatedUser) || !isRoleAllowed.value) {
-      logout()
-      throw new Error('This account does not match the selected user type.')
-    }
-
-    if (!hasRequiredPermissionsForRole(authenticatedUser)) {
-      logout()
-      throw new Error('Your account does not have the required permissions for this access type.')
-    }
-
-    shouldRedirectAfterSuccess.value = true
-    showLoginSuccess.value = true
-  } catch (error) {
-    errorMessage.value = isKhmer.value
-      ? 'ព័ត៌មានចូលប្រើមិនត្រឹមត្រូវ។'
-      : error?.message || 'Unable to login right now.'
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-function getSafeRedirectTarget(value) {
-  const redirect = String(value || '').trim()
-
-  if (!redirect.startsWith('/') || redirect.startsWith('//')) {
-    return props.accessPolicy.defaultRedirect || '/module/dashboard'
-  }
-
-  return redirect
-}
-
-async function onLoginSuccessClose() {
-  showLoginSuccess.value = false
-
-  if (!shouldRedirectAfterSuccess.value) return
-  shouldRedirectAfterSuccess.value = false
-  await router.push(getSafeRedirectTarget(route.query.redirect))
-}
 </script>
 
 <template>
@@ -260,7 +57,7 @@ async function onLoginSuccessClose() {
         <form class="login-form-fields" :class="{ 'login-form-khmer': isKhmer }" @submit.prevent="onSubmit">
           <div class="login-form-field">
             <div class="login-form-label-row">
-              <label for="email">{{ isKhmer ? 'អ៊ីមែល' : 'Email' }}</label>
+              <label for="email">{{ t('auth.loginForm.emailLabel') }}</label>
             </div>
             <div class="login-form-control">
               <i class="pi pi-envelope login-form-control-icon" aria-hidden="true"></i>
@@ -273,7 +70,7 @@ async function onLoginSuccessClose() {
                 :class="{ 'login-form-input--invalid': emailError }"
                 :aria-invalid="Boolean(emailError)"
                 :aria-describedby="emailError ? 'email-error' : undefined"
-                :placeholder="isKhmer ? 'name@hfccf.org' : 'name@hfccf.org'"
+                :placeholder="t('auth.loginForm.emailPlaceholder')"
                 @blur="touchField('email')"
               />
             </div>
@@ -285,7 +82,7 @@ async function onLoginSuccessClose() {
 
           <div class="login-form-field">
             <div class="login-form-label-row">
-              <label for="password">{{ isKhmer ? 'ពាក្យសម្ងាត់' : 'Password' }}</label>
+              <label for="password">{{ t('auth.loginForm.passwordLabel') }}</label>
             </div>
             <div class="login-form-control">
               <i class="pi pi-key login-form-control-icon" aria-hidden="true"></i>
@@ -294,7 +91,7 @@ async function onLoginSuccessClose() {
                 v-model="form.password"
                 class="w-full login-form-password"
                 autocomplete="current-password"
-                :placeholder="isKhmer ? 'បញ្ចូលពាក្យសម្ងាត់' : 'Enter your password'"
+                :placeholder="t('auth.loginForm.passwordPlaceholder')"
                 :feedback="false"
                 toggle-mask
                 fluid
@@ -312,7 +109,7 @@ async function onLoginSuccessClose() {
 
           <div class="login-form-field">
             <div class="login-form-label-row">
-              <label for="userType">{{ isKhmer ? 'ប្រភេទអ្នកប្រើ' : 'User type' }}</label>
+              <label for="userType">{{ t('auth.loginForm.userTypeLabel') }}</label>
             </div>
             <div class="login-form-control">
               <i class="pi pi-id-card login-form-control-icon" aria-hidden="true"></i>
@@ -327,7 +124,7 @@ async function onLoginSuccessClose() {
                 :class="{ 'login-form-input--invalid': userTypeError }"
                 :aria-invalid="Boolean(userTypeError)"
                 :aria-describedby="userTypeError ? 'user-type-error' : undefined"
-                :placeholder="isKhmer ? 'ជ្រើសរើសប្រភេទ' : 'Select user type'"
+                :placeholder="t('auth.loginForm.userTypePlaceholder')"
                 @blur="touchField('userType')"
               />
             </div>
@@ -352,10 +149,10 @@ async function onLoginSuccessClose() {
                 binary
                 input-id="rememberMe"
                 name="rememberMe"
-                aria-label="Remember me"
+                :aria-label="t('auth.loginForm.rememberMe')"
                 @click.stop
               />
-              <span>{{ isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me' }}</span>
+              <span>{{ t('auth.loginForm.rememberMe') }}</span>
             </div>
 
             <RouterLink
@@ -363,7 +160,7 @@ async function onLoginSuccessClose() {
               :to="{ name: 'forgot-password' }"
               class="font-semibold text-sky-700 transition hover:text-sky-800 max-sm:self-start"
             >
-              {{ isKhmer ? 'ភ្លេច?' : 'Forgot?' }}
+              {{ t('auth.loginForm.forgot') }}
             </RouterLink>
           </div>
 
@@ -374,7 +171,7 @@ async function onLoginSuccessClose() {
           <Loading
             v-if="isSubmitting"
             class="login-form-loading"
-            :label="isKhmer ? 'កំពុងចូល...' : 'Signing in...'"
+            :label="t('auth.loginForm.loading')"
             size="sm"
           />
 
@@ -393,16 +190,15 @@ async function onLoginSuccessClose() {
             </template>
             {{ localizedSubmitLabel }}
           </Button>
-
         </form>
       </template>
     </Card>
 
     <AlertSuccess
       :show="showLoginSuccess"
-      :title="isKhmer ? 'បានចូលប្រើ' : 'Signed in'"
-      :message="isKhmer ? 'កំពុងបញ្ជូន...' : 'Redirecting...'"
-      :button-text="isKhmer ? 'បន្ត' : 'Continue'"
+      :title="t('auth.loginForm.signedInTitle')"
+      :message="t('auth.loginForm.redirecting')"
+      :button-text="t('auth.loginForm.continue')"
       :auto-close="900"
       @close="onLoginSuccessClose"
     />

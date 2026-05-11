@@ -6,17 +6,24 @@ export function useLanguage() {
 
   const language = computed({
     get: () => (locale.value === 'kh' ? 'KH' : 'EN'),
+
     set: (value) => {
       const next = String(value || '').toUpperCase() === 'KH' ? 'kh' : 'en'
+
       locale.value = next
       localStorage.setItem('locale', next)
     },
   })
+
+  function setLanguage(value) {
+    language.value = value
+  }
 
   return {
     t,
     te,
     tm,
     language,
+    setLanguage,
   }
 }
