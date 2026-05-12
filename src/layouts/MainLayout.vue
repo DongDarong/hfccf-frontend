@@ -7,7 +7,7 @@ import BlockUI from 'primevue/blockui'
 import Navbar from '@/components/navigation/Navbar.vue'
 import Sidebar from '@/components/navigation/Sidebar.vue'
 import Loading from '@/components/feedback/Loading.vue'
-import { logoutFromApi } from '@/services/auth'
+import { useUserStore } from '@/store/userStore'
 
 const props = defineProps({
   mobileBreakpoint: {
@@ -26,6 +26,7 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useUserStore()
 const isSidebarOpen = ref(false)
 const isMobileViewport = ref(false)
 const isDesktopSidebarVisible = ref(true)
@@ -86,7 +87,7 @@ function onContentClick() {
 }
 
 async function onSidebarLogout() {
-  await logoutFromApi()
+  await authStore.logout()
   closeSidebar()
   if (route.name !== 'login') {
     await router.push({ name: 'login' })

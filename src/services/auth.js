@@ -4,8 +4,10 @@ import { mapUser } from '@/services/mappers/userMapper'
 const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
 const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
 const LAST_ACTIVITY_STORAGE_KEY = 'hfccf-last-activity-at'
+export const AUTH_STATE_CHANGED_EVENT = 'hfccf-auth-state-changed'
 
 const INACTIVITY_TIMEOUT_MS = 12 * 60 * 60 * 1000
+let sessionValidationPerformed = false
 
 function isBrowser() {
   return typeof window !== 'undefined'
@@ -25,6 +27,16 @@ function clearSessionStorage(storage) {
   storage?.removeItem(LAST_ACTIVITY_STORAGE_KEY)
 }
 
+function dispatchAuthStateChanged(detail = {}) {
+  if (!isBrowser() || typeof window.CustomEvent !== 'function') return
+
+  window.dispatchEvent(
+    new CustomEvent(AUTH_STATE_CHANGED_EVENT, {
+      detail,
+    }),
+  )
+}
+
 function sanitizeUser(user) {
   const safeUser = mapUser(user)
 
@@ -34,13 +46,15 @@ function sanitizeUser(user) {
 }
 
 function getApiErrorMessage(error, fallbackMessage) {
-  if (error?.code === 'ERR_NETWORK') {
+  if (error?.isNetworkError || error?.code === 'ERR_NETWORK' || error?.code === 'NETWORK_ERROR') {
     return 'Unable to reach the backend API. Check that the backend is running and the API URL is correct.'
   }
 
-  const apiMessage = error?.response?.data?.message || error?.response?.data?.error
+  if (error?.validationErrors) {
+    return fallbackMessage
+  }
 
-  return apiMessage || fallbackMessage
+  return error?.message || error?.response?.data?.message || error?.response?.data?.error || fallbackMessage
 }
 
 function getApiPayload(response) {
@@ -110,6 +124,10 @@ export async function login({ email, password, remember = false }) {
     storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
     storage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
     storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
+    dispatchAuthStateChanged({
+      type: 'login',
+      user: safeUser,
+    })
 
     return safeUser
   } catch (error) {
@@ -205,6 +223,10 @@ export async function getAuthenticatedUser() {
     storage?.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
 
     touchActivity()
+    dispatchAuthStateChanged({
+      type: 'refresh',
+      user: safeUser,
+    })
 
     return safeUser
   } catch (error) {
@@ -221,11 +243,17 @@ export async function getAuthenticatedUser() {
 export function logout({ clearRemembered = true } = {}) {
   if (!isBrowser()) return
 
+  sessionValidationPerformed = false
   clearSessionStorage(window.sessionStorage)
 
   if (clearRemembered) {
     clearSessionStorage(window.localStorage)
   }
+
+  dispatchAuthStateChanged({
+    type: 'logout',
+    clearRemembered,
+  })
 }
 
 export async function logoutFromApi() {
@@ -328,7 +356,7 @@ export function hasSessionExpired(now = Date.now()) {
   return now - lastActivity >= INACTIVITY_TIMEOUT_MS
 }
 
-export function ensureSessionIsValid() {
+export async function ensureSessionIsValid() {
   if (!isAuthenticated()) {
     return false
   }
@@ -347,7 +375,17 @@ export function ensureSessionIsValid() {
     return false
   }
 
-  return true
+  if (sessionValidationPerformed) {
+    return true
+  }
+
+  try {
+    await getAuthenticatedUser()
+    sessionValidationPerformed = true
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function startAutoLogoutWatcher({

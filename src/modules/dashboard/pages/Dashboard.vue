@@ -1,43 +1,32 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
-import { getCurrentUser, hasPermission } from '@/services/auth'
-import SuperAdminDashboard from '@/modules/super-admin/pages/Dashboard.vue'
-import PreschoolAdminDashboard from '@/modules/preschool/admin/pages/PreschoolDashboard.vue'
-import ScholarshipAdminDashboard from '@/modules/scholarship/admin/pages/Dashboard.vue'
-import EnglishAdminDashboard from '@/modules/english/admin/pages/Dashboard.vue'
-import SportAdminDashboard from '@/modules/sport/admin/pages/Dashboard.vue'
-import TeacherEnglishDashboard from '@/modules/english/teacher/pages/Dashboard.vue'
-import CoachDashboard from '@/modules/sport/coach/pages/Dashboard.vue'
-import PreschoolTeacherDashboard from '@/modules/preschool/teacher/pages/Dashboard.vue'
-import ScholarshipTeacherDashboard from '@/modules/scholarship/teacher/pages/Dashboard.vue'
-import OperationsDashboard from '@/shared/components/dashboards/OperationsDashboard.vue'
-import DeliveryDashboard from '@/shared/components/dashboards/DeliveryDashboard.vue'
-import ProgramsDashboard from '@/shared/components/dashboards/ProgramsDashboard.vue'
-import BasicDashboard from '@/shared/components/dashboards/BasicDashboard.vue'
+import { hasPermission } from '@/services/auth'
 import { ROLES, isTeacherRole, normalizeRole } from '@/constants/roles'
+import { useUserStore } from '@/store/userStore'
 
 defineOptions({
   name: 'DashboardPage',
 })
 
 const router = useRouter()
-const currentUser = computed(() => getCurrentUser() || {})
+const userStore = useUserStore()
+const currentUser = computed(() => userStore.currentUser || {})
 const normalizedRole = computed(() => normalizeRole(currentUser.value?.role))
 
 const dashboardByRole = Object.freeze({
-  [ROLES.SUPER_ADMIN]: SuperAdminDashboard,
-  [ROLES.ADMIN_ENGLISH]: EnglishAdminDashboard,
-  [ROLES.ADMIN_PRESCHOOL]: PreschoolAdminDashboard,
-  [ROLES.ADMIN_SCHOLARSHIP]: ScholarshipAdminDashboard,
-  [ROLES.ADMIN_SPORT]: SportAdminDashboard,
-  [ROLES.COACH]: CoachDashboard,
-  [ROLES.TEACHER_ENGLISH]: TeacherEnglishDashboard,
-  [ROLES.TEACHER_PRESCHOOL]: PreschoolTeacherDashboard,
-  [ROLES.TEACHER_SCHOLARSHIP]: ScholarshipTeacherDashboard,
+  [ROLES.SUPER_ADMIN]: defineAsyncComponent(() => import('@/modules/super-admin/pages/Dashboard.vue')),
+  [ROLES.ADMIN_ENGLISH]: defineAsyncComponent(() => import('@/modules/english/admin/pages/Dashboard.vue')),
+  [ROLES.ADMIN_PRESCHOOL]: defineAsyncComponent(() => import('@/modules/preschool/admin/pages/PreschoolDashboard.vue')),
+  [ROLES.ADMIN_SCHOLARSHIP]: defineAsyncComponent(() => import('@/modules/scholarship/admin/pages/Dashboard.vue')),
+  [ROLES.ADMIN_SPORT]: defineAsyncComponent(() => import('@/modules/sport/admin/pages/Dashboard.vue')),
+  [ROLES.COACH]: defineAsyncComponent(() => import('@/modules/sport/coach/pages/Dashboard.vue')),
+  [ROLES.TEACHER_ENGLISH]: defineAsyncComponent(() => import('@/modules/english/teacher/pages/Dashboard.vue')),
+  [ROLES.TEACHER_PRESCHOOL]: defineAsyncComponent(() => import('@/modules/preschool/teacher/pages/Dashboard.vue')),
+  [ROLES.TEACHER_SCHOLARSHIP]: defineAsyncComponent(() => import('@/modules/scholarship/teacher/pages/Dashboard.vue')),
 })
 
 const dashboardLabels = Object.freeze({
@@ -73,22 +62,22 @@ function canUseRoleDashboard(role) {
 
 const dashboardRegistry = {
   operations: {
-    component: OperationsDashboard,
+    component: defineAsyncComponent(() => import('@/shared/components/dashboards/OperationsDashboard.vue')),
     label: 'Operations',
     severity: 'secondary',
   },
   delivery: {
-    component: DeliveryDashboard,
+    component: defineAsyncComponent(() => import('@/shared/components/dashboards/DeliveryDashboard.vue')),
     label: 'Delivery',
     severity: 'secondary',
   },
   programs: {
-    component: ProgramsDashboard,
+    component: defineAsyncComponent(() => import('@/shared/components/dashboards/ProgramsDashboard.vue')),
     label: 'Programs',
     severity: 'secondary',
   },
   basic: {
-    component: BasicDashboard,
+    component: defineAsyncComponent(() => import('@/shared/components/dashboards/BasicDashboard.vue')),
     label: 'Basic Access',
     severity: 'secondary',
   },

@@ -1,8 +1,8 @@
 import { computed, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { login, logout } from '@/modules/auth/services/authService'
 import { ROLES } from '@/constants/roles'
+import { useUserStore } from '@/store/userStore'
 
 const USER_TYPE_GROUPS = Object.freeze({
   ADMIN: 'admin',
@@ -47,6 +47,7 @@ export function useLoginForm({ accessPolicy, language }) {
   const router = useRouter()
   const route = useRoute()
   const { t } = useI18n()
+  const authStore = useUserStore()
 
   const isKhmer = computed(() => language.value === 'KH')
 
@@ -63,7 +64,7 @@ export function useLoginForm({ accessPolicy, language }) {
     userType: false,
   })
 
-  const isSubmitting = ref(false)
+  const isSubmitting = computed(() => Boolean(authStore.loading))
   const errorMessage = ref('')
   const showLoginSuccess = ref(false)
   const shouldRedirectAfterSuccess = ref(false)
@@ -158,7 +159,11 @@ export function useLoginForm({ accessPolicy, language }) {
       ? accessPolicy.requiredPermissionsByRole[role]
       : []
 
-    const userPermissions = Array.isArray(user?.role_permission) ? user.role_permission : []
+    const userPermissions = Array.isArray(user?.permissions)
+      ? user.permissions
+      : Array.isArray(user?.role_permission)
+        ? user.role_permission
+        : []
 
     if (!requiredPermissions.length) return true
     if (userPermissions.includes('all:*')) return true
@@ -182,22 +187,20 @@ export function useLoginForm({ accessPolicy, language }) {
 
     if (!isFormValid.value) return
 
-    isSubmitting.value = true
-
     try {
-      const authenticatedUser = await login({
+      const authenticatedUser = await authStore.login({
         email: form.email.trim().toLowerCase(),
         password: form.password,
         remember: form.remember,
       })
 
       if (!userMatchesSelectedType(authenticatedUser) || !isRoleAllowed.value) {
-        logout()
+        await authStore.logout({ callApi: false })
         throw new Error(t('auth.loginForm.accountTypeMismatch'))
       }
 
       if (!hasRequiredPermissionsForRole(authenticatedUser)) {
-        logout()
+        await authStore.logout({ callApi: false })
         throw new Error(t('auth.loginForm.missingRequiredPermissions'))
       }
 
@@ -205,8 +208,6 @@ export function useLoginForm({ accessPolicy, language }) {
       showLoginSuccess.value = true
     } catch (error) {
       errorMessage.value = error?.message || t('auth.loginForm.unableToLogin')
-    } finally {
-      isSubmitting.value = false
     }
   }
 

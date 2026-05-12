@@ -110,7 +110,7 @@ export default {
     teacher_preschool: 'Preschool Teacher',
     teacher_scholarship: 'Scholarship Teacher',
     adminpreschool: 'Preschool Admin',
-    adminscholaship: 'Scholarship Admin',
+    adminscholarship: 'Scholarship Admin',
     adminenglish: 'English Admin',
     adminsport: 'Sport Admin',
   },

@@ -1,7 +1,10 @@
+import { getRoleAccess } from '@/constants/access'
+
 export function mapUser(raw = {}) {
   const firstName = String(raw.firstName || raw.first_name || '').trim()
   const lastName = String(raw.lastName || raw.last_name || '').trim()
   const fallbackName = `${firstName} ${lastName}`.trim()
+  const roleAccess = getRoleAccess(String(raw.role || ''))
 
   const permissions = Array.isArray(raw.permissions)
     ? [...raw.permissions]
@@ -20,8 +23,8 @@ export function mapUser(raw = {}) {
     email: String(raw.email || ''),
     avatar: raw.avatar || '',
     role: String(raw.role || ''),
-    scope: String(raw.scope || ''),
-    domain: String(raw.domain || ''),
+    scope: String(raw.scope || roleAccess?.scope || ''),
+    domain: String(raw.domain || roleAccess?.domain || ''),
     permissions,
     role_permission: permissions,
     status: String(raw.status || ''),

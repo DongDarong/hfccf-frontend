@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import PrimeAvatar from 'primevue/avatar'
-import { getCurrentUser } from '@/services/auth'
+import { useUserStore } from '@/store/userStore'
 
 defineOptions({
   name: 'UserAvatar',
@@ -39,7 +39,8 @@ const props = defineProps({
   },
 })
 
-const currentUser = computed(() => getCurrentUser() || {})
+const userStore = useUserStore()
+const currentUser = computed(() => userStore.currentUser || {})
 const hasImageError = ref(false)
 
 const displayName = computed(() => {

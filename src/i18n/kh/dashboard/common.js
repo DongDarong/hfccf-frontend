@@ -110,7 +110,7 @@ export default {
     teacher_preschool: 'គ្រូបង្រៀនមត្តេយ្យ',
     teacher_scholarship: 'គ្រូបង្រៀនអាហារូបករណ៍',
     adminpreschool: 'អ្នកគ្រប់គ្រងមត្តេយ្យ',
-    adminscholaship: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍',
+    adminscholarship: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍',
     adminenglish: 'អ្នកគ្រប់គ្រងភាសាអង់គ្លេស',
     adminsport: 'អ្នកគ្រប់គ្រងកីឡា',
   },

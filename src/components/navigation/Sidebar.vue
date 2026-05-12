@@ -4,14 +4,15 @@ import PrimeButton from 'primevue/button'
 import Avatar from '@/components/navigation/Avatar.vue'
 import LogoutButton from '@/components/buttons/LogoutButton.vue'
 import SidebarNavigation from '@/components/navigation/SidebarNavigation.vue'
-import { getCurrentUser } from '@/services/auth'
 import { getSidebarToneClass } from '@/services/accessControl'
+import { useUserStore } from '@/store/userStore'
 
 defineOptions({
   name: 'MainSidebar',
 })
 
 const emit = defineEmits(['toggle-sidebar', 'logout'])
+const userStore = useUserStore()
 
 defineProps({
   collapsed: {
@@ -21,7 +22,7 @@ defineProps({
 })
 
 const slots = useSlots()
-const currentUser = computed(() => getCurrentUser() || {})
+const currentUser = computed(() => userStore.currentUser || {})
 const currentUserDisplayName = computed(() => {
   const firstName = String(currentUser.value?.firstName || '').trim()
   const lastName = String(currentUser.value?.lastName || '').trim()
