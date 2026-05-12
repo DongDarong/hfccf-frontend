@@ -1,33 +1,36 @@
 export function mapUser(raw = {}) {
-  const firstName = raw.firstName || ''
-  const lastName = raw.lastName || ''
+  const firstName = String(raw.firstName || raw.first_name || '').trim()
+  const lastName = String(raw.lastName || raw.last_name || '').trim()
   const fallbackName = `${firstName} ${lastName}`.trim()
+
   const permissions = Array.isArray(raw.permissions)
     ? [...raw.permissions]
     : Array.isArray(raw.role_permission)
       ? [...raw.role_permission]
-      : []
+      : Array.isArray(raw.role_permissions)
+        ? [...raw.role_permissions]
+        : []
 
   return {
-    id: raw.id,
+    id: raw.id ?? '',
     firstName,
     lastName,
-    name: raw.name || fallbackName || raw.username || raw.id,
-    username: raw.username || raw.id,
-    email: raw.email,
-    avatar: raw.avatar,
-    role: raw.role,
-    scope: raw.scope,
-    domain: raw.domain,
+    name: String(raw.name || fallbackName || raw.username || raw.id || ''),
+    username: String(raw.username || raw.id || ''),
+    email: String(raw.email || ''),
+    avatar: raw.avatar || '',
+    role: String(raw.role || ''),
+    scope: String(raw.scope || ''),
+    domain: String(raw.domain || ''),
     permissions,
     role_permission: permissions,
-    status: raw.status,
-    phone: raw.phone,
-    bio: raw.bio,
-    department: raw.department,
-    departmentCode: raw.departmentCode,
-    createdAt: raw.createdAt,
-    lastLoginAt: raw.lastLoginAt,
+    status: String(raw.status || ''),
+    phone: String(raw.phone || ''),
+    bio: raw.bio || '',
+    department: raw.department || '',
+    departmentCode: raw.departmentCode || raw.department_code || '',
+    createdAt: raw.createdAt || raw.created_at || '',
+    lastLoginAt: raw.lastLoginAt || raw.last_login_at || '',
   }
 }
 

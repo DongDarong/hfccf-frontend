@@ -4,6 +4,10 @@ const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
 const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
 const LAST_ACTIVITY_STORAGE_KEY = 'hfccf-last-activity-at'
 
+function isBrowser() {
+  return typeof window !== 'undefined'
+}
+
 function isLocalHostname(hostname) {
   return (
     hostname === 'localhost' ||
@@ -14,7 +18,7 @@ function isLocalHostname(hostname) {
   )
 }
 
-function assertSafeHttpUrl(rawUrl, fallbackOrigin = window.location.origin) {
+function assertSafeHttpUrl(rawUrl, fallbackOrigin = isBrowser() ? window.location.origin : 'http://localhost') {
   const parsedUrl = new URL(String(rawUrl || '').trim(), fallbackOrigin)
 
   if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
@@ -26,6 +30,7 @@ function assertSafeHttpUrl(rawUrl, fallbackOrigin = window.location.origin) {
 
 function getValidatedApiBaseUrl() {
   const rawBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim()
+
   if (!rawBaseUrl) return ''
 
   const parsedUrl = assertSafeHttpUrl(rawBaseUrl)
@@ -39,6 +44,8 @@ function getValidatedApiBaseUrl() {
 }
 
 function getAuthToken() {
+  if (!isBrowser()) return ''
+
   return (
     window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ||
     window.sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ||
@@ -47,6 +54,8 @@ function getAuthToken() {
 }
 
 function clearAuthStorage() {
+  if (!isBrowser()) return
+
   for (const storage of [window.localStorage, window.sessionStorage]) {
     storage.removeItem(AUTH_TOKEN_STORAGE_KEY)
     storage.removeItem(AUTH_USER_STORAGE_KEY)
@@ -67,8 +76,10 @@ const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const requestUrl = assertSafeHttpUrl(config.url || '', config.baseURL || apiBaseUrl || window.location.origin)
-  const isSameOrigin = requestUrl.origin === window.location.origin
+  const fallbackOrigin = config.baseURL || apiBaseUrl || (isBrowser() ? window.location.origin : 'http://localhost')
+  const requestUrl = assertSafeHttpUrl(config.url || '', fallbackOrigin)
+  const currentOrigin = isBrowser() ? window.location.origin : ''
+  const isSameOrigin = currentOrigin ? requestUrl.origin === currentOrigin : false
   const isTrustedApiOrigin = apiOrigin ? requestUrl.origin === apiOrigin : isSameOrigin
 
   config.headers = config.headers || {}

@@ -7,6 +7,10 @@ const LAST_ACTIVITY_STORAGE_KEY = 'hfccf-last-activity-at'
 
 const INACTIVITY_TIMEOUT_MS = 12 * 60 * 60 * 1000
 
+function isBrowser() {
+  return typeof window !== 'undefined'
+}
+
 function getStorage(remember = false) {
   return remember ? window.localStorage : window.sessionStorage
 }
@@ -23,7 +27,9 @@ function clearSessionStorage(storage) {
 
 function sanitizeUser(user) {
   const safeUser = mapUser(user)
+
   delete safeUser.password
+
   return safeUser
 }
 
@@ -32,9 +38,7 @@ function getApiErrorMessage(error, fallbackMessage) {
     return 'Unable to reach the backend API. Check that the backend is running and the API URL is correct.'
   }
 
-  const apiMessage =
-    error?.response?.data?.message ||
-    error?.response?.data?.error
+  const apiMessage = error?.response?.data?.message || error?.response?.data?.error
 
   return apiMessage || fallbackMessage
 }
@@ -52,7 +56,7 @@ function hasToken(storage) {
 }
 
 function getSessionStorage() {
-  if (typeof window === 'undefined') return null
+  if (!isBrowser()) return null
 
   if (hasToken(window.localStorage)) {
     return window.localStorage
@@ -66,7 +70,7 @@ function getSessionStorage() {
 }
 
 function getLastActivityRaw() {
-  if (typeof window === 'undefined') return ''
+  if (!isBrowser()) return ''
 
   return (
     window.localStorage.getItem(LAST_ACTIVITY_STORAGE_KEY) ||
@@ -75,14 +79,8 @@ function getLastActivityRaw() {
   )
 }
 
-export async function login({
-  email,
-  password,
-  remember = false,
-}) {
-  const normalizedEmail = String(email || '')
-    .trim()
-    .toLowerCase()
+export async function login({ email, password, remember = false }) {
+  const normalizedEmail = String(email || '').trim().toLowerCase()
 
   if (!normalizedEmail || !password) {
     throw new Error('Please enter both email and password.')
@@ -96,7 +94,6 @@ export async function login({
     })
 
     const payload = getApiPayload(response)
-
     const token = payload.token
     const user = payload.user
 
@@ -106,26 +103,13 @@ export async function login({
 
     const storage = getStorage(remember)
     const fallbackStorage = getFallbackStorage(remember)
-
     const safeUser = sanitizeUser(user)
 
-    // clear opposite storage only
     clearSessionStorage(fallbackStorage)
 
-    storage.setItem(
-      AUTH_USER_STORAGE_KEY,
-      JSON.stringify(safeUser),
-    )
-
-    storage.setItem(
-      AUTH_TOKEN_STORAGE_KEY,
-      token,
-    )
-
-    storage.setItem(
-      LAST_ACTIVITY_STORAGE_KEY,
-      String(Date.now()),
-    )
+    storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
+    storage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
+    storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
 
     return safeUser
   } catch (error) {
@@ -133,84 +117,51 @@ export async function login({
       throw error
     }
 
-    throw new Error(
-      getApiErrorMessage(
-        error,
-        'Invalid email or password.',
-      ),
-      { cause: error },
-    )
+    throw new Error(getApiErrorMessage(error, 'Invalid email or password.'), {
+      cause: error,
+    })
   }
 }
 
 export async function requestPasswordReset(email) {
-  const normalizedEmail = String(email || '')
-    .trim()
-    .toLowerCase()
+  const normalizedEmail = String(email || '').trim().toLowerCase()
 
   if (!normalizedEmail) {
     throw new Error('Please enter your email address.')
   }
 
   try {
-    const response = await http.post(
-      '/auth/forgot-password',
-      {
-        email: normalizedEmail,
-      },
-    )
+    const response = await http.post('/auth/forgot-password', {
+      email: normalizedEmail,
+    })
 
     return getApiPayload(response)
   } catch (error) {
-    throw new Error(
-      getApiErrorMessage(
-        error,
-        'Unable to send reset code right now.',
-      ),
-      { cause: error },
-    )
+    throw new Error(getApiErrorMessage(error, 'Unable to send reset code right now.'), {
+      cause: error,
+    })
   }
 }
 
-export async function verifyPasswordResetOtp({
-  email,
-  code,
-}) {
-  const normalizedEmail = String(email || '')
-    .trim()
-    .toLowerCase()
+export async function verifyPasswordResetOtp({ email, code }) {
+  const normalizedEmail = String(email || '').trim().toLowerCase()
+  const normalizedCode = String(code || '').replace(/\D/g, '').slice(0, 6)
 
-  const normalizedCode = String(code || '')
-    .replace(/\D/g, '')
-    .slice(0, 6)
-
-  if (
-    !normalizedEmail ||
-    normalizedCode.length !== 6
-  ) {
-    throw new Error(
-      'Please enter a valid verification code.',
-    )
+  if (!normalizedEmail || normalizedCode.length !== 6) {
+    throw new Error('Please enter a valid verification code.')
   }
 
   try {
-    const response = await http.post(
-      '/auth/verify-otp',
-      {
-        email: normalizedEmail,
-        code: normalizedCode,
-      },
-    )
+    const response = await http.post('/auth/verify-otp', {
+      email: normalizedEmail,
+      code: normalizedCode,
+    })
 
     return getApiPayload(response)
   } catch (error) {
-    throw new Error(
-      getApiErrorMessage(
-        error,
-        'Invalid or expired verification code.',
-      ),
-      { cause: error },
-    )
+    throw new Error(getApiErrorMessage(error, 'Invalid or expired verification code.'), {
+      cause: error,
+    })
   }
 }
 
@@ -220,83 +171,55 @@ export async function resetPassword({
   password,
   password_confirmation,
 }) {
-  const normalizedEmail = String(email || '')
-    .trim()
-    .toLowerCase()
+  const normalizedEmail = String(email || '').trim().toLowerCase()
+  const normalizedCode = String(code || '').replace(/\D/g, '').slice(0, 6)
 
-  const normalizedCode = String(code || '')
-    .replace(/\D/g, '')
-    .slice(0, 6)
-
-  if (
-    !normalizedEmail ||
-    normalizedCode.length !== 6 ||
-    !password
-  ) {
-    throw new Error(
-      'Please complete the password reset form.',
-    )
+  if (!normalizedEmail || normalizedCode.length !== 6 || !password) {
+    throw new Error('Please complete the password reset form.')
   }
 
   try {
-    const response = await http.post(
-      '/auth/reset-password',
-      {
-        email: normalizedEmail,
-        code: normalizedCode,
-        password,
-        password_confirmation:
-          password_confirmation || password,
-      },
-    )
+    const response = await http.post('/auth/reset-password', {
+      email: normalizedEmail,
+      code: normalizedCode,
+      password,
+      password_confirmation: password_confirmation || password,
+    })
 
     return getApiPayload(response)
   } catch (error) {
-    throw new Error(
-      getApiErrorMessage(
-        error,
-        'Unable to reset password right now.',
-      ),
-      { cause: error },
-    )
+    throw new Error(getApiErrorMessage(error, 'Unable to reset password right now.'), {
+      cause: error,
+    })
   }
 }
 
 export async function getAuthenticatedUser() {
   try {
     const response = await http.get('/auth/me')
-
     const payload = getApiPayload(response)
-
     const user = payload.user || payload
-
     const safeUser = sanitizeUser(user)
-
     const storage = getSessionStorage()
 
-    storage?.setItem(
-      AUTH_USER_STORAGE_KEY,
-      JSON.stringify(safeUser),
-    )
+    storage?.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
 
     touchActivity()
 
     return safeUser
   } catch (error) {
-    throw new Error(
-      getApiErrorMessage(
-        error,
-        'Unable to load authenticated user.',
-      ),
-      { cause: error },
-    )
+    if (error?.response?.status === 401) {
+      logout()
+    }
+
+    throw new Error(getApiErrorMessage(error, 'Unable to load authenticated user.'), {
+      cause: error,
+    })
   }
 }
 
-export function logout({
-  clearRemembered = true,
-} = {}) {
-  if (typeof window === 'undefined') return
+export function logout({ clearRemembered = true } = {}) {
+  if (!isBrowser()) return
 
   clearSessionStorage(window.sessionStorage)
 
@@ -317,51 +240,33 @@ export async function logoutFromApi() {
 
 function getStoredUser() {
   const storage = getSessionStorage()
+  const raw = storage?.getItem(AUTH_USER_STORAGE_KEY)
 
-  const raw = storage?.getItem(
-    AUTH_USER_STORAGE_KEY,
-  )
-
-  if (!raw) {
-    return null
-  }
+  if (!raw) return null
 
   try {
     const user = JSON.parse(raw)
 
-    return user && typeof user === 'object'
-      ? user
-      : null
+    return user && typeof user === 'object' ? user : null
   } catch (error) {
-    console.error(
-      'Failed to parse stored auth user:',
-      error,
-    )
+    console.error('Failed to parse stored auth user:', error)
 
     return null
   }
 }
 
 export function getCurrentUser() {
-  if (typeof window === 'undefined') {
-    return null
-  }
+  if (!isBrowser()) return null
 
   return getStoredUser()
 }
 
 export function getAuthToken() {
-  if (typeof window === 'undefined') {
-    return ''
-  }
+  if (!isBrowser()) return ''
 
   return (
-    window.localStorage.getItem(
-      AUTH_TOKEN_STORAGE_KEY,
-    ) ||
-    window.sessionStorage.getItem(
-      AUTH_TOKEN_STORAGE_KEY,
-    ) ||
+    window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ||
+    window.sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ||
     ''
   )
 }
@@ -370,73 +275,57 @@ export function isAuthenticated() {
   return Boolean(getAuthToken())
 }
 
-export function getCurrentPermissions(
-  user = getCurrentUser(),
-) {
+export function getCurrentPermissions(user = getCurrentUser()) {
   if (!user || typeof user !== 'object') {
     return []
+  }
+
+  if (Array.isArray(user.permissions)) {
+    return user.permissions
   }
 
   if (Array.isArray(user.role_permission)) {
     return user.role_permission
   }
 
-  return Array.isArray(user.permissions)
-    ? user.permissions
-    : []
+  if (Array.isArray(user.role_permissions)) {
+    return user.role_permissions
+  }
+
+  return []
 }
 
-export function hasPermission(
-  permission,
-  user = getCurrentUser(),
-) {
+export function hasPermission(permission, user = getCurrentUser()) {
   const permissions = getCurrentPermissions(user)
 
-  return (
-    permissions.includes('all:*') ||
-    permissions.includes(permission)
-  )
+  return permissions.includes('all:*') || permissions.includes(permission)
 }
 
-export function isSuperAdmin(
-  user = getCurrentUser(),
-) {
+export function isSuperAdmin(user = getCurrentUser()) {
   return hasPermission('all:*', user)
 }
 
-export function touchActivity(
-  timestamp = Date.now(),
-) {
+export function touchActivity(timestamp = Date.now()) {
   const storage = getSessionStorage()
 
   if (!storage) return
 
-  storage.setItem(
-    LAST_ACTIVITY_STORAGE_KEY,
-    String(timestamp),
-  )
+  storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(timestamp))
 }
 
-export function hasSessionExpired(
-  now = Date.now(),
-) {
+export function hasSessionExpired(now = Date.now()) {
   if (!isAuthenticated()) {
     return false
   }
 
-  const lastActivity = Number(
-    getLastActivityRaw(),
-  )
+  const lastActivity = Number(getLastActivityRaw())
 
   if (!lastActivity) {
     touchActivity(now)
     return false
   }
 
-  return (
-    now - lastActivity >=
-    INACTIVITY_TIMEOUT_MS
-  )
+  return now - lastActivity >= INACTIVITY_TIMEOUT_MS
 }
 
 export function ensureSessionIsValid() {
@@ -465,7 +354,7 @@ export function startAutoLogoutWatcher({
   onExpire,
   checkEveryMs = 60000,
 } = {}) {
-  if (typeof window === 'undefined') {
+  if (!isBrowser()) {
     return () => {}
   }
 
@@ -494,7 +383,6 @@ export function startAutoLogoutWatcher({
     }
 
     lastTrackedAt = now
-
     touchActivity(now)
   }
 
@@ -513,18 +401,14 @@ export function startAutoLogoutWatcher({
   }
 
   function handleStorageChange(event) {
-    const sessionWasCleared =
-      event.key === null
+    const sessionWasCleared = event.key === null
 
     const authValueWasRemoved =
       sessionKeys.includes(event.key) &&
       event.oldValue !== null &&
       event.newValue === null
 
-    if (
-      !authValueWasRemoved &&
-      !(sessionWasCleared && isAuthenticated())
-    ) {
+    if (!authValueWasRemoved && !(sessionWasCleared && isAuthenticated())) {
       return
     }
 
@@ -538,38 +422,23 @@ export function startAutoLogoutWatcher({
   }
 
   activityEvents.forEach((eventName) => {
-    window.addEventListener(
-      eventName,
-      trackActivity,
-      { passive: true },
-    )
+    window.addEventListener(eventName, trackActivity, {
+      passive: true,
+    })
   })
 
-  window.addEventListener(
-    'storage',
-    handleStorageChange,
-  )
+  window.addEventListener('storage', handleStorageChange)
 
-  const timer = window.setInterval(
-    checkExpiry,
-    checkEveryMs,
-  )
+  const timer = window.setInterval(checkExpiry, checkEveryMs)
 
   checkExpiry()
 
   return () => {
     activityEvents.forEach((eventName) => {
-      window.removeEventListener(
-        eventName,
-        trackActivity,
-      )
+      window.removeEventListener(eventName, trackActivity)
     })
 
     window.clearInterval(timer)
-
-    window.removeEventListener(
-      'storage',
-      handleStorageChange,
-    )
+    window.removeEventListener('storage', handleStorageChange)
   }
 }
