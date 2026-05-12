@@ -1,7 +1,23 @@
 <script setup>
+/**
+ * NotificationListItem
+ * --------------------------------------------------------------------------
+ * Single notification row item.
+ *
+ * Features:
+ * - Tone-based icon and border
+ * - Read state styling
+ * - Mark-read action
+ * - Delete action
+ * - Time and relative-time display
+ * --------------------------------------------------------------------------
+ */
+
 import { computed } from 'vue'
 
-defineEmits(['delete', 'mark-read'])
+defineOptions({
+  name: 'NotificationListItem',
+})
 
 const props = defineProps({
   item: {
@@ -30,34 +46,105 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['delete', 'mark-read'])
+
+/**
+ * Safe notification tone.
+ */
+const normalizedTone = computed(() => {
+  const tone = String(props.item?.tone || 'info').toLowerCase()
+
+  return ['danger', 'success', 'info'].includes(tone) ? tone : 'info'
+})
+
+/**
+ * Icon by notification tone.
+ */
 const toneIcon = computed(() => {
-  if (props.item.tone === 'danger') return 'pi pi-exclamation-triangle'
-  if (props.item.tone === 'success') return 'pi pi-check-circle'
+  if (normalizedTone.value === 'danger') return 'pi pi-exclamation-triangle'
+  if (normalizedTone.value === 'success') return 'pi pi-check-circle'
+
   return 'pi pi-info-circle'
 })
+
+/**
+ * Resolve exact time from prop or item.
+ */
+const resolvedTime = computed(() =>
+  props.time || props.item?.time || '',
+)
+
+/**
+ * Resolve relative time from prop or item.
+ */
+const resolvedRelativeTime = computed(() =>
+  props.relativeTime || props.item?.relativeTime || '',
+)
+
+/**
+ * Mark notification as read.
+ */
+function handleMarkRead() {
+  if (props.loading || props.item?.read) return
+
+  emit('mark-read', props.item)
+}
+
+/**
+ * Delete notification.
+ */
+function handleDelete() {
+  if (props.loading) return
+
+  emit('delete', props.item)
+}
 </script>
 
 <template>
   <div
     class="notification-list-item"
     :class="[
-      `notification-list-item--${item.tone}`,
+      `notification-list-item--${normalizedTone}`,
       { 'notification-list-item--read': item.read },
     ]"
   >
     <div class="notification-list-item__main">
-      <span class="notification-list-item__icon" aria-hidden="true">
+      <span
+        class="notification-list-item__icon"
+        aria-hidden="true"
+      >
         <i :class="toneIcon" />
       </span>
 
-      <div>
-        <div class="notification-list-item__pill">{{ item.label }}</div>
-        <p class="notification-list-item__title">{{ item.title }}</p>
-        <p class="notification-list-item__detail">{{ item.detail }}</p>
-        <p v-if="time" class="notification-list-item__time">
-          <span>{{ time }}</span>
-          <span v-if="relativeTime" class="notification-list-item__time-separator">•</span>
-          <span v-if="relativeTime">{{ relativeTime }}</span>
+      <div class="min-w-0">
+        <div class="notification-list-item__pill">
+          {{ item.label }}
+        </div>
+
+        <p class="notification-list-item__title">
+          {{ item.title }}
+        </p>
+
+        <p class="notification-list-item__detail">
+          {{ item.detail }}
+        </p>
+
+        <p
+          v-if="resolvedTime"
+          class="notification-list-item__time"
+        >
+          <span>{{ resolvedTime }}</span>
+
+          <span
+            v-if="resolvedRelativeTime"
+            class="notification-list-item__time-separator"
+          >
+            •
+          </span>
+
+          <span v-if="resolvedRelativeTime">
+            {{ resolvedRelativeTime }}
+          </span>
         </p>
       </div>
     </div>
@@ -68,9 +155,13 @@ const toneIcon = computed(() => {
           type="button"
           class="notification-list-item__button notification-list-item__button--read"
           :disabled="item.read || loading"
-          @click="$emit('mark-read', item)"
+          @click="handleMarkRead"
         >
-          <i class="pi pi-check" aria-hidden="true" />
+          <i
+            class="pi pi-check"
+            aria-hidden="true"
+          />
+
           <span>{{ markReadLabel }}</span>
         </button>
 
@@ -78,9 +169,13 @@ const toneIcon = computed(() => {
           type="button"
           class="notification-list-item__button notification-list-item__button--delete"
           :disabled="loading"
-          @click="$emit('delete', item)"
+          @click="handleDelete"
         >
-          <i class="pi pi-trash" aria-hidden="true" />
+          <i
+            class="pi pi-trash"
+            aria-hidden="true"
+          />
+
           <span>{{ deleteLabel }}</span>
         </button>
       </div>
@@ -89,15 +184,18 @@ const toneIcon = computed(() => {
 </template>
 
 <style scoped>
+/**
+ * Notification row shell.
+ */
 .notification-list-item {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  border-radius: 1rem;
   border: 1px solid #e7eef6;
-  background: white;
+  border-radius: 1rem;
+  background: #ffffff;
 }
 
 .notification-list-item--read {
@@ -116,24 +214,30 @@ const toneIcon = computed(() => {
   border-left: 4px solid var(--hope-lime);
 }
 
+/**
+ * Main content layout.
+ */
+.notification-list-item__main {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/**
+ * Tone icon.
+ */
 .notification-list-item__icon {
-  width: 2.35rem;
-  height: 2.35rem;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  width: 2.35rem;
+  height: 2.35rem;
   border-radius: 0.8rem;
   background: #eef6fb;
   color: #0f6e96;
   font-size: 0.95rem;
-}
-
-.notification-list-item__main {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  min-width: 0;
 }
 
 .notification-list-item--danger .notification-list-item__icon {
@@ -151,6 +255,9 @@ const toneIcon = computed(() => {
   color: #15803d;
 }
 
+/**
+ * Pill label.
+ */
 .notification-list-item__pill {
   display: inline-flex;
   align-items: center;
@@ -164,18 +271,21 @@ const toneIcon = computed(() => {
   text-align: center;
 }
 
+/**
+ * Notification text.
+ */
 .notification-list-item__title {
   margin: 0;
+  color: #122f43;
   font-size: 1rem;
   font-weight: 800;
-  color: #122f43;
 }
 
 .notification-list-item__detail {
   margin: 0.25rem 0 0;
+  color: #64748b;
   font-size: 0.86rem;
   line-height: 1.6;
-  color: #64748b;
 }
 
 .notification-list-item__time {
@@ -190,10 +300,13 @@ const toneIcon = computed(() => {
   color: #94a3b8;
 }
 
+/**
+ * Actions.
+ */
 .notification-list-item__actions-wrap {
   display: flex;
-  align-items: center;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .notification-list-item__actions {
@@ -203,19 +316,23 @@ const toneIcon = computed(() => {
 }
 
 .notification-list-item__button {
-  min-height: 2rem;
   display: inline-flex;
+  min-height: 2rem;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  border-radius: 9999px;
   padding: 0.45rem 0.75rem;
+  border-radius: 9999px;
   font-size: 0.74rem;
   font-weight: 800;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
     color 0.18s ease;
+}
+
+.notification-list-item__button:disabled {
+  cursor: not-allowed;
 }
 
 .notification-list-item__button--read {
@@ -230,7 +347,6 @@ const toneIcon = computed(() => {
 }
 
 .notification-list-item__button--read:disabled {
-  cursor: not-allowed;
   border-color: #d1fae5;
   background: #ecfdf5;
   color: #15803d;
@@ -242,13 +358,9 @@ const toneIcon = computed(() => {
   color: #be123c;
 }
 
-.notification-list-item__button--delete:hover {
+.notification-list-item__button--delete:hover:not(:disabled) {
   border-color: #fda4af;
   background: #ffe4e6;
-}
-
-.notification-list-item__button:disabled {
-  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {
