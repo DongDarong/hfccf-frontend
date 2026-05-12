@@ -1,5 +1,20 @@
 <script setup>
-import { computed, ref } from 'vue'
+/**
+ * Notifications
+ * --------------------------------------------------------------------------
+ * Dashboard notifications page.
+ *
+ * Features:
+ * - All / unread / read filters
+ * - Mark as read
+ * - Delete single notification
+ * - Clear all notifications
+ * - Confirmation dialog
+ * - Khmer typography support
+ * --------------------------------------------------------------------------
+ */
+
+import { computed, onBeforeUnmount, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -8,6 +23,28 @@ import NotificationFilterTabs from '@/modules/dashboard/components/notifications
 import NotificationInboxCard from '@/modules/dashboard/components/notifications/NotificationInboxCard.vue'
 
 const { t, language } = useLanguage()
+
+const activeFilter = ref('all')
+const readNotificationIds = ref([])
+const deletedNotificationIds = ref([])
+const confirmAction = ref(null)
+const pendingNotification = ref(null)
+const isLoading = ref(false)
+
+/**
+ * Reactive current time for relative-time labels.
+ */
+const currentTime = ref(new Date())
+
+const timeTimer = window.setInterval(() => {
+  currentTime.value = new Date()
+}, 60000)
+
+onBeforeUnmount(() => {
+  window.clearInterval(timeTimer)
+})
+
+const locale = computed(() => (language.value === 'KH' ? 'km-KH' : 'en-US'))
 
 const title = computed(() => t('common.notifications'))
 const subtitle = computed(() => t('common.notificationPage.subtitle'))
@@ -18,38 +55,36 @@ const deleteLabel = computed(() => t('common.notificationPage.delete'))
 const clearAllLabel = computed(() => t('common.notificationPage.clearAll'))
 const cancelLabel = computed(() => t('common.notificationPage.confirm.cancel'))
 const loadingLabel = computed(() => t('common.notificationPage.loading'))
-const activeFilter = ref('all')
-const readNotificationIds = ref([])
-const deletedNotificationIds = ref([])
-const confirmAction = ref(null)
-const pendingNotification = ref(null)
-const isLoading = ref(false)
-const now = new Date()
-const locale = computed(() => (language.value === 'KH' ? 'km-KH' : 'en-US'))
 
-const notificationSeed = [
+/**
+ * Mock notification seed.
+ */
+const notificationSeed = computed(() => [
   {
     id: 'approval-requests',
     tone: 'danger',
     itemKey: 'approvalRequests',
-    createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+    createdAt: new Date(currentTime.value.getTime() - 2 * 60 * 60 * 1000),
   },
   {
     id: 'schedule-updated',
     tone: 'info',
     itemKey: 'scheduleUpdated',
-    createdAt: new Date(now.getTime() - 14 * 60 * 1000),
+    createdAt: new Date(currentTime.value.getTime() - 14 * 60 * 1000),
   },
   {
     id: 'backup-completed',
     tone: 'success',
     itemKey: 'backupCompleted',
-    createdAt: now,
+    createdAt: currentTime.value,
   },
-]
+])
 
+/**
+ * Localized notification list.
+ */
 const notifications = computed(() =>
-  notificationSeed.map((item) => ({
+  notificationSeed.value.map((item) => ({
     ...item,
     label: t(`common.notificationPage.items.${item.itemKey}.label`),
     title: t(`common.notificationPage.items.${item.itemKey}.title`),
@@ -59,6 +94,9 @@ const notifications = computed(() =>
   })),
 )
 
+/**
+ * Visible notifications after deleted items are removed.
+ */
 const visibleNotifications = computed(() =>
   notifications.value
     .filter((item) => !deletedNotificationIds.value.includes(item.id))
@@ -68,11 +106,18 @@ const visibleNotifications = computed(() =>
     })),
 )
 
-const unreadNotifications = computed(() => visibleNotifications.value.filter((item) => !item.read))
-const readNotifications = computed(() => visibleNotifications.value.filter((item) => item.read))
+const unreadNotifications = computed(() =>
+  visibleNotifications.value.filter((item) => !item.read),
+)
+
+const readNotifications = computed(() =>
+  visibleNotifications.value.filter((item) => item.read),
+)
+
 const filteredNotifications = computed(() => {
   if (activeFilter.value === 'unread') return unreadNotifications.value
   if (activeFilter.value === 'read') return readNotifications.value
+
   return visibleNotifications.value
 })
 
@@ -120,38 +165,63 @@ const alertMessage = computed(() => {
   }
 
   const notificationTitle = pendingNotification.value?.title || t('common.notificationPage.empty')
-  return t('common.notificationPage.confirm.deleteMessage', { title: notificationTitle })
+
+  return t('common.notificationPage.confirm.deleteMessage', {
+    title: notificationTitle,
+  })
 })
 
+/**
+ * Mark one notification as read.
+ */
 function markNotificationRead(item) {
   if (isLoading.value) return
   if (!item?.id || readNotificationIds.value.includes(item.id)) return
+
   runNotificationAction(() => {
-    readNotificationIds.value = [...readNotificationIds.value, item.id]
+    readNotificationIds.value = [
+      ...readNotificationIds.value,
+      item.id,
+    ]
   })
 }
 
+/**
+ * Open delete confirmation.
+ */
 function deleteNotification(item) {
   if (isLoading.value) return
   if (!item?.id || deletedNotificationIds.value.includes(item.id)) return
+
   pendingNotification.value = item
   confirmAction.value = 'delete'
 }
 
+/**
+ * Open clear-all confirmation.
+ */
 function clearAllNotifications() {
   if (isLoading.value) return
   if (!visibleNotifications.value.length) return
+
   pendingNotification.value = null
   confirmAction.value = 'clear-all'
 }
 
+/**
+ * Close confirmation dialog.
+ */
 function cancelQuestion() {
   confirmAction.value = null
   pendingNotification.value = null
 }
 
+/**
+ * Confirm pending delete or clear-all action.
+ */
 function confirmQuestion() {
   if (isLoading.value) return
+
   const action = confirmAction.value
   const notificationId = pendingNotification.value?.id
 
@@ -159,7 +229,10 @@ function confirmQuestion() {
 
   runNotificationAction(() => {
     if (action === 'delete' && notificationId) {
-      deletedNotificationIds.value = [...deletedNotificationIds.value, notificationId]
+      deletedNotificationIds.value = [
+        ...deletedNotificationIds.value,
+        notificationId,
+      ]
     }
 
     if (action === 'clear-all') {
@@ -168,17 +241,24 @@ function confirmQuestion() {
   })
 }
 
+/**
+ * Simulate async notification action.
+ */
 function runNotificationAction(callback) {
   isLoading.value = true
+
   window.setTimeout(() => {
     callback()
     isLoading.value = false
   }, 350)
 }
 
+/**
+ * Format relative notification time.
+ */
 function formatRelativeTime(dateValue) {
   const value = dateValue instanceof Date ? dateValue : new Date(dateValue)
-  const diffMs = now.getTime() - value.getTime()
+  const diffMs = currentTime.value.getTime() - value.getTime()
   const absMinutes = Math.round(Math.abs(diffMs) / 60000)
   const absHours = Math.round(Math.abs(diffMs) / 3600000)
 
@@ -201,8 +281,12 @@ function formatRelativeTime(dateValue) {
   return t('common.notificationPage.time.today')
 }
 
+/**
+ * Format exact notification time.
+ */
 function formatExactTime(dateValue) {
   const value = dateValue instanceof Date ? dateValue : new Date(dateValue)
+
   return new Intl.DateTimeFormat(locale.value, {
     hour: 'numeric',
     minute: '2-digit',
@@ -213,7 +297,10 @@ function formatExactTime(dateValue) {
 <template>
   <MainLayout>
     <section :class="language === 'KH' ? 'global-page global-page--kh' : 'global-page'">
-      <HeaderSection :title="title" :subtitle="subtitle" />
+      <HeaderSection
+        :title="title"
+        :subtitle="subtitle"
+      />
 
       <NotificationFilterTabs
         v-model:active-tab="activeFilter"
@@ -241,6 +328,7 @@ function formatExactTime(dateValue) {
         :message="alertMessage"
         :confirm-text="confirmAction === 'clear-all' ? clearAllLabel : deleteLabel"
         :cancel-text="cancelLabel"
+        :loading="isLoading"
         type="danger"
         @confirm="confirmQuestion"
         @cancel="cancelQuestion"
@@ -266,7 +354,11 @@ function formatExactTime(dateValue) {
 .global-page--kh :deep(.alert-question__title),
 .global-page--kh :deep(.alert-question__message) {
   font-family:
-    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+    'Noto Sans Khmer',
+    'Khmer OS Siemreap',
+    'Khmer OS Battambang',
+    'Leelawadee UI',
+    sans-serif;
 }
 
 .global-page--kh :deep(.notification-inbox-card__eyebrow) {
