@@ -1,10 +1,10 @@
 <script setup>
-import { computed, reactive } from 'vue'
 import Card from 'primevue/card'
 import Password from 'primevue/password'
 import Message from 'primevue/message'
 import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useCreateNewPassword } from '@/modules/auth/composables/useCreateNewPassword'
 
 const props = defineProps({
   loading: {
@@ -27,55 +27,21 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'back', 'success-close'])
 
-const form = reactive({
-  password: '',
-  confirmPassword: '',
-})
-
-const touched = reactive({
-  password: false,
-  confirmPassword: false,
-})
-
-const passwordError = computed(() => {
-  if (!touched.password) return ''
-  if (!form.password) return props.t('auth.forgotPassword.createPassword.errors.passwordRequired')
-  if (form.password.length < 8) return props.t('auth.forgotPassword.createPassword.errors.minPassword')
-  return ''
-})
-
-const confirmPasswordError = computed(() => {
-  if (!touched.confirmPassword) return ''
-  if (!form.confirmPassword) return props.t('auth.forgotPassword.createPassword.errors.confirmRequired')
-  if (form.confirmPassword !== form.password) return props.t('auth.forgotPassword.createPassword.errors.mismatch')
-  return ''
-})
-
-const isFormValid = computed(
-  () => form.password.length >= 8 && form.confirmPassword.length >= 8 && form.password === form.confirmPassword,
-)
-
-function touchField(field) {
-  touched[field] = true
-}
-
-function onSubmit() {
-  touched.password = true
-  touched.confirmPassword = true
-
-  if (!isFormValid.value) return
-
-  emit('submit', {
-    password: form.password,
-  })
-}
+const {
+  form,
+  passwordError,
+  confirmPasswordError,
+  isFormValid,
+  touchField,
+  submitPassword,
+} = useCreateNewPassword(props, emit)
 </script>
 
 <template>
   <div class="create-password mx-auto w-full max-w-md">
     <Card class="create-password-card border-0">
       <template #content>
-        <form class="create-password-fields" @submit.prevent="onSubmit">
+        <form class="create-password-fields" @submit.prevent="submitPassword">
           <div class="create-password-header">
             <button
               type="button"
