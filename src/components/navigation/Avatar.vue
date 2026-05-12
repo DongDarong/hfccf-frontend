@@ -3,7 +3,6 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import PrimeAvatar from 'primevue/avatar'
 import { getCurrentUser } from '@/services/auth'
-import users from '@/mocks/users.json'
 
 defineOptions({
   name: 'UserAvatar',
@@ -43,47 +42,38 @@ const props = defineProps({
 const currentUser = computed(() => getCurrentUser() || {})
 const hasImageError = ref(false)
 
-const matchedMockUser = computed(() => {
-  const currentId = String(currentUser.value?.id || '').trim()
-  const currentEmail = String(currentUser.value?.email || '').trim().toLowerCase()
-  const currentUsername = String(currentUser.value?.username || '').trim().toLowerCase()
-
-  return (
-    users.find((user) => String(user.id || '').trim() === currentId) ||
-    users.find((user) => String(user.email || '').trim().toLowerCase() === currentEmail) ||
-    users.find((user) => String(user.username || '').trim().toLowerCase() === currentUsername) ||
-    null
-  )
-})
-
 const displayName = computed(() => {
+  if (props.name) return props.name
+
   const firstName = String(currentUser.value?.firstName || '').trim()
   const lastName = String(currentUser.value?.lastName || '').trim()
-  const fullName = `${lastName} ${firstName}`.trim()
-  if (fullName) return fullName
-  return props.name || String(currentUser.value?.username || '').trim() || 'Admin User'
+  const fullName = `${firstName} ${lastName}`.trim()
+
+  return fullName || String(currentUser.value?.username || '').trim() || 'Admin User'
 })
 
 const displayUsername = computed(() => {
   if (props.username) return props.username
+
   const role = String(currentUser.value?.role || '').trim()
   if (role) return role
+
   const email = String(currentUser.value?.email || '').trim()
   if (email.includes('@')) return email.split('@')[0]
+
   return email || 'user'
 })
 
 const resolvedAvatar = computed(() => {
   if (props.avatar) return props.avatar
-  return (
-    String(currentUser.value?.avatar || '').trim() || String(matchedMockUser.value?.avatar || '').trim()
-  )
+  return String(currentUser.value?.avatar || '').trim()
 })
 
 const displayAvatar = computed(() => (hasImageError.value ? '' : resolvedAvatar.value))
 
 const displayInitials = computed(() => {
   if (props.initials) return props.initials
+
   return (
     displayName.value
       .split(/\s+/)
@@ -99,6 +89,7 @@ const avatarSize = computed(() => {
   if (props.size === 'lg') return 'large'
   return 'normal'
 })
+
 const resolvedTo = computed(() => props.to || props.href || { name: 'profile-settings' })
 
 watch(resolvedAvatar, () => {
@@ -117,11 +108,14 @@ watch(resolvedAvatar, () => {
     "
   >
     <div v-if="showMeta" class="text-right max-sm:hidden">
-      <div class="text-[0.88rem] leading-tight font-extrabold text-surface-900">{{ displayName }}</div>
+      <div class="text-[0.88rem] leading-tight font-extrabold text-surface-900">
+        {{ displayName }}
+      </div>
       <div class="text-[0.72rem] font-semibold tracking-[0.02em] text-surface-500">
         {{ displayUsername }}
       </div>
     </div>
+
     <div class="relative flex">
       <PrimeAvatar
         :label="displayAvatar ? undefined : displayInitials"
@@ -131,6 +125,7 @@ watch(resolvedAvatar, () => {
         class="navbar-profile__avatar"
         @image-error="hasImageError = true"
       />
+
       <div
         class="absolute right-0 bottom-0 h-3 w-3 rounded-full border-[2.5px] border-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]"
         :class="`navbar-profile__status-dot--${status}`"
