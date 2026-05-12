@@ -1,9 +1,9 @@
 <script setup>
-import { computed, reactive, watch } from 'vue'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Button from '@/components/buttons/Button.vue'
+import { useVerifyEmail } from '@/modules/auth/composables/useVerifyEmail'
 
 const props = defineProps({
   email: {
@@ -30,61 +30,20 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'update:email'])
 
-const form = reactive({
-  email: props.email,
-})
-
-const touched = reactive({
-  email: false,
-})
-
-watch(
-  () => props.email,
-  (value) => {
-    if (value !== form.email) form.email = value
-  },
-)
-
-watch(
-  () => form.email,
-  (value) => {
-    emit('update:email', value)
-  },
-)
-
-const normalizedEmail = computed(() => form.email.trim())
-
-const emailError = computed(() => {
-  if (!touched.email) return ''
-  if (!normalizedEmail.value) return props.t('auth.forgotPassword.verifyEmail.errors.required')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value)) {
-    return props.t('auth.forgotPassword.verifyEmail.errors.invalid')
-  }
-  return ''
-})
-
-const canSubmitCurrentStep = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value))
-
-function touchField(field) {
-  touched[field] = true
-}
-
-function onSubmit() {
-  touched.email = true
-
-  if (!canSubmitCurrentStep.value) return
-
-emit('submit', {
-  email: normalizedEmail.value,
-})
-}
+const {
+  form,
+  emailError,
+  canSubmitCurrentStep,
+  touchField,
+  submitEmail,
+} = useVerifyEmail(props, emit)
 </script>
 
 <template>
   <div class="verify-email mx-auto w-full max-w-md">
     <Card class="verify-email-card border-0">
       <template #content>
-        <form class="verify-email-fields" @submit.prevent="onSubmit">
+        <form class="verify-email-fields" @submit.prevent="submitEmail">
           <div class="verify-email-header">
             <RouterLink
               :to="{ name: 'login' }"
