@@ -11,11 +11,10 @@
  * --------------------------------------------------------------------------
  */
 
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import commandCenterData from '@/mocks/super-admin/commandCenterData'
 import CommandCenterSummaryCards from '@/modules/super-admin/components/command-center/CommandCenterSummaryCards.vue'
 import ExecutiveStatusPanel from '@/modules/super-admin/components/command-center/ExecutiveStatusPanel.vue'
 import PriorityActionsPanel from '@/modules/super-admin/components/command-center/PriorityActionsPanel.vue'
@@ -24,6 +23,8 @@ import GovernanceOverviewPanel from '@/modules/super-admin/components/command-ce
 import RecentCriticalEventsPanel from '@/modules/super-admin/components/command-center/RecentCriticalEventsPanel.vue'
 import RecommendedNextStepsPanel from '@/modules/super-admin/components/command-center/RecommendedNextStepsPanel.vue'
 import { buildCommandCenterViewModel } from '@/modules/super-admin/components/command-center/commandCenterViewModel'
+import commandCenterMock from '@/mocks/super-admin/commandCenterData'
+import { fetchCommandCenterData } from '@/modules/super-admin/services/commandCenterApi'
 
 defineOptions({
   name: 'SuperAdminCommandCenter',
@@ -32,10 +33,23 @@ defineOptions({
 const { t } = useI18n()
 
 /**
- * Localized dashboard view model.
+ * Command center data is initialized from the local mock so the dashboard renders immediately,
+ * then hydrated from the API when available.
  */
+const commandCenterData = ref(commandCenterMock)
+
+async function loadCommandCenterData() {
+  commandCenterData.value = await fetchCommandCenterData()
+}
+
+onMounted(() => {
+  void loadCommandCenterData().catch((error) => {
+    console.error('Failed to load command center data:', error)
+  })
+})
+
 const viewModel = computed(() =>
-  buildCommandCenterViewModel(t, commandCenterData),
+  buildCommandCenterViewModel(t, commandCenterData.value),
 )
 </script>
 
