@@ -27,7 +27,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['mark-all-read', 'view-all', 'read', 'dismiss'])
+const emit = defineEmits(['mark-all-read', 'view-all', 'read', 'dismiss', 'undismiss'])
 
 const { t } = useLanguage()
 
@@ -78,10 +78,12 @@ function handleMarkAllRead() {
           :notification="item"
           :read-label="t('notifications.read')"
           :dismiss-label="t('notifications.dismiss')"
+          :undismiss-label="t('notifications.undismiss')"
           :show-actions="true"
           compact
           @read="emit('read', $event)"
           @dismiss="emit('dismiss', $event)"
+          @undismiss="emit('undismiss', $event)"
         />
 
         <NotificationEmptyState

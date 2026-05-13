@@ -45,6 +45,10 @@ defineProps({
     type: String,
     default: 'Dismiss',
   },
+  undismissLabel: {
+    type: String,
+    default: 'Undismiss',
+  },
   markAllReadLabel: {
     type: String,
     default: 'Mark all as read',
@@ -55,7 +59,7 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['read', 'dismiss', 'mark-all-read'])
+const emit = defineEmits(['read', 'dismiss', 'undismiss', 'mark-all-read'])
 
 function notificationKey(item, index) {
   return item?.id || item?.uuid || item?.key || `notification-${index}`
@@ -118,8 +122,10 @@ function notificationKey(item, index) {
           :notification="item"
           :read-label="readLabel"
           :dismiss-label="dismissLabel"
+          :undismiss-label="undismissLabel"
           @read="emit('read', $event)"
           @dismiss="emit('dismiss', $event)"
+          @undismiss="emit('undismiss', $event)"
         />
       </div>
     </div>

@@ -12,6 +12,7 @@ export default {
   read: 'បានអាន',
   dismissed: 'បានលុបចេញ',
   dismiss: 'លុបចេញ',
+  undismiss: 'Undismiss',
   create: 'បង្កើតការជូនដំណឹង',
   createSubtitle: 'ផ្ញើការធ្វើបច្ចុប្បន្នភាពទៅកាន់ក្រុមគោលដៅជាក់លាក់ ឬប្រព័ន្ធទាំងមូល។',
   createdTitle: 'បានបង្កើតការជូនដំណឹង',

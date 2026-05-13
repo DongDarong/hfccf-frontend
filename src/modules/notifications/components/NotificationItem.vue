@@ -22,6 +22,10 @@ const props = defineProps({
     type: String,
     default: 'Dismiss',
   },
+  undismissLabel: {
+    type: String,
+    default: 'Undismiss',
+  },
   compact: {
     type: Boolean,
     default: false,
@@ -44,7 +48,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['read', 'dismiss', 'click'])
+const emit = defineEmits(['read', 'dismiss', 'undismiss', 'click'])
 
 const { t, te } = useLanguage()
 
@@ -87,6 +91,10 @@ function handleRead() {
 
 function handleDismiss() {
   emit('dismiss', props.notification)
+}
+
+function handleUndismiss() {
+  emit('undismiss', props.notification)
 }
 
 function handleClick() {
@@ -166,6 +174,7 @@ function handleClick() {
       </Button>
 
       <Button
+        v-if="!isDismissed"
         type="button"
         severity="danger"
         text
@@ -173,6 +182,17 @@ function handleClick() {
         @click.stop="handleDismiss"
       >
         {{ dismissLabel }}
+      </Button>
+
+      <Button
+        v-else
+        type="button"
+        severity="secondary"
+        text
+        size="small"
+        @click.stop="handleUndismiss"
+      >
+        {{ undismissLabel }}
       </Button>
     </div>
   </article>

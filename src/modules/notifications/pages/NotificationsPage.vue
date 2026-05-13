@@ -57,6 +57,7 @@ const loadingLabel = computed(() => t('notifications.loading'))
 const markAllReadLabel = computed(() => t('notifications.markAllRead'))
 const readLabel = computed(() => t('notifications.read'))
 const dismissLabel = computed(() => t('notifications.dismiss'))
+const undismissLabel = computed(() => t('notifications.undismiss'))
 const searchPlaceholder = computed(() => t('notifications.searchPlaceholder'))
 const createLabel = computed(() => t('notifications.create'))
 const showCreateAction = computed(() => hasPermission('all:*', userStore.currentUser))
@@ -113,6 +114,10 @@ async function handleRead(notification) {
 
 async function handleDismiss(notification) {
   await notificationsStore.dismiss(notification.id)
+}
+
+async function handleUndismiss(notification) {
+  await notificationsStore.undismiss(notification.id)
 }
 
 function goToCreateNotification() {
@@ -228,10 +233,12 @@ onBeforeUnmount(() => {
         :empty-description="emptyDescription"
         :read-label="readLabel"
         :dismiss-label="dismissLabel"
+        :undismiss-label="undismissLabel"
         :mark-all-read-label="markAllReadLabel"
         @mark-all-read="handleMarkAllRead"
         @read="handleRead"
         @dismiss="handleDismiss"
+        @undismiss="handleUndismiss"
       />
 
       <div

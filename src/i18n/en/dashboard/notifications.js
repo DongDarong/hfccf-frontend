@@ -12,6 +12,7 @@ export default {
   read: 'Read',
   dismissed: 'Dismissed',
   dismiss: 'Dismiss',
+  undismiss: 'Undismiss',
   create: 'Create notification',
   createSubtitle: 'Send a targeted update to a specific audience or the whole platform.',
   createdTitle: 'Notification created',

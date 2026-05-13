@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import Popover from 'primevue/popover'
-import { fetchNotifications, markAllNotificationsAsRead, markNotificationAsRead, dismissNotification } from '@/modules/notifications/services/notificationsApi'
+import { fetchNotifications, markAllNotificationsAsRead, markNotificationAsRead, dismissNotification, undismissNotification } from '@/modules/notifications/services/notificationsApi'
 import { useNotificationsStore } from '@/modules/notifications/stores/notificationsStore'
 import NotificationDropdown from '@/modules/notifications/components/NotificationDropdown.vue'
 import NotificationTypeIcon from '@/modules/notifications/components/NotificationTypeIcon.vue'
@@ -98,6 +98,18 @@ async function handleDismiss(notification) {
   }
 }
 
+async function handleUndismiss(notification) {
+  if (!notification?.id) return
+
+  try {
+    await undismissNotification(notification.id)
+    await loadDropdownItems()
+    await notificationsStore.loadUnreadCount()
+  } catch {
+    // Keep the dropdown usable if the backend rejects the change.
+  }
+}
+
 async function handleMarkAllRead() {
   try {
     await markAllNotificationsAsRead()
@@ -161,6 +173,7 @@ onMounted(() => {
         :unread-count="unreadCount"
         @read="handleRead"
         @dismiss="handleDismiss"
+        @undismiss="handleUndismiss"
         @mark-all-read="handleMarkAllRead"
         @view-all="goToNotificationsPage"
       />
