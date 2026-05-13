@@ -71,6 +71,16 @@ const profileImagePreview = ref('')
 
 const isEditMode = computed(() => route.query.mode === 'edit' || Boolean(route.query.id))
 const editingUserId = computed(() => String(route.query.id || '').trim())
+const profileImageFallbackLabel = computed(() => {
+  const tokens = String(form.name || '').trim().split(/\s+/).filter(Boolean)
+
+  return (
+    tokens
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('') || 'AU'
+  )
+})
 
 function resolvedText(key, fallback) {
   const translated = t(key)
@@ -430,6 +440,7 @@ const checklistItems = computed(() => [
               class="add-admin-page__field add-admin-page__field--full"
               :title="t('users.addAdmin.profileImage')"
               :preview="profileImagePreview"
+              :fallback-label="profileImageFallbackLabel"
               :remove-label="t('users.addAdmin.removeImage')"
               :disabled="isSubmitting"
               @change="onProfileImageChange"
