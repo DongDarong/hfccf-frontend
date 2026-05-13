@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
@@ -22,6 +23,12 @@ const {
   calendarLabel,
   localeOptions,
 } = useNavbarLocale()
+
+/**
+ * Keep the notification badge stable until a shared notifications source exists.
+ * This matches the current dashboard notification seed and prevents render warnings.
+ */
+const unreadNotificationsCount = computed(() => 3)
 
 function goToRoute(name) {
   router.push({ name })
