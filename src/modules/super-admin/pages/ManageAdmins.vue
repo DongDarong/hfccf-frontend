@@ -62,7 +62,6 @@ const tableColumns = computed(() => [
     align: 'left',
     sortable: true,
   },
-  { key: 'phone', field: 'phone', label: t('common.table.phone'), align: 'left' },
   { key: 'actions', label: t('common.table.actions'), align: 'right' },
 ])
 
