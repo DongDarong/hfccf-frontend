@@ -17,7 +17,6 @@
 import { computed, ref, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Avatar from 'primevue/avatar'
 import Loading from '@/components/feedback/Loading.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import RolesBadge from '@/components/badges/RolesBadge.vue'
@@ -81,7 +80,7 @@ const { t } = useLanguage()
 /**
  * Track rows with broken avatar URLs.
  */
-const hasImageError = ref({})
+const avatarStates = ref({})
 
 /**
  * Use rows when provided, otherwise fallback to users.
@@ -241,11 +240,21 @@ function avatarKey(row) {
 function avatarSrc(row) {
   const key = avatarKey(row)
 
-  if (key && hasImageError.value[key]) {
+  if (key && avatarStates.value[key]?.error) {
     return ''
   }
 
   return String(row?.avatar || row?.avatarUrl || row?.profileImage || row?.photo || '').trim()
+}
+
+/**
+ * Determine whether the avatar image should be shown for a row.
+ */
+function shouldShowImage(row) {
+  const key = avatarKey(row)
+  const state = key ? avatarStates.value[key] || {} : {}
+
+  return Boolean(avatarSrc(row)) && Boolean(state.loaded) && !state.error
 }
 
 /**
@@ -301,9 +310,29 @@ function onAvatarError(row) {
 
   if (!key) return
 
-  hasImageError.value = {
-    ...hasImageError.value,
-    [key]: true,
+  avatarStates.value = {
+    ...avatarStates.value,
+    [key]: {
+      loaded: false,
+      error: true,
+    },
+  }
+}
+
+/**
+ * Mark avatar image as ready once the browser has loaded it.
+ */
+function onAvatarLoad(row) {
+  const key = avatarKey(row)
+
+  if (!key) return
+
+  avatarStates.value = {
+    ...avatarStates.value,
+    [key]: {
+      loaded: true,
+      error: false,
+    },
   }
 }
 
@@ -313,7 +342,7 @@ function onAvatarError(row) {
 watch(
   () => resolvedRows.value,
   () => {
-    hasImageError.value = {}
+    avatarStates.value = {}
   },
   { deep: true },
 )
@@ -385,13 +414,24 @@ function onSort(event) {
         <!-- User profile cell -->
         <template v-else-if="column.key === 'user'">
           <div class="flex items-center gap-3">
-            <Avatar
-              :label="avatarSrc(data) ? undefined : userInitials(data)"
-              :image="avatarSrc(data) || undefined"
-              shape="circle"
-              class="ui-user-avatar"
-              @image-error="onAvatarError(data)"
-            />
+            <div class="ui-user-avatar">
+              <span
+                v-if="!shouldShowImage(data)"
+                class="ui-user-avatar__initials"
+              >
+                {{ userInitials(data) }}
+              </span>
+
+              <img
+                v-if="avatarSrc(data)"
+                :src="avatarSrc(data)"
+                :alt="`${data.name || 'User'} avatar`"
+                class="ui-user-avatar__image"
+                :class="{ 'ui-user-avatar__image--visible': shouldShowImage(data) }"
+                @load="onAvatarLoad(data)"
+                @error="onAvatarError(data)"
+              >
+            </div>
 
             <div class="min-w-0">
               <div class="truncate text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
@@ -520,7 +560,11 @@ function onSort(event) {
 /**
  * User avatar style.
  */
-:deep(.ui-user-avatar.p-avatar) {
+.ui-user-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 2.75rem;
   height: 2.75rem;
   background: linear-gradient(
@@ -530,6 +574,36 @@ function onSort(event) {
   );
   color: #ffffff;
   box-shadow: 0 10px 18px -14px rgba(0, 174, 239, 0.55);
+  border-radius: 9999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ui-user-avatar__initials {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ui-user-avatar__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ui-user-avatar__image--visible {
+  opacity: 1;
 }
 
 /**

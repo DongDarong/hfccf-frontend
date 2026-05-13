@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import PrimeAvatar from 'primevue/avatar'
 import { useUserStore } from '@/store/userStore'
 
 defineOptions({
@@ -42,6 +41,7 @@ const props = defineProps({
 const userStore = useUserStore()
 const currentUser = computed(() => userStore.currentUser || {})
 const hasImageError = ref(false)
+const isImageLoaded = ref(false)
 
 const displayName = computed(() => {
   if (props.name) return props.name
@@ -70,7 +70,9 @@ const resolvedAvatar = computed(() => {
   return String(currentUser.value?.avatar || '').trim()
 })
 
-const displayAvatar = computed(() => (hasImageError.value ? '' : resolvedAvatar.value))
+const shouldShowImage = computed(() =>
+  Boolean(resolvedAvatar.value) && Boolean(isImageLoaded.value) && !hasImageError.value,
+)
 
 const displayInitials = computed(() => {
   if (props.initials) return props.initials
@@ -95,6 +97,7 @@ const resolvedTo = computed(() => props.to || props.href || { name: 'profile-set
 
 watch(resolvedAvatar, () => {
   hasImageError.value = false
+  isImageLoaded.value = false
 })
 </script>
 
@@ -118,14 +121,24 @@ watch(resolvedAvatar, () => {
     </div>
 
     <div class="relative flex">
-      <PrimeAvatar
-        :label="displayAvatar ? undefined : displayInitials"
-        :image="displayAvatar || undefined"
-        shape="circle"
-        :size="avatarSize"
-        class="navbar-profile__avatar"
-        @image-error="hasImageError = true"
-      />
+      <div class="navbar-profile__avatar" :class="`navbar-profile__avatar--${avatarSize}`">
+        <span
+          v-if="!shouldShowImage"
+          class="navbar-profile__avatar-initials"
+        >
+          {{ displayInitials }}
+        </span>
+
+        <img
+          v-if="resolvedAvatar"
+          :src="resolvedAvatar"
+          :alt="displayName"
+          class="navbar-profile__avatar-image"
+          :class="{ 'navbar-profile__avatar-image--visible': shouldShowImage }"
+          @load="isImageLoaded = true"
+          @error="hasImageError = true"
+        >
+      </div>
 
       <div
         class="absolute right-0 bottom-0 h-3 w-3 rounded-full border-[2.5px] border-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]"
@@ -136,11 +149,57 @@ watch(resolvedAvatar, () => {
 </template>
 
 <style scoped>
-:deep(.navbar-profile__avatar.p-avatar) {
+.navbar-profile__avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   background: linear-gradient(135deg, var(--hope-cyan) 0%, #0087b8 100%);
   color: #fff;
   box-shadow: 0 4px 12px rgba(0, 174, 239, 0.2);
   border: 2px solid #fff;
+  border-radius: 9999px;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+}
+
+.navbar-profile__avatar--normal {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.navbar-profile__avatar--large {
+  width: 3rem;
+  height: 3rem;
+}
+
+.navbar-profile__avatar-initials {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.navbar-profile__avatar-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.navbar-profile__avatar-image--visible {
+  opacity: 1;
 }
 
 .navbar-profile__status-dot--online {

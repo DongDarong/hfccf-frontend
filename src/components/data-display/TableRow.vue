@@ -49,6 +49,7 @@ const emit = defineEmits(['view', 'edit', 'delete'])
  * Track avatar load failure for current row.
  */
 const hasImageError = ref(false)
+const isImageLoaded = ref(false)
 
 /**
  * Keep permission columns compact so rows remain readable.
@@ -195,6 +196,13 @@ function avatarSrc(row) {
 }
 
 /**
+ * Determine whether the avatar image should be rendered.
+ */
+const shouldShowImage = computed(() =>
+  Boolean(avatarSrc(resolvedRow.value)) && Boolean(isImageLoaded.value) && !hasImageError.value,
+)
+
+/**
  * Build initials from user name.
  */
 function userInitials(row) {
@@ -337,6 +345,7 @@ watch(
   ],
   () => {
     hasImageError.value = false
+    isImageLoaded.value = false
   },
 )
 
@@ -345,6 +354,14 @@ watch(
  */
 function onAvatarError() {
   hasImageError.value = true
+  isImageLoaded.value = false
+}
+
+/**
+ * Mark avatar as loaded.
+ */
+function onAvatarLoad() {
+  isImageLoaded.value = true
 }
 </script>
 
@@ -371,16 +388,8 @@ function onAvatarError() {
               avatarRingClass(resolvedRow.role),
             ]"
           >
-            <img
-              v-if="avatarSrc(resolvedRow)"
-              :src="avatarSrc(resolvedRow)"
-              :alt="`${resolvedRow.name || 'User'} avatar`"
-              class="h-full w-full object-cover"
-              @error="onAvatarError"
-            >
-
             <div
-              v-else
+              v-if="!shouldShowImage"
               :class="[
                 'flex h-full w-full items-center justify-center text-[11px] font-bold uppercase tracking-[0.08em]',
                 getInitialBadgeClass(resolvedRow.role),
@@ -390,6 +399,16 @@ function onAvatarError() {
             >
               {{ userInitials(resolvedRow) }}
             </div>
+
+            <img
+              v-if="avatarSrc(resolvedRow)"
+              :src="avatarSrc(resolvedRow)"
+              :alt="`${resolvedRow.name || 'User'} avatar`"
+              class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-150"
+              :class="{ 'opacity-100': shouldShowImage }"
+              @load="onAvatarLoad"
+              @error="onAvatarError"
+            >
           </div>
 
           <div class="min-w-0">
