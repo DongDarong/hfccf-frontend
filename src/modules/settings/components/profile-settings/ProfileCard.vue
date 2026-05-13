@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 
 const { t } = useLanguage()
 
@@ -15,11 +16,34 @@ const props = defineProps({
   },
 })
 
-const avatarUrl = computed(() => {
-  if (props.user.avatar) return props.user.avatar
-  const name = encodeURIComponent(props.user.name || 'User')
-  return `https://ui-avatars.com/api/?name=${name}&background=00AEEF&color=fff&size=128`
+const hasImageError = ref(false)
+const isImageLoaded = ref(false)
+
+/**
+ * Prefer a safe uploaded avatar or a bundled local avatar.
+ * If that still fails, the initials fallback below keeps the card stable.
+ */
+const avatarUrl = computed(() => resolveAvatarSource(props.user.avatar, { fallbackToAsset: true }))
+
+const shouldShowImage = computed(() =>
+  Boolean(avatarUrl.value) && Boolean(isImageLoaded.value) && !hasImageError.value,
+)
+
+const avatarInitials = computed(() => getAvatarInitials(props.user.name, 'U'))
+
+watch(avatarUrl, () => {
+  hasImageError.value = false
+  isImageLoaded.value = false
 })
+
+function onAvatarLoad() {
+  isImageLoaded.value = true
+}
+
+function onAvatarError() {
+  hasImageError.value = true
+  isImageLoaded.value = false
+}
 
 const roleLabel = computed(() => {
   const roleKey = props.user.role?.toLowerCase().replace(/\s+/g, '') || 'user'
@@ -41,12 +65,23 @@ const statusLabel = computed(() => {
     <div class="absolute left-0 top-0 h-24 w-full bg-gradient-to-r from-hope-cyan to-blue-500"></div>
 
     <div class="relative mb-4 mt-12">
-      <div class="mx-auto h-24 w-24 rounded-full bg-white p-1 shadow-md">
+      <div class="relative mx-auto h-24 w-24 rounded-full bg-white p-1 shadow-md">
+        <div
+          v-if="!shouldShowImage"
+          class="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-sky-700 text-lg font-extrabold uppercase tracking-[0.08em] text-white"
+        >
+          {{ avatarInitials }}
+        </div>
+
         <img
+          v-if="avatarUrl"
           id="profileAvatar"
-          class="h-full w-full rounded-full object-cover"
+          class="absolute inset-0 h-full w-full rounded-full object-cover opacity-0 transition-opacity duration-150"
+          :class="{ 'opacity-100': shouldShowImage }"
           :src="avatarUrl"
           :alt="user.name"
+          @load="onAvatarLoad"
+          @error="onAvatarError"
         />
       </div>
       <button

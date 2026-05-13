@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useUserStore } from '@/store/userStore'
+import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 
 defineOptions({
   name: 'UserAvatar',
@@ -66,8 +67,9 @@ const displayUsername = computed(() => {
 })
 
 const resolvedAvatar = computed(() => {
-  if (props.avatar) return props.avatar
-  return String(currentUser.value?.avatar || '').trim()
+  if (props.avatar) return resolveAvatarSource(props.avatar)
+
+  return resolveAvatarSource(currentUser.value?.avatar)
 })
 
 const shouldShowImage = computed(() =>
@@ -77,14 +79,7 @@ const shouldShowImage = computed(() =>
 const displayInitials = computed(() => {
   if (props.initials) return props.initials
 
-  return (
-    displayName.value
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() || '')
-      .join('') || 'AU'
-  )
+  return getAvatarInitials(displayName.value, 'AU')
 })
 
 const avatarSize = computed(() => {

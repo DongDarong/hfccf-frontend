@@ -1,4 +1,5 @@
 import { getRoleAccess } from '@/constants/access'
+import { resolveAvatarSource } from '@/utils/avatar'
 
 export function mapUser(raw = {}) {
   const firstName = String(raw.firstName || raw.first_name || '').trim()
@@ -21,7 +22,7 @@ export function mapUser(raw = {}) {
     name: String(raw.name || fallbackName || raw.username || raw.id || ''),
     username: String(raw.username || raw.id || ''),
     email: String(raw.email || ''),
-    avatar: raw.avatar || '',
+    avatar: resolveAvatarSource(raw.avatar),
     role: String(raw.role || ''),
     scope: String(raw.scope || roleAccess?.scope || ''),
     domain: String(raw.domain || roleAccess?.domain || ''),

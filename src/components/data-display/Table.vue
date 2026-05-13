@@ -24,6 +24,7 @@ import PermissionBadge from '@/components/badges/PermissionBadge.vue'
 import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 
 defineOptions({
   name: 'UsersTable',
@@ -244,7 +245,7 @@ function avatarSrc(row) {
     return ''
   }
 
-  return String(row?.avatar || row?.avatarUrl || row?.profileImage || row?.photo || '').trim()
+  return resolveAvatarSource(row?.avatar || row?.avatarUrl || row?.profileImage || row?.photo)
 }
 
 /**
@@ -261,18 +262,7 @@ function shouldShowImage(row) {
  * Build initials from display name.
  */
 function userInitials(row) {
-  const name = String(row?.name || '').trim()
-
-  if (!name) return '?'
-
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('') || '?'
-  )
+  return getAvatarInitials(row?.name, '?')
 }
 
 /**

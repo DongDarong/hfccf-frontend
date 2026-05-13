@@ -15,6 +15,7 @@ import AddAdminProfileImageField from '@/modules/super-admin/components/admin-ma
 import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
 import AddAdminPermissionsField from '@/modules/super-admin/components/admin-management/AddAdminPermissionsField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
+import { resolveAvatarSource } from '@/utils/avatar'
 import {
   createAdminUser,
   findAdminUserById,
@@ -300,7 +301,7 @@ onMounted(async () => {
     (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
   )
   form.status = matchedStatus || statusOptions[0]
-  profileImagePreview.value = found.avatar || ''
+  profileImagePreview.value = resolveAvatarSource(found.avatar)
   form.avatarAction = found.avatar ? 'keep' : 'none'
 })
 
