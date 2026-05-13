@@ -22,7 +22,7 @@
         {
           "id": "admin-management",
           "routeName": "dashboard-super-admin-users-manage",
-          "labelKey": "nav.items.adminManagement",
+          "labelKey": "nav.items.manageUsers",
           "icon": "users",
           "badgeKey": "nav.badges.admin"
         }

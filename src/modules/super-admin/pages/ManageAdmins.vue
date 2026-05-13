@@ -6,7 +6,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
+import { ROLES, STAFF_ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminManagementToolbar from '@/modules/super-admin/components/admin-management/list/AdminManagementToolbar.vue'
 import AdminManagementListPanel from '@/modules/super-admin/components/admin-management/list/AdminManagementListPanel.vue'
@@ -21,7 +21,7 @@ const { t } = useI18n()
 const router = useRouter()
 
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const roleOptions = [ROLES.SUPER_ADMIN, ...PROGRAM_ADMIN_ROLES]
+const roleOptions = [ROLES.SUPER_ADMIN, ...STAFF_ROLES]
 const tableColumns = computed(() => [
   { key: 'number', label: t('common.table.number'), align: 'left' },
   {

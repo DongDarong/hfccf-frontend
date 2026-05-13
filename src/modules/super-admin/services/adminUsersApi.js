@@ -6,10 +6,8 @@ import {
   findAdminUserById as findLocalAdminUserById,
   updateAdminUser as updateLocalAdminUser,
 } from '@/modules/super-admin/services/adminUsersStorage'
-import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
 
 const ADMIN_ROUTES = '/users'
-const MANAGED_ADMIN_ROLES = [ROLES.SUPER_ADMIN, ...PROGRAM_ADMIN_ROLES]
 
 function isFallbackWorthyError(error) {
   const status = error?.response?.status
@@ -17,7 +15,7 @@ function isFallbackWorthyError(error) {
 }
 
 function toAdminUsers(items = []) {
-  return mapUsers(items).filter((user) => MANAGED_ADMIN_ROLES.includes(String(user?.role || '').trim()))
+  return mapUsers(items)
 }
 
 function splitName(fullName) {

@@ -63,7 +63,7 @@ export function useAdminManagement({ pageSize = 10 } = {}) {
   const tableEmptyText = computed(() => t('users.manageAdmins.tableEmpty'))
   const loadingLabel = computed(() => t('users.manageAdmins.loading'))
 
-  const deleteConfirmTitle = computed(() => t('users.deleteConfirmTitle') || 'Delete admin?')
+  const deleteConfirmTitle = computed(() => t('users.deleteConfirmTitle') || 'Delete user?')
   const deleteConfirmText = computed(() => t('users.deleteConfirmText') || 'Delete')
   const cancelLabel = computed(() => t('common.cancel') || 'Cancel')
   const deleteConfirmMessage = computed(() => {
@@ -195,7 +195,7 @@ export function useAdminManagement({ pageSize = 10 } = {}) {
         return
       }
 
-      errorMessage.value = error?.message || 'Unable to load admin accounts right now.'
+      errorMessage.value = error?.message || 'Unable to load user accounts right now.'
       showError.value = true
     } finally {
       if (requestId === requestSeq) {
@@ -232,7 +232,7 @@ export function useAdminManagement({ pageSize = 10 } = {}) {
       showSuccess.value = true
       await performLoad()
     } catch (error) {
-      errorMessage.value = error?.message || 'Unable to delete admin right now.'
+      errorMessage.value = error?.message || 'Unable to delete user right now.'
       showError.value = true
     } finally {
       isLoading.value = false
