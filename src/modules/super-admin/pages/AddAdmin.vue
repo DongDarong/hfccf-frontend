@@ -22,19 +22,26 @@ import {
 } from '@/modules/super-admin/services/adminUsersApi'
 
 defineOptions({
-  name: 'AddAdminPage',
+  name: 'AddUserPage',
 })
 
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 
+/**
+ * Super Admin can now manage every system role, not just admin roles.
+ */
 const roleOptions = [
+  ROLES.SUPER_ADMIN,
   ROLES.ADMIN_ENGLISH,
   ROLES.ADMIN_PRESCHOOL,
   ROLES.ADMIN_SCHOLARSHIP,
   ROLES.ADMIN_SPORT,
-  ROLES.SUPER_ADMIN,
+  ROLES.COACH,
+  ROLES.TEACHER_ENGLISH,
+  ROLES.TEACHER_PRESCHOOL,
+  ROLES.TEACHER_SCHOLARSHIP,
 ]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 const permissionOptions = ['all:*', 'users:read', 'users:write', 'reports:read', 'programs:write', 'settings:read']
@@ -45,7 +52,7 @@ const form = reactive({
   name: '',
   email: '',
   phone: '',
-  role: roleOptions[0],
+  role: ROLES.ADMIN_ENGLISH,
   permissions: [],
   status: statusOptions[0],
   password: '',
@@ -70,19 +77,29 @@ function resolvedText(key, fallback) {
 }
 
 const pageTitle = computed(() =>
-  isEditMode.value ? resolvedText('users.addAdmin.updateTitle', 'Update Admin') : t('users.addAdmin.title'),
+  isEditMode.value
+    ? resolvedText('users.addAdmin.updateTitle', 'Update User')
+    : resolvedText('users.addAdmin.title', 'Add User'),
 )
 
 const pageSubtitle = computed(() =>
   isEditMode.value
     ? resolvedText(
         'users.addAdmin.updateSubtitle',
-        'Update the admin profile, permissions, and account security details.',
+        'Update the user profile, permissions, and account security details.',
       )
-    : t('users.addAdmin.summary'),
+    : resolvedText(
+        'users.addAdmin.summary',
+        'Create a new system account, assign permissions, and verify access before saving.',
+      ),
 )
 
-const resolvedFormDescription = computed(() => t('users.addAdmin.formDescription'))
+const resolvedFormDescription = computed(() =>
+  resolvedText(
+    'users.addAdmin.formDescription',
+    'Use the profile details, permissions, and role assignment below to create the account.',
+  ),
+)
 
 function statusLabel(status) {
   const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
@@ -110,16 +127,16 @@ function toggleConfirmPasswordVisibility() {
 }
 
 function validateForm() {
-  if (!form.name.trim()) return t('users.addAdmin.validation.fullNameRequired')
-  if (!form.email.trim()) return t('users.addAdmin.validation.emailRequired')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('users.addAdmin.validation.emailInvalid')
-  if (!form.role) return t('users.addAdmin.validation.roleRequired')
-  if (!form.permissions.length) return t('users.addAdmin.validation.permissionsRequired')
-  if (!form.status) return t('users.addAdmin.validation.statusRequired')
-  if (!isEditMode.value && form.password.length < 8) return t('users.addAdmin.validation.passwordLength')
-  if (isEditMode.value && form.password && form.password.length < 8) return t('users.addAdmin.validation.passwordLength')
+  if (!form.name.trim()) return resolvedText('users.addAdmin.validation.fullNameRequired', 'Full name is required.')
+  if (!form.email.trim()) return resolvedText('users.addAdmin.validation.emailRequired', 'Email is required.')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return resolvedText('users.addAdmin.validation.emailInvalid', 'Please enter a valid email.')
+  if (!form.role) return resolvedText('users.addAdmin.validation.roleRequired', 'Role is required.')
+  if (!form.permissions.length) return resolvedText('users.addAdmin.validation.permissionsRequired', 'At least one permission is required.')
+  if (!form.status) return resolvedText('users.addAdmin.validation.statusRequired', 'Status is required.')
+  if (!isEditMode.value && form.password.length < 8) return resolvedText('users.addAdmin.validation.passwordLength', 'Password must be at least 8 characters.')
+  if (isEditMode.value && form.password && form.password.length < 8) return resolvedText('users.addAdmin.validation.passwordLength', 'Password must be at least 8 characters.')
   if (form.password || form.confirmPassword) {
-    if (form.password !== form.confirmPassword) return t('users.addAdmin.validation.passwordMismatch')
+    if (form.password !== form.confirmPassword) return resolvedText('users.addAdmin.validation.passwordMismatch', 'Passwords do not match.')
   }
   return ''
 }
@@ -153,13 +170,19 @@ function onProfileImageChange(event) {
   if (!file) return
 
   if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = t('users.addAdmin.validation.imageType')
+    errorMessage.value = resolvedText(
+      'users.addAdmin.validation.imageType',
+      'Please choose a JPG, PNG, WEBP, or GIF image.',
+    )
     showError.value = true
     return
   }
 
   if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = t('users.addAdmin.validation.imageSize')
+    errorMessage.value = resolvedText(
+      'users.addAdmin.validation.imageSize',
+      'Profile images must be 2 MB or smaller.',
+    )
     showError.value = true
     return
   }
@@ -212,8 +235,8 @@ async function onSubmit() {
     showSuccess.value = true
   } catch (error) {
     errorMessage.value = isEditMode.value
-      ? error?.message || t('users.addAdmin.validation.updateFailed')
-      : error?.message || t('users.addAdmin.validation.createFailed')
+      ? error?.message || resolvedText('users.addAdmin.validation.updateFailed', 'Unable to update user right now.')
+      : error?.message || resolvedText('users.addAdmin.validation.createFailed', 'Unable to create user right now.')
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -235,6 +258,7 @@ function onErrorClose() {
 
 onMounted(async () => {
   if (!isEditMode.value) {
+    // Allow deep links like ?role=teacher-preschool while keeping the default role stable.
     const requestedRole = String(route.query.role || '').trim()
     if (roleOptions.includes(requestedRole)) {
       form.role = requestedRole
@@ -274,40 +298,40 @@ const formSummaryCards = computed(() => {
   return [
     {
       id: 'role-scope',
-      title: t('users.addAdmin.roleScope'),
+      title: resolvedText('users.addAdmin.roleScope', 'Role scope'),
       value: selectedRole,
-      label: t('users.addAdmin.programAccess'),
+      label: resolvedText('users.addAdmin.programAccess', 'Account access'),
       status: 'info',
       statusLabel: statusLabel('info'),
       surfaceClass: 'bg-cyan-50/80 border-cyan-200',
     },
     {
       id: 'permissions',
-      title: t('users.addAdmin.permissions'),
+      title: resolvedText('users.addAdmin.permissions', 'Permissions'),
       value: permissionCount,
       label: permissionCount
-        ? t('users.addAdmin.configuredPermissions')
-        : t('users.addAdmin.noPermissionsSelected'),
+        ? resolvedText('users.addAdmin.configuredPermissions', 'Configured permissions')
+        : resolvedText('users.addAdmin.noPermissionsSelected', 'No permissions selected'),
       status: permissionCount ? 'success' : 'warning',
       statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
       surfaceClass: 'bg-lime-50/80 border-lime-200',
     },
     {
       id: 'account-state',
-      title: t('users.addAdmin.accountState'),
+      title: resolvedText('users.addAdmin.accountState', 'Account state'),
       value: statusLabel(form.status),
-      label: t('users.addAdmin.initialAccountState'),
+      label: resolvedText('users.addAdmin.initialAccountState', 'Initial account state'),
       status: form.status,
       statusLabel: statusLabel(form.status),
       surfaceClass: 'bg-amber-50/80 border-amber-200',
     },
     {
       id: 'security-review',
-      title: t('users.addAdmin.securityReview'),
-      value: profileImagePreview.value ? t('users.addAdmin.ready') : t('users.addAdmin.pending'),
+      title: resolvedText('users.addAdmin.securityReview', 'Security review'),
+      value: profileImagePreview.value ? resolvedText('users.addAdmin.ready', 'Ready') : resolvedText('users.addAdmin.pending', 'Pending'),
       label: profileImagePreview.value
-        ? t('users.addAdmin.profileImageSet')
-        : t('users.addAdmin.profileImagePending'),
+        ? resolvedText('users.addAdmin.profileImageSet', 'Profile image set')
+        : resolvedText('users.addAdmin.profileImagePending', 'Profile image pending'),
       status: securityStatus,
       statusLabel: statusLabel(securityStatus),
       surfaceClass: 'bg-rose-50/80 border-rose-200',
@@ -319,20 +343,29 @@ const selectedRoleDescription = computed(() => roleLabel(form.role))
 
 const checklistItems = computed(() => [
   {
-    title: t('users.addAdmin.sidebarItems.role'),
+    title: resolvedText('users.addAdmin.sidebarItems.role', 'Choose a role'),
     text: selectedRoleDescription.value,
   },
   {
-    title: t('users.addAdmin.sidebarItems.permissions'),
-    text: t('users.addAdmin.sidebarItems.permissionsDetail'),
+    title: resolvedText('users.addAdmin.sidebarItems.permissions', 'Review permissions'),
+    text: resolvedText(
+      'users.addAdmin.sidebarItems.permissionsDetail',
+      'Make sure the selected permissions match the account scope.',
+    ),
   },
   {
-    title: t('users.addAdmin.sidebarItems.security'),
-    text: t('users.addAdmin.sidebarItems.securityDetail'),
+    title: resolvedText('users.addAdmin.sidebarItems.security', 'Check security'),
+    text: resolvedText(
+      'users.addAdmin.sidebarItems.securityDetail',
+      'Password strength and image upload are part of the final review.',
+    ),
   },
   {
-    title: t('users.addAdmin.sidebarItems.review'),
-    text: t('users.addAdmin.sidebarItems.reviewDetail'),
+    title: resolvedText('users.addAdmin.sidebarItems.review', 'Review summary'),
+    text: resolvedText(
+      'users.addAdmin.sidebarItems.reviewDetail',
+      'Use the summary cards to confirm the account is ready.',
+    ),
   },
 ])
 </script>
@@ -345,11 +378,11 @@ const checklistItems = computed(() => [
       <AdminSummaryCards :cards="formSummaryCards" />
 
       <div class="add-admin-page__layout">
-        <Form
-          class="add-admin-page__form"
-          :title="pageTitle"
-          :description="resolvedFormDescription"
-          :submit-text="pageTitle"
+      <Form
+        class="add-admin-page__form"
+        :title="pageTitle"
+        :description="resolvedFormDescription"
+        :submit-text="pageTitle"
           :cancel-text="t('common.cancel')"
           :loading="isSubmitting"
           :show-cancel="true"
@@ -359,10 +392,10 @@ const checklistItems = computed(() => [
           <div class="add-admin-page__intro">
             <div>
               <p class="text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-surface-500">
-                {{ t('users.addAdmin.title') }}
+                {{ pageTitle }}
               </p>
               <p class="mt-1 text-[0.92rem] leading-6 text-slate-600">
-                {{ t('users.addAdmin.summary') }}
+                {{ pageSubtitle }}
               </p>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -478,7 +511,7 @@ const checklistItems = computed(() => [
 
     <AlertError
       :show="showError"
-      :title="t('users.addAdmin.validationError')"
+      :title="resolvedText('users.addAdmin.validationError', 'Validation error')"
       :message="errorMessage"
       :button-text="t('common.close')"
       @close="onErrorClose"
@@ -486,13 +519,13 @@ const checklistItems = computed(() => [
 
     <AlertSuccess
       :show="showSuccess"
-      :title="isEditMode ? t('users.addAdmin.adminUpdated') : t('users.addAdmin.adminCreated')"
+      :title="isEditMode ? resolvedText('users.addAdmin.adminUpdated', 'User updated') : resolvedText('users.addAdmin.adminCreated', 'User created')"
       :message="
         isEditMode
-          ? t('users.addAdmin.updatedMessage')
-          : t('users.addAdmin.createdMessage')
+          ? resolvedText('users.addAdmin.updatedMessage', 'The user account was updated successfully.')
+          : resolvedText('users.addAdmin.createdMessage', 'The user account was created successfully.')
       "
-      :button-text="t('users.addAdmin.backToAdmins')"
+      :button-text="resolvedText('users.addAdmin.backToAdmins', 'Back to users')"
       @close="onSuccessClose"
     />
   </MainLayout>
