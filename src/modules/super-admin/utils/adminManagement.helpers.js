@@ -68,13 +68,13 @@ export function paginateAdmins(admins = [], currentPage = 1, pageSize = 10) {
 /**
  * Build the summary cards shown above the admin list.
  */
-export function buildSummaryCards(t, admins = [], toolbarNote = '', addButtonLabel = '') {
-  const total = admins.length
-  const active = admins.filter((user) => String(user.status).toLowerCase() === 'active').length
-  const pending = admins.filter((user) => String(user.status).toLowerCase() === 'pending').length
-  const alerts = admins.filter((user) =>
+export function buildSummaryCards(t, admins = [], toolbarNote = '', addButtonLabel = '', summary = null) {
+  const total = Number(summary?.total ?? admins.length) || 0
+  const active = Number(summary?.active ?? admins.filter((user) => String(user.status).toLowerCase() === 'active').length) || 0
+  const pending = Number(summary?.pending ?? admins.filter((user) => String(user.status).toLowerCase() === 'pending').length) || 0
+  const alerts = Number(summary?.alerts ?? admins.filter((user) =>
     ['inactive', 'suspended'].includes(String(user.status).toLowerCase()),
-  ).length
+  ).length) || 0
 
   return [
     {
@@ -120,9 +120,10 @@ export function buildSummaryCards(t, admins = [], toolbarNote = '', addButtonLab
 /**
  * Build the filtered status chips using the current filtered list.
  */
-export function buildStatusBadges(t, admins = [], statuses = DEFAULT_STATUS_ORDER) {
+export function buildStatusBadges(t, admins = [], statuses = DEFAULT_STATUS_ORDER, summary = null) {
   return statuses.map((status) => {
-    const count = admins.filter((user) => String(user.status || '').toLowerCase() === status).length
+    const summaryCount = summary?.status_counts?.[status]
+    const count = Number(summaryCount ?? admins.filter((user) => String(user.status || '').toLowerCase() === status).length) || 0
 
     return {
       status,

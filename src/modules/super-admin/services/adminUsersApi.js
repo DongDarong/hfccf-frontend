@@ -4,7 +4,6 @@ import {
   createAdminUser as createLocalAdminUser,
   deleteAdminUser as deleteLocalAdminUser,
   findAdminUserById as findLocalAdminUserById,
-  getAdminUsers as getLocalAdminUsers,
   updateAdminUser as updateLocalAdminUser,
 } from '@/modules/super-admin/services/adminUsersStorage'
 import { PROGRAM_ADMIN_ROLES, ROLES } from '@/constants/roles'
@@ -54,18 +53,40 @@ function toApiPayload(formPayload = {}, { includePassword = false } = {}) {
   return payload
 }
 
-function extractUserCollection(response) {
-  const payload = response?.data?.data ?? response?.data ?? {}
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.users)) return payload.users
-  if (Array.isArray(payload?.items)) return payload.items
-  return []
-}
-
 function extractUserItem(response) {
   const payload = response?.data?.data ?? response?.data ?? {}
   return payload?.user || payload?.data || payload
+}
+
+function extractAdminUsersPayload(response) {
+  const payload = response?.data?.data ?? response?.data ?? {}
+
+  const rawItems = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload?.users)
+        ? payload.users
+        : []
+
+  const pagination = payload?.pagination && typeof payload.pagination === 'object'
+    ? payload.pagination
+    : {
+        current_page: 1,
+        last_page: 1,
+        per_page: 10,
+        total: rawItems.length,
+        from: rawItems.length ? 1 : null,
+        to: rawItems.length || null,
+      }
+
+  const summary = payload?.summary && typeof payload.summary === 'object' ? payload.summary : {}
+
+  return {
+    items: rawItems,
+    pagination,
+    summary,
+  }
 }
 
 async function requestWithFallback(requestHandler, fallbackHandler) {
@@ -77,11 +98,38 @@ async function requestWithFallback(requestHandler, fallbackHandler) {
   }
 }
 
-export async function listAdminUsers() {
-  return requestWithFallback(async () => {
-    const response = await http.get(ADMIN_ROUTES, { params: { per_page: 100 } })
-    return toAdminUsers(extractUserCollection(response))
-  }, () => getLocalAdminUsers())
+export async function listAdminUsers(
+  {
+    page = 1,
+    perPage = 10,
+    search = '',
+    role = '',
+    status = '',
+    sortBy = 'created_at',
+    sortDirection = 'desc',
+  } = {},
+  options = {},
+) {
+  const response = await http.get(ADMIN_ROUTES, {
+    params: {
+      page,
+      per_page: perPage,
+      search,
+      role,
+      status,
+      sort_by: sortBy,
+      sort_direction: sortDirection,
+    },
+    signal: options.signal,
+  })
+
+  const payload = extractAdminUsersPayload(response)
+
+  return {
+    items: toAdminUsers(payload.items),
+    pagination: payload.pagination,
+    summary: payload.summary,
+  }
 }
 
 export async function findAdminUserById(id) {

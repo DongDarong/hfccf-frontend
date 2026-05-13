@@ -36,6 +36,22 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  columns: {
+    type: Array,
+    default: () => [],
+  },
+  sortField: {
+    type: String,
+    default: '',
+  },
+  sortOrder: {
+    type: Number,
+    default: -1,
+  },
+  serverSide: {
+    type: Boolean,
+    default: false,
+  },
   users: {
     type: Array,
     default: () => [],
@@ -62,6 +78,7 @@ const emit = defineEmits([
   'delete',
   'refresh',
   'clear',
+  'sort',
 ])
 </script>
 
@@ -103,7 +120,12 @@ const emit = defineEmits([
       <template v-else>
         <Table
           :users="users"
+          :columns="columns"
+          :sort-field="sortField"
+          :sort-order="sortOrder"
+          :server-side="serverSide"
           :empty-text="emptyText"
+          @sort="emit('sort', $event)"
           @edit="emit('edit', $event)"
           @delete="emit('delete', $event)"
         />

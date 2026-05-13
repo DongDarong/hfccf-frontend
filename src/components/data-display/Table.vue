@@ -60,9 +60,21 @@ const props = defineProps({
     default: 'menu',
     validator: (value) => ['menu', 'buttons'].includes(value),
   },
+  sortField: {
+    type: String,
+    default: '',
+  },
+  sortOrder: {
+    type: Number,
+    default: 0,
+  },
+  serverSide: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['view', 'edit', 'delete'])
+const emit = defineEmits(['view', 'edit', 'delete', 'sort'])
 
 const { t } = useLanguage()
 
@@ -143,6 +155,9 @@ const defaultColumns = computed(() => [
 const resolvedColumns = computed(() =>
   props.columns.length ? props.columns : defaultColumns.value,
 )
+
+const resolvedSortField = computed(() => String(props.sortField || '').trim())
+const resolvedSortOrder = computed(() => Number(props.sortOrder) || 0)
 
 /**
  * Normalize row status for StatusBadge tone.
@@ -235,6 +250,22 @@ function plainValue(row, column) {
 }
 
 /**
+ * Format date/time values for human-readable display.
+ */
+function formatDateTime(value) {
+  const normalized = String(value ?? '').trim()
+
+  if (!normalized) return '-'
+
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) {
+    return normalized
+  }
+
+  return date.toLocaleString()
+}
+
+/**
  * Mark avatar image as broken.
  */
 function onAvatarError(row) {
@@ -258,6 +289,12 @@ watch(
   },
   { deep: true },
 )
+
+function onSort(event) {
+  if (!props.serverSide) return
+
+  emit('sort', event)
+}
 </script>
 
 <template>
@@ -265,10 +302,14 @@ watch(
     :value="resolvedRows"
     :data-key="rowKey"
     :loading="loading"
+    :lazy="serverSide"
+    :sort-field="resolvedSortField || undefined"
+    :sort-order="resolvedSortOrder"
     striped-rows
     removable-sort
     class="ui-data-table"
     :pt="tablePt"
+    @sort="onSort"
   >
     <!-- Empty state -->
     <template #empty>
@@ -294,6 +335,8 @@ watch(
       :key="column.key"
       :field="column.field || column.key"
       :header="column.label"
+      :sortable="Boolean(column.sortable)"
+      :sort-field="column.sortField || column.field || column.key"
       :pt="{
         headerCell: {
           class: column.align === 'right' ? 'text-right' : 'text-left',
@@ -368,6 +411,13 @@ watch(
             :label="String(data.status ?? 'Unknown')"
             size="sm"
           />
+        </template>
+
+        <!-- Created at -->
+        <template v-else-if="column.key === 'created_at'">
+          <span class="text-[12px] text-surface-700 sm:text-sm">
+            {{ formatDateTime(data.createdAt || data.created_at) }}
+          </span>
         </template>
 
         <!-- Row actions -->

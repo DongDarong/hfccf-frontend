@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -18,16 +19,60 @@ defineOptions({
 
 const { t } = useI18n()
 const router = useRouter()
-const pageSize = 10
 
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 const roleOptions = [ROLES.SUPER_ADMIN, ...PROGRAM_ADMIN_ROLES]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('common.table.number'), align: 'left' },
+  {
+    key: 'user',
+    field: 'name',
+    sortField: 'first_name',
+    label: t('common.table.user'),
+    align: 'left',
+    sortable: true,
+  },
+  {
+    key: 'email',
+    field: 'email',
+    label: t('common.table.email'),
+    align: 'left',
+    sortable: true,
+  },
+  {
+    key: 'role',
+    field: 'role',
+    label: t('common.table.role'),
+    align: 'left',
+    sortable: true,
+  },
+  { key: 'permission', label: t('common.table.permission'), align: 'left' },
+  {
+    key: 'status',
+    field: 'status',
+    label: t('common.table.status'),
+    align: 'left',
+    sortable: true,
+  },
+  {
+    key: 'created_at',
+    field: 'createdAt',
+    sortField: 'created_at',
+    label: 'Created At',
+    align: 'left',
+    sortable: true,
+  },
+  { key: 'phone', field: 'phone', label: t('common.table.phone'), align: 'left' },
+  { key: 'actions', label: t('common.table.actions'), align: 'right' },
+])
 
 const {
   searchQuery,
   roleFilter,
   statusFilter,
   currentPage,
+  sortBy,
+  sortDirection,
   isLoading,
   isDeleteOpen,
   showSuccess,
@@ -47,6 +92,7 @@ const {
   statusBadges,
   paginatedAdmins,
   totalPages,
+  onSort,
   deleteConfirmTitle,
   deleteConfirmText,
   cancelLabel,
@@ -56,7 +102,7 @@ const {
   onDeleteAdmin,
   onCancelDelete,
   onClearFilters,
-} = useAdminManagement({ pageSize })
+} = useAdminManagement()
 
 function goToAddAdmin() {
   router.push('/module/super-admin/users/add')
@@ -105,6 +151,10 @@ function onEditAdmin(admin) {
           :search-placeholder="searchPlaceholder"
           :role-options="roleOptions"
           :status-options="statusOptions"
+          :columns="tableColumns"
+          :sort-field="sortBy"
+          :sort-order="sortDirection === 'asc' ? 1 : -1"
+          :server-side="true"
           :users="paginatedAdmins"
           :empty-text="tableEmptyText"
           :loading="isLoading"
@@ -116,6 +166,7 @@ function onEditAdmin(admin) {
           @delete="onDeleteAdmin"
           @refresh="loadAdmins"
           @clear="onClearFilters"
+          @sort="onSort"
         />
 
         <div v-if="totalPages > 1" class="flex justify-end pt-1">
