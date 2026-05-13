@@ -23,6 +23,7 @@ async function requestWithFallback(requestHandler, fallbackHandler) {
     return await requestHandler()
   } catch (error) {
     if (!isFallbackWorthyError(error)) throw error
+    console.warn('Falling back to local command center data:', error)
     return fallbackHandler()
   }
 }
