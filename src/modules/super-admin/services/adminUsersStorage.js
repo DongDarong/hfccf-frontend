@@ -1,5 +1,6 @@
 import { PROGRAM_ADMIN_ROLES, ROLES, isProgramAdminRole, isSuperAdminRole } from '@/constants/roles'
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
+import { getLocalRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
 import usersMock from '@/mocks/users.json'
 
 const ADMIN_USERS_STORAGE_KEY = 'hfccf-super-admin-users'
@@ -57,7 +58,7 @@ function normalizeAdminPayload(payload, existingUser = null) {
   const name = String(payload?.name || existingUser?.name || '').trim()
   const email = String(payload?.email || existingUser?.email || '').trim().toLowerCase()
   const role = MANAGED_ADMIN_ROLES.includes(payload?.role) ? payload.role : ROLES.ADMIN_ENGLISH
-  const permissions = Array.isArray(payload?.permissions) ? [...payload.permissions] : []
+  const permissions = getLocalRolePermissions(role).map((permission) => permission.code)
   const nameParts = normalizeNameParts(name)
 
   // Keep this frontend contract close to the backend user resource shape until the real users API is connected.

@@ -30,7 +30,6 @@ function splitName(fullName) {
 function buildAvatarFormData(formPayload = {}, { includePassword = false, method = 'POST' } = {}) {
   const payload = new FormData()
   const { firstName, lastName } = splitName(formPayload?.name)
-  const permissions = Array.isArray(formPayload?.permissions) ? formPayload.permissions : []
   const avatarFile = formPayload?.avatar instanceof File ? formPayload.avatar : null
   const shouldRemoveAvatar = Boolean(formPayload?.removeAvatar)
 
@@ -41,10 +40,6 @@ function buildAvatarFormData(formPayload = {}, { includePassword = false, method
   payload.append('phone', String(formPayload?.phone || '').trim())
   payload.append('role', String(formPayload?.role || '').trim())
   payload.append('status', String(formPayload?.status || '').trim() || 'active')
-
-  permissions.forEach((permission) => {
-    payload.append('permissions[]', String(permission))
-  })
 
   if (includePassword && String(formPayload?.password || '').trim()) {
     payload.append('password', String(formPayload?.password || ''))
@@ -75,6 +70,7 @@ function sanitizeFallbackPayload(formPayload = {}) {
   }
 
   delete fallbackPayload.removeAvatar
+  delete fallbackPayload.permissions
 
   return fallbackPayload
 }
