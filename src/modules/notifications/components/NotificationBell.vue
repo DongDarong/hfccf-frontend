@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
-import OverlayPanel from 'primevue/overlaypanel'
+import Popover from 'primevue/popover'
 import { fetchNotifications, markAllNotificationsAsRead, markNotificationAsRead, dismissNotification } from '@/modules/notifications/services/notificationsApi'
 import { useNotificationsStore } from '@/modules/notifications/stores/notificationsStore'
 import NotificationDropdown from '@/modules/notifications/components/NotificationDropdown.vue'
@@ -42,8 +42,8 @@ function normalizeItems(payload) {
     module: String(item.module || item.domain || 'global').trim().toLowerCase(),
     title: String(item.title || item.subject || '').trim(),
     message: String(item.message || item.body || item.content || '').trim(),
-    read: Boolean(item.read || item.is_read || item.read_at),
-    dismissed: Boolean(item.dismissed || item.dismissed_at),
+    read: Boolean(item.read || item.is_read || item.read_at || item.readAt),
+    dismissed: Boolean(item.dismissed || item.dismissed_at || item.dismissedAt),
     createdAt: item.created_at || item.createdAt || item.sent_at || item.timestamp || '',
   }))
 }
@@ -151,7 +151,7 @@ onMounted(() => {
       </template>
     </Button>
 
-    <OverlayPanel
+    <Popover
       ref="overlayRef"
       class="notification-bell__panel"
     >
@@ -164,7 +164,7 @@ onMounted(() => {
         @mark-all-read="handleMarkAllRead"
         @view-all="goToNotificationsPage"
       />
-    </OverlayPanel>
+    </Popover>
   </div>
 </template>
 
@@ -182,7 +182,7 @@ onMounted(() => {
   line-height: 1;
 }
 
-:deep(.notification-bell__panel.p-overlaypanel) {
+:deep(.notification-bell__panel.p-popover) {
   padding: 0;
   border: 0;
   background: transparent;

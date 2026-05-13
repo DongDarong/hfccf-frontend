@@ -4,15 +4,58 @@ function unwrapResponseData(response) {
   return response?.data?.data ?? response?.data ?? null
 }
 
+function toPositiveInteger(value, fallback) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback
+}
+
+function normalizeListParams(params = {}) {
+  const page = toPositiveInteger(params.page, 1)
+  const perPage = toPositiveInteger(params.perPage ?? params.per_page, 10)
+
+  const payload = {
+    page,
+    per_page: perPage,
+  }
+
+  const status = String(params.status || '').trim()
+  const type = String(params.type || '').trim()
+  const module = String(params.module || '').trim()
+  const search = String(params.search || '').trim()
+
+  if (status) payload.status = status
+  if (type) payload.type = type
+  if (module) payload.module = module
+  if (search) payload.search = search
+
+  return payload
+}
+
+function normalizeCreatePayload(payload = {}) {
+  const metadata = payload.metadata
+
+  return {
+    type: String(payload.type || '').trim().toLowerCase(),
+    title: String(payload.title || '').trim(),
+    message: String(payload.message || '').trim(),
+    module: String(payload.module || '').trim().toLowerCase(),
+    action_url: String(payload.actionUrl || payload.action_url || '').trim() || null,
+    metadata: metadata && typeof metadata === 'object' ? metadata : null,
+    target_type: String(payload.targetType || payload.target_type || '').trim().toLowerCase(),
+    target_value: String(payload.targetValue || payload.target_value || '').trim() || null,
+  }
+}
+
 /**
  * Shared notification API client.
  *
  * The app already owns the Axios instance and auth token flow, so this service
  * only maps domain-specific requests to the backend endpoints.
  */
-export async function fetchNotifications(params = {}) {
+export async function fetchNotifications(params = {}, options = {}) {
   const response = await http.get('/notifications', {
-    params,
+    params: normalizeListParams(params),
+    signal: options.signal,
   })
 
   return unwrapResponseData(response)
@@ -31,7 +74,7 @@ export async function fetchUnreadCount() {
  * Create a new notification.
  */
 export async function createNotification(payload = {}) {
-  const response = await http.post('/notifications', payload)
+  const response = await http.post('/notifications', normalizeCreatePayload(payload))
 
   return unwrapResponseData(response)
 }

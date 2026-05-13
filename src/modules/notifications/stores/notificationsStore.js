@@ -10,6 +10,7 @@ import {
 } from '@/modules/notifications/services/notificationsApi'
 
 const DEFAULT_PER_PAGE = 10
+let activeLoadController = null
 
 function toPositiveInteger(value, fallback) {
   const parsed = Number(value)
@@ -32,8 +33,19 @@ function normalizeNotificationItem(item = {}) {
     title: String(item.title || item.subject || '').trim(),
     message: String(item.message || item.body || item.content || '').trim(),
     actionUrl: String(item.action_url || item.actionUrl || '').trim(),
-    read: Boolean(item.read || item.is_read || item.read_at || status === 'read'),
-    dismissed: Boolean(item.dismissed || item.dismissed_at || status === 'dismissed'),
+    read: Boolean(
+      item.read ||
+        item.is_read ||
+        item.read_at ||
+        item.readAt ||
+        status === 'read',
+    ),
+    dismissed: Boolean(
+      item.dismissed ||
+        item.dismissed_at ||
+        item.dismissedAt ||
+        status === 'dismissed',
+    ),
     createdAt:
       item.created_at ||
       item.createdAt ||
@@ -189,6 +201,12 @@ export const useNotificationsStore = defineStore('notifications', () => {
   }
 
   async function loadNotifications(params = {}) {
+    if (activeLoadController) {
+      activeLoadController.abort()
+    }
+
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+    activeLoadController = controller
     loading.value = true
     clearError()
 
@@ -241,7 +259,23 @@ export const useNotificationsStore = defineStore('notifications', () => {
         query.search = filters.search
       }
 
-      const response = await fetchNotifications(query)
+      const response = await fetchNotifications({
+        ...query,
+      }, {
+        signal: controller?.signal,
+      })
+
+      if (controller && controller.signal.aborted) {
+        return {
+          items: items.value,
+          pagination: {
+            page: pagination.page,
+            perPage: pagination.perPage,
+            total: pagination.total,
+            lastPage: pagination.lastPage,
+          },
+        }
+      }
 
       const normalized = normalizeNotificationResponse(response, nextPage, nextPerPage)
 
@@ -250,6 +284,18 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
       return normalized
     } catch (err) {
+      if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
+        return {
+          items: items.value,
+          pagination: {
+            page: pagination.page,
+            perPage: pagination.perPage,
+            total: pagination.total,
+            lastPage: pagination.lastPage,
+          },
+        }
+      }
+
       setError(err?.message || 'Unable to load notifications right now.')
       return {
         items: [],
@@ -261,6 +307,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
         },
       }
     } finally {
+      if (activeLoadController === controller) {
+        activeLoadController = null
+      }
       loading.value = false
     }
   }
