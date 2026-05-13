@@ -103,6 +103,11 @@ const useButtonActions = computed(() =>
 )
 
 /**
+ * Keep permission columns compact so rows do not grow excessively tall.
+ */
+const MAX_VISIBLE_PERMISSIONS = 3
+
+/**
  * PrimeVue table styling.
  */
 const tablePt = computed(() => ({
@@ -187,6 +192,29 @@ function permissionList(row) {
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean)
+}
+
+/**
+ * Limit the permission badges rendered in the table cell.
+ */
+function visiblePermissions(row) {
+  return permissionList(row).slice(0, MAX_VISIBLE_PERMISSIONS)
+}
+
+/**
+ * Count how many permissions are hidden behind the compact overflow badge.
+ */
+function hiddenPermissionCount(row) {
+  return Math.max(permissionList(row).length - MAX_VISIBLE_PERMISSIONS, 0)
+}
+
+/**
+ * Tooltip text for the overflow badge.
+ */
+function hiddenPermissionLabel(row) {
+  return permissionList(row)
+    .slice(MAX_VISIBLE_PERMISSIONS)
+    .join(', ')
 }
 
 /**
@@ -390,7 +418,7 @@ function onSort(event) {
         <template v-else-if="column.key === 'permission'">
           <div class="flex flex-wrap gap-1">
             <PermissionBadge
-              v-for="permission in permissionList(data)"
+              v-for="permission in visiblePermissions(data)"
               :key="permission"
               :permission="permission"
             />
@@ -400,6 +428,14 @@ function onSort(event) {
               class="text-[11px] text-surface-400"
             >
               -
+            </span>
+
+            <span
+              v-else-if="hiddenPermissionCount(data) > 0"
+              class="inline-flex items-center rounded-full border border-surface-200 bg-surface-100 px-2 py-0.5 text-[0.68rem] font-semibold leading-none tracking-[0.02em] text-surface-600"
+              :title="hiddenPermissionLabel(data)"
+            >
+              +{{ hiddenPermissionCount(data) }} more
             </span>
           </div>
         </template>

@@ -51,6 +51,11 @@ const emit = defineEmits(['view', 'edit', 'delete'])
 const hasImageError = ref(false)
 
 /**
+ * Keep permission columns compact so rows remain readable.
+ */
+const MAX_VISIBLE_PERMISSIONS = 3
+
+/**
  * Prefer explicit row prop, fallback to user prop.
  */
 const resolvedRow = computed(() =>
@@ -138,6 +143,27 @@ const permissionList = computed(() => {
     .map((value) => value.trim())
     .filter(Boolean)
 })
+
+/**
+ * Render only the first few permission badges in the cell.
+ */
+const visiblePermissions = computed(() =>
+  permissionList.value.slice(0, MAX_VISIBLE_PERMISSIONS),
+)
+
+/**
+ * Count the hidden permissions that collapse into the overflow pill.
+ */
+const hiddenPermissionCount = computed(() =>
+  Math.max(permissionList.value.length - MAX_VISIBLE_PERMISSIONS, 0),
+)
+
+/**
+ * Show the remaining permission labels in the tooltip for quick inspection.
+ */
+const hiddenPermissionLabel = computed(() =>
+  permissionList.value.slice(MAX_VISIBLE_PERMISSIONS).join(', '),
+)
 
 /**
  * Format phone text.
@@ -398,7 +424,7 @@ function onAvatarError() {
       <template v-else-if="column.key === 'permission'">
         <div class="flex flex-wrap gap-1">
           <PermissionBadge
-            v-for="permission in permissionList"
+            v-for="permission in visiblePermissions"
             :key="permission"
             :permission="permission"
             size="sm"
@@ -409,6 +435,14 @@ function onAvatarError() {
             class="text-[11px] text-surface-400"
           >
             -
+          </span>
+
+          <span
+            v-else-if="hiddenPermissionCount > 0"
+            class="inline-flex items-center rounded-full border border-surface-200 bg-surface-100 px-2 py-0.5 text-[0.68rem] font-semibold leading-none tracking-[0.02em] text-surface-600"
+            :title="hiddenPermissionLabel"
+          >
+            +{{ hiddenPermissionCount }} more
           </span>
         </div>
       </template>
