@@ -113,6 +113,12 @@ function onEditAdmin(admin) {
   if (!id) return
   router.push({ path: '/module/super-admin/users/add', query: { mode: 'edit', id } })
 }
+
+function onViewAdmin(admin) {
+  const id = String(admin?.id || '').trim()
+  if (!id) return
+  router.push({ name: 'dashboard-super-admin-users-view', params: { id } })
+}
 </script>
 
 <template>
@@ -162,6 +168,7 @@ function onEditAdmin(admin) {
           @update:search-query="searchQuery = $event"
           @update:role-filter="roleFilter = $event"
           @update:status-filter="statusFilter = $event"
+          @view="onViewAdmin"
           @edit="onEditAdmin"
           @delete="onDeleteAdmin"
           @refresh="loadAdmins"

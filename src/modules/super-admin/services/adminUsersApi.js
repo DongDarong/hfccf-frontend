@@ -164,6 +164,16 @@ export async function findAdminUserById(id) {
   }, () => findLocalAdminUserById(targetId))
 }
 
+export async function getAdminUser(id) {
+  const targetId = String(id || '').trim()
+  if (!targetId) return null
+
+  return requestWithFallback(async () => {
+    const response = await http.get(`/super-admin/users/${encodeURIComponent(targetId)}`)
+    return mapUser(extractUserItem(response))
+  }, () => findLocalAdminUserById(targetId))
+}
+
 export async function createAdminUser(payload) {
   return requestWithFallback(async () => {
     const response = await http.post(

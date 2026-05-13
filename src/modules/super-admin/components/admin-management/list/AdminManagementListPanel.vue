@@ -74,6 +74,7 @@ const emit = defineEmits([
   'update:searchQuery',
   'update:roleFilter',
   'update:statusFilter',
+  'view',
   'edit',
   'delete',
   'refresh',
@@ -126,6 +127,7 @@ const emit = defineEmits([
           :server-side="serverSide"
           :empty-text="emptyText"
           @sort="emit('sort', $event)"
+          @view="emit('view', $event)"
           @edit="emit('edit', $event)"
           @delete="emit('delete', $event)"
         />

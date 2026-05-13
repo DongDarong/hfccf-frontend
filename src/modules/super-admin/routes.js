@@ -21,6 +21,15 @@ export const superAdminRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/super-admin/users/:id/view',
+    name: 'dashboard-super-admin-users-view',
+    component: () => import('@/modules/super-admin/pages/ViewUser.vue'),
+    access: {
+      domains: [DOMAINS.GLOBAL],
+      scopes: [ACCESS_SCOPES.SUPER_ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/super-admin/users/add',
     name: 'dashboard-super-admin-users-add',
     component: () => import('@/modules/super-admin/pages/AddAdmin.vue'),
