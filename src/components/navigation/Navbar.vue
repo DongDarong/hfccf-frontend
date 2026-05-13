@@ -1,14 +1,12 @@
 <script setup>
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 
 import Calendar from '@/assets/icons/Calendar.vue'
-import Notification from '@/assets/icons/Notification.vue'
-
 import { useNavbarLocale } from '@/components/navigation/composables/useNavbarLocale'
 import { localePt, menuButtonPt } from '@/components/navigation/config/navbar.config'
+import NotificationBell from '@/modules/notifications/components/NotificationBell.vue'
 
 defineOptions({
   name: 'MainNavbar',
@@ -23,12 +21,6 @@ const {
   calendarLabel,
   localeOptions,
 } = useNavbarLocale()
-
-/**
- * Keep the notification badge stable until a shared notifications source exists.
- * This matches the current dashboard notification seed and prevents render warnings.
- */
-const unreadNotificationsCount = computed(() => 3)
 
 function goToRoute(name) {
   router.push({ name })
@@ -94,29 +86,7 @@ function goToRoute(name) {
         </template>
       </Button>
 
-      <Button
-        type="button"
-        severity="secondary"
-        text
-        rounded
-        class="icon-btn icon-btn--notification"
-        :pt="menuButtonPt"
-        :aria-label="t('common.notifications')"
-        @click="goToRoute('notifications')"
-      >
-        <template #icon>
-          <div class="relative flex items-center justify-center">
-            <Notification :size="18" />
-
-            <span
-              v-if="unreadNotificationsCount > 0"
-              class="absolute -top-2 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-hope-red px-1 text-[0.62rem] leading-none font-bold text-white shadow-[0_6px_12px_-8px_rgba(237,28,36,0.8)] max-[480px]:-top-1.5 max-[480px]:-right-1.5 max-[480px]:h-3.5 max-[480px]:min-w-3.5 max-[480px]:text-[0.55rem]"
-            >
-              {{ unreadNotificationsCount }}
-            </span>
-          </div>
-        </template>
-      </Button>
+      <NotificationBell />
 
       <Select
         v-model="currentLocale"

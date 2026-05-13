@@ -19,7 +19,7 @@ export const dashboardRoutes = [
   }),
   defineAppRoute({
     path: '/module/notifications',
-    name: 'notifications',
+    name: 'dashboard-notifications',
     component: () => import('@/modules/dashboard/pages/Notifications.vue'),
     access: {},
   }),

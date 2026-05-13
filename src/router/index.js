@@ -3,6 +3,7 @@ import { ensureSessionIsValid, getCurrentUser, touchActivity } from '@/services/
 import { canAccessRoute } from '@/services/accessControl'
 import { authRoutes } from '@/modules/auth/routes'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
+import { notificationsRoutes } from '@/modules/notifications/routes'
 import { reportsRoutes } from '@/modules/reports/routes'
 import { superAdminRoutes } from '@/modules/super-admin/routes'
 import { englishRoutes } from '@/modules/english/routes'
@@ -15,6 +16,7 @@ import { validateRouteConfig } from '@/router/routeValidator'
 const routes = [
   ...authRoutes,
   ...dashboardRoutes,
+  ...notificationsRoutes,
   ...reportsRoutes,
   ...superAdminRoutes,
   ...englishRoutes,
