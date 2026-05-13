@@ -7,6 +7,7 @@ import {
   fetchUnreadCount,
   markAllNotificationsAsRead as markAllNotificationsAsReadRequest,
   markNotificationAsRead as markNotificationAsReadRequest,
+  undismissNotification as undismissNotificationRequest,
 } from '@/modules/notifications/services/notificationsApi'
 
 const DEFAULT_PER_PAGE = 10
@@ -415,6 +416,30 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
   }
 
+  async function undismiss(id) {
+    if (!id) return null
+
+    loading.value = true
+    clearError()
+
+    try {
+      const response = await undismissNotificationRequest(id)
+
+      await loadNotifications({
+        page: pagination.page,
+        perPage: pagination.perPage,
+      })
+      await loadUnreadCount()
+
+      return response
+    } catch (err) {
+      setError(err?.message || 'Unable to restore the notification.')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   function resetState() {
     items.value = []
     unreadCount.value = 0
@@ -447,6 +472,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     markAsRead,
     markAllAsRead,
     dismiss,
+    undismiss,
     resetState,
     patchNotification,
   }

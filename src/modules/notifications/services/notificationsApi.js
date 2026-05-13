@@ -105,3 +105,12 @@ export async function dismissNotification(id) {
 
   return unwrapResponseData(response)
 }
+
+/**
+ * Restore a previously dismissed notification.
+ */
+export async function undismissNotification(id) {
+  const response = await http.patch(`/notifications/${id}/undismiss`)
+
+  return unwrapResponseData(response)
+}
