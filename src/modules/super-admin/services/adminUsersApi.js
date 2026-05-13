@@ -27,28 +27,56 @@ function splitName(fullName) {
   }
 }
 
-function toApiPayload(formPayload = {}, { includePassword = false } = {}) {
-  // The Add Admin UI uses a single `name` field; the backend schema is normalized.
+function buildAvatarFormData(formPayload = {}, { includePassword = false, method = 'POST' } = {}) {
+  const payload = new FormData()
   const { firstName, lastName } = splitName(formPayload?.name)
+  const permissions = Array.isArray(formPayload?.permissions) ? formPayload.permissions : []
+  const avatarFile = formPayload?.avatar instanceof File ? formPayload.avatar : null
+  const shouldRemoveAvatar = Boolean(formPayload?.removeAvatar)
 
-  const payload = {
-    firstName,
-    lastName,
-    username: String(formPayload?.username || formPayload?.name || '').trim(),
-    email: String(formPayload?.email || '').trim().toLowerCase(),
-    phone: String(formPayload?.phone || '').trim() || null,
-    role: String(formPayload?.role || '').trim(),
-    status: String(formPayload?.status || '').trim() || 'active',
-    avatar: formPayload?.avatar || null,
-    permissions: Array.isArray(formPayload?.permissions) ? formPayload.permissions : [],
+  payload.append('first_name', firstName)
+  payload.append('last_name', lastName)
+  payload.append('username', String(formPayload?.username || formPayload?.name || '').trim())
+  payload.append('email', String(formPayload?.email || '').trim().toLowerCase())
+  payload.append('phone', String(formPayload?.phone || '').trim())
+  payload.append('role', String(formPayload?.role || '').trim())
+  payload.append('status', String(formPayload?.status || '').trim() || 'active')
+
+  permissions.forEach((permission) => {
+    payload.append('permissions[]', String(permission))
+  })
+
+  if (includePassword && String(formPayload?.password || '').trim()) {
+    payload.append('password', String(formPayload?.password || ''))
+    payload.append(
+      'password_confirmation',
+      String(formPayload?.confirmPassword || formPayload?.password || ''),
+    )
   }
 
-  if (includePassword) {
-    payload.password = String(formPayload?.password || '')
-    payload.password_confirmation = String(formPayload?.confirmPassword || formPayload?.password || '')
+  if (avatarFile) {
+    payload.append('avatar', avatarFile)
+  } else if (shouldRemoveAvatar) {
+    payload.append('remove_avatar', '1')
+  }
+
+  if (method === 'PUT') {
+    payload.append('_method', 'PUT')
   }
 
   return payload
+}
+
+function sanitizeFallbackPayload(formPayload = {}) {
+  const fallbackPayload = { ...formPayload }
+
+  if (fallbackPayload.avatar instanceof File) {
+    delete fallbackPayload.avatar
+  }
+
+  delete fallbackPayload.removeAvatar
+
+  return fallbackPayload
 }
 
 function extractUserItem(response) {
@@ -142,9 +170,12 @@ export async function findAdminUserById(id) {
 
 export async function createAdminUser(payload) {
   return requestWithFallback(async () => {
-    const response = await http.post(ADMIN_ROUTES, toApiPayload(payload, { includePassword: true }))
+    const response = await http.post(
+      ADMIN_ROUTES,
+      buildAvatarFormData(payload, { includePassword: true }),
+    )
     return mapUser(extractUserItem(response))
-  }, () => createLocalAdminUser(payload))
+  }, () => createLocalAdminUser(sanitizeFallbackPayload(payload)))
 }
 
 export async function updateAdminUser(id, payload) {
@@ -155,12 +186,12 @@ export async function updateAdminUser(id, payload) {
 
   return requestWithFallback(async () => {
     const includePassword = Boolean(payload?.password)
-    const response = await http.put(
+    const response = await http.post(
       `${ADMIN_ROUTES}/${encodeURIComponent(targetId)}`,
-      toApiPayload(payload, { includePassword }),
+      buildAvatarFormData(payload, { includePassword, method: 'PUT' }),
     )
     return mapUser(extractUserItem(response))
-  }, () => updateLocalAdminUser(targetId, payload))
+  }, () => updateLocalAdminUser(targetId, sanitizeFallbackPayload(payload)))
 }
 
 export async function deleteAdminUser(id) {

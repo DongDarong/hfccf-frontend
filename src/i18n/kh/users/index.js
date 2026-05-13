@@ -87,7 +87,7 @@ export default {
       statusRequired: 'ស្ថានភាពត្រូវបំពេញ។',
       passwordLength: 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ 6 តួអក្សរ។',
       passwordMismatch: 'ពាក្យសម្ងាត់មិនត្រូវគ្នា។',
-      imageType: 'សូមជ្រើសរើសរូបភាព JPG, PNG, WEBP ឬ GIF។',
+      imageType: 'សូមជ្រើសរើសរូបភាព JPG, PNG ឬ WEBP។',
       imageSize: 'រូបភាពប្រវត្តិរូបត្រូវតិចជាងឬស្មើ 2 MB។',
       updateFailed: 'មិនអាចធ្វើបច្ចុប្បន្នភាពអ្នកប្រើប្រាស់បានទេ។',
       createFailed: 'មិនអាចបង្កើតអ្នកប្រើប្រាស់បានទេ។',

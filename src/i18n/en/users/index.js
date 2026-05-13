@@ -87,7 +87,7 @@ export default {
       statusRequired: 'Status is required.',
       passwordLength: 'Password must be at least 6 characters.',
       passwordMismatch: 'Passwords do not match.',
-      imageType: 'Please choose a JPG, PNG, WEBP, or GIF image.',
+      imageType: 'Please choose a JPG, PNG, or WEBP image.',
       imageSize: 'Profile images must be 2 MB or smaller.',
       updateFailed: 'Unable to update user right now.',
       createFailed: 'Unable to create user right now.',

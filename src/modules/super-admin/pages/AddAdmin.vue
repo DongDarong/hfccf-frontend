@@ -45,7 +45,7 @@ const roleOptions = [
 ]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
 const permissionOptions = ['all:*', 'users:read', 'users:write', 'reports:read', 'programs:write', 'settings:read']
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
 const form = reactive({
@@ -58,6 +58,7 @@ const form = reactive({
   password: '',
   confirmPassword: '',
   profileImage: null,
+  avatarAction: 'none',
 })
 
 const isSubmitting = ref(false)
@@ -118,6 +119,10 @@ function resetFeedback() {
   showError.value = false
 }
 
+function isBlobPreview(value) {
+  return String(value || '').startsWith('blob:')
+}
+
 function togglePasswordVisibility() {
   isPasswordVisible.value = !isPasswordVisible.value
 }
@@ -167,12 +172,16 @@ function permissionLabel(value) {
 
 function onProfileImageChange(event) {
   const [file] = event?.target?.files || []
+  if (event?.target) {
+    event.target.value = ''
+  }
+
   if (!file) return
 
   if (!allowedProfileImageTypes.includes(file.type)) {
     errorMessage.value = resolvedText(
       'users.addAdmin.validation.imageType',
-      'Please choose a JPG, PNG, WEBP, or GIF image.',
+      'Please choose a JPG, PNG, or WEBP image.',
     )
     showError.value = true
     return
@@ -187,19 +196,21 @@ function onProfileImageChange(event) {
     return
   }
 
-  if (profileImagePreview.value) {
+  if (isBlobPreview(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
   form.profileImage = file
+  form.avatarAction = 'replace'
   profileImagePreview.value = URL.createObjectURL(file)
 }
 
 function removeProfileImage() {
-  if (profileImagePreview.value) {
+  if (isBlobPreview(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
   profileImagePreview.value = ''
   form.profileImage = null
+  form.avatarAction = 'remove'
 }
 
 async function onSubmit() {
@@ -221,7 +232,8 @@ async function onSubmit() {
       role: form.role,
       permissions: form.permissions,
       status: form.status,
-      avatar: profileImagePreview.value,
+      avatar: form.profileImage,
+      removeAvatar: form.avatarAction === 'remove',
       password: form.password,
       confirmPassword: form.confirmPassword,
     }
@@ -279,10 +291,11 @@ onMounted(async () => {
   )
   form.status = matchedStatus || statusOptions[0]
   profileImagePreview.value = found.avatar || ''
+  form.avatarAction = found.avatar ? 'keep' : 'none'
 })
 
 onBeforeUnmount(() => {
-  if (profileImagePreview.value) {
+  if (isBlobPreview(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 })

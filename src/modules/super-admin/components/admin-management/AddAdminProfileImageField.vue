@@ -39,7 +39,7 @@ const emit = defineEmits(['change', 'remove'])
       <div class="flex flex-wrap items-center gap-2">
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          accept="image/jpeg,image/png,image/webp"
           class="max-w-[260px] text-[0.8rem] text-slate-700"
           :disabled="disabled"
           @change="emit('change', $event)"
