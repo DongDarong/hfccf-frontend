@@ -1,18 +1,7 @@
 import http from '@/services/http'
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
-import {
-  createAdminUser as createLocalAdminUser,
-  deleteAdminUser as deleteLocalAdminUser,
-  findAdminUserById as findLocalAdminUserById,
-  updateAdminUser as updateLocalAdminUser,
-} from '@/modules/super-admin/services/adminUsersStorage'
 
 const ADMIN_ROUTES = '/users'
-
-function isFallbackWorthyError(error) {
-  const status = error?.response?.status
-  return !error?.response || status === 404 || status === 405
-}
 
 function toAdminUsers(items = []) {
   return mapUsers(items)
@@ -62,19 +51,6 @@ function buildAvatarFormData(formPayload = {}, { includePassword = false, method
   return payload
 }
 
-function sanitizeFallbackPayload(formPayload = {}) {
-  const fallbackPayload = { ...formPayload }
-
-  if (fallbackPayload.avatar instanceof File) {
-    delete fallbackPayload.avatar
-  }
-
-  delete fallbackPayload.removeAvatar
-  delete fallbackPayload.permissions
-
-  return fallbackPayload
-}
-
 function extractUserItem(response) {
   const payload = response?.data?.data ?? response?.data ?? {}
   return payload?.user || payload?.data || payload
@@ -108,15 +84,6 @@ function extractAdminUsersPayload(response) {
     items: rawItems,
     pagination,
     summary,
-  }
-}
-
-async function requestWithFallback(requestHandler, fallbackHandler) {
-  try {
-    return await requestHandler()
-  } catch (error) {
-    if (!isFallbackWorthyError(error)) throw error
-    return fallbackHandler()
   }
 }
 
@@ -158,30 +125,24 @@ export async function findAdminUserById(id) {
   const targetId = String(id || '').trim()
   if (!targetId) return null
 
-  return requestWithFallback(async () => {
-    const response = await http.get(`${ADMIN_ROUTES}/${encodeURIComponent(targetId)}`)
-    return mapUser(extractUserItem(response))
-  }, () => findLocalAdminUserById(targetId))
+  const response = await http.get(`/super-admin/users/${encodeURIComponent(targetId)}`)
+  return mapUser(extractUserItem(response))
 }
 
 export async function getAdminUser(id) {
   const targetId = String(id || '').trim()
   if (!targetId) return null
 
-  return requestWithFallback(async () => {
-    const response = await http.get(`/super-admin/users/${encodeURIComponent(targetId)}`)
-    return mapUser(extractUserItem(response))
-  }, () => findLocalAdminUserById(targetId))
+  const response = await http.get(`/super-admin/users/${encodeURIComponent(targetId)}`)
+  return mapUser(extractUserItem(response))
 }
 
 export async function createAdminUser(payload) {
-  return requestWithFallback(async () => {
-    const response = await http.post(
-      ADMIN_ROUTES,
-      buildAvatarFormData(payload, { includePassword: true }),
-    )
-    return mapUser(extractUserItem(response))
-  }, () => createLocalAdminUser(sanitizeFallbackPayload(payload)))
+  const response = await http.post(
+    ADMIN_ROUTES,
+    buildAvatarFormData(payload, { includePassword: true }),
+  )
+  return mapUser(extractUserItem(response))
 }
 
 export async function updateAdminUser(id, payload) {
@@ -190,22 +151,18 @@ export async function updateAdminUser(id, payload) {
     throw new Error('Admin user id is required.')
   }
 
-  return requestWithFallback(async () => {
-    const includePassword = Boolean(payload?.password)
-    const response = await http.post(
-      `${ADMIN_ROUTES}/${encodeURIComponent(targetId)}`,
-      buildAvatarFormData(payload, { includePassword, method: 'PUT' }),
-    )
-    return mapUser(extractUserItem(response))
-  }, () => updateLocalAdminUser(targetId, sanitizeFallbackPayload(payload)))
+  const includePassword = Boolean(payload?.password)
+  const response = await http.post(
+    `${ADMIN_ROUTES}/${encodeURIComponent(targetId)}`,
+    buildAvatarFormData(payload, { includePassword, method: 'PUT' }),
+  )
+  return mapUser(extractUserItem(response))
 }
 
 export async function deleteAdminUser(id) {
   const targetId = String(id || '').trim()
   if (!targetId) return false
 
-  return requestWithFallback(async () => {
-    await http.delete(`${ADMIN_ROUTES}/${encodeURIComponent(targetId)}`)
-    return true
-  }, () => deleteLocalAdminUser(targetId))
+  await http.delete(`${ADMIN_ROUTES}/${encodeURIComponent(targetId)}`)
+  return true
 }

@@ -131,7 +131,12 @@ function normalizeUser(raw = {}) {
 
 function roleLabel(value) {
   const normalized = normalizeRole(value)
-  const key = `common.role.${String(normalized || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+
+  if (!normalized) {
+    return '-'
+  }
+
+  const key = `common.role.${String(normalized).replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
 
   return translated !== key ? translated : asText(value)
@@ -322,9 +327,16 @@ async function loadUser() {
     }
   } catch (error) {
     user.value = null
-    errorMessage.value =
-      error?.message ||
-      resolvedText('users.viewUser.loadFailed', 'Unable to load user details right now.')
+    if (error?.response?.status === 404) {
+      errorMessage.value = resolvedText(
+        'users.viewUser.notFoundMessage',
+        'The requested user could not be found.',
+      )
+    } else {
+      errorMessage.value =
+        error?.message ||
+        resolvedText('users.viewUser.loadFailed', 'Unable to load user details right now.')
+    }
   } finally {
     isLoading.value = false
   }
