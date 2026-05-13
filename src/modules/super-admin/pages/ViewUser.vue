@@ -36,6 +36,134 @@ function resolvedText(key, fallback) {
   return translated !== key ? translated : fallback
 }
 
+function firstNonEmpty(...values) {
+  const value = values.find((item) => {
+    if (item === null || item === undefined) return false
+    return String(item).trim() !== ''
+  })
+
+  return value === undefined ? '' : value
+}
+
+function asText(value) {
+  const normalized = String(value ?? '').trim()
+  return normalized || '-'
+}
+
+function asOptionalText(value) {
+  const normalized = String(value ?? '').trim()
+  return normalized || ''
+}
+
+function toArray(value) {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string' && value.trim()) {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+function normalizePermissionList(raw = {}) {
+  const combined = [
+    ...toArray(raw.permissions),
+    ...toArray(raw.role_permission),
+    ...toArray(raw.rolePermission),
+    ...toArray(raw.role_permissions),
+  ]
+
+  return [...new Set(combined.map((permission) => String(permission).trim()).filter(Boolean))]
+}
+
+function normalizeUser(raw = {}) {
+  const firstName = firstNonEmpty(raw.firstName, raw.first_name)
+  const lastName = firstNonEmpty(raw.lastName, raw.last_name)
+  const username = firstNonEmpty(raw.username, raw.user_name, raw.id)
+  const nameFromParts = [firstName, lastName].filter(Boolean).join(' ').trim()
+  const name = firstNonEmpty(
+    raw.name,
+    raw.fullName,
+    raw.full_name,
+    nameFromParts,
+    username,
+    raw.email,
+    raw.id,
+  )
+  const permissions = normalizePermissionList(raw)
+  const role = asOptionalText(raw.role)
+  const scope = asOptionalText(raw.scope)
+  const domain = asOptionalText(raw.domain)
+  const avatar = resolveAvatarSource(
+    firstNonEmpty(raw.avatar, raw.avatarUrl, raw.profileImage, raw.photo),
+  )
+
+  return {
+    id: firstNonEmpty(raw.id, raw.user_id),
+    firstName: asOptionalText(firstName),
+    lastName: asOptionalText(lastName),
+    name: asOptionalText(name),
+    fullName: asOptionalText(firstNonEmpty(raw.fullName, raw.full_name, name)),
+    username: asOptionalText(username),
+    email: asOptionalText(raw.email),
+    phone: asOptionalText(raw.phone),
+    role,
+    roleLabel: roleLabel(role),
+    scope,
+    domain,
+    departmentCode: asOptionalText(firstNonEmpty(raw.departmentCode, raw.department_code)),
+    department: asOptionalText(raw.department),
+    bio: asOptionalText(raw.bio),
+    status: asOptionalText(raw.status),
+    avatar,
+    permissions,
+    role_permission: permissions,
+    rolePermission: permissions,
+    role_permissions: permissions,
+    createdAt: asOptionalText(firstNonEmpty(raw.createdAt, raw.created_at)),
+    updatedAt: asOptionalText(firstNonEmpty(raw.updatedAt, raw.updated_at)),
+    lastLoginAt: asOptionalText(firstNonEmpty(raw.lastLoginAt, raw.last_login_at)),
+    emailVerifiedAt: asOptionalText(firstNonEmpty(raw.emailVerifiedAt, raw.email_verified_at)),
+  }
+}
+
+function roleLabel(value) {
+  const normalized = normalizeRole(value)
+  const key = `common.role.${String(normalized || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const translated = t(key)
+
+  return translated !== key ? translated : asText(value)
+}
+
+function statusLabel(value) {
+  const key = `common.status.${String(value || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const translated = t(key)
+
+  return translated !== key ? translated : asText(value)
+}
+
+function statusTone(value) {
+  const key = String(value || '').trim().toLowerCase()
+
+  if (key === 'active') return 'success'
+  if (key === 'pending') return 'info'
+  if (key === 'inactive') return 'warning'
+  if (key === 'suspended') return 'error'
+
+  return 'info'
+}
+
+function permissionLabel(permission) {
+  const normalized = String(permission || '').trim()
+
+  if (!normalized) return '-'
+  if (normalized === 'all:*') return resolvedText('users.viewUser.fullAccess', 'Full access')
+
+  return normalized
+}
+
 function formatDateTime(value) {
   const normalized = String(value || '').trim()
 
@@ -50,50 +178,10 @@ function formatDateTime(value) {
   return date.toLocaleString()
 }
 
-function roleLabel(value) {
-  const normalized = normalizeRole(value)
-  const key = `common.role.${String(normalized || '').replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-
-  return translated !== key ? translated : String(value || '-')
-}
-
-function statusLabel(value) {
-  const key = `common.status.${String(value || '').replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-
-  return translated !== key ? translated : String(value || '-')
-}
-
-function statusTone(value) {
-  const key = String(value || '').trim().toLowerCase()
-
-  if (key === 'active') return 'success'
-  if (key === 'pending') return 'info'
-  if (key === 'inactive') return 'warning'
-  if (key === 'suspended') return 'error'
-
-  return 'info'
-}
-
-const resolvedAvatar = computed(() => {
-  if (avatarErrored.value) return ''
-
-  return resolveAvatarSource(user.value?.avatar, { fallbackToAsset: true })
-})
-
-const shouldShowAvatar = computed(() =>
-  Boolean(resolvedAvatar.value) && Boolean(avatarLoaded.value) && !avatarErrored.value,
-)
-
-const avatarInitials = computed(() => getAvatarInitials(user.value?.name, '?'))
-
-const displayPermissions = computed(() =>
-  Array.isArray(user.value?.permissions) ? user.value.permissions : [],
-)
+const normalizedUser = computed(() => normalizeUser(user.value || {}))
 
 const pageTitle = computed(() =>
-  user.value?.name || resolvedText('users.viewUser.title', 'View User'),
+  normalizedUser.value.name || resolvedText('users.viewUser.title', 'View User'),
 )
 
 const pageSubtitle = computed(() =>
@@ -103,40 +191,107 @@ const pageSubtitle = computed(() =>
   ),
 )
 
-const detailItems = computed(() => [
+const avatarSource = computed(() => normalizedUser.value.avatar)
+
+const avatarInitials = computed(() =>
+  getAvatarInitials(
+    normalizedUser.value.fullName || normalizedUser.value.name || normalizedUser.value.username,
+    '?',
+  ),
+)
+
+const shouldShowAvatar = computed(() =>
+  Boolean(avatarSource.value) && Boolean(avatarLoaded.value) && !avatarErrored.value,
+)
+
+const hasPermissions = computed(() => normalizedUser.value.permissions.length > 0)
+
+const isFullAccess = computed(() =>
+  normalizedUser.value.permissions.some((permission) => String(permission).trim() === 'all:*'),
+)
+
+const sectionCards = computed(() => [
   {
-    label: resolvedText('users.viewUser.fields.fullName', 'Full Name'),
-    value: user.value?.name || '-',
+    key: 'profile-summary',
+    title: resolvedText('users.viewUser.sections.profileSummary', 'Profile Summary'),
+    rows: [
+      { label: resolvedText('users.viewUser.fields.id', 'ID'), value: normalizedUser.value.id },
+      {
+        label: resolvedText('users.viewUser.fields.fullName', 'Full Name'),
+        value: normalizedUser.value.fullName || normalizedUser.value.name,
+      },
+      {
+        label: resolvedText('users.viewUser.fields.username', 'Username'),
+        value: normalizedUser.value.username,
+      },
+      {
+        label: resolvedText('users.viewUser.fields.avatar', 'Avatar'),
+        value: normalizedUser.value.avatar ? resolvedText('users.viewUser.avatarPresent', 'Available') : '-',
+      },
+    ],
   },
   {
-    label: resolvedText('users.viewUser.fields.email', 'Email'),
-    value: user.value?.email || '-',
+    key: 'account-details',
+    title: resolvedText('users.viewUser.sections.accountDetails', 'Account Details'),
+    rows: [
+      { label: resolvedText('users.viewUser.fields.firstName', 'First name'), value: normalizedUser.value.firstName },
+      { label: resolvedText('users.viewUser.fields.lastName', 'Last name'), value: normalizedUser.value.lastName },
+      { label: resolvedText('users.viewUser.fields.department', 'Department'), value: normalizedUser.value.department },
+      { label: resolvedText('users.viewUser.fields.departmentCode', 'Department code'), value: normalizedUser.value.departmentCode },
+      { label: resolvedText('users.viewUser.fields.scope', 'Scope'), value: normalizedUser.value.scope },
+      { label: resolvedText('users.viewUser.fields.domain', 'Domain'), value: normalizedUser.value.domain },
+      { label: resolvedText('users.viewUser.fields.emailVerifiedAt', 'Email verified at'), value: formatDateTime(normalizedUser.value.emailVerifiedAt) },
+      { label: resolvedText('users.viewUser.fields.updatedAt', 'Updated at'), value: formatDateTime(normalizedUser.value.updatedAt) },
+    ],
   },
   {
-    label: resolvedText('users.viewUser.fields.phone', 'Phone'),
-    value: user.value?.phone || '-',
+    key: 'role-access',
+    title: resolvedText('users.viewUser.sections.roleAccess', 'Role & Access'),
+    rows: [
+      { label: resolvedText('users.viewUser.fields.role', 'Role'), value: normalizedUser.value.roleLabel || roleLabel(normalizedUser.value.role) },
+      { label: resolvedText('users.viewUser.fields.roleRaw', 'Role key'), value: normalizedUser.value.role },
+      { label: resolvedText('users.viewUser.fields.status', 'Status'), value: statusLabel(normalizedUser.value.status) },
+      { label: resolvedText('users.viewUser.fields.scope', 'Scope'), value: normalizedUser.value.scope },
+      { label: resolvedText('users.viewUser.fields.domain', 'Domain'), value: normalizedUser.value.domain },
+    ],
   },
   {
-    label: resolvedText('users.viewUser.fields.role', 'Role'),
-    value: roleLabel(user.value?.role),
+    key: 'contact-info',
+    title: resolvedText('users.viewUser.sections.contactInformation', 'Contact Information'),
+    rows: [
+      { label: resolvedText('users.viewUser.fields.email', 'Email'), value: normalizedUser.value.email },
+      { label: resolvedText('users.viewUser.fields.phone', 'Phone'), value: normalizedUser.value.phone },
+    ],
   },
   {
-    label: resolvedText('users.viewUser.fields.status', 'Status'),
-    value: statusLabel(user.value?.status),
+    key: 'activity',
+    title: resolvedText('users.viewUser.sections.activity', 'Activity'),
+    rows: [
+      { label: resolvedText('users.viewUser.fields.createdAt', 'Created at'), value: formatDateTime(normalizedUser.value.createdAt) },
+      { label: resolvedText('users.viewUser.fields.updatedAt', 'Updated at'), value: formatDateTime(normalizedUser.value.updatedAt) },
+      { label: resolvedText('users.viewUser.fields.lastLogin', 'Last login'), value: formatDateTime(normalizedUser.value.lastLoginAt) },
+      { label: resolvedText('users.viewUser.fields.emailVerifiedAt', 'Email verified at'), value: formatDateTime(normalizedUser.value.emailVerifiedAt) },
+    ],
   },
   {
-    label: resolvedText('users.viewUser.fields.department', 'Department'),
-    value: user.value?.department || '-',
-  },
-  {
-    label: resolvedText('users.viewUser.fields.createdAt', 'Created at'),
-    value: formatDateTime(user.value?.createdAt),
-  },
-  {
-    label: resolvedText('users.viewUser.fields.lastLogin', 'Last login'),
-    value: formatDateTime(user.value?.lastLoginAt),
+    key: 'bio-notes',
+    title: resolvedText('users.viewUser.sections.bioNotes', 'Bio / Notes'),
+    rows: [
+      { label: resolvedText('users.viewUser.fields.bio', 'Bio'), value: normalizedUser.value.bio },
+    ],
   },
 ])
+
+const permissionItems = computed(() => {
+  if (!hasPermissions.value) {
+    return []
+  }
+
+  return normalizedUser.value.permissions.map((permission) => ({
+    key: permission,
+    label: permissionLabel(permission),
+  }))
+})
 
 async function loadUser() {
   const id = userId.value
@@ -258,9 +413,9 @@ onMounted(() => {
                   </span>
 
                   <img
-                    v-if="resolvedAvatar"
-                    :src="resolvedAvatar"
-                    :alt="`${user?.name || 'User'} avatar`"
+                    v-if="avatarSource"
+                    :src="avatarSource"
+                    :alt="`${normalizedUser.name || 'User'} avatar`"
                     class="view-user-page__avatar-image"
                     :class="{ 'view-user-page__avatar-image--visible': shouldShowAvatar }"
                     @load="onAvatarLoad"
@@ -271,20 +426,33 @@ onMounted(() => {
 
               <div class="view-user-page__hero-content">
                 <div class="view-user-page__identity">
-                  <h1 class="view-user-page__name">{{ user?.name || '-' }}</h1>
-                  <p class="view-user-page__email">{{ user?.email || '-' }}</p>
+                  <h1 class="view-user-page__name">
+                    {{ normalizedUser.fullName || normalizedUser.name || '-' }}
+                  </h1>
+                  <p class="view-user-page__email">
+                    {{ normalizedUser.username ? `@${normalizedUser.username}` : normalizedUser.email || '-' }}
+                  </p>
                 </div>
 
                 <div class="view-user-page__badges">
-                  <RolesBadge :role="user?.role" />
+                  <RolesBadge :role="normalizedUser.role" />
                   <StatusBadge
-                    :status="statusTone(user?.status)"
-                    :label="statusLabel(user?.status)"
+                    :status="statusTone(normalizedUser.status)"
+                    :label="statusLabel(normalizedUser.status)"
                     size="sm"
                   />
                 </div>
 
                 <div class="view-user-page__actions">
+                  <Button
+                    type="button"
+                    severity="secondary"
+                    outlined
+                    @click="loadUser"
+                  >
+                    {{ resolvedText('users.viewUser.refreshButton', 'Refresh') }}
+                  </Button>
+
                   <Button
                     type="button"
                     severity="secondary"
@@ -307,21 +475,39 @@ onMounted(() => {
         </Card>
 
         <div class="view-user-page__grid">
-          <Card class="view-user-page__card">
+          <Card
+            v-for="section in sectionCards"
+            :key="section.key"
+            class="view-user-page__card"
+          >
             <template #title>
-              {{ resolvedText('users.viewUser.detailsTitle', 'Account details') }}
+              {{ section.title }}
             </template>
 
             <template #content>
-              <div class="view-user-page__details">
+              <div
+                v-if="section.key !== 'bio-notes'"
+                class="view-user-page__details"
+              >
                 <div
-                  v-for="item in detailItems"
-                  :key="item.label"
+                  v-for="item in section.rows"
+                  :key="`${section.key}-${item.label}`"
                   class="view-user-page__detail-row"
                 >
                   <span class="view-user-page__detail-label">{{ item.label }}</span>
-                  <span class="view-user-page__detail-value">{{ item.value }}</span>
+                  <span class="view-user-page__detail-value">
+                    {{ item.value || '-' }}
+                  </span>
                 </div>
+              </div>
+
+              <div
+                v-else
+                class="view-user-page__bio"
+              >
+                <p class="view-user-page__bio-text">
+                  {{ normalizedUser.bio || '-' }}
+                </p>
               </div>
             </template>
           </Card>
@@ -333,12 +519,23 @@ onMounted(() => {
 
             <template #content>
               <div class="view-user-page__permissions">
-                <template v-if="displayPermissions.length">
-                  <PermissionBadge
-                    v-for="permission in displayPermissions"
-                    :key="permission"
-                    :permission="permission"
-                  />
+                <template v-if="permissionItems.length">
+                  <template v-if="isFullAccess">
+                    <span
+                      class="view-user-page__full-access"
+                      :title="normalizedUser.permissions.join(', ')"
+                    >
+                      {{ resolvedText('users.viewUser.fullAccess', 'Full access') }}
+                    </span>
+                  </template>
+
+                  <template v-else>
+                    <PermissionBadge
+                      v-for="permission in permissionItems"
+                      :key="permission.key"
+                      :permission="permission.label"
+                    />
+                  </template>
                 </template>
 
                 <p
@@ -347,34 +544,6 @@ onMounted(() => {
                 >
                   {{ resolvedText('users.viewUser.emptyPermissions', 'No permissions assigned.') }}
                 </p>
-              </div>
-            </template>
-          </Card>
-
-          <Card class="view-user-page__card">
-            <template #title>
-              {{ resolvedText('users.viewUser.activityTitle', 'Activity') }}
-            </template>
-
-            <template #content>
-              <div class="view-user-page__details">
-                <div class="view-user-page__detail-row">
-                  <span class="view-user-page__detail-label">
-                    {{ resolvedText('users.viewUser.fields.createdAt', 'Created at') }}
-                  </span>
-                  <span class="view-user-page__detail-value">
-                    {{ formatDateTime(user?.createdAt) }}
-                  </span>
-                </div>
-
-                <div class="view-user-page__detail-row">
-                  <span class="view-user-page__detail-label">
-                    {{ resolvedText('users.viewUser.fields.lastLogin', 'Last login') }}
-                  </span>
-                  <span class="view-user-page__detail-value">
-                    {{ formatDateTime(user?.lastLoginAt) }}
-                  </span>
-                </div>
               </div>
             </template>
           </Card>
@@ -484,7 +653,7 @@ onMounted(() => {
 
 .view-user-page__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -523,6 +692,33 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
+}
+
+.view-user-page__full-access {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 9999px;
+  background: #eff6ff;
+  padding: 0.45rem 0.75rem;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.view-user-page__bio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.view-user-page__bio-text {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  white-space: pre-line;
 }
 
 .view-user-page__empty {

@@ -20,6 +20,7 @@ export function mapUser(raw = {}) {
     firstName,
     lastName,
     name: String(raw.name || fallbackName || raw.username || raw.id || ''),
+    fullName: String(raw.fullName || raw.name || fallbackName || raw.username || raw.id || ''),
     username: String(raw.username || raw.id || ''),
     email: String(raw.email || ''),
     avatar: resolveAvatarSource(raw.avatar),
@@ -28,13 +29,17 @@ export function mapUser(raw = {}) {
     domain: String(raw.domain || roleAccess?.domain || ''),
     permissions,
     role_permission: permissions,
+    rolePermission: permissions,
+    role_permissions: permissions,
     status: String(raw.status || ''),
     phone: String(raw.phone || ''),
     bio: raw.bio || '',
     department: raw.department || '',
     departmentCode: raw.departmentCode || raw.department_code || '',
     createdAt: raw.createdAt || raw.created_at || '',
+    updatedAt: raw.updatedAt || raw.updated_at || '',
     lastLoginAt: raw.lastLoginAt || raw.last_login_at || '',
+    emailVerifiedAt: raw.emailVerifiedAt || raw.email_verified_at || '',
   }
 }
 
