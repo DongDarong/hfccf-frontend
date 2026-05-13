@@ -31,6 +31,8 @@ export default {
   deleteConfirmText: 'លុប',
   deleteConfirmMessage: 'តើអ្នកពិតជាចង់លុប {name} មែនទេ?',
   addAdmin: {
+    updateTitle: 'Update User',
+    updateSubtitle: 'Update the user profile, permissions, and account security details.',
     title: 'បន្ថែមអ្នកគ្រប់គ្រង',
     summary: 'បង្កើតគណនីអ្នកគ្រប់គ្រងថ្មី កំណត់សិទ្ធិ និងផ្ទៀងផ្ទាត់ការចូលប្រើមុនរក្សាទុក។',
     formDescription:
@@ -99,4 +101,3 @@ export default {
     securityReview: 'ពិនិត្យសេចក្តីសង្ខេបមុនរក្សាទុកគណនី។',
   },
 }
-

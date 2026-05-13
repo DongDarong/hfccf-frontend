@@ -32,7 +32,9 @@ export default {
   deleteConfirmMessage: 'Are you sure you want to delete {name}?',
   addAdmin: {
     title: 'Add User',
+    updateTitle: 'Update User',
     summary: 'Create a new system account, assign permissions, and verify access before saving.',
+    updateSubtitle: 'Update the user profile, permissions, and account security details.',
     formDescription:
       'Use the profile details, permission set, and role assignment below to create the account.',
     programAccess: 'Account access',
