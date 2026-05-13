@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -13,14 +13,15 @@ import AdminSummaryCards from '@/modules/super-admin/components/admin-management
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
-import AddAdminPermissionsField from '@/modules/super-admin/components/admin-management/AddAdminPermissionsField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
+import RolePermissionsPreview from '@/modules/super-admin/components/add-admin/RolePermissionsPreview.vue'
 import { resolveAvatarSource } from '@/utils/avatar'
 import {
   createAdminUser,
   findAdminUserById,
   updateAdminUser,
 } from '@/modules/super-admin/services/adminUsersApi'
+import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
 
 defineOptions({
   name: 'AddUserPage',
@@ -45,7 +46,6 @@ const roleOptions = [
   ROLES.TEACHER_SCHOLARSHIP,
 ]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const permissionOptions = ['all:*', 'users:read', 'users:write', 'reports:read', 'programs:write', 'settings:read']
 const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
@@ -54,7 +54,6 @@ const form = reactive({
   email: '',
   phone: '',
   role: ROLES.ADMIN_ENGLISH,
-  permissions: [],
   status: statusOptions[0],
   password: '',
   confirmPassword: '',
@@ -69,6 +68,9 @@ const showError = ref(false)
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const profileImagePreview = ref('')
+const rolePermissions = ref([])
+const rolePermissionsLoading = ref(false)
+let rolePermissionsRequestId = 0
 
 const isEditMode = computed(() => route.query.mode === 'edit' || Boolean(route.query.id))
 const editingUserId = computed(() => String(route.query.id || '').trim())
@@ -98,18 +100,18 @@ const pageSubtitle = computed(() =>
   isEditMode.value
     ? resolvedText(
         'users.addAdmin.updateSubtitle',
-        'Update the user profile, permissions, and account security details.',
+        'Update the user profile, role-driven permissions, and account security details.',
       )
     : resolvedText(
         'users.addAdmin.summary',
-        'Create a new system account, assign permissions, and verify access before saving.',
+        'Create a new system account, choose a role, and review the automatically assigned permissions before saving.',
       ),
 )
 
 const resolvedFormDescription = computed(() =>
   resolvedText(
     'users.addAdmin.formDescription',
-    'Use the profile details, permissions, and role assignment below to create the account.',
+    'Use the profile details, role selection, and permission preview below to create the account.',
   ),
 )
 
@@ -147,7 +149,6 @@ function validateForm() {
   if (!form.email.trim()) return resolvedText('users.addAdmin.validation.emailRequired', 'Email is required.')
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return resolvedText('users.addAdmin.validation.emailInvalid', 'Please enter a valid email.')
   if (!form.role) return resolvedText('users.addAdmin.validation.roleRequired', 'Role is required.')
-  if (!form.permissions.length) return resolvedText('users.addAdmin.validation.permissionsRequired', 'At least one permission is required.')
   if (!form.status) return resolvedText('users.addAdmin.validation.statusRequired', 'Status is required.')
   if (!isEditMode.value && form.password.length < 8) return resolvedText('users.addAdmin.validation.passwordLength', 'Password must be at least 8 characters.')
   if (isEditMode.value && form.password && form.password.length < 8) return resolvedText('users.addAdmin.validation.passwordLength', 'Password must be at least 8 characters.')
@@ -155,30 +156,6 @@ function validateForm() {
     if (form.password !== form.confirmPassword) return resolvedText('users.addAdmin.validation.passwordMismatch', 'Passwords do not match.')
   }
   return ''
-}
-
-function hasPermission(permission) {
-  return form.permissions.includes(permission)
-}
-
-function togglePermission(permission) {
-  if (hasPermission(permission)) {
-    form.permissions = form.permissions.filter((value) => value !== permission)
-    return
-  }
-  form.permissions = [...form.permissions, permission]
-}
-
-function permissionLabel(value) {
-  const normalized = String(value ?? '').trim().toLowerCase()
-  const key = `common.permission.${normalized}`
-  const translated = t(key)
-  if (translated !== key) return translated
-
-  return String(value ?? '')
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
 }
 
 function onProfileImageChange(event) {
@@ -241,7 +218,6 @@ async function onSubmit() {
       email: form.email,
       phone: form.phone,
       role: form.role,
-      permissions: form.permissions,
       status: form.status,
       avatar: form.profileImage,
       removeAvatar: form.avatarAction === 'remove',
@@ -295,7 +271,6 @@ onMounted(async () => {
   form.email = found.email || ''
   form.phone = found.phone || ''
   form.role = found.role || roleOptions[0]
-  form.permissions = Array.isArray(found.permissions) ? [...found.permissions] : []
   const normalizedStatus = String(found.status || '')
   const matchedStatus = statusOptions.find(
     (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
@@ -305,6 +280,31 @@ onMounted(async () => {
   form.avatarAction = found.avatar ? 'keep' : 'none'
 })
 
+watch(
+  () => form.role,
+  async (nextRole) => {
+    const requestId = ++rolePermissionsRequestId
+    rolePermissionsLoading.value = true
+
+    try {
+      const permissions = await fetchRolePermissions(nextRole)
+
+      if (requestId === rolePermissionsRequestId) {
+        rolePermissions.value = permissions
+      }
+    } catch {
+      if (requestId === rolePermissionsRequestId) {
+        rolePermissions.value = []
+      }
+    } finally {
+      if (requestId === rolePermissionsRequestId) {
+        rolePermissionsLoading.value = false
+      }
+    }
+  },
+  { immediate: true },
+)
+
 onBeforeUnmount(() => {
   if (isBlobPreview(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
@@ -313,7 +313,7 @@ onBeforeUnmount(() => {
 
 const formSummaryCards = computed(() => {
   const selectedRole = roleLabel(form.role)
-  const permissionCount = form.permissions.length
+  const permissionCount = rolePermissions.value.length
   const securityStatus =
     isEditMode.value || (form.password.length >= 6 && form.confirmPassword === form.password)
       ? 'success'
@@ -334,8 +334,8 @@ const formSummaryCards = computed(() => {
       title: resolvedText('users.addAdmin.permissions', 'Permissions'),
       value: permissionCount,
       label: permissionCount
-        ? resolvedText('users.addAdmin.configuredPermissions', 'Configured permissions')
-        : resolvedText('users.addAdmin.noPermissionsSelected', 'No permissions selected'),
+        ? resolvedText('users.addAdmin.configuredPermissions', 'Role-based permissions loaded')
+        : resolvedText('users.addAdmin.noPermissionsSelected', 'No permissions available'),
       status: permissionCount ? 'success' : 'warning',
       statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
       surfaceClass: 'bg-lime-50/80 border-lime-200',
@@ -374,7 +374,7 @@ const checklistItems = computed(() => [
     title: resolvedText('users.addAdmin.sidebarItems.permissions', 'Review permissions'),
     text: resolvedText(
       'users.addAdmin.sidebarItems.permissionsDetail',
-      'Make sure the selected permissions match the account scope.',
+      'The permission list is locked to the selected role and cannot be edited manually.',
     ),
   },
   {
@@ -470,14 +470,11 @@ const checklistItems = computed(() => [
               :status-label="statusLabel"
             />
 
-            <AddAdminPermissionsField
+            <RolePermissionsPreview
               class="add-admin-page__field add-admin-page__field--full"
-              :title="t('users.addAdmin.permissions')"
-              :permissions="form.permissions"
-              :options="permissionOptions"
-              :disabled="isSubmitting"
-              :permission-label="permissionLabel"
-              @toggle="togglePermission"
+              :role="form.role"
+              :permissions="rolePermissions"
+              :loading="rolePermissionsLoading"
             />
 
             <AddAdminPasswordFields
@@ -672,52 +669,6 @@ const checklistItems = computed(() => [
   background: #ffffff;
 }
 
-.add-admin-page__permissions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.55rem;
-}
-
-.add-admin-page__permission-item {
-  display: flex;
-  align-items: center;
-  gap: 0.52rem;
-  min-height: 2.35rem;
-  padding: 0.52rem 0.72rem;
-  border: 1px solid #d6e2ee;
-  border-radius: 0.72rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-  transition: all 0.16s ease;
-}
-
-.add-admin-page__permission-item:hover {
-  border-color: #8fc3de;
-  background: #f0f8fe;
-  transform: translateY(-1px);
-}
-
-.add-admin-page__permission-item--active {
-  border-color: #67b7df;
-  background: linear-gradient(180deg, #e8f6fe 0%, #dff1fc 100%);
-  color: #075985;
-  box-shadow: 0 6px 14px -12px rgba(0, 87, 138, 0.8);
-}
-
-.add-admin-page__permission-checkbox {
-  accent-color: var(--hope-o-cyan-blue);
-  width: 0.95rem;
-  height: 0.95rem;
-  flex-shrink: 0;
-}
-
-.add-admin-page__permission-item span {
-  line-height: 1.2;
-}
-
 .add-admin-page__profile {
   display: flex;
   flex-wrap: wrap;
@@ -782,10 +733,6 @@ const checklistItems = computed(() => [
 
 @media (max-width: 768px) {
   .add-admin-page__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .add-admin-page__permissions {
     grid-template-columns: 1fr;
   }
 }
