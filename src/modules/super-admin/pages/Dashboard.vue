@@ -1,4 +1,16 @@
 <script setup>
+/**
+ * SuperAdminCommandCenter
+ * --------------------------------------------------------------------------
+ * Super Admin command center dashboard page.
+ *
+ * Responsibilities:
+ * - Compose command-center panels
+ * - Build localized view model
+ * - Keep business display logic inside commandCenterViewModel
+ * --------------------------------------------------------------------------
+ */
+
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -18,13 +30,22 @@ defineOptions({
 })
 
 const { t } = useI18n()
-const viewModel = computed(() => buildCommandCenterViewModel(t, commandCenterData))
+
+/**
+ * Localized dashboard view model.
+ */
+const viewModel = computed(() =>
+  buildCommandCenterViewModel(t, commandCenterData),
+)
 </script>
 
 <template>
   <MainLayout>
     <section class="command-center-page">
-      <HeaderSection :title="viewModel.pageTitle" :subtitle="viewModel.pageSubtitle" />
+      <HeaderSection
+        :title="viewModel.pageTitle"
+        :subtitle="viewModel.pageSubtitle"
+      />
 
       <CommandCenterSummaryCards
         :title="viewModel.sections.summary.title"
@@ -38,6 +59,7 @@ const viewModel = computed(() => buildCommandCenterViewModel(t, commandCenterDat
           :title="viewModel.sections.status.title"
           :status="viewModel.executiveStatus"
         />
+
         <PriorityActionsPanel
           class="xl:col-span-2"
           :title="viewModel.sections.priorityActions.title"
@@ -51,6 +73,7 @@ const viewModel = computed(() => buildCommandCenterViewModel(t, commandCenterDat
           :title="viewModel.sections.departmentHealth.title"
           :departments="viewModel.departmentHealth"
         />
+
         <GovernanceOverviewPanel
           class="xl:col-span-2"
           :title="viewModel.sections.governance.title"
@@ -64,6 +87,7 @@ const viewModel = computed(() => buildCommandCenterViewModel(t, commandCenterDat
           :title="viewModel.sections.events.title"
           :events="viewModel.recentEvents"
         />
+
         <RecommendedNextStepsPanel
           class="xl:col-span-2"
           :title="viewModel.sections.nextSteps.title"
@@ -75,12 +99,18 @@ const viewModel = computed(() => buildCommandCenterViewModel(t, commandCenterDat
 </template>
 
 <style scoped>
+/**
+ * Page vertical layout.
+ */
 .command-center-page {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
+/**
+ * Reusable responsive panel grid.
+ */
 .command-center-grid {
   display: grid;
   gap: 1rem;
@@ -92,6 +122,3 @@ const viewModel = computed(() => buildCommandCenterViewModel(t, commandCenterDat
   }
 }
 </style>
-
-
-
