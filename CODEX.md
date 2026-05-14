@@ -126,3 +126,20 @@ Use the smallest valid scope first. For example:
 - Keep `sport_matches.home_score` and `sport_matches.away_score` normalized; format display scores in the frontend/API layer.
 - Keep `sport_standings.goal_difference` numeric; format positive values with `+` in the frontend/API layer.
 - If team names are needed for players, prefer joining through `team_id` instead of duplicating `team_name`.
+
+## 11. i18n Organization
+
+- Split locale files by feature and page when translations grow large.
+- Keep a root `index.js` in each locale folder that merges the feature indexes.
+- Keep a feature `index.js` in each section folder that merges its child files.
+- Preserve existing translation key paths whenever possible so `t('...')` calls do not need to change.
+- Update English and Khmer translations together for any new or changed user-facing text.
+- Prefer shared `common` keys for cross-cutting labels such as actions, statuses, roles, and table text.
+- Avoid introducing empty or partial translation keys that would generate invalid paths like `common.role.` or `common.status.`.
+- Example structure:
+  - `src/i18n/en/auth/index.js` with `login.js`, `forgotPassword.js`, `createPassword.js`
+  - `src/i18n/en/dashboard/index.js` with `overview.js`, `commandCenter.js`
+  - `src/i18n/en/users/index.js` with `manageUsers.js`, `addUser.js`, `viewUser.js`, `roles.js`, `permissions.js`
+  - `src/i18n/en/notifications/index.js` with `notifications.js`, `createNotification.js`
+  - `src/i18n/en/sport/index.js` with `dashboard.js`, `teams.js`, `players.js`, `matches.js`, `results.js`
+  - `src/i18n/en/preschool/index.js` with `dashboard.js`, `classes.js`, `students.js`, `attendance.js`, `payments.js`
