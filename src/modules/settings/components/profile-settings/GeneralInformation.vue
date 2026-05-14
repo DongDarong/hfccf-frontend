@@ -5,6 +5,7 @@ import UiForm from '@/components/forms/Form.vue'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
+import { updateAuthenticatedUserProfile } from '@/services/auth'
 
 const props = defineProps({
   user: {
@@ -33,6 +34,8 @@ const departments = [
 ]
 
 const currentDepartment = computed(() => form.value.department || props.user.department || '')
+const isSubmitting = ref(false)
+const requestError = ref('')
 
 function syncForm(user) {
   form.value = {
@@ -53,8 +56,26 @@ watch(
   { immediate: true, deep: true },
 )
 
-function handleSubmit() {
-  emit('submit', { ...form.value })
+async function handleSubmit() {
+  requestError.value = ''
+  isSubmitting.value = true
+
+  try {
+    const updatedUser = await updateAuthenticatedUserProfile({
+      first_name: form.value.firstName,
+      last_name: form.value.lastName,
+      email: form.value.email,
+      phone: form.value.phone,
+      department: form.value.department,
+      bio: form.value.bio,
+    })
+
+    emit('submit', updatedUser)
+  } catch (error) {
+    requestError.value = error?.message || t('common.error')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -64,8 +85,16 @@ function handleSubmit() {
     :description="t('pages.profile.general.description')"
     :submit-text="t('common.saveChanges')"
     show-cancel
+    :loading="isSubmitting"
     @submit="handleSubmit"
   >
+    <div
+      v-if="requestError"
+      class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+    >
+      {{ requestError }}
+    </div>
+
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
       <div class="flex flex-col gap-2">
         <label class="text-sm font-bold text-surface-900" for="firstName">

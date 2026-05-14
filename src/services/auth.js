@@ -45,6 +45,19 @@ function sanitizeUser(user) {
   return safeUser
 }
 
+function persistAuthenticatedUser(user) {
+  const safeUser = sanitizeUser(user)
+  const storage = getSessionStorage()
+
+  storage?.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
+  dispatchAuthStateChanged({
+    type: 'profile-update',
+    user: safeUser,
+  })
+
+  return safeUser
+}
+
 function getApiErrorMessage(error, fallbackMessage) {
   if (error?.isNetworkError || error?.code === 'ERR_NETWORK' || error?.code === 'NETWORK_ERROR') {
     return 'Unable to reach the backend API. Check that the backend is running and the API URL is correct.'
@@ -236,15 +249,41 @@ export async function changePassword({
   }
 }
 
+export async function updateAuthenticatedUserProfile({
+  first_name,
+  last_name,
+  email,
+  phone,
+  department,
+  bio,
+}) {
+  try {
+    const response = await http.patch('/auth/me', {
+      first_name,
+      last_name,
+      email,
+      phone,
+      department,
+      bio,
+    })
+
+    const payload = getApiPayload(response)
+    const user = payload.user || payload
+
+    return persistAuthenticatedUser(user)
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Unable to update your profile right now.'), {
+      cause: error,
+    })
+  }
+}
+
 export async function getAuthenticatedUser() {
   try {
     const response = await http.get('/auth/me')
     const payload = getApiPayload(response)
     const user = payload.user || payload
-    const safeUser = sanitizeUser(user)
-    const storage = getSessionStorage()
-
-    storage?.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
+    const safeUser = persistAuthenticatedUser(user)
 
     touchActivity()
     dispatchAuthStateChanged({
