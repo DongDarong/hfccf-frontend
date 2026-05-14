@@ -195,12 +195,13 @@ export default {
       currentPassword: 'Current Password',
       newPassword: 'New Password',
       confirmNewPassword: 'Confirm New Password',
-      currentPasswordPlaceholder: 'Enter your current password',
-      newPasswordPlaceholder: 'Enter a new password',
-      confirmNewPasswordPlaceholder: 'Re-enter your new password',
-      approvalNote:
-        'The password change will only succeed after the Super Admin approves it.',
-    },
+        currentPasswordPlaceholder: 'Enter your current password',
+        newPasswordPlaceholder: 'Enter a new password',
+        confirmNewPasswordPlaceholder: 'Re-enter your new password',
+        passwordMismatchHint: 'The new password and confirmation must match.',
+        approvalNote:
+          'The password change will only succeed after the Super Admin approves it.',
+      },
     aboutWebsite: {
       title: 'About Website',
       description:

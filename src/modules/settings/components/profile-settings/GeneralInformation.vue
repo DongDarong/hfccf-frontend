@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import UiForm from '@/components/forms/Form.vue'
 import InputText from 'primevue/inputtext'
@@ -17,11 +17,11 @@ const emit = defineEmits(['submit'])
 const { t } = useLanguage()
 
 const form = ref({
-  firstName: props.user.firstName || '',
-  lastName: props.user.lastName || '',
-  email: props.user.email || '',
-  phone: props.user.phone || '',
-  department: props.user.department || '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  department: '',
   bio: '',
 })
 
@@ -32,9 +32,28 @@ const departments = [
   { label: 'Administration', value: 'Administration' },
 ]
 
+const currentDepartment = computed(() => form.value.department || props.user.department || '')
+
+function syncForm(user) {
+  form.value = {
+    firstName: user?.firstName || user?.name?.split?.(' ')?.[0] || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    department: user?.department || '',
+    bio: user?.bio || '',
+  }
+}
+
+watch(
+  () => props.user,
+  (nextUser) => {
+    syncForm(nextUser || {})
+  },
+  { immediate: true, deep: true },
+)
+
 function handleSubmit() {
-  // In a real app, we would call an API here
-  console.log('Form submitted:', form.value)
   emit('submit', { ...form.value })
 }
 </script>
@@ -124,6 +143,11 @@ function handleSubmit() {
           class="w-full"
         />
       </div>
+    </div>
+
+    <div class="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-900">
+      {{ t('pages.profile.general.description') }}
+      <span class="font-bold text-sky-950">{{ currentDepartment || 'Unassigned' }}</span>
     </div>
   </UiForm>
 </template>
