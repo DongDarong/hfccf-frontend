@@ -12,6 +12,7 @@ import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { compareMatchEvents } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'GoalEventsList',
@@ -55,11 +56,7 @@ const combinedEvents = computed(() => {
   const away = props.awayEvents.map((e) => ({ ...e, team: props.awayTeam, teamType: 'away' }))
 
   // Keep the incident timeline readable by ordering all team events by match minute.
-  return [...home, ...away].sort((a, b) => {
-    const minA = Number.parseInt(a.minute, 10) || 0
-    const minB = Number.parseInt(b.minute, 10) || 0
-    return minA - minB
-  })
+  return [...home, ...away].sort(compareMatchEvents)
 })
 
 function getTagSeverity(type) {

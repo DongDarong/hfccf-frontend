@@ -169,10 +169,7 @@ async function onSaveResult(result) {
       })
     }
 
-    resultEntryValue.value = createResultValue({
-      ...result,
-      ...deriveScoreState(result),
-    })
+    await loadMatch()
     showSuccess.value = true
   } catch {
     errorMessage.value = t('sportMatchesManagement.resultsEntry.saveFailed')

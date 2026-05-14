@@ -33,6 +33,46 @@ function resolveId(payloadOrId) {
   return normalizeText(payloadOrId?.id || payloadOrId?._id)
 }
 
+function parseMatchEventTiming(event = {}) {
+  const minuteInput = event.minute ?? event.minuteValue ?? 0
+  const extraTimeInput = event.extraTimeMinute ?? event.extra_time_minute ?? null
+
+  if (typeof minuteInput === 'string' && /\d+\+\d+/.test(minuteInput)) {
+    const [minutePart, extraPart] = minuteInput.split('+', 2)
+    return {
+      minute: Number.parseInt(minutePart, 10) || 0,
+      extraTimeMinute: Number.parseInt(extraPart, 10) || 0,
+    }
+  }
+
+  return {
+    minute: Number.parseInt(minuteInput, 10) || 0,
+    extraTimeMinute: extraTimeInput === null || extraTimeInput === undefined || extraTimeInput === ''
+      ? null
+      : Number.parseInt(extraTimeInput, 10) || 0,
+  }
+}
+
+function compareMatchEvents(left = {}, right = {}) {
+  const leftTiming = parseMatchEventTiming(left)
+  const rightTiming = parseMatchEventTiming(right)
+
+  if (leftTiming.minute !== rightTiming.minute) {
+    return leftTiming.minute - rightTiming.minute
+  }
+
+  const leftExtra = leftTiming.extraTimeMinute === null ? -1 : leftTiming.extraTimeMinute
+  const rightExtra = rightTiming.extraTimeMinute === null ? -1 : rightTiming.extraTimeMinute
+
+  if (leftExtra !== rightExtra) {
+    return leftExtra - rightExtra
+  }
+
+  const leftId = String(left.id ?? '')
+  const rightId = String(right.id ?? '')
+  return leftId.localeCompare(rightId)
+}
+
 function buildFormData(payload = {}, options = {}) {
   const formData = new FormData()
   const method = String(options.method || 'POST').toUpperCase()
@@ -167,8 +207,7 @@ function normalizeEventRow(row = {}, homeTeamId = null, awayTeamId = null) {
         ? 'away'
         : 'home'
   const player = row.player || {}
-  const minute = Number(row.minute ?? 0)
-  const extraTimeMinute = row.extraTimeMinute ?? row.extra_time_minute ?? null
+  const timing = parseMatchEventTiming(row)
 
   return {
     id: row.id ?? '',
@@ -177,8 +216,8 @@ function normalizeEventRow(row = {}, homeTeamId = null, awayTeamId = null) {
     teamType,
     playerId: row.playerId ?? row.player_id ?? '',
     eventType: normalizeText(row.eventType || row.event_type || 'goal'),
-    minute,
-    extraTimeMinute,
+    minute: timing.minute,
+    extraTimeMinute: timing.extraTimeMinute,
     playerName: normalizeText(
       row.playerName ||
         row.player_name ||
@@ -267,7 +306,9 @@ function normalizeMatchListResponse(response, fallbackPage = 1, fallbackPerPage 
 function normalizeEventListResponse(response, homeTeamId = null, awayTeamId = null, fallbackPage = 1, fallbackPerPage = 10) {
   const items = unwrapApiItems(response)
   return {
-    items: items.map((event) => normalizeEventRow(event, homeTeamId, awayTeamId)),
+    items: items
+      .map((event) => normalizeEventRow(event, homeTeamId, awayTeamId))
+      .sort(compareMatchEvents),
     pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
@@ -694,3 +735,4 @@ export async function deleteMatchEvent(id) {
 }
 
 export { buildQueryParams, getApiErrorMessage, normalizeBooleanLike, unwrapApiData }
+export { compareMatchEvents }
