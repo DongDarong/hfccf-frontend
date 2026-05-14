@@ -74,6 +74,24 @@ function getApiPayload(response) {
   return response?.data?.data || response?.data || {}
 }
 
+async function requestWithMethodFallback(requests) {
+  let lastError = null
+
+  for (const request of requests) {
+    try {
+      return await request()
+    } catch (error) {
+      lastError = error
+
+      if (error?.response?.status !== 405) {
+        throw error
+      }
+    }
+  }
+
+  throw lastError || new Error('The request method is not allowed.')
+}
+
 function isHttpClientError(error) {
   return Boolean(error?.response || error?.request)
 }
@@ -235,11 +253,16 @@ export async function changePassword({
   }
 
   try {
-    const response = await http.post('/auth/change-password', {
+    const payload = {
       current_password,
       password,
       password_confirmation,
-    })
+    }
+
+    const response = await requestWithMethodFallback([
+      () => http.patch('/auth/change-password', payload),
+      () => http.post('/auth/change-password', payload),
+    ])
 
     return getApiPayload(response)
   } catch (error) {
@@ -262,33 +285,41 @@ export async function updateAuthenticatedUserProfile({
   try {
     const hasAvatarMutation = Boolean(avatar) || Boolean(remove_avatar)
 
-    const requestBody = hasAvatarMutation
-      ? (() => {
-          const formData = new FormData()
+    const jsonPayload = {
+      first_name,
+      last_name,
+      email,
+      phone,
+      department,
+      bio,
+    }
 
-          if (first_name !== undefined) formData.append('first_name', first_name || '')
-          if (last_name !== undefined) formData.append('last_name', last_name || '')
-          if (email !== undefined) formData.append('email', email || '')
-          if (phone !== undefined) formData.append('phone', phone || '')
-          if (department !== undefined) formData.append('department', department || '')
-          if (bio !== undefined) formData.append('bio', bio || '')
-          if (avatar) formData.append('avatar', avatar)
-          if (remove_avatar) formData.append('remove_avatar', '1')
+    const response = await requestWithMethodFallback(
+      hasAvatarMutation
+        ? [
+            () => {
+              const formData = new FormData()
 
-          formData.append('_method', 'PATCH')
+              if (first_name !== undefined) formData.append('first_name', first_name || '')
+              if (last_name !== undefined) formData.append('last_name', last_name || '')
+              if (email !== undefined) formData.append('email', email || '')
+              if (phone !== undefined) formData.append('phone', phone || '')
+              if (department !== undefined) formData.append('department', department || '')
+              if (bio !== undefined) formData.append('bio', bio || '')
+              if (avatar) formData.append('avatar', avatar)
+              if (remove_avatar) formData.append('remove_avatar', '1')
 
-          return formData
-        })()
-      : {
-          first_name,
-          last_name,
-          email,
-          phone,
-          department,
-          bio,
-        }
+              formData.append('_method', 'PATCH')
 
-    const response = await http.post('/auth/me', requestBody)
+              return http.post('/auth/me', formData)
+            },
+            () => http.patch('/auth/me', jsonPayload),
+          ]
+        : [
+            () => http.patch('/auth/me', jsonPayload),
+            () => http.post('/auth/me', jsonPayload),
+          ],
+    )
 
     const payload = getApiPayload(response)
     const user = payload.user || payload
