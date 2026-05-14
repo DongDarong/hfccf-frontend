@@ -4,6 +4,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import UiForm from '@/components/forms/Form.vue'
 import InputText from 'primevue/inputtext'
 import Button from '@/components/buttons/Button.vue'
+import { changePassword } from '@/services/auth'
 
 const emit = defineEmits(['submit'])
 const { t } = useLanguage()
@@ -16,6 +17,8 @@ const form = ref({
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
+const isSubmitting = ref(false)
+const requestError = ref('')
 
 // Group labels in one computed block so the template stays lean and the copy is easy to update later.
 const labels = computed(() => ({
@@ -28,9 +31,8 @@ const labels = computed(() => ({
   newPasswordPlaceholder: t('pages.profile.security.newPasswordPlaceholder'),
   confirmNewPasswordPlaceholder: t('pages.profile.security.confirmNewPasswordPlaceholder'),
   approvalNote: t('pages.profile.security.approvalNote'),
+  passwordMismatchHint: t('pages.profile.security.passwordMismatchHint'),
 }))
-
-const passwordMismatchMessage = 'The new password and confirmation must match.'
 
 const passwordsMatch = computed(() =>
   !form.value.newPassword ||
@@ -38,8 +40,32 @@ const passwordsMatch = computed(() =>
   form.value.newPassword === form.value.confirmNewPassword,
 )
 
-function handleSubmit() {
-  emit('submit', { ...form.value })
+async function handleSubmit() {
+  requestError.value = ''
+
+  if (!passwordsMatch.value) {
+    requestError.value = labels.value.passwordMismatchHint
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    const response = await changePassword({
+      current_password: form.value.currentPassword,
+      password: form.value.newPassword,
+      password_confirmation: form.value.confirmNewPassword,
+    })
+
+    emit('submit', response)
+    form.value.currentPassword = ''
+    form.value.newPassword = ''
+    form.value.confirmNewPassword = ''
+  } catch (error) {
+    requestError.value = error?.message || t('common.error')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -49,6 +75,7 @@ function handleSubmit() {
     :description="labels.description"
     :submit-text="t('common.saveChanges')"
     show-cancel
+    :loading="isSubmitting"
     @submit="handleSubmit"
   >
     <div class="grid grid-cols-1 gap-6">
@@ -57,6 +84,13 @@ function handleSubmit() {
         <p class="mt-1 text-sm leading-6 text-amber-900">
           {{ t('pages.profile.security.description') }}
         </p>
+      </div>
+
+      <div
+        v-if="requestError"
+        class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+      >
+        {{ requestError }}
       </div>
 
       <div class="flex flex-col gap-2">
@@ -137,7 +171,7 @@ function handleSubmit() {
           v-if="!passwordsMatch"
           class="text-sm font-semibold text-rose-600"
         >
-          {{ passwordMismatchMessage }}
+          {{ labels.passwordMismatchHint }}
         </p>
       </div>
     </div>

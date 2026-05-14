@@ -212,6 +212,30 @@ export async function resetPassword({
   }
 }
 
+export async function changePassword({
+  current_password,
+  password,
+  password_confirmation,
+}) {
+  if (!current_password || !password || !password_confirmation) {
+    throw new Error('Please complete the password change form.')
+  }
+
+  try {
+    const response = await http.post('/auth/change-password', {
+      current_password,
+      password,
+      password_confirmation,
+    })
+
+    return getApiPayload(response)
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Unable to update your password right now.'), {
+      cause: error,
+    })
+  }
+}
+
 export async function getAuthenticatedUser() {
   try {
     const response = await http.get('/auth/me')
