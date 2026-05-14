@@ -24,11 +24,13 @@ const successAlertTitle = computed(() => t('pages.profile.alerts.profileUpdatedT
 const successAlertMessage = computed(() => t('pages.profile.alerts.profileUpdatedMessage'))
 
 function handleGeneralInformationSubmit() {
+  userStore.refresh()
   activeAlertMode.value = 'profile'
   isSuccessAlertVisible.value = true
 }
 
 function handleSecuritySubmit() {
+  userStore.refresh()
   activeAlertMode.value = 'security'
   isSuccessAlertVisible.value = true
 }
