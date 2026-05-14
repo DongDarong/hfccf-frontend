@@ -56,7 +56,7 @@ export default {
       total: {
         title: 'Total Matches',
         badge: '{count} visible now',
-        caption: 'All matches loaded from the current mock set.',
+        caption: 'All matches currently loaded in the system.',
       },
       live: {
         title: 'Live Matches',
