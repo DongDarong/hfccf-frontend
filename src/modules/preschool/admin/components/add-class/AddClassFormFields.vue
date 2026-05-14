@@ -27,6 +27,10 @@ defineProps({
     type: String,
     default: '',
   },
+  teacherOptions: {
+    type: Array,
+    default: () => [],
+  },
   level: {
     type: String,
     default: '',
@@ -99,13 +103,18 @@ const isKh = computed(() => language.value === 'KH')
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
       <span class="add-class-form-fields__label">{{ t('preschoolAddClass.teacher') }}</span>
-      <input
+      <select
         :value="teacher"
-        type="text"
-        :placeholder="t('preschoolAddClass.teacherPlaceholder')"
         :disabled="isLocked"
-        @input="$emit('update:teacher', $event.target.value)"
-      />
+        @change="$emit('update:teacher', $event.target.value)"
+      >
+        <option value="">
+          {{ t('preschoolAddClass.teacherPlaceholder') }}
+        </option>
+        <option v-for="option in teacherOptions" :key="option.value" :value="option.value">
+          {{ option.label }}
+        </option>
+      </select>
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">

@@ -6,14 +6,18 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
-import { ROLES } from '@/constants/roles'
-import { mapUser } from '@/services/mappers/userMapper'
-import usersMock from '@/mocks/users.json'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import AddTeacherIntro from '@/modules/preschool/admin/components/add-teacher/AddTeacherIntro.vue'
 import AddTeacherFormFields from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormFields.vue'
 import AddTeacherFormActions from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormActions.vue'
+import { ROLES } from '@/constants/roles'
+import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
+import {
+  createPreschoolTeacher,
+  fetchPreschoolTeacher,
+  updatePreschoolTeacher,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminAddTeacherPage',
@@ -23,22 +27,20 @@ const router = useRouter()
 const route = useRoute()
 
 const teacherDirectoryPath = '/module/preschool-admin/users'
-const roleOptions = [ROLES.TEACHER_PRESCHOOL]
+const teacherRole = ROLES.TEACHER_PRESCHOOL
+const roleOptions = [teacherRole]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const permissionOptions = ['dashboard:read', 'classes:write', 'students:read', 'tasks:write']
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
 const form = reactive({
   name: '',
   email: '',
   phone: '',
-  role: ROLES.TEACHER_PRESCHOOL,
-  permissions: permissionOptions.slice(0, 3),
+  role: teacherRole,
   status: statusOptions[0],
   password: '',
   confirmPassword: '',
   profileImage: null,
+  removeAvatar: false,
 })
 
 const isSubmitting = ref(false)
@@ -48,6 +50,8 @@ const showError = ref(false)
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const profileImagePreview = ref('')
+const rolePermissions = ref([])
+const rolePermissionsLoading = ref(false)
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -58,6 +62,7 @@ const isViewMode = computed(() => mode.value === 'view')
 const isEditMode = computed(() => mode.value === 'edit')
 const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
+const editingTeacherId = computed(() => String(route.query.id || '').trim())
 
 const pageTitle = computed(() => {
   if (isViewMode.value) return 'Teacher Details'
@@ -77,19 +82,10 @@ function statusLabel(status) {
 }
 
 function roleLabel(value) {
-  if (String(value || '').trim().toLowerCase() === ROLES.TEACHER_PRESCHOOL) {
+  if (String(value || '').trim().toLowerCase() === teacherRole) {
     return 'Preschool Teacher'
   }
-  return String(value || '')
-}
-
-function permissionLabel(value) {
-  return String(value || '')
-    .replace(/[:_]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  return String(value || '-')
 }
 
 function resetFeedback() {
@@ -105,19 +101,8 @@ function toggleConfirmPasswordVisibility() {
   isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value
 }
 
-function hasPermission(permission) {
-  return form.permissions.includes(permission)
-}
-
-function togglePermission(permission) {
-  if (isFormLocked.value) return
-
-  if (hasPermission(permission)) {
-    form.permissions = form.permissions.filter((value) => value !== permission)
-    return
-  }
-
-  form.permissions = [...form.permissions, permission]
+function isBlobUrl(value) {
+  return String(value || '').startsWith('blob:')
 }
 
 function onProfileImageChange(event) {
@@ -126,45 +111,50 @@ function onProfileImageChange(event) {
   const [file] = event?.target?.files || []
   if (!file) return
 
-  if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = 'Profile image must be a JPG, PNG, WEBP, or GIF file.'
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    errorMessage.value = 'Profile image must be a JPG, PNG, or WEBP file.'
     showError.value = true
     return
   }
 
-  if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = 'Profile image must be smaller than 2MB.'
+  if (file.size > 2 * 1024 * 1024) {
+    errorMessage.value = 'Profile image must be 2MB or smaller.'
     showError.value = true
     return
   }
 
-  if (profileImagePreview.value.startsWith('blob:')) {
+  if (isBlobUrl(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 
   form.profileImage = file
+  form.removeAvatar = false
   profileImagePreview.value = URL.createObjectURL(file)
 }
 
 function removeProfileImage() {
   if (isFormLocked.value) return
 
-  if (profileImagePreview.value.startsWith('blob:')) {
+  if (isBlobUrl(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 
   profileImagePreview.value = ''
   form.profileImage = null
+  form.removeAvatar = true
 }
 
 function validateForm() {
   if (!form.name.trim()) return 'Full name is required.'
   if (!form.email.trim()) return 'Email is required.'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email.'
-  if (!form.permissions.length) return 'Select at least one permission.'
   if (!form.status) return 'Status is required.'
-  if (form.password.length < 6) return 'Password must be at least 6 characters.'
-  if (form.password !== form.confirmPassword) return 'Passwords do not match.'
+
+  if (isAddMode.value || form.password || form.confirmPassword) {
+    if (form.password.length < 8) return 'Password must be at least 8 characters.'
+    if (form.password !== form.confirmPassword) return 'Passwords do not match.'
+  }
+
   return ''
 }
 
@@ -173,9 +163,45 @@ async function goBackToTeachers() {
 }
 
 async function goToEditMode() {
-  const id = String(route.query.id || '').trim()
-  if (!id) return
-  await router.push({ path: '/module/preschool-admin/users/add', query: { mode: 'edit', id } })
+  if (!editingTeacherId.value) return
+  await router.push({ path: '/module/preschool-admin/users/add', query: { mode: 'edit', id: editingTeacherId.value } })
+}
+
+function populateFromTeacher(user) {
+  form.name = user?.fullName || user?.name || user?.username || ''
+  form.email = user?.email || ''
+  form.phone = user?.phone || ''
+  form.role = teacherRole
+  form.status = String(user?.status || statusOptions[0]).toLowerCase()
+  form.password = ''
+  form.confirmPassword = ''
+  form.profileImage = null
+  form.removeAvatar = false
+  profileImagePreview.value = String(user?.avatar || '').trim()
+}
+
+async function loadRolePermissions() {
+  rolePermissionsLoading.value = true
+  try {
+    rolePermissions.value = await fetchRolePermissions(teacherRole)
+  } catch {
+    rolePermissions.value = []
+  } finally {
+    rolePermissionsLoading.value = false
+  }
+}
+
+async function loadTeacher() {
+  if (!editingTeacherId.value) return
+
+  try {
+    const teacher = await fetchPreschoolTeacher(editingTeacherId.value)
+    if (!teacher) return
+    populateFromTeacher(teacher)
+  } catch (error) {
+    errorMessage.value = error?.message || 'Failed to load teacher details.'
+    showError.value = true
+  }
 }
 
 async function onSubmit() {
@@ -191,13 +217,29 @@ async function onSubmit() {
   }
 
   isSubmitting.value = true
+
   try {
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      role: teacherRole,
+      status: form.status,
+      avatar: form.profileImage,
+      removeAvatar: form.removeAvatar,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+    }
+
+    if (isEditMode.value) {
+      await updatePreschoolTeacher(editingTeacherId.value, payload)
+    } else {
+      await createPreschoolTeacher(payload)
+    }
+
     showSuccess.value = true
-  } catch {
-    errorMessage.value = isEditMode.value
-      ? 'Failed to update the teacher account.'
-      : 'Failed to create the teacher account.'
+  } catch (error) {
+    errorMessage.value = error?.message || (isEditMode.value ? 'Failed to update the teacher account.' : 'Failed to create the teacher account.')
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -213,51 +255,12 @@ async function onSuccessClose() {
   await goBackToTeachers()
 }
 
-function populateFromUser(user) {
-  form.name = user.name || user.username || ''
-  form.email = user.email || ''
-  form.phone = user.phone || ''
-  form.role = ROLES.TEACHER_PRESCHOOL
-  form.permissions = Array.isArray(user.permissions) ? [...user.permissions] : permissionOptions.slice(0, 3)
-
-  const normalizedStatus = String(user.status || '')
-  const matchedStatus = statusOptions.find(
-    (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
-  )
-  form.status = matchedStatus || statusOptions[0]
-  form.password = 'Teacher@123'
-  form.confirmPassword = 'Teacher@123'
-  form.profileImage = null
-  profileImagePreview.value = String(user.avatar || '').trim()
-}
-
-onMounted(() => {
-  if (isAddMode.value) return
-
-  const id = String(route.query.id || '').trim()
-  const found = mapUser(
-    usersMock.find(
-      (item) =>
-        String(item.id) === id && String(item.role || '').toLowerCase() === ROLES.TEACHER_PRESCHOOL,
-    ) || {},
-  )
-
-  if (!found?.id) return
-  populateFromUser(found)
-})
-
-onBeforeUnmount(() => {
-  if (profileImagePreview.value.startsWith('blob:')) {
-    URL.revokeObjectURL(profileImagePreview.value)
-  }
-})
-
 const selectedRoleDescription = computed(() => roleLabel(form.role))
 
 const formSummaryCards = computed(() => {
-  const permissionCount = form.permissions.length
+  const permissionCount = rolePermissions.value.length
   const securityStatus =
-    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
+    isAddMode.value || form.password.length >= 8 ? 'success' : 'warning'
 
   return [
     {
@@ -273,9 +276,9 @@ const formSummaryCards = computed(() => {
       id: 'teacher-permissions',
       title: 'Permissions',
       value: permissionCount,
-      label: permissionCount ? 'Configured permissions' : 'No permissions selected',
-      status: permissionCount ? 'success' : 'warning',
-      statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
+      label: permissionCount ? 'Configured permissions' : 'Permissions loaded from role',
+      status: 'success',
+      statusLabel: statusLabel('success'),
       surfaceClass: 'bg-lime-50/80 border-lime-200',
     },
     {
@@ -306,7 +309,7 @@ const checklistItems = computed(() => [
   },
   {
     title: 'Permissions',
-    text: 'Grant access for classes, student records, and daily teaching tasks.',
+    text: 'Permissions are resolved from the teacher role and displayed read-only.',
   },
   {
     title: 'Security',
@@ -317,6 +320,22 @@ const checklistItems = computed(() => [
     text: 'Confirm the account status and contact details before submission.',
   },
 ])
+
+onMounted(async () => {
+  await loadRolePermissions()
+
+  if (isAddMode.value) {
+    return
+  }
+
+  await loadTeacher()
+})
+
+onBeforeUnmount(() => {
+  if (isBlobUrl(profileImagePreview.value)) {
+    URL.revokeObjectURL(profileImagePreview.value)
+  }
+})
 </script>
 
 <template>
@@ -347,8 +366,8 @@ const checklistItems = computed(() => [
             :profile-image-preview="profileImagePreview"
             :role-options="roleOptions"
             :status-options="statusOptions"
-            :permission-options="permissionOptions"
-            :permissions="form.permissions"
+            :role-permissions="rolePermissions"
+            :role-permissions-loading="rolePermissionsLoading"
             :name="form.name"
             :email="form.email"
             :phone="form.phone"
@@ -361,7 +380,6 @@ const checklistItems = computed(() => [
             :is-confirm-password-visible="isConfirmPasswordVisible"
             :role-label="roleLabel"
             :status-label="statusLabel"
-            :permission-label="permissionLabel"
             @update:name="form.name = $event"
             @update:email="form.email = $event"
             @update:phone="form.phone = $event"
@@ -371,7 +389,6 @@ const checklistItems = computed(() => [
             @update:confirm-password="form.confirmPassword = $event"
             @profile-image-change="onProfileImageChange"
             @profile-image-remove="removeProfileImage"
-            @toggle-permission="togglePermission"
             @toggle-password="togglePasswordVisibility"
             @toggle-confirm-password="toggleConfirmPasswordVisibility"
           />

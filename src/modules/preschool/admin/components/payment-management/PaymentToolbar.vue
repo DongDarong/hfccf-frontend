@@ -18,9 +18,13 @@ defineProps({
     type: String,
     default: 'Clear',
   },
+  addLabel: {
+    type: String,
+    default: '',
+  },
 })
 
-defineEmits(['clear'])
+defineEmits(['clear', 'add'])
 </script>
 
 <template>
@@ -30,9 +34,22 @@ defineEmits(['clear'])
       <h2 class="payment-toolbar__title">{{ title }}</h2>
     </div>
 
-    <Button type="button" variant="outline" size="md" rounded="xl" @click="$emit('clear')">
-      {{ clearLabel }}
-    </Button>
+    <div class="payment-toolbar__actions">
+      <Button
+        v-if="addLabel"
+        type="button"
+        variant="primary"
+        size="md"
+        rounded="xl"
+        @click="$emit('add')"
+      >
+        {{ addLabel }}
+      </Button>
+
+      <Button type="button" variant="outline" size="md" rounded="xl" @click="$emit('clear')">
+        {{ clearLabel }}
+      </Button>
+    </div>
   </div>
 </template>
 
@@ -42,6 +59,12 @@ defineEmits(['clear'])
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.payment-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .payment-toolbar__eyebrow {
@@ -64,6 +87,12 @@ defineEmits(['clear'])
 @media (max-width: 640px) {
   .payment-toolbar {
     flex-direction: column;
+  }
+
+  .payment-toolbar__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

@@ -1,8 +1,8 @@
 <script setup>
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
-import AddAdminPermissionsField from '@/modules/super-admin/components/admin-management/AddAdminPermissionsField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
+import RolePermissionsPreview from '@/modules/super-admin/components/add-admin/RolePermissionsPreview.vue'
 
 defineOptions({
   name: 'AddTeacherFormFields',
@@ -21,11 +21,7 @@ defineProps({
     type: Array,
     default: () => [],
   },
-  permissionOptions: {
-    type: Array,
-    default: () => [],
-  },
-  permissions: {
+  rolePermissions: {
     type: Array,
     default: () => [],
   },
@@ -69,15 +65,15 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  rolePermissionsLoading: {
+    type: Boolean,
+    default: false,
+  },
   roleLabel: {
     type: Function,
     required: true,
   },
   statusLabel: {
-    type: Function,
-    required: true,
-  },
-  permissionLabel: {
     type: Function,
     required: true,
   },
@@ -93,7 +89,6 @@ const emit = defineEmits([
   'update:confirmPassword',
   'profile-image-change',
   'profile-image-remove',
-  'toggle-permission',
   'toggle-password',
   'toggle-confirm-password',
 ])
@@ -138,14 +133,11 @@ const emit = defineEmits([
       @update:status="emit('update:status', $event)"
     />
 
-    <AddAdminPermissionsField
+    <RolePermissionsPreview
       class="add-teacher-form-fields__field add-teacher-form-fields__field--full"
-      title="Permissions"
-      :permissions="permissions"
-      :options="permissionOptions"
-      :disabled="isLocked"
-      :permission-label="permissionLabel"
-      @toggle="emit('toggle-permission', $event)"
+      :role="role"
+      :permissions="rolePermissions"
+      :loading="rolePermissionsLoading"
     />
 
     <AddAdminPasswordFields

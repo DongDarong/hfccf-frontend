@@ -11,7 +11,12 @@ import AdminChecklistPanel from '@/modules/super-admin/components/admin-manageme
 import AddClassIntro from '@/modules/preschool/admin/components/add-class/AddClassIntro.vue'
 import AddClassFormFields from '@/modules/preschool/admin/components/add-class/AddClassFormFields.vue'
 import AddClassFormActions from '@/modules/preschool/admin/components/add-class/AddClassFormActions.vue'
-import { findClassRowById, upsertClassRow } from '@/modules/preschool/admin/utils/classStorage'
+import {
+  createPreschoolClass,
+  fetchPreschoolClass,
+  fetchPreschoolTeachers,
+  updatePreschoolClass,
+} from '@/modules/preschool/services/preschoolApi'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -24,12 +29,13 @@ const { t, language } = useLanguage()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
 const levelOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
-const statusOptions = ['Active', 'Pending', 'Closed']
+const statusOptions = ['active', 'pending', 'closed', 'archived']
 
 const form = reactive({
   code: '',
   name: '',
   teacher: '',
+  teacherDisplayName: '',
   level: levelOptions[0],
   schedule: '',
   students: 0,
@@ -43,6 +49,8 @@ const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
 const isKh = computed(() => language.value === 'KH')
+const teacherOptions = ref([])
+
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
   if (route.query.mode === 'edit' || Boolean(route.query.id)) return 'edit'
@@ -51,6 +59,13 @@ const mode = computed(() => {
 const isViewMode = computed(() => mode.value === 'view')
 const isEditMode = computed(() => mode.value === 'edit')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
+const editingClassId = computed(() => String(route.query.id || '').trim())
+const teacherLabelMap = computed(() =>
+  teacherOptions.value.reduce((carry, teacher) => {
+    carry[String(teacher.value)] = teacher.label
+    return carry
+  }, {}),
+)
 
 const pageTitle = computed(() => {
   if (isViewMode.value) return t('preschoolAddClass.viewTitle')
@@ -147,9 +162,46 @@ async function goBackToClasses() {
 }
 
 async function goToEditMode() {
-  const id = String(route.query.id || '').trim()
-  if (!id) return
-  await router.push({ path: '/module/preschool-admin/classes/add', query: { mode: 'edit', id } })
+  if (!editingClassId.value) return
+  await router.push({ path: '/module/preschool-admin/classes/add', query: { mode: 'edit', id: editingClassId.value } })
+}
+
+function populateFromClass(item) {
+  form.code = item.code || ''
+  form.name = item.name || ''
+  form.teacher = item.teacherUserId || item.teacher_user_id || ''
+  form.teacherDisplayName = item.teacherDisplayName || item.teacher_display_name || item.teacher || ''
+  form.level = item.level || levelOptions[0]
+  form.schedule = item.schedule || ''
+  form.students = Number(item.studentsCount ?? item.students_count ?? item.students ?? 0)
+  form.status = item.status || statusOptions[0]
+  form.room = item.room || ''
+  form.notes = item.notes || ''
+}
+
+async function loadTeachers() {
+  try {
+    const response = await fetchPreschoolTeachers({ perPage: 100, status: 'active' })
+    teacherOptions.value = (response.items || []).map((teacher) => ({
+      value: teacher.id,
+      label: teacher.fullName || teacher.name || teacher.username || teacher.id,
+    }))
+  } catch {
+    teacherOptions.value = []
+  }
+}
+
+async function loadClass() {
+  if (!editingClassId.value) return
+
+  try {
+    const item = await fetchPreschoolClass(editingClassId.value)
+    if (!item) return
+    populateFromClass(item)
+  } catch (error) {
+    errorMessage.value = error?.message || 'Failed to load class details.'
+    showError.value = true
+  }
 }
 
 async function onSubmit() {
@@ -167,24 +219,29 @@ async function onSubmit() {
   isSubmitting.value = true
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 700))
-    upsertClassRow({
-      id: isEditMode.value ? String(route.query.id || '').trim() : '',
+    const teacherLabel = teacherLabelMap.value[form.teacher] || form.teacherDisplayName || ''
+    const payload = {
       code: form.code.trim(),
       name: form.name.trim(),
-      teacher: form.teacher.trim(),
+      teacher_user_id: form.teacher,
+      teacher_display_name: teacherLabel,
       level: form.level,
       schedule: form.schedule.trim(),
-      students: normalizeNumber(form.students),
+      students_count: normalizeNumber(form.students),
       status: form.status,
       room: form.room.trim(),
       notes: form.notes.trim(),
-    })
+    }
+
+    if (isEditMode.value) {
+      await updatePreschoolClass(editingClassId.value, payload)
+    } else {
+      await createPreschoolClass(payload)
+    }
+
     showSuccess.value = true
-  } catch {
-    errorMessage.value = isEditMode.value
-      ? t('preschoolAddClass.validation.updateFailed')
-      : t('preschoolAddClass.validation.createFailed')
+  } catch (error) {
+    errorMessage.value = error?.message || (isEditMode.value ? t('preschoolAddClass.validation.updateFailed') : t('preschoolAddClass.validation.createFailed'))
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -200,25 +257,12 @@ async function onSuccessClose() {
   await goBackToClasses()
 }
 
-function populateFromClass(item) {
-  form.code = item.code || ''
-  form.name = item.name || ''
-  form.teacher = item.teacher || ''
-  form.level = item.level || levelOptions[0]
-  form.schedule = item.schedule || ''
-  form.students = Number(item.students || 0)
-  form.status = item.status || statusOptions[0]
-  form.room = item.room || ''
-  form.notes = item.notes || ''
-}
+onMounted(async () => {
+  await loadTeachers()
 
-onMounted(() => {
-  if (mode.value === 'add') return
-
-  const id = String(route.query.id || '').trim()
-  const found = findClassRowById(id)
-  if (!found) return
-  populateFromClass(found)
+  if (mode.value !== 'add') {
+    await loadClass()
+  }
 })
 </script>
 
@@ -246,6 +290,7 @@ onMounted(() => {
           <AddClassFormFields
             :level-options="levelOptions"
             :status-options="statusOptions"
+            :teacher-options="teacherOptions"
             :code="form.code"
             :name="form.name"
             :teacher="form.teacher"
@@ -359,5 +404,4 @@ onMounted(() => {
     position: static;
   }
 }
-
 </style>

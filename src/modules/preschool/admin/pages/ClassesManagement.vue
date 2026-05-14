@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -11,8 +11,8 @@ import ClassTable from '@/modules/classes/components/ClassTable.vue'
 import PreschoolClassesSummaryGrid from '@/modules/preschool/admin/components/classes-management/PreschoolClassesSummaryGrid.vue'
 import PreschoolClassesToolbar from '@/modules/preschool/admin/components/classes-management/PreschoolClassesToolbar.vue'
 import PreschoolClassesHighlights from '@/modules/preschool/admin/components/classes-management/PreschoolClassesHighlights.vue'
-import { getStoredClassRows, removeClassRow } from '@/modules/preschool/admin/utils/classStorage'
 import { useLanguage } from '@/composables/useLanguage'
+import { deletePreschoolClass, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminClassesManagementPage',
@@ -23,7 +23,7 @@ const router = useRouter()
 const isKh = computed(() => language.value === 'KH')
 
 const searchQuery = ref('')
-const roleFilter = ref('')
+const levelFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 5
@@ -32,58 +32,27 @@ const selectedClassId = ref('')
 const selectedClassName = ref('')
 const showSuccess = ref(false)
 const successMessage = ref('')
-
-const roleOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
-const statusOptions = ['active', 'pending', 'closed']
-
-const classRows = ref(getStoredClassRows())
-
-function normalize(value) {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-}
-
-const filteredClasses = computed(() => {
-  const query = normalize(searchQuery.value)
-
-  return classRows.value.filter((item) => {
-    let isMatch = true
-
-    if (query) {
-      const haystack = normalize(
-        `${item.code} ${item.name} ${item.teacher} ${item.level} ${item.schedule}`,
-      )
-      isMatch = haystack.includes(query)
-    }
-
-    if (isMatch && roleFilter.value) {
-      isMatch = normalize(item.level) === normalize(roleFilter.value)
-    }
-
-    if (isMatch && statusFilter.value) {
-      isMatch = normalize(item.status) === normalize(statusFilter.value)
-    }
-
-    return isMatch
-  })
+const loading = ref(false)
+const errorMessage = ref('')
+const classRows = ref([])
+const pagination = ref({
+  page: 1,
+  perPage: pageSize,
+  total: 0,
+  totalPages: 1,
 })
 
-const totalPages = computed(() => Math.max(Math.ceil(filteredClasses.value.length / pageSize), 1))
-const paginatedClasses = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredClasses.value.slice(start, start + pageSize)
-})
+const statusOptions = ['active', 'pending', 'closed', 'archived']
 
-const totalClasses = computed(() => classRows.value.length)
+const totalClasses = computed(() => pagination.value.total || classRows.value.length)
 const activeClasses = computed(
-  () => classRows.value.filter((c) => normalize(c.status) === 'active').length,
+  () => classRows.value.filter((c) => String(c.status || '').toLowerCase() === 'active').length,
 )
 const pendingClasses = computed(
-  () => classRows.value.filter((c) => normalize(c.status) === 'pending').length,
+  () => classRows.value.filter((c) => String(c.status || '').toLowerCase() === 'pending').length,
 )
 const totalStudents = computed(() =>
-  classRows.value.reduce((sum, c) => sum + Number(c.students || 0), 0),
+  classRows.value.reduce((sum, c) => sum + Number(c.students || c.studentsCount || 0), 0),
 )
 
 const activeRateLabel = computed(() => {
@@ -135,18 +104,15 @@ const summaryCards = computed(() => [
 ])
 
 const highlightItems = computed(() => {
-  const visibleStudents = filteredClasses.value.reduce(
-    (sum, c) => sum + Number(c.students || 0),
-    0,
-  )
-  const avgStudents = filteredClasses.value.length
-    ? Math.round(visibleStudents / filteredClasses.value.length)
+  const visibleStudents = classRows.value.reduce((sum, c) => sum + Number(c.students || c.studentsCount || 0), 0)
+  const avgStudents = classRows.value.length
+    ? Math.round(visibleStudents / classRows.value.length)
     : 0
 
   return [
     {
       label: t('preschoolClassesManagement.highlights.visibleClasses'),
-      value: filteredClasses.value.length,
+      value: classRows.value.length,
     },
     {
       label: t('preschoolClassesManagement.highlights.visibleStudents'),
@@ -160,30 +126,63 @@ const highlightItems = computed(() => {
 })
 
 const toolbarSummary = computed(() =>
-  t('preschoolClassesManagement.toolbarSummary', { count: filteredClasses.value.length }),
+  t('preschoolClassesManagement.toolbarSummary', { count: classRows.value.length }),
 )
 
 const visibleRangeLabel = computed(() => {
-  if (!filteredClasses.value.length) return t('preschoolClassesManagement.noResults')
+  if (!classRows.value.length) return t('preschoolClassesManagement.noResults')
 
   const start = (currentPage.value - 1) * pageSize + 1
-  const end = Math.min(currentPage.value * pageSize, filteredClasses.value.length)
+  const end = Math.min(currentPage.value * pageSize, pagination.value.total || classRows.value.length)
   return t('preschoolClassesManagement.visibleRange', {
     start,
     end,
-    total: filteredClasses.value.length,
+    total: pagination.value.total || classRows.value.length,
   })
 })
 
-watch(
-  () => filteredClasses.value.length,
-  () => {
-    if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
-  },
-)
+const roleOptions = computed(() => ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep'])
 
-watch([searchQuery, roleFilter, statusFilter], () => {
+async function loadClasses() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await fetchPreschoolClasses({
+      page: currentPage.value,
+      perPage: pageSize,
+      search: searchQuery.value,
+      status: statusFilter.value,
+      level: levelFilter.value,
+    })
+
+    classRows.value = (response.items || []).map((item) => ({
+      ...item,
+      teacher: item.teacherDisplayName || item.teacher || '-',
+      students: item.studentsCount ?? item.students ?? 0,
+    }))
+    pagination.value = response.pagination || pagination.value
+  } catch (error) {
+    classRows.value = []
+    pagination.value = {
+      page: 1,
+      perPage: pageSize,
+      total: 0,
+      totalPages: 1,
+    }
+    errorMessage.value = error?.message || 'Failed to load preschool classes.'
+  } finally {
+    loading.value = false
+  }
+}
+
+watch([searchQuery, levelFilter, statusFilter], () => {
   currentPage.value = 1
+  loadClasses()
+})
+
+watch(currentPage, () => {
+  loadClasses()
 })
 
 function onAddClass() {
@@ -215,12 +214,27 @@ function onCancelDelete() {
   selectedClassName.value = ''
 }
 
-function onConfirmDelete() {
-  classRows.value = removeClassRow(selectedClassId.value)
-  successMessage.value = `${selectedClassName.value || 'Class'} deleted successfully.`
-  showSuccess.value = true
-  onCancelDelete()
+async function onConfirmDelete() {
+  try {
+    await deletePreschoolClass(selectedClassId.value)
+    successMessage.value = `${selectedClassName.value || 'Class'} deleted successfully.`
+    showSuccess.value = true
+    onCancelDelete()
+    await loadClasses()
+  } catch (error) {
+    errorMessage.value = error?.message || 'Failed to delete the class.'
+  }
 }
+
+function onFiltersCleared() {
+  searchQuery.value = ''
+  levelFilter.value = ''
+  statusFilter.value = ''
+}
+
+onMounted(() => {
+  loadClasses()
+})
 </script>
 
 <template>
@@ -252,25 +266,34 @@ function onConfirmDelete() {
         <SearchFilterBar
           class="w-full"
           v-model:searchQuery="searchQuery"
-          v-model:roleFilter="roleFilter"
+          v-model:roleFilter="levelFilter"
           v-model:statusFilter="statusFilter"
           :role-options="roleOptions"
           :status-options="statusOptions"
           :search-placeholder="t('preschoolClassesManagement.searchPlaceholder')"
+          @clear="onFiltersCleared"
         />
+
+        <div
+          v-if="errorMessage"
+          class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+        >
+          {{ errorMessage }}
+        </div>
 
         <PreschoolClassesHighlights :items="highlightItems" :is-kh="isKh" />
 
         <ClassTable
-          :classes="paginatedClasses"
+          :classes="classRows"
+          :loading="loading"
           :empty-text="t('preschoolClassesManagement.tableEmpty')"
           @view="onViewClass"
           @edit="onEditClass"
           @delete="onDeleteClass"
         />
 
-        <div v-if="totalPages > 1" class="flex justify-end">
-          <Pagination v-model="currentPage" :total-pages="totalPages" class="mt-2" />
+        <div v-if="pagination.totalPages > 1" class="flex justify-end">
+          <Pagination v-model="currentPage" :total-pages="pagination.totalPages" class="mt-2" />
         </div>
       </div>
     </section>
