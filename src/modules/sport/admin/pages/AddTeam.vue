@@ -81,7 +81,11 @@ function resetFeedback() {
 }
 
 function statusLabel(status) {
-  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const normalized = String(status || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
   return translated !== key ? translated : String(status || '')
 }

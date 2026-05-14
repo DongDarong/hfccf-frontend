@@ -75,19 +75,31 @@ function resetFeedback() {
 }
 
 function statusLabel(status) {
-  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const normalized = String(status || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
   return translated !== key ? translated : String(status || '')
 }
 
 function roleLabel(value) {
-  const key = `common.role.${String(value || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const normalized = String(value || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.role.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
   return translated !== key ? translated : String(value || '')
 }
 
 function permissionLabel(value) {
-  const key = `common.permission.${String(value || '').trim().toLowerCase()}`
+  const normalized = String(value || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.permission.${normalized.toLowerCase()}`
   const translated = t(key)
   if (translated !== key) return translated
 

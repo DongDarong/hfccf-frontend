@@ -6,7 +6,11 @@ const DEFAULT_STATUS_ORDER = ['active', 'pending', 'inactive', 'suspended']
  * Translate a status key with a stable fallback for untranslated values.
  */
 export function statusLabel(t, status) {
-  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const normalized = String(status || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
 
   return translated !== key ? translated : String(status || '')

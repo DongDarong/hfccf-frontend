@@ -57,7 +57,11 @@ export function roleLabel(value, translate) {
 }
 
 export function statusLabel(value, translate) {
-  const key = `common.status.${String(value || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const normalized = String(value || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = translate?.(key)
 
   return translated && translated !== key ? translated : asText(value)

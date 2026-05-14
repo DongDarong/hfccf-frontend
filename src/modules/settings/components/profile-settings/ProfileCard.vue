@@ -88,13 +88,25 @@ async function onAvatarChange(event) {
 }
 
 const roleLabel = computed(() => {
-  const roleKey = props.user.role?.toLowerCase().replace(/\s+/g, '') || 'user'
+  const normalizedRole = String(props.user.role || '').trim()
+
+  if (!normalizedRole) {
+    return '-'
+  }
+
+  const roleKey = normalizedRole.toLowerCase().replace(/\s+/g, '')
   const translated = t(`common.role.${roleKey}`)
   return translated === `common.role.${roleKey}` ? props.user.role : translated
 })
 
 const statusLabel = computed(() => {
-  const statusKey = props.user.status?.toLowerCase() || 'active'
+  const normalizedStatus = String(props.user.status || '').trim()
+
+  if (!normalizedStatus) {
+    return '-'
+  }
+
+  const statusKey = normalizedStatus.toLowerCase()
   const translated = t(`common.status.${statusKey}`)
   return translated === `common.status.${statusKey}` ? props.user.status : translated
 })
