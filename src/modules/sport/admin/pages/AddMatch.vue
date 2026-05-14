@@ -12,6 +12,7 @@ import {
   createSportMatch,
   fetchSportMatch,
   fetchSportTeams,
+  fetchSportTournaments,
   updateSportMatch,
 } from '@/modules/sport/services/sportApi'
 
@@ -48,9 +49,11 @@ const showError = ref(false)
 const errorMessage = ref('')
 const feedbackMessage = ref('')
 const teamRows = ref([])
+const tournamentRows = ref([])
 
-const competitionType = ref('')
+const competitionType = ref('tournament')
 const tournament = ref('')
+const tournamentId = ref('')
 const dateTime = ref('')
 const venue = ref('')
 const status = ref('scheduled')
@@ -62,11 +65,12 @@ const competitionTypeOptions = computed(() => [
   { value: 'friendly', label: t('sportMatchesManagement.competitionTypes.friendly') },
 ])
 
-const tournamentOptions = computed(() => [
-  { value: 'hfccf_cup_2026', label: 'HFCCF Cup 2026' },
-  { value: 'friendly_league', label: 'Friendly League' },
-  { value: 'summer_showcase', label: 'Summer Showcase' },
-])
+const tournamentOptions = computed(() =>
+  tournamentRows.value.map((item) => ({
+    value: String(item.id),
+    label: item.name || item.title || item.tournamentCode || String(item.id),
+  })),
+)
 
 const statusOptions = computed(() => [
   { value: 'scheduled', label: t('sportMatchesManagement.status.scheduled') },
@@ -90,7 +94,7 @@ const selectedTournamentLabel = computed(() => {
     return tournament.value || t('sportMatchesManagement.tournamentNamePlaceholder')
   }
 
-  const selected = tournamentOptions.value.find((option) => option.value === tournament.value)
+  const selected = tournamentOptions.value.find((option) => option.value === String(tournamentId.value))
   return selected?.label || t('sportMatchesManagement.tournamentSelectPlaceholder')
 })
 
@@ -138,16 +142,16 @@ function parseSchedule(value) {
 }
 
 function inferCompetitionType(match) {
-  const tournamentName = String(match?.tournament || '').trim().toLowerCase()
-  return tournamentName.includes('friendly') ? 'friendly' : 'tournament'
+  return match?.tournamentId ? 'tournament' : match?.tournamentName ? 'friendly' : 'tournament'
 }
 
 function applySelectedMatch(match) {
   if (!match) return
 
   competitionType.value = inferCompetitionType(match)
-  tournament.value = String(match.tournament || '')
-  dateTime.value = parseSchedule(match.schedule)
+  tournamentId.value = String(match.tournamentId || match.tournament?.id || '')
+  tournament.value = String(match.tournamentName || match.tournament?.name || '')
+  dateTime.value = parseSchedule(match.schedule || match.scheduledAt)
   venue.value = String(match.venue || '')
   status.value = String(match.status || 'scheduled')
   homeTeam.value = String(match.homeTeam || '')
@@ -162,7 +166,8 @@ watch(
       return
     }
 
-    competitionType.value = ''
+    competitionType.value = 'tournament'
+    tournamentId.value = ''
     tournament.value = ''
     dateTime.value = ''
     venue.value = ''
@@ -172,6 +177,14 @@ watch(
   },
   { immediate: true },
 )
+
+watch(competitionType, (nextType) => {
+  if (nextType === 'friendly') {
+    tournamentId.value = ''
+  } else {
+    tournament.value = ''
+  }
+})
 
 async function onSubmit() {
   resetFeedback()
@@ -187,7 +200,8 @@ async function onSubmit() {
   try {
     const payload = {
       competitionType: competitionType.value,
-      tournamentName: tournament.value,
+      tournamentId: competitionType.value === 'tournament' ? tournamentId.value : null,
+      tournamentName: competitionType.value === 'friendly' ? tournament.value : null,
       scheduledAt: dateTime.value,
       venue: venue.value,
       status: status.value,
@@ -224,14 +238,23 @@ function onCancel() {
   router.push({ name: 'dashboard-sport-admin-matches' })
 }
 
-onMounted(() => {
-  fetchSportTeams({ perPage: 100 })
-    .then((response) => {
-      teamRows.value = response.items || []
-    })
-    .catch(() => {
-      teamRows.value = []
-    })
+onMounted(async () => {
+  await Promise.all([
+    fetchSportTeams({ perPage: 100 })
+      .then((response) => {
+        teamRows.value = response.items || []
+      })
+      .catch(() => {
+        teamRows.value = []
+      }),
+    fetchSportTournaments({ perPage: 100 })
+      .then((response) => {
+        tournamentRows.value = response.items || []
+      })
+      .catch(() => {
+        tournamentRows.value = []
+      }),
+  ])
 
   if (!matchId.value) return
 
@@ -239,8 +262,9 @@ onMounted(() => {
     .then((match) => {
       if (!match?.id) return
       selectedMatch.value = match
-      competitionType.value = match.competitionType || ''
-      tournament.value = match.tournamentName || ''
+      competitionType.value = match.competitionType || inferCompetitionType(match)
+      tournamentId.value = String(match.tournamentId || match.tournament?.id || '')
+      tournament.value = match.tournamentName || match.tournament?.name || ''
       dateTime.value = String(match.scheduledAt || '').slice(0, 16)
       venue.value = match.venue || ''
       status.value = match.status || 'scheduled'
@@ -270,6 +294,7 @@ onMounted(() => {
             :competition-type="competitionType"
             :competition-type-options="competitionTypeOptions"
             :tournament="tournament"
+            :tournament-id="tournamentId"
             :tournament-options="tournamentOptions"
             :date-time="dateTime"
             :venue="venue"
@@ -282,6 +307,7 @@ onMounted(() => {
             :cancel-text="t('common.cancel')"
             @update:competition-type="competitionType = $event"
             @update:tournament="tournament = $event"
+            @update:tournament-id="tournamentId = $event"
             @update:date-time="dateTime = $event"
             @update:venue="venue = $event"
             @update:status="status = $event"

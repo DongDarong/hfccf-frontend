@@ -152,6 +152,60 @@ function normalizeTeamRow(row = {}) {
   }
 }
 
+function normalizeTournamentRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    tournamentCode: normalizeText(row.tournamentCode || row.tournament_code),
+    name: normalizeText(row.name),
+    title: normalizeText(row.title || row.name),
+    season: normalizeText(row.season),
+    tournamentType: normalizeText(row.tournamentType || row.tournament_type || 'league'),
+    status: normalizeText(row.status || 'draft'),
+    startsAt: row.startsAt || row.starts_at || '',
+    endsAt: row.endsAt || row.ends_at || '',
+    description: normalizeText(row.description),
+    teamsCount: Number(row.teamsCount ?? row.teams_count ?? row.totalTeams ?? 0),
+    matchesCount: Number(row.matchesCount ?? row.matches_count ?? row.matches ?? 0),
+    standingsCount: Number(row.standingsCount ?? row.standings_count ?? 0),
+    teams: Number(row.teamsCount ?? row.teams_count ?? row.totalTeams ?? 0),
+    matches: Number(row.matchesCount ?? row.matches_count ?? row.matches ?? 0),
+    location: normalizeText(row.location || row.season || row.tournamentType || ''),
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
+function normalizeStandingRow(row = {}) {
+  const team = row.team || {}
+
+  return {
+    id: row.id ?? '',
+    tournamentId: row.tournamentId ?? row.tournament_id ?? '',
+    teamId: row.teamId ?? row.team_id ?? '',
+    rankPosition: Number(row.rankPosition ?? row.rank_position ?? 0),
+    played: Number(row.played ?? 0),
+    wins: Number(row.wins ?? 0),
+    draws: Number(row.draws ?? 0),
+    losses: Number(row.losses ?? 0),
+    goalsFor: Number(row.goalsFor ?? row.goals_for ?? 0),
+    goalsAgainst: Number(row.goalsAgainst ?? row.goals_against ?? 0),
+    goalDifference: Number(row.goalDifference ?? row.goal_difference ?? 0),
+    points: Number(row.points ?? 0),
+    team: {
+      id: team.id ?? '',
+      teamCode: normalizeText(team.teamCode || team.team_code),
+      name: normalizeText(team.name),
+      shortName: normalizeText(team.shortName || team.short_name),
+      logo: normalizeText(team.logo),
+      status: normalizeText(team.status || ''),
+    },
+    updatedAt: row.updatedAt || row.updated_at || '',
+    raw: row,
+  }
+}
+
 function normalizePlayerRow(row = {}) {
   const firstName = normalizeText(row.firstName || row.first_name)
   const lastName = normalizeText(row.lastName || row.last_name)
@@ -237,6 +291,7 @@ function normalizeEventRow(row = {}, homeTeamId = null, awayTeamId = null) {
 function normalizeMatchRow(row = {}) {
   const homeTeam = row.homeTeam || {}
   const awayTeam = row.awayTeam || {}
+  const tournament = row.tournament || null
   const events = Array.isArray(row.events) ? row.events.map((event) => normalizeEventRow(event, homeTeam.id, awayTeam.id)) : []
 
   return {
@@ -244,12 +299,16 @@ function normalizeMatchRow(row = {}) {
     matchCode: normalizeText(row.matchCode || row.match_code),
     homeTeamId: row.homeTeamId ?? row.home_team_id ?? '',
     awayTeamId: row.awayTeamId ?? row.away_team_id ?? '',
+    tournamentId: row.tournamentId ?? row.tournament_id ?? '',
     homeTeam: normalizeText(homeTeam.name || row.homeTeamName || row.home_team_name || row.home_team || ''),
     awayTeam: normalizeText(awayTeam.name || row.awayTeamName || row.away_team_name || row.away_team || ''),
     homeTeamData: homeTeam,
     awayTeamData: awayTeam,
+    tournament: tournament && (tournament.id || tournament.name || tournament.tournamentCode || tournament.tournament_code)
+      ? normalizeTournamentRow(tournament)
+      : null,
     competitionType: normalizeText(row.competitionType || row.competition_type),
-    tournamentName: normalizeText(row.tournamentName || row.tournament_name),
+    tournamentName: normalizeText(row.tournamentName || row.tournament_name || tournament?.name),
     venue: normalizeText(row.venue),
     schedule: row.scheduledAt || row.scheduled_at || '',
     scheduledAt: row.scheduledAt || row.scheduled_at || '',
@@ -303,6 +362,22 @@ function normalizeMatchListResponse(response, fallbackPage = 1, fallbackPerPage 
   }
 }
 
+function normalizeTournamentListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+  return {
+    items: items.map(normalizeTournamentRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+function normalizeStandingListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+  return {
+    items: items.map(normalizeStandingRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
 function normalizeEventListResponse(response, homeTeamId = null, awayTeamId = null, fallbackPage = 1, fallbackPerPage = 10) {
   const items = unwrapApiItems(response)
   return {
@@ -313,7 +388,7 @@ function normalizeEventListResponse(response, homeTeamId = null, awayTeamId = nu
   }
 }
 
-function buildTeamPayload(payload = {}) {
+function buildTeamPayload(payload = {}, options = {}) {
   return buildFormData({
     team_code: payload.teamCode || payload.team_code,
     name: payload.name,
@@ -333,10 +408,10 @@ function buildTeamPayload(payload = {}) {
     remove_logo: payload.removeLogo || payload.remove_logo,
     status: payload.status,
     description: payload.description,
-  })
+  }, options)
 }
 
-function buildPlayerPayload(payload = {}) {
+function buildPlayerPayload(payload = {}, options = {}) {
   const fullName = normalizeText(payload.name || payload.fullName)
   const split = splitName(fullName)
 
@@ -371,10 +446,10 @@ function buildPlayerPayload(payload = {}) {
     status: payload.status,
     notes: payload.notes,
     division: payload.division,
-  })
+  }, options)
 }
 
-function buildCoachPayload(payload = {}) {
+function buildCoachPayload(payload = {}, options = {}) {
   const fullName = normalizeText(payload.name || payload.fullName)
   const split = splitName(fullName)
 
@@ -390,14 +465,15 @@ function buildCoachPayload(payload = {}) {
     password_confirmation: payload.confirmPassword || payload.password_confirmation,
     avatar: payload.avatar instanceof File ? payload.avatar : payload.profileImage instanceof File ? payload.profileImage : undefined,
     remove_avatar: payload.removeAvatar || payload.remove_avatar,
-  })
+  }, options)
 }
 
-function buildMatchPayload(payload = {}) {
+function buildMatchPayload(payload = {}, options = {}) {
   return buildFormData({
     match_code: payload.matchCode || payload.match_code,
     home_team: payload.homeTeam || payload.home_team,
     away_team: payload.awayTeam || payload.away_team,
+    tournament_id: payload.tournamentId || payload.tournament_id,
     competition_type: payload.competitionType || payload.competition_type,
     tournament_name: payload.tournamentName || payload.tournament_name || payload.tournament,
     venue: payload.venue,
@@ -405,10 +481,23 @@ function buildMatchPayload(payload = {}) {
     status: payload.status,
     current_period: payload.currentPeriod || payload.current_period,
     notes: payload.notes,
-  })
+  }, options)
 }
 
-function buildEventPayload(payload = {}) {
+function buildTournamentPayload(payload = {}, options = {}) {
+  return buildFormData({
+    tournament_code: payload.tournamentCode || payload.tournament_code,
+    name: payload.name,
+    season: payload.season,
+    tournament_type: payload.tournamentType || payload.tournament_type,
+    status: payload.status,
+    starts_at: payload.startsAt || payload.starts_at,
+    ends_at: payload.endsAt || payload.ends_at,
+    description: payload.description,
+  }, options)
+}
+
+function buildEventPayload(payload = {}, options = {}) {
   return buildFormData({
     team_id: payload.teamId || payload.team_id,
     player_id: payload.playerId || payload.player_id,
@@ -417,7 +506,25 @@ function buildEventPayload(payload = {}) {
     minute: payload.minute,
     extra_time_minute: payload.extraTimeMinute || payload.extra_time_minute,
     metadata: payload.metadata,
-  })
+  }, options)
+}
+
+function normalizeDashboardPayload(response) {
+  const payload = unwrapApiData(response) || {}
+
+  return {
+    ...payload,
+    summary: payload.summary || {},
+    teams: Array.isArray(payload.teams) ? payload.teams.map(normalizeTeamRow) : [],
+    players: Array.isArray(payload.players) ? payload.players.map(normalizePlayerRow) : [],
+    matches: Array.isArray(payload.matches) ? payload.matches.map(normalizeMatchRow) : [],
+    events: Array.isArray(payload.events)
+      ? payload.events.map((event) => normalizeEventRow(event, event?.match?.homeTeam?.id, event?.match?.awayTeam?.id))
+      : [],
+    tournaments: Array.isArray(payload.tournaments) ? payload.tournaments.map(normalizeTournamentRow) : [],
+    featuredTournament: payload.featuredTournament ? normalizeTournamentRow(payload.featuredTournament) : null,
+    standings: Array.isArray(payload.standings) ? payload.standings.map(normalizeStandingRow) : [],
+  }
 }
 
 export async function fetchSportDashboard(options = {}) {
@@ -425,7 +532,123 @@ export async function fetchSportDashboard(options = {}) {
     signal: options.signal,
   })
 
-  return unwrapApiData(response) || {}
+  return normalizeDashboardPayload(response)
+}
+
+export async function fetchSportTournaments(
+  { page = 1, perPage = 10, search = '', status = '', type = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
+  options = {},
+) {
+  const response = await http.get('/sport/tournaments', {
+    params: buildQueryParams({
+      page,
+      per_page: perPage,
+      search,
+      status,
+      type,
+      sort_by: sortBy,
+      sort_direction: sortDirection,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeTournamentListResponse(response, page, perPage)
+}
+
+export async function fetchSportTournament(id, options = {}) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) return null
+
+  const response = await http.get(`/sport/tournaments/${encodeURIComponent(tournamentId)}`, {
+    signal: options.signal,
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return normalizeTournamentRow(payload.tournament || payload)
+}
+
+export async function createSportTournament(payload = {}) {
+  const response = await http.post('/sport/tournaments', buildTournamentPayload(payload))
+  const data = unwrapApiData(response) || {}
+  return normalizeTournamentRow(data.tournament || data)
+}
+
+export async function updateSportTournament(id, payload = {}) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) throw new Error('Tournament id is required.')
+
+  const response = await http.post(
+    `/sport/tournaments/${encodeURIComponent(tournamentId)}`,
+    buildTournamentPayload(payload, { method: 'PUT' }),
+  )
+
+  const data = unwrapApiData(response) || {}
+  return normalizeTournamentRow(data.tournament || data)
+}
+
+export async function deleteSportTournament(id) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) return false
+
+  await http.delete(`/sport/tournaments/${encodeURIComponent(tournamentId)}`)
+  return true
+}
+
+export async function addTournamentTeam(id, teamId) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) throw new Error('Tournament id is required.')
+
+  const response = await http.post(`/sport/tournaments/${encodeURIComponent(tournamentId)}/teams`, {
+    team_id: teamId,
+  })
+
+  const data = unwrapApiData(response) || {}
+  return {
+    tournament: data.tournament ? normalizeTournamentRow(data.tournament) : null,
+    standings: Array.isArray(data.standings) ? data.standings.map(normalizeStandingRow) : [],
+  }
+}
+
+export async function removeTournamentTeam(id, teamId) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) throw new Error('Tournament id is required.')
+
+  const response = await http.delete(`/sport/tournaments/${encodeURIComponent(tournamentId)}/teams/${encodeURIComponent(resolveId(teamId))}`)
+  const data = unwrapApiData(response) || {}
+  return {
+    tournament: data.tournament ? normalizeTournamentRow(data.tournament) : null,
+    standings: Array.isArray(data.standings) ? data.standings.map(normalizeStandingRow) : [],
+  }
+}
+
+export async function fetchTournamentStandings(id, { page = 1, perPage = 50 } = {}, options = {}) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) {
+    return { items: [], pagination: { page: 1, perPage: 50, total: 0, totalPages: 1 } }
+  }
+
+  const response = await http.get(`/sport/tournaments/${encodeURIComponent(tournamentId)}/standings`, {
+    params: buildQueryParams({
+      page,
+      per_page: perPage,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeStandingListResponse(response, page, perPage)
+}
+
+export async function recalculateTournamentStandings(id) {
+  const tournamentId = resolveId(id)
+  if (!tournamentId) throw new Error('Tournament id is required.')
+
+  const response = await http.post(`/sport/tournaments/${encodeURIComponent(tournamentId)}/recalculate-standings`)
+  const data = unwrapApiData(response) || {}
+
+  return {
+    tournamentId: data.tournamentId ?? tournamentId,
+    standings: Array.isArray(data.standings) ? data.standings.map(normalizeStandingRow) : [],
+  }
 }
 
 export async function fetchCoachDashboard(options = {}) {

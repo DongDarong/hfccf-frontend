@@ -71,14 +71,20 @@ function toTableMatch(match) {
 }
 
 const competitionOptions = computed(() => {
-  const options = matches.value.map((match) => match.competition).filter(Boolean)
+  const options = matches.value.map((match) => match.competitionType || match.competition || '').filter(Boolean)
   return [...new Set(options)].sort()
 })
 
 const tournamentOptions = computed(() => {
-  const options = matches.value.map((match) => match.tournament).filter(Boolean)
+  const options = matches.value
+    .map((match) => match.tournament?.name || match.tournamentName || match.tournament || '')
+    .filter(Boolean)
   return [...new Set(options)].sort()
 })
+
+function matchTournamentLabel(match = {}) {
+  return String(match?.tournament?.name || match?.tournamentName || match?.tournament || '').trim()
+}
 
 function normalize(value) {
   return String(value ?? '')
@@ -96,18 +102,18 @@ const filteredMatches = computed(() => {
     let isMatch = true
 
     if (query) {
-      const haystack = normalize(
-        `${match.id} ${match.homeTeam} ${match.awayTeam} ${match.venue} ${match.tournament} ${match.competition}`,
+        const haystack = normalize(
+        `${match.id} ${match.homeTeam} ${match.awayTeam} ${match.venue} ${matchTournamentLabel(match)} ${match.competitionType || match.competition || ''}`,
       )
       isMatch = haystack.includes(query)
     }
 
     if (isMatch && competition.value) {
-      isMatch = normalize(match.competition) === normalize(competition.value)
+      isMatch = normalize(match.competitionType || match.competition || '') === normalize(competition.value)
     }
 
     if (isMatch && tournament.value) {
-      isMatch = normalize(match.tournament) === normalize(tournament.value)
+      isMatch = normalize(matchTournamentLabel(match)) === normalize(tournament.value)
     }
 
     if (isMatch && matchDateInput.value) {

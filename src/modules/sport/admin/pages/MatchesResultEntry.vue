@@ -67,7 +67,7 @@ const fixtureSummary = computed(() => {
     matchDate,
     matchTime,
     venue: String(match.venue || '-'),
-    competition: String(match.competition || '-'),
+    competition: String(match.tournament?.name || match.tournamentName || match.competitionType || '-'),
   }
 })
 
