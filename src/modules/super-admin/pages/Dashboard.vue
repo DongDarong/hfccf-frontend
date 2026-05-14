@@ -30,7 +30,7 @@ defineOptions({
   name: 'SuperAdminCommandCenter',
 })
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 
 /**
  * Command center data is initialized from the local mock so the dashboard renders immediately,
@@ -49,7 +49,7 @@ onMounted(() => {
 })
 
 const viewModel = computed(() =>
-  buildCommandCenterViewModel(t, commandCenterData.value),
+  buildCommandCenterViewModel(t, te, commandCenterData.value),
 )
 </script>
 
