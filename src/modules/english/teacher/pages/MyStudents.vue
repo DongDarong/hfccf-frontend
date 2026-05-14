@@ -4,10 +4,10 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import { fetchTeacherClasses } from '@/modules/english/services/englishApi'
+import { fetchTeacherStudents } from '@/modules/english/services/englishApi'
 
 defineOptions({
-  name: 'EnglishTeacherClassesPage',
+  name: 'EnglishTeacherStudentsPage',
 })
 
 const searchQuery = ref('')
@@ -16,45 +16,46 @@ const currentPage = ref(1)
 const pageSize = 10
 const loading = ref(false)
 const errorMessage = ref('')
-const classes = ref([])
+const students = ref([])
 const pagination = ref({ page: 1, perPage: pageSize, total: 0, totalPages: 1 })
 
 const tableColumns = [
   { key: 'number', label: 'No.', align: 'left' },
-  { key: 'classCode', label: 'Code', align: 'left' },
-  { key: 'name', label: 'Class', align: 'left' },
-  { key: 'level', label: 'Level', align: 'left' },
-  { key: 'studentsCount', label: 'Students', align: 'left' },
-  { key: 'taskCount', label: 'Tasks', align: 'left' },
+  { key: 'studentCode', label: 'Code', align: 'left' },
+  { key: 'student', label: 'Student', align: 'left' },
+  { key: 'gender', label: 'Gender', align: 'left' },
   { key: 'status', label: 'Status', align: 'left' },
+  { key: 'classesCount', label: 'Classes', align: 'left' },
+  { key: 'submissionsCount', label: 'Submissions', align: 'left' },
 ]
 
-const mappedClasses = computed(() =>
-  classes.value.map((item) => ({
+const mappedStudents = computed(() =>
+  students.value.map((item) => ({
     ...item,
-    classCode: item.classCode || '-',
-    studentsCount: item.studentsCount ?? 0,
-    taskCount: item.tasksCount ?? 0,
+    studentCode: item.studentCode || '-',
+    student: item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+    classesCount: item.classesCount ?? 0,
+    submissionsCount: item.submissionsCount ?? 0,
   })),
 )
 
-async function loadClasses() {
+async function loadStudents() {
   loading.value = true
   errorMessage.value = ''
 
   try {
-    const response = await fetchTeacherClasses({
+    const response = await fetchTeacherStudents({
       page: currentPage.value,
       perPage: pageSize,
       search: searchQuery.value,
       status: statusFilter.value,
     })
 
-    classes.value = response.items || []
+    students.value = response.items || []
     pagination.value = response.pagination || pagination.value
   } catch (error) {
-    classes.value = []
-    errorMessage.value = error?.message || 'Failed to load English classes.'
+    students.value = []
+    errorMessage.value = error?.message || 'Failed to load English students.'
   } finally {
     loading.value = false
   }
@@ -62,30 +63,30 @@ async function loadClasses() {
 
 watch([searchQuery, statusFilter], () => {
   currentPage.value = 1
-  loadClasses()
+  loadStudents()
 })
 
 watch(currentPage, () => {
-  loadClasses()
+  loadStudents()
 })
 
 onMounted(() => {
-  loadClasses()
+  loadStudents()
 })
 </script>
 
 <template>
   <MainLayout>
-    <section class="english-teacher-classes-page">
+    <section class="english-teacher-students-page">
       <HeaderSection
-        title="My English Classes"
-        subtitle="Classes assigned to you as the English teacher."
+        title="My English Students"
+        subtitle="Students in classes assigned to you."
       />
 
-      <div class="english-teacher-classes-page__shell">
-        <div class="english-teacher-classes-page__filters">
-          <input v-model="searchQuery" class="english-teacher-classes-page__input" type="search" placeholder="Search classes" />
-          <select v-model="statusFilter" class="english-teacher-classes-page__input">
+      <div class="english-teacher-students-page__shell">
+        <div class="english-teacher-students-page__filters">
+          <input v-model="searchQuery" class="english-teacher-students-page__input" type="search" placeholder="Search students" />
+          <select v-model="statusFilter" class="english-teacher-students-page__input">
             <option value="">All status</option>
             <option value="active">active</option>
             <option value="inactive">inactive</option>
@@ -101,10 +102,10 @@ onMounted(() => {
         </div>
 
         <Table
-          :rows="mappedClasses"
+          :rows="mappedStudents"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No assigned English classes found."
+          empty-text="No assigned English students found."
           :show-view-action="false"
           :show-edit-action="false"
           :show-delete-action="false"
@@ -119,13 +120,13 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.english-teacher-classes-page {
+.english-teacher-students-page {
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
 }
 
-.english-teacher-classes-page__shell {
+.english-teacher-students-page__shell {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -136,13 +137,13 @@ onMounted(() => {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.english-teacher-classes-page__filters {
+.english-teacher-students-page__filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.english-teacher-classes-page__input {
+.english-teacher-students-page__input {
   width: 100%;
   min-height: 2.7rem;
   border-radius: 0.8rem;
@@ -153,7 +154,7 @@ onMounted(() => {
 }
 
 @media (max-width: 900px) {
-  .english-teacher-classes-page__filters {
+  .english-teacher-students-page__filters {
     grid-template-columns: 1fr;
   }
 }

@@ -25,6 +25,27 @@
           "labelKey": "nav.items.teachers",
           "icon": "users",
           "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "english-students",
+          "routeName": "dashboard-english-admin-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "english-classes",
+          "routeName": "dashboard-english-admin-classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "english-tasks",
+          "routeName": "dashboard-english-admin-tasks",
+          "label": "Tasks",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     }

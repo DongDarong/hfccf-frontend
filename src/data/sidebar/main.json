@@ -106,6 +106,96 @@
           }
         },
         {
+          "id": "english-students",
+          "routeName": "dashboard-english-admin-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "english"
+            ]
+          }
+        },
+        {
+          "id": "english-classes",
+          "routeName": "dashboard-english-admin-classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "english"
+            ]
+          }
+        },
+        {
+          "id": "english-tasks",
+          "routeName": "dashboard-english-admin-tasks",
+          "label": "Tasks",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "english"
+            ]
+          }
+        },
+        {
+          "id": "english-teacher-classes",
+          "routeName": "dashboard-english-teacher-classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "english"
+            ]
+          }
+        },
+        {
+          "id": "english-teacher-students",
+          "routeName": "dashboard-english-teacher-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "english"
+            ]
+          }
+        },
+        {
+          "id": "english-teacher-homework",
+          "routeName": "dashboard-english-teacher-homework",
+          "label": "Homework",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "english"
+            ]
+          }
+        },
+        {
           "id": "preschool-teachers",
           "routeName": "dashboard-preschool-admin-users",
           "labelKey": "nav.items.teachers",
