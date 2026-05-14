@@ -1,34 +1,18 @@
 import http from '@/services/http'
-
-function unwrapResponseData(response) {
-  return response?.data?.data ?? response?.data ?? null
-}
-
-function toPositiveInteger(value, fallback) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback
-}
+import { buildQueryParams, unwrapApiData } from '@/services/api'
 
 function normalizeListParams(params = {}) {
-  const page = toPositiveInteger(params.page, 1)
-  const perPage = toPositiveInteger(params.perPage ?? params.per_page, 10)
+  const page = Number(params.page || 1) || 1
+  const perPage = Number((params.perPage ?? params.per_page) || 10) || 10
 
-  const payload = {
+  return buildQueryParams({
     page,
     per_page: perPage,
-  }
-
-  const status = String(params.status || '').trim()
-  const type = String(params.type || '').trim()
-  const module = String(params.module || '').trim()
-  const search = String(params.search || '').trim()
-
-  if (status) payload.status = status
-  if (type) payload.type = type
-  if (module) payload.module = module
-  if (search) payload.search = search
-
-  return payload
+    status: params.status,
+    type: params.type,
+    module: params.module,
+    search: params.search,
+  })
 }
 
 function normalizeCreatePayload(payload = {}) {
@@ -58,7 +42,7 @@ export async function fetchNotifications(params = {}, options = {}) {
     signal: options.signal,
   })
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }
 
 /**
@@ -67,7 +51,7 @@ export async function fetchNotifications(params = {}, options = {}) {
 export async function fetchUnreadCount() {
   const response = await http.get('/notifications/unread-count')
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }
 
 /**
@@ -76,7 +60,7 @@ export async function fetchUnreadCount() {
 export async function createNotification(payload = {}) {
   const response = await http.post('/notifications', normalizeCreatePayload(payload))
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }
 
 /**
@@ -85,7 +69,7 @@ export async function createNotification(payload = {}) {
 export async function markNotificationAsRead(id) {
   const response = await http.patch(`/notifications/${id}/read`)
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }
 
 /**
@@ -94,7 +78,7 @@ export async function markNotificationAsRead(id) {
 export async function markAllNotificationsAsRead() {
   const response = await http.patch('/notifications/read-all')
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }
 
 /**
@@ -103,7 +87,7 @@ export async function markAllNotificationsAsRead() {
 export async function dismissNotification(id) {
   const response = await http.delete(`/notifications/${id}/dismiss`)
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }
 
 /**
@@ -112,5 +96,5 @@ export async function dismissNotification(id) {
 export async function undismissNotification(id) {
   const response = await http.patch(`/notifications/${id}/undismiss`)
 
-  return unwrapResponseData(response)
+  return unwrapApiData(response)
 }

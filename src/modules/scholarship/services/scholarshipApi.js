@@ -1,22 +1,5 @@
 import http from '@/services/http'
-
-function unwrapData(response) {
-  return response?.data?.data ?? response?.data ?? null
-}
-
-function normalizePagination(pagination = {}, fallbackPage = 1, fallbackPerPage = 10, fallbackTotal = 0) {
-  const page = Number(pagination.page || pagination.current_page || fallbackPage) || fallbackPage
-  const perPage = Number(pagination.perPage || pagination.per_page || fallbackPerPage) || fallbackPerPage
-  const total = Number(pagination.total ?? fallbackTotal) || fallbackTotal
-  const totalPages = Number(pagination.totalPages || pagination.last_page || Math.max(Math.ceil(total / perPage), 1)) || 1
-
-  return {
-    page,
-    perPage,
-    total,
-    totalPages,
-  }
-}
+import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -105,20 +88,6 @@ function normalizeApplication(row = {}) {
   }
 }
 
-function extractListPayload(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = unwrapData(response) || {}
-  const rawItems = Array.isArray(payload) ? payload : Array.isArray(payload.items) ? payload.items : []
-
-  return {
-    items: rawItems,
-    pagination: normalizePagination(payload.pagination || payload, fallbackPage, fallbackPerPage, rawItems.length),
-    summary: payload.summary && typeof payload.summary === 'object' ? payload.summary : null,
-    reviewerWorkload: Array.isArray(payload.reviewerWorkload) ? payload.reviewerWorkload : [],
-    recentSubmissions: Array.isArray(payload.recentSubmissions) ? payload.recentSubmissions : [],
-    recentDecisions: Array.isArray(payload.recentDecisions) ? payload.recentDecisions : [],
-  }
-}
-
 function resolveId(payloadOrId) {
   if (typeof payloadOrId === 'string' || typeof payloadOrId === 'number') {
     return String(payloadOrId).trim()
@@ -128,29 +97,29 @@ function resolveId(payloadOrId) {
 }
 
 function normalizeStudentListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
 
   return {
-    items: payload.items.map(normalizeStudent),
-    pagination: payload.pagination,
+    items: items.map(normalizeStudent),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
 function normalizeApplicationListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
 
   return {
-    items: payload.items.map(normalizeApplication),
-    pagination: payload.pagination,
+    items: items.map(normalizeApplication),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
 function normalizeReviewListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
 
   return {
-    items: payload.items.map(normalizeReview),
-    pagination: payload.pagination,
+    items: items.map(normalizeReview),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
@@ -159,7 +128,7 @@ export async function fetchScholarshipDashboard(options = {}) {
     signal: options.signal,
   })
 
-  return unwrapData(response) || {}
+  return unwrapApiData(response) || {}
 }
 
 export async function fetchReviewerDashboard(options = {}) {
@@ -167,7 +136,7 @@ export async function fetchReviewerDashboard(options = {}) {
     signal: options.signal,
   })
 
-  return unwrapData(response) || {}
+  return unwrapApiData(response) || {}
 }
 
 export async function fetchScholarshipStudents(
@@ -175,7 +144,7 @@ export async function fetchScholarshipStudents(
   options = {},
 ) {
   const response = await http.get('/scholarship/students', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -184,7 +153,7 @@ export async function fetchScholarshipStudents(
       gender,
       sort_by: sortBy,
       sort_direction: sortDirection,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -199,13 +168,13 @@ export async function fetchScholarshipStudent(id, options = {}) {
     signal: options.signal,
   })
 
-  const payload = unwrapData(response) || {}
+  const payload = unwrapApiData(response) || {}
   return normalizeStudent(payload.student || payload)
 }
 
 export async function createScholarshipStudent(payload = {}) {
   const response = await http.post('/scholarship/students', payload)
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeStudent(data.student || data)
 }
 
@@ -220,7 +189,7 @@ export async function updateScholarshipStudent(id, payload = {}) {
     _method: 'PUT',
   })
 
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeStudent(data.student || data)
 }
 
@@ -237,7 +206,7 @@ export async function fetchScholarshipApplications(
   options = {},
 ) {
   const response = await http.get('/scholarship/applications', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -248,7 +217,7 @@ export async function fetchScholarshipApplications(
       assigned_reviewer_user_id: reviewerUserId,
       sort_by: sortBy,
       sort_direction: sortDirection,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -260,12 +229,12 @@ export async function fetchReviewerApplications(
   options = {},
 ) {
   const response = await http.get('/scholarship/reviewer/my-applications', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
       status,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -280,13 +249,13 @@ export async function fetchScholarshipApplication(id, options = {}) {
     signal: options.signal,
   })
 
-  const payload = unwrapData(response) || {}
+  const payload = unwrapApiData(response) || {}
   return normalizeApplication(payload.application || payload)
 }
 
 export async function createScholarshipApplication(payload = {}) {
   const response = await http.post('/scholarship/applications', payload)
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeApplication(data.application || data)
 }
 
@@ -301,7 +270,7 @@ export async function updateScholarshipApplication(id, payload = {}) {
     _method: 'PUT',
   })
 
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeApplication(data.application || data)
 }
 
@@ -316,21 +285,21 @@ export async function deleteScholarshipApplication(id) {
 export async function approveScholarshipApplication(id, payload = {}) {
   const applicationId = resolveId(id)
   const response = await http.patch(`/scholarship/applications/${encodeURIComponent(applicationId)}/approve`, payload)
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeApplication(data.application || data)
 }
 
 export async function rejectScholarshipApplication(id, payload = {}) {
   const applicationId = resolveId(id)
   const response = await http.patch(`/scholarship/applications/${encodeURIComponent(applicationId)}/reject`, payload)
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeApplication(data.application || data)
 }
 
 export async function updateScholarshipApplicationStatus(id, payload = {}) {
   const applicationId = resolveId(id)
   const response = await http.patch(`/scholarship/applications/${encodeURIComponent(applicationId)}/status`, payload)
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeApplication(data.application || data)
 }
 
@@ -339,12 +308,12 @@ export async function fetchScholarshipReviews(
   options = {},
 ) {
   const response = await http.get('/scholarship/reviews', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
       recommendation,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -353,7 +322,7 @@ export async function fetchScholarshipReviews(
 
 export async function createScholarshipReview(payload = {}) {
   const response = await http.post('/scholarship/reviews', payload)
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeReview(data.review || data)
 }
 
@@ -363,7 +332,6 @@ export async function updateScholarshipReview(id, payload = {}) {
     ...payload,
     _method: 'PUT',
   })
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeReview(data.review || data)
 }
-

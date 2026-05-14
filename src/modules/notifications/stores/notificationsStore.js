@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
+import { toPositiveInteger } from '@/services/api'
 import {
   createNotification as createNotificationRequest,
   dismissNotification as dismissNotificationRequest,
@@ -12,12 +13,6 @@ import {
 
 const DEFAULT_PER_PAGE = 10
 let activeLoadController = null
-
-function toPositiveInteger(value, fallback) {
-  const parsed = Number(value)
-
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback
-}
 
 function normalizeNotificationItem(item = {}) {
   const status = String(item.status || '').trim().toLowerCase()

@@ -1,26 +1,6 @@
 import http from '@/services/http'
+import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
-
-function unwrapData(response) {
-  return response?.data?.data ?? response?.data ?? null
-}
-
-function normalizePagination(pagination = {}, fallbackPage = 1, fallbackPerPage = 10, fallbackTotal = 0) {
-  const page = Number(pagination.page || pagination.current_page || fallbackPage) || fallbackPage
-  const perPage =
-    Number(pagination.perPage || pagination.per_page || fallbackPerPage) || fallbackPerPage
-  const total = Number(pagination.total ?? fallbackTotal) || fallbackTotal
-  const totalPages =
-    Number(pagination.totalPages || pagination.last_page || Math.max(Math.ceil(total / perPage), 1)) ||
-    1
-
-  return {
-    page,
-    perPage,
-    total,
-    totalPages,
-  }
-}
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -119,19 +99,6 @@ function normalizePaymentRow(row = {}) {
   }
 }
 
-function extractListPayload(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = unwrapData(response) || {}
-  const rawItems = Array.isArray(payload) ? payload : Array.isArray(payload.items) ? payload.items : []
-  return {
-    items: rawItems,
-    pagination: normalizePagination(payload.pagination || payload, fallbackPage, fallbackPerPage, rawItems.length),
-    summary: payload.summary && typeof payload.summary === 'object' ? payload.summary : null,
-    paymentSummary: payload.paymentSummary && typeof payload.paymentSummary === 'object' ? payload.paymentSummary : null,
-    recentAttendance: Array.isArray(payload.recentAttendance) ? payload.recentAttendance : [],
-    upcomingClasses: Array.isArray(payload.upcomingClasses) ? payload.upcomingClasses : [],
-  }
-}
-
 function buildMultipartPayload(payload = {}, options = {}) {
   const formData = new FormData()
   const includePassword = Boolean(options.includePassword)
@@ -187,47 +154,42 @@ function buildMultipartPayload(payload = {}, options = {}) {
 }
 
 function normalizeTeacherListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
   return {
-    items: mapUsers(payload.items),
-    pagination: payload.pagination,
-    summary: payload.summary,
+    items: mapUsers(items),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
 function normalizeClassListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
   return {
-    items: payload.items.map(normalizeClassRow),
-    pagination: payload.pagination,
-    summary: payload.summary,
+    items: items.map(normalizeClassRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
 function normalizeStudentListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
   return {
-    items: payload.items.map(normalizeStudentRow),
-    pagination: payload.pagination,
-    summary: payload.summary,
+    items: items.map(normalizeStudentRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
 function normalizeAttendanceListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
   return {
-    items: payload.items.map(normalizeAttendanceRow),
-    pagination: payload.pagination,
-    summary: payload.summary,
+    items: items.map(normalizeAttendanceRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
 function normalizePaymentListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
-  const payload = extractListPayload(response, fallbackPage, fallbackPerPage)
+  const items = unwrapApiItems(response)
   return {
-    items: payload.items.map(normalizePaymentRow),
-    pagination: payload.pagination,
-    summary: payload.summary,
+    items: items.map(normalizePaymentRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
   }
 }
 
@@ -243,7 +205,7 @@ export async function fetchPreschoolDashboard(options = {}) {
     signal: options.signal,
   })
 
-  return unwrapData(response) || {}
+  return unwrapApiData(response) || {}
 }
 
 export async function fetchPreschoolTeachers(
@@ -251,14 +213,14 @@ export async function fetchPreschoolTeachers(
   options = {},
 ) {
   const response = await http.get('/preschool/teachers', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
       status,
       sort_by: sortBy,
       sort_direction: sortDirection,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -273,12 +235,14 @@ export async function fetchPreschoolTeacher(id, options = {}) {
     signal: options.signal,
   })
 
-  return mapUser(unwrapData(response)?.user || unwrapData(response) || {})
+  const responsePayload = unwrapApiData(response) || {}
+  return mapUser(responsePayload.user || responsePayload)
 }
 
 export async function createPreschoolTeacher(payload = {}) {
   const response = await http.post('/preschool/teachers', buildMultipartPayload(payload, { includePassword: true }))
-  return mapUser(unwrapData(response)?.user || unwrapData(response) || {})
+  const responsePayload = unwrapApiData(response) || {}
+  return mapUser(responsePayload.user || responsePayload)
 }
 
 export async function updatePreschoolTeacher(id, payload = {}) {
@@ -292,7 +256,8 @@ export async function updatePreschoolTeacher(id, payload = {}) {
     buildMultipartPayload(payload, { includePassword: Boolean(normalizeText(payload.password)), method: 'PUT' }),
   )
 
-  return mapUser(unwrapData(response)?.user || unwrapData(response) || {})
+  const responsePayload = unwrapApiData(response) || {}
+  return mapUser(responsePayload.user || responsePayload)
 }
 
 export async function deletePreschoolTeacher(id) {
@@ -308,7 +273,7 @@ export async function fetchPreschoolClasses(
   options = {},
 ) {
   const response = await http.get('/preschool/classes', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -317,7 +282,7 @@ export async function fetchPreschoolClasses(
       teacher_user_id: teacherUserId,
       sort_by: sortBy,
       sort_direction: sortDirection,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -332,13 +297,13 @@ export async function fetchPreschoolClass(id, options = {}) {
     signal: options.signal,
   })
 
-  const payload = unwrapData(response) || {}
-  return normalizeClassRow(payload.class || payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeClassRow(responsePayload.class || responsePayload)
 }
 
 export async function createPreschoolClass(payload = {}) {
   const response = await http.post('/preschool/classes', buildMultipartPayload(payload))
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeClassRow(data.class || data)
 }
 
@@ -353,7 +318,7 @@ export async function updatePreschoolClass(id, payload = {}) {
     buildMultipartPayload(payload, { method: 'PUT' }),
   )
 
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizeClassRow(data.class || data)
 }
 
@@ -370,7 +335,7 @@ export async function fetchPreschoolStudents(
   options = {},
 ) {
   const response = await http.get('/preschool/students', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -379,7 +344,7 @@ export async function fetchPreschoolStudents(
       class_id: classId,
       sort_by: sortBy,
       sort_direction: sortDirection,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -394,14 +359,14 @@ export async function fetchPreschoolStudent(id, options = {}) {
     signal: options.signal,
   })
 
-  const data = unwrapData(response) || {}
-  return normalizeStudentRow(data.student || data)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeStudentRow(responsePayload.student || responsePayload)
 }
 
 export async function createPreschoolStudent(payload = {}) {
   const response = await http.post('/preschool/students', buildMultipartPayload(payload))
-  const data = unwrapData(response) || {}
-  return normalizeStudentRow(data.student || data)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeStudentRow(responsePayload.student || responsePayload)
 }
 
 export async function updatePreschoolStudent(id, payload = {}) {
@@ -415,8 +380,8 @@ export async function updatePreschoolStudent(id, payload = {}) {
     buildMultipartPayload(payload, { method: 'PUT' }),
   )
 
-  const data = unwrapData(response) || {}
-  return normalizeStudentRow(data.student || data)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeStudentRow(responsePayload.student || responsePayload)
 }
 
 export async function deletePreschoolStudent(id) {
@@ -432,7 +397,7 @@ export async function fetchPreschoolAttendance(
   options = {},
 ) {
   const response = await http.get('/preschool/attendance', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -440,7 +405,7 @@ export async function fetchPreschoolAttendance(
       student_id: studentId,
       status,
       attendance_date: attendanceDate,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -452,7 +417,7 @@ export async function fetchMyPreschoolAttendance(
   options = {},
 ) {
   const response = await http.get('/preschool/teacher/attendance', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -460,7 +425,7 @@ export async function fetchMyPreschoolAttendance(
       student_id: studentId,
       status,
       attendance_date: attendanceDate,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -472,8 +437,8 @@ export async function savePreschoolAttendance(payload = {}) {
   const method = attendanceId ? 'put' : 'post'
   const url = attendanceId ? `/preschool/attendance/${encodeURIComponent(attendanceId)}` : '/preschool/attendance'
   const response = await http[method](url, payload)
-  const data = unwrapData(response) || {}
-  return normalizeAttendanceRow(data.attendance || data)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeAttendanceRow(responsePayload.attendance || responsePayload)
 }
 
 export async function fetchPreschoolPayments(
@@ -481,7 +446,7 @@ export async function fetchPreschoolPayments(
   options = {},
 ) {
   const response = await http.get('/preschool/payments', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
       search,
@@ -489,7 +454,7 @@ export async function fetchPreschoolPayments(
       student_id: studentId,
       payment_status: paymentStatus,
       payment_method: paymentMethod,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -504,13 +469,13 @@ export async function fetchPreschoolPayment(id, options = {}) {
     signal: options.signal,
   })
 
-  const data = unwrapData(response) || {}
-  return normalizePaymentRow(data.payment || data)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizePaymentRow(responsePayload.payment || responsePayload)
 }
 
 export async function createPreschoolPayment(payload = {}) {
   const response = await http.post('/preschool/payments', buildMultipartPayload(payload))
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizePaymentRow(data.payment || data)
 }
 
@@ -525,7 +490,7 @@ export async function updatePreschoolPayment(id, payload = {}) {
     buildMultipartPayload(payload, { method: 'PUT' }),
   )
 
-  const data = unwrapData(response) || {}
+  const data = unwrapApiData(response) || {}
   return normalizePaymentRow(data.payment || data)
 }
 
@@ -542,10 +507,10 @@ export async function fetchMyPreschoolStudents(
   options = {},
 ) {
   const response = await http.get('/preschool/teacher/my-students', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
-    },
+    }),
     signal: options.signal,
   })
 
@@ -557,10 +522,10 @@ export async function fetchMyPreschoolClasses(
   options = {},
 ) {
   const response = await http.get('/preschool/teacher/my-classes', {
-    params: {
+    params: buildQueryParams({
       page,
       per_page: perPage,
-    },
+    }),
     signal: options.signal,
   })
 

@@ -1,5 +1,6 @@
 import http from '@/services/http'
 import { mapUser } from '@/services/mappers/userMapper'
+import { getApiErrorMessage, unwrapApiData } from '@/services/api'
 
 const AUTH_USER_STORAGE_KEY = 'hfccf-auth-user'
 const AUTH_TOKEN_STORAGE_KEY = 'hfccf-auth-token'
@@ -58,22 +59,6 @@ function persistAuthenticatedUser(user) {
   return safeUser
 }
 
-function getApiErrorMessage(error, fallbackMessage) {
-  if (error?.isNetworkError || error?.code === 'ERR_NETWORK' || error?.code === 'NETWORK_ERROR') {
-    return 'Unable to reach the backend API. Check that the backend is running and the API URL is correct.'
-  }
-
-  if (error?.validationErrors) {
-    return fallbackMessage
-  }
-
-  return error?.message || error?.response?.data?.message || error?.response?.data?.error || fallbackMessage
-}
-
-function getApiPayload(response) {
-  return response?.data?.data || response?.data || {}
-}
-
 function isHttpClientError(error) {
   return Boolean(error?.response || error?.request)
 }
@@ -120,7 +105,7 @@ export async function login({ email, password, remember = false }) {
       remember: Boolean(remember),
     })
 
-    const payload = getApiPayload(response)
+    const payload = unwrapApiData(response) || {}
     const token = payload.token
     const user = payload.user
 
@@ -166,7 +151,7 @@ export async function requestPasswordReset(email) {
       email: normalizedEmail,
     })
 
-    return getApiPayload(response)
+    return unwrapApiData(response)
   } catch (error) {
     throw new Error(getApiErrorMessage(error, 'Unable to send reset code right now.'), {
       cause: error,
@@ -188,7 +173,7 @@ export async function verifyPasswordResetOtp({ email, code }) {
       code: normalizedCode,
     })
 
-    return getApiPayload(response)
+    return unwrapApiData(response)
   } catch (error) {
     throw new Error(getApiErrorMessage(error, 'Invalid or expired verification code.'), {
       cause: error,
@@ -217,7 +202,7 @@ export async function resetPassword({
       password_confirmation: password_confirmation || password,
     })
 
-    return getApiPayload(response)
+    return unwrapApiData(response)
   } catch (error) {
     throw new Error(getApiErrorMessage(error, 'Unable to reset password right now.'), {
       cause: error,
@@ -241,7 +226,7 @@ export async function changePassword({
       password_confirmation,
     })
 
-    return getApiPayload(response)
+    return unwrapApiData(response)
   } catch (error) {
     throw new Error(getApiErrorMessage(error, 'Unable to update your password right now.'), {
       cause: error,
@@ -284,7 +269,7 @@ export async function updateAuthenticatedUserProfile({
 
     const response = await http.post('/auth/me', formData)
 
-    const payload = getApiPayload(response)
+    const payload = unwrapApiData(response) || {}
     const user = payload.user || payload
 
     return persistAuthenticatedUser(user)
@@ -298,7 +283,7 @@ export async function updateAuthenticatedUserProfile({
 export async function getAuthenticatedUser() {
   try {
     const response = await http.get('/auth/me')
-    const payload = getApiPayload(response)
+    const payload = unwrapApiData(response) || {}
     const user = payload.user || payload
     const safeUser = persistAuthenticatedUser(user)
 

@@ -1,4 +1,5 @@
 import http from '@/services/http'
+import { unwrapApiData } from '@/services/api'
 
 function humanizePermissionCode(code) {
   const normalized = String(code || '').trim()
@@ -32,10 +33,6 @@ function normalizePermissionItem(permission) {
   }
 }
 
-function unwrapResponseData(response) {
-  return response?.data?.data ?? response?.data ?? null
-}
-
 export async function fetchRolePermissions(role) {
   const normalizedRole = String(role || '').trim().toLowerCase()
 
@@ -44,7 +41,7 @@ export async function fetchRolePermissions(role) {
   }
 
   const response = await http.get(`/roles/${encodeURIComponent(normalizedRole)}/permissions`)
-  const payload = unwrapResponseData(response)
+  const payload = unwrapApiData(response)
   const permissions = Array.isArray(payload?.permissions)
     ? payload.permissions
     : Array.isArray(payload?.items)
