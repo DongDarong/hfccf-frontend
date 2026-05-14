@@ -13,6 +13,7 @@ import AdminSummaryCards from '@/modules/super-admin/components/admin-management
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import AddAdminIdentityFields from '@/modules/super-admin/components/admin-management/AddAdminIdentityFields.vue'
+import AddAdminBioField from '@/modules/super-admin/components/admin-management/AddAdminBioField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
 import RolePermissionsPreview from '@/modules/super-admin/components/add-admin/RolePermissionsPreview.vue'
 import { resolveAvatarSource } from '@/utils/avatar'
@@ -53,6 +54,7 @@ const form = reactive({
   name: '',
   email: '',
   phone: '',
+  bio: '',
   role: ROLES.ADMIN_ENGLISH,
   status: statusOptions[0],
   password: '',
@@ -214,11 +216,12 @@ async function onSubmit() {
   isSubmitting.value = true
   try {
     const payload = {
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
-      role: form.role,
-      status: form.status,
+    name: form.name,
+    email: form.email,
+    phone: form.phone,
+    bio: form.bio,
+    role: form.role,
+    status: form.status,
       avatar: form.profileImage,
       removeAvatar: form.avatarAction === 'remove',
       password: form.password,
@@ -270,6 +273,7 @@ onMounted(async () => {
   form.name = found.name || found.username || ''
   form.email = found.email || ''
   form.phone = found.phone || ''
+  form.bio = found.bio || ''
   form.role = found.role || roleOptions[0]
   const normalizedStatus = String(found.status || '')
   const matchedStatus = statusOptions.find(
@@ -470,6 +474,15 @@ const checklistItems = computed(() => [
               :status-label="statusLabel"
             />
 
+            <AddAdminBioField
+              class="add-admin-page__field add-admin-page__field--full"
+              v-model:bio="form.bio"
+              :label="t('users.addAdmin.bio')"
+              :placeholder="t('users.addAdmin.bioPlaceholder')"
+              :help-text="t('users.addAdmin.bioHelp')"
+              :disabled="isSubmitting"
+            />
+
             <RolePermissionsPreview
               class="add-admin-page__field add-admin-page__field--full"
               :role="form.role"
@@ -603,7 +616,7 @@ const checklistItems = computed(() => [
   gap: 0.42rem;
 }
 
-.add-admin-page__field--full {
+  .add-admin-page__field--full {
   grid-column: 1 / -1;
 }
 

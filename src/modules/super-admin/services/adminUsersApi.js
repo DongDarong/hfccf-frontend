@@ -27,6 +27,7 @@ function buildAvatarFormData(formPayload = {}, { includePassword = false, method
   payload.append('username', String(formPayload?.username || formPayload?.name || '').trim())
   payload.append('email', String(formPayload?.email || '').trim().toLowerCase())
   payload.append('phone', String(formPayload?.phone || '').trim())
+  payload.append('bio', String(formPayload?.bio || '').trim())
   payload.append('role', String(formPayload?.role || '').trim())
   payload.append('status', String(formPayload?.status || '').trim() || 'active')
 
