@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { updateAuthenticatedUserProfile } from '@/services/auth'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 
 const { t } = useLanguage()
@@ -18,6 +20,9 @@ const props = defineProps({
 
 const hasImageError = ref(false)
 const isImageLoaded = ref(false)
+const isUploadingAvatar = ref(false)
+const avatarInputRef = ref(null)
+const requestError = ref('')
 
 /**
  * Prefer a safe uploaded avatar or a bundled local avatar.
@@ -53,6 +58,33 @@ function onAvatarLoad() {
 function onAvatarError() {
   hasImageError.value = true
   isImageLoaded.value = false
+}
+
+function openAvatarPicker() {
+  avatarInputRef.value?.click()
+}
+
+async function onAvatarChange(event) {
+  const [file] = event?.target?.files || []
+
+  if (!file || isUploadingAvatar.value) return
+
+  requestError.value = ''
+  isUploadingAvatar.value = true
+
+  try {
+    await updateAuthenticatedUserProfile({
+      avatar: file,
+    })
+  } catch (error) {
+    requestError.value = error?.message || t('common.error')
+  } finally {
+    isUploadingAvatar.value = false
+
+    if (event?.target) {
+      event.target.value = ''
+    }
+  }
 }
 
 const roleLabel = computed(() => {
@@ -102,16 +134,28 @@ const contactItems = computed(() => [
           @error="onAvatarError"
         />
       </div>
-      <button
+      <input
+        ref="avatarInputRef"
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        class="hidden"
+        @change="onAvatarChange"
+      >
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         class="absolute bottom-0 right-1/2 translate-x-10 translate-y-2 rounded-full border border-gray-100 bg-white p-1.5 text-gray-600 shadow-sm transition-colors hover:text-hope-cyan"
+        :loading="isUploadingAvatar"
+        :disabled="isUploadingAvatar"
+        @click="openAvatarPicker"
       >
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0118.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
           ></path>
           <path
             stroke-linecap="round"
@@ -120,7 +164,7 @@ const contactItems = computed(() => [
             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
           ></path>
         </svg>
-      </button>
+      </Button>
     </div>
 
     <h2 id="profileDisplayName" class="text-xl font-bold text-hope-dark">{{ displayName }}</h2>
@@ -138,6 +182,13 @@ const contactItems = computed(() => [
     </div>
 
     <div class="space-y-4 border-t border-slate-100 pt-4 text-left">
+      <div
+        v-if="requestError"
+        class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+      >
+        {{ requestError }}
+      </div>
+
       <div class="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div
           v-for="item in contactItems"

@@ -256,16 +256,39 @@ export async function updateAuthenticatedUserProfile({
   phone,
   department,
   bio,
+  avatar,
+  remove_avatar = false,
 }) {
   try {
-    const response = await http.patch('/auth/me', {
-      first_name,
-      last_name,
-      email,
-      phone,
-      department,
-      bio,
-    })
+    const hasAvatarMutation = Boolean(avatar) || Boolean(remove_avatar)
+
+    const requestBody = hasAvatarMutation
+      ? (() => {
+          const formData = new FormData()
+
+          if (first_name !== undefined) formData.append('first_name', first_name || '')
+          if (last_name !== undefined) formData.append('last_name', last_name || '')
+          if (email !== undefined) formData.append('email', email || '')
+          if (phone !== undefined) formData.append('phone', phone || '')
+          if (department !== undefined) formData.append('department', department || '')
+          if (bio !== undefined) formData.append('bio', bio || '')
+          if (avatar) formData.append('avatar', avatar)
+          if (remove_avatar) formData.append('remove_avatar', '1')
+
+          formData.append('_method', 'PATCH')
+
+          return formData
+        })()
+      : {
+          first_name,
+          last_name,
+          email,
+          phone,
+          department,
+          bio,
+        }
+
+    const response = await http.post('/auth/me', requestBody)
 
     const payload = getApiPayload(response)
     const user = payload.user || payload
