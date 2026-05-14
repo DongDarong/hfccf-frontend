@@ -7,12 +7,14 @@ import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import teamsManagementData from '@/mocks/sport/teams-management-data.json'
-import playersManagementData from '@/mocks/sport/players-management-data.json'
+import {
+  createSportPlayer,
+  fetchSportPlayer,
+  fetchSportTeams,
+  updateSportPlayer,
+} from '@/modules/sport/services/sportApi'
 import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
-import ParentGuardianInformation from '@/modules/sport/admin/components/add-player/ParentGuardianInformation.vue'
-import DocumentsContractsUpload from '@/modules/sport/admin/components/add-player/DocumentsContractsUpload.vue'
 import PlayerChecklist from '@/modules/sport/admin/components/add-player/PlayerChecklist.vue'
 
 defineOptions({
@@ -30,6 +32,7 @@ const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'imag
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 // Sports profile/admin status fields (separate from the "record status" used by the table).
 const registrationStatusOptions = ['registered', 'pending', 'unregistered']
+const teamRows = ref([])
 
 const form = reactive({
   name: '',
@@ -77,34 +80,16 @@ const isViewMode = computed(() => mode.value === 'view')
 const isEditMode = computed(() => mode.value === 'edit')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 
-// Build select options from sport team data first; fall back to player mock data if needed.
 const teamOptions = computed(() => {
-  const fromTeams = (Array.isArray(teamsManagementData) ? teamsManagementData : [])
-    .map((item) => String(item?.name || '').trim())
-    .filter(Boolean)
-  const fromPlayers = (Array.isArray(playersManagementData) ? playersManagementData : [])
-    .map((item) => String(item?.team || '').trim())
-    .filter(Boolean)
-  return [...new Set([...fromTeams, ...fromPlayers])].sort()
+  return [...new Set(teamRows.value.map((item) => String(item?.name || '').trim()).filter(Boolean))].sort()
 })
 
 const divisionOptions = computed(() => {
-  const fromTeams = (Array.isArray(teamsManagementData) ? teamsManagementData : [])
-    .map((item) => String(item?.division || '').trim())
-    .filter(Boolean)
-  const fromPlayers = (Array.isArray(playersManagementData) ? playersManagementData : [])
-    .map((item) => String(item?.division || '').trim())
-    .filter(Boolean)
-  return [...new Set([...fromTeams, ...fromPlayers])].sort()
+  return [...new Set(teamRows.value.map((item) => String(item?.division || '').trim()).filter(Boolean))].sort()
 })
 
-// Positions belong to the player record (data), so we derive a stable set of options from the mock dataset.
 const positionOptions = computed(() => {
-  const fromPlayers = (Array.isArray(playersManagementData) ? playersManagementData : [])
-    // Position was refactored into Primary Position; keep a fallback for older mock records.
-    .map((item) => String(item?.primaryPosition || item?.position || '').trim())
-    .filter(Boolean)
-  return [...new Set(fromPlayers)].sort()
+  return ['Forward', 'Midfielder', 'Defender', 'Goalkeeper']
 })
 
 // Keep these small and stable; can be moved to constants / fetched from API later.
@@ -138,20 +123,20 @@ const selectedRegistrationStatusLabel = computed(() =>
 const checklistItems = computed(() => [
   {
     title: t('sportAddPlayer.sidebarItems.identity'),
-    text: `${selectedTeamLabel.value} • ${selectedDivisionLabel.value}`,
+    text: `${selectedTeamLabel.value} / ${selectedDivisionLabel.value}`,
   },
   {
     title: t('sportAddPlayer.sidebarItems.personal'),
     text:
       form.currentSchool.trim() || form.gradeYear.trim()
-        ? `${form.currentSchool || t('sportAddPlayer.sidebarItems.personalDetail')} • ${form.gradeYear || t('sportAddPlayer.sidebarItems.personalDetail')}`
+        ? `${form.currentSchool || t('sportAddPlayer.sidebarItems.personalDetail')} / ${form.gradeYear || t('sportAddPlayer.sidebarItems.personalDetail')}`
         : t('sportAddPlayer.sidebarItems.personalDetail'),
   },
   {
     title: t('sportAddPlayer.sidebarItems.sports'),
     text:
       form.primaryPosition || form.registrationStatus
-        ? `${form.primaryPosition || t('sportAddPlayer.sidebarItems.sportsDetail')} • ${selectedRegistrationStatusLabel.value}`
+        ? `${form.primaryPosition || t('sportAddPlayer.sidebarItems.sportsDetail')} / ${selectedRegistrationStatusLabel.value}`
         : t('sportAddPlayer.sidebarItems.sportsDetail'),
   },
   {
@@ -238,10 +223,39 @@ async function onSubmit() {
     return
   }
 
-  // No persistence yet: this page defines the future API contract only.
   isSubmitting.value = true
   try {
-    await new Promise((resolve) => setTimeout(resolve, 450))
+    const payload = {
+      name: form.name,
+      phone: form.phone,
+      gender: form.gender,
+      team: form.team,
+      division: form.division,
+      jerseyNumber: form.jerseyNumber,
+      age: form.age,
+      status: form.status,
+      matchesPlayed: form.matchesPlayed,
+      goalsScored: form.goalsScored,
+      photo: form.profileImage,
+      heightCm: form.heightCm,
+      weightKg: form.weightKg,
+      preferredFoot: form.preferredFoot,
+      bloodType: form.bloodType,
+      village: form.village,
+      commune: form.commune,
+      district: form.district,
+      province: form.province,
+      currentSchool: form.currentSchool,
+      gradeYear: form.gradeYear,
+      primaryPosition: form.primaryPosition,
+      registrationStatus: form.registrationStatus,
+    }
+
+    if (isEditMode.value && route.query.id) {
+      await updateSportPlayer(route.query.id, payload)
+    } else {
+      await createSportPlayer(payload)
+    }
     showSuccess.value = true
   } catch {
     errorMessage.value = isEditMode.value
@@ -263,42 +277,47 @@ function onErrorClose() {
 }
 
 onMounted(() => {
+  fetchSportTeams({ perPage: 100 })
+    .then((response) => {
+      teamRows.value = response.items || []
+    })
+    .catch(() => {
+      teamRows.value = []
+    })
+
   // Pre-fill from query id when present (supports future view/edit modes).
   const id = String(route.query.id || '').trim()
   if (!id) return
 
-  const found = (Array.isArray(playersManagementData) ? playersManagementData : []).find(
-    (item) => String(item?.id || '') === id,
-  )
-  if (!found) return
+  fetchSportPlayer(id)
+    .then((found) => {
+      if (!found?.id) return
 
-  form.name = String(found.name || '')
-  form.phone = String(found.phone || '')
-  form.gender = String(found.gender || '')
-  // When mock/API provides an image URL, allow read-only preview in view/edit modes.
-  profileImagePreview.value = String(found.profileImage || found.avatar || found.photo || '').trim()
-  form.team = String(found.team || '')
-  form.division = String(found.division || '')
-  form.jerseyNumber = found.jerseyNumber ?? null
-  form.age = found.age ?? null
-  form.status = String(found.status || statusOptions[0])
-  form.matchesPlayed = Number(found.matchesPlayed ?? 0)
-  form.goalsScored = Number(found.goalsScored ?? 0)
-
-  // Personal information is optional in the mock dataset, so default safely.
-  form.heightCm = found.heightCm ?? null
-  form.weightKg = found.weightKg ?? null
-  form.preferredFoot = String(found.preferredFoot || '')
-  form.bloodType = String(found.bloodType || '')
-  form.village = String(found.village || '')
-  form.commune = String(found.commune || '')
-  form.district = String(found.district || '')
-  form.province = String(found.province || '')
-  form.currentSchool = String(found.currentSchool || '')
-  form.gradeYear = String(found.gradeYear || '')
-
-  form.primaryPosition = String(found.primaryPosition || found.position || '')
-  form.registrationStatus = String(found.registrationStatus || registrationStatusOptions[0])
+      form.name = String(found.name || '')
+      form.phone = String(found.phone || '')
+      form.gender = String(found.gender || '')
+      profileImagePreview.value = String(found.photo || found.avatar || '').trim()
+      form.team = String(found.team || '')
+      form.division = String(found.division || '')
+      form.jerseyNumber = found.jerseyNumber ?? null
+      form.age = found.age ?? null
+      form.status = String(found.status || statusOptions[0])
+      form.matchesPlayed = Number(found.matchesPlayed ?? 0)
+      form.goalsScored = Number(found.goalsScored ?? 0)
+      form.heightCm = found.heightCm ?? null
+      form.weightKg = found.weightKg ?? null
+      form.preferredFoot = String(found.preferredFoot || '')
+      form.bloodType = String(found.bloodType || '')
+      form.village = String(found.village || '')
+      form.commune = String(found.commune || '')
+      form.district = String(found.district || '')
+      form.province = String(found.province || '')
+      form.currentSchool = String(found.currentSchool || '')
+      form.gradeYear = String(found.gradeYear || '')
+      form.primaryPosition = String(found.primaryPosition || found.position || '')
+      form.registrationStatus = String(found.registrationStatus || registrationStatusOptions[0])
+    })
+    .catch(() => {})
 })
 
 onBeforeUnmount(() => {
@@ -381,16 +400,6 @@ onBeforeUnmount(() => {
             @update:primaryPosition="form.primaryPosition = $event"
             @update:registrationStatus="form.registrationStatus = $event"
           />
-
-          <!-- UI-only section: parent/guardian details (no backend persistence yet). -->
-          <div class="mt-6">
-            <ParentGuardianInformation />
-          </div>
-
-          <!-- UI-only section: documents upload (mock drag/drop, no backend persistence yet). -->
-          <div class="mt-6">
-            <DocumentsContractsUpload />
-          </div>
 
           <template #actions>
             <AddPlayerFormActions

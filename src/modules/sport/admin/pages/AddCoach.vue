@@ -8,8 +8,12 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { ROLES } from '@/constants/roles'
 import { useLanguage } from '@/composables/useLanguage'
-import { mapUser } from '@/services/mappers/userMapper'
-import usersMock from '@/mocks/users.json'
+import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
+import {
+  createSportCoach,
+  fetchSportCoach,
+  updateSportCoach,
+} from '@/modules/sport/services/sportApi'
 import AddCoachIntro from '@/modules/sport/admin/components/add-coach/AddCoachIntro.vue'
 import AddCoachFormFields from '@/modules/sport/admin/components/add-coach/AddCoachFormFields.vue'
 import AddCoachFormActions from '@/modules/sport/admin/components/add-coach/AddCoachFormActions.vue'
@@ -27,8 +31,7 @@ const { t, language } = useLanguage()
 const coachDirectoryPath = '/module/sport-admin/users'
 const roleOptions = [ROLES.COACH]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const permissionOptions = ['dashboard:read', 'athletes:read', 'training:write', 'tasks:read']
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp']
 const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
 const form = reactive({
@@ -36,7 +39,7 @@ const form = reactive({
   email: '',
   phone: '',
   role: ROLES.COACH,
-  permissions: permissionOptions.slice(0, 3),
+  permissions: [],
   status: statusOptions[0],
   password: '',
   confirmPassword: '',
@@ -76,7 +79,6 @@ function resetFeedback() {
 
 function statusLabel(status) {
   const normalized = String(status || '').trim()
-
   if (!normalized) return '-'
 
   const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
@@ -86,7 +88,6 @@ function statusLabel(status) {
 
 function roleLabel(value) {
   const normalized = String(value || '').trim()
-
   if (!normalized) return '-'
 
   const key = `common.role.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
@@ -96,7 +97,6 @@ function roleLabel(value) {
 
 function permissionLabel(value) {
   const normalized = String(value || '').trim()
-
   if (!normalized) return '-'
 
   const key = `common.permission.${normalized.toLowerCase()}`
@@ -124,74 +124,65 @@ const pageSubtitle = computed(() => {
 })
 
 const selectedRoleDescription = computed(() => roleLabel(form.role))
+const permissionCount = computed(() => form.permissions.length)
 
-const formSummaryCards = computed(() => {
-  const permissionCount = form.permissions.length
-  const securityStatus =
-    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
-
-  return [
-    {
-      id: 'coach-role',
-      title: t('sportAddCoach.roleScope'),
-      value: selectedRoleDescription.value,
-      label: t('sportAddCoach.programAccess'),
-      status: 'info',
-      statusLabel: statusLabel('info'),
-      surfaceClass: 'bg-cyan-50/80 border-cyan-200',
-    },
-    {
-      id: 'coach-permissions',
-      title: t('sportAddCoach.permissions'),
-      value: permissionCount,
-      label: permissionCount
-        ? t('sportAddCoach.configuredPermissions')
-        : t('sportAddCoach.noPermissionsSelected'),
-      status: permissionCount ? 'success' : 'warning',
-      statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
-      surfaceClass: 'bg-lime-50/80 border-lime-200',
-    },
-    {
-      id: 'coach-account-state',
-      title: t('sportAddCoach.accountState'),
-      value: statusLabel(form.status),
-      label: t('sportAddCoach.initialAccountState'),
-      status: form.status,
-      statusLabel: statusLabel(form.status),
-      surfaceClass: 'bg-amber-50/80 border-amber-200',
-    },
-    {
-      id: 'coach-security-review',
-      title: t('sportAddCoach.securityReview'),
-      value: profileImagePreview.value ? t('sportAddCoach.ready') : t('sportAddCoach.pending'),
-      label: profileImagePreview.value
-        ? t('sportAddCoach.profileImageSet')
-        : t('sportAddCoach.profileImagePending'),
-      status: securityStatus,
-      statusLabel: statusLabel(securityStatus),
-      surfaceClass: 'bg-rose-50/80 border-rose-200',
-    },
-  ]
-})
-
-const checklistItems = computed(() => [
+const formSummaryCards = computed(() => [
   {
-    title: t('sportAddCoach.sidebarItems.role'),
-    text: selectedRoleDescription.value,
+    id: 'coach-role',
+    title: t('sportAddCoach.roleScope'),
+    value: selectedRoleDescription.value,
+    label: t('sportAddCoach.programAccess'),
+    status: 'info',
+    statusLabel: statusLabel('info'),
+    surfaceClass: 'bg-cyan-50/80 border-cyan-200',
   },
   {
-    title: t('sportAddCoach.sidebarItems.permissions'),
-    text: t('sportAddCoach.sidebarItems.permissionsDetail'),
+    id: 'coach-permissions',
+    title: t('sportAddCoach.permissions'),
+    value: permissionCount.value,
+    label: permissionCount.value
+      ? t('sportAddCoach.configuredPermissions')
+      : t('sportAddCoach.noPermissionsSelected'),
+    status: permissionCount.value ? 'success' : 'warning',
+    statusLabel: statusLabel(permissionCount.value ? 'success' : 'warning'),
+    surfaceClass: 'bg-lime-50/80 border-lime-200',
   },
   {
-    title: t('sportAddCoach.sidebarItems.security'),
-    text: t('sportAddCoach.sidebarItems.securityDetail'),
+    id: 'coach-account-state',
+    title: t('sportAddCoach.accountState'),
+    value: statusLabel(form.status),
+    label: t('sportAddCoach.initialAccountState'),
+    status: form.status,
+    statusLabel: statusLabel(form.status),
+    surfaceClass: 'bg-amber-50/80 border-amber-200',
   },
   {
-    title: t('sportAddCoach.sidebarItems.review'),
-    text: t('sportAddCoach.sidebarItems.reviewDetail'),
+    id: 'coach-security-review',
+    title: t('sportAddCoach.securityReview'),
+    value: profileImagePreview.value ? t('sportAddCoach.ready') : t('sportAddCoach.pending'),
+    label: profileImagePreview.value
+      ? t('sportAddCoach.profileImageSet')
+      : t('sportAddCoach.profileImagePending'),
+    status: profileImagePreview.value ? 'success' : 'warning',
+    statusLabel: statusLabel(profileImagePreview.value ? 'success' : 'warning'),
+    surfaceClass: 'bg-rose-50/80 border-rose-200',
   },
 ])
+
+const checklistItems = computed(() => [
+  { title: t('sportAddCoach.sidebarItems.role'), text: selectedRoleDescription.value },
+  { title: t('sportAddCoach.sidebarItems.permissions'), text: t('sportAddCoach.sidebarItems.permissionsDetail') },
+  { title: t('sportAddCoach.sidebarItems.security'), text: t('sportAddCoach.sidebarItems.securityDetail') },
+  { title: t('sportAddCoach.sidebarItems.review'), text: t('sportAddCoach.sidebarItems.reviewDetail') },
+])
+
+async function loadPermissions() {
+  try {
+    form.permissions = await fetchRolePermissions(ROLES.COACH)
+  } catch {
+    form.permissions = ['dashboard:read', 'matches:read', 'events:write']
+  }
+}
 
 function togglePasswordVisibility() {
   isPasswordVisible.value = !isPasswordVisible.value
@@ -199,21 +190,6 @@ function togglePasswordVisibility() {
 
 function toggleConfirmPasswordVisibility() {
   isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value
-}
-
-function hasPermission(permission) {
-  return form.permissions.includes(permission)
-}
-
-function togglePermission(permission) {
-  if (isFormLocked.value) return
-
-  if (hasPermission(permission)) {
-    form.permissions = form.permissions.filter((value) => value !== permission)
-    return
-  }
-
-  form.permissions = [...form.permissions, permission]
 }
 
 function onProfileImageChange(event) {
@@ -251,11 +227,12 @@ function validateForm() {
   if (!form.name.trim()) return t('sportAddCoach.validation.fullNameRequired')
   if (!form.email.trim()) return t('sportAddCoach.validation.emailRequired')
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('sportAddCoach.validation.emailInvalid')
-  if (!form.role) return t('sportAddCoach.validation.roleRequired')
-  if (!form.permissions.length) return t('sportAddCoach.validation.permissionsRequired')
   if (!form.status) return t('sportAddCoach.validation.statusRequired')
-  if (form.password.length < 6) return t('sportAddCoach.validation.passwordLength')
-  if (form.password !== form.confirmPassword) return t('sportAddCoach.validation.passwordMismatch')
+  if (isAddMode.value && form.password.length < 8) return t('sportAddCoach.validation.passwordLength')
+  if (form.password || form.confirmPassword) {
+    if (form.password.length < 8) return t('sportAddCoach.validation.passwordLength')
+    if (form.password !== form.confirmPassword) return t('sportAddCoach.validation.passwordMismatch')
+  }
   return ''
 }
 
@@ -282,12 +259,26 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const payload = {
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      status: form.status,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+      avatar: form.profileImage,
+      removeAvatar: !form.profileImage && !profileImagePreview.value ? false : false,
+    }
+
+    if (isEditMode.value && route.query.id) {
+      await updateSportCoach(route.query.id, payload)
+    } else {
+      await createSportCoach(payload)
+    }
+
     showSuccess.value = true
-  } catch {
-    errorMessage.value = isEditMode.value
-      ? t('sportAddCoach.validation.updateFailed')
-      : t('sportAddCoach.validation.createFailed')
+  } catch (error) {
+    errorMessage.value = error?.message || (isEditMode.value ? t('sportAddCoach.validation.updateFailed') : t('sportAddCoach.validation.createFailed'))
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -303,37 +294,32 @@ async function onSuccessClose() {
   await goBackToCoaches()
 }
 
-function populateFromUser(user) {
-  form.name = user.name || user.username || ''
-  form.email = user.email || ''
-  form.phone = user.phone || ''
-  form.role = user.role || ROLES.COACH
-  form.permissions = Array.isArray(user.permissions) ? [...user.permissions] : permissionOptions.slice(0, 3)
-
-  const normalizedStatus = String(user.status || '')
-  const matchedStatus = statusOptions.find(
-    (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
-  )
-  form.status = matchedStatus || statusOptions[0]
-  form.password = 'Coach@123'
-  form.confirmPassword = 'Coach@123'
+async function populateFromCoach(coach) {
+  form.name = coach.fullName || coach.name || coach.username || ''
+  form.email = coach.email || ''
+  form.phone = coach.phone || ''
+  form.role = ROLES.COACH
+  form.permissions = Array.isArray(coach.permissions) && coach.permissions.length ? coach.permissions : await fetchRolePermissions(ROLES.COACH)
+  form.status = statusOptions.find((status) => status.toLowerCase() === String(coach.status || '').toLowerCase()) || statusOptions[0]
+  form.password = ''
+  form.confirmPassword = ''
   form.profileImage = null
   cleanupProfileImageObjectUrl()
-  profileImagePreview.value = String(user.avatar || '').trim()
+  profileImagePreview.value = String(coach.avatar || '').trim()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadPermissions()
+
   if (isAddMode.value) return
 
   const id = String(route.query.id || '').trim()
-  const found = mapUser(
-    usersMock.find(
-      (item) => String(item.id) === id && String(item.role || '').toLowerCase() === ROLES.COACH,
-    ) || {},
-  )
+  if (!id) return
 
-  if (!found?.id) return
-  populateFromUser(found)
+  const coach = await fetchSportCoach(id).catch(() => null)
+  if (!coach?.id) return
+
+  await populateFromCoach(coach)
 })
 
 onBeforeUnmount(() => {
@@ -369,7 +355,6 @@ onBeforeUnmount(() => {
             :profile-image-preview="profileImagePreview"
             :role-options="roleOptions"
             :status-options="statusOptions"
-            :permission-options="permissionOptions"
             :permissions="form.permissions"
             :name="form.name"
             :email="form.email"
@@ -393,7 +378,6 @@ onBeforeUnmount(() => {
             @update:confirm-password="form.confirmPassword = $event"
             @profile-image-change="onProfileImageChange"
             @profile-image-remove="removeProfileImage"
-            @toggle-permission="togglePermission"
             @toggle-password="togglePasswordVisibility"
             @toggle-confirm-password="toggleConfirmPasswordVisibility"
           />

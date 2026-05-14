@@ -1,12 +1,5 @@
 <script setup>
-/**
- * SportAdminAddMatchPage
- * Placeholder shell for creating or editing a match record.
- *
- * The page stays UI-only, but it now supports add/edit/delete flows so the
- * Manage Matches table can route to a real destination immediately.
- */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -15,8 +8,12 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FormMatche from '@/modules/sport/admin/components/add-match/FormMatche.vue'
 import MatchChecklist from '@/modules/sport/admin/components/add-match/MatchChecklist.vue'
-import teamsManagementData from '@/mocks/sport/teams-management-data.json'
-import matchesManagementData from '@/mocks/sport/matches-management-data.json'
+import {
+  createSportMatch,
+  fetchSportMatch,
+  fetchSportTeams,
+  updateSportMatch,
+} from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportAdminAddMatchPage',
@@ -50,6 +47,7 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
 const feedbackMessage = ref('')
+const teamRows = ref([])
 
 const competitionType = ref('')
 const tournament = ref('')
@@ -79,12 +77,7 @@ const statusOptions = computed(() => [
 ])
 
 const teamOptions = computed(() => {
-  // Reuse the live team directory so match team selection stays aligned with sport data.
-  const teams = Array.isArray(teamsManagementData) ? teamsManagementData : []
-  const values = teams
-    .map((item) => String(item?.name || '').trim())
-    .filter(Boolean)
-  return [...new Set(values)].sort()
+  return [...new Set(teamRows.value.map((item) => String(item?.name || '').trim()).filter(Boolean))].sort()
 })
 
 const selectedCompetitionLabel = computed(() => {
@@ -128,11 +121,7 @@ const checklistHighlightValue = computed(() =>
   isEditMode.value ? t('sportMatchesManagement.sidebarHighlightEdit') : t('sportMatchesManagement.sidebarHighlightAdd'),
 )
 
-const selectedMatch = computed(() => {
-  if (!matchId.value) return null
-  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
-  return matches.find((item) => String(item?.id || '').trim() === matchId.value) || null
-})
+const selectedMatch = ref(null)
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -156,7 +145,6 @@ function inferCompetitionType(match) {
 function applySelectedMatch(match) {
   if (!match) return
 
-  // Hydrate the form from the mock row so edit mode behaves like a real record view.
   competitionType.value = inferCompetitionType(match)
   tournament.value = String(match.tournament || '')
   dateTime.value = parseSchedule(match.schedule)
@@ -174,7 +162,6 @@ watch(
       return
     }
 
-    // Keep the add flow clean when there is no record to hydrate.
     competitionType.value = ''
     tournament.value = ''
     dateTime.value = ''
@@ -198,8 +185,21 @@ async function onSubmit() {
   isSubmitting.value = true
 
   try {
-    // Placeholder submit: the real match form will replace this shell later.
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const payload = {
+      competitionType: competitionType.value,
+      tournamentName: tournament.value,
+      scheduledAt: dateTime.value,
+      venue: venue.value,
+      status: status.value,
+      homeTeam: homeTeam.value,
+      awayTeam: awayTeam.value,
+    }
+
+    if (isEditMode.value && matchId.value) {
+      await updateSportMatch(matchId.value, payload)
+    } else {
+      await createSportMatch(payload)
+    }
     feedbackMessage.value = isEditMode.value
       ? t('sportMatchesManagement.updateSuccessMessage')
       : t('sportMatchesManagement.addSuccessMessage')
@@ -223,6 +223,32 @@ function onSuccessClose() {
 function onCancel() {
   router.push({ name: 'dashboard-sport-admin-matches' })
 }
+
+onMounted(() => {
+  fetchSportTeams({ perPage: 100 })
+    .then((response) => {
+      teamRows.value = response.items || []
+    })
+    .catch(() => {
+      teamRows.value = []
+    })
+
+  if (!matchId.value) return
+
+  fetchSportMatch(matchId.value)
+    .then((match) => {
+      if (!match?.id) return
+      selectedMatch.value = match
+      competitionType.value = match.competitionType || ''
+      tournament.value = match.tournamentName || ''
+      dateTime.value = String(match.scheduledAt || '').slice(0, 16)
+      venue.value = match.venue || ''
+      status.value = match.status || 'scheduled'
+      homeTeam.value = match.homeTeam || ''
+      awayTeam.value = match.awayTeam || ''
+    })
+    .catch(() => {})
+})
 </script>
 
 <template>

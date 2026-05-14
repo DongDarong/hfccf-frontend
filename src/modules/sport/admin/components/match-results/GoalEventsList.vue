@@ -63,9 +63,12 @@ const combinedEvents = computed(() => {
 })
 
 function getTagSeverity(type) {
-  if (type === 'Red') return 'danger'
-  if (type === 'Yellow') return 'warn'
-  if (type === 'Green') return 'success'
+  const value = String(type || '').toLowerCase()
+  if (value === 'red_card') return 'danger'
+  if (value === 'yellow_card') return 'warn'
+  if (value === 'goal' || value === 'penalty_goal') return 'success'
+  if (value === 'own_goal') return 'warning'
+  if (value === 'substitution') return 'info'
   return 'info'
 }
 
@@ -141,16 +144,11 @@ function cancelDelete() {
 
       <Column :header="t('common.type')">
         <template #body="{ data }">
-          <div class="flex flex-wrap gap-1.5">
-            <Tag
-              v-for="type in data.goalTypes"
-              :key="type"
-              :value="type"
-              :severity="getTagSeverity(type)"
-              class="!text-[0.6rem] !font-black uppercase"
-            />
-            <span v-if="!data.goalTypes?.length" class="text-slate-300">-</span>
-          </div>
+          <Tag
+            :value="data.eventType"
+            :severity="getTagSeverity(data.eventType)"
+            class="!text-[0.6rem] !font-black uppercase"
+          />
         </template>
       </Column>
 

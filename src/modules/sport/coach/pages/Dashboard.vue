@@ -1,12 +1,20 @@
 <script setup>
+import { computed, onMounted, ref } from 'vue'
 import RoleDashboardLayout from '@/shared/components/dashboards/RoleDashboardLayout.vue'
+import { fetchCoachDashboard } from '@/modules/sport/services/sportApi'
 
-const cards = [
-  { title: 'Training blocks', value: 8, label: 'Current cycle', status: 'info' },
-  { title: 'Performance reviews', value: 12, label: 'Pending completion', status: 'warning' },
-  { title: 'Injury watchlist', value: 3, label: 'Monitor closely', status: 'error' },
-  { title: 'Programs completed', value: 5, label: 'This month', status: 'success' },
-]
+const dashboard = ref({ summary: {} })
+
+const cards = computed(() => [
+  { title: 'Teams', value: dashboard.value.summary.teams ?? 0, label: 'Assigned teams', status: 'info' },
+  { title: 'Matches', value: dashboard.value.summary.matches ?? 0, label: 'Recent matches', status: 'warning' },
+  { title: 'Live matches', value: dashboard.value.summary.liveMatches ?? 0, label: 'Current activity', status: 'error' },
+  { title: 'Upcoming', value: dashboard.value.summary.upcomingMatches ?? 0, label: 'Scheduled next', status: 'success' },
+])
+
+onMounted(async () => {
+  dashboard.value = await fetchCoachDashboard().catch(() => ({ summary: {} }))
+})
 </script>
 
 <template>
@@ -23,7 +31,6 @@ const cards = [
     ]"
   />
 </template>
-
 
 
 

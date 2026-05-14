@@ -4,7 +4,7 @@
  * Placeholder page for match management (fixtures / live match feeds).
  * UI-only for now: future backend integration will use `sport_matches` and related tournament tables.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -16,7 +16,7 @@ import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-man
 import MatchesTable from '@/modules/sport/admin/components/matches-management/MatchesTable.vue'
 import PlayerInfoToolbar from '@/modules/sport/admin/components/player-management/PlayerInfoToolbar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import matchesData from '@/mocks/sport/matches-management-data.json'
+import { deleteSportMatch, fetchSportMatches } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportAdminManageMatchesPage',
@@ -47,7 +47,7 @@ const selectedMatch = ref(null)
 const pageSize = 8
 
 // Placeholder options: these will come from the backend/API later.
-const matches = ref(Array.isArray(matchesData) ? [...matchesData] : [])
+const matches = ref([])
 
 function toScoreNumber(value) {
   const numericValue = Number(value)
@@ -231,7 +231,7 @@ function onCancelDelete() {
   selectedMatch.value = null
 }
 
-function onConfirmDelete() {
+async function onConfirmDelete() {
   if (isDeleting.value) return
   isDeleting.value = true
 
@@ -243,6 +243,7 @@ function onConfirmDelete() {
 
   const homeTeam = String(selectedMatch.value?.homeTeam || '').trim()
   const awayTeam = String(selectedMatch.value?.awayTeam || '').trim()
+  await deleteSportMatch(id).catch(() => null)
   matches.value = matches.value.filter((item) => item.id !== id)
 
   deleteSuccessMessage.value = t('sportMatchesManagement.confirm.deletedMessage', {
@@ -254,6 +255,12 @@ function onConfirmDelete() {
   onCancelDelete()
   isDeleting.value = false
 }
+
+onMounted(() => {
+  void fetchSportMatches({ perPage: 100 }).then((response) => {
+    matches.value = response.items || []
+  })
+})
 </script>
 
 <template>
