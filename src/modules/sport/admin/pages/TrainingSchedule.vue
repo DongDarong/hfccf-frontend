@@ -125,11 +125,11 @@ function onAddSession() {
 }
 
 function onViewSession(session) {
-  console.log('Viewing session:', session)
+  selectedSession.value = session
 }
 
 function onEditSession(session) {
-  console.log('Editing session:', session)
+  selectedSession.value = session
 }
 
 function onDeleteSession(session) {

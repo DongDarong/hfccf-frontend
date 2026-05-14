@@ -20,20 +20,31 @@ const { t } = useLanguage()
 const form = ref({
   firstName: '',
   lastName: '',
+  username: '',
   email: '',
   phone: '',
-  department: '',
+  departmentCode: '',
   bio: '',
 })
 
 const departments = [
-  { label: 'Operations', value: 'Operations' },
-  { label: 'Education', value: 'Education' },
-  { label: 'Sports', value: 'Sports' },
-  { label: 'Administration', value: 'Administration' },
+  { label: 'Operations', value: 'operations' },
+  { label: 'Education', value: 'education' },
+  { label: 'Sports', value: 'sports' },
+  { label: 'Administration', value: 'administration' },
 ]
 
-const currentDepartment = computed(() => form.value.department || props.user.department || '')
+const departmentLabelByCode = departments.reduce((carry, department) => {
+  carry[department.value] = department.label
+  return carry
+}, {})
+
+const currentDepartment = computed(
+  () =>
+    departmentLabelByCode[form.value.departmentCode] ||
+    props.user.department ||
+    '',
+)
 const isSubmitting = ref(false)
 const requestError = ref('')
 
@@ -41,9 +52,13 @@ function syncForm(user) {
   form.value = {
     firstName: user?.firstName || user?.name?.split?.(' ')?.[0] || '',
     lastName: user?.lastName || '',
+    username: user?.username || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    department: user?.department || '',
+    departmentCode:
+      user?.departmentCode ||
+      departments.find((item) => item.label === user?.department)?.value ||
+      '',
     bio: user?.bio || '',
   }
 }
@@ -64,9 +79,10 @@ async function handleSubmit() {
     const updatedUser = await updateAuthenticatedUserProfile({
       first_name: form.value.firstName,
       last_name: form.value.lastName,
+      username: form.value.username,
       email: form.value.email,
       phone: form.value.phone,
-      department: form.value.department,
+      department_code: form.value.departmentCode,
       bio: form.value.bio,
     })
 
@@ -121,6 +137,18 @@ async function handleSubmit() {
       </div>
 
       <div class="flex flex-col gap-2">
+        <label class="text-sm font-bold text-surface-900" for="username">
+          {{ t('pages.profile.general.username') }}
+        </label>
+        <InputText
+          id="username"
+          v-model="form.username"
+          :placeholder="t('pages.profile.general.usernamePlaceholder')"
+          class="w-full"
+        />
+      </div>
+
+      <div class="flex flex-col gap-2">
         <label class="text-sm font-bold text-surface-900" for="email">
           {{ t('pages.profile.general.email') }}
         </label>
@@ -151,7 +179,7 @@ async function handleSubmit() {
         </label>
         <Select
           id="department"
-          v-model="form.department"
+          v-model="form.departmentCode"
           :options="departments"
           option-label="label"
           option-value="value"

@@ -74,24 +74,6 @@ function getApiPayload(response) {
   return response?.data?.data || response?.data || {}
 }
 
-async function requestWithMethodFallback(requests) {
-  let lastError = null
-
-  for (const request of requests) {
-    try {
-      return await request()
-    } catch (error) {
-      lastError = error
-
-      if (error?.response?.status !== 405) {
-        throw error
-      }
-    }
-  }
-
-  throw lastError || new Error('The request method is not allowed.')
-}
-
 function isHttpClientError(error) {
   return Boolean(error?.response || error?.request)
 }
@@ -253,16 +235,11 @@ export async function changePassword({
   }
 
   try {
-    const payload = {
+    const response = await http.patch('/auth/change-password', {
       current_password,
       password,
       password_confirmation,
-    }
-
-    const response = await requestWithMethodFallback([
-      () => http.patch('/auth/change-password', payload),
-      () => http.post('/auth/change-password', payload),
-    ])
+    })
 
     return getApiPayload(response)
   } catch (error) {
@@ -275,51 +252,37 @@ export async function changePassword({
 export async function updateAuthenticatedUserProfile({
   first_name,
   last_name,
+  username,
   email,
   phone,
+  department_code,
   department,
   bio,
   avatar,
   remove_avatar = false,
 }) {
   try {
-    const hasAvatarMutation = Boolean(avatar) || Boolean(remove_avatar)
+    const formData = new FormData()
 
-    const jsonPayload = {
-      first_name,
-      last_name,
-      email,
-      phone,
-      department,
-      bio,
+    if (first_name !== undefined) formData.append('first_name', first_name || '')
+    if (last_name !== undefined) formData.append('last_name', last_name || '')
+    if (username !== undefined) formData.append('username', username || '')
+    if (email !== undefined) formData.append('email', email || '')
+    if (phone !== undefined) formData.append('phone', phone || '')
+
+    const resolvedDepartmentCode = String(department_code || department || '').trim()
+    if (department_code !== undefined || department !== undefined) {
+      formData.append('department_code', resolvedDepartmentCode)
     }
 
-    const response = await requestWithMethodFallback(
-      hasAvatarMutation
-        ? [
-            () => {
-              const formData = new FormData()
+    if (bio !== undefined) formData.append('bio', bio || '')
+    if (avatar) formData.append('avatar', avatar)
+    if (remove_avatar) formData.append('remove_avatar', '1')
 
-              if (first_name !== undefined) formData.append('first_name', first_name || '')
-              if (last_name !== undefined) formData.append('last_name', last_name || '')
-              if (email !== undefined) formData.append('email', email || '')
-              if (phone !== undefined) formData.append('phone', phone || '')
-              if (department !== undefined) formData.append('department', department || '')
-              if (bio !== undefined) formData.append('bio', bio || '')
-              if (avatar) formData.append('avatar', avatar)
-              if (remove_avatar) formData.append('remove_avatar', '1')
+    // POST with method spoofing keeps multipart avatar uploads compatible with Laravel.
+    formData.append('_method', 'PATCH')
 
-              formData.append('_method', 'PATCH')
-
-              return http.post('/auth/me', formData)
-            },
-            () => http.patch('/auth/me', jsonPayload),
-          ]
-        : [
-            () => http.patch('/auth/me', jsonPayload),
-            () => http.post('/auth/me', jsonPayload),
-          ],
-    )
+    const response = await http.post('/auth/me', formData)
 
     const payload = getApiPayload(response)
     const user = payload.user || payload
@@ -393,9 +356,7 @@ function getStoredUser() {
     const user = JSON.parse(raw)
 
     return user && typeof user === 'object' ? user : null
-  } catch (error) {
-    console.error('Failed to parse stored auth user:', error)
-
+  } catch {
     return null
   }
 }

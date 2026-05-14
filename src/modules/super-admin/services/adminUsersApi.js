@@ -64,19 +64,18 @@ function extractAdminUsersPayload(response) {
     ? payload
     : Array.isArray(payload?.items)
       ? payload.items
-      : Array.isArray(payload?.users)
-        ? payload.users
         : []
 
   const pagination = payload?.pagination && typeof payload.pagination === 'object'
     ? payload.pagination
     : {
-        current_page: 1,
-        last_page: 1,
-        per_page: 10,
-        total: rawItems.length,
-        from: rawItems.length ? 1 : null,
-        to: rawItems.length || null,
+        page: Number(payload?.page) || 1,
+        perPage: Number(payload?.perPage) || Number(payload?.per_page) || 10,
+        total: Number(payload?.total) || rawItems.length,
+        totalPages: Number(payload?.totalPages) || Number(payload?.last_page) || 1,
+        current_page: Number(payload?.page) || Number(payload?.current_page) || 1,
+        last_page: Number(payload?.totalPages) || Number(payload?.last_page) || 1,
+        per_page: Number(payload?.perPage) || Number(payload?.per_page) || 10,
       }
 
   const summary = payload?.summary && typeof payload.summary === 'object' ? payload.summary : {}
@@ -114,10 +113,21 @@ export async function listAdminUsers(
   })
 
   const payload = extractAdminUsersPayload(response)
+  const pagination = payload.pagination || {}
 
   return {
     items: toAdminUsers(payload.items),
-    pagination: payload.pagination,
+    pagination: {
+      page: Number(pagination.page || pagination.current_page || page) || page,
+      perPage: Number(pagination.perPage || pagination.per_page || perPage) || perPage,
+      total: Number(pagination.total) || 0,
+      totalPages: Number(pagination.totalPages || pagination.last_page || 1) || 1,
+      current_page: Number(pagination.current_page || pagination.page || page) || page,
+      last_page: Number(pagination.last_page || pagination.totalPages || 1) || 1,
+      per_page: Number(pagination.per_page || pagination.perPage || perPage) || perPage,
+      from: pagination.from ?? null,
+      to: pagination.to ?? null,
+    },
     summary: payload.summary,
   }
 }

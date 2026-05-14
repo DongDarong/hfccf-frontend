@@ -43,8 +43,8 @@ async function loadCommandCenterData() {
 }
 
 onMounted(() => {
-  void loadCommandCenterData().catch((error) => {
-    console.error('Failed to load command center data:', error)
+  void loadCommandCenterData().catch(() => {
+    commandCenterData.value = commandCenterMock
   })
 })
 

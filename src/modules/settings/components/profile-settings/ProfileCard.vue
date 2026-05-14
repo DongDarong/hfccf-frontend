@@ -5,7 +5,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { updateAuthenticatedUserProfile } from '@/services/auth'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 
-const { t } = useLanguage()
+const { t, te } = useLanguage()
 
 const props = defineProps({
   user: {
@@ -94,9 +94,14 @@ const roleLabel = computed(() => {
     return '-'
   }
 
-  const roleKey = normalizedRole.toLowerCase().replace(/\s+/g, '')
-  const translated = t(`common.role.${roleKey}`)
-  return translated === `common.role.${roleKey}` ? props.user.role : translated
+  const roleKey = normalizedRole.toLowerCase().replace(/[\s-]+/g, '_')
+  const translationKey = `common.role.${roleKey}`
+
+  if (te(translationKey)) {
+    return t(translationKey)
+  }
+
+  return props.user.role || '-'
 })
 
 const statusLabel = computed(() => {
@@ -114,6 +119,7 @@ const statusLabel = computed(() => {
 const bioText = computed(() => String(props.user.bio || '').trim())
 const departmentLabel = computed(() => String(props.user.department || '-').trim() || '-')
 const contactItems = computed(() => [
+  { label: t('pages.profile.general.username'), value: props.user.username || '-' },
   { label: t('pages.profile.general.email'), value: props.user.email || '-' },
   { label: t('pages.profile.general.phone'), value: props.user.phone || '-' },
   { label: t('pages.profile.general.department'), value: departmentLabel.value },
@@ -149,7 +155,7 @@ const contactItems = computed(() => [
       <input
         ref="avatarInputRef"
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp"
         class="hidden"
         @change="onAvatarChange"
       >

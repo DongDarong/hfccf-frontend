@@ -1,40 +1,12 @@
-import http from '@/services/http'
 import commandCenterMock from '@/mocks/super-admin/commandCenterData'
 
-const COMMAND_CENTER_ROUTE = '/super-admin/command-center'
-
-function isFallbackWorthyError(error) {
-  const status = error?.response?.status
-  return !error?.response || status === 404 || status === 405
-}
-
-function unwrapCommandCenterPayload(response) {
-  const payload = response?.data?.data ?? response?.data ?? {}
-
-  if (payload?.commandCenter) return payload.commandCenter
-  if (payload?.command_center) return payload.command_center
-  if (payload?.data?.page && payload?.data?.sections) return payload.data
-
-  return payload
-}
-
-async function requestWithFallback(requestHandler, fallbackHandler) {
-  try {
-    return await requestHandler()
-  } catch (error) {
-    if (!isFallbackWorthyError(error)) throw error
-    console.warn('Falling back to local command center data:', error)
-    return fallbackHandler()
-  }
-}
-
 /**
- * Load the command center data from the backend when available.
- * Falls back to the local mock so the dashboard remains functional in dev and offline scenarios.
+ * Load the command center data from the local mock.
+ *
+ * The backend command-center endpoint is not part of the current API contract,
+ * so we avoid making a dead request that would emit a 404 in the console.
+ * This keeps the page deterministic until a real endpoint is introduced.
  */
 export async function fetchCommandCenterData() {
-  return requestWithFallback(async () => {
-    const response = await http.get(COMMAND_CENTER_ROUTE)
-    return unwrapCommandCenterPayload(response)
-  }, () => commandCenterMock)
+  return commandCenterMock
 }

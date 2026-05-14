@@ -67,6 +67,13 @@ const overviewSections = computed(() => {
         : t('pages.profile.general.description'),
     },
     {
+      title: t('pages.profile.general.username'),
+      tag: currentUser.value.username || '-',
+      copy: currentUser.value.username
+        ? t('pages.profile.general.usernameHelp')
+        : t('pages.profile.general.usernamePlaceholder'),
+    },
+    {
       title: t('pages.profile.general.bio'),
       tag: currentUser.value.bio ? t('common.status.active') : t('common.status.pending'),
       copy: currentUser.value.bio || t('pages.profile.general.bioPlaceholder'),
@@ -92,7 +99,7 @@ const overviewSections = computed(() => {
 
       <ProfileSettingsGrid
         :sections="overviewSections"
-        :columns="4"
+        :columns="5"
       />
 
       <div class="profile-settings-layout">
