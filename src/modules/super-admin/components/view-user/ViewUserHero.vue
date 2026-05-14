@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import Button from 'primevue/button'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import RolesBadge from '@/components/badges/RolesBadge.vue'
@@ -7,10 +8,14 @@ defineOptions({
   name: 'ViewUserHero',
 })
 
-defineProps({
+const props = defineProps({
   user: {
     type: Object,
     required: true,
+  },
+  bio: {
+    type: String,
+    default: '',
   },
   avatarSource: {
     type: String,
@@ -47,6 +52,8 @@ defineProps({
 })
 
 const emit = defineEmits(['refresh', 'back', 'edit', 'avatar-load', 'avatar-error'])
+
+const bioText = computed(() => String(props.bio || '').trim())
 </script>
 
 <template>
@@ -75,6 +82,9 @@ const emit = defineEmits(['refresh', 'back', 'edit', 'avatar-load', 'avatar-erro
         <h1 class="view-user-hero__name">{{ user.fullName || user.name || '-' }}</h1>
         <p class="view-user-hero__subline">
           {{ user.username ? `@${user.username}` : user.email || '-' }}
+        </p>
+        <p v-if="bioText" class="view-user-hero__bio">
+          {{ bioText }}
         </p>
       </div>
 
@@ -177,6 +187,15 @@ const emit = defineEmits(['refresh', 'back', 'edit', 'avatar-load', 'avatar-erro
   margin: 0;
   color: #64748b;
   font-size: 0.92rem;
+}
+
+.view-user-hero__bio {
+  margin: 0.35rem 0 0;
+  max-width: 58rem;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  white-space: pre-line;
 }
 
 .view-user-hero__chips,

@@ -330,6 +330,7 @@ onMounted(() => {
           <template #content>
             <ViewUserHero
               :user="normalizedUser"
+              :bio="normalizedUser.bio"
               :avatar-source="avatarSource"
               :avatar-initials="avatarInitials"
               :should-show-avatar="shouldShowAvatar"
