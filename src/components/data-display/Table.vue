@@ -60,6 +60,18 @@ const props = defineProps({
     default: 'menu',
     validator: (value) => ['menu', 'buttons'].includes(value),
   },
+  showViewAction: {
+    type: Boolean,
+    default: true,
+  },
+  showEditAction: {
+    type: Boolean,
+    default: true,
+  },
+  showDeleteAction: {
+    type: Boolean,
+    default: true,
+  },
   sortField: {
     type: String,
     default: '',
@@ -493,6 +505,7 @@ function onSort(event) {
             class="ui-data-table__row-actions"
           >
             <Button
+              v-if="props.showViewAction"
               type="button"
               icon="pi pi-eye"
               rounded="full"
@@ -504,6 +517,7 @@ function onSort(event) {
             />
 
             <Button
+              v-if="props.showEditAction"
               type="button"
               icon="pi pi-pencil"
               rounded="full"
@@ -515,6 +529,7 @@ function onSort(event) {
             />
 
             <Button
+              v-if="props.showDeleteAction"
               type="button"
               icon="pi pi-trash"
               rounded="full"
@@ -529,6 +544,9 @@ function onSort(event) {
           <ActionsButton
             v-else
             :item="data"
+            :show-view="showViewAction"
+            :show-edit="showEditAction"
+            :show-delete="showDeleteAction"
             @view="emit('view', data)"
             @edit="emit('edit', data)"
             @delete="emit('delete', data)"
