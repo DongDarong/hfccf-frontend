@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { nextTick } from 'vue'
 import { flushPromises } from '@vue/test-utils'
 import { mount as vtuMount } from '@vue/test-utils'

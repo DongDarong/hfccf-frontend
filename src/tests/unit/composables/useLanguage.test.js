@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { withI18nSetup } from '../../helpers/mount'
 import { useLanguage } from '@/composables/useLanguage'
 
-function setup(locale = 'en') {
+function setup(_locale = 'en') {
   return withI18nSetup(() => useLanguage(), {
     en: { greeting: 'Hello' },
     kh: { greeting: 'សួស្ដី' },
