@@ -16,20 +16,18 @@ export function useNavbarLocale() {
 
   const isKh = computed(() => locale.value === 'kh')
 
-  const calendarLabel = computed(() => {
-    return isKh.value ? 'កាលវិភាគ' : 'Calendar'
-  })
+  const calendarLabel = computed(() => t('common.navigation.calendar'))
 
-  const localeOptions = [
+  const localeOptions = computed(() => [
     {
-      label: 'EN',
+      label: t('common.navigation.languages.english'),
       value: 'en',
     },
     {
-      label: 'KH',
+      label: t('common.navigation.languages.khmer'),
       value: 'kh',
     },
-  ]
+  ])
 
   return {
     t,

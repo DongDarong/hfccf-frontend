@@ -1,11 +1,13 @@
 <script setup>
+import { computed } from 'vue'
 import ModernNotificationInboxCard from '@/modules/notifications/components/NotificationInboxCard.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'NotificationInboxCard',
 })
 
-defineProps({
+const props = defineProps({
   eyebrow: {
     type: String,
     required: true,
@@ -16,19 +18,19 @@ defineProps({
   },
   emptyText: {
     type: String,
-    default: 'No notifications to show.',
+    default: '',
   },
   markReadLabel: {
     type: String,
-    default: 'Mark Read',
+    default: '',
   },
   deleteLabel: {
     type: String,
-    default: 'Delete',
+    default: '',
   },
   clearAllLabel: {
     type: String,
-    default: 'Clear All',
+    default: '',
   },
   loading: {
     type: Boolean,
@@ -36,11 +38,18 @@ defineProps({
   },
   loadingLabel: {
     type: String,
-    default: 'Loading',
+    default: '',
   },
 })
 
 const emit = defineEmits(['clear-all', 'delete-notification', 'mark-notification-read'])
+const { t } = useLanguage()
+
+const resolvedEmptyText = computed(() => props.emptyText || t('common.notifications.empty'))
+const resolvedMarkReadLabel = computed(() => props.markReadLabel || t('common.notifications.markRead'))
+const resolvedDeleteLabel = computed(() => props.deleteLabel || t('common.actions.delete'))
+const resolvedClearAllLabel = computed(() => props.clearAllLabel || t('common.notifications.clearAll'))
+const resolvedLoadingLabel = computed(() => props.loadingLabel || t('common.notifications.loading'))
 </script>
 
 <template>
@@ -49,12 +58,12 @@ const emit = defineEmits(['clear-all', 'delete-notification', 'mark-notification
     :subtitle="''"
     :notifications="notifications"
     :loading="loading"
-    :loading-label="loadingLabel"
-    :empty-title="emptyText"
+    :loading-label="resolvedLoadingLabel"
+    :empty-title="resolvedEmptyText"
     :empty-description="''"
-    :read-label="markReadLabel"
-    :dismiss-label="deleteLabel"
-    :mark-all-read-label="clearAllLabel"
+    :read-label="resolvedMarkReadLabel"
+    :dismiss-label="resolvedDeleteLabel"
+    :mark-all-read-label="resolvedClearAllLabel"
     @mark-all-read="emit('clear-all')"
     @read="emit('mark-notification-read', $event)"
     @dismiss="emit('delete-notification', $event)"

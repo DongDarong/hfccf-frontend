@@ -1,3 +1,8 @@
+import shell from './common/shell'
+import navigation from './common/navigation'
+import notifications from './common/notifications'
+import states from './common/states'
+
 export default {
   loading: 'កំពុងផ្ទុក',
   refresh: 'ផ្ទុកឡើងវិញ',
@@ -9,7 +14,7 @@ export default {
   close: 'បិទ',
   continue: 'បន្ត',
   calendar: 'ប្រតិទិន',
-  notifications: 'ការជូនដំណឹង',
+  notificationsLabel: 'ការជូនដំណឹង',
   profileSettings: 'ប្រវត្តិរូប និងការកំណត់',
   empty: 'គ្មានទិន្នន័យ',
   error: 'កំហុស',
@@ -108,4 +113,8 @@ export default {
     previous: 'មុន',
     next: 'បន្ទាប់',
   },
+  shell,
+  navigation,
+  notifications,
+  states,
 }

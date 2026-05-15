@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import NotificationItem from '@/modules/notifications/components/NotificationItem.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'NotificationListItem',
@@ -13,11 +14,11 @@ const props = defineProps({
   },
   markReadLabel: {
     type: String,
-    default: 'Mark Read',
+    default: '',
   },
   deleteLabel: {
     type: String,
-    default: 'Delete',
+    default: '',
   },
   loading: {
     type: Boolean,
@@ -34,6 +35,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['delete', 'mark-read'])
+const { t } = useLanguage()
+
+const resolvedMarkReadLabel = computed(() => props.markReadLabel || t('common.notifications.markRead'))
+const resolvedDeleteLabel = computed(() => props.deleteLabel || t('common.actions.delete'))
 
 const notification = computed(() => ({
   ...props.item,
@@ -52,11 +57,11 @@ const notification = computed(() => ({
 
 <template>
   <NotificationItem
-    :notification="notification"
-    :read-label="markReadLabel"
-    :dismiss-label="deleteLabel"
-    :show-actions="true"
-    :loading="loading"
+  :notification="notification"
+  :read-label="resolvedMarkReadLabel"
+  :dismiss-label="resolvedDeleteLabel"
+  :show-actions="true"
+  :loading="loading"
     :time-label="time"
     :relative-time-label="relativeTime"
     @read="emit('mark-read', $event)"

@@ -143,7 +143,7 @@ onMounted(() => {
       rounded
       class="icon-btn icon-btn--notification"
       :pt="menuButtonPt"
-      :aria-label="t('common.notifications')"
+      :aria-label="t('common.notifications.title')"
       @click="openDropdown"
     >
       <template #icon>

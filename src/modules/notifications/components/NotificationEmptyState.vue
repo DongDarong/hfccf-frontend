@@ -1,15 +1,17 @@
 <script setup>
+import { computed } from 'vue'
 import Button from 'primevue/button'
 import NotificationTypeIcon from '@/modules/notifications/components/NotificationTypeIcon.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'NotificationEmptyState',
 })
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
-    default: 'No notifications',
+    default: '',
   },
   description: {
     type: String,
@@ -26,6 +28,11 @@ defineProps({
 })
 
 const emit = defineEmits(['action'])
+const { t } = useLanguage()
+
+const resolvedTitle = computed(() => props.title || t('common.notifications.empty'))
+const resolvedDescription = computed(() => props.description || t('common.notifications.emptyDescription'))
+const resolvedActionLabel = computed(() => props.actionLabel || '')
 </script>
 
 <template>
@@ -37,26 +44,26 @@ const emit = defineEmits(['action'])
 
     <div class="notification-empty-state__copy">
       <h3 class="notification-empty-state__title">
-        {{ title }}
+        {{ resolvedTitle }}
       </h3>
 
       <p
-        v-if="description"
+        v-if="resolvedDescription"
         class="notification-empty-state__description"
       >
-        {{ description }}
+        {{ resolvedDescription }}
       </p>
     </div>
 
     <Button
-      v-if="actionLabel"
+      v-if="resolvedActionLabel"
       type="button"
       severity="secondary"
       outlined
       :loading="loading"
       @click="emit('action')"
     >
-      {{ actionLabel }}
+      {{ resolvedActionLabel }}
     </Button>
   </div>
 </template>

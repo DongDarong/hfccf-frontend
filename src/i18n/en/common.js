@@ -1,3 +1,8 @@
+import shell from './common/shell'
+import navigation from './common/navigation'
+import notifications from './common/notifications'
+import states from './common/states'
+
 export default {
   loading: 'Loading',
   refresh: 'Refresh',
@@ -9,7 +14,6 @@ export default {
   close: 'Close',
   continue: 'Continue',
   calendar: 'Calendar',
-  notifications: 'Notifications',
   profileSettings: 'Profile & Settings',
   empty: 'No data available',
   error: 'Error',
@@ -108,4 +112,8 @@ export default {
     previous: 'Previous',
     next: 'Next',
   },
+  shell,
+  navigation,
+  notifications,
+  states,
 }

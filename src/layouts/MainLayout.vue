@@ -7,6 +7,7 @@ import BlockUI from 'primevue/blockui'
 import Navbar from '@/components/navigation/Navbar.vue'
 import Sidebar from '@/components/navigation/Sidebar.vue'
 import Loading from '@/components/feedback/Loading.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { useUserStore } from '@/store/userStore'
 
 const props = defineProps({
@@ -27,6 +28,7 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 const authStore = useUserStore()
+const { t } = useLanguage()
 const isSidebarOpen = ref(false)
 const isMobileViewport = ref(false)
 const isDesktopSidebarVisible = ref(true)
@@ -254,7 +256,7 @@ onBeforeUnmount(() => {
       v-if="isMobileViewport && !isSidebarOpen"
       type="button"
       class="fixed left-0 z-[65] flex h-14 w-5 items-center justify-center rounded-r-xl border border-l-0 border-surface-200 bg-white/95 text-surface-500 shadow-[0_12px_28px_-20px_rgba(15,23,42,0.28)] backdrop-blur transition-all hover:w-6 hover:border-brand-300 hover:text-surface-900 min-[769px]:hidden top-[calc(60px+38vh)] max-[600px]:top-[calc(56px+38vh)] max-[480px]:top-[calc(52px+38vh)] max-[420px]:top-[calc(50px+38vh)]"
-      aria-label="Open sidebar"
+      :aria-label="t('common.navigation.openSidebar')"
       @click="openSidebar"
     >
       <i class="pi pi-angle-right text-sm" />
@@ -299,10 +301,10 @@ onBeforeUnmount(() => {
           <slot>
             <Card class="main-layout-card">
               <template #content>
-                <Loading label="Loading content..." size="md" />
-              </template>
-            </Card>
-          </slot>
+            <Loading :label="t('common.shell.loadingContent')" size="md" />
+          </template>
+        </Card>
+      </slot>
         </main>
       </BlockUI>
     </div>

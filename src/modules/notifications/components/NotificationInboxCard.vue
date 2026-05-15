@@ -1,14 +1,16 @@
 <script setup>
+import { computed } from 'vue'
 import Button from 'primevue/button'
 import Loading from '@/components/feedback/Loading.vue'
 import NotificationItem from '@/modules/notifications/components/NotificationItem.vue'
 import NotificationEmptyState from '@/modules/notifications/components/NotificationEmptyState.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'NotificationInboxCard',
 })
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -27,11 +29,11 @@ defineProps({
   },
   loadingLabel: {
     type: String,
-    default: 'Loading notifications',
+    default: '',
   },
   emptyTitle: {
     type: String,
-    default: 'No notifications',
+    default: '',
   },
   emptyDescription: {
     type: String,
@@ -39,19 +41,19 @@ defineProps({
   },
   readLabel: {
     type: String,
-    default: 'Mark as read',
+    default: '',
   },
   dismissLabel: {
     type: String,
-    default: 'Dismiss',
+    default: '',
   },
   undismissLabel: {
     type: String,
-    default: 'Undismiss',
+    default: '',
   },
   markAllReadLabel: {
     type: String,
-    default: 'Mark all as read',
+    default: '',
   },
   showMarkAll: {
     type: Boolean,
@@ -60,6 +62,15 @@ defineProps({
 })
 
 const emit = defineEmits(['read', 'dismiss', 'undismiss', 'mark-all-read'])
+const { t } = useLanguage()
+
+const resolvedLoadingLabel = computed(() => props.loadingLabel || t('common.notifications.loading'))
+const resolvedEmptyTitle = computed(() => props.emptyTitle || t('common.notifications.empty'))
+const resolvedEmptyDescription = computed(() => props.emptyDescription || t('common.notifications.emptyDescription'))
+const resolvedReadLabel = computed(() => props.readLabel || t('common.notifications.markRead'))
+const resolvedDismissLabel = computed(() => props.dismissLabel || t('common.notifications.dismiss'))
+const resolvedUndismissLabel = computed(() => props.undismissLabel || t('common.notifications.undismiss'))
+const resolvedMarkAllReadLabel = computed(() => props.markAllReadLabel || t('common.notifications.markAllRead'))
 
 function notificationKey(item, index) {
   return item?.id || item?.uuid || item?.key || `notification-${index}`
@@ -91,7 +102,7 @@ function notificationKey(item, index) {
         :disabled="loading || !notifications.length"
         @click="emit('mark-all-read')"
       >
-        {{ markAllReadLabel }}
+        {{ resolvedMarkAllReadLabel }}
       </Button>
     </header>
 
@@ -101,15 +112,15 @@ function notificationKey(item, index) {
         class="notification-inbox-card__state"
       >
         <Loading
-          :label="loadingLabel"
+          :label="resolvedLoadingLabel"
           size="sm"
         />
       </div>
 
       <NotificationEmptyState
         v-else-if="!notifications.length"
-        :title="emptyTitle"
-        :description="emptyDescription"
+        :title="resolvedEmptyTitle"
+        :description="resolvedEmptyDescription"
       />
 
       <div
@@ -120,9 +131,9 @@ function notificationKey(item, index) {
           v-for="(item, index) in notifications"
           :key="notificationKey(item, index)"
           :notification="item"
-          :read-label="readLabel"
-          :dismiss-label="dismissLabel"
-          :undismiss-label="undismissLabel"
+          :read-label="resolvedReadLabel"
+          :dismiss-label="resolvedDismissLabel"
+          :undismiss-label="resolvedUndismissLabel"
           @read="emit('read', $event)"
           @dismiss="emit('dismiss', $event)"
           @undismiss="emit('undismiss', $event)"

@@ -35,7 +35,7 @@ function goToRoute(name) {
       <RouterLink
         :to="{ name: 'dashboard' }"
         class="flex min-w-0 flex-1 items-center gap-3 rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand-200 max-[600px]:gap-2 max-[430px]:flex-none"
-        aria-label="HFCCF dashboard"
+        :aria-label="t('common.navigation.dashboard')"
       >
         <img
           src="@/assets/images/logo.jpg"
@@ -95,7 +95,7 @@ function goToRoute(name) {
         option-value="value"
         class="locale-switcher max-[360px]:hidden"
         :pt="localePt"
-        aria-label="Language Switcher"
+        :aria-label="t('common.navigation.languageSwitcher')"
       />
     </div>
   </nav>

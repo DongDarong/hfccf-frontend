@@ -233,7 +233,7 @@ const buttonClass = computed(() => {
 /**
  * Text shown when button is loading and no slot content is passed.
  */
-const loadingLabel = computed(() => t('common.loading'))
+const loadingLabel = computed(() => t('common.states.loading'))
 
 /**
  * PrimeVue pass-through style config.

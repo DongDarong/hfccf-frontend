@@ -45,11 +45,11 @@ function handleMarkAllRead() {
     <header class="notification-dropdown__header">
       <div>
         <p class="notification-dropdown__eyebrow">
-          {{ t('notifications.title') }}
+          {{ t('common.notifications.title') }}
         </p>
 
         <p class="notification-dropdown__count">
-          {{ t('notifications.unreadCount', { count: unreadCount }) }}
+          {{ t('common.notifications.unreadCount', { count: unreadCount }) }}
         </p>
       </div>
 
@@ -61,7 +61,7 @@ function handleMarkAllRead() {
         :disabled="loading || !hasNotifications"
         @click="handleMarkAllRead"
       >
-        {{ t('notifications.markAllRead') }}
+        {{ t('common.notifications.markAllRead') }}
       </Button>
     </header>
 
@@ -76,9 +76,9 @@ function handleMarkAllRead() {
           v-for="item in notifications"
           :key="item.id"
           :notification="item"
-          :read-label="t('notifications.read')"
-          :dismiss-label="t('notifications.dismiss')"
-          :undismiss-label="t('notifications.undismiss')"
+          :read-label="t('common.notifications.markRead')"
+          :dismiss-label="t('common.notifications.dismiss')"
+          :undismiss-label="t('common.notifications.undismiss')"
           :show-actions="true"
           compact
           @read="emit('read', $event)"
@@ -88,8 +88,8 @@ function handleMarkAllRead() {
 
         <NotificationEmptyState
           v-if="!hasNotifications && !loading"
-          :title="t('notifications.empty')"
-          :description="t('notifications.emptyDescription')"
+          :title="t('common.notifications.empty')"
+          :description="t('common.notifications.emptyDescription')"
         />
 
         <div
@@ -97,7 +97,7 @@ function handleMarkAllRead() {
           class="notification-dropdown__loading"
         >
           <Loading
-            :label="t('common.loading')"
+            :label="t('common.notifications.loading')"
             size="sm"
           />
         </div>
@@ -115,7 +115,7 @@ function handleMarkAllRead() {
         class="w-full"
         @click="emit('view-all')"
       >
-        {{ t('notifications.viewAll') }}
+        {{ t('common.notifications.viewAll') }}
       </Button>
     </footer>
   </section>

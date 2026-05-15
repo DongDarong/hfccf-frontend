@@ -1,4 +1,6 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
+
 /**
  * NotificationFilterTabs
  * --------------------------------------------------------------------------
@@ -50,6 +52,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:activeTab'])
+const { t } = useLanguage()
 
 /**
  * Select tab only when enabled.
@@ -66,7 +69,7 @@ function selectTab(tab) {
   <div
     class="notification-filter-tabs"
     role="tablist"
-    aria-label="Notification filters"
+    :aria-label="t('common.notifications.filters')"
   >
     <button
       v-for="tab in tabs"

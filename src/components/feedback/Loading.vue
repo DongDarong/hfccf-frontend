@@ -54,7 +54,7 @@ const { t } = useLanguage()
  * Resolve display label.
  */
 const resolvedLabel = computed(() =>
-  props.label || t('common.loading'),
+  props.label || t('common.states.loading'),
 )
 
 /**

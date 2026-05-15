@@ -71,7 +71,7 @@ const emptyMessage = computed(() =>
       v-if="loading"
       class="role-permissions-preview__state"
     >
-      {{ t('common.loading') }}
+      {{ t('common.states.loading') }}
     </div>
 
     <div

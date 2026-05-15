@@ -16,15 +16,15 @@ const props = defineProps({
   },
   readLabel: {
     type: String,
-    default: 'Mark as read',
+    default: '',
   },
   dismissLabel: {
     type: String,
-    default: 'Dismiss',
+    default: '',
   },
   undismissLabel: {
     type: String,
-    default: 'Undismiss',
+    default: '',
   },
   compact: {
     type: Boolean,
@@ -83,6 +83,9 @@ const moduleLabel = computed(
 )
 const resolvedTimeLabel = computed(() => props.timeLabel || formatTime(props.notification?.createdAt || props.notification?.created_at))
 const resolvedRelativeTimeLabel = computed(() => props.relativeTimeLabel || '')
+const resolvedReadLabel = computed(() => props.readLabel || t('common.notifications.markRead'))
+const resolvedDismissLabel = computed(() => props.dismissLabel || t('common.notifications.dismiss'))
+const resolvedUndismissLabel = computed(() => props.undismissLabel || t('common.notifications.undismiss'))
 
 function handleRead() {
   if (isRead.value) return
@@ -170,7 +173,7 @@ function handleClick() {
         :disabled="loading || isRead || isDismissed"
         @click.stop="handleRead"
       >
-        {{ readLabel }}
+        {{ resolvedReadLabel }}
       </Button>
 
       <Button
@@ -181,7 +184,7 @@ function handleClick() {
         size="small"
         @click.stop="handleDismiss"
       >
-        {{ dismissLabel }}
+        {{ resolvedDismissLabel }}
       </Button>
 
       <Button
@@ -192,7 +195,7 @@ function handleClick() {
         size="small"
         @click.stop="handleUndismiss"
       >
-        {{ undismissLabel }}
+        {{ resolvedUndismissLabel }}
       </Button>
     </div>
   </article>
