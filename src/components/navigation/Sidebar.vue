@@ -29,14 +29,14 @@ const currentUserDisplayName = computed(() => {
   const firstName = String(currentUser.value?.firstName || '').trim()
   const lastName = String(currentUser.value?.lastName || '').trim()
   const fullName = `${lastName} ${firstName}`.trim()
-  return fullName || String(currentUser.value?.username || '').trim() || 'Admin User'
+  return fullName || String(currentUser.value?.username || '').trim() || t('common.navigation.defaultUserName')
 })
 const currentUserDisplayUsername = computed(() => {
   const role = String(currentUser.value?.role || '').trim()
   if (role) return role
   const email = String(currentUser.value?.email || '').trim()
   if (email.includes('@')) return email.split('@')[0]
-  return email || 'user'
+  return email || t('common.navigation.defaultUsername')
 })
 const sidebarToneClass = computed(() => getSidebarToneClass(currentUser.value))
 const hasHeaderSlot = computed(() => Boolean(slots.header))

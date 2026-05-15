@@ -6,6 +6,8 @@ export default {
   languageSwitcher: 'Language switcher',
   calendar: 'Calendar',
   notifications: 'Notifications',
+  defaultUserName: 'Admin User',
+  defaultUsername: 'user',
   languages: {
     english: 'English',
     khmer: 'Khmer',

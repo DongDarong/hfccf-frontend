@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useLanguage } from '@/composables/useLanguage'
 import { useUserStore } from '@/store/userStore'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 
@@ -43,6 +44,7 @@ const userStore = useUserStore()
 const currentUser = computed(() => userStore.currentUser || {})
 const hasImageError = ref(false)
 const isImageLoaded = ref(false)
+const { t } = useLanguage()
 
 const displayName = computed(() => {
   if (props.name) return props.name
@@ -51,7 +53,7 @@ const displayName = computed(() => {
   const lastName = String(currentUser.value?.lastName || '').trim()
   const fullName = `${firstName} ${lastName}`.trim()
 
-  return fullName || String(currentUser.value?.username || '').trim() || 'Admin User'
+  return fullName || String(currentUser.value?.username || '').trim() || t('common.navigation.defaultUserName')
 })
 
 const displayUsername = computed(() => {
@@ -63,7 +65,7 @@ const displayUsername = computed(() => {
   const email = String(currentUser.value?.email || '').trim()
   if (email.includes('@')) return email.split('@')[0]
 
-  return email || 'user'
+  return email || t('common.navigation.defaultUsername')
 })
 
 const resolvedAvatar = computed(() => {
