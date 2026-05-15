@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { resolveAvatarSource } from '@/utils/avatar'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_SIZE_BYTES = 2 * 1024 * 1024
@@ -45,7 +46,7 @@ export function useAddAdminAvatar({ form }) {
    * Validates and applies a new file selection.
    * Returns an error string on failure, null on success.
    */
-  function changeProfileImage(event) {
+  async function changeProfileImage(event) {
     const [file] = event?.target?.files || []
     if (event?.target) event.target.value = ''
     if (!file) return null
@@ -58,12 +59,18 @@ export function useAddAdminAvatar({ form }) {
       return resolved('users.addAdmin.validation.imageSize', 'Profile images must be 2 MB or smaller.')
     }
 
+    const optimizedFile = await optimizeImageFile(file, {
+      maxWidth: 512,
+      maxHeight: 512,
+      quality: 0.84,
+    }).catch(() => file)
+
     if (isBlobUrl(profileImagePreview.value)) {
       URL.revokeObjectURL(profileImagePreview.value)
     }
-    form.profileImage = file
+    form.profileImage = optimizedFile
     form.avatarAction = 'replace'
-    profileImagePreview.value = URL.createObjectURL(file)
+    profileImagePreview.value = URL.createObjectURL(optimizedFile)
     return null
   }
 

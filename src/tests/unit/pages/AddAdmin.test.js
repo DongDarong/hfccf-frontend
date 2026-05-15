@@ -18,8 +18,13 @@ vi.mock('@/modules/super-admin/services/rolePermissionsApi', () => ({
   fetchRolePermissions: vi.fn(),
 }))
 
+vi.mock('@/utils/imageOptimization', () => ({
+  optimizeImageFile: vi.fn(async (file) => file),
+}))
+
 import { createAdminUser, findAdminUserById, updateAdminUser } from '@/modules/super-admin/services/adminUsersApi'
 import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 
 // ─── i18n messages ────────────────────────────────────────────────────────────
 
@@ -278,6 +283,46 @@ describe('AddAdmin page', () => {
     )
   })
 
+  it('submits the optimized avatar file when one is selected', async () => {
+    const optimizedAvatar = new File([new Uint8Array([1, 2, 3])], 'compressed-avatar.jpg', {
+      type: 'image/jpeg',
+    })
+    optimizeImageFile.mockResolvedValueOnce(optimizedAvatar)
+    createAdminUser.mockResolvedValueOnce({ id: 'usr_0001' })
+
+    const wrapper = mountCreate()
+    await flushPromises()
+
+    fillValidCreateForm(wrapper)
+    await nextTick()
+
+    const originalAvatar = new File([new Uint8Array([9, 8, 7])], 'avatar.jpg', {
+      type: 'image/jpeg',
+    })
+
+    wrapper.findComponent({ name: 'AddAdminProfileImageField' }).vm.$emit('change', {
+      target: { files: [originalAvatar], value: '' },
+    })
+    await flushPromises()
+
+    wrapper.findComponent({ name: 'Form' }).vm.$emit('submit')
+    await flushPromises()
+
+    expect(optimizeImageFile).toHaveBeenCalledWith(
+      originalAvatar,
+      expect.objectContaining({
+        maxWidth: 512,
+        maxHeight: 512,
+        quality: 0.84,
+      }),
+    )
+    expect(createAdminUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        avatar: optimizedAvatar,
+      }),
+    )
+  })
+
   it('shows success alert after successful create', async () => {
     createAdminUser.mockResolvedValueOnce({ id: 'usr_0001' })
     const wrapper = mountCreate()
@@ -399,7 +444,7 @@ describe('AddAdmin page', () => {
     wrapper.findComponent({ name: 'AddAdminProfileImageField' }).vm.$emit('change', {
       target: { files: [fakeFile], value: '' },
     })
-    await nextTick()
+    await flushPromises()
 
     expect(wrapper.find('[data-testid="alert-error"]').exists()).toBe(true)
   })
@@ -412,7 +457,7 @@ describe('AddAdmin page', () => {
     wrapper.findComponent({ name: 'AddAdminProfileImageField' }).vm.$emit('change', {
       target: { files: [fakeFile], value: '' },
     })
-    await nextTick()
+    await flushPromises()
 
     expect(wrapper.find('[data-testid="alert-error"]').exists()).toBe(true)
   })

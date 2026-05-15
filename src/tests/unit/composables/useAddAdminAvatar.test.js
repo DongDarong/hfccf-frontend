@@ -36,11 +36,11 @@ describe('useAddAdminAvatar — changeProfileImage', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns an error string for a disallowed MIME type', () => {
+  it('returns an error string for a disallowed MIME type', async () => {
     const form = makeForm()
     const { changeProfileImage } = withI18nSetup(() => useAddAdminAvatar({ form }), messages)
 
-    const error = changeProfileImage(makeChangeEvent({ type: 'image/gif' }))
+    const error = await changeProfileImage(makeChangeEvent({ type: 'image/gif' }))
 
     expect(error).toBeTruthy()
     expect(typeof error).toBe('string')
@@ -48,24 +48,24 @@ describe('useAddAdminAvatar — changeProfileImage', () => {
     expect(form.avatarAction).toBe('none')
   })
 
-  it('returns an error string when file exceeds the 2 MB limit', () => {
+  it('returns an error string when file exceeds the 2 MB limit', async () => {
     const form = makeForm()
     const { changeProfileImage } = withI18nSetup(() => useAddAdminAvatar({ form }), messages)
 
-    const error = changeProfileImage(makeChangeEvent({ size: 3 * 1024 * 1024 }))
+    const error = await changeProfileImage(makeChangeEvent({ size: 3 * 1024 * 1024 }))
 
     expect(error).toBeTruthy()
     expect(form.profileImage).toBeNull()
   })
 
-  it('returns null and updates form for a valid JPEG', () => {
+  it('returns null and updates form for a valid JPEG', async () => {
     const form = makeForm()
     const { changeProfileImage, profileImagePreview } = withI18nSetup(
       () => useAddAdminAvatar({ form }),
       messages,
     )
 
-    const error = changeProfileImage(makeChangeEvent({ type: 'image/jpeg', size: 500 * 1024 }))
+    const error = await changeProfileImage(makeChangeEvent({ type: 'image/jpeg', size: 500 * 1024 }))
 
     expect(error).toBeNull()
     expect(form.avatarAction).toBe('replace')
@@ -73,43 +73,43 @@ describe('useAddAdminAvatar — changeProfileImage', () => {
     expect(profileImagePreview.value).toBe('blob:mock-url')
   })
 
-  it('returns null and updates form for a valid PNG', () => {
+  it('returns null and updates form for a valid PNG', async () => {
     const form = makeForm()
     const { changeProfileImage } = withI18nSetup(() => useAddAdminAvatar({ form }), messages)
 
-    const error = changeProfileImage(makeChangeEvent({ type: 'image/png', size: 1024 }))
+    const error = await changeProfileImage(makeChangeEvent({ type: 'image/png', size: 1024 }))
     expect(error).toBeNull()
     expect(form.avatarAction).toBe('replace')
   })
 
-  it('returns null and updates form for a valid WEBP', () => {
+  it('returns null and updates form for a valid WEBP', async () => {
     const form = makeForm()
     const { changeProfileImage } = withI18nSetup(() => useAddAdminAvatar({ form }), messages)
 
-    const error = changeProfileImage(makeChangeEvent({ type: 'image/webp', size: 1024 }))
+    const error = await changeProfileImage(makeChangeEvent({ type: 'image/webp', size: 1024 }))
     expect(error).toBeNull()
     expect(form.avatarAction).toBe('replace')
   })
 
-  it('returns null and does nothing when no file is selected', () => {
+  it('returns null and does nothing when no file is selected', async () => {
     const form = makeForm()
     const { changeProfileImage } = withI18nSetup(() => useAddAdminAvatar({ form }), messages)
 
-    const error = changeProfileImage({ target: { files: [], value: '' } })
+    const error = await changeProfileImage({ target: { files: [], value: '' } })
 
     expect(error).toBeNull()
     expect(form.profileImage).toBeNull()
   })
 
-  it('revokes the previous blob URL before replacing with a new file', () => {
+  it('revokes the previous blob URL before replacing with a new file', async () => {
     const form = makeForm()
     const { changeProfileImage } = withI18nSetup(() => useAddAdminAvatar({ form }), messages)
 
     URL.createObjectURL.mockReturnValueOnce('blob:first-url')
-    changeProfileImage(makeChangeEvent())
+    await changeProfileImage(makeChangeEvent())
 
     URL.createObjectURL.mockReturnValueOnce('blob:second-url')
-    changeProfileImage(makeChangeEvent())
+    await changeProfileImage(makeChangeEvent())
 
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:first-url')
   })
@@ -125,14 +125,14 @@ describe('useAddAdminAvatar — removeProfileImage', () => {
     vi.restoreAllMocks()
   })
 
-  it('clears form fields and revokes blob URL', () => {
+  it('clears form fields and revokes blob URL', async () => {
     const form = makeForm()
     const { changeProfileImage, removeProfileImage, profileImagePreview } = withI18nSetup(
       () => useAddAdminAvatar({ form }),
       messages,
     )
 
-    changeProfileImage(makeChangeEvent())
+    await changeProfileImage(makeChangeEvent())
     expect(profileImagePreview.value).toBe('blob:mock-url')
 
     removeProfileImage()

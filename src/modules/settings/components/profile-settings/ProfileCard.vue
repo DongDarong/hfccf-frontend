@@ -4,6 +4,7 @@ import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { updateAuthenticatedUserProfile } from '@/services/auth'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 
 const { t, te } = useLanguage()
 
@@ -73,8 +74,14 @@ async function onAvatarChange(event) {
   isUploadingAvatar.value = true
 
   try {
+    const optimizedFile = await optimizeImageFile(file, {
+      maxWidth: 512,
+      maxHeight: 512,
+      quality: 0.84,
+    }).catch(() => file)
+
     await updateAuthenticatedUserProfile({
-      avatar: file,
+      avatar: optimizedFile,
     })
   } catch (error) {
     requestError.value = error?.message || t('common.error')

@@ -83,8 +83,8 @@ onMounted(async () => {
 
 // ─── avatar handler (bridges avatar composable with page error state) ─────────
 
-function onProfileImageChange(event) {
-  const error = changeProfileImage(event)
+async function onProfileImageChange(event) {
+  const error = await changeProfileImage(event)
   if (error) {
     errorMessage.value = error
     showError.value = true
