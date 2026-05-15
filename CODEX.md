@@ -72,7 +72,7 @@ Use the smallest valid scope first. For example:
 ## 7. Backend API Connection Rules
 
 - Use `src/services/http.js` for shared API requests.
-- In local development, `VITE_API_BASE_URL=/api` is proxied by Vite to `http://hfccf-backend.test`.
+- In local development, `VITE_API_BASE_URL=http://hfccf-backend.test/api` points directly to the Laravel backend origin.
 - Do not bypass the shared HTTP client for authenticated frontend requests.
 - Store backend bearer tokens only through `src/services/auth.js`.
 - Keep auth response mapping compatible with the backend `AuthUserResource` shape:
