@@ -102,13 +102,11 @@ Use the smallest valid scope first. For example:
   - `POST /auth/reset-password`
 - Restart `npm run dev` after changing `.env.*` or Vite proxy settings.
 
-## 8. Current Frontend-Only Persistence
+## 8. Super Admin User API
 
-- Super Admin user add/edit/delete is currently frontend-only.
-- The storage service is `src/modules/super-admin/services/adminUsersStorage.js`.
-- It persists admin users in `localStorage` using the key `hfccf-super-admin-users`.
-- Keep all Super Admin user CRUD page logic routed through this service until a backend users API exists.
-- When the backend users CRUD API is created, replace this service implementation with API calls and keep page components unchanged where possible.
+- Super Admin user add/edit/delete is backed by the real backend Users API.
+- All CRUD calls go through `src/modules/super-admin/services/adminUsersApi.js`.
+- Do not restore localStorage persistence for this feature.
 
 ## 9. Domain Boundaries
 
