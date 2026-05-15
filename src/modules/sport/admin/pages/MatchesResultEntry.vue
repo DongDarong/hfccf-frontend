@@ -4,7 +4,7 @@
  * Keeps route lookup, validation, alerts, and simulated persistence in one place.
  * Presentational sections live in smaller components under `components/match-results`.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -14,7 +14,13 @@ import { useLanguage } from '@/composables/useLanguage'
 import FixtureSummaryCard from '@/modules/sport/admin/components/match-results/FixtureSummaryCard.vue'
 import ResultEntryPanel from '@/modules/sport/admin/components/match-results/ResultEntryPanel.vue'
 import GoalEventsList from '@/modules/sport/admin/components/match-results/GoalEventsList.vue'
-import matchesManagementData from '@/mocks/sport/matches-management-data.json'
+import {
+  createMatchEvent,
+  deleteMatchEvent,
+  fetchMatchEvents,
+  fetchSportMatch,
+  updateMatchStatus,
+} from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportAdminMatchesResultEntryPage',
@@ -31,11 +37,7 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
 const resultEntryValue = ref(createResultValue())
-
-const selectedMatch = computed(() => {
-  const matches = Array.isArray(matchesManagementData) ? matchesManagementData : []
-  return matches.find((match) => String(match?.id || '').trim() === matchId.value) || null
-})
+const selectedMatch = ref(null)
 
 const pageTitle = computed(() => t('sportMatchesManagement.resultsEntry.title'))
 const pageSubtitle = computed(() => {
@@ -59,14 +61,13 @@ const fixtureSummary = computed(() => {
     .trim()
     .split(/\s+/)
 
-  // The card is reusable and expects display-ready strings, so the page handles mock data shaping.
   return {
     homeTeam: String(match.homeTeam || '-'),
     awayTeam: String(match.awayTeam || '-'),
     matchDate,
     matchTime,
     venue: String(match.venue || '-'),
-    competition: String(match.competition || '-'),
+    competition: String(match.tournament?.name || match.tournamentName || match.competitionType || '-'),
   }
 })
 
@@ -83,59 +84,32 @@ function createResultValue(value = {}) {
   }
 }
 
-function toScoreNumber(value) {
-  const numericValue = Number(value)
-  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : 0
+function calculateScore(events = []) {
+  return events.reduce(
+    (carry, event) => {
+      const type = String(event.eventType || 'goal').toLowerCase()
+      if (!['goal', 'own_goal', 'penalty_goal'].includes(type)) return carry
+
+      const teamType = String(event.teamType || 'home').toLowerCase()
+      const creditedTeam = type === 'own_goal' ? (teamType === 'home' ? 'away' : 'home') : teamType
+
+      if (creditedTeam === 'home') carry.home += 1
+      if (creditedTeam === 'away') carry.away += 1
+
+      return carry
+    },
+    { home: 0, away: 0 },
+  )
 }
 
-function parseDisplayScore(score) {
-  const [home = '0', away = '0'] = String(score || '')
-    .split('-')
-    .map((value) => value.trim())
-
+function deriveScoreState(value = {}) {
+  const events = [...(value.homeEvents || []), ...(value.awayEvents || [])]
+  const score = calculateScore(events)
   return {
-    home: toScoreNumber(home),
-    away: toScoreNumber(away),
+    homeScore: score.home,
+    awayScore: score.away,
   }
 }
-
-function resolveScore(match = {}) {
-  if ('homeScore' in match || 'awayScore' in match) {
-    return {
-      home: toScoreNumber(match.homeScore),
-      away: toScoreNumber(match.awayScore),
-    }
-  }
-
-  if ('home_score' in match || 'away_score' in match) {
-    return {
-      home: toScoreNumber(match.home_score),
-      away: toScoreNumber(match.away_score),
-    }
-  }
-
-  // Backward-compatible while older frontend mock rows still expose display score text.
-  return parseDisplayScore(match.score)
-}
-
-watch(
-  selectedMatch,
-  (match) => {
-    if (!match) return
-    const score = resolveScore(match)
-    resultEntryValue.value = createResultValue({
-      homeTeam: match.homeTeam,
-      awayTeam: match.awayTeam,
-      homeScore: score.home,
-      awayScore: score.away,
-      status: match.status || 'completed',
-      report: '',
-      homeEvents: [],
-      awayEvents: [],
-    })
-  },
-  { immediate: true },
-)
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -162,9 +136,40 @@ async function onSaveResult(result) {
 
   isSubmitting.value = true
   try {
-    // UI-only save: backend result persistence will replace this simulated delay.
-    await new Promise((resolve) => setTimeout(resolve, 600))
-    resultEntryValue.value = createResultValue(result)
+    await updateMatchStatus(matchId.value, { status: result.status, currentPeriod: 'final' }).catch(() => null)
+
+    const currentMatch = selectedMatch.value || (await fetchSportMatch(matchId.value))
+    const existingEvents = await fetchMatchEvents(matchId.value, {
+      homeTeamId: currentMatch?.homeTeamId || currentMatch?.home_team_id,
+      awayTeamId: currentMatch?.awayTeamId || currentMatch?.away_team_id,
+    }).catch(() => ({ items: [] }))
+    await Promise.all((existingEvents.items || []).map((event) => deleteMatchEvent(event.id)))
+
+    const combined = [
+      ...(Array.isArray(result.homeEvents) ? result.homeEvents : []).map((event) => ({
+        ...event,
+        teamType: 'home',
+      })),
+      ...(Array.isArray(result.awayEvents) ? result.awayEvents : []).map((event) => ({
+        ...event,
+        teamType: 'away',
+      })),
+    ]
+
+    for (const event of combined) {
+      await createMatchEvent(matchId.value, {
+        teamId:
+          event.teamType === 'home'
+            ? currentMatch?.homeTeamId || currentMatch?.home_team_id
+            : currentMatch?.awayTeamId || currentMatch?.away_team_id,
+        playerName: event.playerName,
+        eventType: event.eventType,
+        minute: event.minute,
+        metadata: event.metadata || {},
+      })
+    }
+
+    await loadMatch()
     showSuccess.value = true
   } catch {
     errorMessage.value = t('sportMatchesManagement.resultsEntry.saveFailed')
@@ -182,16 +187,49 @@ function onDeleteEvent(event) {
   const team = event.teamType
   const field = team === 'home' ? 'homeEvents' : 'awayEvents'
   const nextEvents = resultEntryValue.value[field].filter((e) => e.id !== event.id)
-  resultEntryValue.value = {
+  const nextValue = {
     ...resultEntryValue.value,
     [field]: nextEvents,
-    [team === 'home' ? 'homeScore' : 'awayScore']: nextEvents.length,
+  }
+  resultEntryValue.value = {
+    ...nextValue,
+    ...deriveScoreState(nextValue),
   }
 }
 
 function onEditEvent() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+async function loadMatch() {
+  const match = await fetchSportMatch(matchId.value).catch(() => null)
+  if (!match?.id) return
+
+  selectedMatch.value = match
+  const eventsResponse = await fetchMatchEvents(matchId.value, {
+    homeTeamId: match.homeTeamId || match.home_team_id,
+    awayTeamId: match.awayTeamId || match.away_team_id,
+  }).catch(() => ({ items: [] }))
+  const events = eventsResponse.items || []
+  const homeEvents = events.filter((event) => String(event.teamType) === 'home')
+  const awayEvents = events.filter((event) => String(event.teamType) === 'away')
+  const scores = calculateScore(events)
+
+  resultEntryValue.value = createResultValue({
+    homeTeam: match.homeTeam || '',
+    awayTeam: match.awayTeam || '',
+    homeScore: scores.home,
+    awayScore: scores.away,
+    status: match.status || 'completed',
+    report: '',
+    homeEvents,
+    awayEvents,
+  })
+}
+
+onMounted(() => {
+  void loadMatch()
+})
 </script>
 
 <template>

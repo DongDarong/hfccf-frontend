@@ -1,0 +1,53 @@
+{
+  "sections": [
+    {
+      "id": "preschool",
+      "labelKey": "nav.sections.preschoolProgram",
+      "captionKey": "nav.sectionCaptions.preschoolProgram",
+      "className": "sidebar-section--preschool",
+      "collapsible": true,
+      "access": {
+        "scopes": [
+          "super_admin"
+        ]
+      },
+      "items": [
+        {
+          "id": "preschool-dashboard",
+          "routeName": "dashboard-preschool-admin",
+          "labelKey": "nav.items.preschoolDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "preschool-teachers",
+          "routeName": "dashboard-preschool-admin-users",
+          "labelKey": "nav.items.teachers",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-students",
+          "routeName": "dashboard-preschool-admin-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-classes",
+          "routeName": "dashboard-preschool-admin-classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "labelKey": "nav.items.payments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        }
+      ]
+    }
+  ]
+}

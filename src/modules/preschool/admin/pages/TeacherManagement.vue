@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -7,87 +7,92 @@ import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
-import usersMock from '@/mocks/users.json'
-import { ROLES } from '@/constants/roles'
-import { mapUser } from '@/services/mappers/userMapper'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useLanguage } from '@/composables/useLanguage'
+import { mapUsers } from '@/services/mappers/userMapper'
+import {
+  deletePreschoolTeacher,
+  fetchPreschoolTeachers,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminTeachersPage',
 })
 
 const router = useRouter()
+const { t } = useLanguage()
+
 const searchQuery = ref('')
-const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 8
+const teachers = ref([])
+const pagination = ref({
+  page: 1,
+  perPage: pageSize,
+  total: 0,
+  totalPages: 1,
+})
+const loading = ref(false)
+const errorMessage = ref('')
+const isDeleteOpen = ref(false)
+const selectedTeacher = ref(null)
+const showSuccess = ref(false)
+const successMessage = ref('')
 
-const roleOptions = [ROLES.TEACHER_PRESCHOOL]
-const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
-const addTeacherLabel = computed(() => 'Add Teacher')
-const addTeacherCaption = computed(() => 'Create preschool account')
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'user', label: 'User', align: 'left' },
-  { key: 'email', label: 'Email', align: 'left' },
-  { key: 'role', label: 'Role', align: 'left' },
-  { key: 'permission', label: 'Permissions', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'phone', label: 'Phone', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const statusOptions = ['active', 'pending', 'inactive', 'suspended']
+const addTeacherLabel = computed(() => t('preschoolTeachersManagement.addButtonLabel'))
+const addTeacherCaption = computed(() => t('preschoolTeachersManagement.addButtonCaption'))
+const tableColumns = computed(() => [
+  { key: 'number', label: t('preschoolTeachersManagement.table.number'), align: 'left' },
+  { key: 'user', label: t('preschoolTeachersManagement.table.user'), align: 'left' },
+  { key: 'email', label: t('preschoolTeachersManagement.table.email'), align: 'left' },
+  { key: 'role', label: t('preschoolTeachersManagement.table.role'), align: 'left' },
+  { key: 'permission', label: t('preschoolTeachersManagement.table.permission'), align: 'left' },
+  { key: 'status', label: t('preschoolTeachersManagement.table.status'), align: 'left' },
+  { key: 'phone', label: t('preschoolTeachersManagement.table.phone'), align: 'left' },
+  { key: 'actions', label: t('preschoolTeachersManagement.table.actions'), align: 'right' },
+])
+
+const mappedTeachers = computed(() =>
+  mapUsers(teachers.value).map((teacher) => ({
+    ...teacher,
+    permissions: Array.isArray(teacher.permissions) ? teacher.permissions : [],
+  })),
+)
 
 function goToAddTeacher() {
   router.push({ path: '/module/preschool-admin/users/add' })
 }
 
-const preschoolUsers = ref(
-  usersMock
-    .filter((item) => String(item.role || '').toLowerCase() === ROLES.TEACHER_PRESCHOOL)
-    .map((item) => mapUser(item)),
-)
+async function loadTeachers() {
+  loading.value = true
+  errorMessage.value = ''
 
-const filteredUsers = computed(() => {
-  const query = String(searchQuery.value || '')
-    .trim()
-    .toLowerCase()
+  try {
+    const response = await fetchPreschoolTeachers({
+      page: currentPage.value,
+      perPage: pageSize,
+      search: searchQuery.value,
+      status: statusFilter.value,
+    })
 
-  return preschoolUsers.value.filter((user) => {
-    let isMatch = true
-
-    if (query) {
-      const haystack =
-        `${user.name} ${user.email} ${user.role} ${user.permissions.join(' ')}`.toLowerCase()
-      isMatch = haystack.includes(query)
+    teachers.value = Array.isArray(response.items) ? response.items : []
+    pagination.value = response.pagination || pagination.value
+  } catch (error) {
+    teachers.value = []
+    pagination.value = {
+      page: 1,
+      perPage: pageSize,
+      total: 0,
+      totalPages: 1,
     }
-
-    if (isMatch && roleFilter.value) {
-      isMatch = String(user.role).toLowerCase() === roleFilter.value.toLowerCase()
-    }
-
-    if (isMatch && statusFilter.value) {
-      isMatch = String(user.status).toLowerCase() === statusFilter.value.toLowerCase()
-    }
-
-    return isMatch
-  })
-})
-
-const totalPages = computed(() => Math.max(Math.ceil(filteredUsers.value.length / pageSize), 1))
-const paginatedUsers = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredUsers.value.slice(start, start + pageSize).map((user, index) => ({
-    ...user,
-    rowNumber: start + index + 1,
-  }))
-})
-
-watch(
-  () => filteredUsers.value.length,
-  () => {
-    if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
-  },
-)
+    errorMessage.value = error?.message || t('preschoolTeachersManagement.loadFailed')
+  } finally {
+    loading.value = false
+  }
+}
 
 function onViewUser(user) {
   const id = String(user?.id || '').trim()
@@ -102,18 +107,56 @@ function onEditUser(user) {
 }
 
 function onDeleteUser(user) {
-  const id = String(user?.id || '').trim()
-  if (!id) return
-  preschoolUsers.value = preschoolUsers.value.filter((item) => item.id !== id)
+  selectedTeacher.value = user || null
+  if (!selectedTeacher.value?.id) return
+  isDeleteOpen.value = true
 }
+
+function onCancelDelete() {
+  isDeleteOpen.value = false
+  selectedTeacher.value = null
+}
+
+async function onConfirmDelete() {
+  const id = String(selectedTeacher.value?.id || '').trim()
+  if (!id) return
+
+  try {
+    await deletePreschoolTeacher(id)
+    successMessage.value = t('preschoolTeachersManagement.deletedSuccess')
+    showSuccess.value = true
+    onCancelDelete()
+    await loadTeachers()
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolTeachersManagement.deleteFailed')
+  }
+}
+
+function onFiltersCleared() {
+  searchQuery.value = ''
+  statusFilter.value = ''
+}
+
+watch([searchQuery, statusFilter], () => {
+  currentPage.value = 1
+  loadTeachers()
+})
+
+watch(currentPage, () => {
+  loadTeachers()
+})
+
+onMounted(() => {
+  loadTeachers()
+})
 </script>
 
 <template>
   <MainLayout>
     <section class="preschool-users-page">
       <HeaderSection
-        title="Preschool Teachers"
-        subtitle="View teachers assigned to the Preschool program."
+        :title="t('preschoolTeachersManagement.title')"
+        :subtitle="t('preschoolTeachersManagement.subtitle')"
       />
 
       <div class="preschool-users-page__panel">
@@ -145,26 +188,54 @@ function onDeleteUser(user) {
         <SearchFilterBar
           class="w-full"
           v-model:searchQuery="searchQuery"
-          v-model:roleFilter="roleFilter"
           v-model:statusFilter="statusFilter"
-          :role-options="roleOptions"
+          :show-role-filter="false"
           :status-options="statusOptions"
+          :search-placeholder="t('preschoolTeachersManagement.searchPlaceholder')"
+          @clear="onFiltersCleared"
         />
 
+        <div
+          v-if="errorMessage"
+          class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+        >
+          {{ errorMessage }}
+        </div>
+
         <Table
-          :rows="paginatedUsers"
+          :rows="mappedTeachers"
           :columns="tableColumns"
-          empty-text="No Preschool teachers found."
+          :loading="loading"
+          :empty-text="t('preschoolTeachersManagement.tableEmpty')"
           @view="onViewUser"
           @edit="onEditUser"
           @delete="onDeleteUser"
         />
 
-        <div v-if="totalPages > 1" class="flex justify-end">
-          <Pagination v-model="currentPage" :total-pages="totalPages" class="mt-2" />
+        <div v-if="pagination.totalPages > 1" class="flex justify-end">
+          <Pagination v-model="currentPage" :total-pages="pagination.totalPages" class="mt-2" />
         </div>
       </div>
     </section>
+
+    <AlertQuestion
+      :show="isDeleteOpen"
+      :title="t('preschoolTeachersManagement.deleteConfirmTitle')"
+      :message="t('preschoolTeachersManagement.deleteConfirmMessage', { name: selectedTeacher?.name || selectedTeacher?.fullName || 'this teacher' })"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      type="danger"
+      @confirm="onConfirmDelete"
+      @cancel="onCancelDelete"
+    />
+
+    <AlertSuccess
+      :show="showSuccess"
+      :title="t('preschoolTeachersManagement.successTitle')"
+      :message="successMessage"
+      :button-text="t('preschoolTeachersManagement.closeButton')"
+      @close="showSuccess = false"
+    />
   </MainLayout>
 </template>
 

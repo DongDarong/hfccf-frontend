@@ -3,12 +3,12 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SidebarLink from '@/components/navigation/SidebarLink.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import sidebarNavData from '@/data/sidebar-nav.json'
+import sidebarNavData from '@/data/sidebar'
 import HomeIcon from '@/assets/icons/Home.vue'
 import UsersIcon from '@/assets/icons/Users.vue'
 import ReportsIcon from '@/assets/icons/Reports.vue'
-import { getCurrentUser } from '@/services/auth'
 import { buildSidebarSections } from '@/components/navigation/sidebarNavigation'
+import { useUserStore } from '@/store/userStore'
 
 defineOptions({
   name: 'SidebarNavigation',
@@ -24,6 +24,7 @@ defineProps({
 const route = useRoute()
 const router = useRouter()
 const { t } = useLanguage()
+const userStore = useUserStore()
 // Map icon keys from JSON config to concrete Vue components.
 const iconByName = {
   home: HomeIcon,
@@ -34,7 +35,7 @@ const iconByName = {
 
 const currentPath = computed(() => route.path)
 const currentRouteName = computed(() => String(route.name || ''))
-const currentUser = computed(() => getCurrentUser() || null)
+const currentUser = computed(() => userStore.currentUser || null)
 const SECTION_STATE_STORAGE_KEY = 'sidebar-navigation-section-state'
 const sectionStateById = ref({})
 const navigationSections = computed(() => {

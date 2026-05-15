@@ -3,16 +3,21 @@ import { ensureSessionIsValid, getCurrentUser, touchActivity } from '@/services/
 import { canAccessRoute } from '@/services/accessControl'
 import { authRoutes } from '@/modules/auth/routes'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
+import { notificationsRoutes } from '@/modules/notifications/routes'
+import { reportsRoutes } from '@/modules/reports/routes'
 import { superAdminRoutes } from '@/modules/super-admin/routes'
 import { englishRoutes } from '@/modules/english/routes'
 import { preschoolRoutes } from '@/modules/preschool/routes'
 import { scholarshipRoutes } from '@/modules/scholarship/routes'
 import { sportRoutes } from '@/modules/sport/routes'
 import { settingsRoutes } from '@/modules/settings/routes'
+import { validateRouteConfig } from '@/router/routeValidator'
 
 const routes = [
   ...authRoutes,
   ...dashboardRoutes,
+  ...notificationsRoutes,
+  ...reportsRoutes,
   ...superAdminRoutes,
   ...englishRoutes,
   ...preschoolRoutes,
@@ -24,6 +29,8 @@ const routes = [
     redirect: '/module/dashboard',
   },
 ]
+
+validateRouteConfig(routes)
 
 function routeMetaMatches(to, key) {
   return to.matched.some((record) => record.meta[key])
@@ -46,8 +53,8 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
-  const sessionValid = hasValidSession()
+router.beforeEach(async (to) => {
+  const sessionValid = await hasValidSession()
   const currentUser = getCurrentUser()
 
   if (requiresAuth(to) && !sessionValid) {

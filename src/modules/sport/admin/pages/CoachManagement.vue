@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -9,10 +9,9 @@ import Pagination from '@/components/data-display/Pagination.vue'
 import CoachManagementSummaryGrid from '@/modules/sport/admin/components/coach-management/CoachManagementSummaryGrid.vue'
 import CoachManagementToolbar from '@/modules/sport/admin/components/coach-management/CoachManagementToolbar.vue'
 import CoachManagementHighlights from '@/modules/sport/admin/components/coach-management/CoachManagementHighlights.vue'
-import usersMock from '@/mocks/users.json'
 import { ROLES } from '@/constants/roles'
 import { useLanguage } from '@/composables/useLanguage'
-import { mapUser } from '@/services/mappers/userMapper'
+import { deleteSportCoach, fetchSportCoaches } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportCoachManagementPage',
@@ -54,11 +53,7 @@ function goToAddCoach() {
   router.push({ path: '/module/sport-admin/users/add' })
 }
 
-const coachUsers = ref(
-  usersMock
-    .filter((item) => String(item.role || '').toLowerCase() === ROLES.COACH)
-    .map((item) => mapUser(item)),
-)
+const coachUsers = ref([])
 
 const filteredUsers = computed(() => {
   const query = String(searchQuery.value || '')
@@ -204,11 +199,22 @@ function onEditUser(user) {
   router.push({ path: '/module/sport-admin/users/add', query: { mode: 'edit', id } })
 }
 
-function onDeleteUser(user) {
+async function onDeleteUser(user) {
   const id = String(user?.id || '').trim()
   if (!id) return
+
+  await deleteSportCoach(id).catch(() => null)
   coachUsers.value = coachUsers.value.filter((item) => item.id !== id)
 }
+
+async function loadCoaches() {
+  const response = await fetchSportCoaches({ perPage: 100 })
+  coachUsers.value = response.items || []
+}
+
+onMounted(() => {
+  void loadCoaches()
+})
 </script>
 
 <template>

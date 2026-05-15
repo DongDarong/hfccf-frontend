@@ -2,18 +2,18 @@
 /**
  * SportAdminManagesPlayerInforPage
  * The main container for managing player information.
- * Handles data fetching (mock), filtering, and coordination between sub-components.
+ * Handles data fetching, filtering, and coordination between sub-components.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Button from 'primevue/button'
 import { useLanguage } from '@/composables/useLanguage'
-import playersData from '@/mocks/sport/players-management-data.json'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { deleteSportPlayer, fetchSportPlayers } from '@/modules/sport/services/sportApi'
 
 // Sub-components
 import PlayerStatsCards from '../components/player-management/PlayerStatsCards.vue'
@@ -48,6 +48,7 @@ const selectedPlayer = ref(null)
 const isDeleting = ref(false)
 const showDeleteSuccess = ref(false)
 const deleteSuccessMessage = ref('')
+const playerRecords = ref([])
 
 async function goToAddPlayer() {
   // Use the route name so the link survives future path refactors.
@@ -76,7 +77,7 @@ function onDeletePlayer(player) {
 }
 
 function applyDeleteFromQuery() {
-  // Allow deletes initiated from the Add Player page to be applied in the list without a backend yet.
+  // Allow deletes initiated from the Add Player page to refresh the current list.
   const id = String(route.query.delete || '').trim()
   if (!id) return
   playerRecords.value = playerRecords.value.filter((item) => item.id !== id)
@@ -88,7 +89,7 @@ function onCancelDelete() {
   selectedPlayer.value = null
 }
 
-function onConfirmDelete() {
+async function onConfirmDelete() {
   if (isDeleting.value) return
   isDeleting.value = true
 
@@ -99,9 +100,10 @@ function onConfirmDelete() {
   }
 
   const name = String(selectedPlayer.value?.name || '').trim()
+  await deleteSportPlayer(id).catch(() => null)
   playerRecords.value = playerRecords.value.filter((item) => item.id !== id)
 
-  // Feedback stays on the list page since there is no backend yet.
+  // Feedback stays on the list page.
   deleteSuccessMessage.value = t('sportPlayerInformation.confirm.deletedMessage', {
     name: name || t('sportPlayerInformation.confirm.defaultName'),
   })
@@ -128,9 +130,6 @@ const searchPlaceholder = computed(() => t('sportPlayerInformation.searchPlaceho
 const tableEmptyText = computed(() => t('sportPlayerInformation.tableEmpty'))
 const toolbarEyebrow = computed(() => t('sportPlayerInformation.toolbarEyebrow'))
 const activeRateTitle = computed(() => t('sportPlayerInformation.activeRateLabel'))
-
-// Data Source - Keep as ref so it can be updated by an API later
-const playerRecords = ref(Array.isArray(playersData) ? [...playersData] : [])
 
 /**
  * Helper to normalize strings for searching and comparison
@@ -178,7 +177,7 @@ const paginatedPlayers = computed(() => {
   return filteredPlayers.value.slice(start, start + pageSize).map((player, index) => ({
     ...player,
     // Table identity line expects `position`; UI now uses Primary Position.
-    // Keep a fallback for older mock records that still use `position`.
+    // Keep a fallback for older records that still use `position`.
     position: String(player?.primaryPosition || player?.position || '').trim(),
     rowNumber: start + index + 1,
   }))
@@ -304,6 +303,12 @@ watch(
   },
   { immediate: true },
 )
+
+onMounted(() => {
+  void fetchSportPlayers({ perPage: 100 }).then((response) => {
+    playerRecords.value = response.items || []
+  })
+})
 </script>
 
 <template>
