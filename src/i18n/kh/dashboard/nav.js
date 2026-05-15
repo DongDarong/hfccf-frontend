@@ -49,6 +49,8 @@ export default {
     students: 'សិស្ស',
     myStudents: 'សិស្សរបស់ខ្ញុំ',
     attendance: 'វត្តមាន',
+    homework: 'កិច្ចការផ្ទះ',
+    tasks: 'ភារកិច្ច',
     teams: 'ក្រុម',
     players: 'កីឡាករ',
     matches: 'ការប្រកួត',

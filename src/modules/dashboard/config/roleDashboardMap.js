@@ -21,15 +21,15 @@ export const dashboardByRole = Object.freeze({
  * Human-readable labels for the resolved role dashboards.
  */
 export const dashboardLabels = Object.freeze({
-  [ROLES.SUPER_ADMIN]: 'Super Admin',
-  [ROLES.ADMIN_ENGLISH]: 'English Admin',
-  [ROLES.ADMIN_PRESCHOOL]: 'Preschool Admin',
-  [ROLES.ADMIN_SCHOLARSHIP]: 'Scholarship Admin',
-  [ROLES.ADMIN_SPORT]: 'Sport Admin',
-  [ROLES.COACH]: 'Coach',
-  [ROLES.TEACHER_ENGLISH]: 'Teacher',
-  [ROLES.TEACHER_PRESCHOOL]: 'Preschool Teacher',
-  [ROLES.TEACHER_SCHOLARSHIP]: 'Scholarship Teacher',
+  [ROLES.SUPER_ADMIN]: 'common.role.superadmin',
+  [ROLES.ADMIN_ENGLISH]: 'common.role.adminenglish',
+  [ROLES.ADMIN_PRESCHOOL]: 'common.role.adminpreschool',
+  [ROLES.ADMIN_SCHOLARSHIP]: 'common.role.adminscholarship',
+  [ROLES.ADMIN_SPORT]: 'common.role.adminsport',
+  [ROLES.COACH]: 'common.role.coach',
+  [ROLES.TEACHER_ENGLISH]: 'common.role.teacher_english',
+  [ROLES.TEACHER_PRESCHOOL]: 'common.role.teacher_preschool',
+  [ROLES.TEACHER_SCHOLARSHIP]: 'common.role.teacher_scholarship',
 })
 
 /**

@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { hasPermission } from '@/services/auth'
 import { ROLES, isTeacherRole, normalizeRole } from '@/constants/roles'
 import { useUserStore } from '@/store/userStore'
+import { useLanguage } from '@/composables/useLanguage'
 import { dashboardByRole, dashboardLabels, dashboardSeverities } from '@/modules/dashboard/config/roleDashboardMap'
 import { dashboardRegistry } from '@/modules/dashboard/config/dashboardRegistry'
 
@@ -11,6 +12,7 @@ import { dashboardRegistry } from '@/modules/dashboard/config/dashboardRegistry'
  */
 export function useDashboardResolver() {
   const userStore = useUserStore()
+  const { t } = useLanguage()
 
   const currentUser = computed(() => userStore.currentUser || {})
   const normalizedRole = computed(() => normalizeRole(currentUser.value?.role))
@@ -42,7 +44,7 @@ export function useDashboardResolver() {
 
     return {
       component: dashboardByRole[role],
-      label: dashboardLabels[role] || role,
+      label: t(dashboardLabels[role] || role),
       severity: dashboardSeverities[role] || 'secondary',
     }
   })
@@ -64,7 +66,7 @@ export function useDashboardResolver() {
   )
 
   const currentRoleLabel = computed(() =>
-    activeDashboardConfig.value?.label || normalizedRole.value || 'User',
+    activeDashboardConfig.value?.label || normalizedRole.value || t('common.role.teacher') || 'User',
   )
 
   const currentSeverity = computed(() =>

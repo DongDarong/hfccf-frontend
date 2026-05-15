@@ -6,7 +6,10 @@ import PreschoolDashboardSummary from '@/modules/preschool/admin/components/dash
 import PreschoolDashboardSpotlight from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSpotlight.vue'
 import PreschoolDashboardActionList from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActionList.vue'
 import PreschoolDashboardActivity from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActivity.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolDashboard } from '@/modules/preschool/services/preschoolApi'
+
+const { t } = useLanguage()
 
 const dashboard = ref({
   summary: {
@@ -36,24 +39,24 @@ async function loadDashboard() {
   try {
     dashboard.value = await fetchPreschoolDashboard()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to load preschool dashboard.'
+    errorMessage.value = error?.message || t('preschoolDashboard.loading')
   } finally {
     loading.value = false
   }
 }
 
 const cards = computed(() => [
-  { title: 'Total Students', value: dashboard.value.summary.students || 0, label: 'Active student records', status: 'success' },
-  { title: 'Active Classes', value: dashboard.value.summary.classes || 0, label: 'Live classroom groups', status: 'info' },
-  { title: 'Teachers', value: dashboard.value.summary.teachers || 0, label: 'Preschool teachers', status: 'warning' },
-  { title: 'Attendance Today', value: dashboard.value.summary.attendanceToday || 0, label: 'Recorded today', status: 'error' },
+  { title: t('preschoolDashboard.cards.students.title'), value: dashboard.value.summary.students || 0, label: t('preschoolDashboard.cards.students.label'), status: 'success' },
+  { title: t('preschoolDashboard.cards.classes.title'), value: dashboard.value.summary.classes || 0, label: t('preschoolDashboard.cards.classes.label'), status: 'info' },
+  { title: t('preschoolDashboard.cards.teachers.title'), value: dashboard.value.summary.teachers || 0, label: t('preschoolDashboard.cards.teachers.label'), status: 'warning' },
+  { title: t('preschoolDashboard.cards.attendance.title'), value: dashboard.value.summary.attendanceToday || 0, label: t('preschoolDashboard.cards.attendance.label'), status: 'error' },
 ])
 
 const actions = computed(() => [
-  `Pending payments: ${dashboard.value.summary.pendingPayments || 0}`,
-  `Overdue payments: ${dashboard.value.summary.overduePayments || 0}`,
-  `Paid payments: ${dashboard.value.paymentSummary?.paid || 0}`,
-  `Upcoming classes: ${dashboard.value.upcomingClasses.length || 0}`,
+  t('preschoolDashboard.actions.pendingPayments', { count: dashboard.value.summary.pendingPayments || 0 }),
+  t('preschoolDashboard.actions.overduePayments', { count: dashboard.value.summary.overduePayments || 0 }),
+  t('preschoolDashboard.actions.paidPayments', { count: dashboard.value.paymentSummary?.paid || 0 }),
+  t('preschoolDashboard.actions.upcomingClasses', { count: dashboard.value.upcomingClasses.length || 0 }),
 ])
 
 const notes = computed(() =>
@@ -65,14 +68,14 @@ const notes = computed(() =>
 
 const spotlightTitle = computed(() =>
   dashboard.value.upcomingClasses[0]
-    ? `${dashboard.value.upcomingClasses[0].name} is next`
-    : 'No upcoming classes',
+    ? `${dashboard.value.upcomingClasses[0].name} ${t('preschoolDashboard.nextClassSuffix')}`
+    : t('preschoolDashboard.noUpcomingClasses'),
 )
 
 const spotlightText = computed(() =>
   dashboard.value.upcomingClasses[0]
-    ? `${dashboard.value.upcomingClasses[0].teacherDisplayName || 'Assigned teacher'} has ${dashboard.value.upcomingClasses[0].studentsCount || 0} enrolled students.`
-    : 'Create classes and assign teachers to populate this board.',
+    ? `${dashboard.value.upcomingClasses[0].teacherDisplayName || t('preschoolDashboard.assignedTeacher')} has ${dashboard.value.upcomingClasses[0].studentsCount || 0} enrolled students.`
+    : t('preschoolDashboard.populateText'),
 )
 
 onMounted(() => {
@@ -84,8 +87,8 @@ onMounted(() => {
   <MainLayout>
     <section class="preschool-dashboard-page">
       <HeaderSection
-        title="Preschool Operations Board"
-        subtitle="Enrollment readiness, attendance, and classroom resourcing."
+        :title="t('preschoolDashboard.title')"
+        :subtitle="t('preschoolDashboard.subtitle')"
       />
 
       <div
@@ -99,7 +102,7 @@ onMounted(() => {
         v-if="loading"
         class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
       >
-        Loading preschool dashboard...
+        {{ t('preschoolDashboard.loading') }}
       </div>
 
       <PreschoolDashboardSummary :cards="cards" />
@@ -109,7 +112,7 @@ onMounted(() => {
           :title="spotlightTitle"
           :text="spotlightText"
         />
-        <PreschoolDashboardActionList title="Action Queue" :items="actions" />
+        <PreschoolDashboardActionList :title="t('preschoolDashboard.actions.queueTitle')" :items="actions" />
       </div>
 
       <PreschoolDashboardActivity :items="notes" />
@@ -137,3 +140,5 @@ onMounted(() => {
   }
 }
 </style>
+
+

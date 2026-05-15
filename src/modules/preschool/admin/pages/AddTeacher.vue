@@ -11,6 +11,7 @@ import AdminChecklistPanel from '@/modules/super-admin/components/admin-manageme
 import AddTeacherIntro from '@/modules/preschool/admin/components/add-teacher/AddTeacherIntro.vue'
 import AddTeacherFormFields from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormFields.vue'
 import AddTeacherFormActions from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormActions.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { ROLES } from '@/constants/roles'
 import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
 import {
@@ -25,6 +26,7 @@ defineOptions({
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useLanguage()
 
 const teacherDirectoryPath = '/module/preschool-admin/users'
 const teacherRole = ROLES.TEACHER_PRESCHOOL
@@ -65,25 +67,26 @@ const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 const editingTeacherId = computed(() => String(route.query.id || '').trim())
 
 const pageTitle = computed(() => {
-  if (isViewMode.value) return 'Teacher Details'
-  if (isEditMode.value) return 'Update Teacher'
-  return 'Add Teacher'
+  if (isViewMode.value) return t('preschoolAddTeacher.viewTitle')
+  if (isEditMode.value) return t('preschoolAddTeacher.updateTitle')
+  return t('preschoolAddTeacher.title')
 })
 
 const pageSubtitle = computed(() => {
-  if (isViewMode.value) return 'Review the teacher profile, permissions, and account status.'
-  if (isEditMode.value) return 'Update the teacher profile, permissions, and account details.'
-  return 'Create a Preschool teacher account and assign classroom access.'
+  if (isViewMode.value) return t('preschoolAddTeacher.pageSubtitle.view')
+  if (isEditMode.value) return t('preschoolAddTeacher.pageSubtitle.edit')
+  return t('preschoolAddTeacher.pageSubtitle.add')
 })
 
 function statusLabel(status) {
   const normalized = String(status || '').trim().toLowerCase()
-  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : ''
+  if (!normalized) return ''
+  return t(`common.status.${normalized}`) || normalized.charAt(0).toUpperCase() + normalized.slice(1)
 }
 
 function roleLabel(value) {
   if (String(value || '').trim().toLowerCase() === teacherRole) {
-    return 'Preschool Teacher'
+    return t('preschoolAddTeacher.introEyebrow')
   }
   return String(value || '-')
 }
@@ -112,13 +115,13 @@ function onProfileImageChange(event) {
   if (!file) return
 
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-    errorMessage.value = 'Profile image must be a JPG, PNG, or WEBP file.'
+    errorMessage.value = t('preschoolAddTeacher.validation.profileImageType')
     showError.value = true
     return
   }
 
   if (file.size > 2 * 1024 * 1024) {
-    errorMessage.value = 'Profile image must be 2MB or smaller.'
+    errorMessage.value = t('preschoolAddTeacher.validation.profileImageSize')
     showError.value = true
     return
   }
@@ -145,14 +148,14 @@ function removeProfileImage() {
 }
 
 function validateForm() {
-  if (!form.name.trim()) return 'Full name is required.'
-  if (!form.email.trim()) return 'Email is required.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email.'
-  if (!form.status) return 'Status is required.'
+  if (!form.name.trim()) return t('preschoolAddTeacher.validation.nameRequired')
+  if (!form.email.trim()) return t('preschoolAddTeacher.validation.emailRequired')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('preschoolAddTeacher.validation.emailInvalid')
+  if (!form.status) return t('preschoolAddTeacher.validation.statusRequired')
 
   if (isAddMode.value || form.password || form.confirmPassword) {
-    if (form.password.length < 8) return 'Password must be at least 8 characters.'
-    if (form.password !== form.confirmPassword) return 'Passwords do not match.'
+    if (form.password.length < 8) return t('preschoolAddTeacher.validation.passwordTooShort')
+    if (form.password !== form.confirmPassword) return t('preschoolAddTeacher.validation.passwordsMismatch')
   }
 
   return ''
@@ -199,7 +202,7 @@ async function loadTeacher() {
     if (!teacher) return
     populateFromTeacher(teacher)
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to load teacher details.'
+    errorMessage.value = error?.message || t('preschoolAddTeacher.validation.loadFailed')
     showError.value = true
   }
 }
@@ -239,7 +242,11 @@ async function onSubmit() {
 
     showSuccess.value = true
   } catch (error) {
-    errorMessage.value = error?.message || (isEditMode.value ? 'Failed to update the teacher account.' : 'Failed to create the teacher account.')
+    errorMessage.value =
+      error?.message ||
+      (isEditMode.value
+        ? t('preschoolAddTeacher.validation.updateFailed')
+        : t('preschoolAddTeacher.validation.createFailed'))
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -265,36 +272,36 @@ const formSummaryCards = computed(() => {
   return [
     {
       id: 'teacher-role',
-      title: 'Role Scope',
+      title: t('preschoolAddTeacher.roleScopeTitle'),
       value: selectedRoleDescription.value,
-      label: 'Program access',
+      label: t('preschoolAddTeacher.programAccess'),
       status: 'info',
       statusLabel: statusLabel('info'),
       surfaceClass: 'bg-cyan-50/80 border-cyan-200',
     },
     {
       id: 'teacher-permissions',
-      title: 'Permissions',
+      title: t('preschoolAddTeacher.permissionsTitle'),
       value: permissionCount,
-      label: permissionCount ? 'Configured permissions' : 'Permissions loaded from role',
+      label: permissionCount ? t('preschoolAddTeacher.configuredPermissions') : t('preschoolAddTeacher.permissionsFromRole'),
       status: 'success',
       statusLabel: statusLabel('success'),
       surfaceClass: 'bg-lime-50/80 border-lime-200',
     },
     {
       id: 'teacher-account-state',
-      title: 'Account State',
+      title: t('preschoolAddTeacher.accountStateTitle'),
       value: statusLabel(form.status),
-      label: 'Initial account status',
+      label: t('preschoolAddTeacher.initialAccountStatus'),
       status: form.status,
       statusLabel: statusLabel(form.status),
       surfaceClass: 'bg-amber-50/80 border-amber-200',
     },
     {
       id: 'teacher-security-review',
-      title: 'Security Review',
-      value: profileImagePreview.value ? 'Ready' : 'Pending',
-      label: profileImagePreview.value ? 'Profile image set' : 'Profile image pending',
+      title: t('preschoolAddTeacher.securityReviewTitle'),
+      value: profileImagePreview.value ? t('preschoolAddTeacher.ready') : t('preschoolAddTeacher.pending'),
+      label: profileImagePreview.value ? t('preschoolAddTeacher.profileImageSet') : t('preschoolAddTeacher.profileImagePending'),
       status: securityStatus,
       statusLabel: statusLabel(securityStatus),
       surfaceClass: 'bg-rose-50/80 border-rose-200',
@@ -304,20 +311,20 @@ const formSummaryCards = computed(() => {
 
 const checklistItems = computed(() => [
   {
-    title: 'Role',
+    title: t('preschoolAddTeacher.checklist.roleTitle'),
     text: selectedRoleDescription.value,
   },
   {
-    title: 'Permissions',
-    text: 'Permissions are resolved from the teacher role and displayed read-only.',
+    title: t('preschoolAddTeacher.checklist.permissionsTitle'),
+    text: t('preschoolAddTeacher.checklist.permissions'),
   },
   {
-    title: 'Security',
-    text: 'Set a password and verify the teacher profile image before saving.',
+    title: t('preschoolAddTeacher.checklist.securityTitle'),
+    text: t('preschoolAddTeacher.checklist.security'),
   },
   {
-    title: 'Review',
-    text: 'Confirm the account status and contact details before submission.',
+    title: t('preschoolAddTeacher.checklist.reviewTitle'),
+    text: t('preschoolAddTeacher.checklist.review'),
   },
 ])
 
@@ -349,8 +356,8 @@ onBeforeUnmount(() => {
         <Form
           class="add-teacher-page__form"
           :title="pageTitle"
-          description="Complete the teacher profile, permissions, and sign-in details."
-          :cancel-text="'Cancel'"
+          :description="t('preschoolAddTeacher.formDescription')"
+          :cancel-text="t('common.cancel')"
           :loading="isSubmitting"
           :disabled="isViewMode"
           :show-cancel="true"
@@ -406,10 +413,10 @@ onBeforeUnmount(() => {
 
         <div class="add-teacher-page__rail">
           <AdminChecklistPanel
-            title="Teacher Setup Checklist"
-            description="Review the essentials before activating the account."
+            :title="t('preschoolAddTeacher.sidebarTitle')"
+            :description="t('preschoolAddTeacher.sidebarText')"
             :items="checklistItems"
-            highlight-label="Role Scope"
+            :highlight-label="t('preschoolAddTeacher.roleScopeTitle')"
             :highlight-value="selectedRoleDescription"
           />
         </div>
@@ -418,21 +425,21 @@ onBeforeUnmount(() => {
 
     <AlertError
       :show="showError"
-      title="Validation Error"
+      :title="t('preschoolAddTeacher.validation.validationError')"
       :message="errorMessage"
-      button-text="Close"
+      :button-text="t('preschoolAddTeacher.buttons.close')"
       @close="onErrorClose"
     />
 
     <AlertSuccess
       :show="showSuccess"
-      :title="isEditMode ? 'Teacher Updated' : 'Teacher Created'"
+      :title="isEditMode ? t('preschoolAddTeacher.feedback.updatedTitle') : t('preschoolAddTeacher.feedback.createdTitle')"
       :message="
         isEditMode
-          ? 'The teacher account has been updated successfully.'
-          : 'The teacher account has been created successfully.'
+          ? t('preschoolAddTeacher.feedback.updatedMessage')
+          : t('preschoolAddTeacher.feedback.createdMessage')
       "
-      button-text="Back to Teachers"
+      :button-text="t('preschoolAddTeacher.buttons.backToTeachers')"
       @close="onSuccessClose"
     />
   </MainLayout>

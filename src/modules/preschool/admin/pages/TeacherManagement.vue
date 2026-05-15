@@ -9,6 +9,7 @@ import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { mapUsers } from '@/services/mappers/userMapper'
 import {
   deletePreschoolTeacher,
@@ -20,6 +21,7 @@ defineOptions({
 })
 
 const router = useRouter()
+const { t } = useLanguage()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -40,18 +42,18 @@ const showSuccess = ref(false)
 const successMessage = ref('')
 
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const addTeacherLabel = computed(() => 'Add Teacher')
-const addTeacherCaption = computed(() => 'Create preschool account')
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'user', label: 'User', align: 'left' },
-  { key: 'email', label: 'Email', align: 'left' },
-  { key: 'role', label: 'Role', align: 'left' },
-  { key: 'permission', label: 'Permissions', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'phone', label: 'Phone', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const addTeacherLabel = computed(() => t('preschoolTeachersManagement.addButtonLabel'))
+const addTeacherCaption = computed(() => t('preschoolTeachersManagement.addButtonCaption'))
+const tableColumns = computed(() => [
+  { key: 'number', label: t('preschoolTeachersManagement.table.number'), align: 'left' },
+  { key: 'user', label: t('preschoolTeachersManagement.table.user'), align: 'left' },
+  { key: 'email', label: t('preschoolTeachersManagement.table.email'), align: 'left' },
+  { key: 'role', label: t('preschoolTeachersManagement.table.role'), align: 'left' },
+  { key: 'permission', label: t('preschoolTeachersManagement.table.permission'), align: 'left' },
+  { key: 'status', label: t('preschoolTeachersManagement.table.status'), align: 'left' },
+  { key: 'phone', label: t('preschoolTeachersManagement.table.phone'), align: 'left' },
+  { key: 'actions', label: t('preschoolTeachersManagement.table.actions'), align: 'right' },
+])
 
 const mappedTeachers = computed(() =>
   mapUsers(teachers.value).map((teacher) => ({
@@ -86,7 +88,7 @@ async function loadTeachers() {
       total: 0,
       totalPages: 1,
     }
-    errorMessage.value = error?.message || 'Failed to load preschool teachers.'
+    errorMessage.value = error?.message || t('preschoolTeachersManagement.loadFailed')
   } finally {
     loading.value = false
   }
@@ -121,12 +123,12 @@ async function onConfirmDelete() {
 
   try {
     await deletePreschoolTeacher(id)
-    successMessage.value = 'Teacher deleted successfully.'
+    successMessage.value = t('preschoolTeachersManagement.deletedSuccess')
     showSuccess.value = true
     onCancelDelete()
     await loadTeachers()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete the teacher.'
+    errorMessage.value = error?.message || t('preschoolTeachersManagement.deleteFailed')
   }
 }
 
@@ -153,8 +155,8 @@ onMounted(() => {
   <MainLayout>
     <section class="preschool-users-page">
       <HeaderSection
-        title="Preschool Teachers"
-        subtitle="View teachers assigned to the Preschool program."
+        :title="t('preschoolTeachersManagement.title')"
+        :subtitle="t('preschoolTeachersManagement.subtitle')"
       />
 
       <div class="preschool-users-page__panel">
@@ -189,7 +191,7 @@ onMounted(() => {
           v-model:statusFilter="statusFilter"
           :show-role-filter="false"
           :status-options="statusOptions"
-          search-placeholder="Search by teacher name, email, or phone"
+          :search-placeholder="t('preschoolTeachersManagement.searchPlaceholder')"
           @clear="onFiltersCleared"
         />
 
@@ -204,7 +206,7 @@ onMounted(() => {
           :rows="mappedTeachers"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No Preschool teachers found."
+          :empty-text="t('preschoolTeachersManagement.tableEmpty')"
           @view="onViewUser"
           @edit="onEditUser"
           @delete="onDeleteUser"
@@ -218,10 +220,10 @@ onMounted(() => {
 
     <AlertQuestion
       :show="isDeleteOpen"
-      title="Delete teacher?"
-      :message="`Are you sure you want to delete ${selectedTeacher?.name || selectedTeacher?.fullName || 'this teacher'}?`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="t('preschoolTeachersManagement.deleteConfirmTitle')"
+      :message="t('preschoolTeachersManagement.deleteConfirmMessage', { name: selectedTeacher?.name || selectedTeacher?.fullName || 'this teacher' })"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
       type="danger"
       @confirm="onConfirmDelete"
       @cancel="onCancelDelete"
@@ -229,9 +231,9 @@ onMounted(() => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('preschoolTeachersManagement.successTitle')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('preschoolTeachersManagement.closeButton')"
       @close="showSuccess = false"
     />
   </MainLayout>

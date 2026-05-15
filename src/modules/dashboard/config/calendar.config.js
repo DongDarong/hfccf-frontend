@@ -9,40 +9,48 @@ export const EVENT_TYPE_OPTIONS = Object.freeze([
 
 const CALENDAR_TEAM_TARGETS = Object.freeze({
   [DOMAINS.ENGLISH]: [
-    { id: 101, name: 'English Level 1', group: 'Morning class' },
-    { id: 102, name: 'English Level 2', group: 'Afternoon class' },
-    { id: 103, name: 'English Level 3', group: 'Exam preparation' },
-    { id: 104, name: 'English Teachers', group: 'Staff' },
+    { id: 101, nameKey: 'common.dashboard.calendar.targets.englishLevel1', groupKey: 'common.dashboard.calendar.groups.morningClass' },
+    { id: 102, nameKey: 'common.dashboard.calendar.targets.englishLevel2', groupKey: 'common.dashboard.calendar.groups.afternoonClass' },
+    { id: 103, nameKey: 'common.dashboard.calendar.targets.englishLevel3', groupKey: 'common.dashboard.calendar.groups.examPreparation' },
+    { id: 104, nameKey: 'common.dashboard.calendar.targets.englishTeachers', groupKey: 'common.dashboard.calendar.groups.staff' },
   ],
   [DOMAINS.PRESCHOOL]: [
-    { id: 201, name: 'Nursery A', group: 'Preschool' },
-    { id: 202, name: 'Nursery B', group: 'Preschool' },
-    { id: 203, name: 'Kindergarten', group: 'Preschool' },
-    { id: 204, name: 'Preschool Teachers', group: 'Staff' },
+    { id: 201, nameKey: 'common.dashboard.calendar.targets.nurseryA', groupKey: 'common.dashboard.calendar.groups.preschool' },
+    { id: 202, nameKey: 'common.dashboard.calendar.targets.nurseryB', groupKey: 'common.dashboard.calendar.groups.preschool' },
+    { id: 203, nameKey: 'common.dashboard.calendar.targets.kindergarten', groupKey: 'common.dashboard.calendar.groups.preschool' },
+    { id: 204, nameKey: 'common.dashboard.calendar.targets.preschoolTeachers', groupKey: 'common.dashboard.calendar.groups.staff' },
   ],
   [DOMAINS.SCHOLARSHIP]: [
-    { id: 301, name: 'New Applicants', group: '2026 cycle' },
-    { id: 302, name: 'Shortlisted Students', group: 'Review stage' },
-    { id: 303, name: 'Current Scholars', group: 'Active support' },
-    { id: 304, name: 'Scholarship Staff', group: 'Staff' },
+    { id: 301, nameKey: 'common.dashboard.calendar.targets.newApplicants', groupKey: 'common.dashboard.calendar.groups.education' },
+    { id: 302, nameKey: 'common.dashboard.calendar.targets.shortlistedStudents', groupKey: 'common.dashboard.calendar.groups.reviewStage' },
+    { id: 303, nameKey: 'common.dashboard.calendar.targets.currentScholars', groupKey: 'common.dashboard.calendar.groups.activeSupport' },
+    { id: 304, nameKey: 'common.dashboard.calendar.targets.scholarshipStaff', groupKey: 'common.dashboard.calendar.groups.staff' },
   ],
   [DOMAINS.SPORT]: [
-    { id: 1, name: 'U-18 Falcons', group: 'Girls Football' },
-    { id: 2, name: 'Rising Strikers', group: 'Boys Football' },
-    { id: 3, name: 'Cyan Court', group: 'Basketball' },
-    { id: 4, name: 'Lime Sprinters', group: 'Athletics' },
-    { id: 5, name: 'Red Defenders', group: 'Volleyball' },
-    { id: 6, name: 'Yellow Tactics', group: 'Staff & Coaches' },
+    { id: 1, nameKey: 'common.dashboard.calendar.targets.u18Falcons', groupKey: 'common.dashboard.calendar.groups.girlsFootball' },
+    { id: 2, nameKey: 'common.dashboard.calendar.targets.risingStrikers', groupKey: 'common.dashboard.calendar.groups.boysFootball' },
+    { id: 3, nameKey: 'common.dashboard.calendar.targets.cyanCourt', groupKey: 'common.dashboard.calendar.groups.basketball' },
+    { id: 4, nameKey: 'common.dashboard.calendar.targets.limeSprinters', groupKey: 'common.dashboard.calendar.groups.athletics' },
+    { id: 5, nameKey: 'common.dashboard.calendar.targets.redDefenders', groupKey: 'common.dashboard.calendar.groups.volleyball' },
+    { id: 6, nameKey: 'common.dashboard.calendar.targets.yellowTactics', groupKey: 'common.dashboard.calendar.groups.staff' },
   ],
   [DOMAINS.GLOBAL]: [
-    { id: 400, name: 'All Programs', group: 'Organization-wide' },
-    { id: 401, name: 'English Program', group: 'Education' },
-    { id: 402, name: 'Preschool Program', group: 'Education' },
-    { id: 403, name: 'Scholarship Program', group: 'Education' },
-    { id: 404, name: 'Sport Program', group: 'Athletics' },
-    { id: 405, name: 'Operations Team', group: 'Administration' },
+    { id: 400, nameKey: 'common.dashboard.calendar.targets.allPrograms', groupKey: 'common.dashboard.calendar.groups.organizationWide' },
+    { id: 401, nameKey: 'common.dashboard.calendar.targets.englishProgram', groupKey: 'common.dashboard.calendar.groups.education' },
+    { id: 402, nameKey: 'common.dashboard.calendar.targets.preschoolProgram', groupKey: 'common.dashboard.calendar.groups.education' },
+    { id: 403, nameKey: 'common.dashboard.calendar.targets.scholarshipProgram', groupKey: 'common.dashboard.calendar.groups.education' },
+    { id: 404, nameKey: 'common.dashboard.calendar.targets.sportProgram', groupKey: 'common.dashboard.calendar.groups.athletics' },
+    { id: 405, nameKey: 'common.dashboard.calendar.targets.operationsTeam', groupKey: 'common.dashboard.calendar.groups.administration' },
   ],
 })
+
+function resolveTargets(t, targets) {
+  return targets.map((target) => ({
+    ...target,
+    name: t(target.nameKey),
+    group: t(target.groupKey),
+  }))
+}
 
 function createEventTypeList(t, domain, options = EVENT_TYPE_OPTIONS) {
   return options.map((item) => ({
@@ -99,7 +107,7 @@ export function buildRoleCalendarConfig({ t }) {
       defaultType: 'meeting',
       defaultTargetIds: [400],
       targetIcon: 'pi pi-sitemap',
-      targets: CALENDAR_TEAM_TARGETS[DOMAINS.GLOBAL],
+      targets: resolveTargets(t, CALENDAR_TEAM_TARGETS[DOMAINS.GLOBAL]),
     }),
     [DOMAINS.ENGLISH]: createRoleConfig({
       t,
@@ -114,7 +122,7 @@ export function buildRoleCalendarConfig({ t }) {
       defaultContext: t('pages.calendar.roles.english.defaultContext'),
       defaultType: 'training',
       targetIcon: 'pi pi-book',
-      targets: CALENDAR_TEAM_TARGETS[DOMAINS.ENGLISH],
+      targets: resolveTargets(t, CALENDAR_TEAM_TARGETS[DOMAINS.ENGLISH]),
     }),
     [DOMAINS.PRESCHOOL]: createRoleConfig({
       t,
@@ -129,7 +137,7 @@ export function buildRoleCalendarConfig({ t }) {
       defaultContext: t('pages.calendar.roles.preschool.defaultContext'),
       defaultType: 'training',
       targetIcon: 'pi pi-home',
-      targets: CALENDAR_TEAM_TARGETS[DOMAINS.PRESCHOOL],
+      targets: resolveTargets(t, CALENDAR_TEAM_TARGETS[DOMAINS.PRESCHOOL]),
     }),
     [DOMAINS.SCHOLARSHIP]: createRoleConfig({
       t,
@@ -144,7 +152,7 @@ export function buildRoleCalendarConfig({ t }) {
       defaultContext: t('pages.calendar.roles.scholarship.defaultContext'),
       defaultType: 'meeting',
       targetIcon: 'pi pi-users',
-      targets: CALENDAR_TEAM_TARGETS[DOMAINS.SCHOLARSHIP],
+      targets: resolveTargets(t, CALENDAR_TEAM_TARGETS[DOMAINS.SCHOLARSHIP]),
     }),
     [DOMAINS.SPORT]: createRoleConfig({
       t,
@@ -159,7 +167,7 @@ export function buildRoleCalendarConfig({ t }) {
       defaultContext: t('pages.calendar.roles.sport.defaultContext'),
       defaultType: 'match',
       targetIcon: 'pi pi-users',
-      targets: CALENDAR_TEAM_TARGETS[DOMAINS.SPORT],
+      targets: resolveTargets(t, CALENDAR_TEAM_TARGETS[DOMAINS.SPORT]),
     }),
   }
 }
