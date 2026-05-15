@@ -4,8 +4,10 @@ import MainLayout from '@/layouts/MainLayout.vue'
 
 <template>
   <MainLayout>
-    <slot />
+    <template #default>
+      <section class="flex flex-col gap-5">
+        <slot />
+      </section>
+    </template>
   </MainLayout>
 </template>
-
-

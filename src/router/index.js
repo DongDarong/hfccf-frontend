@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { ensureSessionIsValid, getCurrentUser, isSuperAdmin, touchActivity } from '@/services/auth'
+import { ensureSessionIsValid, getCurrentUser, touchActivity } from '@/services/auth'
+import { canAccessRoute } from '@/services/accessControl'
 import { authRoutes } from '@/modules/auth/routes'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
 import { superAdminRoutes } from '@/modules/super-admin/routes'
@@ -22,16 +23,20 @@ const routes = [
   },
 ]
 
-function normalizeRole(role) {
-  return String(role || '')
-    .trim()
-    .toLowerCase()
+function routeMetaMatches(to, key) {
+  return to.matched.some((record) => record.meta[key])
 }
 
-function hasAllowedRole(user, allowedRoles = []) {
-  if (!Array.isArray(allowedRoles) || !allowedRoles.length) return true
-  const role = normalizeRole(user?.role)
-  return allowedRoles.map((item) => normalizeRole(item)).includes(role)
+function requiresAuth(to) {
+  return routeMetaMatches(to, 'requiresAuth')
+}
+
+function isGuestOnly(to) {
+  return routeMetaMatches(to, 'guestOnly')
+}
+
+function hasValidSession() {
+  return ensureSessionIsValid()
 }
 
 const router = createRouter({
@@ -40,34 +45,21 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const sessionValid = ensureSessionIsValid()
-  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
-  const guestOnly = to.matched.some((record) => record.meta.guestOnly)
-  const superAdminOnly = to.matched.some((record) => record.meta.superAdminOnly)
-  const allowedRoles = to.matched.flatMap((record) => record.meta.allowedRoles || [])
+  const sessionValid = hasValidSession()
   const currentUser = getCurrentUser()
 
-  if (requiresAuth && !sessionValid) {
+  if (requiresAuth(to) && !sessionValid) {
     return {
       name: 'login',
       query: { redirect: to.fullPath },
     }
   }
 
-  if (guestOnly && sessionValid) {
+  if (isGuestOnly(to) && sessionValid) {
     return { name: 'dashboard' }
   }
 
-  if (sessionValid && superAdminOnly && !isSuperAdmin(currentUser)) {
-    return { name: 'dashboard' }
-  }
-
-  if (
-    sessionValid &&
-    allowedRoles.length &&
-    !isSuperAdmin(currentUser) &&
-    !hasAllowedRole(currentUser, allowedRoles)
-  ) {
+  if (sessionValid && !canAccessRoute(currentUser, to)) {
     return { name: 'dashboard' }
   }
 

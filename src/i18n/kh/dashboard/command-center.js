@@ -1,0 +1,146 @@
+export default {
+  commandCenter: {
+    page: {
+      title: 'មជ្ឈមណ្ឌលបញ្ជាសម្រាប់ថ្នាក់ដឹកនាំ',
+      subtitle:
+        'ទិដ្ឋភាពគ្រប់គ្រងឆ្លងនាយកដ្ឋានសម្រាប់ការកើនឡើងជាបន្ទាន់ ការអនុម័ត ការគ្រប់គ្រង និងព្រឹត្តិការណ៍សំខាន់ៗ។',
+    },
+    sections: {
+      summary: {
+        title: 'សង្ខេបសម្រាប់ថ្នាក់ដឹកនាំ',
+        subtitle: 'សញ្ញាសំខាន់ៗសម្រាប់វដ្តប្រតិបត្តិការបច្ចុប្បន្ន។',
+      },
+      status: {
+        title: 'សង្ខេបស្ថានភាពថ្នាក់ដឹកនាំ',
+      },
+      priorityActions: {
+        title: 'សកម្មភាពអាទិភាព',
+      },
+      departmentHealth: {
+        title: 'ស្ថានភាពសុខភាពឆ្លងនាយកដ្ឋាន',
+      },
+      governance: {
+        title: 'ទិដ្ឋភាពទូទៅនៃការគ្រប់គ្រង និងសិទ្ធិចូល',
+      },
+      events: {
+        title: 'ព្រឹត្តិការណ៍សំខាន់ៗថ្មីៗ',
+      },
+      nextSteps: {
+        title: 'ជំហានបន្ទាប់ដែលបានណែនាំ',
+      },
+    },
+    summaryCards: {
+      openEscalations: {
+        title: 'ការកើនឡើងដែលកំពុងបើក',
+        label: 'រង់ចាំការត្រួតពិនិត្យដោយផ្ទាល់',
+        trend: 'សំណើ 6 ត្រូវការសកម្មភាពថ្ងៃនេះ',
+        action: 'ត្រួតពិនិត្យជួរ',
+      },
+      activePrograms: {
+        title: 'កម្មវិធីកំពុងដំណើរការ',
+        label: 'ដំណើរការក្រោមការត្រួតពិនិត្យ',
+        trend: 'កម្មវិធី 4 កំពុងត្រូវបានតាមដាន',
+        action: 'មើលកម្មវិធី',
+      },
+      pendingApprovals: {
+        title: 'ការអនុម័តកំពុងរង់ចាំ',
+        label: 'រង់ចាំការអនុម័ត',
+        trend: 'ការអនុម័ត 11 នៅក្នុងជួរ',
+        action: 'អនុម័តជួរ',
+      },
+      complianceAlerts: {
+        title: 'ការជូនដំណឹងផ្នែកអនុលោមភាព',
+        label: 'ត្រូវការការត្រួតពិនិត្យ',
+        trend: 'ការជូនដំណឹង 3 រួមមាន 1 ធាតុលើសកំណត់',
+        action: 'បើកការត្រួតពិនិត្យ',
+      },
+    },
+    statusLevels: {
+      stable: 'ស្ថេរភាព',
+      watch: 'ត្រូវប្រុងប្រយ័ត្ន',
+      critical: 'សំខាន់ខ្លាំង',
+    },
+    executiveStatus: {
+      topIssueLabel: 'បញ្ហាសំខាន់',
+      departmentLabel: 'នាយកដ្ឋានដែលត្រូវការយកចិត្តទុកដាក់',
+      recommendedActionLabel: 'សកម្មភាពដែលបានណែនាំ',
+      topIssue: 'ការប៉ះទង្គិចសិទ្ធិកំពុងរារាំងការធ្វើបច្ចុប្បន្នភាពការចូលប្រើនៅកីឡា និងអាហារូបករណ៍។',
+      department: 'កម្មវិធីកីឡា',
+      recommendedAction:
+        'អនុម័តជួរសំណើចូលប្រើដែលកំពុងរង់ចាំ ចាត់តាំងម្ចាស់ត្រួតពិនិត្យ និងបិទការកើនឡើងចាស់ៗមុនវដ្តពិនិត្យបន្ទាប់។',
+      note: 'ប្រព័ន្ធទាំងមូលមានស្ថេរភាព ប៉ុន្តែជួរបច្ចុប្បន្នត្រូវការការជ្រៀតជ្រែកដោយផ្ទាល់។',
+    },
+    priorityActions: {
+      approveRequests: 'អនុម័តសំណើរបស់អ្នកគ្រប់គ្រង និងបុគ្គលិក',
+      reviewViolations: 'ត្រួតពិនិត្យការបំពានសិទ្ធិចូល',
+      resolveEscalations: 'ដោះស្រាយការកើនឡើងដែលគ្មានម្ចាស់',
+      overdueItems: 'ពិនិត្យធាតុអនុលោមភាពដែលហួសកំណត់',
+    },
+    priorityLabels: {
+      urgent: 'បន្ទាន់',
+      high: 'ខ្ពស់',
+      medium: 'មធ្យម',
+    },
+    dueLabels: {
+      today: 'ដល់កំណត់ថ្ងៃនេះ',
+      immediate: 'ភ្លាមៗ',
+      beforeNoon: 'មុនថ្ងៃត្រង់',
+      thisWeek: 'សប្តាហ៍នេះ',
+    },
+    departments: {
+      english: 'កម្មវិធីភាសាអង់គ្លេស',
+      preschool: 'កម្មវិធីមត្តេយ្យ',
+      scholarship: 'កម្មវិធីអាហារូបករណ៍',
+      sport: 'កម្មវិធីកីឡា',
+    },
+    health: {
+      reportingComplete: 'ការរាយការណ៍បានបញ្ចប់',
+      issueSingular: 'បញ្ហាកំពុងបើក',
+      issuePlural: 'បញ្ហាកំពុងបើក',
+    },
+    governance: {
+      pendingUserReviews: 'ការពិនិត្យអ្នកប្រើប្រាស់កំពុងរង់ចាំ',
+      pendingUserReviewsLabel: 'កំពុងត្រួតពិនិត្យ',
+      permissionConflicts: 'បញ្ហាជម្លោះសិទ្ធិ',
+      permissionConflictsLabel: 'ត្រូវការអន្តរាគមន៍',
+      inactiveAccounts: 'គណនីអសកម្ម',
+      inactiveAccountsLabel: 'រង់ចាំការពិនិត្យ',
+      recentAccessViolations: 'ការបំពានសិទ្ធិចូលថ្មីៗ',
+      recentAccessViolationsLabel: 'ជួរអធិការកិច្ច',
+    },
+    events: {
+      accessViolation: 'រកឃើញការបំពានសិទ្ធិចូលលើគណនីអ្នកគ្រប់គ្រង',
+      approvalDelay: 'ជួរអនុម័តបានពន្យារពេលសម្រាប់ការពិនិត្យអាហារូបករណ៍',
+      escalationOpen: 'បានបើកការកើនឡើងសម្រាប់គម្លាតក្នុងការរាយការណ៍កីឡា',
+      compliancePass: 'ចំណុចត្រួតពិនិត្យអនុលោមភាពបានឆ្លងកាត់សម្រាប់មត្តេយ្យ',
+    },
+    modules: {
+      superAdmin: 'អ្នកគ្រប់គ្រងជាន់ខ្ពស់',
+      english: 'កម្មវិធីភាសាអង់គ្លេស',
+      preschool: 'កម្មវិធីមត្តេយ្យ',
+      scholarship: 'កម្មវិធីអាហារូបករណ៍',
+      sport: 'កម្មវិធីកីឡា',
+    },
+    timestamps: {
+      tenMinutesAgo: '១០ នាទីមុន',
+      thirtyFiveMinutesAgo: '៣៥ នាទីមុន',
+      oneHourAgo: '១ ម៉ោងមុន',
+      today0815: 'ថ្ងៃនេះ ០៨:១៥',
+    },
+    nextSteps: {
+      reviewCriticalAccess: 'ពិនិត្យការបំពានសិទ្ធិចូលសំខាន់ៗជាមុនសិន។',
+      approvePendingRequests: 'អនុម័តសំណើរបស់អ្នកគ្រប់គ្រងចាស់បំផុតនៅក្នុងជួរ។',
+      confirmReportingGaps: 'បញ្ជាក់គម្លាតក្នុងការរាយការណ៍ និងចាត់ចែងម្ចាស់ការ។',
+      validateCompliance: 'ផ្ទៀងផ្ទាត់បញ្ហាអនុលោមភាពមុនការធ្វើបច្ចុប្បន្នភាពបន្ទាប់។',
+    },
+    actionLabels: {
+      review: 'ត្រួតពិនិត្យ',
+      open: 'បើក',
+      triage: 'ចាត់ចែង',
+      inspect: 'ពិនិត្យ',
+      approve: 'អនុម័ត',
+      assign: 'ចាត់តាំង',
+      viewDetails: 'មើលលម្អិត',
+    },
+  },
+}

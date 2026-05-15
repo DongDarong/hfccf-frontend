@@ -1,6 +1,6 @@
 <script setup>
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/HeaderSection.vue'
+import HeaderSection from '@/components/navigation/HeaderSection.vue'
 
 defineOptions({
   name: 'RoleDashboardLayout',
@@ -33,5 +33,6 @@ const props = defineProps({
   gap: 1rem;
 }
 </style>
+
 
 

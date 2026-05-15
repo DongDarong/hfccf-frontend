@@ -1,0 +1,200 @@
+<script setup>
+import { computed, useAttrs, useSlots } from 'vue'
+import PrimeButton from 'primevue/button'
+import { useLanguage } from '@/composables/useLanguage'
+
+defineOptions({
+  name: 'UiButton',
+  inheritAttrs: false,
+})
+
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'primary',
+    validator: (value) =>
+      ['primary', 'secondary', 'outline', 'ghost', 'danger', 'success'].includes(value),
+  },
+  size: {
+    type: String,
+    default: 'md',
+    validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value),
+  },
+  type: {
+    type: String,
+    default: 'button',
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  block: {
+    type: Boolean,
+    default: false,
+  },
+  rounded: {
+    type: String,
+    default: 'xl',
+  },
+})
+
+defineEmits(['click'])
+
+const attrs = useAttrs()
+const slots = useSlots()
+const { t } = useLanguage()
+
+const severity = computed(() => {
+  if (props.variant === 'secondary') return 'success'
+  if (props.variant === 'danger') return 'danger'
+  if (props.variant === 'success') return 'success'
+  return 'info'
+})
+
+const roundedClass = computed(() => {
+  if (props.rounded === 'full') return 'rounded-full'
+  if (props.rounded === 'md') return 'rounded-md'
+  if (props.rounded === 'lg') return 'rounded-lg'
+  return 'rounded-xl'
+})
+
+const sizeClass = computed(() => {
+  if (props.size === 'xs') return '!min-h-8 !px-3 !py-1.5 !text-xs !gap-1.5'
+  if (props.size === 'sm') return '!min-h-9.5 !px-3.5 !py-2 !text-sm !gap-2'
+  if (props.size === 'lg') return '!min-h-12 !px-5.5 !py-3.5 !text-base !gap-2.5'
+  if (props.size === 'xl') return '!min-h-13.5 !px-6.5 !py-4 !text-[1.06rem] !gap-3'
+  return '!min-h-11 !px-4.5 !py-2.5 !text-sm !gap-2'
+})
+
+const variantClass = computed(() => {
+  if (props.variant === 'secondary' || props.variant === 'success') {
+    return [
+      '!border-hope-lime',
+      '!bg-hope-lime',
+      '!text-white',
+      'shadow-[0_10px_22px_-14px_rgba(101,163,13,0.42)]',
+      'hover:enabled:!-translate-y-0.5',
+      'hover:enabled:!border-lime-700',
+      'hover:enabled:!bg-lime-700',
+      'hover:enabled:shadow-[0_14px_24px_-14px_rgba(77,124,15,0.36)]',
+    ]
+  }
+
+  if (props.variant === 'danger') {
+    return [
+      '!border-hope-red',
+      '!bg-hope-red',
+      '!text-white',
+      'shadow-[0_10px_22px_-14px_rgba(225,29,72,0.38)]',
+      'hover:enabled:!-translate-y-0.5',
+      'hover:enabled:!border-rose-700',
+      'hover:enabled:!bg-rose-700',
+      'hover:enabled:shadow-[0_14px_24px_-14px_rgba(190,18,60,0.34)]',
+    ]
+  }
+
+  if (props.variant === 'outline') {
+    return [
+      '!border-slate-300',
+      '!bg-white',
+      '!text-surface-700',
+      'shadow-[0_8px_18px_-18px_rgba(15,23,42,0.16)]',
+      'hover:enabled:!border-slate-400',
+      'hover:enabled:!bg-slate-50',
+      'hover:enabled:!text-surface-900',
+    ]
+  }
+
+  if (props.variant === 'ghost') {
+    return [
+      '!border-transparent',
+      '!bg-transparent',
+      '!text-surface-600',
+      '!shadow-none',
+      'hover:enabled:!bg-slate-100',
+      'hover:enabled:!text-surface-900',
+    ]
+  }
+
+  return [
+    '!border-brand-500',
+    '!bg-brand-500',
+    '!text-white',
+    'shadow-[0_10px_22px_-14px_rgba(0,174,239,0.46)]',
+    'hover:enabled:!-translate-y-0.5',
+    'hover:enabled:!border-brand-600',
+    'hover:enabled:!bg-brand-600',
+    'hover:enabled:shadow-[0_14px_24px_-14px_rgba(2,132,199,0.38)]',
+  ]
+})
+
+const buttonClass = computed(() => {
+  const classes = [
+    'ui-button',
+    '!inline-flex',
+    '!items-center',
+    '!justify-center',
+    '!border',
+    '!font-bold',
+    '!transition-all',
+    '!duration-200',
+    'focus-visible:!outline-none',
+    'focus-visible:!shadow-focus',
+    'active:enabled:scale-[0.98]',
+    'disabled:!cursor-not-allowed',
+    'disabled:!opacity-60',
+    'disabled:!shadow-none',
+    'disabled:saturate-[0.86]',
+    roundedClass.value,
+    sizeClass.value,
+    ...variantClass.value,
+  ]
+
+  if (props.block) classes.push('w-full')
+  return classes
+})
+
+const loadingLabel = computed(() => t('common.loading'))
+const passthrough = computed(() => ({
+  root: { class: buttonClass.value },
+  loadingIcon: { class: 'ui-button__spinner !text-current' },
+  label: {
+    class: props.loading && !slots.default ? '' : 'ui-button__label inline-flex items-center justify-center whitespace-nowrap',
+  },
+}))
+</script>
+
+<template>
+  <PrimeButton
+    v-bind="attrs"
+    :type="type"
+    :severity="severity"
+    :outlined="variant === 'outline'"
+    :text="variant === 'ghost'"
+    :loading="loading"
+    :disabled="disabled || loading"
+    :pt="passthrough"
+    @click="$emit('click', $event)"
+  >
+    <template v-if="$slots.iconLeft && !loading" #icon>
+      <slot name="iconLeft" />
+    </template>
+
+    <template v-if="$slots.default">
+      <slot />
+    </template>
+    <template v-else-if="loading">
+      {{ loadingLabel }}
+    </template>
+  </PrimeButton>
+</template>
+
+<style scoped>
+:deep(.ui-button.p-button .p-button-icon) {
+  font-size: 0.95em;
+}
+</style>
