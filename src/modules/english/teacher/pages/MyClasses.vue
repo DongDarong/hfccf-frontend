@@ -4,11 +4,14 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchTeacherClasses } from '@/modules/english/services/englishApi'
 
 defineOptions({
   name: 'EnglishTeacherClassesPage',
 })
+
+const { t, te } = useLanguage()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -19,15 +22,34 @@ const errorMessage = ref('')
 const classes = ref([])
 const pagination = ref({ page: 1, perPage: pageSize, total: 0, totalPages: 1 })
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'classCode', label: 'Code', align: 'left' },
-  { key: 'name', label: 'Class', align: 'left' },
-  { key: 'level', label: 'Level', align: 'left' },
-  { key: 'studentsCount', label: 'Students', align: 'left' },
-  { key: 'taskCount', label: 'Tasks', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('english.classes.table.number'), align: 'left' },
+  { key: 'classCode', label: t('english.classes.table.code'), align: 'left' },
+  { key: 'name', label: t('english.classes.table.class'), align: 'left' },
+  { key: 'level', label: t('english.classes.table.level'), align: 'left' },
+  { key: 'studentsCount', label: t('english.classes.table.students'), align: 'left' },
+  { key: 'taskCount', label: t('english.classes.table.tasks'), align: 'left' },
+  { key: 'status', label: t('english.classes.table.status'), align: 'left' },
+])
+
+function localizedStatus(value) {
+  const key = String(value || '').toLowerCase()
+  const statusKey = `english.common.status.${key}`
+  return te(statusKey) ? t(statusKey) : value || '-'
+}
+
+function localizedLevel(value) {
+  const normalized = String(value || '').toLowerCase().replace(/[^a-z]+/g, '')
+  const levelMap = {
+    beginner: 'english.classes.levels.beginner',
+    elementary: 'english.classes.levels.elementary',
+    preintermediate: 'english.classes.levels.preIntermediate',
+    intermediate: 'english.classes.levels.intermediate',
+    upperintermediate: 'english.classes.levels.upperIntermediate',
+  }
+  const key = levelMap[normalized]
+  return key && te(key) ? t(key) : value || '-'
+}
 
 const mappedClasses = computed(() =>
   classes.value.map((item) => ({
@@ -35,6 +57,10 @@ const mappedClasses = computed(() =>
     classCode: item.classCode || '-',
     studentsCount: item.studentsCount ?? 0,
     taskCount: item.tasksCount ?? 0,
+    levelCode: item.level || '',
+    statusCode: item.status || '',
+    level: localizedLevel(item.level),
+    status: localizedStatus(item.status),
   })),
 )
 
@@ -54,7 +80,7 @@ async function loadClasses() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     classes.value = []
-    errorMessage.value = error?.message || 'Failed to load English classes.'
+    errorMessage.value = error?.message || t('english.classes.messages.loadError')
   } finally {
     loading.value = false
   }
@@ -78,18 +104,18 @@ onMounted(() => {
   <MainLayout>
     <section class="english-teacher-classes-page">
       <HeaderSection
-        title="My English Classes"
-        subtitle="Classes assigned to you as the English teacher."
+        :title="t('english.classes.teacherTitle')"
+        :subtitle="t('english.classes.teacherSubtitle')"
       />
 
       <div class="english-teacher-classes-page__shell">
         <div class="english-teacher-classes-page__filters">
-          <input v-model="searchQuery" class="english-teacher-classes-page__input" type="search" placeholder="Search classes" />
+          <input v-model="searchQuery" class="english-teacher-classes-page__input" type="search" :placeholder="t('english.classes.placeholders.search')" />
           <select v-model="statusFilter" class="english-teacher-classes-page__input">
-            <option value="">All status</option>
-            <option value="active">active</option>
-            <option value="inactive">inactive</option>
-            <option value="archived">archived</option>
+            <option value="">{{ t('english.common.filters.allStatus') }}</option>
+            <option value="active">{{ t('english.common.status.active') }}</option>
+            <option value="inactive">{{ t('english.common.status.inactive') }}</option>
+            <option value="archived">{{ t('english.common.status.archived') }}</option>
           </select>
         </div>
 
@@ -104,7 +130,7 @@ onMounted(() => {
           :rows="mappedClasses"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No assigned English classes found."
+          :empty-text="t('english.classes.teacherEmpty')"
           :show-view-action="false"
           :show-edit-action="false"
           :show-delete-action="false"

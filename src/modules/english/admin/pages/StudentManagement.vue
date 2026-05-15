@@ -8,11 +8,14 @@ import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { createEnglishStudent, deleteEnglishStudent, fetchEnglishClasses, fetchEnglishStudents, updateEnglishStudent } from '@/modules/english/services/englishApi'
 
 defineOptions({
   name: 'EnglishStudentManagementPage',
 })
+
+const { t, te } = useLanguage()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -47,19 +50,40 @@ const form = reactive({
   class_ids: [],
 })
 
-const statusOptions = ['active', 'inactive', 'archived']
-const genderOptions = ['male', 'female', 'other']
+const statusOptions = computed(() => [
+  { value: 'active', label: t('english.common.status.active') },
+  { value: 'inactive', label: t('english.common.status.inactive') },
+  { value: 'archived', label: t('english.common.status.archived') },
+])
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'student', label: 'Student', align: 'left' },
-  { key: 'studentCode', label: 'Code', align: 'left' },
-  { key: 'gender', label: 'Gender', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'guardian', label: 'Guardian', align: 'left' },
-  { key: 'classesCount', label: 'Classes', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const genderOptions = computed(() => [
+  { value: 'male', label: t('english.common.status.male') },
+  { value: 'female', label: t('english.common.status.female') },
+  { value: 'other', label: t('english.common.status.other') },
+])
+
+const tableColumns = computed(() => [
+  { key: 'number', label: t('english.students.table.number'), align: 'left' },
+  { key: 'student', label: t('english.students.table.student'), align: 'left' },
+  { key: 'studentCode', label: t('english.students.table.code'), align: 'left' },
+  { key: 'gender', label: t('english.students.table.gender'), align: 'left' },
+  { key: 'status', label: t('english.students.table.status'), align: 'left' },
+  { key: 'guardian', label: t('english.students.table.guardian'), align: 'left' },
+  { key: 'classesCount', label: t('english.students.table.classes'), align: 'left' },
+  { key: 'actions', label: t('english.common.actions.actions'), align: 'right' },
+])
+
+function localizedStatus(value) {
+  const key = String(value || '').toLowerCase()
+  const statusKey = `english.common.status.${key}`
+  return te(statusKey) ? t(statusKey) : value || '-'
+}
+
+function localizedGender(value) {
+  const key = String(value || '').toLowerCase()
+  const genderKey = `english.common.status.${key}`
+  return te(genderKey) ? t(genderKey) : value || '-'
+}
 
 const mappedStudents = computed(() =>
   students.value.map((student) => ({
@@ -68,6 +92,10 @@ const mappedStudents = computed(() =>
     studentCode: student.studentCode || '-',
     guardian: student.guardianName || '-',
     classesCount: student.classesCount ?? 0,
+    genderCode: student.gender || '',
+    statusCode: student.status || '',
+    gender: localizedGender(student.gender),
+    status: localizedStatus(student.status),
   })),
 )
 
@@ -107,14 +135,14 @@ function openEditModal(item, mode = 'edit') {
     student_code: item?.studentCode || '',
     first_name: item?.firstName || '',
     last_name: item?.lastName || '',
-    gender: item?.gender || '',
+    gender: item?.genderCode || item?.gender || '',
     date_of_birth: item?.dateOfBirth || '',
     guardian_name: item?.guardianName || '',
     guardian_phone: item?.guardianPhone || '',
     email: item?.email || '',
     phone: item?.phone || '',
     address: item?.address || '',
-    status: item?.status || 'active',
+    status: item?.statusCode || item?.status || 'active',
     class_ids: Array.isArray(item?.classIds) ? item.classIds.filter(Boolean) : [],
   })
   deleteTarget.value = item || null
@@ -160,7 +188,7 @@ async function loadStudents() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     students.value = []
-    errorMessage.value = error?.message || 'Failed to load English students.'
+    errorMessage.value = error?.message || t('english.students.messages.loadError')
   } finally {
     loading.value = false
   }
@@ -183,17 +211,17 @@ async function onSaveStudent() {
     const payload = normalizePayload()
     if (modalMode.value === 'edit' && deleteTarget.value?.id) {
       await updateEnglishStudent(deleteTarget.value.id, payload)
-      successMessage.value = 'English student updated successfully.'
+      successMessage.value = t('english.students.messages.updateSuccess')
     } else {
       await createEnglishStudent(payload)
-      successMessage.value = 'English student created successfully.'
+      successMessage.value = t('english.students.messages.createSuccess')
     }
 
     showSuccess.value = true
     closeModal()
     await loadStudents()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to save English student.'
+    errorMessage.value = error?.message || t('english.students.messages.saveError')
   } finally {
     saving.value = false
   }
@@ -218,13 +246,13 @@ async function confirmDelete() {
 
   try {
     await deleteEnglishStudent(id)
-    successMessage.value = 'English student deleted successfully.'
+    successMessage.value = t('english.students.messages.deleteSuccess')
     showSuccess.value = true
     deleteOpen.value = false
     deleteTarget.value = null
     await loadStudents()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete English student.'
+    errorMessage.value = error?.message || t('english.students.messages.deleteError')
   }
 }
 
@@ -246,26 +274,26 @@ onMounted(() => {
   <MainLayout>
     <section class="english-students-page">
       <HeaderSection
-        title="English Students"
-        subtitle="Manage English student records and class assignments."
+        :title="t('english.students.title')"
+        :subtitle="t('english.students.subtitle')"
       />
 
       <div class="english-students-page__panel">
         <div class="english-students-page__toolbar">
           <Button type="button" variant="primary" size="md" rounded="xl" @click="openCreateModal">
-            Add Student
+            {{ t('english.students.actions.add') }}
           </Button>
         </div>
 
         <div class="english-students-page__filters">
-          <input v-model="searchQuery" class="english-students-page__input" type="search" placeholder="Search students" />
+          <input v-model="searchQuery" class="english-students-page__input" type="search" :placeholder="t('english.students.placeholders.search')" />
           <select v-model="genderFilter" class="english-students-page__input">
-            <option value="">All genders</option>
-            <option v-for="option in genderOptions" :key="option" :value="option">{{ option }}</option>
+            <option value="">{{ t('english.common.filters.allGenders') }}</option>
+            <option v-for="option in genderOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
           <select v-model="statusFilter" class="english-students-page__input">
-            <option value="">All status</option>
-            <option v-for="option in statusOptions" :key="option" :value="option">{{ option }}</option>
+            <option value="">{{ t('english.common.filters.allStatus') }}</option>
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
         </div>
 
@@ -280,7 +308,7 @@ onMounted(() => {
           :rows="mappedStudents"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No English students found."
+          :empty-text="t('english.students.empty')"
           @view="onViewStudent"
           @edit="onEditStudent"
           @delete="onDeleteStudent"
@@ -294,46 +322,46 @@ onMounted(() => {
 
     <Dialog
       v-model:visible="modalOpen"
-      :header="modalMode === 'view' ? 'View Student' : modalMode === 'edit' ? 'Edit Student' : 'Create Student'"
+      :header="modalMode === 'view' ? t('english.students.dialogs.viewTitle') : modalMode === 'edit' ? t('english.students.dialogs.editTitle') : t('english.students.dialogs.createTitle')"
       modal
       class="english-students-page__dialog"
     >
       <div class="english-students-page__dialog-grid">
-        <input v-model="form.student_code" class="english-students-page__input" type="text" placeholder="Student code" :disabled="modalMode === 'view'" />
-        <input v-model="form.first_name" class="english-students-page__input" type="text" placeholder="First name" :disabled="modalMode === 'view'" />
-        <input v-model="form.last_name" class="english-students-page__input" type="text" placeholder="Last name" :disabled="modalMode === 'view'" />
+        <input v-model="form.student_code" class="english-students-page__input" type="text" :placeholder="t('english.students.placeholders.studentCode')" :disabled="modalMode === 'view'" />
+        <input v-model="form.first_name" class="english-students-page__input" type="text" :placeholder="t('english.students.placeholders.firstName')" :disabled="modalMode === 'view'" />
+        <input v-model="form.last_name" class="english-students-page__input" type="text" :placeholder="t('english.students.placeholders.lastName')" :disabled="modalMode === 'view'" />
         <select v-model="form.gender" class="english-students-page__input" :disabled="modalMode === 'view'">
-          <option value="">Gender</option>
-          <option v-for="option in genderOptions" :key="option" :value="option">{{ option }}</option>
+          <option value="">{{ t('english.students.placeholders.gender') }}</option>
+          <option v-for="option in genderOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
         <input v-model="form.date_of_birth" class="english-students-page__input" type="date" :disabled="modalMode === 'view'" />
-        <input v-model="form.guardian_name" class="english-students-page__input" type="text" placeholder="Guardian name" :disabled="modalMode === 'view'" />
-        <input v-model="form.guardian_phone" class="english-students-page__input" type="text" placeholder="Guardian phone" :disabled="modalMode === 'view'" />
-        <input v-model="form.email" class="english-students-page__input" type="email" placeholder="Email" :disabled="modalMode === 'view'" />
-        <input v-model="form.phone" class="english-students-page__input" type="text" placeholder="Phone" :disabled="modalMode === 'view'" />
+        <input v-model="form.guardian_name" class="english-students-page__input" type="text" :placeholder="t('english.students.placeholders.guardianName')" :disabled="modalMode === 'view'" />
+        <input v-model="form.guardian_phone" class="english-students-page__input" type="text" :placeholder="t('english.students.placeholders.guardianPhone')" :disabled="modalMode === 'view'" />
+        <input v-model="form.email" class="english-students-page__input" type="email" :placeholder="t('english.students.placeholders.email')" :disabled="modalMode === 'view'" />
+        <input v-model="form.phone" class="english-students-page__input" type="text" :placeholder="t('english.students.placeholders.phone')" :disabled="modalMode === 'view'" />
         <select v-model="form.status" class="english-students-page__input" :disabled="modalMode === 'view'">
-          <option v-for="option in statusOptions" :key="option" :value="option">{{ option }}</option>
+          <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
         <select v-model="form.class_ids" class="english-students-page__input english-students-page__dialog-full english-students-page__multiselect" multiple :disabled="modalMode === 'view'">
           <option v-for="option in classOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
-        <textarea v-model="form.address" class="english-students-page__input english-students-page__dialog-full" rows="3" placeholder="Address" :disabled="modalMode === 'view'"></textarea>
+        <textarea v-model="form.address" class="english-students-page__input english-students-page__dialog-full" rows="3" :placeholder="t('english.students.placeholders.address')" :disabled="modalMode === 'view'"></textarea>
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">Close</Button>
+        <Button type="button" variant="outline" rounded="xl" @click="closeModal">{{ t('english.common.actions.close') }}</Button>
         <Button v-if="modalMode !== 'view'" type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveStudent">
-          Save
+          {{ t('english.common.actions.save') }}
         </Button>
       </template>
     </Dialog>
 
     <AlertQuestion
       :show="deleteOpen"
-      title="Delete student?"
-      :message="`Are you sure you want to delete ${deleteTarget?.student || 'this student'}?`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="t('english.students.confirm.deleteTitle')"
+      :message="t('english.students.confirm.deleteMessage', { name: deleteTarget?.student || t('english.students.confirm.fallbackName') })"
+      :confirm-text="t('english.common.actions.delete')"
+      :cancel-text="t('english.common.actions.cancel')"
       type="danger"
       @confirm="confirmDelete"
       @cancel="deleteOpen = false"
@@ -341,9 +369,9 @@ onMounted(() => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('english.common.feedback.success')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('english.common.actions.close')"
       @close="showSuccess = false"
     />
   </MainLayout>

@@ -8,6 +8,7 @@ import UsersTable from '@/components/data-display/Table.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import {
   createEnglishTeacher,
   deleteEnglishTeacher,
@@ -34,6 +35,7 @@ const showSuccess = ref(false)
 const successMessage = ref('')
 const deleteTarget = ref(null)
 const deleteOpen = ref(false)
+const { t, te } = useLanguage()
 
 const form = reactive({
   first_name: '',
@@ -46,18 +48,35 @@ const form = reactive({
   password_confirmation: '',
 })
 
-const statusOptions = ['active', 'pending', 'inactive', 'suspended']
+function normalizeKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_')
+}
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'user', label: 'Teacher', align: 'left' },
-  { key: 'email', label: 'Email', align: 'left' },
-  { key: 'role', label: 'Role', align: 'left' },
-  { key: 'permission', label: 'Permissions', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'phone', label: 'Phone', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+function localizedStatus(value) {
+  const key = `english.common.status.${normalizeKey(value)}`
+  return te(key) ? t(key) : (value || '-')
+}
+
+const statusOptions = computed(() => [
+  { value: 'active', label: t('english.common.status.active') },
+  { value: 'pending', label: t('english.common.status.pending') },
+  { value: 'inactive', label: t('english.common.status.inactive') },
+  { value: 'suspended', label: t('english.common.status.suspended') },
+])
+
+const tableColumns = computed(() => [
+  { key: 'number', label: t('english.teachers.table.number'), align: 'left' },
+  { key: 'user', label: t('english.teachers.table.teacher'), align: 'left' },
+  { key: 'email', label: t('english.teachers.table.email'), align: 'left' },
+  { key: 'role', label: t('english.teachers.table.role'), align: 'left' },
+  { key: 'permission', label: t('english.teachers.table.permissions'), align: 'left' },
+  { key: 'status', label: t('english.teachers.table.status'), align: 'left' },
+  { key: 'phone', label: t('english.teachers.table.phone'), align: 'left' },
+  { key: 'actions', label: t('english.teachers.table.actions'), align: 'right' },
+])
 
 const mappedTeachers = computed(() =>
   teachers.value.map((teacher) => ({
@@ -65,6 +84,8 @@ const mappedTeachers = computed(() =>
     name: teacher.fullName || teacher.name || `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim(),
     email: teacher.email || '-',
     phone: teacher.phone || '-',
+    statusCode: teacher.status || '',
+    status: localizedStatus(teacher.status),
   })),
 )
 
@@ -95,7 +116,7 @@ function openEditModal(teacher, mode = 'edit') {
     username: teacher?.username || '',
     email: teacher?.email || '',
     phone: teacher?.phone || '',
-    status: teacher?.status || 'active',
+    status: teacher?.statusCode || teacher?.status || 'active',
     password: '',
     password_confirmation: '',
   })
@@ -139,7 +160,7 @@ async function loadTeachers() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     teachers.value = []
-    errorMessage.value = error?.message || 'Failed to load English teachers.'
+    errorMessage.value = error?.message || t('english.teachers.errorLoad')
   } finally {
     loading.value = false
   }
@@ -153,17 +174,17 @@ async function onSaveTeacher() {
     const payload = normalizePayload()
     if (modalMode.value === 'edit' && deleteTarget.value?.id) {
       await updateEnglishTeacher(deleteTarget.value.id, payload)
-      successMessage.value = 'English teacher updated successfully.'
+      successMessage.value = t('english.teachers.successUpdated')
     } else {
       await createEnglishTeacher(payload)
-      successMessage.value = 'English teacher created successfully.'
+      successMessage.value = t('english.teachers.successCreated')
     }
 
     showSuccess.value = true
     closeModal()
     await loadTeachers()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to save English teacher.'
+    errorMessage.value = error?.message || t('english.teachers.errorSave')
   } finally {
     saving.value = false
   }
@@ -188,15 +209,43 @@ async function confirmDelete() {
 
   try {
     await deleteEnglishTeacher(id)
-    successMessage.value = 'English teacher deleted successfully.'
+    successMessage.value = t('english.teachers.successDeleted')
     showSuccess.value = true
     deleteOpen.value = false
     deleteTarget.value = null
     await loadTeachers()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete English teacher.'
+    errorMessage.value = error?.message || t('english.teachers.errorDelete')
   }
 }
+
+const pageTitle = computed(() => t('english.teachers.title'))
+const pageSubtitle = computed(() => t('english.teachers.subtitle'))
+const addButtonLabel = computed(() => t('english.teachers.addButton'))
+const searchPlaceholder = computed(() => t('english.teachers.searchPlaceholder'))
+const emptyText = computed(() => t('english.teachers.empty'))
+const dialogTitle = computed(() =>
+  modalMode.value === 'view'
+    ? t('english.teachers.dialog.viewTitle')
+    : modalMode.value === 'edit'
+      ? t('english.teachers.dialog.editTitle')
+      : t('english.teachers.dialog.createTitle'),
+)
+const firstNamePlaceholder = computed(() => t('english.teachers.placeholders.firstName'))
+const lastNamePlaceholder = computed(() => t('english.teachers.placeholders.lastName'))
+const usernamePlaceholder = computed(() => t('english.teachers.placeholders.username'))
+const emailPlaceholder = computed(() => t('english.teachers.placeholders.email'))
+const phonePlaceholder = computed(() => t('english.teachers.placeholders.phone'))
+const passwordPlaceholder = computed(() => t('english.teachers.placeholders.password'))
+const confirmPasswordPlaceholder = computed(() => t('english.teachers.placeholders.confirmPassword'))
+const closeLabel = computed(() => t('english.common.actions.close'))
+const saveLabel = computed(() => t('english.common.actions.save'))
+const cancelLabel = computed(() => t('english.common.actions.cancel'))
+const deleteConfirmTitle = computed(() => t('english.teachers.dialog.deleteTitle'))
+const deleteConfirmMessage = computed(() =>
+  t('english.teachers.dialog.deleteMessage', { name: deleteTarget.value?.name || t('english.common.empty.noResults') }),
+)
+const successButtonText = computed(() => t('english.common.actions.close'))
 
 watch([searchQuery, statusFilter], () => {
   currentPage.value = 1
@@ -216,22 +265,22 @@ onMounted(() => {
   <MainLayout>
     <section class="english-teachers-page">
       <HeaderSection
-        title="English Teachers"
-        subtitle="Manage English teacher accounts, permissions, and assignments."
+        :title="pageTitle"
+        :subtitle="pageSubtitle"
       />
 
       <div class="english-teachers-page__panel">
         <div class="english-teachers-page__toolbar">
           <Button type="button" variant="primary" size="md" rounded="xl" @click="openCreateModal">
-            Add Teacher
+            {{ addButtonLabel }}
           </Button>
         </div>
 
         <div class="english-teachers-page__filters">
-          <input v-model="searchQuery" class="english-teachers-page__input" type="search" placeholder="Search teachers" />
+          <input v-model="searchQuery" class="english-teachers-page__input" type="search" :placeholder="searchPlaceholder" />
           <select v-model="statusFilter" class="english-teachers-page__input">
-            <option value="">All status</option>
-            <option v-for="option in statusOptions" :key="option" :value="option">{{ option }}</option>
+            <option value="">{{ t('english.teachers.statusPlaceholder') }}</option>
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
         </div>
 
@@ -246,7 +295,7 @@ onMounted(() => {
           :rows="mappedTeachers"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No English teachers found."
+          :empty-text="emptyText"
           @view="onViewTeacher"
           @edit="onEditTeacher"
           @delete="onDeleteTeacher"
@@ -260,49 +309,49 @@ onMounted(() => {
 
     <Dialog
       v-model:visible="modalOpen"
-      :header="modalMode === 'view' ? 'View Teacher' : modalMode === 'edit' ? 'Edit Teacher' : 'Create Teacher'"
+      :header="dialogTitle"
       modal
       class="english-teachers-page__dialog"
     >
       <div class="english-teachers-page__dialog-grid">
-        <input v-model="form.first_name" class="english-teachers-page__input" type="text" placeholder="First name" :disabled="modalMode === 'view'" />
-        <input v-model="form.last_name" class="english-teachers-page__input" type="text" placeholder="Last name" :disabled="modalMode === 'view'" />
-        <input v-model="form.username" class="english-teachers-page__input" type="text" placeholder="Username" :disabled="modalMode === 'view'" />
-        <input v-model="form.email" class="english-teachers-page__input" type="email" placeholder="Email" :disabled="modalMode === 'view'" />
-        <input v-model="form.phone" class="english-teachers-page__input" type="text" placeholder="Phone" :disabled="modalMode === 'view'" />
+        <input v-model="form.first_name" class="english-teachers-page__input" type="text" :placeholder="firstNamePlaceholder" :disabled="modalMode === 'view'" />
+        <input v-model="form.last_name" class="english-teachers-page__input" type="text" :placeholder="lastNamePlaceholder" :disabled="modalMode === 'view'" />
+        <input v-model="form.username" class="english-teachers-page__input" type="text" :placeholder="usernamePlaceholder" :disabled="modalMode === 'view'" />
+        <input v-model="form.email" class="english-teachers-page__input" type="email" :placeholder="emailPlaceholder" :disabled="modalMode === 'view'" />
+        <input v-model="form.phone" class="english-teachers-page__input" type="text" :placeholder="phonePlaceholder" :disabled="modalMode === 'view'" />
         <select v-model="form.status" class="english-teachers-page__input" :disabled="modalMode === 'view'">
-          <option v-for="option in statusOptions" :key="option" :value="option">{{ option }}</option>
+          <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
         <input
           v-if="modalMode !== 'view'"
           v-model="form.password"
           class="english-teachers-page__input english-teachers-page__dialog-full"
           type="password"
-          placeholder="Password"
+          :placeholder="passwordPlaceholder"
         />
         <input
           v-if="modalMode !== 'view'"
           v-model="form.password_confirmation"
           class="english-teachers-page__input english-teachers-page__dialog-full"
           type="password"
-          placeholder="Confirm password"
+          :placeholder="confirmPasswordPlaceholder"
         />
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">Close</Button>
+        <Button type="button" variant="outline" rounded="xl" @click="closeModal">{{ closeLabel }}</Button>
         <Button v-if="modalMode !== 'view'" type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveTeacher">
-          Save
+          {{ saveLabel }}
         </Button>
       </template>
     </Dialog>
 
     <AlertQuestion
       :show="deleteOpen"
-      title="Delete teacher?"
-      :message="`Are you sure you want to delete ${deleteTarget?.name || 'this teacher'}?`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="deleteConfirmTitle"
+      :message="deleteConfirmMessage"
+      :confirm-text="t('english.common.actions.delete')"
+      :cancel-text="cancelLabel"
       type="danger"
       @confirm="confirmDelete"
       @cancel="deleteOpen = false"
@@ -310,9 +359,9 @@ onMounted(() => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('english.common.feedback.success')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="successButtonText"
       @close="showSuccess = false"
     />
   </MainLayout>

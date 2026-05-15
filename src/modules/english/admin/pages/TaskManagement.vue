@@ -8,11 +8,14 @@ import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { createEnglishTask, deleteEnglishTask, fetchEnglishClasses, fetchEnglishTasks, updateEnglishTask } from '@/modules/english/services/englishApi'
 
 defineOptions({
   name: 'EnglishTaskManagementPage',
 })
+
+const { t, te } = useLanguage()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -40,18 +43,30 @@ const form = reactive({
   task_status: 'draft',
 })
 
-const statusOptions = ['draft', 'assigned', 'submitted', 'reviewed', 'completed']
+const statusOptions = computed(() => [
+  { value: 'draft', label: t('english.common.status.draft') },
+  { value: 'assigned', label: t('english.common.status.assigned') },
+  { value: 'submitted', label: t('english.common.status.submitted') },
+  { value: 'reviewed', label: t('english.common.status.reviewed') },
+  { value: 'completed', label: t('english.common.status.completed') },
+])
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'title', label: 'Task', align: 'left' },
-  { key: 'className', label: 'Class', align: 'left' },
-  { key: 'assignedByName', label: 'Assigned By', align: 'left' },
-  { key: 'dueDate', label: 'Due Date', align: 'left' },
-  { key: 'taskStatus', label: 'Status', align: 'left' },
-  { key: 'submissionsCount', label: 'Submissions', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('english.tasks.table.number'), align: 'left' },
+  { key: 'title', label: t('english.tasks.table.task'), align: 'left' },
+  { key: 'className', label: t('english.tasks.table.class'), align: 'left' },
+  { key: 'assignedByName', label: t('english.tasks.table.assignedBy'), align: 'left' },
+  { key: 'dueDate', label: t('english.tasks.table.dueDate'), align: 'left' },
+  { key: 'taskStatus', label: t('english.tasks.table.status'), align: 'left' },
+  { key: 'submissionsCount', label: t('english.tasks.table.submissions'), align: 'left' },
+  { key: 'actions', label: t('english.common.actions.actions'), align: 'right' },
+])
+
+function localizedStatus(value) {
+  const key = String(value || '').toLowerCase()
+  const statusKey = `english.common.status.${key}`
+  return te(statusKey) ? t(statusKey) : value || '-'
+}
 
 const mappedTasks = computed(() =>
   tasks.value.map((item) => ({
@@ -60,7 +75,8 @@ const mappedTasks = computed(() =>
     className: item.class?.name || '-',
     assignedByName: item.assignedByName || '-',
     dueDate: item.dueDate || '-',
-    taskStatus: item.taskStatus || '-',
+    taskStatusCode: item.taskStatus || '',
+    taskStatus: localizedStatus(item.taskStatus),
     submissionsCount: item.submissionsCount ?? 0,
   })),
 )
@@ -95,7 +111,7 @@ function openEditModal(item, mode = 'edit') {
     title: item?.title || '',
     description: item?.description || '',
     due_date: item?.dueDate || '',
-    task_status: item?.taskStatus || 'draft',
+    task_status: item?.taskStatusCode || item?.taskStatus || 'draft',
   })
   deleteTarget.value = item || null
   modalOpen.value = true
@@ -142,7 +158,7 @@ async function loadTasks() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     tasks.value = []
-    errorMessage.value = error?.message || 'Failed to load English tasks.'
+    errorMessage.value = error?.message || t('english.tasks.messages.loadError')
   } finally {
     loading.value = false
   }
@@ -156,17 +172,17 @@ async function onSaveTask() {
     const payload = normalizePayload()
     if (modalMode.value === 'edit' && deleteTarget.value?.id) {
       await updateEnglishTask(deleteTarget.value.id, payload)
-      successMessage.value = 'English task updated successfully.'
+      successMessage.value = t('english.tasks.messages.updateSuccess')
     } else {
       await createEnglishTask(payload)
-      successMessage.value = 'English task created successfully.'
+      successMessage.value = t('english.tasks.messages.createSuccess')
     }
 
     showSuccess.value = true
     closeModal()
     await loadTasks()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to save English task.'
+    errorMessage.value = error?.message || t('english.tasks.messages.saveError')
   } finally {
     saving.value = false
   }
@@ -191,13 +207,13 @@ async function confirmDelete() {
 
   try {
     await deleteEnglishTask(id)
-    successMessage.value = 'English task deleted successfully.'
+    successMessage.value = t('english.tasks.messages.deleteSuccess')
     showSuccess.value = true
     deleteOpen.value = false
     deleteTarget.value = null
     await loadTasks()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete English task.'
+    errorMessage.value = error?.message || t('english.tasks.messages.deleteError')
   }
 }
 
@@ -219,26 +235,26 @@ onMounted(async () => {
   <MainLayout>
     <section class="english-tasks-page">
       <HeaderSection
-        title="English Tasks"
-        subtitle="Manage class assignments and homework tracking."
+        :title="t('english.tasks.title')"
+        :subtitle="t('english.tasks.subtitle')"
       />
 
       <div class="english-tasks-page__panel">
         <div class="english-tasks-page__toolbar">
           <Button type="button" variant="primary" size="md" rounded="xl" @click="openCreateModal">
-            Add Task
+            {{ t('english.tasks.actions.add') }}
           </Button>
         </div>
 
         <div class="english-tasks-page__filters">
-          <input v-model="searchQuery" class="english-tasks-page__input" type="search" placeholder="Search tasks" />
+          <input v-model="searchQuery" class="english-tasks-page__input" type="search" :placeholder="t('english.tasks.placeholders.search')" />
           <select v-model="classFilter" class="english-tasks-page__input">
-            <option value="">All classes</option>
+            <option value="">{{ t('english.common.filters.allClasses') }}</option>
             <option v-for="option in classOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
           <select v-model="statusFilter" class="english-tasks-page__input">
-            <option value="">All status</option>
-            <option v-for="option in statusOptions" :key="option" :value="option">{{ option }}</option>
+            <option value="">{{ t('english.common.filters.allStatus') }}</option>
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
         </div>
 
@@ -253,7 +269,7 @@ onMounted(async () => {
           :rows="mappedTasks"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No English tasks found."
+          :empty-text="t('english.tasks.empty')"
           @view="onViewTask"
           @edit="onEditTask"
           @delete="onDeleteTask"
@@ -267,37 +283,37 @@ onMounted(async () => {
 
     <Dialog
       v-model:visible="modalOpen"
-      :header="modalMode === 'view' ? 'View Task' : modalMode === 'edit' ? 'Edit Task' : 'Create Task'"
+      :header="modalMode === 'view' ? t('english.tasks.dialogs.viewTitle') : modalMode === 'edit' ? t('english.tasks.dialogs.editTitle') : t('english.tasks.dialogs.createTitle')"
       modal
       class="english-tasks-page__dialog"
     >
       <div class="english-tasks-page__dialog-grid">
         <select v-model="form.class_id" class="english-tasks-page__input" :disabled="modalMode === 'view'">
-          <option value="">Select class</option>
+          <option value="">{{ t('english.tasks.placeholders.class') }}</option>
           <option v-for="option in classOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
-        <input v-model="form.title" class="english-tasks-page__input" type="text" placeholder="Task title" :disabled="modalMode === 'view'" />
+        <input v-model="form.title" class="english-tasks-page__input" type="text" :placeholder="t('english.tasks.placeholders.title')" :disabled="modalMode === 'view'" />
         <input v-model="form.due_date" class="english-tasks-page__input" type="date" :disabled="modalMode === 'view'" />
         <select v-model="form.task_status" class="english-tasks-page__input" :disabled="modalMode === 'view'">
-          <option v-for="option in statusOptions" :key="option" :value="option">{{ option }}</option>
+          <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
-        <textarea v-model="form.description" class="english-tasks-page__input english-tasks-page__dialog-full" rows="4" placeholder="Description" :disabled="modalMode === 'view'"></textarea>
+        <textarea v-model="form.description" class="english-tasks-page__input english-tasks-page__dialog-full" rows="4" :placeholder="t('english.tasks.placeholders.description')" :disabled="modalMode === 'view'"></textarea>
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">Close</Button>
+        <Button type="button" variant="outline" rounded="xl" @click="closeModal">{{ t('english.common.actions.close') }}</Button>
         <Button v-if="modalMode !== 'view'" type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveTask">
-          Save
+          {{ t('english.common.actions.save') }}
         </Button>
       </template>
     </Dialog>
 
     <AlertQuestion
       :show="deleteOpen"
-      title="Delete task?"
-      :message="`Are you sure you want to delete ${deleteTarget?.title || 'this task'}?`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="t('english.tasks.confirm.deleteTitle')"
+      :message="t('english.tasks.confirm.deleteMessage', { name: deleteTarget?.title || t('english.tasks.confirm.fallbackName') })"
+      :confirm-text="t('english.common.actions.delete')"
+      :cancel-text="t('english.common.actions.cancel')"
       type="danger"
       @confirm="confirmDelete"
       @cancel="deleteOpen = false"
@@ -305,9 +321,9 @@ onMounted(async () => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('english.common.feedback.success')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('english.common.actions.close')"
       @close="showSuccess = false"
     />
   </MainLayout>

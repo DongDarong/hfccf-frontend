@@ -7,6 +7,7 @@ import users from './users'
 import notifications from './notifications'
 import sport from './sport'
 import preschool from './preschool'
+import english from './english'
 
 export default {
   ...localLanguage.en,
@@ -21,6 +22,7 @@ export default {
   },
   users,
   notifications,
+  ...english,
   ...sport,
   ...preschool,
 }

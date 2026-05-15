@@ -4,11 +4,14 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchTeacherStudents } from '@/modules/english/services/englishApi'
 
 defineOptions({
   name: 'EnglishTeacherStudentsPage',
 })
+
+const { t, te } = useLanguage()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -19,15 +22,27 @@ const errorMessage = ref('')
 const students = ref([])
 const pagination = ref({ page: 1, perPage: pageSize, total: 0, totalPages: 1 })
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'studentCode', label: 'Code', align: 'left' },
-  { key: 'student', label: 'Student', align: 'left' },
-  { key: 'gender', label: 'Gender', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'classesCount', label: 'Classes', align: 'left' },
-  { key: 'submissionsCount', label: 'Submissions', align: 'left' },
-]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('english.students.table.number'), align: 'left' },
+  { key: 'studentCode', label: t('english.students.table.code'), align: 'left' },
+  { key: 'student', label: t('english.students.table.student'), align: 'left' },
+  { key: 'gender', label: t('english.students.table.gender'), align: 'left' },
+  { key: 'status', label: t('english.students.table.status'), align: 'left' },
+  { key: 'classesCount', label: t('english.students.table.classes'), align: 'left' },
+  { key: 'submissionsCount', label: t('english.students.table.submissions'), align: 'left' },
+])
+
+function localizedStatus(value) {
+  const key = String(value || '').toLowerCase()
+  const statusKey = `english.common.status.${key}`
+  return te(statusKey) ? t(statusKey) : value || '-'
+}
+
+function localizedGender(value) {
+  const key = String(value || '').toLowerCase()
+  const genderKey = `english.common.status.${key}`
+  return te(genderKey) ? t(genderKey) : value || '-'
+}
 
 const mappedStudents = computed(() =>
   students.value.map((item) => ({
@@ -36,6 +51,10 @@ const mappedStudents = computed(() =>
     student: item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim(),
     classesCount: item.classesCount ?? 0,
     submissionsCount: item.submissionsCount ?? 0,
+    genderCode: item.gender || '',
+    statusCode: item.status || '',
+    gender: localizedGender(item.gender),
+    status: localizedStatus(item.status),
   })),
 )
 
@@ -55,7 +74,7 @@ async function loadStudents() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     students.value = []
-    errorMessage.value = error?.message || 'Failed to load English students.'
+    errorMessage.value = error?.message || t('english.students.messages.loadError')
   } finally {
     loading.value = false
   }
@@ -79,18 +98,18 @@ onMounted(() => {
   <MainLayout>
     <section class="english-teacher-students-page">
       <HeaderSection
-        title="My English Students"
-        subtitle="Students in classes assigned to you."
+        :title="t('english.students.teacherTitle')"
+        :subtitle="t('english.students.teacherSubtitle')"
       />
 
       <div class="english-teacher-students-page__shell">
         <div class="english-teacher-students-page__filters">
-          <input v-model="searchQuery" class="english-teacher-students-page__input" type="search" placeholder="Search students" />
+          <input v-model="searchQuery" class="english-teacher-students-page__input" type="search" :placeholder="t('english.students.placeholders.search')" />
           <select v-model="statusFilter" class="english-teacher-students-page__input">
-            <option value="">All status</option>
-            <option value="active">active</option>
-            <option value="inactive">inactive</option>
-            <option value="archived">archived</option>
+            <option value="">{{ t('english.common.filters.allStatus') }}</option>
+            <option value="active">{{ t('english.common.status.active') }}</option>
+            <option value="inactive">{{ t('english.common.status.inactive') }}</option>
+            <option value="archived">{{ t('english.common.status.archived') }}</option>
           </select>
         </div>
 
@@ -105,7 +124,7 @@ onMounted(() => {
           :rows="mappedStudents"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No assigned English students found."
+          :empty-text="t('english.students.teacherEmpty')"
           :show-view-action="false"
           :show-edit-action="false"
           :show-delete-action="false"

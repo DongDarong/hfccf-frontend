@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchEnglishDashboard } from '@/modules/english/services/englishApi'
 
 defineOptions({
@@ -12,34 +13,70 @@ defineOptions({
 const loading = ref(false)
 const errorMessage = ref('')
 const summary = ref({})
+const { t, te } = useLanguage()
 
-const cards = computed(() => summary.value.summaryCards || [])
+function normalizeKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_')
+}
 
-const assignmentColumns = [
-  { key: 'title', label: 'Recent Assignments', align: 'left' },
-  { key: 'className', label: 'Class', align: 'left' },
-  { key: 'taskStatus', label: 'Status', align: 'left' },
-  { key: 'dueDate', label: 'Due Date', align: 'left' },
-]
+function localizedStatus(value) {
+  const key = `english.common.status.${normalizeKey(value)}`
+  return te(key) ? t(key) : (value || '-')
+}
 
-const reviewColumns = [
-  { key: 'taskTitle', label: 'Reviewed Task', align: 'left' },
-  { key: 'studentName', label: 'Student', align: 'left' },
-  { key: 'submissionStatus', label: 'Status', align: 'left' },
-  { key: 'reviewedAt', label: 'Reviewed At', align: 'left' },
-]
+function localizeCard(rawCard) {
+  const rawTitle = String(rawCard?.title || '').trim()
+  const cardKeyMap = {
+    'Total students': 'totalStudents',
+    'Total teachers': 'totalTeachers',
+    'Active classes': 'activeClasses',
+    'Active tasks': 'activeTasks',
+    'Pending submissions': 'pendingSubmissions',
+    'Reviewed submissions': 'reviewedSubmissions',
+  }
 
-const workloadColumns = [
-  { key: 'name', label: 'Teacher', align: 'left' },
-  { key: 'classes', label: 'Classes', align: 'left' },
-  { key: 'tasks', label: 'Tasks', align: 'left' },
-]
+  const key = cardKeyMap[rawTitle]
+  const titleKey = key ? `english.dashboard.admin.cards.${key}.title` : ''
+  const labelKey = key ? `english.dashboard.admin.cards.${key}.label` : ''
+
+  return {
+    ...rawCard,
+    title: titleKey && te(titleKey) ? t(titleKey) : rawTitle,
+    label: labelKey && te(labelKey) ? t(labelKey) : String(rawCard?.label || ''),
+  }
+}
+
+const cards = computed(() => (summary.value.summaryCards || []).map((card) => localizeCard(card)))
+
+const assignmentColumns = computed(() => [
+  { key: 'title', label: t('english.dashboard.admin.tables.assignments.title'), align: 'left' },
+  { key: 'className', label: t('english.dashboard.admin.tables.assignments.class'), align: 'left' },
+  { key: 'taskStatus', label: t('english.dashboard.admin.tables.assignments.status'), align: 'left' },
+  { key: 'dueDate', label: t('english.dashboard.admin.tables.assignments.dueDate'), align: 'left' },
+])
+
+const reviewColumns = computed(() => [
+  { key: 'taskTitle', label: t('english.dashboard.admin.tables.reviews.taskTitle'), align: 'left' },
+  { key: 'studentName', label: t('english.dashboard.admin.tables.reviews.studentName'), align: 'left' },
+  { key: 'submissionStatus', label: t('english.dashboard.admin.tables.reviews.status'), align: 'left' },
+  { key: 'reviewedAt', label: t('english.dashboard.admin.tables.reviews.reviewedAt'), align: 'left' },
+])
+
+const workloadColumns = computed(() => [
+  { key: 'name', label: t('english.dashboard.admin.tables.workload.name'), align: 'left' },
+  { key: 'classes', label: t('english.dashboard.admin.tables.workload.classes'), align: 'left' },
+  { key: 'tasks', label: t('english.dashboard.admin.tables.workload.tasks'), align: 'left' },
+])
 
 const recentAssignments = computed(() =>
   (summary.value.recentAssignments || []).map((item) => ({
     ...item,
     className: item.className || '-',
-    taskStatus: item.taskStatus || '-',
+    taskStatusCode: item.taskStatus || '',
+    taskStatus: localizedStatus(item.taskStatus),
     dueDate: item.dueDate || '-',
   })),
 )
@@ -49,7 +86,8 @@ const recentReviews = computed(() =>
     ...item,
     taskTitle: item.taskTitle || '-',
     studentName: item.studentName || '-',
-    submissionStatus: item.submissionStatus || '-',
+    submissionStatusCode: item.submissionStatus || '',
+    submissionStatus: localizedStatus(item.submissionStatus),
     reviewedAt: item.reviewedAt || '-',
   })),
 )
@@ -63,6 +101,19 @@ const teacherWorkload = computed(() =>
   })),
 )
 
+const pageTitle = computed(() => t('english.dashboard.admin.title'))
+const pageSubtitle = computed(() => t('english.dashboard.admin.subtitle'))
+const loadingLabel = computed(() => t('english.dashboard.admin.loading'))
+const emptyAssignments = computed(() => t('english.dashboard.admin.panels.recentAssignments.empty'))
+const emptyReviews = computed(() => t('english.dashboard.admin.panels.recentReviews.empty'))
+const emptyWorkload = computed(() => t('english.dashboard.admin.panels.teacherWorkload.empty'))
+const recentAssignmentsTitle = computed(() => t('english.dashboard.admin.panels.recentAssignments.title'))
+const recentAssignmentsCaption = computed(() => t('english.dashboard.admin.panels.recentAssignments.caption'))
+const recentReviewsTitle = computed(() => t('english.dashboard.admin.panels.recentReviews.title'))
+const recentReviewsCaption = computed(() => t('english.dashboard.admin.panels.recentReviews.caption'))
+const workloadTitle = computed(() => t('english.dashboard.admin.panels.teacherWorkload.title'))
+const workloadCaption = computed(() => t('english.dashboard.admin.panels.teacherWorkload.caption'))
+
 async function loadDashboard() {
   loading.value = true
   errorMessage.value = ''
@@ -71,7 +122,7 @@ async function loadDashboard() {
     summary.value = await fetchEnglishDashboard()
   } catch (error) {
     summary.value = {}
-    errorMessage.value = error?.message || 'Failed to load English dashboard.'
+    errorMessage.value = error?.message || t('english.dashboard.admin.error')
   } finally {
     loading.value = false
   }
@@ -86,13 +137,13 @@ onMounted(() => {
   <MainLayout>
     <section class="english-dashboard-page">
       <HeaderSection
-        title="English Dashboard"
-        subtitle="Overview of classes, teachers, students, and task activity."
+        :title="pageTitle"
+        :subtitle="pageSubtitle"
       />
 
       <div class="english-dashboard-page__shell">
         <div v-if="loading" class="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
-          Loading English dashboard...
+          {{ loadingLabel }}
         </div>
 
         <div
@@ -117,15 +168,15 @@ onMounted(() => {
         <div class="english-dashboard-page__grid">
           <section class="english-dashboard-page__panel">
             <div class="english-dashboard-page__panel-header">
-              <h2 class="english-dashboard-page__panel-title">Recent Assignments</h2>
-              <span class="english-dashboard-page__panel-caption">Latest tasks</span>
+              <h2 class="english-dashboard-page__panel-title">{{ recentAssignmentsTitle }}</h2>
+              <span class="english-dashboard-page__panel-caption">{{ recentAssignmentsCaption }}</span>
             </div>
 
             <Table
               :rows="recentAssignments"
               :columns="assignmentColumns"
               :loading="loading"
-              empty-text="No recent assignments."
+              :empty-text="emptyAssignments"
               :show-view-action="false"
               :show-edit-action="false"
               :show-delete-action="false"
@@ -134,15 +185,15 @@ onMounted(() => {
 
           <section class="english-dashboard-page__panel">
             <div class="english-dashboard-page__panel-header">
-              <h2 class="english-dashboard-page__panel-title">Recent Reviews</h2>
-              <span class="english-dashboard-page__panel-caption">Latest reviewed submissions</span>
+              <h2 class="english-dashboard-page__panel-title">{{ recentReviewsTitle }}</h2>
+              <span class="english-dashboard-page__panel-caption">{{ recentReviewsCaption }}</span>
             </div>
 
             <Table
               :rows="recentReviews"
               :columns="reviewColumns"
               :loading="loading"
-              empty-text="No recent reviews."
+              :empty-text="emptyReviews"
               :show-view-action="false"
               :show-edit-action="false"
               :show-delete-action="false"
@@ -152,15 +203,15 @@ onMounted(() => {
 
         <section class="english-dashboard-page__panel">
           <div class="english-dashboard-page__panel-header">
-            <h2 class="english-dashboard-page__panel-title">Teacher Workload</h2>
-            <span class="english-dashboard-page__panel-caption">Classes and tasks per teacher</span>
+            <h2 class="english-dashboard-page__panel-title">{{ workloadTitle }}</h2>
+            <span class="english-dashboard-page__panel-caption">{{ workloadCaption }}</span>
           </div>
 
           <Table
             :rows="teacherWorkload"
             :columns="workloadColumns"
             :loading="loading"
-            empty-text="No teacher workload data."
+            :empty-text="emptyWorkload"
             :show-view-action="false"
             :show-edit-action="false"
             :show-delete-action="false"
