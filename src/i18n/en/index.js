@@ -11,10 +11,10 @@ import english from './english'
 
 export default {
   ...localLanguage.en,
+  ...dashboard,
   common,
   nav: dashboardNav,
   auth,
-  ...dashboard,
   dashboard: {
     nav: {
       logoutCaption: dashboardNav.logoutCaption,
