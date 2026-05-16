@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
-import Dropdown from 'primevue/dropdown'
 import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -89,11 +89,12 @@ function fieldDisabled(name) {
     <div class="knockout-result-form__grid">
       <label class="knockout-result-form__field">
         <span>{{ t('sportTournament.knockout.resultForm.status') }}</span>
-        <Dropdown
+        <Select
           :model-value="draft.status"
           :options="statusOptions"
           option-label="label"
           option-value="value"
+          append-to="self"
           :disabled="disabled"
           @update:modelValue="updateField('status', $event)"
         />
@@ -241,6 +242,7 @@ function fieldDisabled(name) {
 }
 
 .knockout-result-form__field :deep(.p-dropdown),
+.knockout-result-form__field :deep(.p-select),
 .knockout-result-form__field :deep(.p-inputnumber),
 .knockout-result-form__field :deep(.p-inputtext),
 .knockout-result-form__field :deep(.p-textarea) {
