@@ -54,6 +54,7 @@ export default {
     teams: 'ក្រុម',
     players: 'កីឡាករ',
     matches: 'ការប្រកួត',
+    tournaments: 'ការប្រកួតប្រជែង',
     classes: 'ថ្នាក់រៀន',
     applications: 'ពាក្យស្នើសុំ',
     payments: 'ការទូទាត់',

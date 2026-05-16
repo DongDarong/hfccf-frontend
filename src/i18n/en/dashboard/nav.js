@@ -53,6 +53,7 @@ export default {
     teams: 'Teams',
     players: 'Players',
     matches: 'Matches',
+    tournaments: 'Tournaments',
     classes: 'Classes',
     tasks: 'Tasks',
     applications: 'Applications',

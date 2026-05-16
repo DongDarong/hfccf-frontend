@@ -331,6 +331,21 @@
           }
         },
         {
+          "id": "sport-tournaments",
+          "routeName": "dashboard-sport-admin-tournaments",
+          "labelKey": "nav.items.tournaments",
+          "icon": "tournaments",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "sport-training-schedule-admin",
           "routeName": "dashboard-sport-admin-training",
           "labelKey": "nav.items.trainingSchedule",

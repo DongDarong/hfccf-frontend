@@ -1,7 +1,9 @@
 import { ACCESS_SCOPES, DOMAINS } from '@/constants/access'
 import { defineAppRoute } from '@/router/defineAppRoute'
+import { tournamentRoutes } from '@/modules/sport/tournament/routes'
 
 export const sportRoutes = [
+  ...tournamentRoutes,
   defineAppRoute({
     path: '/module/sport-admin/dashboard',
     name: 'dashboard-sport-admin',
