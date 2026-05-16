@@ -22,11 +22,108 @@ function currentSeasonLabel() {
   return '2025 / 2026'
 }
 
-function createTeam(id, name, status = 'active') {
+function createTeam(id, name, status = 'active', extras = {}) {
   return {
     id,
     name,
     status,
+    ...extras,
+  }
+}
+
+function createTeamSeries(prefix, names, seededRanks = []) {
+  return names.map((name, index) => {
+    const seedRank = seededRanks.includes(index + 1) ? seededRanks.indexOf(index + 1) + 1 : null
+
+    return createTeam(`${prefix}-${String(index + 1).padStart(3, '0')}`, name, 'active', {
+      seeded: seedRank !== null,
+      seedRank,
+    })
+  })
+}
+
+function createGroupName(index) {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const safeIndex = Number(index) || 0
+  if (safeIndex < letters.length) {
+    return `Group ${letters[safeIndex]}`
+  }
+
+  return `Group ${safeIndex + 1}`
+}
+
+function createTournamentGroup(teamIds = [], index = 0, qualificationSlots = 2) {
+  return {
+    id: `group-${String(index + 1).padStart(2, '0')}`,
+    name: createGroupName(index),
+    teamIds: Array.isArray(teamIds) ? [...new Set(teamIds.map((teamId) => String(teamId).trim()).filter(Boolean))] : [],
+    qualificationSlots,
+    locked: false,
+  }
+}
+
+export function createTournamentGroupDrawDraft(options = {}) {
+  const groupCount = Math.max(1, Number(options.groupCount ?? TOURNAMENT_RULE_DEFAULTS.groupCount) || 1)
+  const teamsPerGroup = Math.max(1, Number(options.teamsPerGroup ?? TOURNAMENT_RULE_DEFAULTS.teamsPerGroup) || 1)
+  const qualificationCount = Math.max(
+    1,
+    Math.min(Number(options.qualificationCount ?? 2) || 2, teamsPerGroup),
+  )
+
+  return {
+    mode: options.mode || 'automatic',
+    locked: Boolean(options.locked),
+    lastGeneratedAt: String(options.lastGeneratedAt || ''),
+    settings: {
+      groupCount,
+      teamsPerGroup,
+      qualificationCount,
+      seededMode: Boolean(options.seededMode ?? true),
+      autoFixtureGeneration: Boolean(options.autoFixtureGeneration ?? true),
+    },
+    groups: Array.from({ length: groupCount }, (_, index) =>
+      createTournamentGroup([], index, qualificationCount),
+    ),
+  }
+}
+
+export function normalizeTournamentGroupDraw(groupDraw = {}, tournament = null) {
+  const source = groupDraw && typeof groupDraw === 'object' ? groupDraw : {}
+  const base = createTournamentGroupDrawDraft({
+    groupCount: source.settings?.groupCount ?? source.groupCount ?? tournament?.rules?.groupCount ?? TOURNAMENT_RULE_DEFAULTS.groupCount,
+    teamsPerGroup: source.settings?.teamsPerGroup ?? source.teamsPerGroup ?? tournament?.rules?.teamsPerGroup ?? TOURNAMENT_RULE_DEFAULTS.teamsPerGroup,
+    qualificationCount:
+      source.settings?.qualificationCount ?? source.qualificationCount ?? Math.max(1, Math.min(2, tournament?.rules?.teamsPerGroup || TOURNAMENT_RULE_DEFAULTS.teamsPerGroup)),
+    seededMode: source.settings?.seededMode ?? source.seededMode ?? true,
+    autoFixtureGeneration: source.settings?.autoFixtureGeneration ?? source.autoFixtureGeneration ?? true,
+    mode: source.mode || 'automatic',
+    locked: source.locked,
+    lastGeneratedAt: source.lastGeneratedAt,
+  })
+
+  const groups = Array.isArray(source.groups) && source.groups.length
+    ? source.groups.slice(0, base.settings.groupCount).map((group, index) => createTournamentGroup(
+      Array.isArray(group?.teamIds) ? group.teamIds : [],
+      index,
+      Number(group?.qualificationSlots ?? base.settings.qualificationCount) || base.settings.qualificationCount,
+    ))
+    : base.groups
+
+  while (groups.length < base.settings.groupCount) {
+    groups.push(createTournamentGroup([], groups.length, base.settings.qualificationCount))
+  }
+
+  return {
+    ...base,
+    ...source,
+    settings: {
+      ...base.settings,
+      ...source.settings,
+    },
+    groups,
+    mode: source.mode || base.mode,
+    locked: Boolean(source.locked ?? base.locked),
+    lastGeneratedAt: String(source.lastGeneratedAt || base.lastGeneratedAt || ''),
   }
 }
 
@@ -51,6 +148,7 @@ export function createTournamentDraft() {
     registrationStatus: 'closed',
     visibility: 'private',
     rules: deepClone(TOURNAMENT_RULE_DEFAULTS),
+    groupDraw: createTournamentGroupDrawDraft(),
     statistics: {
       registeredTeams: 0,
       totalTeams: 0,
@@ -98,19 +196,53 @@ export const mockTournaments = [
       matches: 48,
       completedMatches: 31,
     },
-    teams: [
-      createTeam('team-001', 'Blue Phoenix'),
-      createTeam('team-002', 'River Hawks'),
-      createTeam('team-003', 'Mekong Stars'),
-      createTeam('team-004', 'Royal Tigers'),
-    ],
+    groupDraw: normalizeTournamentGroupDraw({
+      mode: 'automatic',
+      locked: true,
+      lastGeneratedAt: '2026-04-12',
+      settings: {
+        groupCount: 4,
+        teamsPerGroup: 4,
+        qualificationCount: 2,
+        seededMode: true,
+        autoFixtureGeneration: true,
+      },
+      groups: [
+        createTournamentGroup(['team-001', 'team-005', 'team-009', 'team-013'], 0, 2),
+        createTournamentGroup(['team-002', 'team-006', 'team-010', 'team-014'], 1, 2),
+        createTournamentGroup(['team-003', 'team-007', 'team-011', 'team-015'], 2, 2),
+        createTournamentGroup(['team-004', 'team-008', 'team-012', 'team-016'], 3, 2),
+      ],
+    }),
+    teams: createTeamSeries(
+      'team',
+      [
+        'Blue Phoenix',
+        'River Hawks',
+        'Mekong Stars',
+        'Royal Tigers',
+        'Amber Knights',
+        'Golden Arrows',
+        'City Strikers',
+        'Eastern FC',
+        'United Hearts',
+        'Coastal Waves',
+        'Harbor Lions',
+        'Jade Rangers',
+        'Phnom Stars',
+        'Victory Temple',
+        'Legacy United',
+        'Young Warriors',
+      ],
+      [1, 2, 3, 4],
+    ),
   },
   {
     id: 'tournament-002',
     name: 'HFCCF Inter-College Cup',
     season: '2025',
     sportType: 'basketball',
-    description: 'Registration is open for college teams preparing for the draw phase.',
+    description: 'Registration is closed and the tournament is ready for the group draw phase.',
     logo: '',
     banner: '',
     location: 'National Sports Complex',
@@ -119,8 +251,8 @@ export const mockTournaments = [
     registrationCloseAt: '2026-03-05',
     startAt: '2026-03-18',
     endAt: '2026-05-22',
-    state: 'registration_open',
-    registrationStatus: 'open',
+    state: 'registration_closed',
+    registrationStatus: 'closed',
     visibility: 'public',
     rules: {
       ...TOURNAMENT_RULE_DEFAULTS,
@@ -139,12 +271,35 @@ export const mockTournaments = [
       matches: 0,
       completedMatches: 0,
     },
-    teams: [
-      createTeam('team-005', 'City College Eagles'),
-      createTeam('team-006', 'Sunrise Falcons'),
-      createTeam('team-007', 'Urban Kings'),
-      createTeam('team-008', 'Maverick Lions'),
-    ],
+    groupDraw: normalizeTournamentGroupDraw({
+      mode: 'automatic',
+      locked: false,
+      settings: {
+        groupCount: 2,
+        teamsPerGroup: 6,
+        qualificationCount: 2,
+        seededMode: true,
+        autoFixtureGeneration: true,
+      },
+    }),
+    teams: createTeamSeries(
+      'team',
+      [
+        'City College Eagles',
+        'Sunrise Falcons',
+        'Urban Kings',
+        'Maverick Lions',
+        'Metro Titans',
+        'Harbor Knights',
+        'Skyline Dragons',
+        'Union Panthers',
+        'Nova Bears',
+        'Prime Wolves',
+        'Capital Owls',
+        'Delta Sharks',
+      ],
+      [1, 2],
+    ),
   },
   {
     id: 'tournament-003',
@@ -180,12 +335,41 @@ export const mockTournaments = [
       matches: 0,
       completedMatches: 0,
     },
-    teams: [
-      createTeam('team-009', 'North Ridge'),
-      createTeam('team-010', 'Westview'),
-      createTeam('team-011', 'Central Academy'),
-      createTeam('team-012', 'Riverdale'),
-    ],
+    groupDraw: normalizeTournamentGroupDraw({
+      mode: 'manual',
+      locked: true,
+      lastGeneratedAt: '2025-10-02',
+      settings: {
+        groupCount: 3,
+        teamsPerGroup: 4,
+        qualificationCount: 2,
+        seededMode: true,
+        autoFixtureGeneration: false,
+      },
+      groups: [
+        createTournamentGroup(['team-001', 'team-004', 'team-007', 'team-010'], 0, 2),
+        createTournamentGroup(['team-002', 'team-005', 'team-008', 'team-011'], 1, 2),
+        createTournamentGroup(['team-003', 'team-006', 'team-009', 'team-012'], 2, 2),
+      ],
+    }),
+    teams: createTeamSeries(
+      'team',
+      [
+        'North Ridge',
+        'Westview',
+        'Central Academy',
+        'Riverdale',
+        'Summit School',
+        'Lakewood',
+        'Heritage College',
+        'Pioneer High',
+        'Greenfield',
+        'Sunset Academy',
+        'Beacon Institute',
+        'Starlight School',
+      ],
+      [1, 2, 3],
+    ),
   },
   {
     id: 'tournament-004',
@@ -221,12 +405,44 @@ export const mockTournaments = [
       matches: 36,
       completedMatches: 36,
     },
-    teams: [
-      createTeam('team-013', 'Eastern Dragons'),
-      createTeam('team-014', 'Silver Arrows'),
-      createTeam('team-015', 'Golden Kites'),
-      createTeam('team-016', 'Harmony Club'),
-    ],
+    groupDraw: normalizeTournamentGroupDraw({
+      mode: 'automatic',
+      locked: true,
+      lastGeneratedAt: '2025-03-18',
+      settings: {
+        groupCount: 2,
+        teamsPerGroup: 8,
+        qualificationCount: 2,
+        seededMode: false,
+        autoFixtureGeneration: true,
+      },
+      groups: [
+        createTournamentGroup(['team-001', 'team-003', 'team-005', 'team-007', 'team-009', 'team-011', 'team-013'], 0, 2),
+        createTournamentGroup(['team-002', 'team-004', 'team-006', 'team-008', 'team-010', 'team-012', 'team-014'], 1, 2),
+      ],
+    }),
+    teams: createTeamSeries(
+      'team',
+      [
+        'Eastern Dragons',
+        'Silver Arrows',
+        'Golden Kites',
+        'Harmony Club',
+        'Northern Lights',
+        'Blue Comets',
+        'Amber Foxes',
+        'Royal Waves',
+        'Pacific Eagles',
+        'Mountain Lions',
+        'City Storm',
+        'Nova Chargers',
+        'Tidal Force',
+        'Desert Falcons',
+        'Prime Titans',
+        'Crescent Stars',
+      ],
+      [1, 2, 3, 4],
+    ),
   },
 ]
 
@@ -255,6 +471,10 @@ export function createMockTournamentRules() {
   return {
     ...TOURNAMENT_RULE_DEFAULTS,
   }
+}
+
+export function createMockTournamentGroupDraw() {
+  return createTournamentGroupDrawDraft()
 }
 
 export function createMockTournamentSelectors() {

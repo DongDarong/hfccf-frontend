@@ -88,6 +88,13 @@ function goToEdit() {
   router.push({ name: 'dashboard-sport-admin-tournaments-edit', params: { id } })
 }
 
+function goToGroups() {
+  const id = String(tournament.value?.id || tournamentId.value || '').trim()
+  if (!id) return
+
+  router.push({ name: 'dashboard-sport-admin-tournaments-groups', params: { id } })
+}
+
 function onWorkflowAction(action) {
   if (!tournament.value?.id || !action?.isAllowed || action.disabled) return
 
@@ -145,6 +152,13 @@ function onWorkflowAction(action) {
               class="rounded-xl"
               :label="t('sportTournament.detail.backToList')"
               @click="goBack"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              class="rounded-xl"
+              :label="t('sportTournament.detail.manageGroups')"
+              @click="goToGroups"
             />
             <Button
               type="button"

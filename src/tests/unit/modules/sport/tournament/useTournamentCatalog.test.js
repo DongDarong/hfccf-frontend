@@ -43,9 +43,9 @@ describe('useTournamentCatalog', () => {
 
   it('transitions tournaments when the move is valid', () => {
     const catalog = useTournamentCatalog()
-    const updated = catalog.transitionTournament('tournament-002', 'registration_closed')
+    const updated = catalog.transitionTournament('tournament-002', 'group_draw_completed')
 
-    expect(updated?.state).toBe('registration_closed')
+    expect(updated?.state).toBe('group_draw_completed')
     expect(updated?.registrationStatus).toBe('closed')
   })
 

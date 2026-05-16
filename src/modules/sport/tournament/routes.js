@@ -30,6 +30,15 @@ export const tournamentRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/tournaments/:id/groups',
+    name: 'dashboard-sport-admin-tournaments-groups',
+    component: () => import('@/modules/sport/tournament/pages/TournamentGroupsPage.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/tournaments/:id',
     name: 'dashboard-sport-admin-tournaments-detail',
     component: () => import('@/modules/sport/tournament/pages/TournamentDetailPage.vue'),

@@ -1,5 +1,10 @@
 import { computed, ref } from 'vue'
-import { cloneTournamentRecord, createMockTournaments, createTournamentDraft } from '../mocks/tournaments.mock'
+import {
+  cloneTournamentRecord,
+  createMockTournaments,
+  createTournamentDraft,
+  normalizeTournamentGroupDraw,
+} from '../mocks/tournaments.mock'
 import { canTransitionTournament, normalizeTournamentState } from './useTournamentStateMachine'
 
 function deepClone(value) {
@@ -56,6 +61,7 @@ function normalizeTournamentInput(payload = {}) {
     registrationStatus: normalizeText(source.registrationStatus || base.registrationStatus) || 'closed',
     visibility: normalizeText(source.visibility || base.visibility) || 'private',
     rules: normalizeRules(source.rules || base.rules),
+    groupDraw: normalizeTournamentGroupDraw(source.groupDraw || base.groupDraw, source),
     statistics: {
       registeredTeams: Number(source.statistics?.registeredTeams ?? base.statistics.registeredTeams ?? 0),
       totalTeams: Number(source.statistics?.totalTeams ?? base.statistics.totalTeams ?? 0),
