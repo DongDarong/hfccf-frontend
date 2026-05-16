@@ -139,8 +139,20 @@ function onWorkflowAction(action) {
           </div>
 
           <div class="sport-tournament-detail__hero-actions">
-            <Button type="button" variant="outline" rounded="xl" :label="t('sportTournament.detail.backToList')" @click="goBack" />
-            <Button type="button" rounded="xl" :label="t('sportTournament.detail.editTournament')" :disabled="!canEdit" @click="goToEdit" />
+            <Button
+              type="button"
+              variant="outline"
+              class="rounded-xl"
+              :label="t('sportTournament.detail.backToList')"
+              @click="goBack"
+            />
+            <Button
+              type="button"
+              class="rounded-xl"
+              :label="t('sportTournament.detail.editTournament')"
+              :disabled="!canEdit"
+              @click="goToEdit"
+            />
           </div>
         </div>
 
@@ -168,7 +180,12 @@ function onWorkflowAction(action) {
         <div class="sport-tournament-detail__empty-card">
           <h3>{{ t('sportTournament.detail.notFoundTitle') }}</h3>
           <p>{{ t('sportTournament.detail.notFoundMessage') }}</p>
-          <Button type="button" rounded="xl" :label="t('sportTournament.detail.backToList')" @click="goBack" />
+          <Button
+            type="button"
+            class="rounded-xl"
+            :label="t('sportTournament.detail.backToList')"
+            @click="goBack"
+          />
         </div>
       </div>
     </section>
@@ -287,15 +304,16 @@ function onWorkflowAction(action) {
   align-self: flex-start;
 }
 
-.sport-tournament-detail__stats,
-.sport-tournament-detail__workflow-grid {
+.sport-tournament-detail__stats {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .sport-tournament-detail__workflow-grid {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
 }
 
 .sport-tournament-detail__empty {

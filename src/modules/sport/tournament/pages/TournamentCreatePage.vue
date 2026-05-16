@@ -316,7 +316,12 @@ onBeforeUnmount(() => {
         <div class="sport-tournament-form__empty-card">
           <h3>{{ t('sportTournament.create.validation.notFoundTitle') }}</h3>
           <p>{{ t('sportTournament.create.validation.notFoundMessage') }}</p>
-          <Button type="button" rounded="xl" :label="t('sportTournament.create.actions.backToTournaments')" @click="goBack" />
+          <Button
+            type="button"
+            class="rounded-xl"
+            :label="t('sportTournament.create.actions.backToTournaments')"
+            @click="goBack"
+          />
         </div>
       </div>
 
@@ -530,7 +535,7 @@ onBeforeUnmount(() => {
             <Button
               type="button"
               variant="outline"
-              rounded="xl"
+              class="rounded-xl"
               :label="t('common.cancel')"
               :disabled="isSubmitting"
               @click="goBack"
@@ -538,7 +543,7 @@ onBeforeUnmount(() => {
 
             <Button
               type="submit"
-              rounded="xl"
+              class="rounded-xl"
               :label="isEditMode ? t('sportTournament.create.actions.saveChanges') : t('sportTournament.create.actions.saveTournament')"
               :loading="isSubmitting"
               :disabled="isReadOnly"

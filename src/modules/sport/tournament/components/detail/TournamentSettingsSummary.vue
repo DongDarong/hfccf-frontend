@@ -64,3 +64,51 @@ const items = computed(() => [
     </template>
   </Card>
 </template>
+
+<style scoped>
+.tournament-settings-summary {
+  border: 1px solid #dce6f2;
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 25px 55px -40px rgba(15, 23, 42, 0.45);
+}
+
+.tournament-settings-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 0;
+}
+
+.tournament-settings-summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.95rem;
+  border: 1px solid #dce6f2;
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.96);
+}
+
+.tournament-settings-summary__label {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tournament-settings-summary__value {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .tournament-settings-summary__grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
