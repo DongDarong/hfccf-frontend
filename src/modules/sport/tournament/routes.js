@@ -66,6 +66,15 @@ export const tournamentRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/tournaments/:id/knockout',
+    name: 'dashboard-sport-admin-tournaments-knockout',
+    component: () => import('@/modules/sport/tournament/pages/TournamentKnockoutPage.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/tournaments/:id',
     name: 'dashboard-sport-admin-tournaments-detail',
     component: () => import('@/modules/sport/tournament/pages/TournamentDetailPage.vue'),

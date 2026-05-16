@@ -33,6 +33,7 @@ const tournamentId = computed(() => String(route.params.id || '').trim())
 const tournament = computed(() => (tournamentId.value ? getTournamentById(tournamentId.value) : null))
 const stateMeta = computed(() => getTournamentStateMeta(tournament.value?.state))
 const canEdit = computed(() => Boolean(tournament.value?.id) && canEditTournamentConfiguration(tournament.value.state))
+const canUseKnockout = computed(() => Boolean(tournament.value?.rules?.knockoutEnabled ?? true))
 
 const pageTitle = computed(() => tournament.value?.name || t('sportTournament.detail.notFoundTitle'))
 const pageSubtitle = computed(() =>
@@ -114,6 +115,13 @@ function goToResults() {
   if (!id) return
 
   router.push({ name: 'dashboard-sport-admin-tournaments-results', params: { id } })
+}
+
+function goToKnockout() {
+  const id = String(tournament.value?.id || tournamentId.value || '').trim()
+  if (!id) return
+
+  router.push({ name: 'dashboard-sport-admin-tournaments-knockout', params: { id } })
 }
 
 function onWorkflowAction(action) {
@@ -201,6 +209,14 @@ function onWorkflowAction(action) {
                 class="rounded-xl"
                 :label="t('sportTournament.detail.manageResults')"
                 @click="goToResults"
+              />
+              <Button
+                type="button"
+                outlined
+                class="rounded-xl"
+                :label="t('sportTournament.detail.manageKnockout')"
+                :disabled="!canUseKnockout"
+                @click="goToKnockout"
               />
               <Button
                 type="button"

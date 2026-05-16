@@ -4,6 +4,7 @@ import {
   createMockTournaments,
   createTournamentDraft,
   normalizeTournamentGroupDraw,
+  normalizeTournamentKnockout,
 } from '../mocks/tournaments.mock'
 import { canTransitionTournament, normalizeTournamentState } from './useTournamentStateMachine'
 
@@ -83,6 +84,10 @@ function normalizeTournamentInput(payload = {}) {
     fixtures: Array.isArray(source.fixtures) ? source.fixtures.map((fixture) => deepClone(fixture)) : [],
     results: Array.isArray(source.results) ? source.results.map((result) => deepClone(result)) : [],
     standings: Array.isArray(source.standings) ? source.standings.map((standing) => deepClone(standing)) : [],
+    knockout: normalizeTournamentKnockout(source.knockout || base.knockout, {
+      ...base,
+      ...deepClone(source),
+    }),
   }
 }
 

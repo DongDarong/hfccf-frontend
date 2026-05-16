@@ -6,6 +6,15 @@ import {
   TOURNAMENT_VISIBILITY_OPTIONS,
 } from '../constants/tournamentStates'
 import { createRoundRobinFixtures } from '../composables/useTournamentRoundRobin'
+import {
+  createKnockoutBracket,
+  rebuildKnockoutProgression,
+  updateKnockoutMatchResult,
+} from '../composables/useTournamentBracket'
+import {
+  createKnockoutSettingsSnapshot,
+  selectTournamentQualifiers,
+} from '../composables/useTournamentQualification'
 import { calculateTournamentStandings } from '../composables/useTournamentStandings'
 
 function deepClone(value) {
@@ -124,6 +133,106 @@ function buildStandingsFromFixtures(tournament) {
   }).groups
 }
 
+function createTournamentKnockoutDraft(settings = {}) {
+  return {
+    settings: createKnockoutSettingsSnapshot(settings),
+    qualifiers: [],
+    bracket: null,
+    champion: null,
+    generatedAt: '',
+    updatedAt: '',
+  }
+}
+
+function buildCompletedKnockoutBracket(tournament, settings = {}) {
+  const qualification = selectTournamentQualifiers({
+    tournament,
+    settings,
+  })
+
+  if (!qualification.bracketSize || !qualification.qualifiers.length) {
+    return null
+  }
+
+  const baseBracket = createKnockoutBracket({
+    tournamentId: tournament.id,
+    qualifiers: qualification.qualifiers,
+    settings,
+  }).bracket
+
+  if (!baseBracket) {
+    return null
+  }
+
+  let bracket = baseBracket
+  const semifinalRound = bracket.rounds.find((round) => round.key === 'semifinal')
+
+  if (semifinalRound?.matches?.[0]) {
+    bracket = updateKnockoutMatchResult(bracket, semifinalRound.matches[0].id, {
+      status: 'completed',
+      homeScore: 2,
+      awayScore: 1,
+    }, settings).bracket
+  }
+
+  if (semifinalRound?.matches?.[1]) {
+    bracket = updateKnockoutMatchResult(bracket, semifinalRound.matches[1].id, {
+      status: 'completed',
+      homeScore: 1,
+      awayScore: 0,
+    }, settings).bracket
+  }
+
+  const finalRound = bracket.rounds.find((round) => round.key === 'final')
+  if (finalRound?.matches?.[0]) {
+    bracket = updateKnockoutMatchResult(bracket, finalRound.matches[0].id, {
+      status: 'completed',
+      homeScore: 1,
+      awayScore: 3,
+    }, settings).bracket
+  }
+
+  return bracket
+}
+
+function normalizeTournamentKnockout(knockout = {}, tournament = null) {
+  const source = knockout && typeof knockout === 'object' ? knockout : {}
+  const settings = createKnockoutSettingsSnapshot({
+    qualificationSlots: source.settings?.qualificationSlots ?? tournament?.groupDraw?.settings?.qualificationCount ?? 2,
+    includeThirdPlaceTeams: source.settings?.includeThirdPlaceTeams ?? false,
+    bestThirdPlaceTeams: source.settings?.bestThirdPlaceTeams ?? 0,
+    thirdPlaceMatchEnabled: source.settings?.thirdPlaceMatchEnabled ?? false,
+    extraTimeEnabled: source.settings?.extraTimeEnabled ?? tournament?.rules?.extraTimeEnabled ?? false,
+    penaltyEnabled: source.settings?.penaltyEnabled ?? tournament?.rules?.penaltyEnabled ?? false,
+    seededMode: source.settings?.seededMode ?? true,
+    autoGenerateBracket: source.settings?.autoGenerateBracket ?? true,
+  })
+
+  const qualification = selectTournamentQualifiers({
+    tournament,
+    settings,
+  })
+
+  const baseBracket = source.bracket ? rebuildKnockoutProgression(deepClone(source.bracket), settings) : null
+  const fallbackBracket = !baseBracket && qualification.bracketSize ? createKnockoutBracket({
+    tournamentId: tournament?.id || '',
+    qualifiers: qualification.qualifiers,
+    settings,
+  }).bracket : null
+  const bracket = baseBracket || fallbackBracket || null
+
+  return {
+    ...createTournamentKnockoutDraft(settings),
+    ...source,
+    settings,
+    qualifiers: Array.isArray(source.qualifiers) && source.qualifiers.length ? source.qualifiers.map((item) => deepClone(item)) : qualification.qualifiers,
+    bracket,
+    champion: bracket?.champion || source.champion || null,
+    generatedAt: String(source.generatedAt || bracket?.generatedAt || ''),
+    updatedAt: String(source.updatedAt || bracket?.updatedAt || ''),
+  }
+}
+
 function createGroupName(index) {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   const safeIndex = Number(index) || 0
@@ -238,6 +347,16 @@ export function createTournamentDraft() {
       baseDate: '',
       venue: '',
     },
+    knockout: createTournamentKnockoutDraft({
+      qualificationSlots: 2,
+      includeThirdPlaceTeams: false,
+      bestThirdPlaceTeams: 0,
+      thirdPlaceMatchEnabled: false,
+      extraTimeEnabled: Boolean(TOURNAMENT_RULE_DEFAULTS.extraTimeEnabled),
+      penaltyEnabled: Boolean(TOURNAMENT_RULE_DEFAULTS.penaltyEnabled),
+      seededMode: true,
+      autoGenerateBracket: true,
+    }),
     statistics: {
       registeredTeams: 0,
       totalTeams: 0,
@@ -578,6 +697,30 @@ mockTournaments[3].statistics = {
   completedMatches: tournament004Fixtures.filter((fixture) => fixture.status === 'completed').length,
 }
 
+const tournament004KnockoutSettings = {
+  qualificationSlots: 2,
+  includeThirdPlaceTeams: false,
+  bestThirdPlaceTeams: 0,
+  thirdPlaceMatchEnabled: false,
+  extraTimeEnabled: true,
+  penaltyEnabled: true,
+  seededMode: true,
+  autoGenerateBracket: true,
+}
+
+const tournament004KnockoutBracket = buildCompletedKnockoutBracket(mockTournaments[3], tournament004KnockoutSettings)
+
+mockTournaments[3].knockout = normalizeTournamentKnockout({
+  settings: tournament004KnockoutSettings,
+  bracket: tournament004KnockoutBracket,
+  qualifiers: selectTournamentQualifiers({
+    tournament: mockTournaments[3],
+    settings: tournament004KnockoutSettings,
+  }).qualifiers,
+  generatedAt: '2025-03-19T09:00:00.000Z',
+  updatedAt: '2025-03-19T11:30:00.000Z',
+}, mockTournaments[3])
+
 export function cloneTournamentRecord(tournament) {
   return deepClone(tournament)
 }
@@ -616,4 +759,9 @@ export function createMockTournamentSelectors() {
     visibilityOptions: [...TOURNAMENT_VISIBILITY_OPTIONS],
     states: [...TOURNAMENT_STATES],
   }
+}
+
+export {
+  createTournamentKnockoutDraft,
+  normalizeTournamentKnockout,
 }
