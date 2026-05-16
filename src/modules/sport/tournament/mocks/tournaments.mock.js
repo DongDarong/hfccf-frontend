@@ -5,6 +5,8 @@ import {
   TOURNAMENT_STATES,
   TOURNAMENT_VISIBILITY_OPTIONS,
 } from '../constants/tournamentStates'
+import { createRoundRobinFixtures } from '../composables/useTournamentRoundRobin'
+import { calculateTournamentStandings } from '../composables/useTournamentStandings'
 
 function deepClone(value) {
   if (typeof structuredClone === 'function') {
@@ -40,6 +42,86 @@ function createTeamSeries(prefix, names, seededRanks = []) {
       seedRank,
     })
   })
+}
+
+function buildFixtureScore(index, homeTeamId, awayTeamId) {
+  const homeGoals = (index % 4) + 1
+  const awayGoals = index % 3
+
+  return {
+    score: {
+      home: homeGoals,
+      away: homeGoals === awayGoals ? awayGoals + 1 : awayGoals,
+    },
+    events: [
+      {
+        id: `event-${String(index + 1).padStart(2, '0')}-1`,
+        minute: 12 + (index % 20),
+        type: 'goal',
+        teamId: homeTeamId,
+        teamName: '',
+        playerName: 'Mock striker',
+      },
+      {
+        id: `event-${String(index + 1).padStart(2, '0')}-2`,
+        minute: 58 + (index % 18),
+        type: index % 3 === 0 ? 'yellow_card' : index % 3 === 1 ? 'red_card' : 'penalty',
+        teamId: awayTeamId,
+        teamName: '',
+        playerName: 'Mock defender',
+      },
+    ],
+  }
+}
+
+function createTournamentFixturesForGroups({ groups = [], teams = [], rules = {}, venue = '', baseDate = '', completedCount = 0, liveCount = 0 }) {
+  const fixtures = []
+  const teamMap = new Map((Array.isArray(teams) ? teams : []).map((team) => [String(team.id || '').trim(), team]))
+  const roundRobinMode = rules.homeAwayEnabled ? 'double' : 'single'
+
+  groups.forEach((group, groupIndex) => {
+    const groupTeams = (Array.isArray(group?.teamIds) ? group.teamIds : [])
+      .map((teamId) => teamMap.get(String(teamId || '').trim()))
+      .filter(Boolean)
+
+    const generated = createRoundRobinFixtures({
+      group: {
+        ...group,
+        groupIndex,
+      },
+      teams: groupTeams,
+      roundRobinMode,
+      homeAwayEnabled: Boolean(rules.homeAwayEnabled),
+      matchdaySpacingDays: 7,
+      baseDate,
+      venue,
+    }).fixtures
+
+    fixtures.push(...generated)
+  })
+
+  return fixtures.map((fixture, index) => {
+    const completed = index < completedCount
+    const live = index >= completedCount && index < completedCount + liveCount
+    const result = buildFixtureScore(index, fixture.homeTeamId, fixture.awayTeamId)
+
+    return {
+      ...fixture,
+      status: completed ? 'completed' : live ? 'live' : 'scheduled',
+      score: completed || live ? result.score : { home: null, away: null },
+      events: completed || live ? result.events.map((event) => ({
+        ...event,
+        teamName: event.teamId === fixture.homeTeamId ? fixture.homeTeamName : fixture.awayTeamName,
+      })) : [],
+      completedAt: completed ? `2026-04-${String((index % 24) + 1).padStart(2, '0')}T18:00:00.000Z` : '',
+    }
+  })
+}
+
+function buildStandingsFromFixtures(tournament) {
+  return calculateTournamentStandings({
+    tournament,
+  }).groups
 }
 
 function createGroupName(index) {
@@ -149,6 +231,13 @@ export function createTournamentDraft() {
     visibility: 'private',
     rules: deepClone(TOURNAMENT_RULE_DEFAULTS),
     groupDraw: createTournamentGroupDrawDraft(),
+    fixturesSettings: {
+      roundRobinMode: 'single',
+      homeAwayEnabled: Boolean(TOURNAMENT_RULE_DEFAULTS.homeAwayEnabled),
+      matchdaySpacingDays: 7,
+      baseDate: '',
+      venue: '',
+    },
     statistics: {
       registeredTeams: 0,
       totalTeams: 0,
@@ -158,6 +247,9 @@ export function createTournamentDraft() {
       completedMatches: 0,
     },
     teams: [],
+    fixtures: [],
+    results: [],
+    standings: [],
   }
 }
 
@@ -445,6 +537,46 @@ export const mockTournaments = [
     ),
   },
 ]
+
+const tournament001Fixtures = createTournamentFixturesForGroups({
+  groups: mockTournaments[0].groupDraw.groups,
+  teams: mockTournaments[0].teams,
+  rules: mockTournaments[0].rules,
+  venue: mockTournaments[0].location,
+  baseDate: mockTournaments[0].startAt,
+  completedCount: 31,
+  liveCount: 4,
+})
+
+mockTournaments[0].fixtures = tournament001Fixtures
+mockTournaments[0].results = tournament001Fixtures.filter((fixture) => fixture.status === 'completed')
+mockTournaments[0].standings = buildStandingsFromFixtures(mockTournaments[0])
+mockTournaments[0].statistics = {
+  ...mockTournaments[0].statistics,
+  fixturesGenerated: tournament001Fixtures.length,
+  matches: tournament001Fixtures.length,
+  completedMatches: tournament001Fixtures.filter((fixture) => fixture.status === 'completed').length,
+}
+
+const tournament004Fixtures = createTournamentFixturesForGroups({
+  groups: mockTournaments[3].groupDraw.groups,
+  teams: mockTournaments[3].teams,
+  rules: mockTournaments[3].rules,
+  venue: mockTournaments[3].location,
+  baseDate: mockTournaments[3].startAt,
+  completedCount: 28,
+  liveCount: 0,
+})
+
+mockTournaments[3].fixtures = tournament004Fixtures
+mockTournaments[3].results = tournament004Fixtures.filter((fixture) => fixture.status === 'completed')
+mockTournaments[3].standings = buildStandingsFromFixtures(mockTournaments[3])
+mockTournaments[3].statistics = {
+  ...mockTournaments[3].statistics,
+  fixturesGenerated: tournament004Fixtures.length,
+  matches: tournament004Fixtures.length,
+  completedMatches: tournament004Fixtures.filter((fixture) => fixture.status === 'completed').length,
+}
 
 export function cloneTournamentRecord(tournament) {
   return deepClone(tournament)

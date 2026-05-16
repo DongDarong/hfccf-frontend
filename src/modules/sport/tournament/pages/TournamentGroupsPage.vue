@@ -218,7 +218,7 @@ function handleRemoveTeam(teamId) {
           <div class="sport-tournament-groups__hero-actions">
             <Button
               type="button"
-              variant="outline"
+              outlined
               class="rounded-xl"
               :label="t('sportTournament.groups.backToDetail')"
               @click="goBack"

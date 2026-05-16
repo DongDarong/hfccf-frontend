@@ -534,7 +534,7 @@ onBeforeUnmount(() => {
           <div class="sport-tournament-form__actions">
             <Button
               type="button"
-              variant="outline"
+              outlined
               class="rounded-xl"
               :label="t('common.cancel')"
               :disabled="isSubmitting"

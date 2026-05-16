@@ -43,10 +43,21 @@ describe('useTournamentCatalog', () => {
 
   it('transitions tournaments when the move is valid', () => {
     const catalog = useTournamentCatalog()
-    const updated = catalog.transitionTournament('tournament-002', 'group_draw_completed')
+    const created = catalog.createTournament({
+      name: 'HFCCF Spring Cup',
+      season: '2026',
+      sportType: 'football',
+      location: 'Central Stadium',
+      organizer: 'HFCCF Sport Office',
+      registrationOpenAt: '2026-01-01',
+      registrationCloseAt: '2026-01-15',
+      startAt: '2026-02-01',
+      endAt: '2026-02-28',
+    })
+    const updated = catalog.transitionTournament(created.id, 'registration_open')
 
-    expect(updated?.state).toBe('group_draw_completed')
-    expect(updated?.registrationStatus).toBe('closed')
+    expect(updated?.state).toBe('registration_open')
+    expect(updated?.registrationStatus).toBe('open')
   })
 
   it('rejects invalid transitions', () => {

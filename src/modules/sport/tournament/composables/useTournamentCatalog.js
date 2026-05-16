@@ -62,6 +62,15 @@ function normalizeTournamentInput(payload = {}) {
     visibility: normalizeText(source.visibility || base.visibility) || 'private',
     rules: normalizeRules(source.rules || base.rules),
     groupDraw: normalizeTournamentGroupDraw(source.groupDraw || base.groupDraw, source),
+    fixturesSettings: {
+      roundRobinMode: String(source.fixturesSettings?.roundRobinMode || base.fixturesSettings.roundRobinMode || 'single').trim().toLowerCase() === 'double'
+        ? 'double'
+        : 'single',
+      homeAwayEnabled: Boolean(source.fixturesSettings?.homeAwayEnabled ?? base.fixturesSettings.homeAwayEnabled),
+      matchdaySpacingDays: Number(source.fixturesSettings?.matchdaySpacingDays ?? base.fixturesSettings.matchdaySpacingDays ?? 7),
+      baseDate: normalizeText(source.fixturesSettings?.baseDate ?? base.fixturesSettings.baseDate),
+      venue: normalizeText(source.fixturesSettings?.venue ?? base.fixturesSettings.venue),
+    },
     statistics: {
       registeredTeams: Number(source.statistics?.registeredTeams ?? base.statistics.registeredTeams ?? 0),
       totalTeams: Number(source.statistics?.totalTeams ?? base.statistics.totalTeams ?? 0),
@@ -71,6 +80,9 @@ function normalizeTournamentInput(payload = {}) {
       completedMatches: Number(source.statistics?.completedMatches ?? base.statistics.completedMatches ?? 0),
     },
     teams: Array.isArray(source.teams) ? source.teams.map((team) => deepClone(team)) : [],
+    fixtures: Array.isArray(source.fixtures) ? source.fixtures.map((fixture) => deepClone(fixture)) : [],
+    results: Array.isArray(source.results) ? source.results.map((result) => deepClone(result)) : [],
+    standings: Array.isArray(source.standings) ? source.standings.map((standing) => deepClone(standing)) : [],
   }
 }
 

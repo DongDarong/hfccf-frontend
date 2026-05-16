@@ -95,6 +95,27 @@ function goToGroups() {
   router.push({ name: 'dashboard-sport-admin-tournaments-groups', params: { id } })
 }
 
+function goToFixtures() {
+  const id = String(tournament.value?.id || tournamentId.value || '').trim()
+  if (!id) return
+
+  router.push({ name: 'dashboard-sport-admin-tournaments-fixtures', params: { id } })
+}
+
+function goToStandings() {
+  const id = String(tournament.value?.id || tournamentId.value || '').trim()
+  if (!id) return
+
+  router.push({ name: 'dashboard-sport-admin-tournaments-standings', params: { id } })
+}
+
+function goToResults() {
+  const id = String(tournament.value?.id || tournamentId.value || '').trim()
+  if (!id) return
+
+  router.push({ name: 'dashboard-sport-admin-tournaments-results', params: { id } })
+}
+
 function onWorkflowAction(action) {
   if (!tournament.value?.id || !action?.isAllowed || action.disabled) return
 
@@ -148,23 +169,44 @@ function onWorkflowAction(action) {
           <div class="sport-tournament-detail__hero-actions">
             <Button
               type="button"
-              variant="outline"
+              outlined
               class="rounded-xl"
               :label="t('sportTournament.detail.backToList')"
               @click="goBack"
             />
-            <Button
-              type="button"
-              variant="outline"
-              class="rounded-xl"
-              :label="t('sportTournament.detail.manageGroups')"
-              @click="goToGroups"
-            />
-            <Button
-              type="button"
-              class="rounded-xl"
-              :label="t('sportTournament.detail.editTournament')"
-              :disabled="!canEdit"
+              <Button
+                type="button"
+                outlined
+                class="rounded-xl"
+                :label="t('sportTournament.detail.manageGroups')"
+                @click="goToGroups"
+              />
+              <Button
+                type="button"
+                outlined
+                class="rounded-xl"
+                :label="t('sportTournament.detail.manageFixtures')"
+                @click="goToFixtures"
+              />
+              <Button
+                type="button"
+                outlined
+                class="rounded-xl"
+                :label="t('sportTournament.detail.manageStandings')"
+                @click="goToStandings"
+              />
+              <Button
+                type="button"
+                outlined
+                class="rounded-xl"
+                :label="t('sportTournament.detail.manageResults')"
+                @click="goToResults"
+              />
+              <Button
+                type="button"
+                class="rounded-xl"
+                :label="t('sportTournament.detail.editTournament')"
+                :disabled="!canEdit"
               @click="goToEdit"
             />
           </div>

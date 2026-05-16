@@ -84,7 +84,7 @@ const dialogVisible = computed({
         <Button
           type="button"
           class="rounded-xl"
-          variant="outline"
+          outlined
           :label="t('common.cancel')"
           @click="emit('close')"
         />
