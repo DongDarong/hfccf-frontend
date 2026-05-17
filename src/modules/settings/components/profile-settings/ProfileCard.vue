@@ -29,7 +29,15 @@ const requestError = ref('')
  * Prefer a safe uploaded avatar or a bundled local avatar.
  * If that still fails, the initials fallback below keeps the card stable.
  */
-const avatarUrl = computed(() => resolveAvatarSource(props.user.avatar, { fallbackToAsset: true }))
+const avatarUrl = computed(() =>
+  resolveAvatarSource(
+    props.user.avatar ||
+      props.user.avatarUrl ||
+      props.user.profilePhotoUrl ||
+      props.user.photo,
+    { fallbackToAsset: true },
+  ),
+)
 
 const shouldShowImage = computed(() =>
   Boolean(avatarUrl.value) && Boolean(isImageLoaded.value) && !hasImageError.value,

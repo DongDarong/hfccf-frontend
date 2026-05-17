@@ -17,7 +17,16 @@ export function useTableAvatar(rowsRef) {
   function avatarSrc(row) {
     const key = avatarKey(row)
     if (key && avatarStates.value[key]?.error) return ''
-    return resolveAvatarSource(row?.avatar || row?.avatarUrl || row?.profileImage || row?.photo)
+
+    return resolveAvatarSource(
+      row?.avatar ||
+        row?.avatar_url ||
+        row?.avatarUrl ||
+        row?.profile_photo_url ||
+        row?.profilePhotoUrl ||
+        row?.profileImage ||
+        row?.photo,
+    )
   }
 
   function shouldShowImage(row) {

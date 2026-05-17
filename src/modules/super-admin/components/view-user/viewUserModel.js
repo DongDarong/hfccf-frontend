@@ -123,7 +123,15 @@ export function normalizeUser(raw = {}, translate) {
   const scope = asOptionalText(raw.scope)
   const domain = asOptionalText(raw.domain)
   const avatar = resolveAvatarSource(
-    firstNonEmpty(raw.avatar, raw.avatarUrl, raw.profileImage, raw.photo),
+    firstNonEmpty(
+      raw.avatar,
+      raw.avatar_url,
+      raw.avatarUrl,
+      raw.profile_photo_url,
+      raw.profilePhotoUrl,
+      raw.profileImage,
+      raw.photo,
+    ),
   )
 
   return {
