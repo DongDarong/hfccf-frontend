@@ -1,6 +1,6 @@
 <script setup>
 import Button from 'primevue/button'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import TournamentFixtureStatusBadge from './TournamentFixtureStatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -68,14 +68,15 @@ function changeStatus(event) {
     </div>
 
     <div class="fixture-card__footer">
-      <Dropdown
+      <Select
         v-if="editable"
         :model-value="fixture.status"
         :options="statusOptions"
         option-label="label"
         option-value="value"
+        append-to="self"
         class="fixture-card__status"
-        @change="changeStatus"
+        @update:modelValue="changeStatus({ value: $event })"
       />
 
       <Button
@@ -195,6 +196,10 @@ function changeStatus(event) {
 
 .fixture-card__status {
   min-width: 9rem;
+}
+
+.fixture-card__status :deep(.p-select) {
+  width: 100%;
 }
 
 .fixture-card__button {

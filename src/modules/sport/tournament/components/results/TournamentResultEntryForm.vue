@@ -1,8 +1,8 @@
 <script setup>
 import Button from 'primevue/button'
-import Dropdown from 'primevue/dropdown'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -81,12 +81,13 @@ function updatePatch(patch = {}) {
     <div class="result-form__grid">
       <div class="result-form__field">
         <span>{{ t('sportTournament.results.labels.status') }}</span>
-        <Dropdown
+        <Select
           :model-value="draft.status"
           :options="statusOptions"
           option-label="label"
           option-value="value"
-          @change="updatePatch({ status: $event.value })"
+          append-to="self"
+          @update:modelValue="updatePatch({ status: $event })"
         />
       </div>
 
@@ -187,6 +188,10 @@ function updatePatch(patch = {}) {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.result-form__field :deep(.p-select) {
+  width: 100%;
 }
 
 .result-form__field--full {

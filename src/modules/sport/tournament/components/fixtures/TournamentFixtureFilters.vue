@@ -1,5 +1,5 @@
 <script setup>
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -39,23 +39,25 @@ const resolvedStatusOptions = computed(() => [
   <section class="fixture-filters">
     <div class="fixture-filters__field">
       <span>{{ t('sportTournament.fixtures.filters.status') }}</span>
-      <Dropdown
+      <Select
         :model-value="status"
         :options="resolvedStatusOptions"
         option-label="label"
         option-value="value"
-        @change="emit('update:status', $event.value)"
+        append-to="self"
+        @update:modelValue="emit('update:status', $event)"
       />
     </div>
 
     <div class="fixture-filters__field">
       <span>{{ t('sportTournament.fixtures.filters.matchday') }}</span>
-      <Dropdown
+      <Select
         :model-value="matchday"
         :options="matchdayOptions"
         option-label="label"
         option-value="value"
-        @change="emit('update:matchday', $event.value)"
+        append-to="self"
+        @update:modelValue="emit('update:matchday', $event)"
       />
     </div>
   </section>
@@ -80,6 +82,10 @@ const resolvedStatusOptions = computed(() => [
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.fixture-filters__field :deep(.p-select) {
+  width: 100%;
 }
 
 @media (max-width: 768px) {
