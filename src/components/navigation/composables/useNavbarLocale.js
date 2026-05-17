@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { applyDocumentLocale } from '@/utils/documentLocale'
 
 export function useNavbarLocale() {
   const { t, locale } = useI18n()
@@ -11,6 +12,7 @@ export function useNavbarLocale() {
 
       locale.value = next
       localStorage.setItem('locale', next)
+      applyDocumentLocale(next)
     },
   })
 

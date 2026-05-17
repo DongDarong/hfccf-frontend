@@ -12,6 +12,8 @@ function setup(_locale = 'en') {
 describe('useLanguage', () => {
   beforeEach(() => {
     localStorage.clear()
+    document.documentElement.removeAttribute('lang')
+    document.documentElement.classList.remove('locale-kh')
   })
 
   // ─── initial state ──────────────────────────────────────────────────────────
@@ -49,6 +51,8 @@ describe('useLanguage', () => {
     const { setLanguage } = setup()
     setLanguage('KH')
     expect(localStorage.getItem('locale')).toBe('kh')
+    expect(document.documentElement.lang).toBe('kh')
+    expect(document.documentElement.classList.contains('locale-kh')).toBe(true)
   })
 
   it('persists "en" to localStorage when switching back to EN', () => {
@@ -56,6 +60,8 @@ describe('useLanguage', () => {
     setLanguage('KH')
     setLanguage('EN')
     expect(localStorage.getItem('locale')).toBe('en')
+    expect(document.documentElement.lang).toBe('en')
+    expect(document.documentElement.classList.contains('locale-kh')).toBe(false)
   })
 
   // ─── case insensitivity ─────────────────────────────────────────────────────
