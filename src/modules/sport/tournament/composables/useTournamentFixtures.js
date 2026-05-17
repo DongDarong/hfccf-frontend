@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { createRoundRobinFixtures, sortRoundRobinFixtures } from './useTournamentRoundRobin'
-import { calculateTournamentStandings } from './useTournamentStandings'
+import { calculateTournamentStandings } from '../services/calculateStandings'
 import { normalizeTournamentState } from './useTournamentStateMachine'
 
 function normalizeText(value) {

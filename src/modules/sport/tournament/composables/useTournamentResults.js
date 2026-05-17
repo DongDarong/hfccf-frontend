@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { calculateTournamentStandings, normalizeScoreValue } from './useTournamentStandings'
+import { calculateTournamentStandings, normalizeScoreValue } from '../services/calculateStandings'
 import { normalizeTournamentState } from './useTournamentStateMachine'
 
 function normalizeText(value) {

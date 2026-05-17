@@ -1,4 +1,4 @@
-import { normalizeScoreValue } from './useTournamentStandings'
+import { normalizeScoreValue } from '../services/calculateStandings'
 
 function normalizeText(value) {
   return String(value || '').trim()

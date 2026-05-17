@@ -14,8 +14,8 @@ import {
 import {
   createKnockoutSettingsSnapshot,
   selectTournamentQualifiers,
-} from '../composables/useTournamentQualification'
-import { calculateTournamentStandings } from '../composables/useTournamentStandings'
+} from '../services/generateQualification'
+import { calculateTournamentStandings } from '../services/calculateStandings'
 
 function deepClone(value) {
   if (typeof structuredClone === 'function') {
