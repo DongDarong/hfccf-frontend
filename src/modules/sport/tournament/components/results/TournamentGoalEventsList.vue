@@ -1,12 +1,15 @@
 <script setup>
 import Button from 'primevue/button'
+import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import TournamentMatchEventTypeBadge from './TournamentMatchEventTypeBadge.vue'
+import { formatMatchEventMinute, sortMatchTimeline } from '@/modules/sport/tournament/services/sortMatchTimeline'
 
 defineOptions({
   name: 'TournamentGoalEventsList',
 })
 
-defineProps({
+const props = defineProps({
   events: {
     type: Array,
     default: () => [],
@@ -18,12 +21,9 @@ defineProps({
 })
 
 const emit = defineEmits(['add-event', 'remove-event'])
-const { t, te } = useLanguage()
+const { t } = useLanguage()
 
-function eventLabel(event) {
-  const key = `sportTournament.results.eventTypes.${String(event?.type || '').trim()}`
-  return te(key) ? t(key) : String(event?.type || '')
-}
+const sortedEvents = computed(() => sortMatchTimeline(props.events))
 </script>
 
 <template>
@@ -44,13 +44,19 @@ function eventLabel(event) {
       />
     </div>
 
-    <div v-if="events.length" class="events-list__grid">
-      <article v-for="event in events" :key="event.id" class="events-list__item">
-        <div>
-          <strong>{{ event.minute }}'</strong>
-          <span>{{ eventLabel(event) }}</span>
+    <div v-if="sortedEvents.length" class="events-list__grid">
+      <article v-for="event in sortedEvents" :key="event.id" class="events-list__item">
+        <div class="events-list__minute">{{ formatMatchEventMinute(event) }}</div>
+
+        <div class="events-list__body">
+          <div class="events-list__head-row">
+            <TournamentMatchEventTypeBadge :type="event.type" />
+            <span class="events-list__side">{{ event.side === 'away' ? t('sportTournament.results.eventForm.sides.away') : t('sportTournament.results.eventForm.sides.home') }}</span>
+          </div>
+          <strong>{{ event.playerName || event.teamName || event.teamId || t('sportTournament.results.eventForm.noPlayer') }}</strong>
+          <p>{{ event.description || '-' }}</p>
         </div>
-        <p>{{ event.playerName || event.teamName || event.teamId || '-' }}</p>
+
         <Button
           type="button"
           class="rounded-xl"
@@ -107,7 +113,7 @@ function eventLabel(event) {
 
 .events-list__item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 0.95rem;
@@ -116,18 +122,47 @@ function eventLabel(event) {
   background: rgba(248, 250, 252, 0.94);
 }
 
-.events-list__item strong {
-  color: #0f172a;
-  font-size: 0.95rem;
+.events-list__minute {
+  display: inline-flex;
+  min-width: 3rem;
+  justify-content: center;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(0, 174, 239, 0.1);
+  color: #0369a1;
+  font-weight: 900;
 }
 
-.events-list__item span,
-.events-list__item p {
+.events-list__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.events-list__head-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.events-list__side {
   color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.events-list__item p {
+.events-list__body strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.events-list__body p {
   margin: 0;
+  color: #64748b;
 }
 
 .events-list__empty {

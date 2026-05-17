@@ -44,9 +44,11 @@ function updateStandingRow(row, scoredFor = 0, scoredAgainst = 0, rules = {}) {
 }
 
 function resolveFixtureScore(fixture = {}) {
+  const eventScore = fixture?.eventScore?.hasScoringEvents ? fixture?.eventScore?.score : null
+
   return {
-    home: normalizeScoreValue(fixture?.score?.home),
-    away: normalizeScoreValue(fixture?.score?.away),
+    home: normalizeScoreValue(eventScore?.home ?? fixture?.score?.home),
+    away: normalizeScoreValue(eventScore?.away ?? fixture?.score?.away),
   }
 }
 

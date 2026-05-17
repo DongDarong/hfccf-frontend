@@ -10,8 +10,8 @@ import { useLanguage } from '@/composables/useLanguage'
 import TournamentFixtureList from '@/modules/sport/tournament/components/fixtures/TournamentFixtureList.vue'
 import TournamentResultSummary from '@/modules/sport/tournament/components/results/TournamentResultSummary.vue'
 import TournamentMatchStats from '@/modules/sport/tournament/components/results/TournamentMatchStats.vue'
-import TournamentResultTimeline from '@/modules/sport/tournament/components/results/TournamentResultTimeline.vue'
-import TournamentGoalEventsList from '@/modules/sport/tournament/components/results/TournamentGoalEventsList.vue'
+import TournamentMatchEventForm from '@/modules/sport/tournament/components/results/TournamentMatchEventForm.vue'
+import TournamentMatchEventTimeline from '@/modules/sport/tournament/components/results/TournamentMatchEventTimeline.vue'
 import TournamentResultEntryForm from '@/modules/sport/tournament/components/results/TournamentResultEntryForm.vue'
 import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
 import { createFixtureResultDraft, useTournamentResults } from '@/modules/sport/tournament/composables/useTournamentResults'
@@ -39,10 +39,18 @@ const {
   selectedFixture,
   fixtures,
   resultDraft,
+  eventDraft,
+  eventDraftValidation,
+  eventTimeline,
+  eventTypes,
+  eventSideOptions,
+  eventTeamOptions,
+  statusOptions,
   selectFixture,
   updateDraft,
   addEvent,
   removeEvent,
+  resetEventDraft,
   saveResult,
 } = useTournamentResults(tournament, {
   updateTournament,
@@ -51,13 +59,6 @@ const {
 
 const pageTitle = computed(() => tournament.value?.name || t('sportTournament.results.notFoundTitle'))
 const pageSubtitle = computed(() => tournament.value?.description || t('sportTournament.results.notFoundMessage'))
-const statusOptions = computed(() => [
-  { label: t('sportTournament.matchStatuses.scheduled'), value: 'scheduled' },
-  { label: t('sportTournament.matchStatuses.live'), value: 'live' },
-  { label: t('sportTournament.matchStatuses.completed'), value: 'completed' },
-  { label: t('sportTournament.matchStatuses.postponed'), value: 'postponed' },
-  { label: t('sportTournament.matchStatuses.cancelled'), value: 'cancelled' },
-])
 
 watch(
   () => route.query.fixtureId,
@@ -119,6 +120,15 @@ function handleSave() {
 
 function handleReset() {
   updateDraft(createFixtureResultDraft(selectedFixture.value))
+  resetEventDraft(selectedFixture.value)
+}
+
+function handleAddEvent() {
+  const addedEvent = addEvent()
+  if (!addedEvent?.id) {
+    notifyError(t('sportTournament.results.validation.eventAddFailed'))
+    return
+  }
 }
 </script>
 
@@ -196,14 +206,22 @@ function handleReset() {
               @save="handleSave"
               @reset="handleReset"
             />
-            <TournamentMatchStats :fixture="selectedFixture || {}" />
-            <TournamentGoalEventsList
-              :events="resultDraft.events"
+            <TournamentMatchEventForm
+              v-model="eventDraft"
+              :event-types="eventTypes"
+              :side-options="eventSideOptions"
+              :team-options="eventTeamOptions"
+              :validation="eventDraftValidation"
               :disabled="!selectedFixture"
-              @add-event="addEvent({ type: 'goal', minute: 1 })"
-              @remove-event="removeEvent"
+              @add="handleAddEvent"
+              @reset="resetEventDraft(selectedFixture)"
             />
-            <TournamentResultTimeline :events="resultDraft.events" />
+            <TournamentMatchStats :fixture="selectedFixture || {}" />
+            <TournamentMatchEventTimeline
+              :events="eventTimeline"
+              :disabled="!selectedFixture"
+              @remove="removeEvent"
+            />
           </div>
         </div>
       </div>

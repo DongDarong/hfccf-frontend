@@ -73,11 +73,13 @@ describe('useTournamentResults', () => {
     result.updateDraft({
       status: 'completed',
       score: {
-        home: 2,
-        away: 1,
+        home: 0,
+        away: 0,
       },
       events: [
         { id: 'event-1', minute: 12, type: 'goal', teamId: 'team-a', playerName: 'Player A' },
+        { id: 'event-2', minute: 31, type: 'penalty', teamId: 'team-a', playerName: 'Player A' },
+        { id: 'event-3', minute: 78, type: 'own_goal', teamId: 'team-b', playerName: 'Player B' },
       ],
     })
 
@@ -89,5 +91,11 @@ describe('useTournamentResults', () => {
     expect(tournament.value.fixtures[0].status).toBe('completed')
     expect(tournament.value.results).toHaveLength(1)
     expect(tournament.value.standings).toHaveLength(1)
+    expect(tournament.value.fixtures[0].eventScore.score).toEqual({
+      home: 3,
+      away: 0,
+    })
+    expect(tournament.value.standings[0].rows[0].teamId).toBe('team-a')
+    expect(tournament.value.standings[0].rows[0].points).toBe(3)
   })
 })

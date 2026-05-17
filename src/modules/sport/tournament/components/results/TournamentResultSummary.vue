@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import TournamentFixtureStatusBadge from '@/modules/sport/tournament/components/fixtures/TournamentFixtureStatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -6,7 +7,7 @@ defineOptions({
   name: 'TournamentResultSummary',
 })
 
-defineProps({
+const props = defineProps({
   fixture: {
     type: Object,
     default: () => ({}),
@@ -14,6 +15,20 @@ defineProps({
 })
 
 const { t } = useLanguage()
+
+const displayScore = computed(() => {
+  if (props.fixture?.eventScore?.hasScoringEvents) {
+    return props.fixture.eventScore.score
+  }
+
+  return props.fixture?.score || { home: null, away: null }
+})
+
+const scoreSourceLabel = computed(() =>
+  props.fixture?.eventScore?.hasScoringEvents
+    ? t('sportTournament.results.scoreSummary.eventDerived')
+    : t('sportTournament.results.scoreSummary.manual'),
+)
 </script>
 
 <template>
@@ -27,9 +42,13 @@ const { t } = useLanguage()
     </div>
 
     <div class="result-summary__score">
-      <strong>{{ fixture.score?.home ?? '-' }}</strong>
+      <strong>{{ displayScore.home ?? '-' }}</strong>
       <span>:</span>
-      <strong>{{ fixture.score?.away ?? '-' }}</strong>
+      <strong>{{ displayScore.away ?? '-' }}</strong>
+    </div>
+
+    <div class="result-summary__source">
+      {{ scoreSourceLabel }}
     </div>
 
     <div class="result-summary__meta">
@@ -90,6 +109,14 @@ const { t } = useLanguage()
   color: #0f172a;
   font-size: 1.15rem;
   font-weight: 900;
+}
+
+.result-summary__source {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .result-summary__meta > div {

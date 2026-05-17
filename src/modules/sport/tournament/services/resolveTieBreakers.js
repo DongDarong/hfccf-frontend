@@ -58,8 +58,9 @@ function isCountableFixture(fixture = {}) {
   const status = String(fixture?.status || '').trim().toLowerCase()
   if (status === 'cancelled' || status === 'postponed') return false
 
-  const homeScore = normalizeScoreValue(fixture?.score?.home)
-  const awayScore = normalizeScoreValue(fixture?.score?.away)
+  const scoreSource = fixture?.eventScore?.hasScoringEvents ? fixture?.eventScore?.score : fixture?.score
+  const homeScore = normalizeScoreValue(scoreSource?.home)
+  const awayScore = normalizeScoreValue(scoreSource?.away)
 
   return homeScore !== null && awayScore !== null
 }
@@ -114,8 +115,9 @@ function buildHeadToHeadTable({
     if (!homeTeamId || !awayTeamId) return
     if (!rowTeamIds.has(homeTeamId) || !rowTeamIds.has(awayTeamId)) return
 
-    const homeScore = normalizeScoreValue(fixture?.score?.home)
-    const awayScore = normalizeScoreValue(fixture?.score?.away)
+    const scoreSource = fixture?.eventScore?.hasScoringEvents ? fixture?.eventScore?.score : fixture?.score
+    const homeScore = normalizeScoreValue(scoreSource?.home)
+    const awayScore = normalizeScoreValue(scoreSource?.away)
 
     if (homeScore === null || awayScore === null) return
 
