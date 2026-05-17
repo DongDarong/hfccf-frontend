@@ -38,15 +38,6 @@ function getConfiguredImageOrigins() {
   return [...new Set(origins)]
 }
 
-function isCloudflareR2Host(hostname) {
-  const normalizedHost = String(hostname || '').toLowerCase()
-
-  return (
-    normalizedHost.endsWith('.r2.dev') ||
-    normalizedHost.endsWith('.r2.cloudflarestorage.com')
-  )
-}
-
 const apiOrigin = getApiOrigin()
 const configuredImageOrigins = getConfiguredImageOrigins()
 
@@ -68,7 +59,6 @@ export function isSafeAvatarSource(value) {
     if (typeof window !== 'undefined' && url.origin === window.location.origin) return true
     if (apiOrigin && url.origin === apiOrigin) return true
     if (configuredImageOrigins.includes(url.origin)) return true
-    if (isCloudflareR2Host(url.hostname)) return true
     if (import.meta.env.DEV && DEV_ALLOWED_AVATAR_ORIGINS.has(url.origin)) return true
 
     return false

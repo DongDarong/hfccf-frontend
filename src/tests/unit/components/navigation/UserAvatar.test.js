@@ -1,10 +1,23 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mountWithPlugins } from '@/tests/helpers/mount'
-import UserAvatar from '@/components/navigation/Avatar.vue'
+
+const imageOrigin = 'https://pub-04c60dfb58ea4e43969c54044749b899.r2.dev'
+
+beforeEach(() => {
+  vi.resetModules()
+  vi.stubEnv('VITE_API_BASE_URL', 'http://hfccf-backend.test/api')
+  vi.stubEnv('VITE_IMAGE_PUBLIC_ORIGIN', imageOrigin)
+  vi.stubEnv('VITE_IMAGE_PUBLIC_URL', '')
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe('UserAvatar', () => {
-  it('renders a Cloudflare R2 avatar image source', async () => {
-    const avatarUrl = 'https://pub-123abc.r2.dev/avatars/user.jpg'
+  it('renders a Cloudflare R2 avatar image source from the configured public origin', async () => {
+    const { default: UserAvatar } = await import('@/components/navigation/Avatar.vue')
+    const avatarUrl = `${imageOrigin}/avatars/user.jpg`
 
     const wrapper = mountWithPlugins(UserAvatar, {
       props: {

@@ -73,6 +73,7 @@ Use the smallest valid scope first. For example:
 
 - Use `src/services/http.js` for shared API requests.
 - In local development, `VITE_API_BASE_URL=http://hfccf-backend.test/api` points directly to the Laravel backend origin.
+- If the backend returns public avatar URLs from Cloudflare R2, set `VITE_IMAGE_PUBLIC_ORIGIN` to the exact trusted image origin so CSP and avatar rendering allow it.
 - Do not bypass the shared HTTP client for authenticated frontend requests.
 - Store backend bearer tokens only through `src/services/auth.js`.
 - Keep auth response mapping compatible with the backend `AuthUserResource` shape:
