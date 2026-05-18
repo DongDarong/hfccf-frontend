@@ -1,5 +1,5 @@
-<script setup>
-import { computed, ref } from 'vue'
+﻿<script setup>
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -13,7 +13,7 @@ import {
   canEditTournamentConfiguration,
   normalizeTournamentState,
 } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
-import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
+import { useTournamentCrudCatalog } from '@/modules/sport/tournament/composables/useTournamentCrudCatalog'
 
 defineOptions({
   name: 'SportTournamentListPage',
@@ -21,7 +21,7 @@ defineOptions({
 
 const router = useRouter()
 const { t } = useLanguage()
-const { tournaments, getTournamentById } = useTournamentCatalog()
+const { tournaments, getTournamentById, loadTournaments } = useTournamentCrudCatalog()
 
 const searchQuery = ref('')
 const seasonFilter = ref('')
@@ -114,6 +114,10 @@ const summaryCards = computed(() => [
     status: 'error',
   },
 ])
+
+onMounted(() => {
+  void loadTournaments()
+})
 
 function goToCreateTournament() {
   router.push({ name: 'dashboard-sport-admin-tournaments-create' })
@@ -273,3 +277,4 @@ function goToTournamentEdit(tournament) {
   }
 }
 </style>
+

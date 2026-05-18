@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -16,7 +16,7 @@ import {
   canEditTournamentConfiguration,
   getTournamentStateMeta,
 } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
-import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
+import { useTournamentCrudCatalog } from '@/modules/sport/tournament/composables/useTournamentCrudCatalog'
 import { useTournamentStatistics } from '@/modules/sport/tournament/composables/useTournamentStatistics'
 
 defineOptions({
@@ -26,10 +26,11 @@ defineOptions({
 const router = useRouter()
 const route = useRoute()
 const { t } = useLanguage()
-const { getTournamentById, transitionTournament } = useTournamentCatalog()
+const { getTournamentById, loadTournament, transitionTournament, isLoading } = useTournamentCrudCatalog()
 
 const showError = ref(false)
 const errorMessage = ref('')
+const hasLoadedTournament = ref(false)
 
 const tournamentId = computed(() => String(route.params.id || '').trim())
 const tournament = computed(() => (tournamentId.value ? getTournamentById(tournamentId.value) : null))
@@ -37,6 +38,7 @@ const stateMeta = computed(() => getTournamentStateMeta(tournament.value?.state)
 const canEdit = computed(() => Boolean(tournament.value?.id) && canEditTournamentConfiguration(tournament.value.state))
 const canUseKnockout = computed(() => Boolean(tournament.value?.rules?.knockoutEnabled ?? true))
 const tournamentStatistics = useTournamentStatistics(tournament)
+const loadingTournament = computed(() => isLoading.value && !hasLoadedTournament.value)
 
 const pageTitle = computed(() => tournament.value?.name || t('sportTournament.detail.notFoundTitle'))
 const pageSubtitle = computed(() =>
@@ -137,6 +139,22 @@ function onWorkflowAction(action) {
     return
   }
 }
+
+onMounted(async () => {
+  if (!tournamentId.value) {
+    hasLoadedTournament.value = true
+    return
+  }
+
+  try {
+    await loadTournament(tournamentId.value)
+  } catch {
+    errorMessage.value = t('sportTournament.create.validation.saveFailed')
+    showError.value = true
+  } finally {
+    hasLoadedTournament.value = true
+  }
+})
 </script>
 
 <template>
@@ -144,7 +162,13 @@ function onWorkflowAction(action) {
     <section class="sport-tournament-detail">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <div v-if="tournament" class="sport-tournament-detail__content">
+      <div v-if="loadingTournament" class="sport-tournament-detail__empty">
+        <div class="sport-tournament-detail__empty-card">
+          <h3>{{ t('common.loading') }}</h3>
+        </div>
+      </div>
+
+      <div v-else-if="tournament" class="sport-tournament-detail__content">
         <div class="sport-tournament-detail__hero">
           <div class="sport-tournament-detail__hero-copy">
             <div class="sport-tournament-detail__hero-head">

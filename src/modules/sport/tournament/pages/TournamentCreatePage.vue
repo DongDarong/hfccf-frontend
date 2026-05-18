@@ -25,7 +25,7 @@ import {
   canEditTournamentConfiguration,
   normalizeTournamentState,
 } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
-import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
+import { useTournamentCrudCatalog } from '@/modules/sport/tournament/composables/useTournamentCrudCatalog'
 import { createTournamentDraft } from '@/modules/sport/tournament/mocks/tournaments.mock'
 
 defineOptions({
@@ -35,10 +35,12 @@ defineOptions({
 const router = useRouter()
 const route = useRoute()
 const { t } = useLanguage()
-const { getTournamentById, createTournament, updateTournament } = useTournamentCatalog()
+const { getTournamentById, loadTournament, createTournament, updateTournament, isLoading } = useTournamentCrudCatalog()
 
 const draftFactory = () => createTournamentDraft()
 const form = reactive(draftFactory())
+const tournamentId = computed(() => String(route.params.id || '').trim())
+const isEditMode = computed(() => route.name === 'dashboard-sport-admin-tournaments-edit')
 
 const isSubmitting = ref(false)
 const showSuccess = ref(false)
@@ -48,13 +50,12 @@ const logoPreview = ref('')
 const bannerPreview = ref('')
 const logoObjectUrl = ref('')
 const bannerObjectUrl = ref('')
-
-const tournamentId = computed(() => String(route.params.id || '').trim())
-const isEditMode = computed(() => route.name === 'dashboard-sport-admin-tournaments-edit')
+const hasLoadedTournament = ref(!isEditMode.value)
 const currentTournament = computed(() =>
   tournamentId.value ? getTournamentById(tournamentId.value) : null,
 )
-const showNotFound = computed(() => isEditMode.value && !currentTournament.value?.id)
+const loadingTournament = computed(() => isEditMode.value && isLoading.value && !hasLoadedTournament.value)
+const showNotFound = computed(() => isEditMode.value && hasLoadedTournament.value && !currentTournament.value?.id)
 const isLockedState = computed(
   () => isEditMode.value && currentTournament.value && !canEditTournamentConfiguration(currentTournament.value.state),
 )
@@ -118,8 +119,8 @@ function resetForm(tournament = null) {
   form.season = String(tournament.season || '')
   form.sportType = String(tournament.sportType || base.sportType)
   form.description = String(tournament.description || '')
-  form.logo = String(tournament.logo || '')
-  form.banner = String(tournament.banner || '')
+  form.logo = String(tournament.logoPath || tournament.logo || '')
+  form.banner = String(tournament.bannerPath || tournament.banner || '')
   form.location = String(tournament.location || '')
   form.organizer = String(tournament.organizer || '')
   form.registrationOpenAt = String(tournament.registrationOpenAt || '')
@@ -139,8 +140,8 @@ function resetForm(tournament = null) {
   }
   form.teams = Array.isArray(tournament.teams) ? tournament.teams.map((team) => ({ ...team })) : []
 
-  logoPreview.value = String(tournament.logo || '')
-  bannerPreview.value = String(tournament.banner || '')
+  logoPreview.value = String(tournament.logoUrl || tournament.logo || '')
+  bannerPreview.value = String(tournament.bannerUrl || tournament.banner || '')
 }
 
 watch(
@@ -296,9 +297,21 @@ function onErrorClose() {
 }
 
 onMounted(() => {
-  if (isEditMode.value && !currentTournament.value?.id) {
-    resetForm(null)
+  if (!isEditMode.value) {
+    hasLoadedTournament.value = true
+    return
   }
+
+  void (async () => {
+    try {
+      await loadTournament(tournamentId.value)
+    } catch {
+      errorMessage.value = t('sportTournament.create.validation.saveFailed')
+      showError.value = true
+    } finally {
+      hasLoadedTournament.value = true
+    }
+  })()
 })
 
 onBeforeUnmount(() => {
@@ -312,7 +325,13 @@ onBeforeUnmount(() => {
     <section class="sport-tournament-form">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <div v-if="showNotFound" class="sport-tournament-form__empty">
+      <div v-if="loadingTournament" class="sport-tournament-form__empty">
+        <div class="sport-tournament-form__empty-card">
+          <h3>{{ t('common.loading') }}</h3>
+        </div>
+      </div>
+
+      <div v-else-if="showNotFound" class="sport-tournament-form__empty">
         <div class="sport-tournament-form__empty-card">
           <h3>{{ t('sportTournament.create.validation.notFoundTitle') }}</h3>
           <p>{{ t('sportTournament.create.validation.notFoundMessage') }}</p>
