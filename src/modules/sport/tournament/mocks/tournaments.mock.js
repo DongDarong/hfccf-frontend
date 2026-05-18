@@ -364,6 +364,8 @@ export function createTournamentDraft() {
       fixturesGenerated: 0,
       matches: 0,
       completedMatches: 0,
+      summary: null,
+      analytics: null,
     },
     teams: [],
     fixtures: [],

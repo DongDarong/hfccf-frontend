@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { createRoundRobinFixtures, sortRoundRobinFixtures } from './useTournamentRoundRobin'
 import { calculateTournamentStandings } from '../services/calculateStandings'
+import { calculateTournamentStats } from '../services/statistics/calculateTournamentStats'
 import { normalizeTournamentState } from './useTournamentStateMachine'
 
 function normalizeText(value) {
@@ -220,6 +221,13 @@ export function useTournamentFixtures(tournament, actions = {}) {
         fixtures: nextFixtures,
       },
     }).groups
+    const nextStatistics = calculateTournamentStats({
+      tournament: {
+        ...tournament.value,
+        fixtures: nextFixtures,
+        standings: nextStandings,
+      },
+    })
 
     const updated = updateTournament(tournament.value.id, {
       fixturesSettings: clone(settings.value),
@@ -231,6 +239,8 @@ export function useTournamentFixtures(tournament, actions = {}) {
         fixturesGenerated: nextFixtures.length,
         matches: nextFixtures.length,
         completedMatches: nextFixtures.filter((fixture) => fixture.status === 'completed').length,
+        summary: nextStatistics.summary,
+        analytics: nextStatistics,
       },
     })
 
@@ -267,6 +277,13 @@ export function useTournamentFixtures(tournament, actions = {}) {
         fixturesGenerated: (snapshot.fixtures || []).length,
         matches: (snapshot.fixtures || []).length,
         completedMatches: (snapshot.fixtures || []).filter((fixture) => fixture.status === 'completed').length,
+        summary: calculateTournamentStats({
+          tournament: {
+            ...tournament.value,
+            fixtures: snapshot.fixtures || [],
+            standings: snapshot.standings || [],
+          },
+        }).summary,
       },
     })
 
@@ -305,6 +322,13 @@ export function useTournamentFixtures(tournament, actions = {}) {
         fixtures: nextFixtures,
       },
     }).groups
+    const nextStatistics = calculateTournamentStats({
+      tournament: {
+        ...tournament.value,
+        fixtures: nextFixtures,
+        standings: nextStandings,
+      },
+    })
 
     const updated = updateTournament(tournament.value.id, {
       fixturesSettings: clone(settings.value),
@@ -316,6 +340,8 @@ export function useTournamentFixtures(tournament, actions = {}) {
         fixturesGenerated: nextFixtures.length,
         matches: nextFixtures.length,
         completedMatches: nextFixtures.filter((fixture) => fixture.status === 'completed').length,
+        summary: nextStatistics.summary,
+        analytics: nextStatistics,
       },
     })
 

@@ -13,8 +13,10 @@ import TournamentMatchStats from '@/modules/sport/tournament/components/results/
 import TournamentMatchEventForm from '@/modules/sport/tournament/components/results/TournamentMatchEventForm.vue'
 import TournamentMatchEventTimeline from '@/modules/sport/tournament/components/results/TournamentMatchEventTimeline.vue'
 import TournamentResultEntryForm from '@/modules/sport/tournament/components/results/TournamentResultEntryForm.vue'
+import TournamentStatisticsPanel from '@/modules/sport/tournament/components/statistics/TournamentStatisticsPanel.vue'
 import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
 import { createFixtureResultDraft, useTournamentResults } from '@/modules/sport/tournament/composables/useTournamentResults'
+import { useTournamentStatistics } from '@/modules/sport/tournament/composables/useTournamentStatistics'
 import { getTournamentStateMeta } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
 
 defineOptions({
@@ -34,6 +36,7 @@ const successMessage = ref('')
 const tournamentId = computed(() => String(route.params.id || '').trim())
 const tournament = computed(() => (tournamentId.value ? getTournamentById(tournamentId.value) : null))
 const stateMeta = computed(() => getTournamentStateMeta(tournament.value?.state))
+const tournamentStatistics = useTournamentStatistics(tournament)
 
 const {
   selectedFixture,
@@ -176,6 +179,11 @@ function handleAddEvent() {
             <Button type="button" class="rounded-xl" severity="info" :label="t('sportTournament.results.goToStandings')" @click="goToStandings" />
           </div>
         </div>
+
+        <TournamentStatisticsPanel
+          compact
+          :statistics="tournamentStatistics.statistics"
+        />
 
         <div class="sport-tournament-results__layout">
           <section class="sport-tournament-results__list-card">

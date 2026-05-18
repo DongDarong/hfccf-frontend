@@ -11,11 +11,13 @@ import TournamentQuickActions from '@/modules/sport/tournament/components/shared
 import TournamentSettingsSummary from '@/modules/sport/tournament/components/detail/TournamentSettingsSummary.vue'
 import TournamentStateTimeline from '@/modules/sport/tournament/components/shared/TournamentStateTimeline.vue'
 import TournamentStatusBadge from '@/modules/sport/tournament/components/shared/TournamentStatusBadge.vue'
+import TournamentStatisticsPanel from '@/modules/sport/tournament/components/statistics/TournamentStatisticsPanel.vue'
 import {
   canEditTournamentConfiguration,
   getTournamentStateMeta,
 } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
 import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
+import { useTournamentStatistics } from '@/modules/sport/tournament/composables/useTournamentStatistics'
 
 defineOptions({
   name: 'SportTournamentDetailPage',
@@ -34,6 +36,7 @@ const tournament = computed(() => (tournamentId.value ? getTournamentById(tourna
 const stateMeta = computed(() => getTournamentStateMeta(tournament.value?.state))
 const canEdit = computed(() => Boolean(tournament.value?.id) && canEditTournamentConfiguration(tournament.value.state))
 const canUseKnockout = computed(() => Boolean(tournament.value?.rules?.knockoutEnabled ?? true))
+const tournamentStatistics = useTournamentStatistics(tournament)
 
 const pageTitle = computed(() => tournament.value?.name || t('sportTournament.detail.notFoundTitle'))
 const pageSubtitle = computed(() =>
@@ -244,6 +247,10 @@ function onWorkflowAction(action) {
             @action="onWorkflowAction"
           />
         </div>
+
+        <TournamentStatisticsPanel
+          :statistics="tournamentStatistics.statistics"
+        />
 
         <TournamentSettingsSummary :tournament="tournament" />
       </div>

@@ -38,6 +38,21 @@ function normalizeRules(rules = {}) {
   }
 }
 
+export function normalizeTournamentStatistics(statistics = {}) {
+  const source = statistics && typeof statistics === 'object' ? statistics : {}
+
+  return {
+    registeredTeams: Number(source.registeredTeams ?? 0),
+    totalTeams: Number(source.totalTeams ?? 0),
+    groupsCompleted: Number(source.groupsCompleted ?? 0),
+    fixturesGenerated: Number(source.fixturesGenerated ?? 0),
+    matches: Number(source.matches ?? 0),
+    completedMatches: Number(source.completedMatches ?? 0),
+    summary: deepClone(source.summary || null),
+    analytics: deepClone(source.analytics || null),
+  }
+}
+
 function normalizeTournamentInput(payload = {}) {
   const source = payload && typeof payload === 'object' ? payload : {}
   const base = createTournamentDraft()
@@ -72,14 +87,10 @@ function normalizeTournamentInput(payload = {}) {
       baseDate: normalizeText(source.fixturesSettings?.baseDate ?? base.fixturesSettings.baseDate),
       venue: normalizeText(source.fixturesSettings?.venue ?? base.fixturesSettings.venue),
     },
-    statistics: {
-      registeredTeams: Number(source.statistics?.registeredTeams ?? base.statistics.registeredTeams ?? 0),
-      totalTeams: Number(source.statistics?.totalTeams ?? base.statistics.totalTeams ?? 0),
-      groupsCompleted: Number(source.statistics?.groupsCompleted ?? base.statistics.groupsCompleted ?? 0),
-      fixturesGenerated: Number(source.statistics?.fixturesGenerated ?? base.statistics.fixturesGenerated ?? 0),
-      matches: Number(source.statistics?.matches ?? base.statistics.matches ?? 0),
-      completedMatches: Number(source.statistics?.completedMatches ?? base.statistics.completedMatches ?? 0),
-    },
+    statistics: normalizeTournamentStatistics({
+      ...base.statistics,
+      ...deepClone(source.statistics || {}),
+    }),
     teams: Array.isArray(source.teams) ? source.teams.map((team) => deepClone(team)) : [],
     fixtures: Array.isArray(source.fixtures) ? source.fixtures.map((fixture) => deepClone(fixture)) : [],
     results: Array.isArray(source.results) ? source.results.map((result) => deepClone(result)) : [],

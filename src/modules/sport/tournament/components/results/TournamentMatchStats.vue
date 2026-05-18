@@ -1,11 +1,12 @@
 <script setup>
+import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'TournamentMatchStats',
 })
 
-defineProps({
+const props = defineProps({
   fixture: {
     type: Object,
     default: () => ({}),
@@ -13,13 +14,20 @@ defineProps({
 })
 
 const { t } = useLanguage()
+
+const totalGoals = computed(() => {
+  const eventScore = props.fixture?.eventScore?.hasScoringEvents ? props.fixture.eventScore.score : null
+  const score = eventScore || props.fixture?.score || {}
+
+  return (Number(score.home ?? 0) || 0) + (Number(score.away ?? 0) || 0)
+})
 </script>
 
 <template>
   <section class="match-stats">
     <article class="match-stats__card">
       <span>{{ t('sportTournament.results.matchStats.goals') }}</span>
-      <strong>{{ (fixture.score?.home ?? 0) + (fixture.score?.away ?? 0) }}</strong>
+      <strong>{{ totalGoals }}</strong>
     </article>
     <article class="match-stats__card">
       <span>{{ t('sportTournament.results.matchStats.events') }}</span>

@@ -12,6 +12,7 @@ import {
 import { sortMatchTimeline } from '../services/sortMatchTimeline'
 import { validateMatchEvents } from '../services/validateMatchEvents'
 import { calculateTournamentStandings, normalizeScoreValue } from '../services/calculateStandings'
+import { calculateTournamentStats } from '../services/statistics/calculateTournamentStats'
 import { normalizeTournamentState } from './useTournamentStateMachine'
 
 const EVENT_TYPE_KEYS = [
@@ -309,6 +310,13 @@ export function useTournamentResults(tournament, actions = {}) {
         fixtures: nextFixtures,
       },
     }).groups
+    const nextStatistics = calculateTournamentStats({
+      tournament: {
+        ...currentTournament,
+        fixtures: nextFixtures,
+        standings: nextStandings,
+      },
+    })
 
     const completedMatches = nextFixtures.filter((fixture) => fixture.status === 'completed').length
     const anyScored = eventScore.hasScoringEvents || (Number.isFinite(resultDraft.value.score.home) && Number.isFinite(resultDraft.value.score.away))
@@ -321,6 +329,8 @@ export function useTournamentResults(tournament, actions = {}) {
         fixturesGenerated: nextFixtures.length,
         matches: nextFixtures.length,
         completedMatches,
+        summary: nextStatistics.summary,
+        analytics: nextStatistics,
       },
     })
 
