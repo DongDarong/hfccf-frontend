@@ -53,6 +53,27 @@
           "labelKey": "nav.items.tournaments",
           "icon": "tournaments",
           "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-coach-team-assignments",
+          "routeName": "dashboard-sport-admin-coach-team-assignments",
+          "labelKey": "nav.items.coachTeamAssignments",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-pending-player-approvals",
+          "routeName": "dashboard-sport-admin-pending-player-approvals",
+          "labelKey": "nav.items.pendingPlayerApprovals",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-pending-match-approvals",
+          "routeName": "dashboard-sport-admin-pending-match-approvals",
+          "labelKey": "nav.items.pendingMatchApprovals",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     }

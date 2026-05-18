@@ -122,12 +122,84 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-coach/teams',
+    name: 'dashboard-sport-coach-teams',
+    component: () => import('@/modules/sport/coach/pages/MyTeams.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-coach/teams/:teamId',
+    name: 'dashboard-sport-coach-team-players',
+    component: () => import('@/modules/sport/coach/pages/TeamPlayers.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-coach/players/request',
+    name: 'dashboard-sport-coach-player-request',
+    component: () => import('@/modules/sport/coach/pages/AddPlayerRequest.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-coach/matches/request',
+    name: 'dashboard-sport-coach-match-request',
+    component: () => import('@/modules/sport/coach/pages/MatchRequest.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-coach/requests',
+    name: 'dashboard-sport-coach-requests',
+    component: () => import('@/modules/sport/coach/pages/MyRequests.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-coach/training-schedule',
     name: 'dashboard-sport-coach-training',
     component: () => import('@/modules/sport/coach/pages/TrainingScheduleCoach.vue'),
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/coach-team-assignments',
+    name: 'dashboard-sport-admin-coach-team-assignments',
+    component: () => import('@/modules/sport/admin/pages/CoachTeamAssignments.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/pending-player-approvals',
+    name: 'dashboard-sport-admin-pending-player-approvals',
+    component: () => import('@/modules/sport/admin/pages/PendingPlayerApprovals.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/pending-match-approvals',
+    name: 'dashboard-sport-admin-pending-match-approvals',
+    component: () => import('@/modules/sport/admin/pages/PendingMatchApprovals.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
 ]

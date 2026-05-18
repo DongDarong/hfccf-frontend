@@ -61,6 +61,36 @@
           }
         },
         {
+          "id": "sport-my-teams",
+          "routeName": "dashboard-sport-coach-teams",
+          "labelKey": "nav.items.myTeams",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-my-requests",
+          "routeName": "dashboard-sport-coach-requests",
+          "labelKey": "nav.items.myRequests",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "preschool-teacher-students",
           "routeName": "dashboard-preschool-teacher-students",
           "labelKey": "nav.items.myStudents",
@@ -349,6 +379,51 @@
           "id": "sport-training-schedule-admin",
           "routeName": "dashboard-sport-admin-training",
           "labelKey": "nav.items.trainingSchedule",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-coach-team-assignments",
+          "routeName": "dashboard-sport-admin-coach-team-assignments",
+          "labelKey": "nav.items.coachTeamAssignments",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-pending-player-approvals",
+          "routeName": "dashboard-sport-admin-pending-player-approvals",
+          "labelKey": "nav.items.pendingPlayerApprovals",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-pending-match-approvals",
+          "routeName": "dashboard-sport-admin-pending-match-approvals",
+          "labelKey": "nav.items.pendingMatchApprovals",
           "icon": "reports",
           "badgeKey": "nav.badges.admin",
           "access": {

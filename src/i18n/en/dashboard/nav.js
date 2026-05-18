@@ -59,6 +59,11 @@ export default {
     applications: 'Applications',
     payments: 'Payments',
     trainingSchedule: 'Training Schedule',
+    myTeams: 'My Teams',
+    myRequests: 'My Requests',
+    coachTeamAssignments: 'Coach Assignments',
+    pendingPlayerApprovals: 'Player Approvals',
+    pendingMatchApprovals: 'Match Approvals',
   },
   badges: {
     admin: 'Admin',

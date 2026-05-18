@@ -59,6 +59,11 @@ export default {
     applications: 'ពាក្យស្នើសុំ',
     payments: 'ការទូទាត់',
     trainingSchedule: 'កាលវិភាគហ្វឹកហាត់',
+    myTeams: 'ក្រុមរបស់ខ្ញុំ',
+    myRequests: 'សំណើរបស់ខ្ញុំ',
+    coachTeamAssignments: 'ការចាត់តាំងគ្រូបង្វឹក',
+    pendingPlayerApprovals: 'ការអនុម័តកីឡាករ',
+    pendingMatchApprovals: 'ការអនុម័តការប្រកួត',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',
