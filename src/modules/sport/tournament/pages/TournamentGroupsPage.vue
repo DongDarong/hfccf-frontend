@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -17,8 +17,8 @@ import TournamentGroupSeedPanel from '@/modules/sport/tournament/components/grou
 import TournamentGroupSettings from '@/modules/sport/tournament/components/groups/TournamentGroupSettings.vue'
 import TournamentGroupStats from '@/modules/sport/tournament/components/groups/TournamentGroupStats.vue'
 import { canEditTournamentConfiguration, getTournamentStateMeta } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
-import { useTournamentCatalog } from '@/modules/sport/tournament/composables/useTournamentCatalog'
-import { useTournamentGroupDraw } from '@/modules/sport/tournament/composables/useTournamentGroupDraw'
+import { useTournamentCrudCatalog } from '@/modules/sport/tournament/composables/useTournamentCrudCatalog'
+import { useTournamentGroups } from '@/modules/sport/tournament/composables/useTournamentGroups'
 
 defineOptions({
   name: 'SportTournamentGroupsPage',
@@ -27,20 +27,21 @@ defineOptions({
 const router = useRouter()
 const route = useRoute()
 const { t } = useLanguage()
-const { getTournamentById, updateTournament, transitionTournament } = useTournamentCatalog()
+const { getTournamentById, loadTournament, transitionTournament, isLoading: tournamentLoading } = useTournamentCrudCatalog()
 
 const showError = ref(false)
 const showSuccess = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const hasLoadedTournament = ref(false)
 
 const tournamentId = computed(() => String(route.params.id || '').trim())
 const tournament = computed(() => (tournamentId.value ? getTournamentById(tournamentId.value) : null))
 const stateMeta = computed(() => getTournamentStateMeta(tournament.value?.state))
 
 const {
-  settings,
   mode,
+  settings,
   previewVisible,
   previewSummary,
   previewWarnings,
@@ -57,13 +58,16 @@ const {
   rebuildGroups,
   previewAutomaticDraw,
   applyPreview,
+  loadGroups,
   assignTeamToGroup,
   removeTeamFromGroup,
   resetDraft,
   saveDraft,
   finalizeGroups,
-} = useTournamentGroupDraw(tournament, {
-  updateTournament,
+  lastGeneratedAt,
+  isLoading: groupsLoading,
+} = useTournamentGroups(tournament, {
+  loadTournament,
   transitionTournament,
 })
 
@@ -71,6 +75,7 @@ const pageTitle = computed(() => tournament.value?.name || t('sportTournament.gr
 const pageSubtitle = computed(() => tournament.value?.description || t('sportTournament.groups.notFoundMessage'))
 const groupWarningItems = computed(() => issues.value.filter(Boolean))
 const isViewOnly = computed(() => !canEdit.value)
+const loadingTournament = computed(() => (tournamentLoading.value || groupsLoading.value) && !hasLoadedTournament.value)
 const isWorkflowPending = computed(() => ['draft', 'registration_open'].includes(stateMeta.value.state))
 const lockTitle = computed(() =>
   isWorkflowPending.value ? t('sportTournament.groups.notReadyTitle') : t('sportTournament.groups.locked'),
@@ -124,10 +129,8 @@ function closePreview() {
   previewVisible.value = false
 }
 
-function handleApplyPreview() {
-  if (!applyPreview()) return
-
-  const record = saveDraft()
+async function handleApplyPreview() {
+  const record = await applyPreview()
   if (!record?.id) {
     showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
     return
@@ -136,8 +139,8 @@ function handleApplyPreview() {
   showSuccessAlert(t('sportTournament.groups.success.previewApplied'))
 }
 
-function handleSaveDraft() {
-  const record = saveDraft()
+async function handleSaveDraft() {
+  const record = await saveDraft()
   if (!record?.id) {
     showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
     return
@@ -146,8 +149,8 @@ function handleSaveDraft() {
   showSuccessAlert(t('sportTournament.groups.success.draftSaved'))
 }
 
-function handleFinalize() {
-  const record = finalizeGroups()
+async function handleFinalize() {
+  const record = await finalizeGroups()
   if (!record?.id) {
     showErrorAlert(t('sportTournament.groups.validation.finalizeFailed'))
     return
@@ -170,6 +173,22 @@ function handleAssignTeam(payload) {
 function handleRemoveTeam(teamId) {
   removeTeamFromGroup(teamId)
 }
+
+onMounted(async () => {
+  if (!tournamentId.value) {
+    hasLoadedTournament.value = true
+    return
+  }
+
+  try {
+    await loadTournament(tournamentId.value)
+    await loadGroups()
+  } catch {
+    showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
+  } finally {
+    hasLoadedTournament.value = true
+  }
+})
 </script>
 
 <template>
@@ -177,7 +196,13 @@ function handleRemoveTeam(teamId) {
     <section class="sport-tournament-groups">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <div v-if="tournament" class="sport-tournament-groups__content">
+      <div v-if="loadingTournament" class="sport-tournament-groups__empty">
+        <div class="sport-tournament-groups__empty-card">
+          <h3>{{ t('common.loading') }}</h3>
+        </div>
+      </div>
+
+      <div v-else-if="tournament" class="sport-tournament-groups__content">
         <div class="sport-tournament-groups__hero">
           <div class="sport-tournament-groups__hero-copy">
             <p class="sport-tournament-groups__page-label">{{ t('sportTournament.groups.title') }}</p>
@@ -255,7 +280,7 @@ function handleRemoveTeam(teamId) {
             :can-finalize="canFinalize"
             :locked="isViewOnly"
             :issue-count="groupWarningItems.length"
-            :last-generated-at="tournament.groupDraw?.lastGeneratedAt || ''"
+            :last-generated-at="lastGeneratedAt"
             @update:mode="handleModeUpdate"
             @preview="handlePreview"
             @save="handleSaveDraft"
