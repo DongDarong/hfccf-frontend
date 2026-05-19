@@ -7,6 +7,7 @@ import sidebarNavData from '@/data/sidebar'
 import HomeIcon from '@/assets/icons/Home.vue'
 import UsersIcon from '@/assets/icons/Users.vue'
 import ReportsIcon from '@/assets/icons/Reports.vue'
+import TournamentsIcon from '@/assets/icons/Tournaments.vue'
 import { buildSidebarSections } from '@/components/navigation/sidebarNavigation'
 import { useUserStore } from '@/store/userStore'
 
@@ -31,6 +32,7 @@ const iconByName = {
   info: UsersIcon,
   users: UsersIcon,
   reports: ReportsIcon,
+  tournaments: TournamentsIcon,
 }
 
 const currentPath = computed(() => route.path)

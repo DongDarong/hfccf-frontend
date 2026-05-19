@@ -13,6 +13,7 @@ import {
   fetchSportTeams,
   updateSportPlayer,
 } from '@/modules/sport/services/sportApi'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
 import PlayerChecklist from '@/modules/sport/admin/components/add-player/PlayerChecklist.vue'
@@ -161,7 +162,7 @@ function cleanupProfileImageObjectUrl() {
   profileImageObjectUrl.value = ''
 }
 
-function onProfileImageChange(event) {
+async function onProfileImageChange(event) {
   if (isFormLocked.value) return
 
   const [file] = event?.target?.files || []
@@ -180,10 +181,16 @@ function onProfileImageChange(event) {
     return
   }
 
+  const optimizedFile = await optimizeImageFile(file, {
+    maxWidth: 512,
+    maxHeight: 512,
+    quality: 0.84,
+  }).catch(() => file)
+
   cleanupProfileImageObjectUrl()
-  profileImageObjectUrl.value = URL.createObjectURL(file)
+  profileImageObjectUrl.value = URL.createObjectURL(optimizedFile)
   profileImagePreview.value = profileImageObjectUrl.value
-  form.profileImage = file
+  form.profileImage = optimizedFile
 }
 
 function removeProfileImage() {

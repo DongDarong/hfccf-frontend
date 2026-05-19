@@ -1,6 +1,15 @@
 import { getRoleAccess } from '@/constants/access'
 import { resolveAvatarSource } from '@/utils/avatar'
 
+function firstNonEmpty(...values) {
+  const value = values.find((item) => {
+    if (item === null || item === undefined) return false
+    return String(item).trim() !== ''
+  })
+
+  return value === undefined ? '' : value
+}
+
 export function mapUser(raw = {}) {
   const firstName = String(raw.firstName || raw.first_name || '').trim()
   const lastName = String(raw.lastName || raw.last_name || '').trim()
@@ -15,6 +24,18 @@ export function mapUser(raw = {}) {
         ? [...raw.role_permissions]
         : []
 
+  const avatarSource = firstNonEmpty(
+    raw.avatar,
+    raw.avatar_url,
+    raw.avatarUrl,
+    raw.profile_photo_url,
+    raw.profilePhotoUrl,
+    raw.profileImage,
+    raw.photo,
+  )
+
+  const avatar = resolveAvatarSource(avatarSource)
+
   return {
     id: raw.id ?? '',
     firstName,
@@ -23,7 +44,9 @@ export function mapUser(raw = {}) {
     fullName: String(raw.fullName || raw.name || fallbackName || raw.username || raw.id || ''),
     username: String(raw.username || raw.id || ''),
     email: String(raw.email || ''),
-    avatar: resolveAvatarSource(raw.avatar),
+    avatar,
+    avatarUrl: avatar,
+    profilePhotoUrl: avatar,
     role: String(raw.role || ''),
     scope: String(raw.scope || roleAccess?.scope || ''),
     domain: String(raw.domain || roleAccess?.domain || ''),

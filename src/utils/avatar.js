@@ -6,6 +6,8 @@ const DEV_ALLOWED_AVATAR_ORIGINS = new Set([
   'http://127.0.0.1',
 ])
 
+const PUBLIC_IMAGE_URL_ENV_KEYS = ['VITE_IMAGE_PUBLIC_URL', 'VITE_IMAGE_PUBLIC_ORIGIN']
+
 function getApiOrigin() {
   const rawBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim()
 
@@ -18,11 +20,30 @@ function getApiOrigin() {
   }
 }
 
+function getConfiguredImageOrigins() {
+  const origins = []
+
+  for (const key of PUBLIC_IMAGE_URL_ENV_KEYS) {
+    const rawValue = String(import.meta.env[key] || '').trim()
+
+    if (!rawValue) continue
+
+    try {
+      origins.push(new URL(rawValue, 'http://localhost').origin)
+    } catch {
+      continue
+    }
+  }
+
+  return [...new Set(origins)]
+}
+
 const apiOrigin = getApiOrigin()
+const configuredImageOrigins = getConfiguredImageOrigins()
 
 /**
- * Keep avatar URLs on the local app origin or trusted backend origin.
- * External demo providers are rejected so the UI does not trip CSP.
+ * Keep avatar URLs on the local app origin or trusted backend/public image origin.
+ * R2 public origins are allowed so uploaded avatars can render directly in the UI.
  */
 export function isSafeAvatarSource(value) {
   const source = String(value || '').trim()
@@ -37,6 +58,7 @@ export function isSafeAvatarSource(value) {
     if (!['http:', 'https:'].includes(url.protocol)) return false
     if (typeof window !== 'undefined' && url.origin === window.location.origin) return true
     if (apiOrigin && url.origin === apiOrigin) return true
+    if (configuredImageOrigins.includes(url.origin)) return true
     if (import.meta.env.DEV && DEV_ALLOWED_AVATAR_ORIGINS.has(url.origin)) return true
 
     return false

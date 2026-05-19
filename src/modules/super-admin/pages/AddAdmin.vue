@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, onMounted, toRef } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -8,7 +8,6 @@ import Form from '@/components/forms/Form.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
-import { ROLES } from '@/constants/roles'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
@@ -16,81 +15,83 @@ import AddAdminIdentityFields from '@/modules/super-admin/components/admin-manag
 import AddAdminBioField from '@/modules/super-admin/components/admin-management/AddAdminBioField.vue'
 import AddAdminPasswordFields from '@/modules/super-admin/components/admin-management/AddAdminPasswordFields.vue'
 import RolePermissionsPreview from '@/modules/super-admin/components/add-admin/RolePermissionsPreview.vue'
-import { resolveAvatarSource } from '@/utils/avatar'
-import {
-  createAdminUser,
-  findAdminUserById,
-  updateAdminUser,
-} from '@/modules/super-admin/services/adminUsersApi'
-import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
+import { findAdminUserById } from '@/modules/super-admin/services/adminUsersApi'
+import { useAddAdminForm } from '@/modules/super-admin/composables/useAddAdminForm'
+import { useAddAdminAvatar } from '@/modules/super-admin/composables/useAddAdminAvatar'
+import { roleOptions, statusOptions, useAddAdminOptions } from '@/modules/super-admin/composables/useAddAdminOptions'
 
 defineOptions({
   name: 'AddUserPage',
 })
 
-const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 
-/**
- * Super Admin can now manage every system role, not just admin roles.
- */
-const roleOptions = [
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN_ENGLISH,
-  ROLES.ADMIN_PRESCHOOL,
-  ROLES.ADMIN_SCHOLARSHIP,
-  ROLES.ADMIN_SPORT,
-  ROLES.COACH,
-  ROLES.TEACHER_ENGLISH,
-  ROLES.TEACHER_PRESCHOOL,
-  ROLES.TEACHER_SCHOLARSHIP,
-]
-const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp']
-const maxProfileImageSizeBytes = 2 * 1024 * 1024
+// ─── composables ──────────────────────────────────────────────────────────────
 
-const form = reactive({
-  name: '',
-  email: '',
-  phone: '',
-  bio: '',
-  role: ROLES.ADMIN_ENGLISH,
-  status: statusOptions[0],
-  password: '',
-  confirmPassword: '',
-  profileImage: null,
-  avatarAction: 'none',
+const {
+  form,
+  isSubmitting,
+  errorMessage,
+  showSuccess,
+  showError,
+  isPasswordVisible,
+  isConfirmPasswordVisible,
+  isEditMode,
+  editingUserId,
+  resolvedText,
+  togglePasswordVisibility,
+  toggleConfirmPasswordVisibility,
+  onSubmit,
+  onCancel,
+  onSuccessClose,
+  onErrorClose,
+  populateFromUser,
+} = useAddAdminForm()
+
+const {
+  profileImagePreview,
+  profileImageFallbackLabel,
+  initFromUser,
+  changeProfileImage,
+  removeProfileImage,
+} = useAddAdminAvatar({ form })
+
+const {
+  rolePermissions,
+  rolePermissionsLoading,
+  statusLabel,
+  roleLabel,
+} = useAddAdminOptions({ roleRef: toRef(form, 'role') })
+
+// ─── initialization ───────────────────────────────────────────────────────────
+
+onMounted(async () => {
+  if (!isEditMode.value) {
+    const requestedRole = String(route.query.role || '').trim()
+    if (roleOptions.includes(requestedRole)) {
+      form.role = requestedRole
+    }
+    return
+  }
+
+  const found = await findAdminUserById(editingUserId.value)
+  if (!found) return
+  populateFromUser(found)
+  initFromUser(found.avatar)
 })
 
-const isSubmitting = ref(false)
-const errorMessage = ref('')
-const showSuccess = ref(false)
-const showError = ref(false)
-const isPasswordVisible = ref(false)
-const isConfirmPasswordVisible = ref(false)
-const profileImagePreview = ref('')
-const rolePermissions = ref([])
-const rolePermissionsLoading = ref(false)
-let rolePermissionsRequestId = 0
+// ─── avatar handler (bridges avatar composable with page error state) ─────────
 
-const isEditMode = computed(() => route.query.mode === 'edit' || Boolean(route.query.id))
-const editingUserId = computed(() => String(route.query.id || '').trim())
-const profileImageFallbackLabel = computed(() => {
-  const tokens = String(form.name || '').trim().split(/\s+/).filter(Boolean)
-
-  return (
-    tokens
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('') || 'AU'
-  )
-})
-
-function resolvedText(key, fallback) {
-  const translated = t(key)
-  return translated !== key ? translated : fallback
+async function onProfileImageChange(event) {
+  const error = await changeProfileImage(event)
+  if (error) {
+    errorMessage.value = error
+    showError.value = true
+  }
 }
+
+// ─── page text ────────────────────────────────────────────────────────────────
 
 const pageTitle = computed(() =>
   isEditMode.value
@@ -117,214 +118,11 @@ const resolvedFormDescription = computed(() =>
   ),
 )
 
-function statusLabel(status) {
-  const normalized = String(status || '').trim()
+const selectedRoleDescription = computed(() => roleLabel(form.role))
 
-  if (!normalized) return '-'
-
-  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(status || '')
-}
-
-function roleLabel(value) {
-  const normalized = String(value || '').trim()
-
-  if (!normalized) return '-'
-
-  const key = `common.role.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(value || '')
-}
-
-function resetFeedback() {
-  errorMessage.value = ''
-  showError.value = false
-}
-
-function isBlobPreview(value) {
-  return String(value || '').startsWith('blob:')
-}
-
-function togglePasswordVisibility() {
-  isPasswordVisible.value = !isPasswordVisible.value
-}
-
-function toggleConfirmPasswordVisibility() {
-  isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value
-}
-
-function validateForm() {
-  if (!form.name.trim()) return resolvedText('users.addAdmin.validation.fullNameRequired', 'Full name is required.')
-  if (!form.email.trim()) return resolvedText('users.addAdmin.validation.emailRequired', 'Email is required.')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return resolvedText('users.addAdmin.validation.emailInvalid', 'Please enter a valid email.')
-  if (!form.role) return resolvedText('users.addAdmin.validation.roleRequired', 'Role is required.')
-  if (!form.status) return resolvedText('users.addAdmin.validation.statusRequired', 'Status is required.')
-  if (!isEditMode.value && form.password.length < 8) return resolvedText('users.addAdmin.validation.passwordLength', 'Password must be at least 8 characters.')
-  if (isEditMode.value && form.password && form.password.length < 8) return resolvedText('users.addAdmin.validation.passwordLength', 'Password must be at least 8 characters.')
-  if (form.password || form.confirmPassword) {
-    if (form.password !== form.confirmPassword) return resolvedText('users.addAdmin.validation.passwordMismatch', 'Passwords do not match.')
-  }
-  return ''
-}
-
-function onProfileImageChange(event) {
-  const [file] = event?.target?.files || []
-  if (event?.target) {
-    event.target.value = ''
-  }
-
-  if (!file) return
-
-  if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = resolvedText(
-      'users.addAdmin.validation.imageType',
-      'Please choose a JPG, PNG, or WEBP image.',
-    )
-    showError.value = true
-    return
-  }
-
-  if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = resolvedText(
-      'users.addAdmin.validation.imageSize',
-      'Profile images must be 2 MB or smaller.',
-    )
-    showError.value = true
-    return
-  }
-
-  if (isBlobPreview(profileImagePreview.value)) {
-    URL.revokeObjectURL(profileImagePreview.value)
-  }
-  form.profileImage = file
-  form.avatarAction = 'replace'
-  profileImagePreview.value = URL.createObjectURL(file)
-}
-
-function removeProfileImage() {
-  if (isBlobPreview(profileImagePreview.value)) {
-    URL.revokeObjectURL(profileImagePreview.value)
-  }
-  profileImagePreview.value = ''
-  form.profileImage = null
-  form.avatarAction = 'remove'
-}
-
-async function onSubmit() {
-  resetFeedback()
-  const validationError = validateForm()
-
-  if (validationError) {
-    errorMessage.value = validationError
-    showError.value = true
-    return
-  }
-
-  isSubmitting.value = true
-  try {
-    const payload = {
-    name: form.name,
-    email: form.email,
-    phone: form.phone,
-    bio: form.bio,
-    role: form.role,
-    status: form.status,
-      avatar: form.profileImage,
-      removeAvatar: form.avatarAction === 'remove',
-      password: form.password,
-      confirmPassword: form.confirmPassword,
-    }
-
-    if (isEditMode.value) {
-      await updateAdminUser(editingUserId.value, payload)
-    } else {
-      await createAdminUser(payload)
-    }
-
-    showSuccess.value = true
-  } catch (error) {
-    errorMessage.value = isEditMode.value
-      ? error?.message || resolvedText('users.addAdmin.validation.updateFailed', 'Unable to update user right now.')
-      : error?.message || resolvedText('users.addAdmin.validation.createFailed', 'Unable to create user right now.')
-    showError.value = true
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-async function onCancel() {
-  await router.push('/module/super-admin/users/manage')
-}
-
-async function onSuccessClose() {
-  showSuccess.value = false
-  await router.push('/module/super-admin/users/manage')
-}
-
-function onErrorClose() {
-  showError.value = false
-}
-
-onMounted(async () => {
-  if (!isEditMode.value) {
-    // Allow deep links like ?role=teacher-preschool while keeping the default role stable.
-    const requestedRole = String(route.query.role || '').trim()
-    if (roleOptions.includes(requestedRole)) {
-      form.role = requestedRole
-    }
-    return
-  }
-
-  const found = await findAdminUserById(editingUserId.value)
-  if (!found) return
-  form.name = found.name || found.username || ''
-  form.email = found.email || ''
-  form.phone = found.phone || ''
-  form.bio = found.bio || ''
-  form.role = found.role || roleOptions[0]
-  const normalizedStatus = String(found.status || '')
-  const matchedStatus = statusOptions.find(
-    (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
-  )
-  form.status = matchedStatus || statusOptions[0]
-  profileImagePreview.value = resolveAvatarSource(found.avatar)
-  form.avatarAction = found.avatar ? 'keep' : 'none'
-})
-
-watch(
-  () => form.role,
-  async (nextRole) => {
-    const requestId = ++rolePermissionsRequestId
-    rolePermissionsLoading.value = true
-
-    try {
-      const permissions = await fetchRolePermissions(nextRole)
-
-      if (requestId === rolePermissionsRequestId) {
-        rolePermissions.value = permissions
-      }
-    } catch {
-      if (requestId === rolePermissionsRequestId) {
-        rolePermissions.value = []
-      }
-    } finally {
-      if (requestId === rolePermissionsRequestId) {
-        rolePermissionsLoading.value = false
-      }
-    }
-  },
-  { immediate: true },
-)
-
-onBeforeUnmount(() => {
-  if (isBlobPreview(profileImagePreview.value)) {
-    URL.revokeObjectURL(profileImagePreview.value)
-  }
-})
+// ─── summary cards & checklist ────────────────────────────────────────────────
 
 const formSummaryCards = computed(() => {
-  const selectedRole = roleLabel(form.role)
   const permissionCount = rolePermissions.value.length
   const securityStatus =
     isEditMode.value || (form.password.length >= 6 && form.confirmPassword === form.password)
@@ -335,7 +133,7 @@ const formSummaryCards = computed(() => {
     {
       id: 'role-scope',
       title: resolvedText('users.addAdmin.roleScope', 'Role scope'),
-      value: selectedRole,
+      value: selectedRoleDescription.value,
       label: resolvedText('users.addAdmin.programAccess', 'Account access'),
       status: 'info',
       statusLabel: statusLabel('info'),
@@ -364,7 +162,9 @@ const formSummaryCards = computed(() => {
     {
       id: 'security-review',
       title: resolvedText('users.addAdmin.securityReview', 'Security review'),
-      value: profileImagePreview.value ? resolvedText('users.addAdmin.ready', 'Ready') : resolvedText('users.addAdmin.pending', 'Pending'),
+      value: profileImagePreview.value
+        ? resolvedText('users.addAdmin.ready', 'Ready')
+        : resolvedText('users.addAdmin.pending', 'Pending'),
       label: profileImagePreview.value
         ? resolvedText('users.addAdmin.profileImageSet', 'Profile image set')
         : resolvedText('users.addAdmin.profileImagePending', 'Profile image pending'),
@@ -374,8 +174,6 @@ const formSummaryCards = computed(() => {
     },
   ]
 })
-
-const selectedRoleDescription = computed(() => roleLabel(form.role))
 
 const checklistItems = computed(() => [
   {
