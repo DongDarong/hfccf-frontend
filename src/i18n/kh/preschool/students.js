@@ -1,1 +1,81 @@
-export default {}
+// Keep student copy centralized so Khmer and English stay aligned and the
+// roster pages do not need inline strings that can drift over time.
+export default {
+  preschoolStudentInfoPage: {
+    title: 'ព័ត៌មានសិស្ស',
+    subtitle: 'គ្រប់គ្រងកំណត់ត្រាសិស្ស ការចាត់តាំងថ្នាក់ និងព័ត៌មានទំនាក់ទំនង។',
+    addButton: 'បន្ថែមសិស្ស',
+    searchPlaceholder: 'ស្វែងរកសិស្ស',
+    filters: {
+      allStatus: 'ស្ថានភាពទាំងអស់',
+      allGenders: 'ភេទទាំងអស់',
+      allClasses: 'ថ្នាក់ទាំងអស់',
+    },
+    columns: {
+      no: 'ល.រ.',
+      student: 'សិស្ស',
+      code: 'កូដ',
+      gender: 'ភេទ',
+      status: 'ស្ថានភាព',
+      classes: 'ថ្នាក់',
+      guardianPhone: 'លេខទូរស័ព្ទអាណាព្យាបាល',
+      actions: 'សកម្មភាព',
+    },
+    dialog: {
+      createTitle: 'បង្កើតសិស្ស',
+      editTitle: 'កែប្រែសិស្ស',
+      studentCode: 'កូដសិស្ស',
+      firstName: 'នាមខ្លួន',
+      lastName: 'នាមត្រកូល',
+      gender: 'ភេទ',
+      guardianName: 'ឈ្មោះអាណាព្យាបាល',
+      guardianPhone: 'លេខទូរស័ព្ទអាណាព្យាបាល',
+      assignClasses: 'ចាត់តាំងថ្នាក់',
+      address: 'អាសយដ្ឋាន',
+      cancel: 'បោះបង់',
+      save: 'រក្សាទុក',
+    },
+    options: {
+      male: 'ប្រុស',
+      female: 'ស្រី',
+      other: 'ផ្សេងទៀត',
+      active: 'សកម្ម',
+      pending: 'រង់ចាំ',
+      inactive: 'អសកម្ម',
+      graduated: 'បានបញ្ចប់',
+    },
+    alerts: {
+      deleteTitle: 'លុបសិស្ស?',
+      deleteMessage: 'តើអ្នកប្រាកដថាចង់លុប {name} ទេ?',
+      deleteFallback: '????????',
+      successTitle: 'ជោគជ័យ',
+      close: 'បិទ',
+    },
+    messages: {
+      loadFailed: 'ផ្ទុកសិស្សមិនបានសម្រេច។',
+      saveFailed: 'រក្សាទុកសិស្សមិនបានសម្រេច។',
+      createSuccess: 'បង្កើតសិស្សបានជោគជ័យ។',
+      updateSuccess: 'កែប្រែសិស្សបានជោគជ័យ។',
+      deleteSuccess: 'លុបសិស្សបានជោគជ័យ។',
+      noResults: 'មិនមានសិស្ស។',
+    },
+  },
+  preschoolTeacherStudentsPage: {
+    title: 'សិស្សមត្តេយ្យរបស់ខ្ញុំ',
+    subtitle: 'សិស្សដែលបានចាត់តាំងក្នុងថ្នាក់របស់អ្នក។',
+    searchPlaceholder: 'ស្វែងរកសិស្ស',
+    columns: {
+      no: 'ល.រ.',
+      student: 'សិស្ស',
+      code: 'កូដ',
+      gender: 'ភេទ',
+      status: 'ស្ថានភាព',
+      classes: 'ថ្នាក់',
+    },
+    messages: {
+      loadFailed: 'ផ្ទុកសិស្សមិនបានសម្រេច។',
+      noResults: 'មិនមានសិស្ស។',
+    },
+  },
+}
+

@@ -1,6 +1,8 @@
 import { ACCESS_SCOPES, DOMAINS } from '@/constants/access'
 import { defineAppRoute } from '@/router/defineAppRoute'
 
+// Preserve stable Preschool route names while moving legacy filenames toward
+// clearer component names and explicit scaffold states.
 export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/dashboard',
@@ -68,7 +70,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/attendance',
     name: 'dashboard-preschool-admin-attendance',
-    component: () => import('@/modules/preschool/admin/pages/AttendentManagement.vue'),
+    component: () => import('@/modules/preschool/admin/pages/AttendanceManagement.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
@@ -137,10 +139,10 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
-    defineAppRoute({
+  defineAppRoute({
     path: '/module/preschool-admin/teacher/classroomresources',
     name: 'dashboard-preschool-teacher-classroomresources',
-    component: () => import('@/modules/preschool/teacher/pages/Classroomresources.vue'),
+    component: () => import('@/modules/preschool/teacher/pages/TeacherClassroomResources.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.STAFF],

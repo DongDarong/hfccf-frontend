@@ -1,4 +1,6 @@
 <script setup>
+// Keep student management text locale-driven so EN/KH parity is testable and
+// hardcoded English labels do not reappear in a production page.
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
@@ -7,11 +9,14 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolClasses, fetchPreschoolStudents, createPreschoolStudent, updatePreschoolStudent, deletePreschoolStudent } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminStudentInfoPage',
 })
+
+const { t } = useLanguage()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -46,29 +51,29 @@ const form = reactive({
   class_ids: [],
 })
 
-const genderOptions = [
-  { label: 'Male', value: 'male' },
-  { label: 'Female', value: 'female' },
-  { label: 'Other', value: 'other' },
-]
+const genderOptions = computed(() => [
+  { label: t('preschoolStudentInfoPage.options.male'), value: 'male' },
+  { label: t('preschoolStudentInfoPage.options.female'), value: 'female' },
+  { label: t('preschoolStudentInfoPage.options.other'), value: 'other' },
+])
 
-const statusOptions = [
-  { label: 'Active', value: 'active' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Inactive', value: 'inactive' },
-  { label: 'Graduated', value: 'graduated' },
-]
+const statusOptions = computed(() => [
+  { label: t('preschoolStudentInfoPage.options.active'), value: 'active' },
+  { label: t('preschoolStudentInfoPage.options.pending'), value: 'pending' },
+  { label: t('preschoolStudentInfoPage.options.inactive'), value: 'inactive' },
+  { label: t('preschoolStudentInfoPage.options.graduated'), value: 'graduated' },
+])
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'student', label: 'Student', align: 'left' },
-  { key: 'studentCode', label: 'Code', align: 'left' },
-  { key: 'gender', label: 'Gender', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'classesCount', label: 'Classes', align: 'left' },
-  { key: 'guardianPhone', label: 'Guardian Phone', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('preschoolStudentInfoPage.columns.no'), align: 'left' },
+  { key: 'student', label: t('preschoolStudentInfoPage.columns.student'), align: 'left' },
+  { key: 'studentCode', label: t('preschoolStudentInfoPage.columns.code'), align: 'left' },
+  { key: 'gender', label: t('preschoolStudentInfoPage.columns.gender'), align: 'left' },
+  { key: 'status', label: t('preschoolStudentInfoPage.columns.status'), align: 'left' },
+  { key: 'classesCount', label: t('preschoolStudentInfoPage.columns.classes'), align: 'left' },
+  { key: 'guardianPhone', label: t('preschoolStudentInfoPage.columns.guardianPhone'), align: 'left' },
+  { key: 'actions', label: t('preschoolStudentInfoPage.columns.actions'), align: 'right' },
+])
 
 const mappedStudents = computed(() =>
   students.value.map((student) => ({
@@ -168,7 +173,7 @@ async function loadStudents() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     students.value = []
-    errorMessage.value = error?.message || 'Failed to load students.'
+    errorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.loadFailed')
   } finally {
     loading.value = false
   }
@@ -182,16 +187,16 @@ async function onSaveStudent() {
     const payload = normalizeStudentPayload()
     if (modalMode.value === 'edit') {
       await updatePreschoolStudent(currentStudentId.value, payload)
-      successMessage.value = 'Student updated successfully.'
+      successMessage.value = t('preschoolStudentInfoPage.messages.updateSuccess')
     } else {
       await createPreschoolStudent(payload)
-      successMessage.value = 'Student created successfully.'
+      successMessage.value = t('preschoolStudentInfoPage.messages.createSuccess')
     }
     showSuccess.value = true
     closeModal()
     await loadStudents()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to save student.'
+    errorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.saveFailed')
   } finally {
     saving.value = false
   }
@@ -208,13 +213,13 @@ async function confirmDelete() {
 
   try {
     await deletePreschoolStudent(id)
-    successMessage.value = 'Student deleted successfully.'
+    successMessage.value = t('preschoolStudentInfoPage.messages.deleteSuccess')
     showSuccess.value = true
     deleteOpen.value = false
     deleteTarget.value = null
     await loadStudents()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete student.'
+    errorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.saveFailed')
   }
 }
 
@@ -241,33 +246,33 @@ onMounted(async () => {
   <MainLayout>
     <section class="student-info-page">
       <HeaderSection
-        title="Student Information"
-        subtitle="Manage preschool student records, classroom assignments, and contact details."
+        :title="t('preschoolStudentInfoPage.title')"
+        :subtitle="t('preschoolStudentInfoPage.subtitle')"
       />
 
       <div class="student-info-page__panel">
         <div class="student-info-page__toolbar">
           <Button type="button" variant="primary" size="md" rounded="xl" @click="openCreateModal">
-            Add Student
+            {{ t('preschoolStudentInfoPage.addButton') }}
           </Button>
         </div>
 
         <div class="student-info-page__filters">
-          <input v-model="searchQuery" class="student-info-page__input" type="search" placeholder="Search students" />
+          <input v-model="searchQuery" class="student-info-page__input" type="search" :placeholder="t('preschoolStudentInfoPage.searchPlaceholder')" />
           <select v-model="statusFilter" class="student-info-page__input">
-            <option value="">All status</option>
+            <option value="">{{ t('preschoolStudentInfoPage.filters.allStatus') }}</option>
             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
           <select v-model="genderFilter" class="student-info-page__input">
-            <option value="">All genders</option>
+            <option value="">{{ t('preschoolStudentInfoPage.filters.allGenders') }}</option>
             <option v-for="option in genderOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
           <select v-model="classFilter" class="student-info-page__input">
-            <option value="">All classes</option>
+            <option value="">{{ t('preschoolStudentInfoPage.filters.allClasses') }}</option>
             <option v-for="option in classOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
@@ -285,7 +290,7 @@ onMounted(async () => {
           :rows="mappedStudents"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No students found."
+          :empty-text="t('preschoolStudentInfoPage.messages.noResults')"
           @view="onViewStudent"
           @edit="openEditModal"
           @delete="onDeleteStudent"
@@ -297,20 +302,20 @@ onMounted(async () => {
       </div>
     </section>
 
-    <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? 'Edit Student' : 'Create Student'" modal class="student-info-page__dialog">
+    <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle')" modal class="student-info-page__dialog">
       <div class="student-info-page__dialog-grid">
-        <input v-model="form.student_code" class="student-info-page__input" type="text" placeholder="Student code" />
-        <input v-model="form.first_name" class="student-info-page__input" type="text" placeholder="First name" />
-        <input v-model="form.last_name" class="student-info-page__input" type="text" placeholder="Last name" />
+        <input v-model="form.student_code" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.studentCode')" />
+        <input v-model="form.first_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.firstName')" />
+        <input v-model="form.last_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.lastName')" />
         <select v-model="form.gender" class="student-info-page__input">
-          <option value="">Gender</option>
+          <option value="">{{ t('preschoolStudentInfoPage.dialog.gender') }}</option>
           <option v-for="option in genderOptions" :key="option.value" :value="option.value">
             {{ option.label }}
           </option>
         </select>
         <input v-model="form.date_of_birth" class="student-info-page__input" type="date" />
-        <input v-model="form.guardian_name" class="student-info-page__input" type="text" placeholder="Guardian name" />
-        <input v-model="form.guardian_phone" class="student-info-page__input" type="text" placeholder="Guardian phone" />
+        <input v-model="form.guardian_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianName')" />
+        <input v-model="form.guardian_phone" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" />
         <select v-model="form.status" class="student-info-page__input">
           <option v-for="option in statusOptions" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -322,28 +327,28 @@ onMounted(async () => {
             :options="classOptions"
             option-label="label"
             option-value="value"
-            placeholder="Assign classes"
+            :placeholder="t('preschoolStudentInfoPage.dialog.assignClasses')"
             display="chip"
             class="w-full"
           />
         </div>
-        <textarea v-model="form.address" class="student-info-page__input student-info-page__dialog-full" rows="3" placeholder="Address"></textarea>
+        <textarea v-model="form.address" class="student-info-page__input student-info-page__dialog-full" rows="3" :placeholder="t('preschoolStudentInfoPage.dialog.address')"></textarea>
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">Cancel</Button>
+        <Button type="button" variant="outline" rounded="xl" @click="closeModal">{{ t('preschoolStudentInfoPage.dialog.cancel') }}</Button>
         <Button type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveStudent">
-          Save
+          {{ t('preschoolStudentInfoPage.dialog.save') }}
         </Button>
       </template>
     </Dialog>
 
     <AlertQuestion
       :show="deleteOpen"
-      title="Delete student?"
-      :message="`Are you sure you want to delete ${deleteTarget?.fullName || deleteTarget?.name || 'this student'}?`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="t('preschoolStudentInfoPage.alerts.deleteTitle')"
+      :message="t('preschoolStudentInfoPage.alerts.deleteMessage', { name: deleteTarget?.fullName || deleteTarget?.name || t('preschoolStudentInfoPage.alerts.deleteFallback') })"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
       type="danger"
       @confirm="confirmDelete"
       @cancel="deleteOpen = false"
@@ -351,9 +356,9 @@ onMounted(async () => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('preschoolStudentInfoPage.alerts.successTitle')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('preschoolStudentInfoPage.alerts.close')"
       @close="showSuccess = false"
     />
   </MainLayout>

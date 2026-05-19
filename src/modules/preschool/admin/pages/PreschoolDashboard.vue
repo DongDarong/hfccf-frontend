@@ -1,4 +1,6 @@
 <script setup>
+// Keep Preschool dashboard copy in the locale layer so the page stays stable
+// across EN/KH switches and does not regress to hardcoded English labels.
 import { computed, onMounted, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -8,6 +10,10 @@ import PreschoolDashboardActionList from '@/modules/preschool/admin/components/d
 import PreschoolDashboardActivity from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActivity.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolDashboard } from '@/modules/preschool/services/preschoolApi'
+
+defineOptions({
+  name: 'PreschoolDashboardPage',
+})
 
 const { t } = useLanguage()
 
@@ -39,43 +45,63 @@ async function loadDashboard() {
   try {
     dashboard.value = await fetchPreschoolDashboard()
   } catch (error) {
-    errorMessage.value = error?.message || t('preschoolDashboard.loading')
+    errorMessage.value = error?.message || t('preschoolDashboardPage.errors.loadFailed')
   } finally {
     loading.value = false
   }
 }
 
 const cards = computed(() => [
-  { title: t('preschoolDashboard.cards.students.title'), value: dashboard.value.summary.students || 0, label: t('preschoolDashboard.cards.students.label'), status: 'success' },
-  { title: t('preschoolDashboard.cards.classes.title'), value: dashboard.value.summary.classes || 0, label: t('preschoolDashboard.cards.classes.label'), status: 'info' },
-  { title: t('preschoolDashboard.cards.teachers.title'), value: dashboard.value.summary.teachers || 0, label: t('preschoolDashboard.cards.teachers.label'), status: 'warning' },
-  { title: t('preschoolDashboard.cards.attendance.title'), value: dashboard.value.summary.attendanceToday || 0, label: t('preschoolDashboard.cards.attendance.label'), status: 'error' },
+  {
+    title: t('preschoolDashboardPage.cards.students.title'),
+    value: dashboard.value.summary.students || 0,
+    label: t('preschoolDashboardPage.cards.students.label'),
+    status: 'success',
+  },
+  {
+    title: t('preschoolDashboardPage.cards.classes.title'),
+    value: dashboard.value.summary.classes || 0,
+    label: t('preschoolDashboardPage.cards.classes.label'),
+    status: 'info',
+  },
+  {
+    title: t('preschoolDashboardPage.cards.teachers.title'),
+    value: dashboard.value.summary.teachers || 0,
+    label: t('preschoolDashboardPage.cards.teachers.label'),
+    status: 'warning',
+  },
+  {
+    title: t('preschoolDashboardPage.cards.attendance.title'),
+    value: dashboard.value.summary.attendanceToday || 0,
+    label: t('preschoolDashboardPage.cards.attendance.label'),
+    status: 'error',
+  },
 ])
 
 const actions = computed(() => [
-  t('preschoolDashboard.actions.pendingPayments', { count: dashboard.value.summary.pendingPayments || 0 }),
-  t('preschoolDashboard.actions.overduePayments', { count: dashboard.value.summary.overduePayments || 0 }),
-  t('preschoolDashboard.actions.paidPayments', { count: dashboard.value.paymentSummary?.paid || 0 }),
-  t('preschoolDashboard.actions.upcomingClasses', { count: dashboard.value.upcomingClasses.length || 0 }),
+  t('preschoolDashboardPage.actions.pendingPayments', { count: dashboard.value.summary.pendingPayments || 0 }),
+  t('preschoolDashboardPage.actions.overduePayments', { count: dashboard.value.summary.overduePayments || 0 }),
+  t('preschoolDashboardPage.actions.paidPayments', { count: dashboard.value.paymentSummary?.paid || 0 }),
+  t('preschoolDashboardPage.actions.upcomingClasses', { count: dashboard.value.upcomingClasses.length || 0 }),
 ])
 
 const notes = computed(() =>
   (dashboard.value.recentAttendance || []).slice(0, 5).map((item) => ({
-    title: `${item.studentName || 'Student'} - ${item.className || 'Class'}`,
+    title: `${item.studentName || t('preschoolDashboardPage.cards.students.title')} - ${item.className || t('preschoolDashboardPage.cards.classes.title')}`,
     text: `${item.attendanceDate || '-'} • ${item.status || '-'}`,
   })),
 )
 
 const spotlightTitle = computed(() =>
   dashboard.value.upcomingClasses[0]
-    ? `${dashboard.value.upcomingClasses[0].name} ${t('preschoolDashboard.nextClassSuffix')}`
-    : t('preschoolDashboard.noUpcomingClasses'),
+    ? `${dashboard.value.upcomingClasses[0].name} ${t('preschoolDashboardPage.nextClassSuffix')}`
+    : t('preschoolDashboardPage.noUpcomingClasses'),
 )
 
 const spotlightText = computed(() =>
   dashboard.value.upcomingClasses[0]
-    ? `${dashboard.value.upcomingClasses[0].teacherDisplayName || t('preschoolDashboard.assignedTeacher')} has ${dashboard.value.upcomingClasses[0].studentsCount || 0} enrolled students.`
-    : t('preschoolDashboard.populateText'),
+    ? `${dashboard.value.upcomingClasses[0].teacherDisplayName || t('preschoolDashboardPage.assignedTeacher')} has ${dashboard.value.upcomingClasses[0].studentsCount || 0} enrolled students.`
+    : t('preschoolDashboardPage.populateText'),
 )
 
 onMounted(() => {
@@ -87,8 +113,8 @@ onMounted(() => {
   <MainLayout>
     <section class="preschool-dashboard-page">
       <HeaderSection
-        :title="t('preschoolDashboard.title')"
-        :subtitle="t('preschoolDashboard.subtitle')"
+        :title="t('preschoolDashboardPage.title')"
+        :subtitle="t('preschoolDashboardPage.subtitle')"
       />
 
       <div
@@ -102,7 +128,7 @@ onMounted(() => {
         v-if="loading"
         class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
       >
-        {{ t('preschoolDashboard.loading') }}
+        {{ t('preschoolDashboardPage.loading') }}
       </div>
 
       <PreschoolDashboardSummary :cards="cards" />
@@ -112,7 +138,7 @@ onMounted(() => {
           :title="spotlightTitle"
           :text="spotlightText"
         />
-        <PreschoolDashboardActionList :title="t('preschoolDashboard.actions.queueTitle')" :items="actions" />
+        <PreschoolDashboardActionList :title="t('preschoolDashboardPage.actions.queueTitle')" :items="actions" />
       </div>
 
       <PreschoolDashboardActivity :items="notes" />
@@ -140,5 +166,4 @@ onMounted(() => {
   }
 }
 </style>
-
 

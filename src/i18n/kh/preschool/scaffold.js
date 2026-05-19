@@ -1,0 +1,48 @@
+// Keep placeholder copy explicit so Khmer Preschool routes stay honest about
+// unfinished work and do not masquerade as production-ready workflows.
+export default {
+  preschoolScaffold: {
+    attendanceManagement: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'គ្រប់គ្រងវត្តមាន',
+      subtitle: 'ផ្ទាំងវត្តមានមត្តេយ្យនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'រក្សា route ឲ្យនៅដដែល ដើម្បីឲ្យ navigation របស់មត្តេយ្យមានស្ថេរភាព ខណៈពេល workflow នេះនៅជាស្កេហ្វូលដ៍។',
+    },
+    formManagement: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'គ្រប់គ្រងទម្រង់',
+      subtitle: 'ផ្ទាំងទម្រង់មត្តេយ្យនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'រក្សា route ឲ្យនៅដដែល ដើម្បីឲ្យ navigation មានស្ថេរភាព ខណៈពេលមុខងារនេះនៅជាស្កេហ្វូលដ៍។',
+    },
+    classroomResources: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'ធនធានថ្នាក់រៀន',
+      subtitle: 'ទំព័រធនធានមត្តេយ្យនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'ការបង្ហាញស្ថានភាពមិនទាន់រួចរាល់នេះធ្វើឲ្យ UX ស្មោះត្រង់ និងជៀសវាងការយល់ច្រឡំ។',
+    },
+    reportManagement: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'គ្រប់គ្រងរបាយការណ៍',
+      subtitle: 'ទំព័ររបាយការណ៍មត្តេយ្យនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'របាយការណ៍នៅក្នុង sidebar បានរក្សាទុក ប៉ុន្តែ workflow ពិតប្រាកដនៅតែត្រូវការអភិវឌ្ឍ។',
+    },
+    teacherReport: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'របាយការណ៍គ្រូ',
+      subtitle: 'ទំព័ររបាយការណ៍សម្រាប់គ្រូនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'រក្សា route សម្រាប់ការងារនាពេលក្រោយ ដោយមិនធ្វើឲ្យវាហាក់ដូចជារួចរាល់រួចហើយ។',
+    },
+    teacherClassroomResources: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'ធនធានថ្នាក់រៀន',
+      subtitle: 'ទំព័រធនធានសម្រាប់គ្រូនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'ការបង្ហាញ placeholder ច្បាស់លាស់ជួយកាត់បន្ថយការភាន់ច្រឡំ ខណៈពេល route នៅតែភ្ជាប់ដដែល។',
+    },
+    healthy: {
+      eyebrow: 'ស្កេហ្វូលដ៍',
+      title: 'ទម្លាប់សុខភាពល្អ',
+      subtitle: 'ទំព័រណែនាំសុខភាពនេះមិនទាន់បានអភិវឌ្ឍនៅឡើយ។',
+      description: 'រក្សា route ដើម្បីស្ថេរភាព navigation និងការអភិវឌ្ឍនាពេលក្រោយ។',
+    },
+  },
+}

@@ -1,3 +1,5 @@
+// Keep Preschool admin copy grouped here while the module is still being
+// normalized, so class-management regressions remain easy to trace.
 export default {
   preschoolClassesManagement: {
     title: 'Preschool Classes',
@@ -14,6 +16,20 @@ export default {
       visibleClasses: 'Visible classes',
       visibleStudents: 'Visible students',
       avgStudents: 'Avg. students',
+    },
+    alerts: {
+      deleteTitle: 'Delete class?',
+      deleteMessage: 'Are you sure you want to delete {name}?',
+      deleteFallback: 'this class',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      successTitle: 'Success',
+      close: 'Close',
+    },
+    messages: {
+      loadFailed: 'Failed to load preschool classes.',
+      deleteFailed: 'Failed to delete the class.',
+      deleteSuccess: 'Class {name} deleted successfully.',
     },
     summary: {
       total: {
@@ -63,6 +79,11 @@ export default {
     students: 'Students',
     status: 'Status',
     schedule: 'Schedule',
+    statusLabels: {
+      info: 'Info',
+      success: 'Success',
+      warning: 'Warning',
+    },
     selectedLearningStage: 'Selected learning stage',
     plannedEnrollment: 'Planned enrollment',
     initialClassState: 'Initial class state',

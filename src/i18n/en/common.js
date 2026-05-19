@@ -68,6 +68,8 @@ export default {
     suspended: 'Suspended',
   },
   role: {
+    // Keep Preschool level labels under the shared role namespace so class
+    // filters and add-class forms resolve them consistently across pages.
     superadmin: 'Super Admin',
     coach: 'Coach',
     teacher: 'Teacher',
@@ -78,6 +80,10 @@ export default {
     adminscholarship: 'Scholarship Admin',
     adminenglish: 'English Admin',
     adminsport: 'Sport Admin',
+    nursery: 'Nursery',
+    kindergarten_a: 'Kindergarten A',
+    kindergarten_b: 'Kindergarten B',
+    prep: 'Prep',
   },
   dashboard: {
     calendar: {

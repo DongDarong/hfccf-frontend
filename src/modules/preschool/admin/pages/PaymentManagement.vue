@@ -1,4 +1,6 @@
 <script setup>
+// Keep tuition-management copy locale-driven so the screen stays stable and
+// can be regression-tested for EN/KH parity instead of hardcoded English.
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -11,11 +13,14 @@ import PaymentSummaryCards from '@/modules/preschool/admin/components/payment-ma
 import PaymentTable from '@/modules/preschool/admin/components/payment-management/PaymentTable.vue'
 import PaymentToolbar from '@/modules/preschool/admin/components/payment-management/PaymentToolbar.vue'
 import Button from '@/components/buttons/Button.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolClasses, fetchPreschoolPayments, fetchPreschoolStudents, createPreschoolPayment, updatePreschoolPayment, deletePreschoolPayment } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminPaymentManagementPage',
 })
+
+const { t } = useLanguage()
 
 const paymentRows = ref([])
 const searchQuery = ref('')
@@ -49,18 +54,29 @@ const form = reactive({
   note: '',
 })
 
-const statusOptions = ['paid', 'pending', 'overdue', 'cancelled']
-const methodOptions = ['cash', 'mobile_payment', 'bank_transfer', 'card', 'other']
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'studentName', label: 'Student', align: 'left' },
-  { key: 'className', label: 'Class', align: 'left' },
-  { key: 'amountLabel', label: 'Amount', align: 'left' },
-  { key: 'paymentMethod', label: 'Method', align: 'left' },
-  { key: 'dueDate', label: 'Due Date', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'actions', label: 'Actions', align: 'right' },
-]
+const statusOptions = computed(() => [
+  { label: t('preschoolPaymentManagementPage.options.paid'), value: 'paid' },
+  { label: t('preschoolPaymentManagementPage.options.pending'), value: 'pending' },
+  { label: t('preschoolPaymentManagementPage.options.overdue'), value: 'overdue' },
+  { label: t('preschoolPaymentManagementPage.options.cancelled'), value: 'cancelled' },
+])
+const methodOptions = computed(() => [
+  { label: t('preschoolPaymentManagementPage.options.cash'), value: 'cash' },
+  { label: t('preschoolPaymentManagementPage.options.mobilePayment'), value: 'mobile_payment' },
+  { label: t('preschoolPaymentManagementPage.options.bankTransfer'), value: 'bank_transfer' },
+  { label: t('preschoolPaymentManagementPage.options.card'), value: 'card' },
+  { label: t('preschoolPaymentManagementPage.options.other'), value: 'other' },
+])
+const tableColumns = computed(() => [
+  { key: 'number', label: t('preschoolPaymentManagementPage.columns.no'), align: 'left' },
+  { key: 'studentName', label: t('preschoolPaymentManagementPage.columns.student'), align: 'left' },
+  { key: 'className', label: t('preschoolPaymentManagementPage.columns.class'), align: 'left' },
+  { key: 'amountLabel', label: t('preschoolPaymentManagementPage.columns.amount'), align: 'left' },
+  { key: 'paymentMethod', label: t('preschoolPaymentManagementPage.columns.method'), align: 'left' },
+  { key: 'dueDate', label: t('preschoolPaymentManagementPage.columns.dueDate'), align: 'left' },
+  { key: 'status', label: t('preschoolPaymentManagementPage.columns.status'), align: 'left' },
+  { key: 'actions', label: t('preschoolPaymentManagementPage.columns.actions'), align: 'right' },
+])
 
 const classOptionLabelMap = computed(() =>
   classOptions.value.reduce((carry, item) => {
@@ -101,28 +117,28 @@ const overdueCount = computed(
 const summaryCards = computed(() => [
   {
     id: 'total',
-    label: 'Total Records',
+    label: t('preschoolPaymentManagementPage.summary.total'),
     value: paymentRows.value.length,
     tone: 'info',
     icon: 'pi pi-receipt',
   },
   {
     id: 'paid',
-    label: 'Collected',
+    label: t('preschoolPaymentManagementPage.summary.collected'),
     value: `$${paidAmount.value.toFixed(2)}`,
     tone: 'success',
     icon: 'pi pi-check-circle',
   },
   {
     id: 'pending',
-    label: 'Pending',
+    label: t('preschoolPaymentManagementPage.summary.pending'),
     value: pendingCount.value,
     tone: 'warning',
     icon: 'pi pi-clock',
   },
   {
     id: 'overdue',
-    label: 'Overdue',
+    label: t('preschoolPaymentManagementPage.summary.overdue'),
     value: overdueCount.value,
     tone: 'danger',
     icon: 'pi pi-exclamation-triangle',
@@ -130,10 +146,14 @@ const summaryCards = computed(() => [
 ])
 
 const visibleRangeLabel = computed(() => {
-  if (!filteredPayments.value.length) return 'No payment records found.'
+  if (!filteredPayments.value.length) return t('preschoolPaymentManagementPage.messages.noResults')
   const start = (currentPage.value - 1) * pageSize + 1
   const end = Math.min(currentPage.value * pageSize, filteredPayments.value.length)
-  return `Showing ${start}-${end} of ${filteredPayments.value.length} payment records`
+  return t('preschoolPaymentManagementPage.toolbar.range', {
+    start,
+    end,
+    total: filteredPayments.value.length,
+  })
 })
 
 function mapPayment(row) {
@@ -195,7 +215,7 @@ async function loadPayments() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     paymentRows.value = []
-    errorMessage.value = error?.message || 'Failed to load payments.'
+    errorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.loadFailed')
   } finally {
     loading.value = false
   }
@@ -267,17 +287,17 @@ async function onSavePayment() {
     const payload = normalizePayload()
     if (modalMode.value === 'edit' && selectedPayment.value?.id) {
       await updatePreschoolPayment(selectedPayment.value.id, payload)
-      successMessage.value = 'Payment updated successfully.'
+      successMessage.value = t('preschoolPaymentManagementPage.messages.updateSuccess')
     } else {
       await createPreschoolPayment(payload)
-      successMessage.value = 'Payment created successfully.'
+      successMessage.value = t('preschoolPaymentManagementPage.messages.createSuccess')
     }
 
     showSuccess.value = true
     closeModal()
     await loadPayments()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to save payment.'
+    errorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.saveFailed')
   } finally {
     paymentSaving.value = false
   }
@@ -304,12 +324,12 @@ function onCancelDelete() {
 async function onConfirmDelete() {
   try {
     await deletePreschoolPayment(selectedPayment.value?.id)
-    successMessage.value = 'Payment record deleted successfully.'
+    successMessage.value = t('preschoolPaymentManagementPage.messages.deleteSuccess')
     showSuccess.value = true
     onCancelDelete()
     await loadPayments()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete payment.'
+    errorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.saveFailed')
   }
 }
 
@@ -331,18 +351,18 @@ onMounted(async () => {
   <MainLayout>
     <section class="payment-management-page">
       <HeaderSection
-        title="Payment Management"
-        subtitle="Track preschool tuition payments, pending balances, and overdue records."
+        :title="t('preschoolPaymentManagementPage.title')"
+        :subtitle="t('preschoolPaymentManagementPage.subtitle')"
       />
 
       <PaymentSummaryCards :cards="summaryCards" />
 
       <div class="payment-management-page__panel">
         <PaymentToolbar
-          eyebrow="Preschool Payments"
+          :eyebrow="t('preschoolPaymentManagementPage.toolbar.eyebrow')"
           :title="visibleRangeLabel"
-          clear-label="Clear"
-          add-label="Create Payment"
+          :clear-label="t('preschoolPaymentManagementPage.toolbar.clear')"
+          :add-label="t('preschoolPaymentManagementPage.toolbar.add')"
           @clear="clearFilters"
           @add="openCreateModal"
         />
@@ -353,7 +373,9 @@ onMounted(async () => {
           v-model:statusFilter="statusFilter"
           :class-options="classOptions"
           :status-options="statusOptions"
-          search-placeholder="Search by student, class, or payment id"
+          :search-placeholder="t('preschoolPaymentManagementPage.searchPlaceholder')"
+          :all-classes-label="t('common.allClasses')"
+          :all-status-label="t('common.allStatus')"
         />
 
         <div
@@ -366,7 +388,7 @@ onMounted(async () => {
         <PaymentTable
           :payments="paginatedPayments"
           :columns="tableColumns"
-          :empty-text="'No preschool payment records found.'"
+          :empty-text="t('preschoolPaymentManagementPage.messages.noResults')"
           @view="onViewPayment"
           @edit="onEditPayment"
           @delete="onDeletePayment"
@@ -378,52 +400,52 @@ onMounted(async () => {
       </div>
     </section>
 
-    <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? 'Edit Payment' : 'Create Payment'" modal class="payment-management-page__dialog">
+    <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? t('preschoolPaymentManagementPage.dialog.editTitle') : t('preschoolPaymentManagementPage.dialog.createTitle')" modal class="payment-management-page__dialog">
       <div class="payment-management-page__dialog-grid">
         <select v-model="form.student_id" class="payment-management-page__input">
-          <option value="">Select student</option>
+          <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
           <option v-for="option in studentOptions" :key="option.value" :value="option.value">
             {{ option.label }}
           </option>
         </select>
         <select v-model="form.class_id" class="payment-management-page__input">
-          <option value="">Select class</option>
+          <option value="">{{ t('preschoolPaymentManagementPage.dialog.class') }}</option>
           <option v-for="option in classOptions" :key="option.value" :value="option.value">
             {{ option.label }}
           </option>
         </select>
-        <input v-model="form.payment_reference" class="payment-management-page__input" type="text" placeholder="Payment reference" />
-        <input v-model="form.amount" class="payment-management-page__input" type="number" step="0.01" min="0" placeholder="Amount" />
-        <input v-model="form.currency" class="payment-management-page__input" type="text" placeholder="Currency" />
+        <input v-model="form.payment_reference" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.dialog.reference')" />
+        <input v-model="form.amount" class="payment-management-page__input" type="number" step="0.01" min="0" :placeholder="t('preschoolPaymentManagementPage.dialog.amount')" />
+        <input v-model="form.currency" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.dialog.currency')" />
         <select v-model="form.payment_method" class="payment-management-page__input">
-          <option v-for="method in methodOptions" :key="method" :value="method">
-            {{ method }}
+          <option v-for="method in methodOptions" :key="method.value" :value="method.value">
+            {{ method.label }}
           </option>
         </select>
         <select v-model="form.payment_status" class="payment-management-page__input">
-          <option v-for="status in statusOptions" :key="status" :value="status">
-            {{ status }}
+          <option v-for="status in statusOptions" :key="status.value" :value="status.value">
+            {{ status.label }}
           </option>
         </select>
         <input v-model="form.paid_at" class="payment-management-page__input" type="date" />
         <input v-model="form.due_date" class="payment-management-page__input" type="date" />
-        <textarea v-model="form.note" class="payment-management-page__input payment-management-page__dialog-full" rows="3" placeholder="Note"></textarea>
+        <textarea v-model="form.note" class="payment-management-page__input payment-management-page__dialog-full" rows="3" :placeholder="t('preschoolPaymentManagementPage.dialog.note')"></textarea>
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">Cancel</Button>
+        <Button type="button" variant="outline" rounded="xl" @click="closeModal">{{ t('preschoolPaymentManagementPage.dialog.cancel') }}</Button>
         <Button type="button" variant="primary" rounded="xl" :loading="paymentSaving" :disabled="paymentSaving" @click="onSavePayment">
-          Save
+          {{ t('preschoolPaymentManagementPage.dialog.save') }}
         </Button>
       </template>
     </Dialog>
 
     <AlertQuestion
       :show="isDeleteOpen"
-      title="Delete payment?"
-      :message="`Delete ${selectedPayment?.studentName || 'this payment'} record? This action cannot be undone.`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="t('preschoolPaymentManagementPage.alerts.deleteTitle')"
+      :message="t('preschoolPaymentManagementPage.alerts.deleteMessage', { name: selectedPayment?.studentName || t('preschoolPaymentManagementPage.alerts.deleteFallback') })"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
       type="danger"
       @confirm="onConfirmDelete"
       @cancel="onCancelDelete"
@@ -431,9 +453,9 @@ onMounted(async () => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('preschoolPaymentManagementPage.alerts.successTitle')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('preschoolPaymentManagementPage.alerts.close')"
       @close="showSuccess = false"
     />
   </MainLayout>
@@ -493,3 +515,4 @@ onMounted(async () => {
   }
 }
 </style>
+

@@ -1,3 +1,5 @@
+// Keep Preschool class editor copy in a dedicated Khmer module so the page
+// contract stays aligned with English and label drift can be regression-tested.
 export default {
   preschoolAddClass: {
     title: 'បន្ថែមថ្នាក់',
@@ -14,6 +16,11 @@ export default {
     students: 'សិស្ស',
     status: 'ស្ថានភាព',
     schedule: 'កាលវិភាគ',
+    statusLabels: {
+      info: '???????',
+      success: '??????',
+      warning: '????????????????',
+    },
     selectedLearningStage: 'កម្រិតសិក្សាដែលបានជ្រើស',
     plannedEnrollment: 'ចំនួនសិស្សដែលបានគ្រោងទុក',
     initialClassState: 'ស្ថានភាពដំបូងរបស់ថ្នាក់',
@@ -64,3 +71,5 @@ export default {
     },
   },
 }
+
+

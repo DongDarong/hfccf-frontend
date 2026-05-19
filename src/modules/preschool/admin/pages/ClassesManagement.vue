@@ -1,4 +1,6 @@
 <script setup>
+// Keep class-management text locale-driven so the page stays stable while the
+// Preschool module transitions from scaffold-heavy pages to production-ready UI.
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -170,7 +172,7 @@ async function loadClasses() {
       total: 0,
       totalPages: 1,
     }
-    errorMessage.value = error?.message || 'Failed to load preschool classes.'
+    errorMessage.value = error?.message || t('preschoolClassesManagement.messages.loadFailed')
   } finally {
     loading.value = false
   }
@@ -217,12 +219,14 @@ function onCancelDelete() {
 async function onConfirmDelete() {
   try {
     await deletePreschoolClass(selectedClassId.value)
-    successMessage.value = `${selectedClassName.value || 'Class'} deleted successfully.`
+    successMessage.value = t('preschoolClassesManagement.messages.deleteSuccess', {
+      name: selectedClassName.value || t('preschoolClassesManagement.alerts.deleteFallback'),
+    })
     showSuccess.value = true
     onCancelDelete()
     await loadClasses()
   } catch (error) {
-    errorMessage.value = error?.message || 'Failed to delete the class.'
+    errorMessage.value = error?.message || t('preschoolClassesManagement.messages.deleteFailed')
   }
 }
 
@@ -300,10 +304,14 @@ onMounted(() => {
 
     <AlertQuestion
       :show="isDeleteOpen"
-      title="Delete class?"
-      :message="`Are you sure you want to delete ${selectedClassName || 'this class'}?`"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :title="t('preschoolClassesManagement.alerts.deleteTitle')"
+      :message="
+        t('preschoolClassesManagement.alerts.deleteMessage', {
+          name: selectedClassName || t('preschoolClassesManagement.alerts.deleteFallback'),
+        })
+      "
+      :confirm-text="t('preschoolClassesManagement.alerts.confirm')"
+      :cancel-text="t('preschoolClassesManagement.alerts.cancel')"
       type="danger"
       @confirm="onConfirmDelete"
       @cancel="onCancelDelete"
@@ -311,9 +319,9 @@ onMounted(() => {
 
     <AlertSuccess
       :show="showSuccess"
-      title="Success"
+      :title="t('preschoolClassesManagement.alerts.successTitle')"
       :message="successMessage"
-      button-text="Close"
+      :button-text="t('preschoolClassesManagement.alerts.close')"
       @close="showSuccess = false"
     />
   </MainLayout>

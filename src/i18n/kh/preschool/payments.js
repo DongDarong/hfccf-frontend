@@ -1,1 +1,74 @@
-export default {}
+// Keep payment copy separate so Khmer tuition screens stay aligned with the
+// English page contract and do not fall back to inline labels.
+export default {
+  preschoolPaymentManagementPage: {
+    title: 'ការគ្រប់គ្រងការបង់ប្រាក់',
+    subtitle: 'តាមដានការបង់ថ្លៃសិក្សា សមតុល្យរង់ចាំ និងកំណត់ត្រាហួសកំណត់។',
+    toolbar: {
+      eyebrow: 'ការបង់ប្រាក់មត្តេយ្យ',
+      clear: 'សម្អាត',
+      add: 'បង្កើតការបង់ប្រាក់',
+      range: 'បង្ហាញ {start}-{end} នៃកំណត់ត្រាការបង់ប្រាក់ {total}',
+    },
+    searchPlaceholder: 'ស្វែងរកតាមសិស្ស ថ្នាក់ ឬលេខសម្គាល់ការបង់ប្រាក់',
+    columns: {
+      no: 'ល.រ.',
+      student: 'សិស្ស',
+      class: 'ថ្នាក់',
+      amount: 'ចំនួនទឹកប្រាក់',
+      method: 'វិធីសាស្ត្រ',
+      dueDate: 'កាលកំណត់',
+      status: 'ស្ថានភាព',
+      actions: 'សកម្មភាព',
+    },
+    dialog: {
+      createTitle: 'បង្កើតការបង់ប្រាក់',
+      editTitle: 'កែប្រែការបង់ប្រាក់',
+      student: 'ជ្រើសរើសសិស្ស',
+      class: 'ជ្រើសរើសថ្នាក់',
+      reference: 'លេខយោងការបង់ប្រាក់',
+      amount: 'ចំនួនទឹកប្រាក់',
+      currency: 'រូបិយប័ណ្ណ',
+      method: 'វិធីសាស្ត្របង់ប្រាក់',
+      status: 'ស្ថានភាពបង់ប្រាក់',
+      paidAt: 'បង់នៅថ្ងៃ',
+      dueDate: 'កាលកំណត់',
+      note: 'កំណត់ចំណាំ',
+      cancel: 'បោះបង់',
+      save: 'រក្សាទុក',
+    },
+    options: {
+      paid: 'បានបង់',
+      pending: 'កំពុងរង់ចាំ',
+      overdue: 'ហួសកំណត់',
+      cancelled: 'បានលុបចោល',
+      cash: 'សាច់ប្រាក់',
+      mobilePayment: 'ទូទាត់តាមទូរស័ព្ទ',
+      bankTransfer: 'ផ្ទេរតាមធនាគារ',
+      card: 'កាត',
+      other: 'ផ្សេងទៀត',
+    },
+    summary: {
+      total: 'កំណត់ត្រាសរុប',
+      collected: 'បានប្រមូល',
+      pending: 'កំពុងរង់ចាំ',
+      overdue: 'ហួសកំណត់',
+    },
+    alerts: {
+      deleteTitle: 'លុបការបង់ប្រាក់?',
+      deleteMessage: 'លុបកំណត់ត្រារបស់ {name} ទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបាន។',
+      deleteFallback: '???????????????',
+      successTitle: 'ជោគជ័យ',
+      close: 'បិទ',
+    },
+    messages: {
+      loadFailed: 'ផ្ទុកការបង់ប្រាក់មិនបានសម្រេច។',
+      saveFailed: 'រក្សាទុកការបង់ប្រាក់មិនបានសម្រេច។',
+      createSuccess: 'បង្កើតការបង់ប្រាក់បានជោគជ័យ។',
+      updateSuccess: 'កែប្រែការបង់ប្រាក់បានជោគជ័យ។',
+      deleteSuccess: 'លុបកំណត់ត្រាការបង់ប្រាក់បានជោគជ័យ។',
+      noResults: 'មិនមានកំណត់ត្រាការបង់ប្រាក់មត្តេយ្យ។',
+    },
+  },
+}
+

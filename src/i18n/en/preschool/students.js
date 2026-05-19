@@ -1,1 +1,80 @@
-export default {}
+// Keep student copy centralized so the admin roster page and teacher roster
+// page share the same parity checks instead of relying on inline English text.
+export default {
+  preschoolStudentInfoPage: {
+    title: 'Student Information',
+    subtitle: 'Manage preschool student records, classroom assignments, and contact details.',
+    addButton: 'Add Student',
+    searchPlaceholder: 'Search students',
+    filters: {
+      allStatus: 'All status',
+      allGenders: 'All genders',
+      allClasses: 'All classes',
+    },
+    columns: {
+      no: 'No.',
+      student: 'Student',
+      code: 'Code',
+      gender: 'Gender',
+      status: 'Status',
+      classes: 'Classes',
+      guardianPhone: 'Guardian Phone',
+      actions: 'Actions',
+    },
+    dialog: {
+      createTitle: 'Create Student',
+      editTitle: 'Edit Student',
+      studentCode: 'Student code',
+      firstName: 'First name',
+      lastName: 'Last name',
+      gender: 'Gender',
+      guardianName: 'Guardian name',
+      guardianPhone: 'Guardian phone',
+      assignClasses: 'Assign classes',
+      address: 'Address',
+      cancel: 'Cancel',
+      save: 'Save',
+    },
+    options: {
+      male: 'Male',
+      female: 'Female',
+      other: 'Other',
+      active: 'Active',
+      pending: 'Pending',
+      inactive: 'Inactive',
+      graduated: 'Graduated',
+    },
+    alerts: {
+      deleteTitle: 'Delete student?',
+      deleteMessage: 'Are you sure you want to delete {name}?',
+      deleteFallback: 'this student',
+      successTitle: 'Success',
+      close: 'Close',
+    },
+    messages: {
+      loadFailed: 'Failed to load students.',
+      saveFailed: 'Failed to save student.',
+      createSuccess: 'Student created successfully.',
+      updateSuccess: 'Student updated successfully.',
+      deleteSuccess: 'Student deleted successfully.',
+      noResults: 'No students found.',
+    },
+  },
+  preschoolTeacherStudentsPage: {
+    title: 'My Preschool Students',
+    subtitle: 'Students assigned to your preschool classes.',
+    searchPlaceholder: 'Search students',
+    columns: {
+      no: 'No.',
+      student: 'Student',
+      code: 'Code',
+      gender: 'Gender',
+      status: 'Status',
+      classes: 'Classes',
+    },
+    messages: {
+      loadFailed: 'Failed to load students.',
+      noResults: 'No students found.',
+    },
+  },
+}

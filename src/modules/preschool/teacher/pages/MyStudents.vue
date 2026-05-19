@@ -1,14 +1,19 @@
 <script setup>
+// Keep the teacher roster text locale-driven so the page stays stable and the
+// teacher view does not regress back to inline English copy.
 import { computed, onMounted, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchMyPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolTeacherMyStudentsPage',
 })
+
+const { t } = useLanguage()
 
 const students = ref([])
 const loading = ref(false)
@@ -17,14 +22,14 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const pagination = ref({ page: 1, perPage: 10, total: 0, totalPages: 1 })
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'student', label: 'Student', align: 'left' },
-  { key: 'studentCode', label: 'Code', align: 'left' },
-  { key: 'gender', label: 'Gender', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'classesCount', label: 'Classes', align: 'left' },
-]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('preschoolTeacherStudentsPage.columns.no'), align: 'left' },
+  { key: 'student', label: t('preschoolTeacherStudentsPage.columns.student'), align: 'left' },
+  { key: 'studentCode', label: t('preschoolTeacherStudentsPage.columns.code'), align: 'left' },
+  { key: 'gender', label: t('preschoolTeacherStudentsPage.columns.gender'), align: 'left' },
+  { key: 'status', label: t('preschoolTeacherStudentsPage.columns.status'), align: 'left' },
+  { key: 'classesCount', label: t('preschoolTeacherStudentsPage.columns.classes'), align: 'left' },
+])
 
 const mappedStudents = computed(() =>
   students.value.map((student) => ({
@@ -48,7 +53,7 @@ async function loadStudents() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     students.value = []
-    errorMessage.value = error?.message || 'Failed to load students.'
+    errorMessage.value = error?.message || t('preschoolTeacherStudentsPage.messages.loadFailed')
   } finally {
     loading.value = false
   }
@@ -67,8 +72,8 @@ onMounted(() => {
   <MainLayout>
     <section class="student-info-page">
       <HeaderSection
-        title="My Preschool Students"
-        subtitle="Students assigned to your preschool classes."
+        :title="t('preschoolTeacherStudentsPage.title')"
+        :subtitle="t('preschoolTeacherStudentsPage.subtitle')"
       />
 
       <div class="student-info-page__panel">
@@ -76,7 +81,7 @@ onMounted(() => {
           v-model="searchQuery"
           class="student-info-page__input"
           type="search"
-          placeholder="Search students"
+          :placeholder="t('preschoolTeacherStudentsPage.searchPlaceholder')"
         >
 
         <div
@@ -90,7 +95,7 @@ onMounted(() => {
           :rows="mappedStudents"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No students found."
+          :empty-text="t('preschoolTeacherStudentsPage.messages.noResults')"
         />
 
         <div v-if="pagination.totalPages > 1" class="flex justify-end">

@@ -79,6 +79,12 @@ export default {
     adminscholarship: 'អ្នកគ្រប់គ្រងអាហារូបករណ៍',
     adminenglish: 'អ្នកគ្រប់គ្រងភាសាអង់គ្លេស',
     adminsport: 'អ្នកគ្រប់គ្រងកីឡា',
+    // Keep Preschool level labels in the shared role namespace so class
+    // filters and add-class forms resolve them consistently across pages.
+    nursery: 'ថ្នាក់ Nursery',
+    kindergarten_a: 'ថ្នាក់ Kindergarten A',
+    kindergarten_b: 'ថ្នាក់ Kindergarten B',
+    prep: 'ថ្នាក់ Prep',
   },
   dashboard: {
     calendar: {
