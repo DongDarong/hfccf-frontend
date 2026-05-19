@@ -1,9 +1,10 @@
 import http from '@/services/http'
 import { buildQueryParams, unwrapApiData } from '@/services/api'
+import { normalizePerPage } from '@/modules/notifications/services/notificationMappers'
 
 function normalizeListParams(params = {}) {
   const page = Number(params.page || 1) || 1
-  const perPage = Number((params.perPage ?? params.per_page) || 10) || 10
+  const perPage = normalizePerPage(params.perPage ?? params.per_page, 10, 100)
 
   return buildQueryParams({
     page,
@@ -55,6 +56,15 @@ export async function fetchUnreadCount() {
 }
 
 /**
+ * Keep the API naming explicit for UI composables that read like a user story.
+ * The backend still exposes the same unread-count endpoint, so this alias is
+ * only a frontend ergonomics layer.
+ */
+export async function fetchUnreadNotificationCount() {
+  return fetchUnreadCount()
+}
+
+/**
  * Create a new notification.
  */
 export async function createNotification(payload = {}) {
@@ -72,6 +82,10 @@ export async function markNotificationAsRead(id) {
   return unwrapApiData(response)
 }
 
+export async function markNotificationRead(id) {
+  return markNotificationAsRead(id)
+}
+
 /**
  * Mark every notification as read.
  */
@@ -79,6 +93,10 @@ export async function markAllNotificationsAsRead() {
   const response = await http.patch('/notifications/read-all')
 
   return unwrapApiData(response)
+}
+
+export async function markAllNotificationsRead() {
+  return markAllNotificationsAsRead()
 }
 
 /**
