@@ -8,9 +8,11 @@ import notifications from './notifications'
 import sport from './sport'
 import preschool from './preschool'
 import english from './english'
-import reports from './reports'
+import reports from './reports/index.js'
 
 export default {
+  // Keep locale merges explicit so reports stays nested under `reports.*`
+  // and Vue I18n resolves audit log keys without accidental flattening.
   ...localLanguage.kh,
   ...dashboard,
   common,
@@ -23,7 +25,7 @@ export default {
   },
   users,
   notifications,
-  ...reports,
+  reports,
   ...english,
   ...sport,
   ...preschool,
