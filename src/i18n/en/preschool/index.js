@@ -5,6 +5,8 @@ import attendance from './attendance'
 import payments from './payments'
 import scaffold from './scaffold'
 import adminDashboard from './admin-dashboard'
+import assessment from './assessment'
+import progress from './progress'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -16,4 +18,6 @@ export default {
   ...payments,
   ...scaffold,
   ...adminDashboard,
+  ...assessment,
+  ...progress,
 }

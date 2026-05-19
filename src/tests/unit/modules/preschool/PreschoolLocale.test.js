@@ -3,11 +3,15 @@ import enPreschool from '@/i18n/en/preschool'
 import khPreschool from '@/i18n/kh/preschool'
 
 // Keep Preschool locale parity covered so the real pages do not regress back to
-// missing-key warnings or accidental double nesting when the module evolves.
+// missing-key warnings, corrupted Unicode, or accidental double nesting when
+// the module evolves.
 function expectString(source, path) {
   const value = path.split('.').reduce((carry, key) => carry?.[key], source)
   expect(typeof value).toBe('string')
   expect(value).not.toContain('<')
+  // Regression protection: keep the scan focused on raw Unicode corruption
+  // without embedding corrupted marker bytes in the test file itself.
+  expect(value).not.toMatch(/[\u00e2\u00e1\u017e\u00c3\uFFFD]/u)
 }
 
 describe('preschool locale parity', () => {
@@ -21,6 +25,11 @@ describe('preschool locale parity', () => {
       'preschoolClassesManagement.alerts.deleteTitle',
       'preschoolAddClass.statusLabels.success',
       'preschoolScaffold.reportManagement.title',
+      'preschoolAssessmentPage.title',
+      'preschoolAssessmentPage.loading',
+      'preschoolAssessmentFormPage.title',
+      'preschoolProgressSummaryPage.title',
+      'preschoolProgressSummaryPage.loading',
     ]
 
     keys.forEach((key) => {

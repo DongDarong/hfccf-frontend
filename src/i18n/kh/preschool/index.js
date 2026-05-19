@@ -6,6 +6,8 @@ import payments from './payments'
 import scaffold from './scaffold'
 import classesManagement from './classes-management'
 import addClass from './add-class'
+import assessment from './assessment'
+import progress from './progress'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -18,4 +20,6 @@ export default {
   ...scaffold,
   ...classesManagement,
   ...addClass,
+  ...assessment,
+  ...progress,
 }

@@ -135,6 +135,36 @@
             ]
           }
         },
+        {
+          "id": "preschool-teacher-assessments",
+          "routeName": "dashboard-preschool-assessments",
+          "labelKey": "nav.items.preschoolAssessments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-teacher-progress-summary",
+          "routeName": "dashboard-preschool-progress-summary",
+          "labelKey": "nav.items.preschoolProgressSummary",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

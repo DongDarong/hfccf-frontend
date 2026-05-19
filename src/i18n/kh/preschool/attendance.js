@@ -1,9 +1,9 @@
-// Keep attendance copy separate so Khmer text remains aligned with the page
-// contract and can be regression-tested like the English version.
+// Keep attendance copy separate so teacher attendance can be tested without
+// relying on placeholders or hardcoded strings in the page template.
 export default {
   preschoolTeacherAttendancePage: {
-    title: 'វត្តមានមត្តេយ្យ',
-    subtitle: 'តាមដានវត្តមានសម្រាប់ថ្នាក់មត្តេយ្យដែលបានចាត់តាំង។',
+    title: 'វត្តមានមត្តេយ្យសិក្សា',
+    subtitle: 'តាមដានវត្តមានសម្រាប់ថ្នាក់ដែលបានចាត់តាំងឱ្យអ្នក។',
     searchPlaceholder: 'ស្វែងរកវត្តមាន',
     filters: {
       allStatus: 'ស្ថានភាពទាំងអស់',
@@ -14,17 +14,17 @@ export default {
       class: 'ថ្នាក់',
       date: 'កាលបរិច្ឆេទ',
       status: 'ស្ថានភាព',
-      note: 'កំណត់ចំណាំ',
+      note: 'កំណត់សម្គាល់',
     },
     options: {
       present: 'មានវត្តមាន',
       absent: 'អវត្តមាន',
       late: 'មកយឺត',
-      excused: 'បានអនុញ្ញាត',
+      excused: 'មានលិខិតអនុញ្ញាត',
     },
     messages: {
-      loadFailed: 'ផ្ទុកវត្តមានមិនបានសម្រេច។',
-      noResults: 'មិនមានកំណត់ត្រាវត្តមាន។',
+      loadFailed: 'មិនអាចផ្ទុកវត្តមានបានទេ។',
+      noResults: 'មិនមានកំណត់ត្រាវត្តមានទេ។',
     },
   },
 }

@@ -76,7 +76,36 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
-   defineAppRoute({
+  // Assessment routes are shared by Preschool admins and teachers so the UI
+  // can grow into reporting later without splitting the same workflow twice.
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments',
+    name: 'dashboard-preschool-assessments',
+    component: () => import('@/modules/preschool/admin/pages/StudentAssessments.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments/add',
+    name: 'dashboard-preschool-assessments-add',
+    component: () => import('@/modules/preschool/admin/pages/AddAssessment.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments/summary',
+    name: 'dashboard-preschool-progress-summary',
+    component: () => import('@/modules/preschool/admin/pages/ProgressSummary.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/reports',
     name: 'dashboard-preschool-admin-reports',
     component: () => import('@/modules/preschool/admin/pages/ReportManagement.vue'),
@@ -148,7 +177,7 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
-    defineAppRoute({
+  defineAppRoute({
     path: '/module/preschool-admin/teacher/healthy',
     name: 'dashboard-preschool-teacher-healthy',
     component: () => import('@/modules/preschool/teacher/pages/Healthy.vue'),
@@ -157,5 +186,4 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
-
 ]

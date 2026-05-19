@@ -62,6 +62,20 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-assessments",
+          "routeName": "dashboard-preschool-assessments",
+          "labelKey": "nav.items.preschoolAssessments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-progress-summary",
+          "routeName": "dashboard-preschool-progress-summary",
+          "labelKey": "nav.items.preschoolProgressSummary",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-reports",
           "routeName": "dashboard-preschool-admin-reports",
           "labelKey": "nav.items.reports",

@@ -65,6 +65,8 @@ export default {
     classroomResources: 'Classroom Resources',
     healthy: 'Healthy',
     classroomresources: 'Classroom Resources',
+    preschoolAssessments: 'Assessments',
+    preschoolProgressSummary: 'Progress Summary',
     myTeams: 'My Teams',
     myRequests: 'My Requests',
     teamRoster: 'Team Roster',

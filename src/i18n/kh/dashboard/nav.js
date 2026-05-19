@@ -65,6 +65,8 @@ export default {
     classroomResources: 'ធនធានថ្នាក់រៀន',
     healthy: 'សុខភាព',
     classroomresources: 'ធនធានថ្នាក់រៀន',
+    preschoolAssessments: 'ការវាយតម្លៃ',
+    preschoolProgressSummary: 'សង្ខេបវឌ្ឍនភាព',
     myTeams: 'ក្រុមរបស់ខ្ញុំ',
     myRequests: 'សំណើរបស់ខ្ញុំ',
     teamRoster: 'បញ្ជីក្រុម',
