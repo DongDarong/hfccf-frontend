@@ -1,4 +1,11 @@
-export { buildQueryParams, getApiErrorMessage, normalizeBooleanLike, unwrapApiData, compareMatchEvents } from './api/sportApiUtils'
+export {
+  buildQueryParams,
+  compareMatchEvents,
+  getApiErrorMessage,
+  normalizeBooleanLike,
+  normalizePerPage,
+  unwrapApiData,
+} from './api/sportApiUtils'
 export * from './api/sportDashboardApi'
 export * from './api/sportTeamsApi'
 export * from './api/sportPlayersApi'

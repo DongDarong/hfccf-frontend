@@ -15,6 +15,18 @@ export function normalizeBooleanLike(value) {
   return Boolean(value)
 }
 
+export function normalizePerPage(value, fallback = 25, max = 100) {
+  // The backend enforces an upper bound on page size to keep list queries
+  // predictable and to avoid large response payloads on shared sport pages.
+  const numeric = Number.parseInt(value, 10)
+
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return fallback
+  }
+
+  return Math.min(numeric, max)
+}
+
 export function splitName(fullName) {
   const tokens = normalizeText(fullName).split(/\s+/).filter(Boolean)
   const [firstName = '', ...rest] = tokens

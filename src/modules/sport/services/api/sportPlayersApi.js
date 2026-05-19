@@ -1,14 +1,24 @@
 import http from '@/services/http'
-import { buildQueryParams, normalizePlayerListResponse, normalizePlayerRow, resolveId, buildPlayerPayload, unwrapApiData } from './sportApiUtils'
+import {
+  buildPlayerPayload,
+  buildQueryParams,
+  normalizePerPage,
+  normalizePlayerListResponse,
+  normalizePlayerRow,
+  resolveId,
+  unwrapApiData,
+} from './sportApiUtils'
 
 export async function fetchSportPlayers(
   { page = 1, perPage = 10, search = '', status = '', teamId = '', division = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
   options = {},
 ) {
+  const normalizedPerPage = normalizePerPage(perPage)
+
   const response = await http.get('/sport/players', {
     params: buildQueryParams({
       page,
-      per_page: perPage,
+      per_page: normalizedPerPage,
       search,
       status,
       team_id: teamId,
@@ -19,7 +29,7 @@ export async function fetchSportPlayers(
     signal: options.signal,
   })
 
-  return normalizePlayerListResponse(response, page, perPage)
+  return normalizePlayerListResponse(response, page, normalizedPerPage)
 }
 
 export async function fetchSportPlayer(id, options = {}) {

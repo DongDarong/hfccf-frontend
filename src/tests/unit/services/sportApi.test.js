@@ -31,6 +31,7 @@ import {
   fetchSportTournaments,
   fetchTournamentStandings,
   normalizeBooleanLike,
+  normalizePerPage,
   recalculateTournamentStandings,
   removeTournamentTeam,
   updateMatchEvent,
@@ -72,6 +73,10 @@ describe('sportApi shared helpers', () => {
 
     expect(normalizeBooleanLike('yes')).toBe(true)
     expect(normalizeBooleanLike(0)).toBe(false)
+    expect(normalizePerPage(200)).toBe(100)
+    expect(normalizePerPage('75')).toBe(75)
+    expect(normalizePerPage(-1)).toBe(25)
+    expect(normalizePerPage('not-a-number')).toBe(25)
 
     const sorted = [
       { id: '3', minute: 45, extraTimeMinute: 1 },
@@ -177,6 +182,15 @@ describe('sport player APIs', () => {
       signal: undefined,
     })
     expect(list.items[0].name).toBe('Ada Lovelace')
+
+    http.get.mockResolvedValueOnce(
+      stubResponse({ items: [], pagination: { page: 1, perPage: 100, total: 0, totalPages: 1 } }),
+    )
+    await fetchSportPlayers({ perPage: 200 })
+    expect(http.get).toHaveBeenLastCalledWith('/sport/players', {
+      params: expect.objectContaining({ per_page: 100, page: 1 }),
+      signal: undefined,
+    })
 
     http.get.mockResolvedValueOnce(stubResponse({ player: { id: 2, first_name: 'Grace', last_name: 'Hopper' } }))
     await expect(fetchSportPlayer(2)).resolves.toMatchObject({ id: 2, name: 'Grace Hopper' })

@@ -61,7 +61,8 @@ function tone(status) {
 
 async function refresh() {
   await loadPlayers({
-    perPage: 200,
+    // The backend caps player listings to keep pagination responses bounded.
+    perPage: 100,
     status: selectedStatus.value,
   })
 }
