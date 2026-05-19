@@ -72,6 +72,13 @@ export function compareMatchEvents(left = {}, right = {}) {
 
   const leftId = String(left.id ?? '')
   const rightId = String(right.id ?? '')
+  const leftCreated = String(left.createdAt || left.created_at || '')
+  const rightCreated = String(right.createdAt || right.created_at || '')
+
+  if (leftCreated !== rightCreated) {
+    return leftCreated.localeCompare(rightCreated)
+  }
+
   return leftId.localeCompare(rightId)
 }
 
@@ -318,10 +325,16 @@ export function normalizeEventRow(row = {}, homeTeamId = null, awayTeamId = null
     matchId: row.matchId ?? row.match_id ?? '',
     teamId,
     teamType,
+    squadId: row.squadId ?? row.squad_id ?? '',
+    squadPlayerId: row.squadPlayerId ?? row.squad_player_id ?? '',
+    relatedSquadPlayerId: row.relatedSquadPlayerId ?? row.related_squad_player_id ?? '',
     playerId: row.playerId ?? row.player_id ?? '',
     eventType: normalizeText(row.eventType || row.event_type || 'goal'),
     minute: timing.minute,
     extraTimeMinute: timing.extraTimeMinute,
+    stoppageMinute: row.stoppageMinute ?? row.stoppage_minute ?? null,
+    period: normalizeText(row.period || row.match_period),
+    side: normalizeText(row.side || row.teamSide),
     playerName: normalizeText(
       row.playerName ||
         row.player_name ||
@@ -584,11 +597,20 @@ export function buildEventPayload(payload = {}, options = {}) {
   return buildFormData(
     {
       team_id: payload.teamId || payload.team_id,
+      squad_id: payload.squadId || payload.squad_id,
+      squad_player_id: payload.squadPlayerId || payload.squad_player_id,
+      related_squad_player_id: payload.relatedSquadPlayerId || payload.related_squad_player_id,
       player_id: payload.playerId || payload.player_id,
       player_name: payload.playerName || payload.player_name,
       event_type: payload.eventType || payload.event_type,
       minute: payload.minute,
       extra_time_minute: payload.extraTimeMinute || payload.extra_time_minute,
+      stoppage_minute: payload.stoppageMinute || payload.stoppage_minute,
+      period: payload.period,
+      side: payload.side,
+      player_name_snapshot: payload.playerNameSnapshot || payload.player_name_snapshot,
+      jersey_number_snapshot: payload.jerseyNumberSnapshot || payload.jersey_number_snapshot,
+      position_snapshot: payload.positionSnapshot || payload.position_snapshot,
       metadata: payload.metadata,
     },
     options,

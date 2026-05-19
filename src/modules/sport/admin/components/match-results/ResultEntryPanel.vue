@@ -27,6 +27,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showGoalEditors: {
+    type: Boolean,
+    default: true,
+  },
   loading: {
     type: Boolean,
     default: false,
@@ -196,7 +200,7 @@ function onSubmit() {
       @update:report="commit('report', $event)"
     />
 
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div v-if="showGoalEditors" class="grid gap-4 lg:grid-cols-2">
       <GoalEventsEditor
         :events="form.homeEvents"
         :labels="{ ...goalEventLabels, title: `${goalEventLabels.title} (${form.homeTeam})` }"
