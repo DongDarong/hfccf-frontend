@@ -91,21 +91,6 @@
           }
         },
         {
-          "id": "sport-match-squad-selection",
-          "routeName": "dashboard-sport-coach-match-squad-selection",
-          "labelKey": "nav.items.matchSquadSelection",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff",
-          "access": {
-            "scopes": [
-              "staff"
-            ],
-            "domains": [
-              "sport"
-            ]
-          }
-        },
-        {
           "id": "sport-my-requests",
           "routeName": "dashboard-sport-coach-requests",
           "labelKey": "nav.items.myRequests",
