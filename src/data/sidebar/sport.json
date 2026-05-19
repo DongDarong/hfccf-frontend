@@ -81,6 +81,13 @@
           "labelKey": "nav.items.playerLifecycle",
           "icon": "users",
           "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-match-squad-review",
+          "routeName": "dashboard-sport-admin-match-squad-review",
+          "labelKey": "nav.items.matchSquadReview",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
         }
       ]
     }

@@ -62,6 +62,8 @@ export default {
     myTeams: 'My Teams',
     myRequests: 'My Requests',
     teamRoster: 'Team Roster',
+    matchSquadSelection: 'Match Squad',
+    matchSquadReview: 'Squad Review',
     coachTeamAssignments: 'Coach Assignments',
     pendingPlayerApprovals: 'Player Approvals',
     pendingMatchApprovals: 'Match Approvals',

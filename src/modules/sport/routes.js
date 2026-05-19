@@ -149,6 +149,15 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-coach/matches/:matchId/squad',
+    name: 'dashboard-sport-coach-match-squad-selection',
+    component: () => import('@/modules/sport/coach/pages/MatchSquadSelection.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-coach/players/request',
     name: 'dashboard-sport-coach-player-request',
     component: () => import('@/modules/sport/coach/pages/AddPlayerRequest.vue'),
@@ -215,6 +224,15 @@ export const sportRoutes = [
     path: '/module/sport-admin/player-lifecycle',
     name: 'dashboard-sport-admin-player-lifecycle',
     component: () => import('@/modules/sport/admin/pages/PlayerLifecycleManagement.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/matches/:matchId/squad',
+    name: 'dashboard-sport-admin-match-squad-review',
+    component: () => import('@/modules/sport/admin/pages/MatchSquadReview.vue'),
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.ADMIN],

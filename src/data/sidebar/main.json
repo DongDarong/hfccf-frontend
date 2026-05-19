@@ -91,6 +91,21 @@
           }
         },
         {
+          "id": "sport-match-squad-selection",
+          "routeName": "dashboard-sport-coach-match-squad-selection",
+          "labelKey": "nav.items.matchSquadSelection",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "sport-my-requests",
           "routeName": "dashboard-sport-coach-requests",
           "labelKey": "nav.items.myRequests",
@@ -456,6 +471,21 @@
           "routeName": "dashboard-sport-admin-player-lifecycle",
           "labelKey": "nav.items.playerLifecycle",
           "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-match-squad-review",
+          "routeName": "dashboard-sport-admin-match-squad-review",
+          "labelKey": "nav.items.matchSquadReview",
+          "icon": "reports",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [
