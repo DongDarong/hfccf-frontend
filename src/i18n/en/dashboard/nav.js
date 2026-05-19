@@ -59,14 +59,11 @@ export default {
     applications: 'Applications',
     payments: 'Payments',
     trainingSchedule: 'Training Schedule',
-<<<<<<< HEAD
     forms: 'Forms',
     reports: 'Reports',
     classroomResources: 'Classroom Resources',
-    attendance: 'Attendance',
     healthy: 'Healthy',
     classroomresources: 'Classroom Resources',
-=======
     myTeams: 'My Teams',
     myRequests: 'My Requests',
     teamRoster: 'Team Roster',
@@ -76,7 +73,6 @@ export default {
     pendingPlayerApprovals: 'Player Approvals',
     pendingMatchApprovals: 'Match Approvals',
     playerLifecycle: 'Player Lifecycle',
->>>>>>> feature/match-events-frontend
   },
   badges: {
     admin: 'Admin',
