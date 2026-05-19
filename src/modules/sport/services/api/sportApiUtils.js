@@ -141,6 +141,7 @@ export function normalizeTeamRow(row = {}) {
     captainName: normalizeText(row.captainName || row.captain_name),
     playersCount: Number(row.playersCount ?? row.players_count ?? row.players ?? 0),
     players: Number(row.playersCount ?? row.players_count ?? row.players ?? 0),
+    activePlayersCount: Number(row.activePlayersCount ?? row.active_players_count ?? 0),
     matchesCount: Number(row.matchesCount ?? row.matches_count ?? row.matches ?? 0),
     matches: Number(row.matchesCount ?? row.matches_count ?? row.matches ?? 0),
     wins: Number(row.wins ?? 0),
@@ -250,6 +251,11 @@ export function normalizePlayerRow(row = {}) {
     matchesPlayed: Number(row.matchesPlayed ?? row.matches_played ?? 0),
     goalsScored: Number(row.goalsScored ?? row.goals_scored ?? 0),
     approvalStatus: normalizeText(row.approvalStatus || row.approval_status),
+    rosterStatus: normalizeText(row.rosterStatus || row.roster_status || row.status || 'inactive'),
+    disciplinaryStatus: normalizeText(row.disciplinaryStatus || row.disciplinary_status),
+    injuryStatus: normalizeText(row.injuryStatus || row.injury_status),
+    archivedAt: row.archivedAt || row.archived_at || '',
+    statusNotes: normalizeText(row.statusNotes || row.status_notes),
     createdByUserId: row.createdByUserId ?? row.created_by_user_id ?? '',
     approvedByUserId: row.approvedByUserId ?? row.approved_by_user_id ?? '',
     approvedAt: row.approvedAt || row.approved_at || '',
@@ -259,6 +265,39 @@ export function normalizePlayerRow(row = {}) {
     createdAt: row.createdAt || row.created_at || '',
     updatedAt: row.updatedAt || row.updated_at || '',
     deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
+export function normalizeMembershipRow(row = {}) {
+  const team = row.team || {}
+  const player = row.player || {}
+
+  return {
+    id: row.id ?? '',
+    teamId: row.teamId ?? row.team_id ?? '',
+    playerId: row.playerId ?? row.player_id ?? '',
+    status: normalizeText(row.status || 'inactive'),
+    joinedAt: row.joinedAt || row.joined_at || '',
+    leftAt: row.leftAt || row.left_at || '',
+    suspensionUntil: row.suspensionUntil || row.suspension_until || '',
+    injuryNotes: normalizeText(row.injuryNotes || row.injury_notes),
+    notes: normalizeText(row.notes),
+    createdByUserId: row.createdByUserId ?? row.created_by_user_id ?? '',
+    updatedByUserId: row.updatedByUserId ?? row.updated_by_user_id ?? '',
+    team: {
+      id: team.id ?? '',
+      teamCode: normalizeText(team.teamCode || team.team_code),
+      name: normalizeText(team.name),
+      shortName: normalizeText(team.shortName || team.short_name),
+    },
+    player: {
+      id: player.id ?? '',
+      playerCode: normalizeText(player.playerCode || player.player_code),
+      name: normalizeText(player.name || `${normalizeText(player.firstName || player.first_name)} ${normalizeText(player.lastName || player.last_name)}`),
+      approvalStatus: normalizeText(player.approvalStatus || player.approval_status),
+      rosterStatus: normalizeText(player.rosterStatus || player.roster_status || player.status),
+    },
     raw: row,
   }
 }

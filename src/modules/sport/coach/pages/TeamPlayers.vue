@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -9,40 +9,27 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { useCoachPlayerRequests } from '../composables/useCoachPlayerRequests'
+import { useTeamRoster } from '../composables/useTeamRoster'
+import { playerStatusTone } from '@/modules/sport/constants/playerStatus'
 
 defineOptions({ name: 'SportCoachTeamPlayersPage' })
 
 const router = useRouter()
 const route = useRoute()
 const { t, language } = useLanguage()
-const { loadTeamPlayers } = useCoachPlayerRequests()
-const team = ref(null)
-const players = ref([])
-const loading = ref(false)
+const { team, players, loadRoster, loading, error } = useTeamRoster()
 const isKh = computed(() => language.value === 'KH')
 
 const pageTitle = computed(() => team.value?.name || t('sportCoachTeamManagement.teamPlayers.title'))
 const pageSubtitle = computed(() => t('sportCoachTeamManagement.teamPlayers.subtitle'))
 
 function statusTone(status) {
-  const value = String(status || '').toLowerCase()
-  if (value === 'approved' || value === 'active') return 'success'
-  if (value === 'pending') return 'warning'
-  if (value === 'rejected') return 'danger'
-  return 'info'
+  return playerStatusTone(status)
 }
 
 async function load(teamId) {
   if (!teamId) return
-  loading.value = true
-  try {
-    const response = await loadTeamPlayers(teamId)
-    team.value = response.team || null
-    players.value = response.players || []
-  } finally {
-    loading.value = false
-  }
+  await loadRoster(teamId)
 }
 
 function goToAddPlayer() {
@@ -71,7 +58,7 @@ watch(
         </template>
         <template #content>
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <p class="m-0 text-sm text-slate-500">
+          <p class="m-0 text-sm text-slate-500">
               {{ team?.name || t('sportCoachTeamManagement.teamPlayers.emptyTeam') }}
             </p>
             <Button :label="t('sportCoachTeamManagement.actions.addPlayer')" icon="pi pi-plus" @click="goToAddPlayer" />
@@ -87,6 +74,8 @@ watch(
               </template>
             </Column>
           </DataTable>
+
+          <p v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</p>
         </template>
       </Card>
     </section>

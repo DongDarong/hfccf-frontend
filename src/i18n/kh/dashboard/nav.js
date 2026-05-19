@@ -61,9 +61,11 @@ export default {
     trainingSchedule: 'កាលវិភាគហ្វឹកហាត់',
     myTeams: 'ក្រុមរបស់ខ្ញុំ',
     myRequests: 'សំណើរបស់ខ្ញុំ',
+    teamRoster: 'បញ្ជីកីឡាករ',
     coachTeamAssignments: 'ការចាត់តាំងគ្រូបង្វឹក',
     pendingPlayerApprovals: 'ការអនុម័តកីឡាករ',
     pendingMatchApprovals: 'ការអនុម័តការប្រកួត',
+    playerLifecycle: 'ជីវចលកីឡាករ',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',

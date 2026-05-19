@@ -76,6 +76,21 @@
           }
         },
         {
+          "id": "sport-team-roster",
+          "routeName": "dashboard-sport-coach-roster",
+          "labelKey": "nav.items.teamRoster",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "sport-my-requests",
           "routeName": "dashboard-sport-coach-requests",
           "labelKey": "nav.items.myRequests",
@@ -425,6 +440,22 @@
           "routeName": "dashboard-sport-admin-pending-match-approvals",
           "labelKey": "nav.items.pendingMatchApprovals",
           "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        }
+        ,
+        {
+          "id": "sport-player-lifecycle",
+          "routeName": "dashboard-sport-admin-player-lifecycle",
+          "labelKey": "nav.items.playerLifecycle",
+          "icon": "users",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [

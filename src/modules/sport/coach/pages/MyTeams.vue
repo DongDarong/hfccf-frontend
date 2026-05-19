@@ -32,7 +32,7 @@ function teamStatusTone(status) {
 function goToTeam(team) {
   const id = String(team?.id || '').trim()
   if (!id) return
-  router.push({ name: 'dashboard-sport-coach-team-players', params: { teamId: id } })
+  router.push({ name: 'dashboard-sport-coach-roster', query: { teamId: id } })
 }
 
 function goToPlayerRequest(team) {

@@ -61,9 +61,11 @@ export default {
     trainingSchedule: 'Training Schedule',
     myTeams: 'My Teams',
     myRequests: 'My Requests',
+    teamRoster: 'Team Roster',
     coachTeamAssignments: 'Coach Assignments',
     pendingPlayerApprovals: 'Player Approvals',
     pendingMatchApprovals: 'Match Approvals',
+    playerLifecycle: 'Player Lifecycle',
   },
   badges: {
     admin: 'Admin',

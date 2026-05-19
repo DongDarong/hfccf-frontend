@@ -131,6 +131,15 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-coach/roster',
+    name: 'dashboard-sport-coach-roster',
+    component: () => import('@/modules/sport/coach/pages/TeamRoster.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-coach/teams/:teamId',
     name: 'dashboard-sport-coach-team-players',
     component: () => import('@/modules/sport/coach/pages/TeamPlayers.vue'),
@@ -197,6 +206,15 @@ export const sportRoutes = [
     path: '/module/sport-admin/pending-match-approvals',
     name: 'dashboard-sport-admin-pending-match-approvals',
     component: () => import('@/modules/sport/admin/pages/PendingMatchApprovals.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/player-lifecycle',
+    name: 'dashboard-sport-admin-player-lifecycle',
+    component: () => import('@/modules/sport/admin/pages/PlayerLifecycleManagement.vue'),
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.ADMIN],

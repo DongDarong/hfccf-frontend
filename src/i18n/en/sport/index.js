@@ -9,6 +9,7 @@ import addCoach from './admin/add-coach'
 import coachTrainingSchedule from './coach-training-schedule'
 import coachDashboard from './coach-dashboard'
 import coachTeamManagement from './coach-team-management'
+import playerLifecycle from './player-lifecycle'
 
 export default {
   ...dashboard,
@@ -22,4 +23,5 @@ export default {
   ...coachTrainingSchedule,
   ...coachDashboard,
   ...coachTeamManagement,
+  ...playerLifecycle,
 }
