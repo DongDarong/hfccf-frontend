@@ -33,4 +33,13 @@ export const reportsRoutes = [
       scopes: [ACCESS_SCOPES.SUPER_ADMIN],
     },
   }),
+  defineAppRoute({
+    path: '/module/reports/audit-logs',
+    name: 'reports-audit-logs',
+    component: () => import('@/modules/reports/pages/AuditLogs.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
 ]

@@ -61,6 +61,7 @@ export default {
     trainingSchedule: 'កាលវិភាគហ្វឹកហាត់',
     forms: 'ទម្រង់',
     reports: 'របាយការណ៍',
+    auditLogs: 'កំណត់ត្រាសវនកម្ម',
     classroomResources: 'ធនធានថ្នាក់រៀន',
     healthy: 'សុខភាព',
     classroomresources: 'ធនធានថ្នាក់រៀន',

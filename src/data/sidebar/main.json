@@ -570,6 +570,21 @@
               "sport"
             ]
           }
+        },
+        {
+          "id": "sport-audit-logs",
+          "routeName": "reports-audit-logs",
+          "labelKey": "nav.items.auditLogs",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
         }
       ]
     }
