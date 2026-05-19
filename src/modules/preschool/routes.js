@@ -66,6 +66,42 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/attendance',
+    name: 'dashboard-preschool-admin-attendance',
+    component: () => import('@/modules/preschool/admin/pages/AttendentManagement.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+   defineAppRoute({
+    path: '/module/preschool-admin/reports',
+    name: 'dashboard-preschool-admin-reports',
+    component: () => import('@/modules/preschool/admin/pages/ReportManagement.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/forms',
+    name: 'dashboard-preschool-admin-forms',
+    component: () => import('@/modules/preschool/admin/pages/FormManagement.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/classroom-resources',
+    name: 'dashboard-preschool-admin-classroom-resources',
+    component: () => import('@/modules/preschool/admin/pages/ClassroomResources.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/teacher',
     name: 'dashboard-preschool-teacher',
     component: () => import('@/modules/preschool/teacher/pages/Dashboard.vue'),
@@ -92,4 +128,32 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/report',
+    name: 'dashboard-preschool-teacher-report',
+    component: () => import('@/modules/preschool/teacher/pages/Report.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+    defineAppRoute({
+    path: '/module/preschool-admin/teacher/classroomresources',
+    name: 'dashboard-preschool-teacher-classroomresources',
+    component: () => import('@/modules/preschool/teacher/pages/Classroomresources.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+    defineAppRoute({
+    path: '/module/preschool-admin/teacher/healthy',
+    name: 'dashboard-preschool-teacher-healthy',
+    component: () => import('@/modules/preschool/teacher/pages/Healthy.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+
 ]

@@ -58,6 +58,12 @@ export default {
     applications: 'ពាក្យស្នើសុំ',
     payments: 'ការទូទាត់',
     trainingSchedule: 'កាលវិភាគហ្វឹកហាត់',
+    forms: 'ទម្រង់',
+    reports: 'របាយការណ៍',
+    classroomResources: 'ធនធានថ្នាក់រៀន',
+    attendance: 'វត្តមាន',
+    healthy: 'សុខភាព',
+    classroomresources: 'ធនធានថ្នាក់រៀន',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',

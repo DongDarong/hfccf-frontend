@@ -58,6 +58,12 @@ export default {
     applications: 'Applications',
     payments: 'Payments',
     trainingSchedule: 'Training Schedule',
+    forms: 'Forms',
+    reports: 'Reports',
+    classroomResources: 'Classroom Resources',
+    attendance: 'Attendance',
+    healthy: 'Healthy',
+    classroomresources: 'Classroom Resources',
   },
   badges: {
     admin: 'Admin',
