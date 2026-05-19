@@ -1,5 +1,4 @@
 import { defineAppRoute } from '@/router/defineAppRoute'
-import DashboardPage from '@/modules/dashboard/pages/Dashboard.vue'
 
 export const dashboardRoutes = [
   {
@@ -9,7 +8,19 @@ export const dashboardRoutes = [
   defineAppRoute({
     path: '/module/dashboard',
     name: 'dashboard',
-    component: DashboardPage,
+    component: () => import('@/modules/dashboard/pages/Dashboard.vue'),
+    access: {},
+  }),
+  defineAppRoute({
+    path: '/module/calendar',
+    name: 'calendar',
+    component: () => import('@/modules/dashboard/pages/Calendar.vue'),
+    access: {},
+  }),
+  defineAppRoute({
+    path: '/module/notifications',
+    name: 'dashboard-notifications',
+    component: () => import('@/modules/dashboard/pages/Notifications.vue'),
     access: {},
   }),
 ]

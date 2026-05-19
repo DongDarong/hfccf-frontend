@@ -6,14 +6,19 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Form from '@/components/forms/Form.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
-import { ROLES } from '@/constants/roles'
-import { mapUser } from '@/services/mappers/userMapper'
-import usersMock from '@/mocks/users.json'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import AddTeacherIntro from '@/modules/preschool/admin/components/add-teacher/AddTeacherIntro.vue'
 import AddTeacherFormFields from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormFields.vue'
 import AddTeacherFormActions from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormActions.vue'
+import { useLanguage } from '@/composables/useLanguage'
+import { ROLES } from '@/constants/roles'
+import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
+import {
+  createPreschoolTeacher,
+  fetchPreschoolTeacher,
+  updatePreschoolTeacher,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminAddTeacherPage',
@@ -21,24 +26,23 @@ defineOptions({
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useLanguage()
 
 const teacherDirectoryPath = '/module/preschool-admin/users'
-const roleOptions = [ROLES.TEACHER_PRESCHOOL]
+const teacherRole = ROLES.TEACHER_PRESCHOOL
+const roleOptions = [teacherRole]
 const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const permissionOptions = ['dashboard:read', 'classes:write', 'students:read', 'tasks:write']
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const maxProfileImageSizeBytes = 2 * 1024 * 1024
 
 const form = reactive({
   name: '',
   email: '',
   phone: '',
-  role: ROLES.TEACHER_PRESCHOOL,
-  permissions: permissionOptions.slice(0, 3),
+  role: teacherRole,
   status: statusOptions[0],
   password: '',
   confirmPassword: '',
   profileImage: null,
+  removeAvatar: false,
 })
 
 const isSubmitting = ref(false)
@@ -48,6 +52,8 @@ const showError = ref(false)
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 const profileImagePreview = ref('')
+const rolePermissions = ref([])
+const rolePermissionsLoading = ref(false)
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -58,38 +64,31 @@ const isViewMode = computed(() => mode.value === 'view')
 const isEditMode = computed(() => mode.value === 'edit')
 const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
+const editingTeacherId = computed(() => String(route.query.id || '').trim())
 
 const pageTitle = computed(() => {
-  if (isViewMode.value) return 'Teacher Details'
-  if (isEditMode.value) return 'Update Teacher'
-  return 'Add Teacher'
+  if (isViewMode.value) return t('preschoolAddTeacher.viewTitle')
+  if (isEditMode.value) return t('preschoolAddTeacher.updateTitle')
+  return t('preschoolAddTeacher.title')
 })
 
 const pageSubtitle = computed(() => {
-  if (isViewMode.value) return 'Review the teacher profile, permissions, and account status.'
-  if (isEditMode.value) return 'Update the teacher profile, permissions, and account details.'
-  return 'Create a Preschool teacher account and assign classroom access.'
+  if (isViewMode.value) return t('preschoolAddTeacher.pageSubtitle.view')
+  if (isEditMode.value) return t('preschoolAddTeacher.pageSubtitle.edit')
+  return t('preschoolAddTeacher.pageSubtitle.add')
 })
 
 function statusLabel(status) {
   const normalized = String(status || '').trim().toLowerCase()
-  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : ''
+  if (!normalized) return ''
+  return t(`common.status.${normalized}`) || normalized.charAt(0).toUpperCase() + normalized.slice(1)
 }
 
 function roleLabel(value) {
-  if (String(value || '').trim().toLowerCase() === ROLES.TEACHER_PRESCHOOL) {
-    return 'Preschool Teacher'
+  if (String(value || '').trim().toLowerCase() === teacherRole) {
+    return t('preschoolAddTeacher.introEyebrow')
   }
-  return String(value || '')
-}
-
-function permissionLabel(value) {
-  return String(value || '')
-    .replace(/[:_]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  return String(value || '-')
 }
 
 function resetFeedback() {
@@ -105,19 +104,8 @@ function toggleConfirmPasswordVisibility() {
   isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value
 }
 
-function hasPermission(permission) {
-  return form.permissions.includes(permission)
-}
-
-function togglePermission(permission) {
-  if (isFormLocked.value) return
-
-  if (hasPermission(permission)) {
-    form.permissions = form.permissions.filter((value) => value !== permission)
-    return
-  }
-
-  form.permissions = [...form.permissions, permission]
+function isBlobUrl(value) {
+  return String(value || '').startsWith('blob:')
 }
 
 function onProfileImageChange(event) {
@@ -126,45 +114,50 @@ function onProfileImageChange(event) {
   const [file] = event?.target?.files || []
   if (!file) return
 
-  if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = 'Profile image must be a JPG, PNG, WEBP, or GIF file.'
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    errorMessage.value = t('preschoolAddTeacher.validation.profileImageType')
     showError.value = true
     return
   }
 
-  if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = 'Profile image must be smaller than 2MB.'
+  if (file.size > 2 * 1024 * 1024) {
+    errorMessage.value = t('preschoolAddTeacher.validation.profileImageSize')
     showError.value = true
     return
   }
 
-  if (profileImagePreview.value.startsWith('blob:')) {
+  if (isBlobUrl(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 
   form.profileImage = file
+  form.removeAvatar = false
   profileImagePreview.value = URL.createObjectURL(file)
 }
 
 function removeProfileImage() {
   if (isFormLocked.value) return
 
-  if (profileImagePreview.value.startsWith('blob:')) {
+  if (isBlobUrl(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 
   profileImagePreview.value = ''
   form.profileImage = null
+  form.removeAvatar = true
 }
 
 function validateForm() {
-  if (!form.name.trim()) return 'Full name is required.'
-  if (!form.email.trim()) return 'Email is required.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email.'
-  if (!form.permissions.length) return 'Select at least one permission.'
-  if (!form.status) return 'Status is required.'
-  if (form.password.length < 6) return 'Password must be at least 6 characters.'
-  if (form.password !== form.confirmPassword) return 'Passwords do not match.'
+  if (!form.name.trim()) return t('preschoolAddTeacher.validation.nameRequired')
+  if (!form.email.trim()) return t('preschoolAddTeacher.validation.emailRequired')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('preschoolAddTeacher.validation.emailInvalid')
+  if (!form.status) return t('preschoolAddTeacher.validation.statusRequired')
+
+  if (isAddMode.value || form.password || form.confirmPassword) {
+    if (form.password.length < 8) return t('preschoolAddTeacher.validation.passwordTooShort')
+    if (form.password !== form.confirmPassword) return t('preschoolAddTeacher.validation.passwordsMismatch')
+  }
+
   return ''
 }
 
@@ -173,9 +166,45 @@ async function goBackToTeachers() {
 }
 
 async function goToEditMode() {
-  const id = String(route.query.id || '').trim()
-  if (!id) return
-  await router.push({ path: '/module/preschool-admin/users/add', query: { mode: 'edit', id } })
+  if (!editingTeacherId.value) return
+  await router.push({ path: '/module/preschool-admin/users/add', query: { mode: 'edit', id: editingTeacherId.value } })
+}
+
+function populateFromTeacher(user) {
+  form.name = user?.fullName || user?.name || user?.username || ''
+  form.email = user?.email || ''
+  form.phone = user?.phone || ''
+  form.role = teacherRole
+  form.status = String(user?.status || statusOptions[0]).toLowerCase()
+  form.password = ''
+  form.confirmPassword = ''
+  form.profileImage = null
+  form.removeAvatar = false
+  profileImagePreview.value = String(user?.avatar || '').trim()
+}
+
+async function loadRolePermissions() {
+  rolePermissionsLoading.value = true
+  try {
+    rolePermissions.value = await fetchRolePermissions(teacherRole)
+  } catch {
+    rolePermissions.value = []
+  } finally {
+    rolePermissionsLoading.value = false
+  }
+}
+
+async function loadTeacher() {
+  if (!editingTeacherId.value) return
+
+  try {
+    const teacher = await fetchPreschoolTeacher(editingTeacherId.value)
+    if (!teacher) return
+    populateFromTeacher(teacher)
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAddTeacher.validation.loadFailed')
+    showError.value = true
+  }
 }
 
 async function onSubmit() {
@@ -191,13 +220,33 @@ async function onSubmit() {
   }
 
   isSubmitting.value = true
+
   try {
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      role: teacherRole,
+      status: form.status,
+      avatar: form.profileImage,
+      removeAvatar: form.removeAvatar,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+    }
+
+    if (isEditMode.value) {
+      await updatePreschoolTeacher(editingTeacherId.value, payload)
+    } else {
+      await createPreschoolTeacher(payload)
+    }
+
     showSuccess.value = true
-  } catch {
-    errorMessage.value = isEditMode.value
-      ? 'Failed to update the teacher account.'
-      : 'Failed to create the teacher account.'
+  } catch (error) {
+    errorMessage.value =
+      error?.message ||
+      (isEditMode.value
+        ? t('preschoolAddTeacher.validation.updateFailed')
+        : t('preschoolAddTeacher.validation.createFailed'))
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -213,85 +262,46 @@ async function onSuccessClose() {
   await goBackToTeachers()
 }
 
-function populateFromUser(user) {
-  form.name = user.name || user.username || ''
-  form.email = user.email || ''
-  form.phone = user.phone || ''
-  form.role = ROLES.TEACHER_PRESCHOOL
-  form.permissions = Array.isArray(user.permissions) ? [...user.permissions] : permissionOptions.slice(0, 3)
-
-  const normalizedStatus = String(user.status || '')
-  const matchedStatus = statusOptions.find(
-    (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
-  )
-  form.status = matchedStatus || statusOptions[0]
-  form.password = 'Teacher@123'
-  form.confirmPassword = 'Teacher@123'
-  form.profileImage = null
-  profileImagePreview.value = String(user.avatar || '').trim()
-}
-
-onMounted(() => {
-  if (isAddMode.value) return
-
-  const id = String(route.query.id || '').trim()
-  const found = mapUser(
-    usersMock.find(
-      (item) =>
-        String(item.id) === id && String(item.role || '').toLowerCase() === ROLES.TEACHER_PRESCHOOL,
-    ) || {},
-  )
-
-  if (!found?.id) return
-  populateFromUser(found)
-})
-
-onBeforeUnmount(() => {
-  if (profileImagePreview.value.startsWith('blob:')) {
-    URL.revokeObjectURL(profileImagePreview.value)
-  }
-})
-
 const selectedRoleDescription = computed(() => roleLabel(form.role))
 
 const formSummaryCards = computed(() => {
-  const permissionCount = form.permissions.length
+  const permissionCount = rolePermissions.value.length
   const securityStatus =
-    form.password.length >= 6 && form.confirmPassword === form.password ? 'success' : 'warning'
+    isAddMode.value || form.password.length >= 8 ? 'success' : 'warning'
 
   return [
     {
       id: 'teacher-role',
-      title: 'Role Scope',
+      title: t('preschoolAddTeacher.roleScopeTitle'),
       value: selectedRoleDescription.value,
-      label: 'Program access',
+      label: t('preschoolAddTeacher.programAccess'),
       status: 'info',
       statusLabel: statusLabel('info'),
       surfaceClass: 'bg-cyan-50/80 border-cyan-200',
     },
     {
       id: 'teacher-permissions',
-      title: 'Permissions',
+      title: t('preschoolAddTeacher.permissionsTitle'),
       value: permissionCount,
-      label: permissionCount ? 'Configured permissions' : 'No permissions selected',
-      status: permissionCount ? 'success' : 'warning',
-      statusLabel: statusLabel(permissionCount ? 'success' : 'warning'),
+      label: permissionCount ? t('preschoolAddTeacher.configuredPermissions') : t('preschoolAddTeacher.permissionsFromRole'),
+      status: 'success',
+      statusLabel: statusLabel('success'),
       surfaceClass: 'bg-lime-50/80 border-lime-200',
     },
     {
       id: 'teacher-account-state',
-      title: 'Account State',
+      title: t('preschoolAddTeacher.accountStateTitle'),
       value: statusLabel(form.status),
-      label: 'Initial account status',
+      label: t('preschoolAddTeacher.initialAccountStatus'),
       status: form.status,
       statusLabel: statusLabel(form.status),
       surfaceClass: 'bg-amber-50/80 border-amber-200',
     },
     {
       id: 'teacher-security-review',
-      title: 'Security Review',
-      value: profileImagePreview.value ? 'Ready' : 'Pending',
-      label: profileImagePreview.value ? 'Profile image set' : 'Profile image pending',
+      title: t('preschoolAddTeacher.securityReviewTitle'),
+      value: profileImagePreview.value ? t('preschoolAddTeacher.ready') : t('preschoolAddTeacher.pending'),
+      label: profileImagePreview.value ? t('preschoolAddTeacher.profileImageSet') : t('preschoolAddTeacher.profileImagePending'),
       status: securityStatus,
       statusLabel: statusLabel(securityStatus),
       surfaceClass: 'bg-rose-50/80 border-rose-200',
@@ -301,22 +311,38 @@ const formSummaryCards = computed(() => {
 
 const checklistItems = computed(() => [
   {
-    title: 'Role',
+    title: t('preschoolAddTeacher.checklist.roleTitle'),
     text: selectedRoleDescription.value,
   },
   {
-    title: 'Permissions',
-    text: 'Grant access for classes, student records, and daily teaching tasks.',
+    title: t('preschoolAddTeacher.checklist.permissionsTitle'),
+    text: t('preschoolAddTeacher.checklist.permissions'),
   },
   {
-    title: 'Security',
-    text: 'Set a password and verify the teacher profile image before saving.',
+    title: t('preschoolAddTeacher.checklist.securityTitle'),
+    text: t('preschoolAddTeacher.checklist.security'),
   },
   {
-    title: 'Review',
-    text: 'Confirm the account status and contact details before submission.',
+    title: t('preschoolAddTeacher.checklist.reviewTitle'),
+    text: t('preschoolAddTeacher.checklist.review'),
   },
 ])
+
+onMounted(async () => {
+  await loadRolePermissions()
+
+  if (isAddMode.value) {
+    return
+  }
+
+  await loadTeacher()
+})
+
+onBeforeUnmount(() => {
+  if (isBlobUrl(profileImagePreview.value)) {
+    URL.revokeObjectURL(profileImagePreview.value)
+  }
+})
 </script>
 
 <template>
@@ -330,8 +356,8 @@ const checklistItems = computed(() => [
         <Form
           class="add-teacher-page__form"
           :title="pageTitle"
-          description="Complete the teacher profile, permissions, and sign-in details."
-          :cancel-text="'Cancel'"
+          :description="t('preschoolAddTeacher.formDescription')"
+          :cancel-text="t('common.cancel')"
           :loading="isSubmitting"
           :disabled="isViewMode"
           :show-cancel="true"
@@ -347,8 +373,8 @@ const checklistItems = computed(() => [
             :profile-image-preview="profileImagePreview"
             :role-options="roleOptions"
             :status-options="statusOptions"
-            :permission-options="permissionOptions"
-            :permissions="form.permissions"
+            :role-permissions="rolePermissions"
+            :role-permissions-loading="rolePermissionsLoading"
             :name="form.name"
             :email="form.email"
             :phone="form.phone"
@@ -361,7 +387,6 @@ const checklistItems = computed(() => [
             :is-confirm-password-visible="isConfirmPasswordVisible"
             :role-label="roleLabel"
             :status-label="statusLabel"
-            :permission-label="permissionLabel"
             @update:name="form.name = $event"
             @update:email="form.email = $event"
             @update:phone="form.phone = $event"
@@ -371,7 +396,6 @@ const checklistItems = computed(() => [
             @update:confirm-password="form.confirmPassword = $event"
             @profile-image-change="onProfileImageChange"
             @profile-image-remove="removeProfileImage"
-            @toggle-permission="togglePermission"
             @toggle-password="togglePasswordVisibility"
             @toggle-confirm-password="toggleConfirmPasswordVisibility"
           />
@@ -389,10 +413,10 @@ const checklistItems = computed(() => [
 
         <div class="add-teacher-page__rail">
           <AdminChecklistPanel
-            title="Teacher Setup Checklist"
-            description="Review the essentials before activating the account."
+            :title="t('preschoolAddTeacher.sidebarTitle')"
+            :description="t('preschoolAddTeacher.sidebarText')"
             :items="checklistItems"
-            highlight-label="Role Scope"
+            :highlight-label="t('preschoolAddTeacher.roleScopeTitle')"
             :highlight-value="selectedRoleDescription"
           />
         </div>
@@ -401,21 +425,21 @@ const checklistItems = computed(() => [
 
     <AlertError
       :show="showError"
-      title="Validation Error"
+      :title="t('preschoolAddTeacher.validation.validationError')"
       :message="errorMessage"
-      button-text="Close"
+      :button-text="t('preschoolAddTeacher.buttons.close')"
       @close="onErrorClose"
     />
 
     <AlertSuccess
       :show="showSuccess"
-      :title="isEditMode ? 'Teacher Updated' : 'Teacher Created'"
+      :title="isEditMode ? t('preschoolAddTeacher.feedback.updatedTitle') : t('preschoolAddTeacher.feedback.createdTitle')"
       :message="
         isEditMode
-          ? 'The teacher account has been updated successfully.'
-          : 'The teacher account has been created successfully.'
+          ? t('preschoolAddTeacher.feedback.updatedMessage')
+          : t('preschoolAddTeacher.feedback.createdMessage')
       "
-      button-text="Back to Teachers"
+      :button-text="t('preschoolAddTeacher.buttons.backToTeachers')"
       @close="onSuccessClose"
     />
   </MainLayout>

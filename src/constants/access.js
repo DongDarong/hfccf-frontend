@@ -27,6 +27,7 @@ export const ROLE_ACCESS_MAP = Object.freeze({
     scope: ACCESS_SCOPES.SUPER_ADMIN,
     domain: DOMAINS.GLOBAL,
   },
+
   [ROLES.ADMIN_ENGLISH]: {
     scope: ACCESS_SCOPES.ADMIN,
     domain: DOMAINS.ENGLISH,
@@ -43,6 +44,7 @@ export const ROLE_ACCESS_MAP = Object.freeze({
     scope: ACCESS_SCOPES.ADMIN,
     domain: DOMAINS.SPORT,
   },
+
   [ROLES.TEACHER_ENGLISH]: {
     scope: ACCESS_SCOPES.STAFF,
     domain: DOMAINS.ENGLISH,
@@ -64,4 +66,3 @@ export const ROLE_ACCESS_MAP = Object.freeze({
 export function getRoleAccess(role) {
   return ROLE_ACCESS_MAP[normalizeRole(role)] || null
 }
-

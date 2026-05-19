@@ -1,0 +1,53 @@
+{
+  "sections": [
+    {
+      "id": "sport",
+      "labelKey": "nav.sections.sportProgram",
+      "captionKey": "nav.sectionCaptions.sportProgram",
+      "className": "sidebar-section--sport",
+      "collapsible": true,
+      "access": {
+        "scopes": [
+          "super_admin"
+        ]
+      },
+      "items": [
+        {
+          "id": "sport-dashboard",
+          "routeName": "dashboard-sport-admin",
+          "labelKey": "nav.items.sportDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "sport-coaches",
+          "routeName": "dashboard-sport-admin-users",
+          "labelKey": "nav.items.coaches",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-teams",
+          "routeName": "dashboard-sport-admin-teams",
+          "labelKey": "nav.items.teams",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-players",
+          "routeName": "dashboard-sport-admin-players",
+          "labelKey": "nav.items.players",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "sport-matches",
+          "routeName": "dashboard-sport-admin-matches",
+          "labelKey": "nav.items.matches",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        }
+      ]
+    }
+  ]
+}

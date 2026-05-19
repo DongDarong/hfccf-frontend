@@ -1,18 +1,142 @@
 <script setup>
-import RoleDashboardLayout from '@/shared/components/dashboards/RoleDashboardLayout.vue'
+import { computed, onMounted, ref } from 'vue'
+import MainLayout from '@/layouts/MainLayout.vue'
+import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import PreschoolDashboardSummary from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSummary.vue'
+import PreschoolDashboardSpotlight from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSpotlight.vue'
+import PreschoolDashboardActionList from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActionList.vue'
+import PreschoolDashboardActivity from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActivity.vue'
+import { fetchPreschoolDashboard } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'TeacherPreschoolDashboard',
 })
+
+const dashboard = ref({
+  summary: {
+    students: 0,
+    classes: 0,
+    teachers: 0,
+    attendanceToday: 0,
+    pendingPayments: 0,
+    overduePayments: 0,
+  },
+  recentAttendance: [],
+  upcomingClasses: [],
+  paymentSummary: {
+    paid: 0,
+    pending: 0,
+    overdue: 0,
+    cancelled: 0,
+  },
+})
+const loading = ref(false)
+const errorMessage = ref('')
+
+async function loadDashboard() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    dashboard.value = await fetchPreschoolDashboard()
+  } catch (error) {
+    errorMessage.value = error?.message || 'Failed to load preschool dashboard.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const cards = computed(() => [
+  { title: 'My Students', value: dashboard.value.summary.students || 0, label: 'Students in your classes', status: 'success' },
+  { title: 'My Classes', value: dashboard.value.summary.classes || 0, label: 'Assigned classes', status: 'info' },
+  { title: 'Attendance Today', value: dashboard.value.summary.attendanceToday || 0, label: 'Records for today', status: 'warning' },
+  { title: 'Pending Payments', value: dashboard.value.summary.pendingPayments || 0, label: 'Tuition follow-up', status: 'error' },
+])
+
+const actions = computed(() => [
+  `Upcoming classes: ${dashboard.value.upcomingClasses.length || 0}`,
+  `Overdue payments: ${dashboard.value.summary.overduePayments || 0}`,
+  `Paid payments: ${dashboard.value.paymentSummary?.paid || 0}`,
+])
+
+const notes = computed(() =>
+  (dashboard.value.recentAttendance || []).slice(0, 5).map((item) => ({
+    title: `${item.studentName || 'Student'} - ${item.className || 'Class'}`,
+    text: `${item.attendanceDate || '-'} • ${item.status || '-'}`,
+  })),
+)
+
+const spotlightTitle = computed(() =>
+  dashboard.value.upcomingClasses[0]
+    ? `${dashboard.value.upcomingClasses[0].name} is next`
+    : 'No upcoming classes',
+)
+
+const spotlightText = computed(() =>
+  dashboard.value.upcomingClasses[0]
+    ? `${dashboard.value.upcomingClasses[0].teacherDisplayName || 'Assigned teacher'} has ${dashboard.value.upcomingClasses[0].studentsCount || 0} enrolled students.`
+    : 'Your assigned classes will appear here once they are created.',
+)
+
+onMounted(() => {
+  loadDashboard()
+})
 </script>
 
 <template>
-  <RoleDashboardLayout
-    title="Preschool Teaching Workspace"
-    subtitle="Daily class support, student care, and activity planning."
-  />
+  <MainLayout>
+    <section class="preschool-dashboard-page">
+      <HeaderSection
+        title="Preschool Teaching Workspace"
+        subtitle="Daily class support, student care, and activity planning."
+      />
+
+      <div
+        v-if="errorMessage"
+        class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <div
+        v-if="loading"
+        class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
+      >
+        Loading teacher dashboard...
+      </div>
+
+      <PreschoolDashboardSummary :cards="cards" />
+
+      <div class="preschool-dashboard-page__grid">
+        <PreschoolDashboardSpotlight
+          :title="spotlightTitle"
+          :text="spotlightText"
+        />
+        <PreschoolDashboardActionList title="Quick Stats" :items="actions" />
+      </div>
+
+      <PreschoolDashboardActivity :items="notes" />
+    </section>
+  </MainLayout>
 </template>
 
+<style scoped>
+.preschool-dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
 
+.preschool-dashboard-page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+  align-items: start;
+}
 
-
+@media (max-width: 980px) {
+  .preschool-dashboard-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -1,0 +1,81 @@
+{
+  "sections": [
+    {
+      "id": "preschool",
+      "labelKey": "nav.sections.preschoolProgram",
+      "captionKey": "nav.sectionCaptions.preschoolProgram",
+      "className": "sidebar-section--preschool",
+      "collapsible": true,
+      "access": {
+        "scopes": [
+          "super_admin"
+        ]
+      },
+      "items": [
+        {
+          "id": "preschool-dashboard",
+          "routeName": "dashboard-preschool-admin",
+          "labelKey": "nav.items.preschoolDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "preschool-teachers",
+          "routeName": "dashboard-preschool-admin-users",
+          "labelKey": "nav.items.teachers",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-students",
+          "routeName": "dashboard-preschool-admin-students",
+          "labelKey": "nav.items.students",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-classes",
+          "routeName": "dashboard-preschool-admin-classes",
+          "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "labelKey": "nav.items.payments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-forms",
+          "routeName": "dashboard-preschool-admin-forms",
+          "labelKey": "nav.items.forms",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-attendance",
+          "routeName": "dashboard-preschool-admin-attendance",
+          "labelKey": "nav.items.attendance",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-reports",
+          "routeName": "dashboard-preschool-admin-reports",
+          "labelKey": "nav.items.reports",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-classroom-resources",
+          "routeName": "dashboard-preschool-admin-classroom-resources",
+          "labelKey": "nav.items.classroomResources",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        }
+      ]
+    }
+  ]
+}

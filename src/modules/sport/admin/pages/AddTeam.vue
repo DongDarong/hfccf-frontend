@@ -8,7 +8,12 @@ import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
-import teamsManagementData from '@/mocks/sport/teams-management-data.json'
+import {
+  createSportTeam,
+  fetchSportTeam,
+  fetchSportTeams,
+  updateSportTeam,
+} from '@/modules/sport/services/sportApi'
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
@@ -27,17 +32,15 @@ const teamDirectoryPath = '/module/sport-admin/teams'
 const statusOptions = ['active', 'pending', 'inactive']
 const allowedLogoImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxLogoImageSizeBytes = 2 * 1024 * 1024
-const divisionOptions = Array.from(
-  new Set(
-    (Array.isArray(teamsManagementData) ? teamsManagementData : [])
-      .map((item) => String(item?.division || '').trim())
-      .filter(Boolean),
-  ),
+const teamRows = ref([])
+
+const divisionOptions = computed(() =>
+  Array.from(new Set(teamRows.value.map((item) => String(item?.division || '').trim()).filter(Boolean))),
 )
 
 const form = reactive({
   name: '',
-  division: divisionOptions[0] || '',
+  division: '',
   coach: '',
   captain: '',
   players: 0,
@@ -81,7 +84,11 @@ function resetFeedback() {
 }
 
 function statusLabel(status) {
-  const key = `common.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
+  const normalized = String(status || '').trim()
+
+  if (!normalized) return '-'
+
+  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
   const translated = t(key)
   return translated !== key ? translated : String(status || '')
 }
@@ -227,7 +234,27 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const payload = {
+      name: form.name,
+      division: form.division,
+      coach: form.coach,
+      coach_display_name: form.coach,
+      captain: form.captain,
+      players: form.players,
+      matches: form.matches,
+      venue: form.venue,
+      status: form.status,
+      wins: form.wins,
+      draws: form.draws,
+      losses: form.losses,
+      logo: form.logo,
+    }
+
+    if (isEditMode.value && route.query.id) {
+      await updateSportTeam(route.query.id, payload)
+    } else {
+      await createSportTeam(payload)
+    }
     showSuccess.value = true
   } catch {
     errorMessage.value = isEditMode.value
@@ -250,11 +277,11 @@ async function onSuccessClose() {
 
 function populateFromTeam(team) {
   form.name = team.name || ''
-  form.division = team.division || divisionOptions[0] || ''
-  form.coach = team.coach || ''
-  form.captain = team.captain || ''
-  form.players = Number(team.players || 0)
-  form.matches = Number(team.matches || 0)
+  form.division = team.division || divisionOptions.value[0] || ''
+  form.coach = team.coachDisplayName || team.coach || ''
+  form.captain = team.captainName || team.captain || ''
+  form.players = Number(team.playersCount ?? team.players ?? 0)
+  form.matches = Number(team.matchesCount ?? team.matches ?? 0)
   form.venue = team.venue || ''
 
   const normalizedStatus = String(team.status || '')
@@ -271,15 +298,25 @@ function populateFromTeam(team) {
 }
 
 onMounted(() => {
+  fetchSportTeams({ perPage: 100 })
+    .then((response) => {
+      teamRows.value = response.items || []
+    })
+    .catch(() => {
+      teamRows.value = []
+    })
+
   if (isAddMode.value) return
 
   const id = String(route.query.id || '').trim()
-  const found = (Array.isArray(teamsManagementData) ? teamsManagementData : []).find(
-    (item) => String(item?.id || '') === id,
-  )
+  if (!id) return
 
-  if (!found) return
-  populateFromTeam(found)
+  fetchSportTeam(id)
+    .then((found) => {
+      if (!found?.id) return
+      populateFromTeam(found)
+    })
+    .catch(() => {})
 })
 
 onBeforeUnmount(() => {
@@ -355,8 +392,8 @@ onBeforeUnmount(() => {
               :is-submitting="isSubmitting"
               :is-view-mode="isViewMode"
               :is-edit-mode="isEditMode"
-              @back="goBackToTeams"
               @edit="goToEditMode"
+              @cancel="goBackToTeams"
             />
           </template>
         </Form>

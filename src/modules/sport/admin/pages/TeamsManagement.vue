@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -12,7 +12,7 @@ import SearchFilterBar from '@/components/forms/SearchFilterBar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import teamsManagementData from '@/mocks/sport/teams-management-data.json'
+import { deleteSportTeam, fetchSportTeams } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportTeamsManagementPage',
@@ -36,7 +36,7 @@ const tableEmptyText = computed(() => t('sportTeamsManagement.tableEmpty'))
 const toolbarEyebrow = computed(() => t('sportTeamsManagement.toolbarEyebrow'))
 const spotlightLabel = computed(() => t('sportTeamsManagement.spotlightLabel'))
 
-const teams = ref(Array.isArray(teamsManagementData) ? [...teamsManagementData] : [])
+const teams = ref([])
 
 async function goToAddTeam() {
   await router.push({ name: 'dashboard-sport-admin-teams-add' })
@@ -54,9 +54,10 @@ function onEditTeam(team) {
   router.push({ path: '/module/sport-admin/teams/add', query: { mode: 'edit', id } })
 }
 
-function onDeleteTeam(team) {
+async function onDeleteTeam(team) {
   const id = String(team?.id || '').trim()
   if (!id) return
+  await deleteSportTeam(id).catch(() => null)
   teams.value = teams.value.filter((item) => item.id !== id)
 }
 
@@ -255,6 +256,16 @@ watch(
     if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
   },
 )
+
+onMounted(() => {
+  fetchSportTeams({ perPage: 100 })
+    .then((response) => {
+      teams.value = response.items || []
+    })
+    .catch(() => {
+      teams.value = []
+    })
+})
 </script>
 
 <template>

@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
-import enMessages from './en/dashboard'
-import khMessages from './kh/dashboard'
+
+import enMessages from './en'
+import khMessages from './kh'
 
 const savedLocale = localStorage.getItem('locale')
 const locale = savedLocale === 'kh' ? 'kh' : 'en'
@@ -18,5 +19,3 @@ const i18n = createI18n({
 })
 
 export default i18n
-
-

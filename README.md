@@ -197,7 +197,7 @@ Current mock roles include:
 - `superadmin`
 - `adminenglish`
 - `adminpreschool`
-- `adminscholaship`
+- `adminscholarship`
 - `adminsport`
 - `teacher-english`
 - `teacher-preschool`
