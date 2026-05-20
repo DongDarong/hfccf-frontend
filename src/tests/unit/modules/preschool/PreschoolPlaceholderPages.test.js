@@ -3,7 +3,6 @@ import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
 import FormManagement from '@/modules/preschool/admin/pages/FormManagement.vue'
-import ReportManagement from '@/modules/preschool/admin/pages/ReportManagement.vue'
 import AttendanceManagement from '@/modules/preschool/admin/pages/AttendanceManagement.vue'
 import TeacherClassroomResources from '@/modules/preschool/teacher/pages/TeacherClassroomResources.vue'
 import Healthy from '@/modules/preschool/teacher/pages/Healthy.vue'
@@ -35,7 +34,6 @@ describe('Preschool placeholder pages', () => {
   it('renders the admin scaffold pages with explicit copy', async () => {
     const pages = [
       [FormManagement, enPreschool.preschoolScaffold.formManagement.title],
-      [ReportManagement, enPreschool.preschoolScaffold.reportManagement.title],
       [AttendanceManagement, enPreschool.preschoolScaffold.attendanceManagement.title],
     ]
 

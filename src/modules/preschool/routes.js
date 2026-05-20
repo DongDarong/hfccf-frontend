@@ -114,6 +114,26 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Reports stay split into overview, student, and classroom routes so the UI
+  // can navigate to real finalized data without exposing placeholder screens.
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/students',
+    name: 'dashboard-preschool-admin-student-reports',
+    component: () => import('@/modules/preschool/admin/pages/StudentReports.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/classes',
+    name: 'dashboard-preschool-admin-classroom-reports',
+    component: () => import('@/modules/preschool/admin/pages/ClassroomReports.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
   defineAppRoute({
     path: '/module/preschool-admin/forms',
     name: 'dashboard-preschool-admin-forms',
@@ -162,7 +182,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/teacher/report',
     name: 'dashboard-preschool-teacher-report',
-    component: () => import('@/modules/preschool/teacher/pages/Report.vue'),
+    component: () => import('@/modules/preschool/admin/pages/StudentReports.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.STAFF],

@@ -8,6 +8,7 @@ import classesManagement from './classes-management'
 import addClass from './add-class'
 import assessment from './assessment'
 import progress from './progress'
+import reports from './reports'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -22,4 +23,5 @@ export default {
   ...addClass,
   ...assessment,
   ...progress,
+  ...reports,
 }
