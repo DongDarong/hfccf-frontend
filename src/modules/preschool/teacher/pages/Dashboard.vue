@@ -2,8 +2,10 @@
 // Keep the teacher dashboard copy in locale files so the view stays stable and
 // EN/KH switching does not rely on inline English strings.
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import Button from '@/components/buttons/Button.vue'
 import PreschoolDashboardSummary from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSummary.vue'
 import PreschoolDashboardSpotlight from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSpotlight.vue'
 import PreschoolDashboardActionList from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActionList.vue'
@@ -16,6 +18,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 
 const dashboard = ref({
   summary: {
@@ -103,6 +106,12 @@ const spotlightText = computed(() =>
     : t('preschoolTeacherDashboardPage.spotlight.fallback'),
 )
 
+function goToMySchedule() {
+  // Keep the teacher timetable shortcut close to the dashboard so the read-only
+  // flow stays discoverable without exposing management screens.
+  router.push({ name: 'dashboard-preschool-teacher-schedule' })
+}
+
 onMounted(() => {
   loadDashboard()
 })
@@ -115,6 +124,12 @@ onMounted(() => {
         :title="t('preschoolTeacherDashboardPage.title')"
         :subtitle="t('preschoolTeacherDashboardPage.subtitle')"
       />
+
+      <div class="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="primary" size="md" rounded="xl" @click="goToMySchedule">
+          {{ t('preschoolTeacherDashboardPage.actions.mySchedule') }}
+        </Button>
+      </div>
 
       <div
         v-if="errorMessage"

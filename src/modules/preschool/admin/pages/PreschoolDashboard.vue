@@ -2,8 +2,10 @@
 // Keep Preschool dashboard copy in the locale layer so the page stays stable
 // across EN/KH switches and does not regress to hardcoded English labels.
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import Button from '@/components/buttons/Button.vue'
 import PreschoolDashboardSummary from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSummary.vue'
 import PreschoolDashboardSpotlight from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSpotlight.vue'
 import PreschoolDashboardActionList from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActionList.vue'
@@ -16,6 +18,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 
 const dashboard = ref({
   summary: {
@@ -104,6 +107,12 @@ const spotlightText = computed(() =>
     : t('preschoolDashboardPage.populateText'),
 )
 
+function goToScheduleManagement() {
+  // Keep the timetable entry point on the dashboard so Preschool admins can
+  // reach schedules without relying on a sidebar structure change.
+  router.push({ name: 'dashboard-preschool-admin-schedules' })
+}
+
 onMounted(() => {
   loadDashboard()
 })
@@ -116,6 +125,12 @@ onMounted(() => {
         :title="t('preschoolDashboardPage.title')"
         :subtitle="t('preschoolDashboardPage.subtitle')"
       />
+
+      <div class="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="primary" size="md" rounded="xl" @click="goToScheduleManagement">
+          {{ t('preschoolDashboardPage.actions.scheduleManagement') }}
+        </Button>
+      </div>
 
       <div
         v-if="errorMessage"

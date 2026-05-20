@@ -29,6 +29,7 @@ export default {
       overduePayments: 'ការទូទាត់ហួសកំណត់៖ {count}',
       paidPayments: 'ការទូទាត់បានបង់៖ {count}',
       upcomingClasses: 'ថ្នាក់រៀនខាងមុខ៖ {count}',
+      scheduleManagement: 'គ្រប់គ្រងកាលវិភាគ',
     },
     notesTitle: 'កំណត់សម្គាល់ប្រតិបត្តិការ',
     spotlightEyebrow: 'ចំណុចផ្តោតសំខាន់',
@@ -67,6 +68,7 @@ export default {
       upcomingClasses: 'ថ្នាក់រៀនខាងមុខ៖ {count}',
       overduePayments: 'ការទូទាត់ហួសកំណត់៖ {count}',
       paidPayments: 'ការទូទាត់បានបង់៖ {count}',
+      mySchedule: 'កាលវិភាគរបស់ខ្ញុំ',
     },
     spotlight: {
       nextSuffix: 'គឺថ្នាក់បន្ទាប់',

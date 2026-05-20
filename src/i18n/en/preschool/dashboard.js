@@ -29,6 +29,7 @@ export default {
       overduePayments: 'Overdue payments: {count}',
       paidPayments: 'Paid payments: {count}',
       upcomingClasses: 'Upcoming classes: {count}',
+      scheduleManagement: 'Manage schedules',
     },
     notesTitle: 'Operational Notes',
     spotlightEyebrow: 'Priority Focus',
@@ -67,6 +68,7 @@ export default {
       upcomingClasses: 'Upcoming classes: {count}',
       overduePayments: 'Overdue payments: {count}',
       paidPayments: 'Paid payments: {count}',
+      mySchedule: 'My schedule',
     },
     spotlight: {
       nextSuffix: 'is next',

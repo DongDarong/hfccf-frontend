@@ -134,6 +134,35 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
     },
   }),
+  // Weekly schedules stay separate from reports so timetable management can
+  // evolve without coupling it to assessments or attendance history.
+  defineAppRoute({
+    path: '/module/preschool-admin/schedules',
+    name: 'dashboard-preschool-admin-schedules',
+    component: () => import('@/modules/preschool/admin/pages/ScheduleManagement.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/schedules/classes',
+    name: 'dashboard-preschool-admin-class-schedule',
+    component: () => import('@/modules/preschool/admin/pages/ClassSchedule.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/schedules/teachers',
+    name: 'dashboard-preschool-admin-teacher-schedule',
+    component: () => import('@/modules/preschool/admin/pages/TeacherSchedule.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
   defineAppRoute({
     path: '/module/preschool-admin/forms',
     name: 'dashboard-preschool-admin-forms',
@@ -174,6 +203,15 @@ export const preschoolRoutes = [
     path: '/module/preschool-admin/teacher/attendance',
     name: 'dashboard-preschool-teacher-attendance',
     component: () => import('@/modules/preschool/teacher/pages/Attendance.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/schedule',
+    name: 'dashboard-preschool-teacher-schedule',
+    component: () => import('@/modules/preschool/teacher/pages/MySchedule.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.STAFF],
