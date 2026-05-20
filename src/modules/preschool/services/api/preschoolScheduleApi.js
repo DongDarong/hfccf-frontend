@@ -10,7 +10,12 @@ import {
 
 function normalizeScheduleList(response, fallbackPage = 1, fallbackPerPage = 10) {
   const payload = unwrapApiData(response) || {}
-  const items = unwrapApiItems(payload) || unwrapApiItems(response) || payload.items || []
+  // Preserve the backend payload when the first unwrap path resolves to an
+  // empty array, otherwise the timetable page would silently render nothing.
+  const responseItems = unwrapApiItems(response)
+  const items = Array.isArray(payload.items) && payload.items.length > 0
+    ? payload.items
+    : responseItems
 
   return normalizeScheduleListResponse(
     {
