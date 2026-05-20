@@ -136,6 +136,21 @@
           }
         },
         {
+          "id": "preschool-teacher-emergency-contacts",
+          "routeName": "dashboard-preschool-teacher-emergency-contacts",
+          "labelKey": "nav.items.emergencyContacts",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
           "id": "preschool-teacher-assessments",
           "routeName": "dashboard-preschool-assessments",
           "labelKey": "nav.items.preschoolAssessments",
@@ -337,6 +352,36 @@
           "labelKey": "nav.items.students",
           "icon": "users",
           "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-guardians",
+          "routeName": "dashboard-preschool-admin-guardians",
+          "labelKey": "nav.items.guardians",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-student-guardians",
+          "routeName": "dashboard-preschool-admin-student-guardians",
+          "labelKey": "nav.items.studentGuardians",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
               "admin"
