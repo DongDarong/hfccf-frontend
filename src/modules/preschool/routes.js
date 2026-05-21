@@ -76,6 +76,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Settings stays in the admin Preschool route tree so the configuration
+  // surface remains discoverable without creating a second dashboard shell.
+  defineAppRoute({
+    path: '/module/preschool-admin/settings',
+    name: 'dashboard-preschool-admin-settings',
+    component: () => import('@/modules/preschool/admin/pages/PreschoolSettings.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Assessment routes are shared by Preschool admins and teachers so the UI
   // can grow into reporting later without splitting the same workflow twice.
   defineAppRoute({

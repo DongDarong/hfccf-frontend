@@ -10,6 +10,7 @@ import progress from './progress'
 import reports from './reports'
 import schedules from './schedules'
 import guardians from './guardians'
+import settings from './settings'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -26,4 +27,5 @@ export default {
   ...reports,
   ...schedules,
   ...guardians,
+  ...settings,
 }

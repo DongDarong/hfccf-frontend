@@ -180,6 +180,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-settings",
+          "routeName": "dashboard-preschool-admin-settings",
+          "labelKey": "nav.items.preschoolSettings",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",
