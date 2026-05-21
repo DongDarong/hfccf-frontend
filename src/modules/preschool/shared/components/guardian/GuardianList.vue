@@ -26,7 +26,7 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['edit', 'archive'])
+const emit = defineEmits(['view', 'edit', 'archive'])
 </script>
 
 <template>
@@ -67,6 +67,9 @@ const emit = defineEmits(['edit', 'archive'])
           </td>
           <td class="px-4 py-4">
             <div class="flex justify-end gap-2">
+              <Button type="button" size="sm" variant="ghost" rounded="xl" @click="emit('view', guardian)">
+                {{ t('preschoolGuardiansPage.actions.viewDetails') }}
+              </Button>
               <Button type="button" size="sm" variant="outline" rounded="xl" @click="emit('edit', guardian)">
                 {{ t('common.edit') }}
               </Button>

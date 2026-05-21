@@ -8,6 +8,8 @@ export default {
     empty: 'No guardian relationships found for the selected student.',
     actions: {
       linkGuardian: 'Link Guardian',
+      setPrimary: 'Set primary',
+      restore: 'Restore',
       archive: 'Archive Relationship',
       link: 'Link Guardian',
       update: 'Update Relationship',
@@ -49,6 +51,8 @@ export default {
     messages: {
       linkedSuccess: 'Guardian "{name}" was linked successfully.',
       updatedSuccess: 'Relationship for "{name}" was updated successfully.',
+      setPrimarySuccess: 'Guardian "{name}" was marked as the primary contact successfully.',
+      restoredSuccess: 'Guardian "{name}" relationship was restored successfully.',
       archivedSuccess: 'Student guardian relationship was archived successfully.',
     },
     paginationHint: 'Page {page} of {total}',

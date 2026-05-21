@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   archiveGuardian,
-  archiveStudentGuardian,
+  archiveStudentGuardianByPair,
   createGuardian,
   fetchEmergencyContacts,
   fetchGuardians,
   fetchStudentGuardians,
   linkStudentGuardian,
+  restoreStudentGuardianByPair,
+  setPrimaryStudentGuardian,
   updateGuardian,
-  updateStudentGuardian,
+  updateStudentGuardianByPair,
 } from '@/modules/preschool/services/api/preschoolGuardianApi'
 import { fetchMyPreschoolStudents, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 import { useEmergencyContacts } from '@/modules/preschool/composables/useEmergencyContacts'
@@ -29,6 +31,10 @@ vi.mock('@/modules/preschool/services/api/preschoolGuardianApi', () => ({
   archiveGuardian: vi.fn(),
   fetchStudentGuardians: vi.fn(),
   linkStudentGuardian: vi.fn(),
+  updateStudentGuardianByPair: vi.fn(),
+  archiveStudentGuardianByPair: vi.fn(),
+  setPrimaryStudentGuardian: vi.fn(),
+  restoreStudentGuardianByPair: vi.fn(),
   updateStudentGuardian: vi.fn(),
   archiveStudentGuardian: vi.fn(),
   fetchEmergencyContacts: vi.fn(),
@@ -80,15 +86,15 @@ describe('preschool guardian composables', () => {
       pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
     })
     fetchStudentGuardians.mockResolvedValue({
-      items: [{ id: 1, guardianName: 'Guardian One', relationshipType: 'mother', isPrimary: true, canPickup: true, emergencyPriority: 1 }],
+      items: [{ id: 1, guardianId: 1, guardianName: 'Guardian One', relationshipType: 'mother', isPrimary: true, canPickup: true, emergencyPriority: 1 }],
       pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
     })
     fetchEmergencyContacts.mockResolvedValue({
-      items: [{ id: 1, guardianName: 'Guardian One', relationshipType: 'mother', isPrimary: true, canPickup: true, emergencyPriority: 1 }],
+      items: [{ id: 1, guardianId: 1, guardianName: 'Guardian One', relationshipType: 'mother', isPrimary: true, canPickup: true, emergencyPriority: 1 }],
     })
     linkStudentGuardian.mockResolvedValueOnce({ id: 2, guardianName: 'Guardian One' })
-    updateStudentGuardian.mockResolvedValueOnce({ id: 2, guardianName: 'Guardian One Updated' })
-    archiveStudentGuardian.mockResolvedValueOnce(true)
+    updateStudentGuardianByPair.mockResolvedValueOnce({ id: 2, guardianName: 'Guardian One Updated' })
+    archiveStudentGuardianByPair.mockResolvedValueOnce({ id: 2, guardianName: 'Guardian One' })
 
     const student = useStudentGuardians()
     await student.loadLookups()
@@ -111,8 +117,8 @@ describe('preschool guardian composables', () => {
     const updated = await student.saveRelationship()
     expect(updated.guardianName).toBe('Guardian One Updated')
 
-    await student.archiveRelationship(2)
-    expect(archiveStudentGuardian).toHaveBeenCalledWith('2')
+    await student.archiveRelationship(1)
+    expect(archiveStudentGuardianByPair).toHaveBeenCalledWith('10', '1')
   })
 
   it('loads emergency contacts for assigned students', async () => {
@@ -120,7 +126,7 @@ describe('preschool guardian composables', () => {
       items: [{ id: 10, fullName: 'Student One', studentCode: 'S-001' }],
     })
     fetchEmergencyContacts.mockResolvedValue({
-      items: [{ id: 1, guardianName: 'Guardian One', relationshipType: 'mother', isPrimary: true, canPickup: true, emergencyPriority: 1 }],
+      items: [{ id: 1, guardianId: 1, guardianName: 'Guardian One', relationshipType: 'mother', isPrimary: true, canPickup: true, emergencyPriority: 1 }],
     })
 
     const contacts = useEmergencyContacts()

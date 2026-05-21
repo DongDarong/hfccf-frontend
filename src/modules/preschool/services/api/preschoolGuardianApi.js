@@ -132,6 +132,39 @@ export async function archiveStudentGuardian(relationshipId) {
   return true
 }
 
+// Pair-based routes keep the student and guardian identifiers visible in the
+// request path so the staff-only UI matches the backend relationship contract.
+function buildStudentGuardianPairPath(studentId, guardianId) {
+  const student = String(studentId || '').trim()
+  const guardian = String(guardianId || '').trim()
+
+  if (!student || !guardian) {
+    throw new Error('Student id and guardian id are required.')
+  }
+
+  return `/preschool/students/${encodeURIComponent(student)}/guardians/${encodeURIComponent(guardian)}`
+}
+
+export async function updateStudentGuardianByPair(studentId, guardianId, payload = {}) {
+  const response = await http.put(buildStudentGuardianPairPath(studentId, guardianId), payload)
+  return normalizeSingleRelationship(response)
+}
+
+export async function setPrimaryStudentGuardian(studentId, guardianId) {
+  const response = await http.post(`${buildStudentGuardianPairPath(studentId, guardianId)}/set-primary`)
+  return normalizeSingleRelationship(response)
+}
+
+export async function archiveStudentGuardianByPair(studentId, guardianId) {
+  const response = await http.post(`${buildStudentGuardianPairPath(studentId, guardianId)}/archive`)
+  return normalizeSingleRelationship(response)
+}
+
+export async function restoreStudentGuardianByPair(studentId, guardianId) {
+  const response = await http.post(`${buildStudentGuardianPairPath(studentId, guardianId)}/restore`)
+  return normalizeSingleRelationship(response)
+}
+
 export async function fetchEmergencyContacts(studentId, options = {}) {
   const id = String(studentId || '').trim()
   if (!id) return { items: [] }

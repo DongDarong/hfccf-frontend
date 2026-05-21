@@ -2,12 +2,14 @@ import shared from './shared'
 import page from './page'
 import student from './student'
 import emergency from './emergency'
+import details from './details'
 
 export default {
-  // បញ្ចូលស្លាកអាណាព្យាបាលនៅកម្រិត Preschool module boundary ដើម្បីឲ្យ
-  // EN/KH រក key ដូចគ្នាបានដោយគ្មាន double nesting។
+  // Keep the Khmer guardian module split into small files so the page copy
+  // stays readable and the EN/KH nesting contract remains identical.
   ...shared,
   ...page,
   ...student,
   ...emergency,
+  ...details,
 }

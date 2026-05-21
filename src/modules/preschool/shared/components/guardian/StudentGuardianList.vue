@@ -28,7 +28,7 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['edit', 'archive'])
+const emit = defineEmits(['edit', 'archive', 'set-primary', 'restore'])
 </script>
 
 <template>
@@ -75,10 +75,30 @@ const emit = defineEmits(['edit', 'archive'])
           </td>
           <td class="px-4 py-4">
             <div class="flex justify-end gap-2">
-              <Button type="button" size="sm" variant="outline" rounded="xl" @click="emit('edit', relationship)">
+              <Button
+                v-if="relationship.status === 'active' && !relationship.isPrimary"
+                type="button"
+                size="sm"
+                variant="outline"
+                rounded="xl"
+                @click="emit('set-primary', relationship)"
+              >
+                {{ t('preschoolStudentGuardiansPage.actions.setPrimary') }}
+              </Button>
+              <Button
+                v-if="relationship.status === 'archived'"
+                type="button"
+                size="sm"
+                variant="outline"
+                rounded="xl"
+                @click="emit('restore', relationship)"
+              >
+                {{ t('preschoolStudentGuardiansPage.actions.restore') }}
+              </Button>
+              <Button v-if="relationship.status !== 'archived'" type="button" size="sm" variant="outline" rounded="xl" @click="emit('edit', relationship)">
                 {{ t('common.edit') }}
               </Button>
-              <Button type="button" size="sm" variant="danger" rounded="xl" @click="emit('archive', relationship)">
+              <Button v-if="relationship.status !== 'archived'" type="button" size="sm" variant="danger" rounded="xl" @click="emit('archive', relationship)">
                 {{ t('preschoolStudentGuardiansPage.actions.archive') }}
               </Button>
             </div>

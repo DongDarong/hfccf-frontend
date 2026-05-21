@@ -192,6 +192,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Guardian detail stays read-only so staff can inspect the master record
+  // without exposing any login or portal behavior.
+  defineAppRoute({
+    path: '/module/preschool-admin/guardians/:guardianId',
+    name: 'dashboard-preschool-admin-guardian-details',
+    component: () => import('@/modules/preschool/admin/pages/GuardianDetails.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   defineAppRoute({
     path: '/module/preschool-admin/guardians/students',
     name: 'dashboard-preschool-admin-student-guardians',

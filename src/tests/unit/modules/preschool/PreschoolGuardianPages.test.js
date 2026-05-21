@@ -4,17 +4,23 @@ import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
 import GuardianManagement from '@/modules/preschool/admin/pages/GuardianManagement.vue'
+import GuardianDetails from '@/modules/preschool/admin/pages/GuardianDetails.vue'
 import StudentGuardians from '@/modules/preschool/admin/pages/StudentGuardians.vue'
 import EmergencyContacts from '@/modules/preschool/teacher/pages/EmergencyContacts.vue'
 
 // Keep the guardian route pages mount-tested so the new Preschool workflow
 // does not regress into placeholder screens or runtime warnings.
 const mockGuardianComposables = vi.fn()
+const mockGuardianDetailsComposables = vi.fn()
 const mockStudentGuardianComposables = vi.fn()
 const mockEmergencyContactComposables = vi.fn()
 
 vi.mock('@/modules/preschool/composables/usePreschoolGuardians', () => ({
   usePreschoolGuardians: () => mockGuardianComposables(),
+}))
+
+vi.mock('@/modules/preschool/composables/usePreschoolGuardianDetails', () => ({
+  usePreschoolGuardianDetails: () => mockGuardianDetailsComposables(),
 }))
 
 vi.mock('@/modules/preschool/composables/useStudentGuardians', () => ({
@@ -37,6 +43,7 @@ function baseStubs() {
     Dialog: { template: '<div><slot /></div>' },
     AlertQuestion: { template: '<div />' },
     AlertSuccess: { template: '<div />' },
+    GuardianStatusBadge: { template: '<span />' },
     GuardianForm: { template: '<div />' },
     GuardianList: { template: '<div />' },
     StudentGuardianRelationshipForm: { template: '<div />' },
@@ -80,6 +87,35 @@ describe('preschool guardian pages', () => {
 
     expect(wrapper.text()).toContain(enPreschool.preschoolGuardiansPage.title)
     expect(wrapper.text()).toContain(enPreschool.preschoolGuardiansPage.actions.addGuardian)
+  })
+
+  it('mounts the guardian details page as a read-only summary view', async () => {
+    mockGuardianDetailsComposables.mockReturnValue({
+      guardian: ref({
+        id: '11',
+        fullName: 'Guardian One',
+        phone: '012345678',
+        status: 'active',
+        relationshipsCount: 2,
+        activeRelationshipsCount: 1,
+      }),
+      errorMessage: ref(''),
+      loadGuardianDetails: vi.fn().mockResolvedValue({
+        id: '11',
+        fullName: 'Guardian One',
+      }),
+      loading: ref(false),
+    })
+
+    const wrapper = mountWithPlugins(GuardianDetails, {
+      messages: { en: enPreschool },
+      global: { stubs: baseStubs() },
+    })
+
+    await flushPromises()
+
+    expect(wrapper.text()).toContain(enPreschool.preschoolGuardianDetailsPage.title)
+    expect(wrapper.text()).toContain(enPreschool.preschoolGuardianDetailsPage.notes.readOnly)
   })
 
   it('mounts the student guardian relationship page', async () => {

@@ -39,7 +39,9 @@ const {
   saving,
   selectedRelationship,
   selectedStudentId,
+  setPrimaryRelationship,
   setSelectedStudentId,
+  restoreRelationship,
   studentOptions,
 } = useStudentGuardians()
 
@@ -67,6 +69,24 @@ async function handleSave() {
 function handleArchiveRequest(relationship) {
   selectedRelationship.value = relationship || null
   archiveOpen.value = true
+}
+
+async function handleSetPrimary(relationship) {
+  selectedRelationship.value = relationship || null
+  const result = await setPrimaryRelationship(relationship)
+  successMessage.value = t('preschoolStudentGuardiansPage.messages.setPrimarySuccess', {
+    name: result?.guardianName || relationship?.guardianName || '-',
+  })
+  successOpen.value = true
+}
+
+async function handleRestore(relationship) {
+  selectedRelationship.value = relationship || null
+  const result = await restoreRelationship(relationship)
+  successMessage.value = t('preschoolStudentGuardiansPage.messages.restoredSuccess', {
+    name: result?.guardianName || relationship?.guardianName || '-',
+  })
+  successOpen.value = true
 }
 
 async function confirmArchive() {
@@ -129,6 +149,8 @@ onMounted(async () => {
             :empty-text="t('preschoolStudentGuardiansPage.empty')"
             @edit="openEditRelationship"
             @archive="handleArchiveRequest"
+            @set-primary="handleSetPrimary"
+            @restore="handleRestore"
           />
 
           <EmergencyContactList

@@ -1,16 +1,17 @@
-// រក្សាអត្ថបទទំព័រអាណាព្យាបាលដាច់ដោយឡែកពីទំព័រទំនាក់ទំនង ដើម្បីងាយស្រួល
-// ត្រួតពិនិត្យ និងការពារកុំឲ្យសែលឡើងវិញទៅជា​អត្ថបទ hardcoded ภาษาอังกฤษ។
+// Keep the Khmer guardian master-data page copy separate from the
+// relationship screens so admin flows stay searchable and easy to maintain.
 export default {
   preschoolGuardiansPage: {
     title: 'អាណាព្យាបាល Preschool',
-    subtitle: 'គ្រប់គ្រងកំណត់ត្រាអាណាព្យាបាលដែលអាចភ្ជាប់ទៅសិស្ស Preschool បានច្រើននាក់។',
+    subtitle: 'គ្រប់គ្រងកំណត់ត្រាអាណាព្យាបាលដែលអាចភ្ជាប់ទៅសិស្ស Preschool ច្រើននាក់បាន។',
     loading: 'កំពុងផ្ទុកអាណាព្យាបាល Preschool...',
-    empty: 'មិនទាន់រកឃើញកំណត់ត្រាអាណាព្យាបាលទេ។',
+    empty: 'មិនទាន់មានកំណត់ត្រាអាណាព្យាបាលនៅឡើយទេ។',
     actions: {
       addGuardian: 'បន្ថែមអាណាព្យាបាល',
-      archive: 'រក្សាទុកជា archived',
+      viewDetails: 'មើលព័ត៌មាន',
+      archive: 'រក្សាទុក',
       save: 'រក្សាទុកអាណាព្យាបាល',
-      update: 'ធ្វើបច្ចុប្បន្នភាពអាណាព្យាបាល',
+      update: 'ធ្វើបច្ចុប្បន្នភាព',
     },
     filters: {
       searchPlaceholder: 'ស្វែងរកឈ្មោះ លេខទូរស័ព្ទ ឬអ៊ីមែល',
@@ -46,11 +47,11 @@ export default {
     },
     dialog: {
       createTitle: 'បង្កើតអាណាព្យាបាល',
-      editTitle: 'កែប្រែអាណាព្យាបាល',
+      editTitle: 'កែសម្រួលអាណាព្យាបាល',
     },
     alerts: {
-      archiveTitle: 'រក្សាទុកអាណាព្យាបាលនេះជា archived ទេ?',
-      archiveMessage: 'វានឹងរក្សាប្រវត្តិទុក និងដកអាណាព្យាបាលចេញពីការប្រើប្រាស់សកម្មនៅ Preschool។',
+      archiveTitle: 'តើចង់រក្សាទុកអាណាព្យាបាលនេះទេ?',
+      archiveMessage: 'វានឹងរក្សាប្រវត្តិទុក ប៉ុន្តែយកអាណាព្យាបាលនេះចេញពីការប្រើប្រាស់ Preschool ដែលសកម្ម។',
       archiveFallback: 'អាណាព្យាបាលដែលបានជ្រើស',
       successTitle: 'បានធ្វើបច្ចុប្បន្នភាពអាណាព្យាបាល',
       close: 'បិទ',
@@ -58,10 +59,10 @@ export default {
     messages: {
       createdSuccess: 'បានបង្កើតអាណាព្យាបាល "{name}" ដោយជោគជ័យ។',
       updatedSuccess: 'បានធ្វើបច្ចុប្បន្នភាពអាណាព្យាបាល "{name}" ដោយជោគជ័យ។',
-      archivedSuccess: 'បានរក្សាទុកអាណាព្យាបាលជា archived ដោយជោគជ័យ។',
+      archivedSuccess: 'បានរក្សាទុកអាណាព្យាបាលដោយជោគជ័យ។',
     },
     errors: {
-      loadFailed: 'បរាជ័យក្នុងការផ្ទុកអាណាព្យាបាល Preschool។',
+      loadFailed: 'ផ្ទុកអាណាព្យាបាល Preschool មិនបានទេ។',
     },
   },
 }

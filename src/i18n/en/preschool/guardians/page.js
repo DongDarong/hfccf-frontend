@@ -8,6 +8,7 @@ export default {
     empty: 'No guardian records found.',
     actions: {
       addGuardian: 'Add Guardian',
+      viewDetails: 'View details',
       archive: 'Archive',
       save: 'Save Guardian',
       update: 'Update Guardian',

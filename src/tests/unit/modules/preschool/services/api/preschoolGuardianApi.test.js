@@ -3,14 +3,18 @@ import http from '@/services/http'
 import {
   archiveGuardian,
   archiveStudentGuardian,
+  archiveStudentGuardianByPair,
   createGuardian,
   fetchEmergencyContacts,
   fetchGuardian,
   fetchGuardians,
   fetchStudentGuardians,
   linkStudentGuardian,
+  restoreStudentGuardianByPair,
+  setPrimaryStudentGuardian,
   updateGuardian,
   updateStudentGuardian,
+  updateStudentGuardianByPair,
 } from '@/modules/preschool/services/api/preschoolGuardianApi'
 
 // Keep the guardian HTTP contract tested so the new Preschool relationship
@@ -19,6 +23,7 @@ vi.mock('@/services/http', () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
   },
@@ -96,5 +101,30 @@ describe('preschool guardian api', () => {
       ],
     })
     expect(http.get).toHaveBeenCalledWith('/preschool/students/7/emergency-contacts', { signal: undefined })
+
+    http.put.mockResolvedValueOnce(stubResponse({ relationship: { id: 31, guardian_name: 'Pair Update' } }))
+    await expect(updateStudentGuardianByPair(7, 11, { notes: 'Updated via pair route' })).resolves.toMatchObject({
+      id: 31,
+      guardianName: 'Pair Update',
+    })
+    expect(http.put).toHaveBeenCalledWith('/preschool/students/7/guardians/11', { notes: 'Updated via pair route' })
+
+    http.post.mockResolvedValueOnce(stubResponse({ relationship: { id: 32, guardian_name: 'Primary Pair' } }))
+    await expect(setPrimaryStudentGuardian(7, 11)).resolves.toMatchObject({ id: 32, guardianName: 'Primary Pair' })
+    expect(http.post).toHaveBeenCalledWith('/preschool/students/7/guardians/11/set-primary')
+
+    http.post.mockResolvedValueOnce(stubResponse({ relationship: { id: 32, guardian_name: 'Archived Pair' } }))
+    await expect(archiveStudentGuardianByPair(7, 11)).resolves.toMatchObject({
+      id: 32,
+      guardianName: 'Archived Pair',
+    })
+    expect(http.post).toHaveBeenCalledWith('/preschool/students/7/guardians/11/archive')
+
+    http.post.mockResolvedValueOnce(stubResponse({ relationship: { id: 33, guardian_name: 'Restored Pair' } }))
+    await expect(restoreStudentGuardianByPair(7, 11)).resolves.toMatchObject({
+      id: 33,
+      guardianName: 'Restored Pair',
+    })
+    expect(http.post).toHaveBeenCalledWith('/preschool/students/7/guardians/11/restore')
   })
 })

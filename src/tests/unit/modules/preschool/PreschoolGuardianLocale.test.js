@@ -25,15 +25,23 @@ describe('preschool guardian locale parity', () => {
       'preschoolGuardianShared.primaryGuardian.primary',
       'preschoolGuardiansPage.title',
       'preschoolGuardiansPage.actions.addGuardian',
+      'preschoolGuardiansPage.actions.viewDetails',
       'preschoolGuardiansPage.fields.fullName',
       'preschoolGuardiansPage.errors.loadFailed',
       'preschoolStudentGuardiansPage.title',
       'preschoolStudentGuardiansPage.actions.linkGuardian',
+      'preschoolStudentGuardiansPage.actions.setPrimary',
+      'preschoolStudentGuardiansPage.actions.restore',
       'preschoolStudentGuardiansPage.fields.guardian',
       'preschoolStudentGuardiansPage.errors.loadLookup',
       'preschoolEmergencyContactsPage.title',
       'preschoolEmergencyContactsPage.actions.refresh',
       'preschoolEmergencyContactsPage.errors.loadContacts',
+      'preschoolGuardianDetailsPage.title',
+      'preschoolGuardianDetailsPage.actions.back',
+      'preschoolGuardianDetailsPage.actions.manageRelationships',
+      'preschoolGuardianDetailsPage.labels.relationshipsCount',
+      'preschoolGuardianDetailsPage.errors.load',
     ]
 
     keys.forEach((key) => {

@@ -2,6 +2,7 @@
 // Keep guardian master data on a dedicated admin page so reusable contacts can
 // be created once and then linked to multiple students without duplicating UI.
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Dialog from 'primevue/dialog'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -21,6 +22,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 const {
   archiveSelectedGuardian,
   closeGuardianDialog,
@@ -63,6 +65,16 @@ async function handleSave() {
 function handleArchiveRequest(guardian) {
   selectedGuardian.value = guardian || null
   archiveOpen.value = true
+}
+
+function handleViewGuardian(guardian) {
+  const guardianId = String(guardian?.id || '').trim()
+  if (!guardianId) return
+
+  router.push({
+    name: 'dashboard-preschool-admin-guardian-details',
+    params: { guardianId },
+  })
 }
 
 async function confirmArchive() {
@@ -127,6 +139,7 @@ onMounted(() => {
           :guardians="guardians"
           :loading="loading"
           :empty-text="t('preschoolGuardiansPage.empty')"
+          @view="handleViewGuardian"
           @edit="openEditGuardian"
           @archive="handleArchiveRequest"
         />

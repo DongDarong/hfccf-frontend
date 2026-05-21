@@ -7,12 +7,14 @@ import { reactive, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 import {
-  archiveStudentGuardian,
+  archiveStudentGuardianByPair,
   fetchEmergencyContacts,
   fetchGuardians,
   fetchStudentGuardians,
   linkStudentGuardian,
-  updateStudentGuardian,
+  restoreStudentGuardianByPair,
+  setPrimaryStudentGuardian,
+  updateStudentGuardianByPair,
 } from '@/modules/preschool/services/api/preschoolGuardianApi'
 
 function normalizeText(value) {
@@ -47,6 +49,11 @@ function createRelationshipForm() {
     ends_at: '',
     notes: '',
   }
+}
+
+function findRelationshipById(items = [], relationshipId = '') {
+  const id = String(relationshipId || '').trim()
+  return items.find((item) => String(item.id || '').trim() === id) || null
 }
 
 export function useStudentGuardians() {
@@ -180,7 +187,7 @@ export function useStudentGuardians() {
       }
 
       const result = relationshipMode.value === 'edit' && selectedRelationship.value?.id
-        ? await updateStudentGuardian(selectedRelationship.value.id, payload)
+        ? await updateStudentGuardianByPair(studentId, relationshipForm.guardian_id, payload)
         : await linkStudentGuardian(studentId, payload)
 
       await loadStudentData(studentId)
@@ -196,14 +203,16 @@ export function useStudentGuardians() {
   }
 
   async function archiveRelationship(relationshipId = selectedRelationship.value?.id) {
-    const id = String(relationshipId || '').trim()
-    if (!id) return false
+    const relationship = findRelationshipById(relationships.value, relationshipId) || selectedRelationship.value
+    const guardianId = String(relationship?.guardianId || relationship?.guardian?.id || '').trim()
+    const studentId = String(selectedStudentId.value || '').trim()
+    if (!guardianId || !studentId) return false
 
     saving.value = true
     errorMessage.value = ''
 
     try {
-      const result = await archiveStudentGuardian(id)
+      const result = await archiveStudentGuardianByPair(studentId, guardianId)
       await loadStudentData()
       return result
     } catch (error) {
@@ -216,6 +225,48 @@ export function useStudentGuardians() {
 
   function setSelectedStudentId(studentId) {
     selectedStudentId.value = String(studentId || '').trim()
+  }
+
+  async function setPrimaryRelationship(relationship = selectedRelationship.value) {
+    const resolved = typeof relationship === 'object' ? relationship : findRelationshipById(relationships.value, relationship)
+    const guardianId = String(resolved?.guardianId || resolved?.guardian?.id || '').trim()
+    const studentId = String(selectedStudentId.value || '').trim()
+    if (!guardianId || !studentId) return null
+
+    saving.value = true
+    errorMessage.value = ''
+
+    try {
+      const result = await setPrimaryStudentGuardian(studentId, guardianId)
+      await loadStudentData(studentId)
+      return result
+    } catch (error) {
+      errorMessage.value = error?.response?.data?.message || error?.message || t('preschoolStudentGuardiansPage.errors.save')
+      throw error
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function restoreRelationship(relationship = selectedRelationship.value) {
+    const resolved = typeof relationship === 'object' ? relationship : findRelationshipById(relationships.value, relationship)
+    const guardianId = String(resolved?.guardianId || resolved?.guardian?.id || '').trim()
+    const studentId = String(selectedStudentId.value || '').trim()
+    if (!guardianId || !studentId) return null
+
+    saving.value = true
+    errorMessage.value = ''
+
+    try {
+      const result = await restoreStudentGuardianByPair(studentId, guardianId)
+      await loadStudentData(studentId)
+      return result
+    } catch (error) {
+      errorMessage.value = error?.response?.data?.message || error?.message || t('preschoolStudentGuardiansPage.errors.save')
+      throw error
+    } finally {
+      saving.value = false
+    }
   }
 
   return {
@@ -239,6 +290,8 @@ export function useStudentGuardians() {
     selectedRelationship,
     selectedStudentId,
     setSelectedStudentId,
+    setPrimaryRelationship,
     studentOptions,
+    restoreRelationship,
   }
 }
