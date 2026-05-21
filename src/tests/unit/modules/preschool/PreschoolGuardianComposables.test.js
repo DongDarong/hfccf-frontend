@@ -7,8 +7,6 @@ import {
   fetchGuardians,
   fetchStudentGuardians,
   linkStudentGuardian,
-  restoreStudentGuardianByPair,
-  setPrimaryStudentGuardian,
   updateGuardian,
   updateStudentGuardianByPair,
 } from '@/modules/preschool/services/api/preschoolGuardianApi'
