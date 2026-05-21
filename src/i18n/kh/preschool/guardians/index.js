@@ -3,6 +3,7 @@ import page from './page'
 import student from './student'
 import emergency from './emergency'
 import details from './details'
+import integrity from './integrity'
 
 export default {
   // Keep the Khmer guardian module split into small files so the page copy
@@ -12,4 +13,5 @@ export default {
   ...student,
   ...emergency,
   ...details,
+  ...integrity,
 }

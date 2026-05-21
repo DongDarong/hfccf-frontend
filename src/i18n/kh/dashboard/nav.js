@@ -49,6 +49,7 @@ export default {
     students: 'សិស្ស',
     guardians: 'អាណាព្យាបាល',
     studentGuardians: 'អាណាព្យាបាលសិស្ស',
+    guardianIntegrityReport: 'របាយការណ៍ភាពត្រឹមត្រូវអាណាព្យាបាល',
     guardianPortalAccounts: 'គណនីចូលប្រើរបស់អាណាព្យាបាល',
     guardianPortalInvite: 'អញ្ជើញចូលប្រើព័រតាល់អាណាព្យាបាល',
     emergencyContacts: 'ទំនាក់ទំនងបន្ទាន់',

@@ -377,6 +377,21 @@
           }
         },
         {
+          "id": "preschool-guardian-integrity",
+          "routeName": "dashboard-preschool-admin-guardian-integrity",
+          "labelKey": "nav.items.guardianIntegrityReport",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
           "id": "preschool-student-guardians",
           "routeName": "dashboard-preschool-admin-student-guardians",
           "labelKey": "nav.items.studentGuardians",

@@ -31,10 +31,16 @@ export default {
       primary: 'អាណាព្យាបាលចម្បង',
       secondary: 'អាណាព្យាបាលបម្រុង',
     },
+    integritySeverityLabels: {
+      info: 'ព័ត៌មាន',
+      warning: 'ការព្រមាន',
+      critical: 'បន្ទាន់',
+    },
     errors: {
       loadGuardians: 'ផ្ទុកអាណាព្យាបាល Preschool មិនបានទេ។',
       loadRelationships: 'ផ្ទុកទំនាក់ទំនងអាណាព្យាបាល Preschool មិនបានទេ។',
       loadEmergencyContacts: 'ផ្ទុកទំនាក់ទំនងបន្ទាន់ Preschool មិនបានទេ។',
+      loadIntegrity: 'ផ្ទុកទិន្នន័យភាពត្រឹមត្រូវអាណាព្យាបាល Preschool មិនបានទេ។',
       saveGuardian: 'ពេលនេះមិនអាចរក្សាទុកអាណាព្យាបាល Preschool បានទេ។',
       saveRelationship: 'ពេលនេះមិនអាចរក្សាទុកទំនាក់ទំនងអាណាព្យាបាល Preschool បានទេ។',
       archiveGuardian: 'ពេលនេះមិនអាចរក្សាទុកអាណាព្យាបាល Preschool បានទេ។',

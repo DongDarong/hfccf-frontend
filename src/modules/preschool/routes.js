@@ -192,6 +192,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Integrity reporting stays alongside guardian management so staff can
+  // review duplicate and consistency drift without leaving the Preschool area.
+  defineAppRoute({
+    path: '/module/preschool-admin/guardians/integrity-report',
+    name: 'dashboard-preschool-admin-guardian-integrity',
+    component: () => import('@/modules/preschool/admin/pages/GuardianConsistencyReport.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Guardian detail stays read-only so staff can inspect the master record
   // without exposing any login or portal behavior.
   defineAppRoute({

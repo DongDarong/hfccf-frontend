@@ -31,10 +31,16 @@ export default {
       primary: 'Primary guardian',
       secondary: 'Secondary guardian',
     },
+    integritySeverityLabels: {
+      info: 'Info',
+      warning: 'Warning',
+      critical: 'Critical',
+    },
     errors: {
       loadGuardians: 'Failed to load Preschool guardians.',
       loadRelationships: 'Failed to load Preschool student guardians.',
       loadEmergencyContacts: 'Failed to load Preschool emergency contacts.',
+      loadIntegrity: 'Failed to load Preschool guardian integrity data.',
       saveGuardian: 'Unable to save the Preschool guardian right now.',
       saveRelationship: 'Unable to save the Preschool student guardian right now.',
       archiveGuardian: 'Unable to archive the Preschool guardian right now.',

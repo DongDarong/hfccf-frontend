@@ -23,6 +23,8 @@ describe('preschool guardian locale parity', () => {
       'preschoolGuardianShared.relationshipTypes.guardian',
       'preschoolGuardianShared.pickupPermission.allowed',
       'preschoolGuardianShared.primaryGuardian.primary',
+      'preschoolGuardianShared.integritySeverityLabels.info',
+      'preschoolGuardianShared.errors.loadIntegrity',
       'preschoolGuardiansPage.title',
       'preschoolGuardiansPage.actions.addGuardian',
       'preschoolGuardiansPage.actions.viewDetails',
@@ -42,6 +44,12 @@ describe('preschool guardian locale parity', () => {
       'preschoolGuardianDetailsPage.actions.manageRelationships',
       'preschoolGuardianDetailsPage.labels.relationshipsCount',
       'preschoolGuardianDetailsPage.errors.load',
+      'preschoolGuardianIntegrityPage.title',
+      'preschoolGuardianIntegrityPage.actions.refresh',
+      'preschoolGuardianIntegrityPage.summary.duplicateGroups',
+      'preschoolGuardianIntegrityPage.signalLabels.samePhone',
+      'preschoolGuardianIntegrityPage.issueDescriptions.studentNoActiveGuardian',
+      'preschoolGuardianIntegrityPage.guardianSources.legacy',
     ]
 
     keys.forEach((key) => {

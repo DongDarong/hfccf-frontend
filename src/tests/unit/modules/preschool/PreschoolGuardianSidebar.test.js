@@ -22,6 +22,7 @@ describe('preschool guardian sidebar', () => {
     const routeNames = sections.flatMap((section) => section.items.map((item) => item.routeName))
 
     expect(routeNames).toContain('dashboard-preschool-admin-guardians')
+    expect(routeNames).toContain('dashboard-preschool-admin-guardian-integrity')
     expect(routeNames).toContain('dashboard-preschool-admin-student-guardians')
     expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-accounts')
     expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-invite')
@@ -42,6 +43,7 @@ describe('preschool guardian sidebar', () => {
     const routeNames = preschoolSection.items.map((item) => item.routeName)
 
     expect(routeNames).toContain('dashboard-preschool-admin-guardians')
+    expect(routeNames).toContain('dashboard-preschool-admin-guardian-integrity')
     expect(routeNames).toContain('dashboard-preschool-admin-student-guardians')
     expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-accounts')
     expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-invite')
