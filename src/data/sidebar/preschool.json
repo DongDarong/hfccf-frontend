@@ -48,6 +48,20 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-guardian-portal-accounts",
+          "routeName": "dashboard-preschool-admin-guardian-portal-accounts",
+          "labelKey": "nav.items.guardianPortalAccounts",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-guardian-portal-invite",
+          "routeName": "dashboard-preschool-admin-guardian-portal-invite",
+          "labelKey": "nav.items.guardianPortalInvite",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
           "labelKey": "nav.items.classes",

@@ -49,6 +49,8 @@ export default {
     students: 'Students',
     guardians: 'Guardians',
     studentGuardians: 'Student Guardians',
+    guardianPortalAccounts: 'Guardian Portal Accounts',
+    guardianPortalInvite: 'Invite Guardian Portal',
     emergencyContacts: 'Emergency Contacts',
     myStudents: 'My Students',
     attendance: 'Attendance',

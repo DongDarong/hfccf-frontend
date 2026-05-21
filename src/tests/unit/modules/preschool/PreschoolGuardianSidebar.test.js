@@ -23,6 +23,8 @@ describe('preschool guardian sidebar', () => {
 
     expect(routeNames).toContain('dashboard-preschool-admin-guardians')
     expect(routeNames).toContain('dashboard-preschool-admin-student-guardians')
+    expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-accounts')
+    expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-invite')
     expect(routeNames.every((routeName) => !String(routeName || '').includes(':'))).toBe(true)
   })
 
@@ -41,5 +43,7 @@ describe('preschool guardian sidebar', () => {
 
     expect(routeNames).toContain('dashboard-preschool-admin-guardians')
     expect(routeNames).toContain('dashboard-preschool-admin-student-guardians')
+    expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-accounts')
+    expect(routeNames).toContain('dashboard-preschool-admin-guardian-portal-invite')
   })
 })

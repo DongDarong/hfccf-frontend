@@ -7,6 +7,7 @@ import { useUserStore } from '@/store/userStore'
 const USER_TYPE_GROUPS = Object.freeze({
   ADMIN: 'admin',
   STAFF: 'staff',
+  GUARDIAN: 'guardian',
 })
 
 const adminRoleValues = [
@@ -24,6 +25,8 @@ const staffRoleValues = [
   ROLES.COACH,
 ]
 
+const guardianRoleValues = [ROLES.GUARDIAN]
+
 const userTypeOptions = [
   {
     labelKey: 'auth.loginForm.adminOption',
@@ -34,6 +37,13 @@ const userTypeOptions = [
     labelKey: 'auth.loginForm.staffOption',
     value: USER_TYPE_GROUPS.STAFF,
     roles: staffRoleValues,
+  },
+  {
+    // Guardians use a dedicated portal login bucket so they do not get mixed
+    // into staff-facing onboarding or dashboard redirects.
+    labelKey: 'guardianPortal.common.guardianOption',
+    value: USER_TYPE_GROUPS.GUARDIAN,
+    roles: guardianRoleValues,
   },
 ]
 
@@ -68,6 +78,7 @@ export function useLoginForm({ accessPolicy, language }) {
   const errorMessage = ref('')
   const showLoginSuccess = ref(false)
   const shouldRedirectAfterSuccess = ref(false)
+  const loginRedirectTarget = ref('')
 
   const allowedRoleValues = computed(() => normalizeRoleList(accessPolicy.allowedRoles))
 
@@ -204,6 +215,7 @@ export function useLoginForm({ accessPolicy, language }) {
         throw new Error(t('auth.loginForm.missingRequiredPermissions'))
       }
 
+      loginRedirectTarget.value = getRedirectTargetForRole(authenticatedUser)
       shouldRedirectAfterSuccess.value = true
       showLoginSuccess.value = true
     } catch (error) {
@@ -221,13 +233,25 @@ export function useLoginForm({ accessPolicy, language }) {
     return redirect
   }
 
+  function getRedirectTargetForRole(user) {
+    const role = String(user?.role || '')
+      .trim()
+      .toLowerCase()
+
+    if (role === ROLES.GUARDIAN) {
+      return getSafeRedirectTarget(accessPolicy.guardianRedirect || '/guardian-portal/dashboard')
+    }
+
+    return getSafeRedirectTarget(route.query.redirect || accessPolicy.defaultRedirect)
+  }
+
   async function onLoginSuccessClose() {
     showLoginSuccess.value = false
 
     if (!shouldRedirectAfterSuccess.value) return
 
     shouldRedirectAfterSuccess.value = false
-    await router.push(getSafeRedirectTarget(route.query.redirect))
+    await router.push(loginRedirectTarget.value || getSafeRedirectTarget(route.query.redirect))
   }
 
   return {

@@ -7,6 +7,7 @@ export const ROLES = Object.freeze({
   ADMIN_SPORT: 'adminsport',
 
   COACH: 'coach',
+  GUARDIAN: 'guardian',
 
   TEACHER_ENGLISH: 'teacher-english',
   TEACHER_PRESCHOOL: 'teacher-preschool',

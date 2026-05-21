@@ -11,6 +11,7 @@ const { language, setLanguage } = useLanguage()
 const loginAccessPolicy = Object.freeze({
   guestOnly: true,
   defaultRedirect: '/module/dashboard',
+  guardianRedirect: '/guardian-portal/dashboard',
   recoveryRole: ROLES.SUPER_ADMIN,
   // Keep exact backend roles here; LoginForm groups them into Admin and Staff for the UI.
   allowedRoles: [
@@ -23,6 +24,7 @@ const loginAccessPolicy = Object.freeze({
     ROLES.TEACHER_PRESCHOOL,
     ROLES.TEACHER_SCHOLARSHIP,
     ROLES.COACH,
+    ROLES.GUARDIAN,
   ],
   requiredPermissionsByRole: {
     [ROLES.SUPER_ADMIN]: ['all:*'],
@@ -34,6 +36,7 @@ const loginAccessPolicy = Object.freeze({
     [ROLES.TEACHER_PRESCHOOL]: ['dashboard:read', 'tasks:read'],
     [ROLES.TEACHER_SCHOLARSHIP]: ['dashboard:read', 'tasks:read'],
     [ROLES.COACH]: ['dashboard:read', 'training:write'],
+    [ROLES.GUARDIAN]: [],
   },
 })
 </script>
@@ -67,7 +70,7 @@ const loginAccessPolicy = Object.freeze({
               aria-label="Khmer"
               @click="setLanguage('KH')"
             >
-              ខ្មែរ
+              {{ t('common.navigation.languages.khmer') }}
             </button>
           </div>
 
@@ -78,15 +81,15 @@ const loginAccessPolicy = Object.freeze({
 
             <div class="login-page-welcome" :class="{ 'login-page-khmer': language === 'KH' }">
               <p class="login-page-eyebrow">
-                {{ t('auth.login.staffPortal') }}
+                {{ t('guardianPortal.login.pageTitle') }}
               </p>
 
               <p>
-                {{ t('auth.login.welcome') }}
+                {{ t('guardianPortal.login.welcome') }}
               </p>
 
               <span>
-                {{ t('auth.login.subtitle') }}
+                {{ t('guardianPortal.login.subtitle') }}
               </span>
             </div>
           </div>
@@ -129,7 +132,7 @@ const loginAccessPolicy = Object.freeze({
                     class="text-xs font-black uppercase text-sky-800"
                     :class="{ 'login-page-khmer': language === 'KH' }"
                   >
-                    {{ t('auth.login.portal') }}
+                    {{ t('guardianPortal.login.portal') }}
                   </p>
                 </div>
               </div>
@@ -137,7 +140,7 @@ const loginAccessPolicy = Object.freeze({
 
             <div class="mb-4 px-1">
               <p class="login-page-eyebrow" :class="{ 'login-page-khmer': language === 'KH' }">
-                {{ t('auth.login.staff') }}
+                {{ t('guardianPortal.login.portalEyebrow') }}
               </p>
 
               <h1
@@ -412,3 +415,4 @@ const loginAccessPolicy = Object.freeze({
   }
 }
 </style>
+

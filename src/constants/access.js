@@ -4,6 +4,7 @@ export const ACCESS_SCOPES = Object.freeze({
   SUPER_ADMIN: 'super_admin',
   ADMIN: 'admin',
   STAFF: 'staff',
+  PORTAL: 'portal',
 })
 
 export const DOMAINS = Object.freeze({
@@ -60,6 +61,10 @@ export const ROLE_ACCESS_MAP = Object.freeze({
   [ROLES.COACH]: {
     scope: ACCESS_SCOPES.STAFF,
     domain: DOMAINS.SPORT,
+  },
+  [ROLES.GUARDIAN]: {
+    scope: ACCESS_SCOPES.PORTAL,
+    domain: DOMAINS.PRESCHOOL,
   },
 })
 
