@@ -373,37 +373,58 @@ onMounted(async () => {
     <!-- create / edit dialog -->
     <Dialog v-model:visible="modalOpen" modal class="student-info-page__dialog">
       <template #header>
-        <div class="flex items-center gap-3">
-          <div
-            class="student-info-page__dialog-avatar"
-            role="button"
-            tabindex="0"
-            :title="t('preschoolStudentInfoPage.dialog.uploadAvatar')"
-            @click="onAvatarClick"
-            @keydown.enter.space.prevent="onAvatarClick"
-          >
-            <img v-if="avatarPreview" :src="avatarPreview" class="student-info-page__dialog-avatar-img" alt="Student avatar" />
-            <span v-else>{{ studentInitials }}</span>
-            <div class="student-info-page__dialog-avatar-overlay" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <div class="student-info-page__dialog-hd">
+          <!-- avatar column -->
+          <div class="student-info-page__avatar-col">
+            <div
+              class="student-info-page__dialog-avatar"
+              :class="{ 'student-info-page__dialog-avatar--empty': !avatarPreview }"
+              role="button"
+              tabindex="0"
+              :title="t('preschoolStudentInfoPage.dialog.uploadAvatar')"
+              @click="onAvatarClick"
+              @keydown.enter.space.prevent="onAvatarClick"
+            >
+              <img v-if="avatarPreview" :src="avatarPreview" class="student-info-page__dialog-avatar-img" alt="Student avatar" />
+              <span v-else class="student-info-page__avatar-initials">{{ studentInitials }}</span>
+              <div class="student-info-page__dialog-avatar-overlay" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </div>
+            </div>
+            <!-- camera badge -->
+            <div class="student-info-page__avatar-badge" aria-hidden="true" @click="onAvatarClick">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
           </div>
-          <input ref="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" @change="onAvatarChange" />
-          <div>
-            <p class="text-base font-semibold text-slate-900">
+
+          <!-- text + actions column -->
+          <div class="student-info-page__avatar-info">
+            <p class="student-info-page__dialog-title">
               {{ modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle') }}
             </p>
-            <p v-if="modalMode === 'edit' && (form.first_name || form.last_name)" class="text-xs text-slate-500">
+            <p v-if="modalMode === 'edit' && (form.first_name || form.last_name)" class="student-info-page__dialog-name">
               {{ `${form.first_name} ${form.last_name}`.trim() }}
             </p>
-            <button v-if="avatarPreview" class="student-info-page__remove-avatar" type="button" @click.stop="onAvatarRemove">
-              {{ t('preschoolStudentInfoPage.dialog.removeAvatar') }}
-            </button>
+            <div class="student-info-page__avatar-btns">
+              <button class="student-info-page__avatar-upload-btn" type="button" @click="onAvatarClick">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                {{ t('preschoolStudentInfoPage.dialog.uploadAvatar') }}
+              </button>
+              <button v-if="avatarPreview" class="student-info-page__avatar-remove-btn" type="button" @click.stop="onAvatarRemove">
+                {{ t('preschoolStudentInfoPage.dialog.removeAvatar') }}
+              </button>
+            </div>
           </div>
         </div>
+        <input ref="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" @change="onAvatarChange" />
       </template>
 
       <div class="student-info-page__form">
@@ -662,23 +683,57 @@ onMounted(async () => {
   overflow: visible;
 }
 
+/* ── Avatar redesign ─────────────────────────────────────── */
+.student-info-page__dialog-hd {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.student-info-page__avatar-col {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .student-info-page__dialog-avatar {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-  box-shadow: 0 8px 16px -12px rgba(124, 58, 237, 0.5);
+  background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 4.5px #ede9fe,
+    0 12px 24px -14px rgba(124, 58, 237, 0.55);
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  flex-shrink: 0;
   cursor: pointer;
   overflow: hidden;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.student-info-page__dialog-avatar--empty {
+  background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
+  outline: 2.5px dashed #c4b5fd;
+  outline-offset: 3px;
+}
+
+.student-info-page__dialog-avatar:hover {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 4.5px #a78bfa,
+    0 14px 28px -12px rgba(124, 58, 237, 0.6);
+  transform: scale(1.04);
+}
+
+.student-info-page__avatar-initials {
+  user-select: none;
+  pointer-events: none;
 }
 
 .student-info-page__dialog-avatar-img {
@@ -697,20 +752,105 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.4);
   opacity: 0;
   transition: opacity 0.15s ease;
   color: #fff;
+}
+
+.student-info-page__dialog-avatar-overlay svg {
+  width: 1.4rem;
+  height: 1.4rem;
 }
 
 .student-info-page__dialog-avatar:hover .student-info-page__dialog-avatar-overlay {
   opacity: 1;
 }
 
-.student-info-page__remove-avatar {
+/* camera badge */
+.student-info-page__avatar-badge {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: #7c3aed;
+  border: 2px solid #fff;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.45);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.student-info-page__avatar-badge:hover {
+  background: #6d28d9;
+  transform: scale(1.1);
+}
+
+.student-info-page__avatar-badge svg {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+/* text + action column */
+.student-info-page__avatar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.student-info-page__dialog-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.student-info-page__dialog-name {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.student-info-page__avatar-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   margin-top: 0.2rem;
-  display: block;
-  font-size: 0.7rem;
+}
+
+.student-info-page__avatar-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ede9fe;
+  border-radius: 0.5rem;
+  padding: 0.28rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.student-info-page__avatar-upload-btn svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.student-info-page__avatar-upload-btn:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+.student-info-page__avatar-remove-btn {
+  font-size: 0.72rem;
   font-weight: 600;
   color: #dc2626;
   background: none;
@@ -719,6 +859,11 @@ onMounted(async () => {
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+.student-info-page__avatar-remove-btn:hover {
+  color: #b91c1c;
 }
 
 @media (max-width: 900px) {
