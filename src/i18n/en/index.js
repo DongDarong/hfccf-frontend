@@ -27,7 +27,7 @@ export default {
   users,
   notifications,
   reports,
-  guardianPortal,
+  ...guardianPortal,
   ...english,
   ...sport,
   ...preschool,

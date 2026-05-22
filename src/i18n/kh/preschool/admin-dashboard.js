@@ -2,6 +2,7 @@
 // normalized, so class-management regressions remain easy to trace.
 export default {
   preschoolClassesManagement: {
+    loading: 'កំពុងផ្ទុកថ្នាក់មត្តេយ្យ...',
     title: 'ថ្នាក់មត្តេយ្យសិក្សា',
     subtitle: 'គ្រប់គ្រងក្រុមថ្នាក់ គ្រូដែលបានចាត់តាំង និងការរៀបចំកាលវិភាគសម្រាប់ការសិក្សាដំបូង។',
     addButton: 'បន្ថែមថ្នាក់',

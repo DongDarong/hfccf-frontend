@@ -2,6 +2,7 @@
 // normalized, so class-management regressions remain easy to trace.
 export default {
   preschoolClassesManagement: {
+    loading: 'Loading preschool classes...',
     title: 'Preschool Classes',
     subtitle: 'Manage class groups, assigned teachers, and schedule coverage for early learning.',
     addButton: 'Add Class',
