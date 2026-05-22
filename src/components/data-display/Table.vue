@@ -171,7 +171,7 @@ function onSort(event) {
 
         <!-- Student profile cell -->
         <template v-else-if="column.key === 'student'">
-          <div class="flex items-center gap-3">
+          <div class="ui-student-cell">
             <div class="ui-user-avatar ui-user-avatar--student">
               <span class="ui-user-avatar__initials">{{ userInitials(data) }}</span>
               <img
@@ -185,12 +185,8 @@ function onSort(event) {
               >
             </div>
             <div class="min-w-0">
-              <div class="truncate text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
-                {{ data.name || '-' }}
-              </div>
-              <div v-if="data.studentCode" class="text-[11px] text-surface-500 sm:text-xs">
-                {{ data.studentCode }}
-              </div>
+              <div class="ui-student-cell__name">{{ data.name || '-' }}</div>
+              <div v-if="data.studentCode" class="ui-student-cell__code">{{ data.studentCode }}</div>
             </div>
           </div>
         </template>
@@ -329,8 +325,39 @@ function onSort(event) {
 }
 
 .ui-user-avatar--student {
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-  box-shadow: 0 10px 18px -14px rgba(124, 58, 237, 0.45);
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
+  box-shadow:
+    0 0 0 2.5px #fff,
+    0 0 0 4px #ede9fe,
+    0 10px 20px -14px rgba(124, 58, 237, 0.5);
+}
+
+/* student cell layout */
+.ui-student-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ui-student-cell__name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16rem;
+}
+
+.ui-student-cell__code {
+  margin-top: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #7c3aed;
+  letter-spacing: 0.03em;
 }
 
 .ui-user-avatar__initials {
