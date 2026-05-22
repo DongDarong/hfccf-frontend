@@ -9,6 +9,8 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
+import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolClasses, fetchPreschoolStudents, createPreschoolStudent, updatePreschoolStudent, deletePreschoolStudent } from '@/modules/preschool/services/preschoolApi'
 
