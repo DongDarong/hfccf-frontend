@@ -1,8 +1,8 @@
-<script setup>
+﻿<script setup>
 // Keep period selection isolated so report pages can switch periods without
 // repeating dropdown wiring or losing the backend period contract.
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineProps({
@@ -45,7 +45,7 @@ function onUpdate(value) {
   <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
     <label class="space-y-2 text-sm font-medium text-slate-700">
       <span>{{ label }}</span>
-      <Dropdown
+      <Select
         :model-value="modelValue"
         :options="periods"
         option-label="label"

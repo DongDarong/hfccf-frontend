@@ -59,9 +59,10 @@ async function handleInvite() {
           {{ t('guardianPortal.admin.inviteHint') }}
         </p>
         <GuardianPortalInviteForm
-          v-model="form"
+          :model-value="form"
           :loading="loading"
           :error-message="errorMessage"
+          @update:model-value="Object.assign(form, $event)"
           @submit="handleInvite"
         />
       </div>

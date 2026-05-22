@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 // Keep the summary page focused on finalized progress so the later Preschool
 // reports phase can reuse the same layout and backend summary contract.
 import { computed, onMounted, ref } from 'vue'
@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolAssessments } from '@/modules/preschool/composables/usePreschoolAssessments'
 import { usePreschoolProgressSummary } from '@/modules/preschool/composables/usePreschoolProgressSummary'
@@ -82,7 +82,7 @@ onMounted(async () => {
         <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
           <label class="space-y-2 text-sm font-medium text-slate-700">
             <span>{{ t('preschoolProgressSummaryPage.filters.student') }}</span>
-            <Dropdown
+            <Select
               :model-value="selectedStudentId"
               :options="studentOptions"
               option-label="label"

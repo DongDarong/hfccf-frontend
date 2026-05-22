@@ -4,8 +4,7 @@ import students from './students'
 import attendance from './attendance'
 import payments from './payments'
 import scaffold from './scaffold'
-import classesManagement from './classes-management'
-import addClass from './add-class'
+import adminDashboard from './admin-dashboard'
 import assessment from './assessment'
 import progress from './progress'
 import reports from './reports'
@@ -22,8 +21,7 @@ export default {
   ...attendance,
   ...payments,
   ...scaffold,
-  ...classesManagement,
-  ...addClass,
+  ...adminDashboard,
   ...assessment,
   ...progress,
   ...reports,

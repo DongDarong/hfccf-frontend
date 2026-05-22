@@ -52,6 +52,7 @@ export default {
   allRoles: 'All roles',
   allDivisions: 'All divisions',
   allTeams: 'All teams',
+  allClasses: 'All classes',
   allStatus: 'All statuses',
   status: {
     success: 'Success',

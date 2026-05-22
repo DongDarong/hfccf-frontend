@@ -1,9 +1,9 @@
-<script setup>
+﻿<script setup>
 // Keep the form isolated so create/edit flows reuse the same field contract
 // and validation behavior without duplicating template logic.
 import { computed, reactive, watch } from 'vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useLanguage } from '@/composables/useLanguage'
@@ -114,7 +114,7 @@ const ratingOptions = computed(() => [
     <div class="grid gap-4 md:grid-cols-2">
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.class') }}</span>
-        <Dropdown
+        <Select
           v-model="draft.class_id"
           :options="classOptions"
           option-label="label"
@@ -126,7 +126,7 @@ const ratingOptions = computed(() => [
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.category') }}</span>
-        <Dropdown
+        <Select
           v-model="draft.category_id"
           :options="categoryOptions"
           option-label="label"
@@ -153,7 +153,7 @@ const ratingOptions = computed(() => [
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.rating') }}</span>
-        <Dropdown
+        <Select
           v-model="draft.rating"
           :options="ratingOptions"
           option-label="label"

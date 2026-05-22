@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 // Keep schedule management on a dedicated page so conflict handling, archive
 // actions, and weekly timetable filtering do not turn the Preschool dashboard
 // into a monolithic CRUD screen.
@@ -6,7 +6,7 @@ import { computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -143,7 +143,7 @@ onMounted(async () => {
 
               <label class="space-y-2 text-sm font-medium text-slate-700">
                 <span>{{ t('preschoolSchedulesPage.filters.class') }}</span>
-                <Dropdown
+                <Select
                   v-model="selectedClassId"
                   :options="classOptions"
                   option-label="label"
@@ -155,7 +155,7 @@ onMounted(async () => {
 
               <label class="space-y-2 text-sm font-medium text-slate-700">
                 <span>{{ t('preschoolSchedulesPage.filters.teacher') }}</span>
-                <Dropdown
+                <Select
                   v-model="selectedTeacherId"
                   :options="teacherOptions"
                   option-label="label"
@@ -167,7 +167,7 @@ onMounted(async () => {
 
               <label class="space-y-2 text-sm font-medium text-slate-700">
                 <span>{{ t('preschoolSchedulesPage.filters.status') }}</span>
-                <Dropdown
+                <Select
                   v-model="selectedStatus"
                   :options="statusOptions"
                   option-label="label"

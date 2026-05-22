@@ -1,8 +1,8 @@
-<script setup>
+﻿<script setup>
 import Button from 'primevue/button'
-import Calendar from 'primevue/calendar'
+import DatePicker from 'primevue/datepicker'
 import InputNumber from 'primevue/inputnumber'
-import InputSwitch from 'primevue/inputswitch'
+import ToggleSwitch from 'primevue/toggleswitch'
 import SelectButton from 'primevue/selectbutton'
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -90,7 +90,7 @@ function updateSetting(key, value) {
 
       <div class="fixture-generator__field fixture-generator__field--switch">
         <span>{{ t('sportTournament.fixtures.settings.homeAwayEnabled') }}</span>
-        <InputSwitch
+        <ToggleSwitch
           :model-value="settingsProxy.homeAwayEnabled"
           @update:modelValue="updateSetting('homeAwayEnabled', $event)"
         />
@@ -108,7 +108,7 @@ function updateSetting(key, value) {
 
       <div class="fixture-generator__field">
         <span>{{ t('sportTournament.fixtures.settings.baseDate') }}</span>
-        <Calendar
+        <DatePicker
           :model-value="settingsProxy.baseDate || null"
           date-format="yy-mm-dd"
           show-icon

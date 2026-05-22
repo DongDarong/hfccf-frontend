@@ -1,7 +1,7 @@
-<script setup>
+﻿<script setup>
 import InputNumber from 'primevue/inputnumber'
-import InputSwitch from 'primevue/inputswitch'
-import Dropdown from 'primevue/dropdown'
+import ToggleSwitch from 'primevue/toggleswitch'
+import Select from 'primevue/select'
 import PreschoolSettingsSectionCard from './PreschoolSettingsSectionCard.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -71,7 +71,7 @@ function updateField(field, value) {
 
       <label class="preschool-settings-field">
         <span>{{ t('preschoolSettingsPage.fields.absenceRule') }}</span>
-        <Dropdown
+        <Select
           :model-value="modelValue.absenceRule"
           :options="absenceRuleOptions"
           option-label="label"
@@ -87,7 +87,7 @@ function updateField(field, value) {
         <span>{{ t('preschoolSettingsPage.fields.teacherCanEditAttendance') }}</span>
         <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
           <span class="text-sm text-slate-600">{{ t('preschoolSettingsPage.help.teacherCanEditAttendance') }}</span>
-          <InputSwitch
+          <ToggleSwitch
             :model-value="modelValue.teacherCanEditAttendance"
             @update:model-value="updateField({ model: modelValue, key: 'teacherCanEditAttendance' }, $event)"
           />

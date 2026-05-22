@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 // Keep the dedicated add page focused on draft creation so the reusable form
 // logic remains shared with the list page edit dialog.
 import { computed, onMounted, ref } from 'vue'
@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolAssessments } from '@/modules/preschool/composables/usePreschoolAssessments'
 import AssessmentForm from '@/modules/preschool/shared/components/assessment/AssessmentForm.vue'
@@ -80,7 +80,7 @@ onMounted(async () => {
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <label class="mb-4 block space-y-2 text-sm font-medium text-slate-700">
           <span>{{ t('preschoolAssessmentFormPage.fields.student') }}</span>
-          <Dropdown
+          <Select
             :model-value="selectedStudentId"
             :options="studentOptions"
             option-label="label"

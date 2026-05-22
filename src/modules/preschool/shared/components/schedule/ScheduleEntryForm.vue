@@ -1,9 +1,9 @@
-<script setup>
+﻿<script setup>
 // Keep the schedule editor self-contained so the management page can focus on
 // orchestration while this form owns validation-friendly field layout.
 import { reactive, watch } from 'vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ScheduleConflictNotice from './ScheduleConflictNotice.vue'
@@ -135,7 +135,7 @@ function submitForm() {
     <div class="mt-4 grid gap-4 md:grid-cols-2">
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.classLabel }}</span>
-        <Dropdown
+        <Select
           v-model="form.class_id"
           :options="classOptions"
           option-label="label"
@@ -147,7 +147,7 @@ function submitForm() {
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.teacherLabel }}</span>
-        <Dropdown
+        <Select
           v-model="form.teacher_user_id"
           :options="teacherOptions"
           option-label="label"
@@ -159,7 +159,7 @@ function submitForm() {
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.dayLabel }}</span>
-        <Dropdown
+        <Select
           v-model="form.day_of_week"
           :options="dayOptions"
           option-label="label"
@@ -171,7 +171,7 @@ function submitForm() {
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.statusLabel }}</span>
-        <Dropdown
+        <Select
           v-model="form.status"
           :options="statusOptions"
           option-label="label"

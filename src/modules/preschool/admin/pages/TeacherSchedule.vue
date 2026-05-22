@@ -1,11 +1,11 @@
-<script setup>
+﻿<script setup>
 // Keep the teacher timetable page read-only so admins can inspect weekly
 // coverage without exposing schedule editing controls.
 import { computed, onMounted, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useRoute, useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolTeacherSchedule } from '@/modules/preschool/composables/usePreschoolTeacherSchedule'
@@ -98,7 +98,7 @@ onMounted(async () => {
       </div>
 
       <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
-        <Dropdown
+        <Select
           :model-value="selectedTeacherId"
           :options="teacherOptions"
           option-label="label"

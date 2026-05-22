@@ -1,6 +1,6 @@
-<script setup>
+﻿<script setup>
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
 import PreschoolSettingsSectionCard from './PreschoolSettingsSectionCard.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -59,7 +59,7 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
         <div class="grid gap-4 md:grid-cols-2">
           <label class="preschool-settings-field">
             <span>{{ t('preschoolSettingsPage.fields.classLevel') }}</span>
-            <Dropdown
+            <Select
               :model-value="item.classLevel"
               :options="levelOptions"
               option-label="label"
@@ -85,7 +85,7 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
 
           <label class="preschool-settings-field">
             <span>{{ t('preschoolSettingsPage.fields.assignedTeacher') }}</span>
-            <Dropdown
+            <Select
               :model-value="item.assignedTeacher"
               :options="teacherOptions"
               option-label="label"
@@ -109,7 +109,7 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
 
           <label class="preschool-settings-field md:col-span-2">
             <span>{{ t('preschoolSettingsPage.fields.status') }}</span>
-            <Dropdown
+            <Select
               :model-value="item.status"
               :options="statusOptions"
               option-label="label"

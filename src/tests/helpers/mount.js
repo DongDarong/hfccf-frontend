@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHashHistory } from 'vue-router'
+import PrimeVue from 'primevue/config'
 
 /**
  * Creates a minimal i18n instance for tests.
@@ -51,6 +52,9 @@ const defaultStubs = {
     template:
       '<span v-bind="$attrs" :data-status-label="value"><slot name="icon" /><slot /></span>',
   },
+  Select: { name: 'Select', props: ['modelValue', 'options', 'optionLabel', 'optionValue', 'placeholder', 'disabled', 'loading'], template: '<select v-bind="$attrs"><slot /></select>' },
+  DatePicker: { name: 'DatePicker', props: ['modelValue', 'placeholder', 'disabled', 'showTime', 'showIcon'], template: '<input v-bind="$attrs" type="text" />' },
+  ToggleSwitch: { name: 'ToggleSwitch', props: ['modelValue', 'disabled'], template: '<input v-bind="$attrs" type="checkbox" />' },
 }
 
 /**
@@ -77,7 +81,7 @@ export function mountWithPlugins(component, options = {}) {
 
   return mount(component, {
     global: {
-      plugins: [i18n, pinia, router],
+      plugins: [i18n, pinia, router, PrimeVue],
       stubs: { ...defaultStubs, ...extraStubs },
       ...restGlobal,
     },

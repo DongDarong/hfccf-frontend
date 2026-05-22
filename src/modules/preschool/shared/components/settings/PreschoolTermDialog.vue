@@ -1,7 +1,7 @@
-<script setup>
-import Calendar from 'primevue/calendar'
+﻿<script setup>
+import DatePicker from 'primevue/datepicker'
 import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import PreschoolSettingsSectionCard from './PreschoolSettingsSectionCard.vue'
@@ -82,7 +82,7 @@ function updateField(field, value) {
 
         <label class="preschool-settings-field">
           <span>{{ t('preschoolSettingsPage.fields.startDate') }}</span>
-          <Calendar
+          <DatePicker
             :model-value="draft.startDate"
             date-format="yy-mm-dd"
             show-icon
@@ -95,7 +95,7 @@ function updateField(field, value) {
 
         <label class="preschool-settings-field">
           <span>{{ t('preschoolSettingsPage.fields.endDate') }}</span>
-          <Calendar
+          <DatePicker
             :model-value="draft.endDate"
             date-format="yy-mm-dd"
             show-icon
@@ -108,7 +108,7 @@ function updateField(field, value) {
 
         <label class="preschool-settings-field md:col-span-2">
           <span>{{ t('preschoolSettingsPage.fields.status') }}</span>
-          <Dropdown
+          <Select
             :model-value="draft.status"
             :options="statusOptions"
             option-label="label"

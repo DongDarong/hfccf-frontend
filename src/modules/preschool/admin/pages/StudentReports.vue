@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 // Keep the student report page focused on selection and loading so the report
 // body can stay reusable and the finalized-data contract stays explicit.
 import { onMounted } from 'vue'
@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
 import ReportPeriodSelector from '@/modules/preschool/shared/components/report/ReportPeriodSelector.vue'
@@ -84,7 +84,7 @@ onMounted(async () => {
           <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
             <label class="space-y-2 text-sm font-medium text-slate-700">
               <span>{{ t('preschoolStudentReportsPage.filters.student') }}</span>
-              <Dropdown
+              <Select
                 :model-value="selectedStudentId"
                 :options="studentOptions"
                 option-label="label"

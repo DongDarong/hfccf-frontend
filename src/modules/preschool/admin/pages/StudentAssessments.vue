@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 // Keep the assessment list page thin so the list, edit dialog, and summary
 // links can share one teacher/admin flow without duplicating backend calls.
 import { computed, onMounted, ref } from 'vue'
@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Dialog from 'primevue/dialog'
 import { useLanguage } from '@/composables/useLanguage'
@@ -168,7 +168,7 @@ onMounted(async () => {
         <div class="grid gap-3 md:grid-cols-5">
           <label class="space-y-2 text-sm font-medium text-slate-700 md:col-span-2">
             <span>{{ t('preschoolAssessmentPage.filters.student') }}</span>
-            <Dropdown
+            <Select
               :model-value="selectedStudentId"
               :options="studentOptions"
               option-label="label"
@@ -181,7 +181,7 @@ onMounted(async () => {
 
           <label class="space-y-2 text-sm font-medium text-slate-700">
             <span>{{ t('preschoolAssessmentPage.filters.class') }}</span>
-            <Dropdown
+            <Select
               :model-value="selectedClassId"
               :options="classOptions"
               option-label="label"
@@ -194,7 +194,7 @@ onMounted(async () => {
 
           <label class="space-y-2 text-sm font-medium text-slate-700">
             <span>{{ t('preschoolAssessmentPage.filters.category') }}</span>
-            <Dropdown
+            <Select
               :model-value="selectedCategoryId"
               :options="categoryOptions"
               option-label="name"
@@ -207,7 +207,7 @@ onMounted(async () => {
 
           <label class="space-y-2 text-sm font-medium text-slate-700">
             <span>{{ t('preschoolAssessmentPage.filters.status') }}</span>
-            <Dropdown
+            <Select
               :model-value="selectedStatus"
               :options="[
                 { label: t('preschoolAssessmentStatus.draft'), value: 'draft' },

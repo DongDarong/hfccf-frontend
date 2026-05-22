@@ -53,6 +53,7 @@ export default {
   allRoles: 'តួនាទីទាំងអស់',
   allDivisions: 'ផ្នែកទាំងអស់',
   allTeams: 'ក្រុមទាំងអស់',
+  allClasses: 'ថ្នាក់ទាំងអស់',
   allStatus: 'ស្ថានភាពទាំងអស់',
   status: {
     success: 'ជោគជ័យ',
