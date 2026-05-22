@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import InputNumber from 'primevue/inputnumber'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Select from 'primevue/select'
@@ -44,15 +44,15 @@ function updateField(field, value) {
     :title="t('preschoolSettingsPage.sections.attendance.title')"
     :subtitle="t('preschoolSettingsPage.sections.attendance.subtitle')"
   >
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <label class="preschool-settings-field xl:col-span-2">
+    <div class="grid gap-4 md:grid-cols-2">
+      <label class="preschool-settings-field">
         <span>{{ t('preschoolSettingsPage.fields.markingWindow') }}</span>
-        <input
-          :value="modelValue.markingWindow"
-          type="text"
-          class="preschool-settings-input"
+        <InputNumber
+          :model-value="modelValue.markingWindow"
+          :min="0"
+          class="preschool-settings-number"
           :placeholder="t('preschoolSettingsPage.placeholders.markingWindow')"
-          @input="updateField({ model: modelValue, key: 'markingWindow' }, $event.target.value)"
+          @update:model-value="updateField({ model: modelValue, key: 'markingWindow' }, $event)"
         />
         <small v-if="errors.markingWindow" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.markingWindow}`) }}</small>
       </label>
@@ -61,15 +61,15 @@ function updateField(field, value) {
         <span>{{ t('preschoolSettingsPage.fields.lateThreshold') }}</span>
         <InputNumber
           :model-value="modelValue.lateThreshold"
-          class="w-full"
-          input-class="preschool-settings-input"
+          :min="0"
+          class="preschool-settings-number"
           :placeholder="t('preschoolSettingsPage.placeholders.lateThreshold')"
           @update:model-value="updateField({ model: modelValue, key: 'lateThreshold' }, $event)"
         />
         <small v-if="errors.lateThreshold" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.lateThreshold}`) }}</small>
       </label>
 
-      <label class="preschool-settings-field">
+      <label class="preschool-settings-field md:col-span-2">
         <span>{{ t('preschoolSettingsPage.fields.absenceRule') }}</span>
         <Select
           :model-value="modelValue.absenceRule"
@@ -83,17 +83,19 @@ function updateField(field, value) {
         <small v-if="errors.absenceRule" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.absenceRule}`) }}</small>
       </label>
 
-      <label class="preschool-settings-field xl:col-span-4">
-        <span>{{ t('preschoolSettingsPage.fields.teacherCanEditAttendance') }}</span>
-        <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
-          <span class="text-sm text-slate-600">{{ t('preschoolSettingsPage.help.teacherCanEditAttendance') }}</span>
-          <ToggleSwitch
-            :model-value="modelValue.teacherCanEditAttendance"
-            @update:model-value="updateField({ model: modelValue, key: 'teacherCanEditAttendance' }, $event)"
-          />
+      <div
+        class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 md:col-span-2"
+        :class="errors.teacherCanEditAttendance ? 'border-rose-300' : ''"
+      >
+        <div class="space-y-0.5">
+          <p class="text-sm font-semibold text-slate-800">{{ t('preschoolSettingsPage.fields.teacherCanEditAttendance') }}</p>
+          <p class="text-xs text-slate-500">{{ t('preschoolSettingsPage.help.teacherCanEditAttendance') }}</p>
         </div>
-        <small v-if="errors.teacherCanEditAttendance" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.teacherCanEditAttendance}`) }}</small>
-      </label>
+        <ToggleSwitch
+          :model-value="modelValue.teacherCanEditAttendance"
+          @update:model-value="updateField({ model: modelValue, key: 'teacherCanEditAttendance' }, $event)"
+        />
+      </div>
     </div>
   </PreschoolSettingsSectionCard>
 </template>
@@ -111,7 +113,12 @@ function updateField(field, value) {
   color: #334155;
 }
 
-.preschool-settings-input {
+/* make InputNumber wrapper + inner input match the design tokens */
+:deep(.preschool-settings-number) {
+  width: 100%;
+}
+
+:deep(.preschool-settings-number .p-inputnumber-input) {
   width: 100%;
   min-height: 2.75rem;
   border-radius: 0.9rem;
@@ -119,5 +126,12 @@ function updateField(field, value) {
   background: #fff;
   padding: 0.7rem 0.9rem;
   color: #0f172a;
+  font-size: 0.875rem;
+}
+
+:deep(.preschool-settings-number .p-inputnumber-input:focus) {
+  outline: none;
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
 }
 </style>
