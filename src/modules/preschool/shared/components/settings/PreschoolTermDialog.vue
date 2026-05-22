@@ -4,7 +4,6 @@ import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import PreschoolSettingsSectionCard from './PreschoolSettingsSectionCard.vue'
 
 // Keep the term dialog isolated so the page can own state while this component
 // stays focused on the form contract and validation feedback.
@@ -62,65 +61,59 @@ function updateField(field, value) {
       </div>
     </template>
 
-    <PreschoolSettingsSectionCard
-      :eyebrow="t('preschoolSettingsPage.termDialog.eyebrow')"
-      :title="t('preschoolSettingsPage.termDialog.cardTitle')"
-      :subtitle="t('preschoolSettingsPage.termDialog.cardSubtitle')"
-    >
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="preschool-settings-field md:col-span-2">
-          <span>{{ t('preschoolSettingsPage.fields.termName') }}</span>
-          <input
-            :value="draft.name"
-            type="text"
-            class="preschool-settings-input"
-            :placeholder="t('preschoolSettingsPage.placeholders.termName')"
-            @input="updateField({ model: draft, key: 'name' }, $event.target.value)"
-          />
-          <small v-if="errors.name" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.name}`) }}</small>
-        </label>
+    <div class="grid gap-4 md:grid-cols-2 px-1 py-2">
+      <label class="preschool-settings-field md:col-span-2">
+        <span>{{ t('preschoolSettingsPage.fields.termName') }}</span>
+        <input
+          :value="draft.name"
+          type="text"
+          class="preschool-settings-input"
+          :placeholder="t('preschoolSettingsPage.placeholders.termName')"
+          @input="updateField({ model: draft, key: 'name' }, $event.target.value)"
+        />
+        <small v-if="errors.name" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.name}`) }}</small>
+      </label>
 
-        <label class="preschool-settings-field">
-          <span>{{ t('preschoolSettingsPage.fields.startDate') }}</span>
-          <DatePicker
-            :model-value="draft.startDate"
-            date-format="yy-mm-dd"
-            show-icon
-            class="w-full"
-            :placeholder="t('preschoolSettingsPage.placeholders.startDate')"
-            @update:model-value="updateField({ model: draft, key: 'startDate' }, $event)"
-          />
-          <small v-if="errors.startDate" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.startDate}`) }}</small>
-        </label>
+      <label class="preschool-settings-field">
+        <span>{{ t('preschoolSettingsPage.fields.startDate') }}</span>
+        <DatePicker
+          :model-value="draft.startDate"
+          date-format="yy-mm-dd"
+          show-icon
+          class="w-full"
+          :placeholder="t('preschoolSettingsPage.placeholders.startDate')"
+          @update:model-value="updateField({ model: draft, key: 'startDate' }, $event)"
+        />
+        <small v-if="errors.startDate" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.startDate}`) }}</small>
+      </label>
 
-        <label class="preschool-settings-field">
-          <span>{{ t('preschoolSettingsPage.fields.endDate') }}</span>
-          <DatePicker
-            :model-value="draft.endDate"
-            date-format="yy-mm-dd"
-            show-icon
-            class="w-full"
-            :placeholder="t('preschoolSettingsPage.placeholders.endDate')"
-            @update:model-value="updateField({ model: draft, key: 'endDate' }, $event)"
-          />
-          <small v-if="errors.endDate" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.endDate}`) }}</small>
-        </label>
+      <label class="preschool-settings-field">
+        <span>{{ t('preschoolSettingsPage.fields.endDate') }}</span>
+        <DatePicker
+          :model-value="draft.endDate"
+          date-format="yy-mm-dd"
+          show-icon
+          class="w-full"
+          :placeholder="t('preschoolSettingsPage.placeholders.endDate')"
+          @update:model-value="updateField({ model: draft, key: 'endDate' }, $event)"
+        />
+        <small v-if="errors.endDate" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.endDate}`) }}</small>
+      </label>
 
-        <label class="preschool-settings-field md:col-span-2">
-          <span>{{ t('preschoolSettingsPage.fields.status') }}</span>
-          <Select
-            :model-value="draft.status"
-            :options="statusOptions"
-            option-label="label"
-            option-value="value"
-            class="w-full"
-            :placeholder="t('preschoolSettingsPage.placeholders.status')"
-            @update:model-value="updateField({ model: draft, key: 'status' }, $event)"
-          />
-          <small v-if="errors.status" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.status}`) }}</small>
-        </label>
-      </div>
-    </PreschoolSettingsSectionCard>
+      <label class="preschool-settings-field md:col-span-2">
+        <span>{{ t('preschoolSettingsPage.fields.status') }}</span>
+        <Select
+          :model-value="draft.status"
+          :options="statusOptions"
+          option-label="label"
+          option-value="value"
+          class="w-full"
+          :placeholder="t('preschoolSettingsPage.placeholders.status')"
+          @update:model-value="updateField({ model: draft, key: 'status' }, $event)"
+        />
+        <small v-if="errors.status" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.status}`) }}</small>
+      </label>
+    </div>
 
     <template #footer>
       <div class="flex flex-wrap justify-end gap-3">
