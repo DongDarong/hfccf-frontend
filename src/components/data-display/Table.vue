@@ -169,6 +169,32 @@ function onSort(event) {
           </span>
         </template>
 
+        <!-- Student profile cell -->
+        <template v-else-if="column.key === 'student'">
+          <div class="flex items-center gap-3">
+            <div class="ui-user-avatar ui-user-avatar--student">
+              <span class="ui-user-avatar__initials">{{ userInitials(data) }}</span>
+              <img
+                v-if="avatarSrc(data)"
+                :src="avatarSrc(data)"
+                :alt="`${data.name || 'Student'} avatar`"
+                class="ui-user-avatar__image"
+                :class="{ 'ui-user-avatar__image--visible': shouldShowImage(data) }"
+                @load="onAvatarLoad(data)"
+                @error="onAvatarError(data)"
+              >
+            </div>
+            <div class="min-w-0">
+              <div class="truncate text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
+                {{ data.name || '-' }}
+              </div>
+              <div v-if="data.studentCode" class="text-[11px] text-surface-500 sm:text-xs">
+                {{ data.studentCode }}
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- User profile cell -->
         <template v-else-if="column.key === 'user'">
           <div class="flex items-center gap-3">
@@ -300,6 +326,11 @@ function onSort(event) {
   border-radius: 9999px;
   overflow: hidden;
   flex-shrink: 0;
+}
+
+.ui-user-avatar--student {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  box-shadow: 0 10px 18px -14px rgba(124, 58, 237, 0.45);
 }
 
 .ui-user-avatar__initials {

@@ -2,6 +2,7 @@
 // Keep student management text locale-driven so EN/KH parity is testable and
 // hardcoded English labels do not reappear in a production page.
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { getAvatarInitials } from '@/utils/avatar'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -78,13 +79,25 @@ const tableColumns = computed(() => [
 ])
 
 const mappedStudents = computed(() =>
-  students.value.map((student) => ({
-    ...student,
-    student: student.fullName || student.name || '-',
-    classesCount: student.classesCount || student.classes?.length || 0,
-    guardianPhone: student.guardianPhone || '-',
-  })),
+  students.value.map((student) => {
+    const fullName =
+      student.fullName ||
+      `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
+      student.name ||
+      '-'
+    return {
+      ...student,
+      name: fullName,
+      classesCount: student.classesCount || student.classes?.length || 0,
+      guardianPhone: student.guardianPhone || '-',
+    }
+  }),
 )
+
+const studentInitials = computed(() => {
+  const name = `${form.first_name} ${form.last_name}`.trim()
+  return getAvatarInitials(name, '?')
+})
 
 function resetForm() {
   form.student_code = ''
@@ -304,7 +317,22 @@ onMounted(async () => {
       </div>
     </section>
 
-    <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle')" modal class="student-info-page__dialog">
+    <Dialog v-model:visible="modalOpen" modal class="student-info-page__dialog">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <div class="student-info-page__dialog-avatar">
+            <span>{{ studentInitials }}</span>
+          </div>
+          <div>
+            <p class="text-base font-semibold text-slate-900">
+              {{ modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle') }}
+            </p>
+            <p v-if="modalMode === 'edit' && (form.first_name || form.last_name)" class="text-xs text-slate-500">
+              {{ `${form.first_name} ${form.last_name}`.trim() }}
+            </p>
+          </div>
+        </div>
+      </template>
       <div class="student-info-page__dialog-grid">
         <input v-model="form.student_code" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.studentCode')" />
         <input v-model="form.first_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.firstName')" />
@@ -420,6 +448,22 @@ onMounted(async () => {
 
 .student-info-page__dialog :deep(.p-dialog-content) {
   overflow: visible;
+}
+
+.student-info-page__dialog-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  box-shadow: 0 8px 16px -12px rgba(124, 58, 237, 0.5);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
