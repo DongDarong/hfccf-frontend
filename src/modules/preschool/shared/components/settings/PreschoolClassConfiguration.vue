@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
@@ -54,10 +54,29 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
       <article
         v-for="(item, index) in items"
         :key="item.id || `${item.classLevel}-${index}`"
-        class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-[0_10px_30px_-28px_rgba(15,23,42,0.45)]"
+        class="class-card"
       >
-        <div class="grid gap-4 md:grid-cols-2">
-          <label class="preschool-settings-field">
+        <!-- card header -->
+        <div class="class-card__header">
+          <div class="space-y-0.5">
+            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-sky-600">
+              {{ t('preschoolSettingsPage.classCard.eyebrow') }} {{ index + 1 }}
+            </p>
+            <p class="text-sm font-semibold text-slate-800">{{ item.room || item.id }}</p>
+          </div>
+          <span
+            class="rounded-full px-3 py-1 text-xs font-semibold"
+            :class="item.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'"
+          >
+            {{ item.status === 'active'
+              ? t('preschoolSettingsPage.statusOptions.active')
+              : t('preschoolSettingsPage.statusOptions.inactive') }}
+          </span>
+        </div>
+
+        <!-- fields -->
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+          <div class="preschool-settings-field">
             <span>{{ t('preschoolSettingsPage.fields.classLevel') }}</span>
             <Select
               :model-value="item.classLevel"
@@ -69,21 +88,21 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
               @update:model-value="emit('update:item', { index, field: 'classLevel', value: $event })"
             />
             <small v-if="errors?.[index]?.classLevel" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors[index].classLevel}`) }}</small>
-          </label>
+          </div>
 
-          <label class="preschool-settings-field">
+          <div class="preschool-settings-field">
             <span>{{ t('preschoolSettingsPage.fields.capacity') }}</span>
             <InputNumber
               :model-value="item.capacity"
-              class="w-full"
-              input-class="preschool-settings-input"
+              :min="1"
+              class="preschool-settings-number"
               :placeholder="t('preschoolSettingsPage.placeholders.capacity')"
               @update:model-value="emit('update:item', { index, field: 'capacity', value: $event })"
             />
             <small v-if="errors?.[index]?.capacity" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors[index].capacity}`) }}</small>
-          </label>
+          </div>
 
-          <label class="preschool-settings-field">
+          <div class="preschool-settings-field">
             <span>{{ t('preschoolSettingsPage.fields.assignedTeacher') }}</span>
             <Select
               :model-value="item.assignedTeacher"
@@ -94,9 +113,9 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
               :placeholder="t('preschoolSettingsPage.placeholders.assignedTeacher')"
               @update:model-value="emit('update:item', { index, field: 'assignedTeacher', value: $event })"
             />
-          </label>
+          </div>
 
-          <label class="preschool-settings-field">
+          <div class="preschool-settings-field">
             <span>{{ t('preschoolSettingsPage.fields.room') }}</span>
             <input
               :value="item.room"
@@ -105,9 +124,9 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
               :placeholder="t('preschoolSettingsPage.placeholders.room')"
               @input="emit('update:item', { index, field: 'room', value: $event.target.value })"
             />
-          </label>
+          </div>
 
-          <label class="preschool-settings-field md:col-span-2">
+          <div class="preschool-settings-field md:col-span-2">
             <span>{{ t('preschoolSettingsPage.fields.status') }}</span>
             <Select
               :model-value="item.status"
@@ -119,10 +138,10 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
               @update:model-value="emit('update:item', { index, field: 'status', value: $event })"
             />
             <small v-if="errors?.[index]?.status" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors[index].status}`) }}</small>
-          </label>
+          </div>
         </div>
 
-        <div class="mt-4 flex justify-end">
+        <div class="mt-4 flex justify-end border-t border-slate-100 pt-3">
           <Button variant="ghost" @click="emit('remove', index)">{{ t('preschoolSettingsPage.actions.remove') }}</Button>
         </div>
       </article>
@@ -155,5 +174,44 @@ const emit = defineEmits(['add', 'update:item', 'remove'])
   background: #fff;
   padding: 0.7rem 0.9rem;
   color: #0f172a;
+  font-size: 0.875rem;
+}
+
+/* class item card */
+.class-card {
+  border-radius: 1rem;
+  border: 1px solid #e2eaf3;
+  background: #f8fafc;
+  padding: 1rem;
+  box-shadow: 0 10px 30px -28px rgba(15, 23, 42, 0.35);
+}
+
+.class-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* normalize InputNumber wrapper + input to match design tokens */
+:deep(.preschool-settings-number) {
+  width: 100%;
+}
+
+:deep(.preschool-settings-number .p-inputnumber-input) {
+  width: 100%;
+  min-height: 2.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid #d7e0ea;
+  background: #fff;
+  padding: 0.7rem 0.9rem;
+  color: #0f172a;
+  font-size: 0.875rem;
+}
+
+:deep(.preschool-settings-number .p-inputnumber-input:focus) {
+  outline: none;
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
 }
 </style>

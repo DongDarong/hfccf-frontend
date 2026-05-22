@@ -47,12 +47,12 @@ function updateField(field, value) {
     <div class="grid gap-4 md:grid-cols-2">
       <label class="preschool-settings-field">
         <span>{{ t('preschoolSettingsPage.fields.markingWindow') }}</span>
-        <InputNumber
-          :model-value="modelValue.markingWindow"
-          :min="0"
-          class="preschool-settings-number"
+        <input
+          :value="modelValue.markingWindow"
+          type="text"
+          class="preschool-settings-input"
           :placeholder="t('preschoolSettingsPage.placeholders.markingWindow')"
-          @update:model-value="updateField({ model: modelValue, key: 'markingWindow' }, $event)"
+          @input="updateField({ model: modelValue, key: 'markingWindow' }, $event.target.value)"
         />
         <small v-if="errors.markingWindow" class="text-xs font-medium text-rose-600">{{ t(`preschoolSettingsPage.validation.${errors.markingWindow}`) }}</small>
       </label>

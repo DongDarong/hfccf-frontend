@@ -92,6 +92,9 @@ export default {
       reset: 'កំណត់ឡើងវិញ',
       addClassConfiguration: 'បន្ថែមថ្នាក់',
     },
+    classCard: {
+      eyebrow: 'ថ្នាក់',
+    },
     statusOptions: {
       active: 'សកម្ម',
       inactive: 'មិនសកម្ម',

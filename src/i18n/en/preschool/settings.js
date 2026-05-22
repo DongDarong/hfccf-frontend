@@ -92,6 +92,9 @@ export default {
       reset: 'Reset',
       addClassConfiguration: 'Add Class',
     },
+    classCard: {
+      eyebrow: 'Class',
+    },
     statusOptions: {
       active: 'Active',
       inactive: 'Inactive',
