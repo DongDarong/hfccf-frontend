@@ -59,6 +59,9 @@ export default {
       deleteSuccess: 'ធនធានត្រូវបានលុបដោយជោគជ័យ។',
       nameMissing: 'សូមបញ្ចូលឈ្មោះធនធាន។',
       quantityInvalid: 'ចំនួនត្រូវតែ 0 ឬច្រើនជាងនេះ។',
+      loadFailed: 'មិនអាចផ្ទុកធនធានថ្នាក់រៀនបានទេ។',
+      saveFailed: 'មិនអាចរក្សាទុកធនធានបានទេ។',
+      deleteFailed: 'មិនអាចលុបធនធានបានទេ។',
     },
     summary: {
       total: 'ធនធានសរុប',

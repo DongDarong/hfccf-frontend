@@ -1,15 +1,20 @@
 <script setup>
-// Classroom Resources — tracks books, toys, equipment, and supplies for each
-// preschool classroom. State is held in-memory until a backend endpoint exists.
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import Button from '@/components/buttons/Button.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import {
+  fetchClassroomResources,
+  createClassroomResource,
+  updateClassroomResource,
+  deleteClassroomResource,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolAdminClassroomResourcesPage',
@@ -17,27 +22,30 @@ defineOptions({
 
 const { t } = useLanguage()
 
-// ── filters ──────────────────────────────────────────────────────────────────
 const searchQuery = ref('')
 const categoryFilter = ref('')
 const conditionFilter = ref('')
+const currentPage = ref(1)
+const pageSize = 20
+const loading = ref(false)
+const errorMessage = ref('')
 
-// ── modal state ───────────────────────────────────────────────────────────────
+const resources = ref([])
+const pagination = ref({ page: 1, perPage: pageSize, total: 0, totalPages: 1 })
+
 const modalOpen = ref(false)
 const modalMode = ref('create')
 const saving = ref(false)
 const editingId = ref(null)
 
-// ── alert state ───────────────────────────────────────────────────────────────
 const showSuccess = ref(false)
 const successMessage = ref('')
 const deleteTarget = ref(null)
 const deleteOpen = ref(false)
 
-// ── form ──────────────────────────────────────────────────────────────────────
 const form = reactive({
   name: '',
-  category: '',
+  category: 'supplies',
   quantity: 0,
   condition: 'good',
   notes: '',
@@ -45,11 +53,6 @@ const form = reactive({
 
 const formError = ref('')
 
-// ── resource list (in-memory until API is available) ─────────────────────────
-let nextId = 1
-const resources = ref([])
-
-// ── options ───────────────────────────────────────────────────────────────────
 const categoryOptions = computed(() => [
   { label: t('preschoolClassroomResources.categories.books'), value: 'books' },
   { label: t('preschoolClassroomResources.categories.toys'), value: 'toys' },
@@ -64,7 +67,6 @@ const conditionOptions = computed(() => [
   { label: t('preschoolClassroomResources.conditions.poor'), value: 'poor' },
 ])
 
-// ── table columns ─────────────────────────────────────────────────────────────
 const tableColumns = computed(() => [
   { key: 'number', label: t('preschoolClassroomResources.columns.no'), align: 'left' },
   { key: 'name', label: t('preschoolClassroomResources.columns.name'), align: 'left' },
@@ -75,36 +77,45 @@ const tableColumns = computed(() => [
   { key: 'actions', label: t('preschoolClassroomResources.columns.actions'), align: 'right' },
 ])
 
-// ── derived data ──────────────────────────────────────────────────────────────
-const filteredResources = computed(() => {
-  const q = searchQuery.value.toLowerCase()
-  return resources.value.filter((r) => {
-    const matchesSearch = !q || r.name.toLowerCase().includes(q) || r.notes.toLowerCase().includes(q)
-    const matchesCategory = !categoryFilter.value || r.category === categoryFilter.value
-    const matchesCondition = !conditionFilter.value || r.condition === conditionFilter.value
-    return matchesSearch && matchesCategory && matchesCondition
-  })
-})
-
 const mappedResources = computed(() =>
-  filteredResources.value.map((r, i) => ({
+  resources.value.map((r, i) => ({
     ...r,
-    number: i + 1,
+    number: (currentPage.value - 1) * pageSize + i + 1,
     categoryLabel: t(`preschoolClassroomResources.categories.${r.category}`),
     conditionLabel: t(`preschoolClassroomResources.conditions.${r.condition}`),
     notes: r.notes || '—',
   })),
 )
 
-// ── summary counts ────────────────────────────────────────────────────────────
-const summaryTotal = computed(() => resources.value.length)
+const summaryTotal = computed(() => pagination.value.total || resources.value.length)
 const summaryGood = computed(() => resources.value.filter((r) => r.condition === 'good').length)
 const summaryAttention = computed(() => resources.value.filter((r) => r.condition !== 'good').length)
 
-// ── form helpers ──────────────────────────────────────────────────────────────
+async function loadResources() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await fetchClassroomResources({
+      page: currentPage.value,
+      perPage: pageSize,
+      search: searchQuery.value,
+      category: categoryFilter.value,
+      condition: conditionFilter.value,
+    })
+    resources.value = response.items || []
+    pagination.value = response.pagination || pagination.value
+  } catch (error) {
+    resources.value = []
+    errorMessage.value = error?.message || t('preschoolClassroomResources.messages.loadFailed')
+  } finally {
+    loading.value = false
+  }
+}
+
 function resetForm() {
   form.name = ''
-  form.category = 'books'
+  form.category = 'supplies'
   form.quantity = 0
   form.condition = 'good'
   form.notes = ''
@@ -124,7 +135,6 @@ function validateForm() {
   return true
 }
 
-// ── modal actions ─────────────────────────────────────────────────────────────
 function openCreateModal() {
   modalMode.value = 'create'
   editingId.value = null
@@ -150,41 +160,67 @@ function closeModal() {
   saving.value = false
 }
 
-function onSave() {
+async function onSave() {
   if (!validateForm()) return
 
   saving.value = true
-  if (modalMode.value === 'edit') {
-    // Update existing entry in-place
-    const idx = resources.value.findIndex((r) => r.id === editingId.value)
-    if (idx !== -1) {
-      resources.value[idx] = { ...resources.value[idx], ...form }
+  errorMessage.value = ''
+
+  try {
+    const payload = {
+      name: form.name.trim(),
+      category: form.category,
+      quantity: form.quantity,
+      condition: form.condition,
+      notes: form.notes.trim() || null,
     }
-    successMessage.value = t('preschoolClassroomResources.messages.updateSuccess')
-  } else {
-    // Append new entry with a stable local id
-    resources.value.push({ id: nextId++, ...form })
-    successMessage.value = t('preschoolClassroomResources.messages.createSuccess')
+
+    if (modalMode.value === 'edit') {
+      await updateClassroomResource(editingId.value, payload)
+      successMessage.value = t('preschoolClassroomResources.messages.updateSuccess')
+    } else {
+      await createClassroomResource(payload)
+      successMessage.value = t('preschoolClassroomResources.messages.createSuccess')
+    }
+
+    showSuccess.value = true
+    closeModal()
+    await loadResources()
+  } catch (error) {
+    formError.value = error?.message || t('preschoolClassroomResources.messages.saveFailed')
+  } finally {
+    saving.value = false
   }
-  saving.value = false
-  showSuccess.value = true
-  closeModal()
 }
 
-// ── delete actions ────────────────────────────────────────────────────────────
 function onDelete(resource) {
-  // Use the original row from resources, not the mapped copy
-  deleteTarget.value = resources.value.find((r) => r.id === resource.id) ?? resource
+  deleteTarget.value = resource
   deleteOpen.value = true
 }
 
-function confirmDelete() {
-  resources.value = resources.value.filter((r) => r.id !== deleteTarget.value?.id)
-  successMessage.value = t('preschoolClassroomResources.messages.deleteSuccess')
-  showSuccess.value = true
-  deleteOpen.value = false
-  deleteTarget.value = null
+async function confirmDelete() {
+  try {
+    await deleteClassroomResource(deleteTarget.value?.id)
+    successMessage.value = t('preschoolClassroomResources.messages.deleteSuccess')
+    showSuccess.value = true
+    deleteOpen.value = false
+    deleteTarget.value = null
+    await loadResources()
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolClassroomResources.messages.deleteFailed')
+  }
 }
+
+watch([searchQuery, categoryFilter, conditionFilter], () => {
+  currentPage.value = 1
+  loadResources()
+})
+
+watch(currentPage, () => {
+  loadResources()
+})
+
+onMounted(loadResources)
 </script>
 
 <template>
@@ -216,6 +252,12 @@ function confirmDelete() {
 
         <!-- toolbar -->
         <div class="classroom-resources__toolbar">
+          <div class="classroom-resources__toolbar-meta">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
+              {{ t('preschoolClassroomResources.summary.total') }}
+            </p>
+            <p class="text-2xl font-bold text-slate-900 leading-none">{{ summaryTotal }}</p>
+          </div>
           <Button type="button" variant="primary" size="md" rounded="xl" @click="openCreateModal">
             {{ t('preschoolClassroomResources.addButton') }}
           </Button>
@@ -223,12 +265,17 @@ function confirmDelete() {
 
         <!-- filters -->
         <div class="classroom-resources__filters">
-          <input
-            v-model="searchQuery"
-            class="classroom-resources__input"
-            type="search"
-            :placeholder="t('preschoolClassroomResources.searchPlaceholder')"
-          />
+          <div class="classroom-resources__search-wrap">
+            <svg class="classroom-resources__search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              class="classroom-resources__input classroom-resources__input--search"
+              type="search"
+              :placeholder="t('preschoolClassroomResources.searchPlaceholder')"
+            />
+          </div>
           <select v-model="categoryFilter" class="classroom-resources__input">
             <option value="">{{ t('preschoolClassroomResources.filters.allCategories') }}</option>
             <option v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
@@ -243,17 +290,25 @@ function confirmDelete() {
           </select>
         </div>
 
-        <!-- resource table -->
+        <!-- page-level error -->
+        <div v-if="errorMessage && !modalOpen" class="classroom-resources__error">
+          {{ errorMessage }}
+        </div>
+
         <Table
           :rows="mappedResources"
           :columns="tableColumns"
-          :loading="false"
+          :loading="loading"
           :empty-text="searchQuery || categoryFilter || conditionFilter
             ? t('preschoolClassroomResources.messages.noResults')
             : t('preschoolClassroomResources.messages.empty')"
           @edit="openEditModal"
           @delete="onDelete"
         />
+
+        <div v-if="pagination.totalPages > 1" class="flex justify-end">
+          <Pagination v-model="currentPage" :total-pages="pagination.totalPages" class="mt-2" />
+        </div>
       </div>
     </section>
 
@@ -279,7 +334,7 @@ function confirmDelete() {
           />
         </div>
 
-        <!-- category + condition side by side -->
+        <!-- category + condition -->
         <div class="classroom-resources__row">
           <div class="classroom-resources__field">
             <label class="classroom-resources__label">{{ t('preschoolClassroomResources.dialog.category') }}</label>
@@ -321,12 +376,11 @@ function confirmDelete() {
           />
         </div>
 
-        <!-- inline validation error -->
         <p v-if="formError" class="classroom-resources__form-error">{{ formError }}</p>
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">
+        <Button type="button" variant="ghost" rounded="xl" @click="closeModal">
           {{ t('preschoolClassroomResources.dialog.cancel') }}
         </Button>
         <Button type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSave">
@@ -335,7 +389,6 @@ function confirmDelete() {
       </template>
     </Dialog>
 
-    <!-- delete confirmation -->
     <AlertQuestion
       :show="deleteOpen"
       :title="t('preschoolClassroomResources.alerts.deleteTitle')"
@@ -349,7 +402,6 @@ function confirmDelete() {
       @cancel="deleteOpen = false"
     />
 
-    <!-- success notification -->
     <AlertSuccess
       :show="showSuccess"
       :title="t('preschoolClassroomResources.alerts.successTitle')"
@@ -425,7 +477,15 @@ function confirmDelete() {
 
 .classroom-resources__toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.classroom-resources__toolbar-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .classroom-resources__filters {
@@ -434,7 +494,37 @@ function confirmDelete() {
   gap: 0.75rem;
 }
 
-/* shared input style */
+.classroom-resources__search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.classroom-resources__search-icon {
+  position: absolute;
+  left: 0.7rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  color: #94a3b8;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.classroom-resources__input--search {
+  padding-left: 2.2rem;
+}
+
+.classroom-resources__error {
+  padding: 0.65rem 1rem;
+  border-radius: 0.7rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+/* shared input */
 .classroom-resources__input {
   width: 100%;
   min-height: 2.7rem;
@@ -444,6 +534,13 @@ function confirmDelete() {
   padding: 0.6rem 0.8rem;
   color: #0f172a;
   font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.classroom-resources__input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 /* dialog form */
@@ -467,8 +564,8 @@ function confirmDelete() {
 }
 
 .classroom-resources__label {
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #475569;
 }
 

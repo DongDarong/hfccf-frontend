@@ -532,3 +532,70 @@ export async function fetchMyPreschoolClasses(
 
   return normalizeClassListResponse(response, page, perPage)
 }
+
+// ── Classroom Resources ───────────────────────────────────────────────────────
+
+function normalizeResourceRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    name: normalizeText(row.name),
+    category: normalizeText(row.category || 'supplies'),
+    quantity: Number(row.quantity ?? 0),
+    condition: normalizeText(row.condition || 'good'),
+    notes: normalizeText(row.notes),
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    raw: row,
+  }
+}
+
+function normalizeResourceListResponse(response, fallbackPage = 1, fallbackPerPage = 20) {
+  const items = unwrapApiItems(response)
+  return {
+    items: items.map(normalizeResourceRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+export async function fetchClassroomResources(
+  { page = 1, perPage = 100, search = '', category = '', condition = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
+  options = {},
+) {
+  const response = await http.get('/preschool/classroom-resources', {
+    params: buildQueryParams({
+      page,
+      per_page: perPage,
+      search,
+      category,
+      condition,
+      sort_by: sortBy,
+      sort_direction: sortDirection,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeResourceListResponse(response, page, perPage)
+}
+
+export async function createClassroomResource(payload = {}) {
+  const response = await http.post('/preschool/classroom-resources', payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeResourceRow(data.resource || data)
+}
+
+export async function updateClassroomResource(id, payload = {}) {
+  const resourceId = resolveId(id)
+  if (!resourceId) throw new Error('Resource id is required.')
+
+  const response = await http.put(`/preschool/classroom-resources/${encodeURIComponent(resourceId)}`, payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeResourceRow(data.resource || data)
+}
+
+export async function deleteClassroomResource(id) {
+  const resourceId = resolveId(id)
+  if (!resourceId) return false
+
+  await http.delete(`/preschool/classroom-resources/${encodeURIComponent(resourceId)}`)
+  return true
+}

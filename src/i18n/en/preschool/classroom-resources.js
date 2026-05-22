@@ -59,6 +59,9 @@ export default {
       deleteSuccess: 'Resource removed successfully.',
       nameMissing: 'Please enter a resource name.',
       quantityInvalid: 'Quantity must be 0 or more.',
+      loadFailed: 'Failed to load classroom resources.',
+      saveFailed: 'Failed to save resource.',
+      deleteFailed: 'Failed to delete resource.',
     },
     summary: {
       total: 'Total resources',
