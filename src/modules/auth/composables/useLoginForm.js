@@ -7,7 +7,6 @@ import { useUserStore } from '@/store/userStore'
 const USER_TYPE_GROUPS = Object.freeze({
   ADMIN: 'admin',
   STAFF: 'staff',
-  GUARDIAN: 'guardian',
 })
 
 const adminRoleValues = [
@@ -25,8 +24,6 @@ const staffRoleValues = [
   ROLES.COACH,
 ]
 
-const guardianRoleValues = [ROLES.GUARDIAN]
-
 const userTypeOptions = [
   {
     labelKey: 'auth.loginForm.adminOption',
@@ -37,13 +34,6 @@ const userTypeOptions = [
     labelKey: 'auth.loginForm.staffOption',
     value: USER_TYPE_GROUPS.STAFF,
     roles: staffRoleValues,
-  },
-  {
-    // Guardians use a dedicated portal login bucket so they do not get mixed
-    // into staff-facing onboarding or dashboard redirects.
-    labelKey: 'guardianPortal.common.guardianOption',
-    value: USER_TYPE_GROUPS.GUARDIAN,
-    roles: guardianRoleValues,
   },
 ]
 
@@ -234,14 +224,6 @@ export function useLoginForm({ accessPolicy, language }) {
   }
 
   function getRedirectTargetForRole(user) {
-    const role = String(user?.role || '')
-      .trim()
-      .toLowerCase()
-
-    if (role === ROLES.GUARDIAN) {
-      return getSafeRedirectTarget(accessPolicy.guardianRedirect || '/guardian-portal/dashboard')
-    }
-
     return getSafeRedirectTarget(route.query.redirect || accessPolicy.defaultRedirect)
   }
 

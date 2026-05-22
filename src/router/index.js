@@ -1,10 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { ROLES, normalizeRole } from '@/constants/roles'
 import { ensureSessionIsValid, getCurrentUser, touchActivity } from '@/services/auth'
 import { canAccessRoute } from '@/services/accessControl'
 import { authRoutes } from '@/modules/auth/routes'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
-import { guardianPortalRoutes } from '@/modules/guardian-portal/routes'
 import { notificationsRoutes } from '@/modules/notifications/routes'
 import { reportsRoutes } from '@/modules/reports/routes'
 import { superAdminRoutes } from '@/modules/super-admin/routes'
@@ -18,7 +16,6 @@ import { validateRouteConfig } from '@/router/routeValidator'
 const routes = [
   ...authRoutes,
   ...dashboardRoutes,
-  ...guardianPortalRoutes,
   ...notificationsRoutes,
   ...reportsRoutes,
   ...superAdminRoutes,
@@ -51,12 +48,6 @@ function hasValidSession() {
   return ensureSessionIsValid()
 }
 
-function isGuardianPortalRoute(to) {
-  const routeName = String(to?.name || '')
-
-  return routeName.startsWith('guardian-portal-')
-}
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -74,19 +65,11 @@ router.beforeEach(async (to) => {
   }
 
   if (isGuestOnly(to) && sessionValid) {
-    return normalizeRole(currentUser?.role) === ROLES.GUARDIAN
-      ? { name: 'guardian-portal-dashboard' }
-      : { name: 'dashboard' }
-  }
-
-  if (sessionValid && normalizeRole(currentUser?.role) === ROLES.GUARDIAN && !isGuardianPortalRoute(to)) {
-    return { name: 'guardian-portal-dashboard' }
+    return { name: 'dashboard' }
   }
 
   if (sessionValid && !canAccessRoute(currentUser, to)) {
-    return normalizeRole(currentUser?.role) === ROLES.GUARDIAN
-      ? { name: 'guardian-portal-dashboard' }
-      : { name: 'dashboard' }
+    return { name: 'dashboard' }
   }
 
   if (sessionValid) {

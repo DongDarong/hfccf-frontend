@@ -235,24 +235,6 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
-    path: '/module/preschool-admin/guardian-portal/accounts',
-    name: 'dashboard-preschool-admin-guardian-portal-accounts',
-    component: () => import('@/modules/preschool/admin/pages/GuardianPortalAccounts.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
-  defineAppRoute({
-    path: '/module/preschool-admin/guardian-portal/invite/:guardianId?',
-    name: 'dashboard-preschool-admin-guardian-portal-invite',
-    component: () => import('@/modules/preschool/admin/pages/InviteGuardianPortal.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
-  defineAppRoute({
     path: '/module/preschool-admin/teacher',
     name: 'dashboard-preschool-teacher',
     component: () => import('@/modules/preschool/teacher/pages/Dashboard.vue'),

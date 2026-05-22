@@ -7,7 +7,6 @@ import users from './users'
 import notifications from './notifications'
 import sport from './sport'
 import preschool from './preschool'
-import guardianPortal from './guardian-portal'
 import english from './english'
 import reports from './reports/index.js'
 
@@ -27,7 +26,6 @@ export default {
   users,
   notifications,
   reports,
-  ...guardianPortal,
   ...english,
   ...sport,
   ...preschool,

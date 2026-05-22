@@ -53,8 +53,6 @@ export default {
     guardians: 'Guardians',
     studentGuardians: 'Student Guardians',
     guardianIntegrityReport: 'Guardian Integrity',
-    guardianPortalAccounts: 'Guardian Portal Accounts',
-    guardianPortalInvite: 'Invite Guardian Portal',
     emergencyContacts: 'Emergency Contacts',
     myStudents: 'My Students',
     attendance: 'Attendance',
