@@ -28,6 +28,8 @@ export default {
       firstName: 'នាមខ្លួន',
       lastName: 'នាមត្រកូល',
       gender: 'ភេទ',
+      dateOfBirth: 'ថ្ងៃខែឆ្នាំកំណើត',
+      status: 'ស្ថានភាព',
       guardianName: 'ឈ្មោះអាណាព្យាបាល',
       guardianPhone: 'លេខទូរស័ព្ទអាណាព្យាបាល',
       assignClasses: 'ចាត់តាំងថ្នាក់',
@@ -36,6 +38,12 @@ export default {
       save: 'រក្សាទុក',
       uploadAvatar: 'បង្ហោះរូបភាព',
       removeAvatar: 'លុបរូបភាព',
+      sectionPersonal: 'ព័ត៌មានផ្ទាល់ខ្លួន',
+      sectionGuardian: 'ទំនាក់ទំនងអាណាព្យាបាល',
+      sectionEnrollment: 'ការចុះឈ្មោះ',
+    },
+    summary: {
+      total: 'សិស្សទាំងអស់',
     },
     options: {
       male: 'ប្រុស',

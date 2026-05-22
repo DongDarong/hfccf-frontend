@@ -28,6 +28,8 @@ export default {
       firstName: 'First name',
       lastName: 'Last name',
       gender: 'Gender',
+      dateOfBirth: 'Date of birth',
+      status: 'Status',
       guardianName: 'Guardian name',
       guardianPhone: 'Guardian phone',
       assignClasses: 'Assign classes',
@@ -36,6 +38,12 @@ export default {
       save: 'Save',
       uploadAvatar: 'Upload photo',
       removeAvatar: 'Remove photo',
+      sectionPersonal: 'Personal information',
+      sectionGuardian: 'Guardian contact',
+      sectionEnrollment: 'Enrollment',
+    },
+    summary: {
+      total: 'Total students',
     },
     options: {
       male: 'Male',
