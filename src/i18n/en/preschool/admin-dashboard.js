@@ -148,15 +148,42 @@ export default {
     loadFailed: 'Failed to load preschool teachers.',
     successTitle: 'Success',
     closeButton: 'Close',
+    summary: {
+      total: 'Total teachers',
+    },
     table: {
       number: 'No.',
-      user: 'User',
+      user: 'Teacher',
       email: 'Email',
       role: 'Role',
       permission: 'Permissions',
       status: 'Status',
       phone: 'Phone',
       actions: 'Actions',
+    },
+  },
+  preschoolTeacherView: {
+    title: 'Teacher Profile',
+    subtitle: 'Review teacher profile, permissions, and account details.',
+    loadFailed: 'Failed to load teacher details.',
+    sections: {
+      contact: 'Contact',
+      account: 'Account',
+      permissions: 'Permissions',
+    },
+    fields: {
+      email: 'Email',
+      phone: 'Phone',
+      role: 'Role',
+      status: 'Status',
+      username: 'Username',
+      noPermissions: 'No permissions assigned.',
+      noPhone: 'No phone number',
+      noEmail: 'No email',
+    },
+    actions: {
+      back: 'Back to Teachers',
+      edit: 'Edit Teacher',
     },
   },
   preschoolDashboard: {

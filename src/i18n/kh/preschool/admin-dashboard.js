@@ -147,15 +147,42 @@ export default {
     loadFailed: 'មិនអាចផ្ទុកគ្រូមត្តេយ្យសិក្សាបានទេ។',
     successTitle: 'ជោគជ័យ',
     closeButton: 'បិទ',
+    summary: {
+      total: 'គ្រូសរុប',
+    },
     table: {
       number: 'លេខ',
-      user: 'អ្នកប្រើប្រាស់',
+      user: 'គ្រូ',
       email: 'អ៊ីមែល',
       role: 'តួនាទី',
       permission: 'សិទ្ធិ',
       status: 'ស្ថានភាព',
       phone: 'ទូរស័ព្ទ',
       actions: 'សកម្មភាព',
+    },
+  },
+  preschoolTeacherView: {
+    title: 'ប្រវត្តិរូបគ្រូ',
+    subtitle: 'មើលប្រវត្តិរូប សិទ្ធិ និងព័ត៌មានគណនីគ្រូ។',
+    loadFailed: 'មិនអាចផ្ទុកព័ត៌មានគ្រូបានទេ។',
+    sections: {
+      contact: 'ទំនាក់ទំនង',
+      account: 'គណនី',
+      permissions: 'សិទ្ធិ',
+    },
+    fields: {
+      email: 'អ៊ីមែល',
+      phone: 'ទូរស័ព្ទ',
+      role: 'តួនាទី',
+      status: 'ស្ថានភាព',
+      username: 'ឈ្មោះអ្នកប្រើ',
+      noPermissions: 'មិនមានសិទ្ធិបានកំណត់ទេ។',
+      noPhone: 'គ្មានលេខទូរស័ព្ទ',
+      noEmail: 'គ្មានអ៊ីមែល',
+    },
+    actions: {
+      back: 'ត្រឡប់ទៅបញ្ជីគ្រូ',
+      edit: 'កែប្រែគ្រូ',
     },
   },
   preschoolDashboard: {
