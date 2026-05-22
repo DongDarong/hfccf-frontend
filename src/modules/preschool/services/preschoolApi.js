@@ -50,6 +50,7 @@ function normalizeStudentRow(row = {}) {
     guardianPhone: normalizeText(row.guardianPhone || row.guardian_phone),
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
+    avatarUrl: normalizeText(row.avatarUrl || row.avatar_url || row.avatar || row.photo || ''),
     classesCount: Number(row.classesCount ?? row.classes_count ?? row.classes?.length ?? 0),
     classes: Array.isArray(row.classes) ? row.classes : [],
     createdAt: row.createdAt || row.created_at || '',

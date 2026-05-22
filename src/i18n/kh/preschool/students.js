@@ -34,6 +34,8 @@ export default {
       address: 'អាសយដ្ឋាន',
       cancel: 'បោះបង់',
       save: 'រក្សាទុក',
+      uploadAvatar: 'បង្ហោះរូបភាព',
+      removeAvatar: 'លុបរូបភាព',
     },
     options: {
       male: 'ប្រុស',

@@ -1,8 +1,8 @@
 <script setup>
 // Keep student management text locale-driven so EN/KH parity is testable and
 // hardcoded English labels do not reappear in a production page.
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { getAvatarInitials } from '@/utils/avatar'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -41,6 +41,9 @@ const successMessage = ref('')
 const deleteTarget = ref(null)
 const deleteOpen = ref(false)
 
+const avatarFileInput = ref(null)
+const avatarPreview = ref('')
+
 const form = reactive({
   student_code: '',
   first_name: '',
@@ -52,6 +55,8 @@ const form = reactive({
   address: '',
   status: 'active',
   class_ids: [],
+  avatar: null,
+  remove_avatar: false,
 })
 
 const genderOptions = computed(() => [
@@ -88,6 +93,7 @@ const mappedStudents = computed(() =>
     return {
       ...student,
       name: fullName,
+      avatarUrl: resolveAvatarSource(student.avatarUrl || ''),
       classesCount: student.classesCount || student.classes?.length || 0,
       guardianPhone: student.guardianPhone || '-',
     }
@@ -98,6 +104,35 @@ const studentInitials = computed(() => {
   const name = `${form.first_name} ${form.last_name}`.trim()
   return getAvatarInitials(name, '?')
 })
+
+function clearAvatarPreview() {
+  if (avatarPreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(avatarPreview.value)
+  }
+  avatarPreview.value = ''
+}
+
+function onAvatarClick() {
+  avatarFileInput.value?.click()
+}
+
+function onAvatarChange(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  clearAvatarPreview()
+  avatarPreview.value = URL.createObjectURL(file)
+  form.avatar = file
+  form.remove_avatar = false
+}
+
+function onAvatarRemove() {
+  clearAvatarPreview()
+  form.avatar = null
+  form.remove_avatar = true
+  if (avatarFileInput.value) avatarFileInput.value.value = ''
+}
+
+onUnmounted(clearAvatarPreview)
 
 function resetForm() {
   form.student_code = ''
@@ -110,6 +145,10 @@ function resetForm() {
   form.address = ''
   form.status = 'active'
   form.class_ids = []
+  clearAvatarPreview()
+  form.avatar = null
+  form.remove_avatar = false
+  if (avatarFileInput.value) avatarFileInput.value.value = ''
 }
 
 function openCreateModal() {
@@ -134,6 +173,10 @@ function openEditModal(student) {
   form.class_ids = Array.isArray(student?.classes)
     ? student.classes.map((item) => item.id).filter(Boolean)
     : []
+  clearAvatarPreview()
+  avatarPreview.value = resolveAvatarSource(student?.avatarUrl || '')
+  form.avatar = null
+  form.remove_avatar = false
   modalOpen.value = true
 }
 
@@ -155,6 +198,8 @@ function normalizeStudentPayload() {
     address: form.address.trim() || null,
     status: form.status,
     class_ids: form.class_ids,
+    avatar: form.avatar instanceof File ? form.avatar : undefined,
+    removeAvatar: form.remove_avatar || undefined,
   }
 }
 
@@ -320,9 +365,21 @@ onMounted(async () => {
     <Dialog v-model:visible="modalOpen" modal class="student-info-page__dialog">
       <template #header>
         <div class="flex items-center gap-3">
-          <div class="student-info-page__dialog-avatar">
-            <span>{{ studentInitials }}</span>
+          <!-- clickable avatar upload zone -->
+          <div class="student-info-page__dialog-avatar" role="button" tabindex="0" :title="t('preschoolStudentInfoPage.dialog.uploadAvatar')" @click="onAvatarClick" @keydown.enter.space.prevent="onAvatarClick">
+            <img v-if="avatarPreview" :src="avatarPreview" class="student-info-page__dialog-avatar-img" alt="Student avatar" />
+            <span v-else>{{ studentInitials }}</span>
+            <div class="student-info-page__dialog-avatar-overlay" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
           </div>
+
+          <!-- hidden file picker -->
+          <input ref="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" @change="onAvatarChange" />
+
           <div>
             <p class="text-base font-semibold text-slate-900">
               {{ modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle') }}
@@ -330,6 +387,9 @@ onMounted(async () => {
             <p v-if="modalMode === 'edit' && (form.first_name || form.last_name)" class="text-xs text-slate-500">
               {{ `${form.first_name} ${form.last_name}`.trim() }}
             </p>
+            <button v-if="avatarPreview" class="student-info-page__remove-avatar" type="button" @click.stop="onAvatarRemove">
+              {{ t('preschoolStudentInfoPage.dialog.removeAvatar') }}
+            </button>
           </div>
         </div>
       </template>
@@ -451,11 +511,12 @@ onMounted(async () => {
 }
 
 .student-info-page__dialog-avatar {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 9999px;
   background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
   box-shadow: 0 8px 16px -12px rgba(124, 58, 237, 0.5);
@@ -464,6 +525,48 @@ onMounted(async () => {
   font-weight: 800;
   letter-spacing: 0.04em;
   flex-shrink: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.student-info-page__dialog-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9999px;
+}
+
+.student-info-page__dialog-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.38);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  color: #fff;
+}
+
+.student-info-page__dialog-avatar:hover .student-info-page__dialog-avatar-overlay {
+  opacity: 1;
+}
+
+.student-info-page__remove-avatar {
+  margin-top: 0.2rem;
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #dc2626;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 @media (max-width: 900px) {

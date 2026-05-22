@@ -34,6 +34,8 @@ export default {
       address: 'Address',
       cancel: 'Cancel',
       save: 'Save',
+      uploadAvatar: 'Upload photo',
+      removeAvatar: 'Remove photo',
     },
     options: {
       male: 'Male',
