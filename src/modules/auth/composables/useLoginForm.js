@@ -223,7 +223,7 @@ export function useLoginForm({ accessPolicy, language }) {
     return redirect
   }
 
-  function getRedirectTargetForRole(user) {
+  function getRedirectTargetForRole(_user) {
     return getSafeRedirectTarget(route.query.redirect || accessPolicy.defaultRedirect)
   }
 
