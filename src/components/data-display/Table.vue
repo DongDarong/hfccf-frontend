@@ -193,7 +193,7 @@ function onSort(event) {
 
         <!-- User profile cell -->
         <template v-else-if="column.key === 'user'">
-          <div class="flex items-center gap-3">
+          <div class="ui-teacher-cell">
             <div class="ui-user-avatar">
               <span
                 v-if="!shouldShowImage(data)"
@@ -214,17 +214,8 @@ function onSort(event) {
             </div>
 
             <div class="min-w-0">
-              <div class="truncate text-[13px] font-semibold leading-5 text-surface-900 sm:text-sm">
-                {{ data.name || '-' }}
-              </div>
-
-              <div class="text-[11px] text-surface-500 sm:text-xs">
-                ID: {{ data.id || '-' }}
-              </div>
-
-              <div class="truncate text-[11px] text-surface-600 sm:text-xs">
-                {{ usernameLabel(data.username) }}
-              </div>
+              <div class="ui-teacher-cell__name">{{ data.name || '-' }}</div>
+              <div v-if="data.username" class="ui-teacher-cell__username">{{ usernameLabel(data.username) }}</div>
             </div>
           </div>
         </template>
@@ -310,15 +301,18 @@ function onSort(event) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3rem;
+  height: 3rem;
   background: linear-gradient(
     135deg,
-    var(--brand-primary-500) 0%,
-    var(--brand-primary-700) 100%
+    var(--brand-primary-400, #38bdf8) 0%,
+    var(--brand-primary-700, #0369a1) 100%
   );
   color: #ffffff;
-  box-shadow: 0 10px 18px -14px rgba(0, 174, 239, 0.55);
+  box-shadow:
+    0 0 0 2.5px #fff,
+    0 0 0 4px #e0f2fe,
+    0 10px 20px -14px rgba(0, 174, 239, 0.5);
   border-radius: 9999px;
   overflow: hidden;
   flex-shrink: 0;
@@ -332,6 +326,32 @@ function onSort(event) {
     0 0 0 2.5px #fff,
     0 0 0 4px #ede9fe,
     0 10px 20px -14px rgba(124, 58, 237, 0.5);
+}
+
+/* teacher cell layout */
+.ui-teacher-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ui-teacher-cell__name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16rem;
+}
+
+.ui-teacher-cell__username {
+  margin-top: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #0369a1;
+  letter-spacing: 0.03em;
 }
 
 /* student cell layout */
