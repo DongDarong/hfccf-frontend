@@ -311,38 +311,46 @@ onMounted(async () => {
       />
 
       <div class="student-info-page__panel">
+
+        <!-- toolbar: count + add button -->
         <div class="student-info-page__toolbar">
+          <div class="student-info-page__toolbar-meta">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
+              {{ t('preschoolStudentInfoPage.summary.total') }}
+            </p>
+            <p class="text-2xl font-bold text-slate-900 leading-none">
+              {{ pagination.total ?? mappedStudents.length }}
+            </p>
+          </div>
           <Button type="button" variant="primary" size="md" rounded="xl" @click="openCreateModal">
             {{ t('preschoolStudentInfoPage.addButton') }}
           </Button>
         </div>
 
+        <!-- filters -->
         <div class="student-info-page__filters">
-          <input v-model="searchQuery" class="student-info-page__input" type="search" :placeholder="t('preschoolStudentInfoPage.searchPlaceholder')" />
+          <div class="student-info-page__search-wrap">
+            <svg class="student-info-page__search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input v-model="searchQuery" class="student-info-page__input student-info-page__input--search" type="search" :placeholder="t('preschoolStudentInfoPage.searchPlaceholder')" />
+          </div>
           <select v-model="statusFilter" class="student-info-page__input">
             <option value="">{{ t('preschoolStudentInfoPage.filters.allStatus') }}</option>
-            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
+            <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
           <select v-model="genderFilter" class="student-info-page__input">
             <option value="">{{ t('preschoolStudentInfoPage.filters.allGenders') }}</option>
-            <option v-for="option in genderOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
+            <option v-for="opt in genderOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
           <select v-model="classFilter" class="student-info-page__input">
             <option value="">{{ t('preschoolStudentInfoPage.filters.allClasses') }}</option>
-            <option v-for="option in classOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
+            <option v-for="opt in classOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
 
-        <div
-          v-if="errorMessage"
-          class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-        >
+        <!-- page-level error -->
+        <div v-if="errorMessage && !modalOpen" class="student-info-page__error">
           {{ errorMessage }}
         </div>
 
@@ -362,11 +370,18 @@ onMounted(async () => {
       </div>
     </section>
 
+    <!-- create / edit dialog -->
     <Dialog v-model:visible="modalOpen" modal class="student-info-page__dialog">
       <template #header>
         <div class="flex items-center gap-3">
-          <!-- clickable avatar upload zone -->
-          <div class="student-info-page__dialog-avatar" role="button" tabindex="0" :title="t('preschoolStudentInfoPage.dialog.uploadAvatar')" @click="onAvatarClick" @keydown.enter.space.prevent="onAvatarClick">
+          <div
+            class="student-info-page__dialog-avatar"
+            role="button"
+            tabindex="0"
+            :title="t('preschoolStudentInfoPage.dialog.uploadAvatar')"
+            @click="onAvatarClick"
+            @keydown.enter.space.prevent="onAvatarClick"
+          >
             <img v-if="avatarPreview" :src="avatarPreview" class="student-info-page__dialog-avatar-img" alt="Student avatar" />
             <span v-else>{{ studentInitials }}</span>
             <div class="student-info-page__dialog-avatar-overlay" aria-hidden="true">
@@ -376,10 +391,7 @@ onMounted(async () => {
               </svg>
             </div>
           </div>
-
-          <!-- hidden file picker -->
           <input ref="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" @change="onAvatarChange" />
-
           <div>
             <p class="text-base font-semibold text-slate-900">
               {{ modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle') }}
@@ -393,40 +405,85 @@ onMounted(async () => {
           </div>
         </div>
       </template>
-      <div class="student-info-page__dialog-grid">
-        <input v-model="form.student_code" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.studentCode')" />
-        <input v-model="form.first_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.firstName')" />
-        <input v-model="form.last_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.lastName')" />
-        <select v-model="form.gender" class="student-info-page__input">
-          <option value="">{{ t('preschoolStudentInfoPage.dialog.gender') }}</option>
-          <option v-for="option in genderOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <input v-model="form.date_of_birth" class="student-info-page__input" type="date" />
-        <input v-model="form.guardian_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianName')" />
-        <input v-model="form.guardian_phone" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" />
-        <select v-model="form.status" class="student-info-page__input">
-          <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <div class="student-info-page__dialog-full">
-          <MultiSelect
-            v-model="form.class_ids"
-            :options="classOptions"
-            option-label="label"
-            option-value="value"
-            :placeholder="t('preschoolStudentInfoPage.dialog.assignClasses')"
-            display="chip"
-            class="w-full"
-          />
+
+      <div class="student-info-page__form">
+
+        <!-- Personal information -->
+        <p class="student-info-page__form-section">{{ t('preschoolStudentInfoPage.dialog.sectionPersonal') }}</p>
+        <div class="student-info-page__form-grid">
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.studentCode') }}</label>
+            <input v-model="form.student_code" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.studentCode')" />
+          </div>
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.status') }}</label>
+            <select v-model="form.status" class="student-info-page__input">
+              <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.firstName') }}</label>
+            <input v-model="form.first_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.firstName')" />
+          </div>
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.lastName') }}</label>
+            <input v-model="form.last_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.lastName')" />
+          </div>
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.gender') }}</label>
+            <select v-model="form.gender" class="student-info-page__input">
+              <option value="">—</option>
+              <option v-for="opt in genderOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.dateOfBirth') }}</label>
+            <input v-model="form.date_of_birth" class="student-info-page__input" type="date" />
+          </div>
         </div>
-        <textarea v-model="form.address" class="student-info-page__input student-info-page__dialog-full" rows="3" :placeholder="t('preschoolStudentInfoPage.dialog.address')"></textarea>
+
+        <!-- Guardian contact -->
+        <p class="student-info-page__form-section">{{ t('preschoolStudentInfoPage.dialog.sectionGuardian') }}</p>
+        <div class="student-info-page__form-grid">
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.guardianName') }}</label>
+            <input v-model="form.guardian_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianName')" />
+          </div>
+          <div class="student-info-page__field">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.guardianPhone') }}</label>
+            <input v-model="form.guardian_phone" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" />
+          </div>
+        </div>
+
+        <!-- Enrollment -->
+        <p class="student-info-page__form-section">{{ t('preschoolStudentInfoPage.dialog.sectionEnrollment') }}</p>
+        <div class="student-info-page__form-grid">
+          <div class="student-info-page__field student-info-page__field--full">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.assignClasses') }}</label>
+            <MultiSelect
+              v-model="form.class_ids"
+              :options="classOptions"
+              option-label="label"
+              option-value="value"
+              :placeholder="t('preschoolStudentInfoPage.dialog.assignClasses')"
+              display="chip"
+              class="w-full"
+            />
+          </div>
+          <div class="student-info-page__field student-info-page__field--full">
+            <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.address') }}</label>
+            <textarea v-model="form.address" class="student-info-page__input" rows="3" :placeholder="t('preschoolStudentInfoPage.dialog.address')" />
+          </div>
+        </div>
+
+        <!-- inline error when save fails -->
+        <div v-if="errorMessage && modalOpen" class="student-info-page__error">
+          {{ errorMessage }}
+        </div>
       </div>
 
       <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeModal">{{ t('preschoolStudentInfoPage.dialog.cancel') }}</Button>
+        <Button type="button" variant="ghost" rounded="xl" @click="closeModal">{{ t('preschoolStudentInfoPage.dialog.cancel') }}</Button>
         <Button type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveStudent">
           {{ t('preschoolStudentInfoPage.dialog.save') }}
         </Button>
@@ -476,13 +533,51 @@ onMounted(async () => {
 
 .student-info-page__toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.student-info-page__toolbar-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .student-info-page__filters {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.student-info-page__search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.student-info-page__search-icon {
+  position: absolute;
+  left: 0.7rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  color: #94a3b8;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.student-info-page__input--search {
+  padding-left: 2.2rem;
+}
+
+.student-info-page__error {
+  padding: 0.65rem 1rem;
+  border-radius: 0.7rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 0.82rem;
+  font-weight: 500;
 }
 
 .student-info-page__input {
@@ -493,6 +588,63 @@ onMounted(async () => {
   background: #fcfdff;
   padding: 0.6rem 0.8rem;
   color: #0f172a;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.student-info-page__input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+/* ── Dialog form ─────────────────────────────────────────── */
+.student-info-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: min(100vw - 2rem, 48rem);
+  padding-top: 0.25rem;
+}
+
+.student-info-page__form-section {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7c3aed;
+  padding: 0.6rem 0 0.25rem;
+  border-top: 1px solid #ede9fe;
+  margin-top: 0.35rem;
+}
+
+.student-info-page__form-section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.student-info-page__form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+}
+
+.student-info-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.student-info-page__field--full {
+  grid-column: 1 / -1;
+}
+
+.student-info-page__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.01em;
 }
 
 .student-info-page__dialog-grid {
@@ -571,8 +723,16 @@ onMounted(async () => {
 
 @media (max-width: 900px) {
   .student-info-page__filters,
+  .student-info-page__form-grid,
   .student-info-page__dialog-grid {
     grid-template-columns: 1fr;
+  }
+
+  .student-info-page__filters {
+    grid-template-columns: 1fr;
+  }
+
+  .student-info-page__form {
     min-width: 0;
   }
 }
