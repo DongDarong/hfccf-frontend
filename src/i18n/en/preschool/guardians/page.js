@@ -51,7 +51,7 @@ export default {
     },
     alerts: {
       archiveTitle: 'Archive this guardian?',
-      archiveMessage: 'This keeps the historical record while removing the guardian from active Preschool use.',
+      archiveMessage: 'Are you sure you want to archive {name}? The record is kept but removed from active Preschool use.',
       archiveFallback: 'the selected guardian',
       successTitle: 'Guardian updated',
       close: 'Close',
