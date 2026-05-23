@@ -19,6 +19,7 @@ describe('useAutoSave', () => {
     vi.advanceTimersByTime(500)
     await Promise.resolve()
     expect(saveFn).toHaveBeenCalledTimes(1)
+    expect(lastSavedAt.value).toBeInstanceOf(Date)
   })
 
   it('debounces: only calls saveFn once if scheduled multiple times', async () => {

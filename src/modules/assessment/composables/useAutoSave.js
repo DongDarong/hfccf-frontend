@@ -1,4 +1,4 @@
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 
 export function useAutoSave(saveFn, { debounceMs = 2000 } = {}) {
   const lastSavedAt = ref(null)

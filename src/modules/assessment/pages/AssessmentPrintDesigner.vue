@@ -222,7 +222,7 @@ function normalizeBlock(block) {
   const fallback = defaultBlock(block?.type || 'custom_html')
   const normalized = {
     ...fallback,
-    ...(block || {}),
+    ...block,
   }
 
   if (normalized.type === 'student_info') {
