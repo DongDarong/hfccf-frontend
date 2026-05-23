@@ -9,7 +9,6 @@ import assessment from './assessment'
 import progress from './progress'
 import reports from './reports'
 import schedules from './schedules'
-import guardians from './guardians'
 import settings from './settings'
 import classroomResources from './classroom-resources'
 
@@ -27,7 +26,6 @@ export default {
   ...progress,
   ...reports,
   ...schedules,
-  ...guardians,
   ...settings,
   ...classroomResources,
 }

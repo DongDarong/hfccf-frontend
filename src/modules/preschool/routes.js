@@ -201,48 +201,6 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
-  // Guardian data stays separate from student records so Preschool can reuse
-  // the same contacts across siblings without pretending guardians are users.
-  defineAppRoute({
-    path: '/module/preschool-admin/guardians',
-    name: 'dashboard-preschool-admin-guardians',
-    component: () => import('@/modules/preschool/admin/pages/GuardianManagement.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
-  // Integrity reporting stays alongside guardian management so staff can
-  // review duplicate and consistency drift without leaving the Preschool area.
-  defineAppRoute({
-    path: '/module/preschool-admin/guardians/integrity-report',
-    name: 'dashboard-preschool-admin-guardian-integrity',
-    component: () => import('@/modules/preschool/admin/pages/GuardianConsistencyReport.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
-  // Guardian detail stays read-only so staff can inspect the master record
-  // without exposing any login or portal behavior.
-  defineAppRoute({
-    path: '/module/preschool-admin/guardians/:guardianId',
-    name: 'dashboard-preschool-admin-guardian-details',
-    component: () => import('@/modules/preschool/admin/pages/GuardianDetails.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
-  defineAppRoute({
-    path: '/module/preschool-admin/guardians/students',
-    name: 'dashboard-preschool-admin-student-guardians',
-    component: () => import('@/modules/preschool/admin/pages/StudentGuardians.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
   defineAppRoute({
     path: '/module/preschool-admin/teacher',
     name: 'dashboard-preschool-teacher',
@@ -274,15 +232,6 @@ export const preschoolRoutes = [
     path: '/module/preschool-admin/teacher/schedule',
     name: 'dashboard-preschool-teacher-schedule',
     component: () => import('@/modules/preschool/teacher/pages/MySchedule.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.STAFF],
-    },
-  }),
-  defineAppRoute({
-    path: '/module/preschool-admin/teacher/emergency-contacts',
-    name: 'dashboard-preschool-teacher-emergency-contacts',
-    component: () => import('@/modules/preschool/teacher/pages/EmergencyContacts.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.STAFF],
