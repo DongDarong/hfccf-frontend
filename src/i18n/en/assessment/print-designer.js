@@ -1,0 +1,41 @@
+export default {
+  printDesigner: {
+    title: 'Print Template Designer',
+    newTemplate: 'New Template',
+    editTemplate: 'Edit Template',
+    templateName: 'Template Name',
+    orientation: 'Orientation',
+    orientations: {
+      portrait: 'Portrait',
+      landscape: 'Landscape',
+    },
+    pageSize: 'Page Size',
+    pageSizes: {
+      A4: 'A4',
+      A3: 'A3',
+      letter: 'Letter',
+    },
+    blocks: {
+      title: 'Blocks',
+      addBlock: 'Add Block',
+      blockType: 'Block Type',
+      blockTypes: {
+        header: 'Header',
+        student_info: 'Student Info',
+        answers_table: 'Answers Table',
+        score_summary: 'Score Summary',
+        risk_badge: 'Risk Badge',
+        signature_box: 'Signature Box',
+        footer: 'Footer',
+        custom_html: 'Custom HTML',
+        page_break: 'Page Break',
+      },
+      content: 'Content',
+      styles: 'Styles',
+    },
+    preview: 'Preview',
+    printNow: 'Print Now',
+    setDefault: 'Set as Default',
+    noTemplates: 'No print templates configured.',
+  },
+}

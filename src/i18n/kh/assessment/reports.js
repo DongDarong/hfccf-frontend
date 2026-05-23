@@ -1,0 +1,33 @@
+export default {
+  assessmentReports: {
+    title: 'របាយការណ៍វាយតម្លៃ',
+    overview: 'ទិដ្ឋភាពរួម',
+    riskDistribution: 'ការចែកចាយហានិភ័យ',
+    submissionTrend: 'និន្នាការការដាក់ស្នើ',
+    studentProgress: 'វឌ្ឍនភាពសិស្ស',
+    formAnalytics: 'ការវិភាគទម្រង់',
+    exportReport: 'នាំចេញរបាយការណ៍',
+    exportFormats: {
+      pdf: 'PDF',
+      excel: 'Excel',
+      csv: 'CSV',
+    },
+    dateRange: 'ជួរពេលវេលា',
+    from: 'ពី',
+    to: 'ដល់',
+    applyFilter: 'អនុវត្តច្រោះ',
+    noData: 'គ្មានទិន្នន័យសម្រាប់រយៈពេលដែលបានជ្រើស។',
+    totalAssessments: 'ការវាយតម្លៃសរុប',
+    averageScore: 'ពិន្ទុជាមធ្យម',
+    completionRate: 'អត្រាបញ្ចប់',
+    riskBreakdown: 'ការបំបែកហានិភ័យ',
+    auditLogs: {
+      title: 'កំណត់ត្រាសវនកម្ម',
+      event: 'ព្រឹត្តិការណ៍',
+      actor: 'អ្នកបំពេញ',
+      description: 'បរិយាយ',
+      timestamp: 'ពេលវេលា',
+      noLogs: 'រកមិនឃើញកំណត់ត្រាសវនកម្ម។',
+    },
+  },
+}

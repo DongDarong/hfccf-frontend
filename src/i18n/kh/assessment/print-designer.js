@@ -1,0 +1,41 @@
+export default {
+  printDesigner: {
+    title: 'កម្មវិធីរចនាគំរូបោះពុម្ព',
+    newTemplate: 'គំរូថ្មី',
+    editTemplate: 'កែសម្រួលគំរូ',
+    templateName: 'ឈ្មោះគំរូ',
+    orientation: 'ទិសដៅ',
+    orientations: {
+      portrait: 'បញ្ឈរ',
+      landscape: 'ផ្តេក',
+    },
+    pageSize: 'ទំហំទំព័រ',
+    pageSizes: {
+      A4: 'A4',
+      A3: 'A3',
+      letter: 'Letter',
+    },
+    blocks: {
+      title: 'ប្លុក',
+      addBlock: 'បន្ថែមប្លុក',
+      blockType: 'ប្រភេទប្លុក',
+      blockTypes: {
+        header: 'ក្បាលទំព័រ',
+        student_info: 'ព័ត៌មានសិស្ស',
+        answers_table: 'តារាងចម្លើយ',
+        score_summary: 'សង្ខេបពិន្ទុ',
+        risk_badge: 'សញ្ញាហានិភ័យ',
+        signature_box: 'ប្រអប់ហត្ថលេខា',
+        footer: 'ជើងទំព័រ',
+        custom_html: 'HTML ផ្ទាល់ខ្លួន',
+        page_break: 'បំបែកទំព័រ',
+      },
+      content: 'មាតិកា',
+      styles: 'រចនាប័ទ្ម',
+    },
+    preview: 'មើលជាមុន',
+    printNow: 'បោះពុម្ពឥឡូវ',
+    setDefault: 'កំណត់ជាលំនាំដើម',
+    noTemplates: 'មិនមានគំរូបោះពុម្ព។',
+  },
+}
