@@ -20,6 +20,7 @@ export default {
     sport: 'កីឡា',
     sportProgram: 'កម្មវិធីកីឡា',
     system: 'ប្រព័ន្ធ',
+    assessment: 'ការវាយតម្លៃ',
   },
   sectionCaptions: {
     main: 'តំបន់ការងារបុគ្គលិក',
@@ -36,6 +37,7 @@ export default {
     sport: 'EduSportPro',
     sportProgram: 'EduSportPro',
     system: 'ការកំណត់ប្រព័ន្ធ',
+    assessment: 'ការវាយតម្លៃស្វ័យប្រវត្តិ',
   },
   items: {
     commandCenter: 'មជ្ឈមណ្ឌលបញ្ជា',
@@ -79,6 +81,12 @@ export default {
     pendingPlayerApprovals: 'ការអនុម័តអ្នកលេង',
     pendingMatchApprovals: 'ការអនុម័តការប្រកួត',
     playerLifecycle: 'វដ្តជីវិតអ្នកលេង',
+    assessmentDashboard: 'ផ្ទាំងគ្រប់គ្រងការវាយតម្លៃ',
+    assessmentForms: 'ទម្រង់វាយតម្លៃ',
+    assessmentSubmissions: 'ការដាក់ស្នើ',
+    assessmentWizard: 'ការវាយតម្លៃថ្មី',
+    assessmentReports: 'របាយការណ៍',
+    assessmentAuditLogs: 'កំណត់ត្រាសវនកម្ម',
   },
   badges: {
     admin: 'រដ្ឋបាល',

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import InputText from 'primevue/inputtext'
 import { useLanguage } from '@/composables/useLanguage'
@@ -33,10 +33,6 @@ async function saveTitle() {
 async function deleteSection() {
   await store.deleteSection(props.section.id)
 }
-</script>
-
-<script>
-import { computed } from 'vue'
 </script>
 
 <template>

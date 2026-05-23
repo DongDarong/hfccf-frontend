@@ -20,6 +20,7 @@ export default {
     sport: 'Sport',
     sportProgram: 'Sport Program',
     system: 'System',
+    assessment: 'Assessment',
   },
   sectionCaptions: {
     main: 'Staff workspace',
@@ -36,6 +37,7 @@ export default {
     sport: 'EduSportPro',
     sportProgram: 'EduSportPro',
     system: 'Platform settings',
+    assessment: 'Dynamic assessments',
   },
   items: {
     commandCenter: 'Command Center',
@@ -79,6 +81,12 @@ export default {
     pendingPlayerApprovals: 'Player Approvals',
     pendingMatchApprovals: 'Match Approvals',
     playerLifecycle: 'Player Lifecycle',
+    assessmentDashboard: 'Assessment Dashboard',
+    assessmentForms: 'Assessment Forms',
+    assessmentSubmissions: 'Submissions',
+    assessmentWizard: 'New Assessment',
+    assessmentReports: 'Reports',
+    assessmentAuditLogs: 'Audit Logs',
   },
   badges: {
     admin: 'Admin',

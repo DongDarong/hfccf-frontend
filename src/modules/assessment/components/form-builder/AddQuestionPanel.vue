@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -48,10 +48,6 @@ async function save() {
     isSaving.value = false
   }
 }
-</script>
-
-<script>
-import { computed } from 'vue'
 </script>
 
 <template>

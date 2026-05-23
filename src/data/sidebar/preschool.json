@@ -8,7 +8,8 @@
       "collapsible": true,
       "access": {
         "scopes": [
-          "super_admin"
+          "super_admin",
+          "admin"
         ]
       },
       "items": [
@@ -34,44 +35,9 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-guardians",
-          "routeName": "dashboard-preschool-admin-guardians",
-          "labelKey": "nav.items.guardians",
-          "icon": "users",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-guardian-integrity",
-          "routeName": "dashboard-preschool-admin-guardian-integrity",
-          "labelKey": "nav.items.guardianIntegrityReport",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-student-guardians",
-          "routeName": "dashboard-preschool-admin-student-guardians",
-          "labelKey": "nav.items.studentGuardians",
-          "icon": "users",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
           "labelKey": "nav.items.classes",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-payments",
-          "routeName": "dashboard-preschool-admin-payment",
-          "labelKey": "nav.items.payments",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-forms",
-          "routeName": "dashboard-preschool-admin-forms",
-          "labelKey": "nav.items.forms",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
         },
@@ -83,10 +49,10 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-emergency-contacts",
-          "routeName": "dashboard-preschool-teacher-emergency-contacts",
-          "labelKey": "nav.items.emergencyContacts",
-          "icon": "users",
+          "id": "preschool-payments",
+          "routeName": "dashboard-preschool-admin-payment",
+          "labelKey": "nav.items.payments",
+          "icon": "reports",
           "badgeKey": "nav.badges.staff"
         },
         {
@@ -104,11 +70,18 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-settings",
-          "routeName": "dashboard-preschool-admin-settings",
-          "labelKey": "nav.items.preschoolSettings",
+          "id": "preschool-classroom-resources",
+          "routeName": "dashboard-preschool-admin-classroom-resources",
+          "labelKey": "nav.items.classroomResources",
           "icon": "reports",
-          "badgeKey": "nav.badges.admin"
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-forms",
+          "routeName": "dashboard-preschool-admin-forms",
+          "labelKey": "nav.items.forms",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
         },
         {
           "id": "preschool-reports",
@@ -118,11 +91,68 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-classroom-resources",
-          "routeName": "dashboard-preschool-admin-classroom-resources",
-          "labelKey": "nav.items.classroomResources",
+          "id": "preschool-settings",
+          "routeName": "dashboard-preschool-admin-settings",
+          "labelKey": "nav.items.preschoolSettings",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
+        }
+      ]
+    },
+    {
+      "id": "assessment",
+      "labelKey": "nav.sections.assessment",
+      "captionKey": "nav.sectionCaptions.assessment",
+      "className": "sidebar-section--preschool",
+      "collapsible": true,
+      "access": {
+        "scopes": [
+          "super_admin",
+          "admin"
+        ]
+      },
+      "items": [
+        {
+          "id": "assessment-dashboard",
+          "routeName": "assessment-dashboard",
+          "labelKey": "nav.items.assessmentDashboard",
+          "icon": "home",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "assessment-forms",
+          "routeName": "assessment-form-list",
+          "labelKey": "nav.items.assessmentForms",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "assessment-submissions",
+          "routeName": "assessment-submission-list",
+          "labelKey": "nav.items.assessmentSubmissions",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "assessment-wizard",
+          "routeName": "assessment-wizard",
+          "labelKey": "nav.items.assessmentWizard",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "assessment-reports",
+          "routeName": "assessment-reports",
+          "labelKey": "nav.items.assessmentReports",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
+          "id": "assessment-audit-logs",
+          "routeName": "assessment-audit-logs",
+          "labelKey": "nav.items.assessmentAuditLogs",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
         }
       ]
     }
