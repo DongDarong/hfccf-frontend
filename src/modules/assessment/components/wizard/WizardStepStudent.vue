@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentWizard } from '../../composables/useAssessmentWizard'
-import api from '@/services/api'
+import http from '@/services/http'
 
 const { t } = useLanguage()
 const { store, selectStudent } = useAssessmentWizard()
@@ -14,7 +14,7 @@ const isLoading = ref(false)
 async function load() {
   isLoading.value = true
   try {
-    const res = await api.get('/preschool/students', { params: { per_page: 200 } })
+    const res = await http.get('/preschool/students', { params: { per_page: 200 } })
     students.value = res.data.data
   } finally {
     isLoading.value = false

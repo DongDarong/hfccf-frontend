@@ -1,5 +1,5 @@
-import api from '@/services/api'
+import http from '@/services/http'
 
 export const assessmentQuestionTypeApi = {
-  list: () => api.get('/assessment/question-types'),
+  list: () => http.get('/assessment/question-types'),
 }

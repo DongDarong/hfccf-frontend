@@ -1,13 +1,13 @@
-import api from '@/services/api'
+import http from '@/services/http'
 
 const BASE = '/assessment/print-templates'
 
 export const assessmentPrintApi = {
-  list: (params) => api.get(BASE, { params }),
-  get: (id) => api.get(`${BASE}/${id}`),
-  create: (data) => api.post(BASE, data),
-  update: (id, data) => api.put(`${BASE}/${id}`, data),
-  delete: (id) => api.delete(`${BASE}/${id}`),
+  list: (params) => http.get(BASE, { params }),
+  get: (id) => http.get(`${BASE}/${id}`),
+  create: (data) => http.post(BASE, data),
+  update: (id, data) => http.put(`${BASE}/${id}`, data),
+  delete: (id) => http.delete(`${BASE}/${id}`),
   print: (submissionId, templateId) =>
-    api.post(`/assessment/submissions/${submissionId}/print`, { template_id: templateId }),
+    http.post(`/assessment/submissions/${submissionId}/print`, { template_id: templateId }),
 }

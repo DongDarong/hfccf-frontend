@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import api from '@/services/api'
+import http from '@/services/http'
 import { assessmentSubmissionApi } from '@/modules/assessment/services/assessmentSubmissionApi'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/services/http', () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
@@ -19,15 +19,15 @@ beforeEach(() => vi.clearAllMocks())
 
 describe('assessmentSubmissionApi', () => {
   it('list passes status filter param', async () => {
-    api.get.mockResolvedValueOnce(ok([]))
+    http.get.mockResolvedValueOnce(ok([]))
     await assessmentSubmissionApi.list({ status: 'submitted' })
-    expect(api.get).toHaveBeenCalledWith('/assessment/submissions', { params: { status: 'submitted' } })
+    expect(http.get).toHaveBeenCalledWith('/assessment/submissions', { params: { status: 'submitted' } })
   })
 
   it('create posts submission payload', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 1 }))
+    http.post.mockResolvedValueOnce(ok({ id: 1 }))
     await assessmentSubmissionApi.create({ form_template_id: 1, student_id: 2, status: 'draft' })
-    expect(api.post).toHaveBeenCalledWith('/assessment/submissions', {
+    expect(http.post).toHaveBeenCalledWith('/assessment/submissions', {
       form_template_id: 1,
       student_id: 2,
       status: 'draft',
@@ -35,23 +35,23 @@ describe('assessmentSubmissionApi', () => {
   })
 
   it('submit posts to the submit endpoint', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 1, status: 'submitted' }))
+    http.post.mockResolvedValueOnce(ok({ id: 1, status: 'submitted' }))
     await assessmentSubmissionApi.submit(1)
-    expect(api.post).toHaveBeenCalledWith('/assessment/submissions/1/submit')
+    expect(http.post).toHaveBeenCalledWith('/assessment/submissions/1/submit')
   })
 
   it('review posts action and note', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 1, status: 'approved' }))
+    http.post.mockResolvedValueOnce(ok({ id: 1, status: 'approved' }))
     await assessmentSubmissionApi.review(1, { action: 'approve', note: 'Good' })
-    expect(api.post).toHaveBeenCalledWith('/assessment/submissions/1/review', {
+    expect(http.post).toHaveBeenCalledWith('/assessment/submissions/1/review', {
       action: 'approve',
       note: 'Good',
     })
   })
 
   it('delete calls delete on submission endpoint', async () => {
-    api.delete.mockResolvedValueOnce(ok(null))
+    http.delete.mockResolvedValueOnce(ok(null))
     await assessmentSubmissionApi.delete(1)
-    expect(api.delete).toHaveBeenCalledWith('/assessment/submissions/1')
+    expect(http.delete).toHaveBeenCalledWith('/assessment/submissions/1')
   })
 })

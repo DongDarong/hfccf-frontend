@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import api from '@/services/api'
+import http from '@/services/http'
 import { assessmentFormApi } from '@/modules/assessment/services/assessmentFormApi'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/services/http', () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
@@ -19,61 +19,61 @@ beforeEach(() => vi.clearAllMocks())
 
 describe('assessmentFormApi', () => {
   it('list passes module and status params', async () => {
-    api.get.mockResolvedValueOnce(ok([]))
+    http.get.mockResolvedValueOnce(ok([]))
     await assessmentFormApi.list({ module: 'preschool', status: 'published' })
-    expect(api.get).toHaveBeenCalledWith('/assessment/forms', {
+    expect(http.get).toHaveBeenCalledWith('/assessment/forms', {
       params: { module: 'preschool', status: 'published' },
     })
   })
 
   it('create posts form data', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 1, name: 'Test Form' }))
+    http.post.mockResolvedValueOnce(ok({ id: 1, name: 'Test Form' }))
     await assessmentFormApi.create({ name: 'Test Form', module: 'preschool' })
-    expect(api.post).toHaveBeenCalledWith('/assessment/forms', { name: 'Test Form', module: 'preschool' })
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms', { name: 'Test Form', module: 'preschool' })
   })
 
   it('publish posts to the correct endpoint', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 1, status: 'published' }))
+    http.post.mockResolvedValueOnce(ok({ id: 1, status: 'published' }))
     await assessmentFormApi.publish(1)
-    expect(api.post).toHaveBeenCalledWith('/assessment/forms/1/publish')
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/1/publish')
   })
 
   it('duplicate posts to the correct endpoint', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 2 }))
+    http.post.mockResolvedValueOnce(ok({ id: 2 }))
     await assessmentFormApi.duplicate(1)
-    expect(api.post).toHaveBeenCalledWith('/assessment/forms/1/duplicate')
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/1/duplicate')
   })
 
   it('listSections fetches sections for a form', async () => {
-    api.get.mockResolvedValueOnce(ok([]))
+    http.get.mockResolvedValueOnce(ok([]))
     await assessmentFormApi.listSections(5)
-    expect(api.get).toHaveBeenCalledWith('/assessment/forms/5/sections')
+    expect(http.get).toHaveBeenCalledWith('/assessment/forms/5/sections')
   })
 
   it('createSection posts to sections endpoint', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 10, title: 'Intro' }))
+    http.post.mockResolvedValueOnce(ok({ id: 10, title: 'Intro' }))
     await assessmentFormApi.createSection(5, { title: 'Intro', order: 1 })
-    expect(api.post).toHaveBeenCalledWith('/assessment/forms/5/sections', { title: 'Intro', order: 1 })
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/5/sections', { title: 'Intro', order: 1 })
   })
 
   it('reorderSections posts ordered ids', async () => {
-    api.post.mockResolvedValueOnce(ok(null))
+    http.post.mockResolvedValueOnce(ok(null))
     await assessmentFormApi.reorderSections(5, [3, 1, 2])
-    expect(api.post).toHaveBeenCalledWith('/assessment/forms/5/sections/reorder', [3, 1, 2])
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/5/sections/reorder', [3, 1, 2])
   })
 
   it('createQuestion posts to questions endpoint', async () => {
-    api.post.mockResolvedValueOnce(ok({ id: 20 }))
+    http.post.mockResolvedValueOnce(ok({ id: 20 }))
     await assessmentFormApi.createQuestion(5, { question_text: 'Q1', section_id: 10 })
-    expect(api.post).toHaveBeenCalledWith('/assessment/forms/5/questions', {
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/5/questions', {
       question_text: 'Q1',
       section_id: 10,
     })
   })
 
   it('delete calls delete on the form endpoint', async () => {
-    api.delete.mockResolvedValueOnce(ok(null))
+    http.delete.mockResolvedValueOnce(ok(null))
     await assessmentFormApi.delete(1)
-    expect(api.delete).toHaveBeenCalledWith('/assessment/forms/1')
+    expect(http.delete).toHaveBeenCalledWith('/assessment/forms/1')
   })
 })
