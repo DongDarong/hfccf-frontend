@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -16,7 +16,6 @@ import FormSectionPanel from '../components/form-builder/FormSectionPanel.vue'
 defineOptions({ name: 'AssessmentFormBuilderPage' })
 
 const route = useRoute()
-const router = useRouter()
 const { t } = useLanguage()
 const store = useFormBuilderStore()
 const toast = useToast()

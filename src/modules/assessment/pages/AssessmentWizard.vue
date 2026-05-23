@@ -20,7 +20,7 @@ const router = useRouter()
 const { t } = useLanguage()
 const toast = useToast()
 const confirm = useConfirm()
-const { store, progressPercent } = useAssessmentWizard()
+const { store } = useAssessmentWizard()
 
 const stepItems = [
   { label: t('assessmentWizard.steps.form') },

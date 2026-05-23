@@ -131,11 +131,6 @@ async function onConfirmDelete() {
   }
 }
 
-function onFiltersCleared() {
-  searchQuery.value = ''
-  statusFilter.value = ''
-}
-
 watch([searchQuery, statusFilter], () => {
   currentPage.value = 1
   loadTeachers()

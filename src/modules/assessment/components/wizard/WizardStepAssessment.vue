@@ -1,11 +1,9 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useLanguage } from '@/composables/useLanguage'
+import { onMounted, ref } from 'vue'
 import { useAssessmentWizard } from '../../composables/useAssessmentWizard'
 import { assessmentFormApi } from '../../services/assessmentFormApi'
 import QuestionRenderer from '../questions/QuestionRenderer.vue'
 
-const { t } = useLanguage()
 const { store } = useAssessmentWizard()
 
 const sections = ref([])

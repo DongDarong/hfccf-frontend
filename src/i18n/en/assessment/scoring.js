@@ -31,6 +31,7 @@ export default {
     },
     score: 'Score',
     totalScore: 'Total Score',
+    sectionScore: 'Section Score',
     riskLevel: 'Risk Level',
     noRules: 'No scoring rules configured.',
     noRiskLevels: 'No risk levels configured.',

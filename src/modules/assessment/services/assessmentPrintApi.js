@@ -8,6 +8,7 @@ export const assessmentPrintApi = {
   create: (data) => http.post(BASE, data),
   update: (id, data) => http.put(`${BASE}/${id}`, data),
   delete: (id) => http.delete(`${BASE}/${id}`),
+  preview: (data) => http.post(`${BASE}/preview`, data),
   print: (submissionId, templateId) =>
-    http.post(`/assessment/submissions/${submissionId}/print`, { template_id: templateId }),
+    http.post(`/assessment/submissions/${submissionId}/print`, { template_id: templateId }, { responseType: 'blob' }),
 }

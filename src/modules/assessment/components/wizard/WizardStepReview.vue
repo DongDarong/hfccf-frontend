@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import Tag from 'primevue/tag'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentWizard } from '../../composables/useAssessmentWizard'

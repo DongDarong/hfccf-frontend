@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import Tag from 'primevue/tag'
 import { useLanguage } from '@/composables/useLanguage'
