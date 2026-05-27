@@ -210,6 +210,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-lifecycle-audit",
+          "routeName": "dashboard-preschool-admin-lifecycle-audit",
+          "labelKey": "nav.items.auditLogs",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

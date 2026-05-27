@@ -12,14 +12,36 @@ function normalizeNumber(value, fallback = 0) {
 }
 
 export function normalizeReportPeriod(row = {}) {
+  const status = normalizeText(row.status || 'draft').toLowerCase()
+
   return {
+    id: row.id ?? '',
     label: normalizeText(row.label || row.periodLabel || row.period_label),
+    academicYearId: row.academicYearId ?? row.academic_year_id ?? '',
+    academicYear: normalizeText(row.academicYear || row.academic_year || row.academic_year_label),
+    academicYearCode: normalizeText(row.academicYearCode || row.academic_year_code),
+    termId: row.termId ?? row.term_id ?? '',
+    termLabel: normalizeText(row.termLabel || row.term_label),
+    termCode: normalizeText(row.termCode || row.term_code),
     fromDate: row.fromDate || row.from_date || '',
     toDate: row.toDate || row.to_date || '',
     latestAssessmentDate: row.latestAssessmentDate || row.latest_assessment_date || row.toDate || row.to_date || '',
     assessmentCount: normalizeNumber(row.assessmentCount ?? row.assessment_count),
     studentCount: normalizeNumber(row.studentCount ?? row.student_count),
     classCount: normalizeNumber(row.classCount ?? row.class_count),
+    status,
+    lockedAt: row.lockedAt || row.locked_at || '',
+    finalizedAt: row.finalizedAt || row.finalized_at || '',
+    archivedAt: row.archivedAt || row.archived_at || '',
+    lockedByUserId: row.lockedByUserId ?? row.locked_by_user_id ?? row.lockedByUserId ?? row.locked_by ?? '',
+    finalizedByUserId: row.finalizedByUserId ?? row.finalized_by_user_id ?? row.finalized_by ?? '',
+    archivedByUserId: row.archivedByUserId ?? row.archived_by_user_id ?? row.archived_by ?? '',
+    notes: normalizeText(row.notes),
+    isDraft: status === 'draft',
+    isActive: status === 'active',
+    isFinalized: status === 'finalized',
+    isLocked: status === 'locked',
+    isArchived: status === 'archived',
     raw: row,
   }
 }

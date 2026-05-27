@@ -97,9 +97,10 @@ export function usePreschoolTeacherSchedule() {
     selectedTeacherId.value = String(teacherId || '').trim()
   }
 
+  const lockedReportStatuses = ['finalized', 'locked', 'archived']
   const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
   const isReportPeriodLocked = computed(() =>
-    ['closed', 'archived'].includes(
+    lockedReportStatuses.includes(
       String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
     ),
   )
@@ -117,7 +118,15 @@ export function usePreschoolTeacherSchedule() {
       return t('preschoolLifecyclePage.messages.termArchived')
     }
 
-    if (['closed', 'archived'].includes(reportPeriodStatus)) {
+    if (reportPeriodStatus === 'finalized') {
+      return t('preschoolLifecyclePage.messages.reportPeriodFinalized')
+    }
+
+    if (reportPeriodStatus === 'archived') {
+      return t('preschoolLifecyclePage.messages.reportPeriodArchived')
+    }
+
+    if (lockedReportStatuses.includes(reportPeriodStatus)) {
       return t('preschoolLifecyclePage.messages.reportPeriodLocked')
     }
 

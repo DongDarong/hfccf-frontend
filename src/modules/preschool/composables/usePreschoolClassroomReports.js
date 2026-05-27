@@ -2,6 +2,7 @@
 // page can stay focused on one selected class and one reporting period.
 import { computed, ref } from 'vue'
 import { getCurrentUser } from '@/services/auth'
+import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchMyPreschoolClasses,
   fetchPreschoolClasses,
@@ -26,6 +27,7 @@ function buildClassOptions(items = []) {
 export function usePreschoolClassroomReports() {
   const currentUser = computed(() => getCurrentUser() || {})
   const isTeacher = computed(() => String(currentUser.value?.role || '') === 'teacher-preschool')
+  const { t } = useLanguage()
 
   const loading = ref(false)
   const errorMessage = ref('')
@@ -34,6 +36,28 @@ export function usePreschoolClassroomReports() {
   const selectedClassId = ref('')
   const selectedPeriodLabel = ref('')
   const reportBundle = ref({ class: null, periods: [], period: null, report: null })
+  const selectedReportPeriod = computed(() =>
+    reportPeriods.value.find((period) => String(period.label || '') === String(selectedPeriodLabel.value || '')) || null,
+  )
+
+  const isReportPeriodLocked = computed(() => ['finalized', 'locked', 'archived'].includes(String(selectedReportPeriod.value?.status || '').toLowerCase()))
+  const reportPeriodLockMessage = computed(() => {
+    const status = String(selectedReportPeriod.value?.status || '').toLowerCase()
+
+    if (status === 'finalized') {
+      return t('preschoolLifecyclePage.messages.reportPeriodFinalized')
+    }
+
+    if (status === 'locked') {
+      return t('preschoolLifecyclePage.messages.reportPeriodLocked')
+    }
+
+    if (status === 'archived') {
+      return t('preschoolLifecyclePage.messages.reportPeriodArchived')
+    }
+
+    return ''
+  })
 
   async function loadLookupData() {
     loading.value = true
@@ -120,8 +144,11 @@ export function usePreschoolClassroomReports() {
     loading,
     reportBundle,
     reportPeriods,
+    reportPeriodLockMessage,
+    isReportPeriodLocked,
     selectedClassId,
     selectedPeriodLabel,
+    selectedReportPeriod,
     setSelectedClassId,
     setSelectedPeriodLabel,
   }

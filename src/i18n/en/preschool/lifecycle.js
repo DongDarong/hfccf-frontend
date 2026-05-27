@@ -27,7 +27,17 @@ export default {
     status: {
       current: 'Current',
       active: 'Active',
+      draft: 'Draft',
+      finalized: 'Finalized',
+      locked: 'Locked',
       closed: 'Closed',
+      archived: 'Archived',
+    },
+    reportPeriodStatuses: {
+      draft: 'Draft',
+      active: 'Active',
+      finalized: 'Finalized',
+      locked: 'Locked',
       archived: 'Archived',
     },
     fields: {
@@ -71,7 +81,11 @@ export default {
     messages: {
       termClosed: 'This term is closed.',
       termArchived: 'This term is archived.',
+      reportPeriodDraft: 'This report period is still in draft.',
+      reportPeriodActive: 'This report period is active.',
+      reportPeriodFinalized: 'This report period is finalized and read-only.',
       reportPeriodLocked: 'This report period is locked.',
+      reportPeriodArchived: 'This report period is archived and read-only.',
       inactiveEnrollment: 'This student enrollment is inactive.',
       finalizedAssessmentLocked: 'Finalized assessments cannot be edited.',
       archivedScheduleLocked: 'This schedule is archived and read-only.',

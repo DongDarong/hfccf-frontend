@@ -1,14 +1,17 @@
 <script setup>
 // Keep the Preschool report overview explicit so the sidebar routes to a real
 // data-driven landing page instead of a placeholder shell.
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
+import { fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
 import ReportSummaryCard from '@/modules/preschool/shared/components/report/ReportSummaryCard.vue'
+import ReportPeriodStatusBadge from '@/modules/preschool/shared/components/report/ReportPeriodStatusBadge.vue'
 
 defineOptions({
   name: 'PreschoolReportPeriodOverviewPage',
@@ -22,9 +25,15 @@ const {
   loadLookupData,
   loadReportPeriodOptions,
   loading,
+  reportPeriodLockMessage,
   reportPeriods,
+  selectedReportPeriod,
   studentOptions,
 } = usePreschoolReports()
+
+const auditLogs = ref([])
+const auditLoading = ref(false)
+const auditError = ref('')
 
 const overviewCards = computed(() => [
   {
@@ -38,15 +47,24 @@ const overviewCards = computed(() => [
     caption: t('preschoolReportsPage.overview.studentsCaption'),
   },
   {
-    title: t('preschoolReportsPage.overview.latestAssessments'),
-    value: reportPeriods.value[0]?.assessmentCount ?? 0,
-    caption: t('preschoolReportsPage.overview.latestAssessmentsCaption'),
+    title: t('preschoolReportsPage.overview.finalized'),
+    value: reportPeriods.value.filter((period) => period.isFinalized).length,
+    caption: t('preschoolReportsPage.overview.finalizedCaption'),
   },
   {
-    title: t('preschoolReportsPage.overview.latestPeriod'),
-    value: reportPeriods.value[0]?.label || '-',
-    caption: t('preschoolReportsPage.overview.latestPeriodCaption'),
+    title: t('preschoolReportsPage.overview.locked'),
+    value: reportPeriods.value.filter((period) => period.isLocked || period.isArchived).length,
+    caption: t('preschoolReportsPage.overview.lockedCaption'),
   },
+])
+
+const selectedPeriodSummary = computed(() => selectedReportPeriod.value || null)
+
+const periodStatusSummary = computed(() => [
+  { label: t('preschoolLifecyclePage.reportPeriodStatuses.active'), value: reportPeriods.value.filter((period) => period.isActive).length },
+  { label: t('preschoolLifecyclePage.reportPeriodStatuses.finalized'), value: reportPeriods.value.filter((period) => period.isFinalized).length },
+  { label: t('preschoolLifecyclePage.reportPeriodStatuses.locked'), value: reportPeriods.value.filter((period) => period.isLocked).length },
+  { label: t('preschoolLifecyclePage.reportPeriodStatuses.archived'), value: reportPeriods.value.filter((period) => period.isArchived).length },
 ])
 
 function goToStudentReports() {
@@ -57,9 +75,29 @@ function goToClassroomReports() {
   router.push({ name: 'dashboard-preschool-admin-classroom-reports' })
 }
 
+function goToAuditLogs() {
+  router.push({ name: 'dashboard-preschool-admin-lifecycle-audit' })
+}
+
+async function loadAuditPreview() {
+  auditLoading.value = true
+  auditError.value = ''
+
+  try {
+    const payload = await fetchLifecycleAuditLogs({ perPage: 5 })
+    auditLogs.value = payload.items || []
+  } catch (error) {
+    auditLogs.value = []
+    auditError.value = error?.message || t('preschoolLifecycleAuditPage.loadingError')
+  } finally {
+    auditLoading.value = false
+  }
+}
+
 onMounted(async () => {
   await loadLookupData()
   await loadReportPeriodOptions()
+  await loadAuditPreview()
 })
 </script>
 
@@ -81,6 +119,22 @@ onMounted(async () => {
         />
       </div>
 
+      <div v-if="selectedPeriodSummary" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="space-y-1">
+            <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolReportsPage.selectedPeriod.title') }}</h3>
+            <p class="text-sm text-slate-500">{{ t('preschoolReportsPage.selectedPeriod.subtitle') }}</p>
+          </div>
+          <ReportPeriodStatusBadge :status="selectedPeriodSummary.status" />
+        </div>
+        <div
+          v-if="reportPeriodLockMessage"
+          class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          {{ reportPeriodLockMessage }}
+        </div>
+      </div>
+
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="space-y-1">
@@ -93,6 +147,9 @@ onMounted(async () => {
             </Button>
             <Button type="button" variant="secondary" size="md" rounded="xl" @click="goToClassroomReports">
               {{ t('preschoolReportsPage.actions.openClassroomReports') }}
+            </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToAuditLogs">
+              {{ t('preschoolLifecycleAuditPage.actions.openAuditLogs') }}
             </Button>
           </div>
         </div>
@@ -114,6 +171,7 @@ onMounted(async () => {
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th class="px-4 py-3">{{ t('preschoolReportsPage.periodColumns.label') }}</th>
+                <th class="px-4 py-3">{{ t('preschoolReportsPage.periodColumns.status') }}</th>
                 <th class="px-4 py-3">{{ t('preschoolReportsPage.periodColumns.dates') }}</th>
                 <th class="px-4 py-3">{{ t('preschoolReportsPage.periodColumns.assessments') }}</th>
                 <th class="px-4 py-3">{{ t('preschoolReportsPage.periodColumns.students') }}</th>
@@ -123,10 +181,89 @@ onMounted(async () => {
             <tbody class="divide-y divide-slate-100 bg-white">
               <tr v-for="period in reportPeriods" :key="period.label">
                 <td class="px-4 py-3 font-medium text-slate-900">{{ period.label }}</td>
+                <td class="px-4 py-3">
+                  <ReportPeriodStatusBadge :status="period.status" />
+                </td>
                 <td class="px-4 py-3 text-slate-600">{{ period.fromDate || '-' }} - {{ period.toDate || '-' }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ period.assessmentCount ?? 0 }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ period.studentCount ?? 0 }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ period.classCount ?? 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="space-y-1">
+            <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAuditPage.previewTitle') }}</h3>
+            <p class="text-sm text-slate-500">{{ t('preschoolLifecycleAuditPage.previewSubtitle') }}</p>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-4">
+            <StatusBadge
+              v-for="status in periodStatusSummary"
+              :key="status.label"
+              :status="status.value > 0 ? 'success' : 'warning'"
+              :label="`${status.label}: ${status.value}`"
+              :translate-label="false"
+              :dot="false"
+            />
+          </div>
+        </div>
+
+        <div v-if="auditError" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {{ auditError }}
+        </div>
+
+        <div v-if="auditLoading" class="mt-4 px-1 py-6 text-sm text-slate-500">
+          {{ t('preschoolLifecycleAuditPage.loading') }}
+        </div>
+
+        <div v-else-if="!auditLogs.length" class="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-sm text-slate-500">
+          {{ t('preschoolLifecycleAuditPage.empty') }}
+        </div>
+
+        <div v-else class="mt-4 overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-4 py-3">{{ t('preschoolLifecycleAuditPage.columns.action') }}</th>
+                <th class="px-4 py-3">{{ t('preschoolLifecycleAuditPage.columns.entity') }}</th>
+                <th class="px-4 py-3">{{ t('preschoolLifecycleAuditPage.columns.context') }}</th>
+                <th class="px-4 py-3">{{ t('preschoolLifecycleAuditPage.columns.reason') }}</th>
+                <th class="px-4 py-3">{{ t('preschoolLifecycleAuditPage.columns.at') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+              <tr v-for="item in auditLogs" :key="item.id">
+                <td class="px-4 py-3">
+                  <div class="space-y-1">
+                    <p class="font-medium text-slate-900">{{ t(`preschoolLifecycleAuditPage.actions.${item.actionType}`) || item.actionType }}</p>
+                    <p class="text-xs text-slate-500">{{ item.actor?.roleCode || item.actorRole || '-' }}</p>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-slate-600">
+                  <div class="space-y-1">
+                    <p>{{ t(`preschoolLifecycleAuditPage.entities.${item.entityType}`) || item.entityType }}</p>
+                    <p class="text-xs text-slate-500">#{{ item.entityId || '-' }}</p>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-slate-600">
+                  <div class="space-y-1">
+                    <p>{{ item.reportPeriod?.periodLabel || item.reportPeriodId || '-' }}</p>
+                    <p class="text-xs text-slate-500">
+                      {{ item.actor?.firstName || item.actor?.lastName ? `${item.actor.firstName || ''} ${item.actor.lastName || ''}`.trim() : '-' }}
+                    </p>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-slate-600">
+                  <div class="space-y-1">
+                    <p>{{ item.lockReason || item.overrideReason || '-' }}</p>
+                    <p v-if="item.lockCode" class="text-xs text-slate-500">{{ item.lockCode }}</p>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-slate-600">{{ item.createdAt || '-' }}</td>
               </tr>
             </tbody>
           </table>

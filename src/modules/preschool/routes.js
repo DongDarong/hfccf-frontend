@@ -146,6 +146,15 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/audit',
+    name: 'dashboard-preschool-admin-lifecycle-audit',
+    component: () => import('@/modules/preschool/admin/pages/LifecycleAudit.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Reports stay split into overview, student, and classroom routes so the UI
   // can navigate to real finalized data without exposing placeholder screens.
   defineAppRoute({

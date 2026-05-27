@@ -171,6 +171,7 @@ export function usePreschoolSchedules() {
     searchQuery.value = String(search || '')
   }
 
+  const lockedReportStatuses = ['finalized', 'locked', 'archived']
   const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
   const lockMessage = computed(() => {
     const status = String(lifecycleContext.value.term_status || '').toLowerCase()
@@ -186,7 +187,15 @@ export function usePreschoolSchedules() {
       return t('preschoolLifecyclePage.messages.termArchived')
     }
 
-    if (['closed', 'archived'].includes(reportPeriodStatus)) {
+    if (reportPeriodStatus === 'finalized') {
+      return t('preschoolLifecyclePage.messages.reportPeriodFinalized')
+    }
+
+    if (reportPeriodStatus === 'archived') {
+      return t('preschoolLifecyclePage.messages.reportPeriodArchived')
+    }
+
+    if (lockedReportStatuses.includes(reportPeriodStatus)) {
       return t('preschoolLifecyclePage.messages.reportPeriodLocked')
     }
 
@@ -194,7 +203,7 @@ export function usePreschoolSchedules() {
   })
 
   const isReportPeriodLocked = computed(() =>
-    ['closed', 'archived'].includes(
+    lockedReportStatuses.includes(
       String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
     ),
   )
