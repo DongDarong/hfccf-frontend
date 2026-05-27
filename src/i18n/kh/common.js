@@ -9,6 +9,7 @@ export default {
   logout: 'ចាកចេញ',
   logoutConfirm: 'តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?',
   cancel: 'បោះបង់',
+  save: 'រក្សាទុក',
   clear: 'ជម្រះ',
   confirm: 'បញ្ជាក់',
   close: 'បិទ',

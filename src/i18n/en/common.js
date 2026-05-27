@@ -9,6 +9,7 @@ export default {
   logout: 'Logout',
   logoutConfirm: 'Are you sure you want to log out?',
   cancel: 'Cancel',
+  save: 'Save',
   clear: 'Clear',
   confirm: 'Confirm',
   close: 'Close',
