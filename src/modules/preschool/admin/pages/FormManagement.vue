@@ -1,9 +1,11 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import Card from 'primevue/card'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { assessmentFormApi } from '@/modules/assessment/services/assessmentFormApi'
 
 defineOptions({
   name: 'PreschoolAdminFormManagementPage',
@@ -11,114 +13,141 @@ defineOptions({
 
 const { t, te } = useLanguage()
 
+const assessmentForms = ref([])
+const isLoading = ref(false)
+
+const launcherCards = [
+  {
+    key: 'dashboard',
+    title: 'Assessment Dashboard',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.dashboard.description',
+    fallbackDescription: 'Review the overall assessment progress and quick metrics.',
+    to: { name: 'assessment-dashboard' },
+  },
+  {
+    key: 'forms',
+    title: 'Form Library',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.forms.description',
+    fallbackDescription: 'Open the form library to manage assessment templates.',
+    to: { name: 'assessment-form-list' },
+  },
+  {
+    key: 'new-form',
+    title: 'Create Form',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.newForm.description',
+    fallbackDescription: 'Start a new assessment form from scratch.',
+    to: { name: 'assessment-form-create' },
+  },
+  {
+    key: 'submissions',
+    title: 'Submissions',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.submissions.description',
+    fallbackDescription: 'Inspect assessment submissions and completion records.',
+    to: { name: 'assessment-submission-list' },
+  },
+  {
+    key: 'wizard',
+    title: 'Assessment Wizard',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.wizard.description',
+    fallbackDescription: 'Launch the guided assessment workflow.',
+    to: { name: 'assessment-wizard' },
+  },
+  {
+    key: 'scoring',
+    title: 'Scoring Manager',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.scoring.description',
+    fallbackDescription: 'Adjust scoring rules for the selected assessment form.',
+    requiresFormId: true,
+    routeName: 'assessment-scoring',
+  },
+  {
+    key: 'print-designer',
+    title: 'Print Designer',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.printDesigner.description',
+    fallbackDescription: 'Design the printable output for the selected assessment form.',
+    requiresFormId: true,
+    routeName: 'assessment-print-designer',
+  },
+  {
+    key: 'reports',
+    title: 'Reports',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.reports.description',
+    fallbackDescription: 'Review reporting insights and generated summaries.',
+    to: { name: 'assessment-reports' },
+  },
+  {
+    key: 'audit-logs',
+    title: 'Audit Logs',
+    descriptionKey: 'preschoolScaffold.formManagement.cards.auditLogs.description',
+    fallbackDescription: 'Track changes and activity across the assessment module.',
+    to: { name: 'assessment-audit-logs' },
+  },
+]
+
 function safeText(key, fallback) {
   return te(key) ? t(key) : fallback
 }
 
-const launchCards = computed(() => [
-  {
-    key: 'dashboard',
-    title: t('assessmentDashboard.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.dashboard.description',
-      'Open the assessment overview and quick metrics.',
-    ),
-    to: { name: 'assessment-dashboard' },
-    icon: 'pi pi-chart-line',
-  },
-  {
-    key: 'forms',
-    title: t('formBuilder.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.forms.description',
-      'Manage templates, versions, sections, and questions.',
-    ),
-    to: { name: 'assessment-form-list' },
-    icon: 'pi pi-file-edit',
-  },
-  {
-    key: 'new-form',
-    title: t('formBuilder.newForm'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.newForm.description',
-      'Create a new assessment template from scratch.',
-    ),
-    to: { name: 'assessment-form-create' },
-    icon: 'pi pi-plus-circle',
-  },
-  {
-    key: 'submissions',
-    title: t('submissions.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.submissions.description',
-      'Review submitted assessments and open individual records.',
-    ),
-    to: { name: 'assessment-submission-list' },
-    icon: 'pi pi-inbox',
-  },
-  {
-    key: 'wizard',
-    title: t('assessmentWizard.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.wizard.description',
-      'Launch the guided assessment entry workflow.',
-    ),
-    to: { name: 'assessment-wizard' },
-    icon: 'pi pi-sitemap',
-  },
-  {
-    key: 'scoring',
-    title: t('scoring.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.scoring.description',
-      'Configure scoring rules and risk levels.',
-    ),
-    to: { name: 'assessment-scoring' },
-    icon: 'pi pi-sliders-h',
-  },
-  {
-    key: 'print-designer',
-    title: t('printDesigner.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.printDesigner.description',
-      'Design Khmer-friendly print layouts and templates.',
-    ),
-    to: { name: 'assessment-print-designer' },
-    icon: 'pi pi-print',
-  },
-  {
-    key: 'reports',
-    title: t('assessmentReports.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.reports.description',
-      'Analyze trends, risk breakdowns, and completion rates.',
-    ),
-    to: { name: 'assessment-reports' },
-    icon: 'pi pi-chart-bar',
-  },
-  {
-    key: 'audit-logs',
-    title: t('assessmentReports.auditLogs.title'),
-    description: safeText(
-      'preschoolScaffold.formManagement.cards.auditLogs.description',
-      'Inspect assessment action history and changes.',
-    ),
-    to: { name: 'assessment-audit-logs' },
-    icon: 'pi pi-history',
-  },
-])
+const primaryFormId = computed(() => String(assessmentForms.value[0]?.id || '').trim())
+
+const launchCards = computed(() =>
+  launcherCards.map((card) => {
+    if (!card.requiresFormId) {
+      return {
+        ...card,
+        description: safeText(card.descriptionKey, card.fallbackDescription),
+        to: card.to,
+      }
+    }
+
+    const id = primaryFormId.value
+    return {
+      ...card,
+      description: safeText(card.descriptionKey, card.fallbackDescription),
+      to: id ? { name: card.routeName, params: { id } } : { name: 'assessment-form-list' },
+    }
+  }),
+)
+
+async function loadAssessmentForms() {
+  isLoading.value = true
+  try {
+    const response = await assessmentFormApi.list({
+      page: 1,
+      perPage: 1,
+      search: '',
+      status: '',
+    })
+    assessmentForms.value = Array.isArray(response?.data) ? response.data : response?.items || []
+  } catch {
+    assessmentForms.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  void loadAssessmentForms()
+})
 </script>
 
 <template>
   <MainLayout>
     <section class="preschool-form-management-page">
       <HeaderSection
-        title="Assessment Workspace"
-        subtitle="Choose a card below to open the assessment page you need."
+        title="Form Management"
+        subtitle="Jump into the assessment tools you need most."
       />
 
-      <div class="rounded-2xl border border-cyan-100 bg-cyan-50/70 px-4 py-3 text-sm leading-6 text-cyan-900 shadow-sm">
-        Click any card to jump directly into the matching Assessment page.
+      <div class="preschool-form-management-page__intro">
+        <p>
+          Select a card to open the matching Assessment workspace. Scoring and print tools will
+          use the first available assessment form when one exists.
+        </p>
+      </div>
+
+      <div v-if="isLoading" class="preschool-form-management-page__loading">
+        Loading assessment tools...
       </div>
 
       <div class="preschool-form-management-page__grid">
@@ -128,31 +157,16 @@ const launchCards = computed(() => [
           :to="card.to"
           class="preschool-form-management-page__link group"
         >
-          <Card class="preschool-form-management-page__card h-full">
+          <Card class="preschool-form-management-page__card">
             <template #content>
-              <div class="preschool-form-management-page__card-inner">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="min-w-0 space-y-1">
-                    <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-500">
-                      Preschool Assessment
-                    </p>
-                    <h2 class="text-lg font-black leading-tight text-slate-900 transition-colors group-hover:text-cyan-700">
-                      {{ card.title }}
-                    </h2>
-                  </div>
-
-                  <span class="preschool-form-management-page__icon">
-                    <i :class="card.icon" aria-hidden="true" />
-                  </span>
+              <div class="preschool-form-management-page__card-content">
+                <div class="preschool-form-management-page__card-icon">
+                  <i class="pi pi-folder-open" aria-hidden="true"></i>
                 </div>
 
-                <p class="text-sm leading-6 text-slate-600">
-                  {{ card.description }}
-                </p>
-
-                <div class="mt-auto flex items-center justify-between pt-2 text-sm font-semibold text-cyan-700">
-                  <span>{{ t('common.actions.view') }}</span>
-                  <i class="pi pi-arrow-right transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                <div class="preschool-form-management-page__card-copy">
+                  <h3>{{ card.title }}</h3>
+                  <p>{{ card.description }}</p>
                 </div>
               </div>
             </template>
@@ -170,72 +184,83 @@ const launchCards = computed(() => [
   gap: 1rem;
 }
 
+.preschool-form-management-page__intro {
+  border-radius: 1.25rem;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  padding: 1rem 1.1rem;
+  color: #1e3a8a;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.preschool-form-management-page__loading {
+  border-radius: 1rem;
+  border: 1px dashed #cbd5e1;
+  background: #fff;
+  color: #475569;
+  padding: 1rem;
+}
+
 .preschool-form-management-page__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
 
 .preschool-form-management-page__link {
   display: block;
-  min-width: 0;
   text-decoration: none;
-  outline: none;
-}
-
-.preschool-form-management-page__link:focus-visible {
-  box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.28);
-  border-radius: 1rem;
 }
 
 .preschool-form-management-page__card {
-  border: 1px solid #dbeafe;
-  border-radius: 1.25rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.92) 100%);
-  box-shadow: 0 18px 36px -28px rgba(15, 23, 42, 0.35);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  height: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.15rem;
+  background: #fff;
+  box-shadow: 0 18px 40px -34px rgba(15, 23, 42, 0.35);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.preschool-form-management-page__link:hover .preschool-form-management-page__card {
+.preschool-form-management-page__link:hover .preschool-form-management-page__card,
+.preschool-form-management-page__link:focus-visible .preschool-form-management-page__card {
   transform: translateY(-2px);
-  border-color: #67e8f9;
-  box-shadow: 0 26px 50px -32px rgba(15, 23, 42, 0.42);
+  border-color: #93c5fd;
+  box-shadow: 0 22px 50px -34px rgba(37, 99, 235, 0.45);
 }
 
-.preschool-form-management-page__card :deep(.p-card-body) {
-  height: 100%;
-  padding: 1.15rem;
-}
-
-.preschool-form-management-page__card-inner {
+.preschool-form-management-page__card-content {
   display: flex;
-  height: 100%;
-  min-height: 13rem;
-  flex-direction: column;
   gap: 0.9rem;
+  align-items: flex-start;
 }
 
-.preschool-form-management-page__icon {
+.preschool-form-management-page__card-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.95rem;
-  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
-  color: #ffffff;
-  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  flex: none;
 }
 
-@media (max-width: 1100px) {
-  .preschool-form-management-page__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.preschool-form-management-page__card-copy h3 {
+  margin: 0 0 0.35rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
-@media (max-width: 700px) {
-  .preschool-form-management-page__grid {
-    grid-template-columns: 1fr;
-  }
+.preschool-form-management-page__card-copy p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 </style>

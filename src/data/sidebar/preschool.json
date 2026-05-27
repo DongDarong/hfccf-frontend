@@ -98,63 +98,6 @@
           "badgeKey": "nav.badges.admin"
         }
       ]
-    },
-    {
-      "id": "assessment",
-      "labelKey": "nav.sections.assessment",
-      "captionKey": "nav.sectionCaptions.assessment",
-      "className": "sidebar-section--preschool",
-      "collapsible": true,
-      "access": {
-        "scopes": [
-          "super_admin",
-          "admin"
-        ]
-      },
-      "items": [
-        {
-          "id": "assessment-dashboard",
-          "routeName": "assessment-dashboard",
-          "labelKey": "nav.items.assessmentDashboard",
-          "icon": "home",
-          "badgeKey": "nav.badges.admin"
-        },
-        {
-          "id": "assessment-forms",
-          "routeName": "assessment-form-list",
-          "labelKey": "nav.items.assessmentForms",
-          "icon": "reports",
-          "badgeKey": "nav.badges.admin"
-        },
-        {
-          "id": "assessment-submissions",
-          "routeName": "assessment-submission-list",
-          "labelKey": "nav.items.assessmentSubmissions",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "assessment-wizard",
-          "routeName": "assessment-wizard",
-          "labelKey": "nav.items.assessmentWizard",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "assessment-reports",
-          "routeName": "assessment-reports",
-          "labelKey": "nav.items.assessmentReports",
-          "icon": "reports",
-          "badgeKey": "nav.badges.admin"
-        },
-        {
-          "id": "assessment-audit-logs",
-          "routeName": "assessment-audit-logs",
-          "labelKey": "nav.items.assessmentAuditLogs",
-          "icon": "reports",
-          "badgeKey": "nav.badges.admin"
-        }
-      ]
     }
   ]
 }
