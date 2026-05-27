@@ -1,4 +1,7 @@
 <script setup>
+// This page is an assessment launcher inside the Preschool admin shell.
+// It deliberately routes into the assessment module rather than duplicating
+// the underlying assessment CRUD and reporting workflows here.
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import Card from 'primevue/card'

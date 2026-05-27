@@ -1,7 +1,7 @@
 <script setup>
-// Keep the admin attendance route visible as a scaffold until the real
-// Preschool workflow is wired here; this prevents the sidebar from implying
-// a finished screen before it exists.
+// This admin attendance route remains an explicit scaffold until the full
+// operational attendance manager is wired. Keeping the route visible avoids
+// broken navigation while making it clear that the screen is not finished.
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import PreschoolPlaceholderState from '@/modules/preschool/shared/components/PreschoolPlaceholderState.vue'

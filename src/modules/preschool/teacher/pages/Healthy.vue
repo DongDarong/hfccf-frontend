@@ -1,6 +1,7 @@
 <script setup>
-// Keep the healthy habits route visible as a scaffold so the sidebar does not
-// suggest a finished workflow before the Preschool content exists.
+// This route is deliberately a wellbeing scaffold, not a clinical record
+// screen. It keeps the teacher workflow visible without implying a medical
+// system or exposing unfinished navigation as production-ready.
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import PreschoolPlaceholderState from '@/modules/preschool/shared/components/PreschoolPlaceholderState.vue'
