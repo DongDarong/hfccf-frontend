@@ -25,6 +25,10 @@ defineProps({
     type: String,
     default: '',
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['edit', 'archive'])
@@ -55,10 +59,10 @@ const emit = defineEmits(['edit', 'archive'])
     </div>
 
     <div v-if="showActions" class="mt-4 flex flex-wrap gap-2">
-      <Button v-if="editLabel" type="button" variant="ghost" size="sm" rounded="xl" @click="emit('edit', entry)">
+      <Button v-if="editLabel" type="button" variant="ghost" size="sm" rounded="xl" :disabled="isLocked" @click="emit('edit', entry)">
         {{ editLabel }}
       </Button>
-      <Button v-if="archiveLabel" type="button" variant="danger" size="sm" rounded="xl" @click="emit('archive', entry)">
+      <Button v-if="archiveLabel" type="button" variant="danger" size="sm" rounded="xl" :disabled="isLocked" @click="emit('archive', entry)">
         {{ archiveLabel }}
       </Button>
     </div>

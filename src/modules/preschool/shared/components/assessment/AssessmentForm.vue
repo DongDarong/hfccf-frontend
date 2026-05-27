@@ -37,6 +37,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
+  lockMessage: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'submit', 'cancel'])
@@ -111,6 +119,13 @@ const ratingOptions = computed(() => [
 
 <template>
   <form class="space-y-4" @submit.prevent="$emit('submit')">
+    <div
+      v-if="isLocked && lockMessage"
+      class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+    >
+      {{ lockMessage }}
+    </div>
+
     <div class="grid gap-4 md:grid-cols-2">
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.class') }}</span>
@@ -121,6 +136,7 @@ const ratingOptions = computed(() => [
           option-value="value"
           class="w-full"
           :placeholder="t('preschoolAssessmentFormPage.placeholders.class')"
+          :disabled="isLocked"
         />
       </label>
 
@@ -133,22 +149,23 @@ const ratingOptions = computed(() => [
           option-value="value"
           class="w-full"
           :placeholder="t('preschoolAssessmentFormPage.placeholders.category')"
+          :disabled="isLocked"
         />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.periodLabel') }}</span>
-        <InputText v-model="draft.period_label" class="w-full" :placeholder="t('preschoolAssessmentFormPage.placeholders.periodLabel')" />
+        <InputText v-model="draft.period_label" class="w-full" :placeholder="t('preschoolAssessmentFormPage.placeholders.periodLabel')" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.assessmentDate') }}</span>
-        <InputText v-model="draft.assessment_date" type="date" class="w-full" />
+        <InputText v-model="draft.assessment_date" type="date" class="w-full" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ t('preschoolAssessmentFormPage.fields.score') }}</span>
-        <InputText v-model="draft.score" type="number" min="0" max="100" step="0.5" class="w-full" :placeholder="t('preschoolAssessmentFormPage.placeholders.score')" />
+        <InputText v-model="draft.score" type="number" min="0" max="100" step="0.5" class="w-full" :placeholder="t('preschoolAssessmentFormPage.placeholders.score')" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
@@ -160,6 +177,7 @@ const ratingOptions = computed(() => [
           option-value="value"
           class="w-full"
           :placeholder="t('preschoolAssessmentFormPage.placeholders.rating')"
+          :disabled="isLocked"
         />
       </label>
     </div>
@@ -171,6 +189,7 @@ const ratingOptions = computed(() => [
         rows="4"
         class="w-full"
         :placeholder="t('preschoolAssessmentFormPage.placeholders.observation')"
+        :disabled="isLocked"
       />
     </label>
 
@@ -181,14 +200,15 @@ const ratingOptions = computed(() => [
         rows="4"
         class="w-full"
         :placeholder="t('preschoolAssessmentFormPage.placeholders.teacherComment')"
+        :disabled="isLocked"
       />
     </label>
 
     <div class="flex flex-wrap gap-2 pt-2">
-      <Button type="submit" variant="primary" size="md" rounded="xl" :loading="loading">
+      <Button type="submit" variant="primary" size="md" rounded="xl" :loading="loading" :disabled="isLocked">
         {{ submitLabel || t('preschoolAssessmentFormPage.actions.save') }}
       </Button>
-      <Button v-if="showCancel" type="button" variant="secondary" size="md" rounded="xl" @click="$emit('cancel')">
+      <Button v-if="showCancel" type="button" variant="secondary" size="md" rounded="xl" :disabled="isLocked" @click="$emit('cancel')">
         {{ cancelLabel || t('common.cancel') }}
       </Button>
     </div>

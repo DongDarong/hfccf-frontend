@@ -68,6 +68,15 @@ export default {
     help: {
       currentYear: 'Only one year should be marked as current at a time.',
     },
+    messages: {
+      termClosed: 'This term is closed.',
+      termArchived: 'This term is archived.',
+      reportPeriodLocked: 'This report period is locked.',
+      inactiveEnrollment: 'This student enrollment is inactive.',
+      finalizedAssessmentLocked: 'Finalized assessments cannot be edited.',
+      archivedScheduleLocked: 'This schedule is archived and read-only.',
+      assignmentLocked: 'Assignment changes are read-only in this academic context.',
+    },
     validation: {
       required: 'This field is required.',
       range: 'The end date must be on or after the start date.',

@@ -2,6 +2,7 @@
 // pages stay thin and do not drift back into direct HTTP calls.
 import { computed, ref } from 'vue'
 import { getCurrentUser } from '@/services/auth'
+import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchAssessmentCategories,
   fetchStudentAssessments,
@@ -10,6 +11,7 @@ import {
   finalizeAssessment,
   archiveAssessment,
 } from '@/modules/preschool/services/api/preschoolAssessmentApi'
+import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import {
   fetchMyPreschoolClasses,
   fetchMyPreschoolStudents,
@@ -40,6 +42,7 @@ function buildClassOptions(items = []) {
 export function usePreschoolAssessments() {
   const currentUser = computed(() => getCurrentUser() || {})
   const isTeacher = computed(() => String(currentUser.value?.role || '') === 'teacher-preschool')
+  const { t } = useLanguage()
 
   const loading = ref(false)
   const saving = ref(false)
@@ -49,6 +52,7 @@ export function usePreschoolAssessments() {
   const categoryOptions = ref([])
   const studentOptions = ref([])
   const classOptions = ref([])
+  const lifecycleContext = ref({})
 
   const selectedStudentId = ref('')
   const selectedClassId = ref('')
@@ -79,6 +83,12 @@ export function usePreschoolAssessments() {
 
     try {
       await Promise.all([loadCategories(), loadStudents(), loadClasses()])
+      try {
+        const lifecycle = await fetchAcademicLifecycle()
+        lifecycleContext.value = lifecycle.currentContext || {}
+      } catch {
+        lifecycleContext.value = {}
+      }
       if (!selectedStudentId.value) {
         selectedStudentId.value = String(studentOptions.value[0]?.value || '').trim()
       }
@@ -205,11 +215,42 @@ export function usePreschoolAssessments() {
     selectedPeriodLabel.value = String(periodLabel || '')
   }
 
+  const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
+  const lockMessage = computed(() => {
+    const status = String(lifecycleContext.value.term_status || '').toLowerCase()
+    const reportPeriodStatus = String(
+      lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '',
+    ).toLowerCase()
+
+    if (status === 'closed') {
+      return t('preschoolLifecyclePage.messages.termClosed')
+    }
+
+    if (status === 'archived') {
+      return t('preschoolLifecyclePage.messages.termArchived')
+    }
+
+    if (['closed', 'archived'].includes(reportPeriodStatus)) {
+      return t('preschoolLifecyclePage.messages.reportPeriodLocked')
+    }
+
+    return ''
+  })
+
+  const isReportPeriodLocked = computed(() =>
+    ['closed', 'archived'].includes(
+      String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
+    ),
+  )
+
   return {
     assessmentItems,
     archiveAssessmentById,
     categoryOptions,
     classOptions,
+    lifecycleContext,
+    isTermLocked,
+    isReportPeriodLocked,
     errorMessage,
     finalizeAssessmentById,
     isTeacher,
@@ -235,5 +276,6 @@ export function usePreschoolAssessments() {
     setSearchQuery,
     saving,
     studentOptions,
+    lockMessage,
   }
 }

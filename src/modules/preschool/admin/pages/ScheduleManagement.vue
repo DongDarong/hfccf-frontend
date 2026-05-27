@@ -27,6 +27,8 @@ const {
   classOptions,
   conflicts,
   errorMessage,
+  isTermLocked,
+  isReportPeriodLocked,
   loadLookups,
   loadSchedules,
   pagination,
@@ -46,6 +48,7 @@ const {
   setSelectedTeacherId,
   saving,
   teacherOptions,
+  lockMessage,
   loading,
 } = usePreschoolSchedules()
 
@@ -130,6 +133,13 @@ onMounted(async () => {
         class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
       >
         {{ errorMessage }}
+      </div>
+
+      <div
+        v-if="(isTermLocked || isReportPeriodLocked) && lockMessage"
+        class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+      >
+        {{ lockMessage }}
       </div>
 
       <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -231,6 +241,7 @@ onMounted(async () => {
                   :show-actions="true"
                   :edit-label="t('preschoolSchedulesPage.actions.update')"
                   :archive-label="t('preschoolSchedulesPage.actions.archive')"
+                  :is-locked="isTermLocked || isReportPeriodLocked"
                   @edit="handleEdit"
                   @archive="handleArchive"
                 />
@@ -293,6 +304,8 @@ onMounted(async () => {
             }"
             :conflict-title="t('preschoolSchedulesShared.conflicts.title')"
             :conflict-subtitle="t('preschoolSchedulesShared.conflicts.subtitle')"
+            :is-locked="isTermLocked || isReportPeriodLocked"
+            :lock-message="lockMessage"
             @submit="handleSave"
             @cancel="setSelectedSchedule(null)"
           />

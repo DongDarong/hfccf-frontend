@@ -77,6 +77,14 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
+  lockMessage: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['submit', 'cancel'])
@@ -127,6 +135,13 @@ function submitForm() {
 
 <template>
   <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      v-if="isLocked && lockMessage"
+      class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+    >
+      {{ lockMessage }}
+    </div>
+
     <div class="space-y-1">
       <h3 class="text-lg font-semibold text-slate-900">{{ title }}</h3>
       <p v-if="subtitle" class="text-sm text-slate-500">{{ subtitle }}</p>
@@ -142,6 +157,7 @@ function submitForm() {
           option-value="value"
           class="w-full"
           :placeholder="emptyClassLabel"
+          :disabled="isLocked"
         />
       </label>
 
@@ -154,6 +170,7 @@ function submitForm() {
           option-value="value"
           class="w-full"
           :placeholder="emptyTeacherLabel"
+          :disabled="isLocked"
         />
       </label>
 
@@ -166,6 +183,7 @@ function submitForm() {
           option-value="value"
           class="w-full"
           :placeholder="placeholders.day"
+          :disabled="isLocked"
         />
       </label>
 
@@ -178,42 +196,43 @@ function submitForm() {
           option-value="value"
           class="w-full"
           :placeholder="placeholders.status"
+          :disabled="isLocked"
         />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.startTimeLabel }}</span>
-        <InputText v-model="form.start_time" type="time" class="w-full" />
+        <InputText v-model="form.start_time" type="time" class="w-full" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.endTimeLabel }}</span>
-        <InputText v-model="form.end_time" type="time" class="w-full" />
+        <InputText v-model="form.end_time" type="time" class="w-full" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.roomLabel }}</span>
-        <InputText v-model="form.room" class="w-full" :placeholder="placeholders.room" />
+        <InputText v-model="form.room" class="w-full" :placeholder="placeholders.room" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.activityLabel }}</span>
-        <InputText v-model="form.activity_label" class="w-full" :placeholder="placeholders.activity" />
+        <InputText v-model="form.activity_label" class="w-full" :placeholder="placeholders.activity" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700 md:col-span-2">
         <span>{{ fieldLabels.notesLabel }}</span>
-        <Textarea v-model="form.notes" rows="3" class="w-full" />
+        <Textarea v-model="form.notes" rows="3" class="w-full" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.effectiveFromLabel }}</span>
-        <InputText v-model="form.effective_from" type="date" class="w-full" />
+        <InputText v-model="form.effective_from" type="date" class="w-full" :disabled="isLocked" />
       </label>
 
       <label class="space-y-2 text-sm font-medium text-slate-700">
         <span>{{ fieldLabels.effectiveUntilLabel }}</span>
-        <InputText v-model="form.effective_until" type="date" class="w-full" />
+        <InputText v-model="form.effective_until" type="date" class="w-full" :disabled="isLocked" />
       </label>
     </div>
 
@@ -226,10 +245,10 @@ function submitForm() {
     </div>
 
     <div class="mt-4 flex flex-wrap gap-2">
-      <Button type="button" variant="primary" size="md" rounded="xl" :loading="saving" @click="submitForm">
+      <Button type="button" variant="primary" size="md" rounded="xl" :loading="saving" :disabled="isLocked" @click="submitForm">
         {{ submitLabel }}
       </Button>
-      <Button type="button" variant="ghost" size="md" rounded="xl" @click="emit('cancel')">
+      <Button type="button" variant="ghost" size="md" rounded="xl" :disabled="isLocked" @click="emit('cancel')">
         {{ cancelLabel }}
       </Button>
     </div>

@@ -23,9 +23,12 @@ const {
   categoryOptions,
   classOptions,
   errorMessage,
+  isTermLocked,
+  isReportPeriodLocked,
   loadLookupData,
   loadAssessments,
   saving,
+  lockMessage,
   saveAssessment,
   selectedStudentId,
   setSelectedStudentId,
@@ -78,6 +81,13 @@ onMounted(async () => {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div
+          v-if="(isTermLocked || isReportPeriodLocked) && lockMessage"
+          class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          {{ lockMessage }}
+        </div>
+
         <label class="mb-4 block space-y-2 text-sm font-medium text-slate-700">
           <span>{{ t('preschoolAssessmentFormPage.fields.student') }}</span>
           <Select
@@ -87,15 +97,17 @@ onMounted(async () => {
             option-value="value"
             class="w-full"
             :placeholder="t('preschoolAssessmentFormPage.placeholders.student')"
+            :disabled="isTermLocked || isReportPeriodLocked"
             @update:model-value="setSelectedStudentId"
           />
         </label>
-
         <AssessmentForm
           v-model="formModel"
           :categories="categoryOptions"
           :classes="classOptions"
           :loading="saving"
+          :is-locked="isTermLocked || isReportPeriodLocked"
+          :lock-message="lockMessage"
           :submit-label="t('preschoolAssessmentFormPage.actions.save')"
           @submit="onSave"
           @cancel="onBack"

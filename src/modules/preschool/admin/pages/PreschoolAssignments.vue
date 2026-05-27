@@ -9,6 +9,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import { fetchPreschoolClasses, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 import { fetchSchedules } from '@/modules/preschool/services/api/preschoolScheduleApi'
 
@@ -21,6 +22,7 @@ const router = useRouter()
 
 const loading = ref(false)
 const errorMessage = ref('')
+const lifecycleContext = ref({})
 const classRows = ref([])
 const studentRows = ref([])
 const scheduleRows = ref([])
@@ -90,15 +92,50 @@ async function loadAssignments() {
     classRows.value = classesResponse.items || []
     studentRows.value = studentsResponse.items || []
     scheduleRows.value = schedulesResponse.items || []
+    try {
+      const lifecycle = await fetchAcademicLifecycle()
+      lifecycleContext.value = lifecycle.currentContext || {}
+    } catch (lifecycleError) {
+      lifecycleContext.value = {}
+      console.warn('Preschool assignment lifecycle snapshot unavailable.', lifecycleError)
+    }
   } catch (error) {
     classRows.value = []
     studentRows.value = []
     scheduleRows.value = []
+    lifecycleContext.value = {}
     errorMessage.value = error?.message || t('preschoolAssignmentsPage.empty')
   } finally {
     loading.value = false
   }
 }
+
+const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
+const isReportPeriodLocked = computed(() =>
+  ['closed', 'archived'].includes(
+    String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
+  ),
+)
+const assignmentLockMessage = computed(() => {
+  const status = String(lifecycleContext.value.term_status || '').toLowerCase()
+  const reportPeriodStatus = String(
+    lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '',
+  ).toLowerCase()
+
+  if (status === 'closed') {
+    return t('preschoolLifecyclePage.messages.termClosed')
+  }
+
+  if (status === 'archived') {
+    return t('preschoolLifecyclePage.messages.termArchived')
+  }
+
+  if (['closed', 'archived'].includes(reportPeriodStatus)) {
+    return t('preschoolLifecyclePage.messages.reportPeriodLocked')
+  }
+
+  return ''
+})
 
 const studentAssignmentRows = computed(() =>
   studentRows.value.flatMap((student) =>
@@ -229,6 +266,12 @@ onMounted(loadAssignments)
         <p class="mt-2 text-sm text-slate-600">
           {{ t('preschoolAssignmentsPage.workflowNote') }}
         </p>
+        <div
+          v-if="(isTermLocked || isReportPeriodLocked) && assignmentLockMessage"
+          class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          {{ assignmentLockMessage }}
+        </div>
 
         <div class="mt-4 flex flex-wrap gap-3">
           <button
