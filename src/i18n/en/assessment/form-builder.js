@@ -72,5 +72,6 @@ export default {
     unsavedChanges: 'You have unsaved changes.',
     autoSaved: 'Auto-saved',
     autoSaving: 'Saving...',
+    saveBeforeSections: 'Save the form before adding sections.',
   },
 }

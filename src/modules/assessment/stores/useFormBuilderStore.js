@@ -3,8 +3,21 @@ import { ref, computed } from 'vue'
 import { assessmentFormApi } from '../services/assessmentFormApi'
 import { assessmentQuestionTypeApi } from '../services/assessmentQuestionTypeApi'
 
+function createEmptyTemplate() {
+  return {
+    id: null,
+    uuid: null,
+    code: '',
+    name: '',
+    description: '',
+    module: 'preschool',
+    status: 'draft',
+    is_locked: false,
+  }
+}
+
 export const useFormBuilderStore = defineStore('formBuilder', () => {
-  const template = ref(null)
+  const template = ref(createEmptyTemplate())
   const sections = ref([])
   const questionTypes = ref([])
   const isDirty = ref(false)
@@ -81,7 +94,7 @@ export const useFormBuilderStore = defineStore('formBuilder', () => {
   }
 
   function reset() {
-    template.value = null
+    template.value = createEmptyTemplate()
     sections.value = []
     isDirty.value = false
     isSaving.value = false

@@ -44,17 +44,35 @@ async function archive(id) {
   confirm.require({
     message: t('formBuilder.archiveConfirm'),
     accept: async () => {
-      await assessmentFormApi.archive(id)
-      toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
-      load()
+      try {
+        await assessmentFormApi.archive(id)
+        toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
+        await load()
+      } catch (error) {
+        toast.add({
+          severity: 'error',
+          summary: t('common.error'),
+          detail: error?.message || t('common.errorTryAgain'),
+          life: 4000,
+        })
+      }
     },
   })
 }
 
 async function duplicate(id) {
-  await assessmentFormApi.duplicate(id)
-  toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
-  load()
+  try {
+    await assessmentFormApi.duplicate(id)
+    toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
+    await load()
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: error?.message || t('common.errorTryAgain'),
+      life: 4000,
+    })
+  }
 }
 
 onMounted(load)
@@ -82,27 +100,27 @@ onMounted(load)
           </template>
         </Column>
         <Column field="current_version" :header="t('formBuilder.version')" />
-        <Column :header="t('common.actions')">
+        <Column :header="t('common.table.actions')">
           <template #body="{ data }">
             <div class="assessment-form-list__actions">
-              <Button
-                icon="pi pi-pencil"
-                severity="secondary"
-                size="small"
-                @click="router.push({ name: 'assessment-form-edit', params: { id: data.id } })"
-              />
-              <Button
-                icon="pi pi-copy"
-                severity="secondary"
-                size="small"
-                @click="duplicate(data.id)"
-              />
-              <Button
-                icon="pi pi-inbox"
-                severity="secondary"
-                size="small"
-                @click="archive(data.id)"
-              />
+                <Button
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  size="sm"
+                  @click="router.push({ name: 'assessment-form-edit', params: { id: data.id } })"
+                />
+                <Button
+                  icon="pi pi-copy"
+                  severity="secondary"
+                  size="sm"
+                  @click="duplicate(data.id)"
+                />
+                <Button
+                  icon="pi pi-inbox"
+                  severity="secondary"
+                  size="sm"
+                  @click="archive(data.id)"
+                />
             </div>
           </template>
         </Column>

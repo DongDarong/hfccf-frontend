@@ -95,7 +95,7 @@ onMounted(load)
           </template>
         </Column>
         <Column field="submitted_at" :header="t('submissions.submittedAt')" />
-        <Column :header="t('common.actions')">
+        <Column :header="t('common.table.actions')">
           <template #body="{ data }">
             <Button
               icon="pi pi-eye"

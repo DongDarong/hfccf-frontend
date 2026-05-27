@@ -57,7 +57,7 @@ onUnmounted(() => store.reset())
           <span v-if="autoSaving" class="form-builder__save-status">{{ t('formBuilder.autoSaving') }}</span>
           <span v-else-if="lastSavedAt" class="form-builder__save-status">{{ t('formBuilder.autoSaved') }}</span>
           <Button
-            v-if="store.template?.status === 'draft'"
+            v-if="store.template?.id && store.template?.status === 'draft'"
             :label="t('formBuilder.publish')"
             icon="pi pi-send"
             @click="publish"
@@ -91,17 +91,25 @@ onUnmounted(() => store.reset())
       </div>
 
       <div class="form-builder__sections">
-        <FormSectionPanel
-          v-for="section in store.sortedSections"
-          :key="section.id"
-          :section="section"
-        />
-        <Button
-          :label="t('formBuilder.sections.addSection')"
-          icon="pi pi-plus"
-          severity="secondary"
-          @click="store.addSection({ title: t('formBuilder.sections.sectionTitle'), order: store.sections.length + 1 })"
-        />
+        <template v-if="store.template?.id">
+          <FormSectionPanel
+            v-for="section in store.sortedSections"
+            :key="section.id"
+            :section="section"
+          />
+          <Button
+            :label="t('formBuilder.sections.addSection')"
+            icon="pi pi-plus"
+            severity="secondary"
+            @click="store.addSection({ title: t('formBuilder.sections.sectionTitle'), order: store.sections.length + 1 })"
+          />
+        </template>
+        <div
+          v-else
+          class="form-builder__notice"
+        >
+          {{ t('formBuilder.saveBeforeSections') }}
+        </div>
       </div>
     </div>
   </MainLayout>
@@ -145,5 +153,13 @@ onUnmounted(() => store.reset())
 .form-builder__save-status {
   font-size: 0.8125rem;
   color: var(--text-color-secondary);
+}
+
+.form-builder__notice {
+  padding: 1rem;
+  border: 1px dashed var(--surface-border);
+  border-radius: 8px;
+  color: var(--text-color-secondary);
+  background: var(--surface-ground);
 }
 </style>
