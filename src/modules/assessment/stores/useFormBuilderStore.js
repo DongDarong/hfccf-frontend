@@ -48,8 +48,13 @@ export const useFormBuilderStore = defineStore('formBuilder', () => {
 
   async function loadQuestionTypes() {
     if (questionTypes.value.length) return
-    const res = await assessmentQuestionTypeApi.list()
-    questionTypes.value = res.data.data
+
+    try {
+      const res = await assessmentQuestionTypeApi.list()
+      questionTypes.value = res.data.data || []
+    } catch {
+      questionTypes.value = []
+    }
   }
 
   async function saveTemplate(data) {

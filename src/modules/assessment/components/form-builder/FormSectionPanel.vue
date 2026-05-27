@@ -42,13 +42,12 @@ async function deleteSection() {
         <Button
           :icon="isExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
           text
-          size="small"
+          size="sm"
           @click="isExpanded = !isExpanded"
         />
         <InputText
           v-if="isEditingTitle"
           v-model="localTitle"
-          size="small"
           autofocus
           @blur="saveTitle"
           @keyup.enter="saveTitle"
@@ -62,8 +61,8 @@ async function deleteSection() {
         </span>
       </div>
       <div class="form-section-panel__header-actions">
-        <Button icon="pi pi-pencil" text size="small" @click="isEditingTitle = true" />
-        <Button icon="pi pi-trash" text size="small" severity="danger" @click="deleteSection" />
+        <Button icon="pi pi-pencil" text size="sm" @click="isEditingTitle = true" />
+        <Button icon="pi pi-trash" text size="sm" severity="danger" @click="deleteSection" />
       </div>
     </div>
 
@@ -79,7 +78,7 @@ async function deleteSection() {
         :label="t('formBuilder.questions.addQuestion')"
         icon="pi pi-plus"
         text
-        size="small"
+        size="sm"
         @click="showAddQuestion = true"
       />
 
