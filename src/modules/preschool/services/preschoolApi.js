@@ -6,7 +6,34 @@ function normalizeText(value) {
   return String(value ?? '').trim()
 }
 
+function normalizeClassAssignmentRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    code: normalizeText(row.code || row.classCode),
+    name: normalizeText(row.name || row.className),
+    teacherUserId: row.teacherUserId ?? row.teacher_user_id ?? '',
+    teacherDisplayName: normalizeText(row.teacherDisplayName || row.teacher_display_name || row.teacher || row.teacherName),
+    status: normalizeText(row.status || 'active'),
+    enrolledAt: row.enrolledAt || row.enrolled_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    raw: row,
+  }
+}
+
+function normalizeStudentAssignmentRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    studentCode: normalizeText(row.studentCode || row.student_code),
+    fullName: normalizeText(row.fullName || row.full_name),
+    status: normalizeText(row.status || 'active'),
+    enrolledAt: row.enrolledAt || row.enrolled_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    raw: row,
+  }
+}
+
 function normalizeClassRow(row = {}) {
+  const studentAssignments = Array.isArray(row.studentAssignments) ? row.studentAssignments.map(normalizeStudentAssignmentRow) : []
   return {
     id: row.id ?? '',
     code: normalizeText(row.code || row.classCode),
@@ -20,8 +47,12 @@ function normalizeClassRow(row = {}) {
     ),
     level: normalizeText(row.level || row.grade),
     schedule: normalizeText(row.schedule || row.time),
-    studentsCount: Number(row.studentsCount ?? row.students_count ?? row.students ?? row.studentCount ?? 0),
-    students: Number(row.studentsCount ?? row.students_count ?? row.students ?? row.studentCount ?? 0),
+    studentsCount: Number(row.studentsCount ?? row.students_count ?? studentAssignments.filter((item) => item.status === 'active').length ?? row.students ?? row.studentCount ?? 0),
+    students: Number(row.studentsCount ?? row.students_count ?? studentAssignments.filter((item) => item.status === 'active').length ?? row.students ?? row.studentCount ?? 0),
+    studentAssignments,
+    activeStudentAssignments: Array.isArray(row.activeStudentAssignments)
+      ? row.activeStudentAssignments.map(normalizeStudentAssignmentRow)
+      : studentAssignments.filter((item) => item.status === 'active'),
     status: normalizeText(row.status || 'active'),
     room: normalizeText(row.room),
     notes: normalizeText(row.notes),
@@ -36,6 +67,8 @@ function normalizeStudentRow(row = {}) {
   const firstName = normalizeText(row.firstName || row.first_name)
   const lastName = normalizeText(row.lastName || row.last_name)
   const fullName = normalizeText(row.fullName || row.full_name || `${firstName} ${lastName}`)
+  const classAssignments = Array.isArray(row.classAssignments) ? row.classAssignments.map(normalizeClassAssignmentRow) : []
+  const activeClasses = Array.isArray(row.classes) ? row.classes.map(normalizeClassAssignmentRow) : classAssignments.filter((item) => item.status === 'active')
 
   return {
     id: row.id ?? '',
@@ -51,8 +84,9 @@ function normalizeStudentRow(row = {}) {
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
     avatarUrl: normalizeText(row.avatarUrl || row.avatar_url || row.avatar || row.photo || ''),
-    classesCount: Number(row.classesCount ?? row.classes_count ?? row.classes?.length ?? 0),
-    classes: Array.isArray(row.classes) ? row.classes : [],
+    classesCount: Number(row.classesCount ?? row.classes_count ?? activeClasses.length ?? 0),
+    classes: activeClasses,
+    classAssignments,
     createdAt: row.createdAt || row.created_at || '',
     updatedAt: row.updatedAt || row.updated_at || '',
     deletedAt: row.deletedAt || row.deleted_at || '',

@@ -195,6 +195,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-assignments",
+          "routeName": "dashboard-preschool-admin-assignments",
+          "labelKey": "nav.items.preschoolAssignments",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

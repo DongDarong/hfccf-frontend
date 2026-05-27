@@ -96,6 +96,18 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Assignment workflow stays admin-only so student/class, teacher/class, and
+  // schedule ownership can be managed without exposing teacher setup controls
+  // to staff users.
+  defineAppRoute({
+    path: '/module/preschool-admin/assignments',
+    name: 'dashboard-preschool-admin-assignments',
+    component: () => import('@/modules/preschool/admin/pages/PreschoolAssignments.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Assessment routes are shared by Preschool admins and teachers so the UI
   // can grow into reporting later without splitting the same workflow twice.
   defineAppRoute({

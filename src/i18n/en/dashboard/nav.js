@@ -47,6 +47,7 @@ export default {
     englishDashboard: 'English Dashboard',
     preschoolDashboard: 'Preschool Dashboard',
     preschoolSettings: 'Preschool Settings',
+    preschoolAssignments: 'Assignments',
     scholarshipDashboard: 'Scholarship Dashboard',
     sportDashboard: 'Sport Dashboard',
     teachers: 'Teachers',

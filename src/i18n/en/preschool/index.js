@@ -11,6 +11,7 @@ import reports from './reports'
 import schedules from './schedules'
 import settings from './settings'
 import classroomResources from './classroom-resources'
+import assignments from './assignments'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -28,4 +29,5 @@ export default {
   ...schedules,
   ...settings,
   ...classroomResources,
+  ...assignments,
 }
