@@ -9,10 +9,39 @@ export default {
       description: 'The route stays visible so the Preschool navigation remains stable while this workflow is still a scaffold.',
     },
     formManagement: {
-      eyebrow: 'Scaffold',
-      title: 'Form Management',
-      subtitle: 'This Preschool form workspace is not implemented yet.',
-      description: 'We keep the route visible so navigation stays stable while the feature remains a scaffold.',
+      eyebrow: 'Assessment',
+      title: 'Assessment Workspace',
+      subtitle: 'Choose a card below to open the Assessment page you need.',
+      description: 'These cards act as shortcuts into the Preschool assessment workflow.',
+      cards: {
+        dashboard: {
+          description: 'Open the assessment overview and quick metrics.',
+        },
+        forms: {
+          description: 'Manage templates, versions, sections, and questions.',
+        },
+        newForm: {
+          description: 'Create a new assessment template from scratch.',
+        },
+        submissions: {
+          description: 'Review submitted assessments and open individual records.',
+        },
+        wizard: {
+          description: 'Launch the guided assessment entry workflow.',
+        },
+        scoring: {
+          description: 'Configure scoring rules and risk levels.',
+        },
+        printDesigner: {
+          description: 'Design Khmer-friendly print layouts and templates.',
+        },
+        reports: {
+          description: 'Analyze trends, risk breakdowns, and completion rates.',
+        },
+        auditLogs: {
+          description: 'Inspect assessment action history and changes.',
+        },
+      },
     },
     classroomResources: {
       eyebrow: 'Scaffold',
