@@ -30,7 +30,7 @@ onMounted(load)
     <Select
       :model-value="store.selectedStudent"
       :options="students"
-      option-label="full_name"
+          option-label="fullName"
       :loading="isLoading"
       :placeholder="t('assessmentWizard.selectStudent')"
       filter
