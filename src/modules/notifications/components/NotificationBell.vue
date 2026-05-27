@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import Popover from 'primevue/popover'
-import { fetchNotifications, markAllNotificationsAsRead, markNotificationAsRead, dismissNotification, undismissNotification } from '@/modules/notifications/services/notificationsApi'
-import { useNotificationsStore } from '@/modules/notifications/stores/notificationsStore'
+import { useNotifications } from '@/modules/notifications/composables/useNotifications'
+import { useUnreadNotifications } from '@/modules/notifications/composables/useUnreadNotifications'
 import NotificationDropdown from '@/modules/notifications/components/NotificationDropdown.vue'
 import NotificationTypeIcon from '@/modules/notifications/components/NotificationTypeIcon.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -16,53 +16,21 @@ defineOptions({
 })
 
 const router = useRouter()
-const notificationsStore = useNotificationsStore()
 const overlayRef = ref(null)
-const dropdownLoading = ref(false)
-const dropdownItems = ref([])
+const notificationCenter = useNotifications({ defaultPerPage: 5 })
+const unreadNotifications = useUnreadNotifications()
 const { t } = useLanguage()
 
-const unreadCount = computed(() => notificationsStore.unreadCount)
-
-function normalizeItems(payload) {
-  const collection = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload?.items)
-      ? payload.items
-      : Array.isArray(payload?.notifications)
-        ? payload.notifications
-        : Array.isArray(payload?.data)
-          ? payload.data
-          : []
-
-  return collection.map((item) => ({
-    ...item,
-    id: item.id ?? item.uuid ?? item.key ?? '',
-    type: String(item.type || item.level || item.category || 'system').trim().toLowerCase(),
-    module: String(item.module || item.domain || 'global').trim().toLowerCase(),
-    title: String(item.title || item.subject || '').trim(),
-    message: String(item.message || item.body || item.content || '').trim(),
-    read: Boolean(item.read || item.is_read || item.read_at || item.readAt),
-    dismissed: Boolean(item.dismissed || item.dismissed_at || item.dismissedAt),
-    createdAt: item.created_at || item.createdAt || item.sent_at || item.timestamp || '',
-  }))
-}
+const unreadCount = computed(() => unreadNotifications.unreadCount.value)
+const dropdownItems = computed(() => notificationCenter.items.value.slice(0, 5))
+const dropdownLoading = computed(() => notificationCenter.loading.value)
+const dropdownError = computed(() => notificationCenter.error.value)
 
 async function loadDropdownItems() {
-  dropdownLoading.value = true
-
-  try {
-    const payload = await fetchNotifications({
-      page: 1,
-      perPage: 5,
-    })
-
-    dropdownItems.value = normalizeItems(payload).slice(0, 5)
-  } catch {
-    dropdownItems.value = []
-  } finally {
-    dropdownLoading.value = false
-  }
+  await notificationCenter.loadNotifications({
+    page: 1,
+    perPage: 5,
+  })
 }
 
 async function openDropdown(event) {
@@ -74,13 +42,8 @@ async function handleRead(notification) {
   if (!notification?.id) return
 
   try {
-    await markNotificationAsRead(notification.id)
-    dropdownItems.value = dropdownItems.value.map((item) =>
-      String(item.id) === String(notification.id)
-        ? { ...item, read: true, read_at: item.read_at || new Date().toISOString() }
-        : item,
-    )
-    await notificationsStore.loadUnreadCount()
+    await notificationCenter.markAsRead(notification.id)
+    await unreadNotifications.loadUnreadCount()
   } catch {
     // Keep the dropdown usable if the backend rejects the change.
   }
@@ -90,9 +53,8 @@ async function handleDismiss(notification) {
   if (!notification?.id) return
 
   try {
-    await dismissNotification(notification.id)
-    dropdownItems.value = dropdownItems.value.filter((item) => String(item.id) !== String(notification.id))
-    await notificationsStore.loadUnreadCount()
+    await notificationCenter.dismiss(notification.id)
+    await unreadNotifications.loadUnreadCount()
   } catch {
     // Keep the dropdown usable if the backend rejects the change.
   }
@@ -102,9 +64,9 @@ async function handleUndismiss(notification) {
   if (!notification?.id) return
 
   try {
-    await undismissNotification(notification.id)
+    await notificationCenter.undismiss(notification.id)
     await loadDropdownItems()
-    await notificationsStore.loadUnreadCount()
+    await unreadNotifications.loadUnreadCount()
   } catch {
     // Keep the dropdown usable if the backend rejects the change.
   }
@@ -112,13 +74,8 @@ async function handleUndismiss(notification) {
 
 async function handleMarkAllRead() {
   try {
-    await markAllNotificationsAsRead()
-    dropdownItems.value = dropdownItems.value.map((item) => ({
-      ...item,
-      read: true,
-      read_at: item.read_at || new Date().toISOString(),
-    }))
-    await notificationsStore.loadUnreadCount()
+    await notificationCenter.markAllAsRead()
+    await unreadNotifications.loadUnreadCount()
   } catch {
     // Keep the dropdown usable if the backend rejects the change.
   }
@@ -130,7 +87,7 @@ function goToNotificationsPage() {
 }
 
 onMounted(() => {
-  void notificationsStore.loadUnreadCount()
+  void unreadNotifications.loadUnreadCount()
 })
 </script>
 
@@ -171,10 +128,12 @@ onMounted(() => {
         :notifications="dropdownItems"
         :loading="dropdownLoading"
         :unread-count="unreadCount"
+        :error="dropdownError"
         @read="handleRead"
         @dismiss="handleDismiss"
         @undismiss="handleUndismiss"
         @mark-all-read="handleMarkAllRead"
+        @retry="loadDropdownItems"
         @view-all="goToNotificationsPage"
       />
     </Popover>

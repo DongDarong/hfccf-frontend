@@ -1,0 +1,33 @@
+export default {
+  assessmentReports: {
+    title: 'Assessment Reports',
+    overview: 'Overview',
+    riskDistribution: 'Risk Distribution',
+    submissionTrend: 'Submission Trend',
+    studentProgress: 'Student Progress',
+    formAnalytics: 'Form Analytics',
+    exportReport: 'Export Report',
+    exportFormats: {
+      pdf: 'PDF',
+      excel: 'Excel',
+      csv: 'CSV',
+    },
+    dateRange: 'Date Range',
+    from: 'From',
+    to: 'To',
+    applyFilter: 'Apply Filter',
+    noData: 'No data available for the selected period.',
+    totalAssessments: 'Total Assessments',
+    averageScore: 'Average Score',
+    completionRate: 'Completion Rate',
+    riskBreakdown: 'Risk Breakdown',
+    auditLogs: {
+      title: 'Audit Logs',
+      event: 'Event',
+      actor: 'Actor',
+      description: 'Description',
+      timestamp: 'Timestamp',
+      noLogs: 'No audit logs found.',
+    },
+  },
+}

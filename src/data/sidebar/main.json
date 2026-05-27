@@ -61,6 +61,51 @@
           }
         },
         {
+          "id": "sport-my-teams",
+          "routeName": "dashboard-sport-coach-teams",
+          "labelKey": "nav.items.myTeams",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-team-roster",
+          "routeName": "dashboard-sport-coach-roster",
+          "labelKey": "nav.items.teamRoster",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-my-requests",
+          "routeName": "dashboard-sport-coach-requests",
+          "labelKey": "nav.items.myRequests",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "preschool-teacher-students",
           "routeName": "dashboard-preschool-teacher-students",
           "labelKey": "nav.items.myStudents",
@@ -90,6 +135,127 @@
             ]
           }
         },
+        {
+          "id": "preschool-teacher-emergency-contacts",
+          "routeName": "dashboard-preschool-teacher-emergency-contacts",
+          "labelKey": "nav.items.emergencyContacts",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-teacher-assessments",
+          "routeName": "dashboard-preschool-assessments",
+          "labelKey": "nav.items.preschoolAssessments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-teacher-progress-summary",
+          "routeName": "dashboard-preschool-progress-summary",
+          "labelKey": "nav.items.preschoolProgressSummary",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-settings",
+          "routeName": "dashboard-preschool-admin-settings",
+          "labelKey": "nav.items.preschoolSettings",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-assignments",
+          "routeName": "dashboard-preschool-admin-assignments",
+          "labelKey": "nav.items.preschoolAssignments",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+         {
+          "id": "preschool-teacher-report",
+          "routeName": "dashboard-preschool-teacher-report",
+          "labelKey": "nav.items.reports",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+         {
+          "id": "preschool-teacher-healthy",
+          "routeName": "dashboard-preschool-teacher-healthy",
+          "labelKey": "nav.items.healthy",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+         {
+          "id": "preschool-teacher-classroomresources",
+          "routeName": "dashboard-preschool-teacher-classroomresources",
+          "labelKey": "nav.items.classroomresources",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+
         {
           "id": "english-teachers",
           "routeName": "dashboard-english-admin-users",
@@ -226,6 +392,51 @@
           }
         },
         {
+          "id": "preschool-guardians",
+          "routeName": "dashboard-preschool-admin-guardians",
+          "labelKey": "nav.items.guardians",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-guardian-integrity",
+          "routeName": "dashboard-preschool-admin-guardian-integrity",
+          "labelKey": "nav.items.guardianIntegrityReport",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-student-guardians",
+          "routeName": "dashboard-preschool-admin-student-guardians",
+          "labelKey": "nav.items.studentGuardians",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
           "labelKey": "nav.items.classes",
@@ -244,6 +455,66 @@
           "id": "preschool-payments",
           "routeName": "dashboard-preschool-admin-payment",
           "labelKey": "nav.items.payments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-forms",
+          "routeName": "dashboard-preschool-admin-forms",
+          "labelKey": "nav.items.forms",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-attendance",
+          "routeName": "dashboard-preschool-admin-attendance",
+          "labelKey": "nav.items.attendance",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-reports",
+          "routeName": "dashboard-preschool-admin-reports",
+          "labelKey": "nav.items.reports",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-classroom-resources",
+          "routeName": "dashboard-preschool-admin-classroom-resources",
+          "labelKey": "nav.items.classroomResources",
           "icon": "reports",
           "badgeKey": "nav.badges.staff",
           "access": {
@@ -331,9 +602,99 @@
           }
         },
         {
+          "id": "sport-tournaments",
+          "routeName": "dashboard-sport-admin-tournaments",
+          "labelKey": "nav.items.tournaments",
+          "icon": "tournaments",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "sport-training-schedule-admin",
           "routeName": "dashboard-sport-admin-training",
           "labelKey": "nav.items.trainingSchedule",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-coach-team-assignments",
+          "routeName": "dashboard-sport-admin-coach-team-assignments",
+          "labelKey": "nav.items.coachTeamAssignments",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-pending-player-approvals",
+          "routeName": "dashboard-sport-admin-pending-player-approvals",
+          "labelKey": "nav.items.pendingPlayerApprovals",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-pending-match-approvals",
+          "routeName": "dashboard-sport-admin-pending-match-approvals",
+          "labelKey": "nav.items.pendingMatchApprovals",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-player-lifecycle",
+          "routeName": "dashboard-sport-admin-player-lifecycle",
+          "labelKey": "nav.items.playerLifecycle",
+          "icon": "users",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
+          "id": "sport-audit-logs",
+          "routeName": "reports-audit-logs",
+          "labelKey": "nav.items.auditLogs",
           "icon": "reports",
           "badgeKey": "nav.badges.admin",
           "access": {

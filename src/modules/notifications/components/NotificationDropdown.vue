@@ -6,6 +6,7 @@ import ScrollPanel from 'primevue/scrollpanel'
 import Loading from '@/components/feedback/Loading.vue'
 import NotificationItem from '@/modules/notifications/components/NotificationItem.vue'
 import NotificationEmptyState from '@/modules/notifications/components/NotificationEmptyState.vue'
+import NotificationErrorState from '@/modules/notifications/components/NotificationErrorState.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -25,13 +26,18 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  error: {
+    type: String,
+    default: '',
+  },
 })
 
-const emit = defineEmits(['mark-all-read', 'view-all', 'read', 'dismiss', 'undismiss'])
+const emit = defineEmits(['mark-all-read', 'view-all', 'read', 'dismiss', 'undismiss', 'retry'])
 
 const { t } = useLanguage()
 
 const hasNotifications = computed(() => props.notifications.length > 0)
+const hasError = computed(() => Boolean(String(props.error || '').trim()))
 
 function handleMarkAllRead() {
   if (props.loading || !hasNotifications.value) return
@@ -72,35 +78,45 @@ function handleMarkAllRead() {
       :style="{ width: '100%', height: '18rem' }"
     >
       <div class="notification-dropdown__list">
-        <NotificationItem
-          v-for="item in notifications"
-          :key="item.id"
-          :notification="item"
-          :read-label="t('common.notifications.markRead')"
-          :dismiss-label="t('common.notifications.dismiss')"
-          :undismiss-label="t('common.notifications.undismiss')"
-          :show-actions="true"
-          compact
-          @read="emit('read', $event)"
-          @dismiss="emit('dismiss', $event)"
-          @undismiss="emit('undismiss', $event)"
+        <NotificationErrorState
+          v-if="hasError && !loading"
+          :title="t('common.notifications.error')"
+          :description="error"
+          :retry-label="t('common.notifications.retry')"
+          @retry="emit('retry')"
         />
 
-        <NotificationEmptyState
-          v-if="!hasNotifications && !loading"
-          :title="t('common.notifications.empty')"
-          :description="t('common.notifications.emptyDescription')"
-        />
-
-        <div
-          v-if="loading"
-          class="notification-dropdown__loading"
-        >
-          <Loading
-            :label="t('common.notifications.loading')"
-            size="sm"
+        <template v-else>
+          <NotificationItem
+            v-for="item in notifications"
+            :key="item.id"
+            :notification="item"
+            :read-label="t('common.notifications.markRead')"
+            :dismiss-label="t('common.notifications.dismiss')"
+            :undismiss-label="t('common.notifications.undismiss')"
+            :show-actions="true"
+            compact
+            @read="emit('read', $event)"
+            @dismiss="emit('dismiss', $event)"
+            @undismiss="emit('undismiss', $event)"
           />
-        </div>
+
+          <NotificationEmptyState
+            v-if="!hasNotifications && !loading"
+            :title="t('common.notifications.empty')"
+            :description="t('common.notifications.emptyDescription')"
+          />
+
+          <div
+            v-if="loading"
+            class="notification-dropdown__loading"
+          >
+            <Loading
+              :label="t('common.notifications.loading')"
+              size="sm"
+            />
+          </div>
+        </template>
       </div>
     </ScrollPanel>
 

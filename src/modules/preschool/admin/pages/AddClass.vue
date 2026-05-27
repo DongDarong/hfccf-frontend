@@ -1,4 +1,6 @@
 <script setup>
+// Keep the class editor locale-driven so the visible setup labels stay
+// consistent across EN/KH and regressions surface in unit tests.
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -67,6 +69,17 @@ const teacherLabelMap = computed(() =>
   }, {}),
 )
 
+const levelLabelMap = computed(() =>
+  levelOptions.reduce((carry, level) => {
+    const key = String(level || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, '_')
+    carry[level] = t(`common.role.${key}`)
+    return carry
+  }, {}),
+)
+
 const pageTitle = computed(() => {
   if (isViewMode.value) return t('preschoolAddClass.viewTitle')
   if (isEditMode.value) return t('preschoolAddClass.updateTitle')
@@ -82,10 +95,10 @@ const summaryCards = computed(() => [
   {
     id: 'class-level',
     title: t('preschoolAddClass.level'),
-    value: form.level || '-',
+    value: levelLabelMap.value[form.level] || form.level || '-',
     label: t('preschoolAddClass.selectedLearningStage'),
     status: 'info',
-    statusLabel: 'Info',
+    statusLabel: t('preschoolAddClass.statusLabels.info'),
     surfaceClass: 'bg-cyan-50/80 border-cyan-200',
   },
   {
@@ -94,7 +107,9 @@ const summaryCards = computed(() => [
     value: Number(form.students || 0),
     label: t('preschoolAddClass.plannedEnrollment'),
     status: Number(form.students || 0) > 0 ? 'success' : 'warning',
-    statusLabel: Number(form.students || 0) > 0 ? 'Success' : 'Warning',
+    statusLabel: Number(form.students || 0) > 0
+      ? t('preschoolAddClass.statusLabels.success')
+      : t('preschoolAddClass.statusLabels.warning'),
     surfaceClass: 'bg-lime-50/80 border-lime-200',
   },
   {

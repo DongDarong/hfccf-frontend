@@ -59,6 +59,33 @@ function persistAuthenticatedUser(user) {
   return safeUser
 }
 
+/**
+ * Portal activation reuses the same storage contract as login so guardian
+ * accounts can bootstrap a session without duplicating auth persistence.
+ */
+export function applyAuthenticatedSession({ token, user, remember = false }) {
+  if (!token || !user) {
+    throw new Error('Login response is missing session data.')
+  }
+
+  const storage = getStorage(remember)
+  const fallbackStorage = getFallbackStorage(remember)
+  const safeUser = sanitizeUser(user)
+
+  clearSessionStorage(fallbackStorage)
+
+  storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
+  storage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
+  storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
+
+  dispatchAuthStateChanged({
+    type: 'login',
+    user: safeUser,
+  })
+
+  return safeUser
+}
+
 function isHttpClientError(error) {
   return Boolean(error?.response || error?.request)
 }
@@ -109,25 +136,7 @@ export async function login({ email, password, remember = false }) {
     const token = payload.token
     const user = payload.user
 
-    if (!token || !user) {
-      throw new Error('Login response is missing session data.')
-    }
-
-    const storage = getStorage(remember)
-    const fallbackStorage = getFallbackStorage(remember)
-    const safeUser = sanitizeUser(user)
-
-    clearSessionStorage(fallbackStorage)
-
-    storage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(safeUser))
-    storage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
-    storage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(Date.now()))
-    dispatchAuthStateChanged({
-      type: 'login',
-      user: safeUser,
-    })
-
-    return safeUser
+    return applyAuthenticatedSession({ token, user, remember })
   } catch (error) {
     if (!isHttpClientError(error)) {
       throw error

@@ -8,7 +8,8 @@
       "collapsible": true,
       "access": {
         "scopes": [
-          "super_admin"
+          "super_admin",
+          "admin"
         ]
       },
       "items": [
@@ -41,11 +42,60 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-attendance",
+          "routeName": "dashboard-preschool-admin-attendance",
+          "labelKey": "nav.items.attendance",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-payments",
           "routeName": "dashboard-preschool-admin-payment",
           "labelKey": "nav.items.payments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-assessments",
+          "routeName": "dashboard-preschool-assessments",
+          "labelKey": "nav.items.preschoolAssessments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-progress-summary",
+          "routeName": "dashboard-preschool-progress-summary",
+          "labelKey": "nav.items.preschoolProgressSummary",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-classroom-resources",
+          "routeName": "dashboard-preschool-admin-classroom-resources",
+          "labelKey": "nav.items.classroomResources",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-forms",
+          "routeName": "dashboard-preschool-admin-forms",
+          "labelKey": "nav.items.forms",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-reports",
+          "routeName": "dashboard-preschool-admin-reports",
+          "labelKey": "nav.items.reports",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-settings",
+          "routeName": "dashboard-preschool-admin-settings",
+          "labelKey": "nav.items.preschoolSettings",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
         }
       ]
     }

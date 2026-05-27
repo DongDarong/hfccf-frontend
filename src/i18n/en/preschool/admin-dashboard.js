@@ -1,5 +1,8 @@
+// Keep Preschool admin copy grouped here while the module is still being
+// normalized, so class-management regressions remain easy to trace.
 export default {
   preschoolClassesManagement: {
+    loading: 'Loading preschool classes...',
     title: 'Preschool Classes',
     subtitle: 'Manage class groups, assigned teachers, and schedule coverage for early learning.',
     addButton: 'Add Class',
@@ -14,6 +17,20 @@ export default {
       visibleClasses: 'Visible classes',
       visibleStudents: 'Visible students',
       avgStudents: 'Avg. students',
+    },
+    alerts: {
+      deleteTitle: 'Delete class?',
+      deleteMessage: 'Are you sure you want to delete {name}?',
+      deleteFallback: 'this class',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      successTitle: 'Success',
+      close: 'Close',
+    },
+    messages: {
+      loadFailed: 'Failed to load preschool classes.',
+      deleteFailed: 'Failed to delete the class.',
+      deleteSuccess: 'Class {name} deleted successfully.',
     },
     summary: {
       total: {
@@ -63,6 +80,11 @@ export default {
     students: 'Students',
     status: 'Status',
     schedule: 'Schedule',
+    statusLabels: {
+      info: 'Info',
+      success: 'Success',
+      warning: 'Warning',
+    },
     selectedLearningStage: 'Selected learning stage',
     plannedEnrollment: 'Planned enrollment',
     initialClassState: 'Initial class state',
@@ -126,15 +148,42 @@ export default {
     loadFailed: 'Failed to load preschool teachers.',
     successTitle: 'Success',
     closeButton: 'Close',
+    summary: {
+      total: 'Total teachers',
+    },
     table: {
       number: 'No.',
-      user: 'User',
+      user: 'Teacher',
       email: 'Email',
       role: 'Role',
       permission: 'Permissions',
       status: 'Status',
       phone: 'Phone',
       actions: 'Actions',
+    },
+  },
+  preschoolTeacherView: {
+    title: 'Teacher Profile',
+    subtitle: 'Review teacher profile, permissions, and account details.',
+    loadFailed: 'Failed to load teacher details.',
+    sections: {
+      contact: 'Contact',
+      account: 'Account',
+      permissions: 'Permissions',
+    },
+    fields: {
+      email: 'Email',
+      phone: 'Phone',
+      role: 'Role',
+      status: 'Status',
+      username: 'Username',
+      noPermissions: 'No permissions assigned.',
+      noPhone: 'No phone number',
+      noEmail: 'No email',
+    },
+    actions: {
+      back: 'Back to Teachers',
+      edit: 'Edit Teacher',
     },
   },
   preschoolDashboard: {

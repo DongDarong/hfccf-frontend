@@ -13,6 +13,7 @@ import AddTeacherFormFields from '@/modules/preschool/admin/components/add-teach
 import AddTeacherFormActions from '@/modules/preschool/admin/components/add-teacher/AddTeacherFormActions.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { ROLES } from '@/constants/roles'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 import { fetchRolePermissions } from '@/modules/super-admin/services/rolePermissionsApi'
 import {
   createPreschoolTeacher,
@@ -108,7 +109,7 @@ function isBlobUrl(value) {
   return String(value || '').startsWith('blob:')
 }
 
-function onProfileImageChange(event) {
+async function onProfileImageChange(event) {
   if (isFormLocked.value) return
 
   const [file] = event?.target?.files || []
@@ -126,13 +127,19 @@ function onProfileImageChange(event) {
     return
   }
 
+  const optimizedFile = await optimizeImageFile(file, {
+    maxWidth: 512,
+    maxHeight: 512,
+    quality: 0.84,
+  }).catch(() => file)
+
   if (isBlobUrl(profileImagePreview.value)) {
     URL.revokeObjectURL(profileImagePreview.value)
   }
 
-  form.profileImage = file
+  form.profileImage = optimizedFile
   form.removeAvatar = false
-  profileImagePreview.value = URL.createObjectURL(file)
+  profileImagePreview.value = URL.createObjectURL(optimizedFile)
 }
 
 function removeProfileImage() {

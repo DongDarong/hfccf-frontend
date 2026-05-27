@@ -4,6 +4,7 @@ import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { updateAuthenticatedUserProfile } from '@/services/auth'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 
 const { t, te } = useLanguage()
 
@@ -28,7 +29,15 @@ const requestError = ref('')
  * Prefer a safe uploaded avatar or a bundled local avatar.
  * If that still fails, the initials fallback below keeps the card stable.
  */
-const avatarUrl = computed(() => resolveAvatarSource(props.user.avatar, { fallbackToAsset: true }))
+const avatarUrl = computed(() =>
+  resolveAvatarSource(
+    props.user.avatar ||
+      props.user.avatarUrl ||
+      props.user.profilePhotoUrl ||
+      props.user.photo,
+    { fallbackToAsset: true },
+  ),
+)
 
 const shouldShowImage = computed(() =>
   Boolean(avatarUrl.value) && Boolean(isImageLoaded.value) && !hasImageError.value,
@@ -73,8 +82,14 @@ async function onAvatarChange(event) {
   isUploadingAvatar.value = true
 
   try {
+    const optimizedFile = await optimizeImageFile(file, {
+      maxWidth: 512,
+      maxHeight: 512,
+      quality: 0.84,
+    }).catch(() => file)
+
     await updateAuthenticatedUserProfile({
-      avatar: file,
+      avatar: optimizedFile,
     })
   } catch (error) {
     requestError.value = error?.message || t('common.error')

@@ -1,4 +1,6 @@
 <script setup>
+// Keep the filter labels configurable so the page can stay locale-driven and
+// the component does not hardcode English fallback copy.
 defineOptions({
   name: 'PaymentFilters',
 })
@@ -28,6 +30,14 @@ defineProps({
     type: String,
     default: '',
   },
+  allClassesLabel: {
+    type: String,
+    default: '',
+  },
+  allStatusLabel: {
+    type: String,
+    default: '',
+  },
 })
 
 defineEmits(['update:searchQuery', 'update:classFilter', 'update:statusFilter'])
@@ -49,7 +59,7 @@ defineEmits(['update:searchQuery', 'update:classFilter', 'update:statusFilter'])
       @change="$emit('update:classFilter', $event.target.value)"
     >
       <option value="">
-        All classes
+        {{ allClassesLabel }}
       </option>
       <option
         v-for="option in classOptions"
@@ -66,7 +76,7 @@ defineEmits(['update:searchQuery', 'update:classFilter', 'update:statusFilter'])
       @change="$emit('update:statusFilter', $event.target.value)"
     >
       <option value="">
-        All status
+        {{ allStatusLabel }}
       </option>
       <option
         v-for="option in statusOptions"

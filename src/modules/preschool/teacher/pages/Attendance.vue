@@ -1,14 +1,19 @@
 <script setup>
+// Keep teacher attendance labels in locale files so the page can be checked
+// for EN/KH parity instead of relying on hardcoded strings.
 import { computed, onMounted, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { fetchMyPreschoolAttendance } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolTeacherAttendancePage',
 })
+
+const { t } = useLanguage()
 
 const attendance = ref([])
 const loading = ref(false)
@@ -19,16 +24,21 @@ const attendanceDate = ref('')
 const currentPage = ref(1)
 const pagination = ref({ page: 1, perPage: 10, total: 0, totalPages: 1 })
 
-const statusOptions = ['present', 'absent', 'late', 'excused']
+const statusOptions = computed(() => [
+  { label: t('preschoolTeacherAttendancePage.options.present'), value: 'present' },
+  { label: t('preschoolTeacherAttendancePage.options.absent'), value: 'absent' },
+  { label: t('preschoolTeacherAttendancePage.options.late'), value: 'late' },
+  { label: t('preschoolTeacherAttendancePage.options.excused'), value: 'excused' },
+])
 
-const tableColumns = [
-  { key: 'number', label: 'No.', align: 'left' },
-  { key: 'studentName', label: 'Student', align: 'left' },
-  { key: 'className', label: 'Class', align: 'left' },
-  { key: 'attendanceDate', label: 'Date', align: 'left' },
-  { key: 'status', label: 'Status', align: 'left' },
-  { key: 'note', label: 'Note', align: 'left' },
-]
+const tableColumns = computed(() => [
+  { key: 'number', label: t('preschoolTeacherAttendancePage.columns.no'), align: 'left' },
+  { key: 'studentName', label: t('preschoolTeacherAttendancePage.columns.student'), align: 'left' },
+  { key: 'className', label: t('preschoolTeacherAttendancePage.columns.class'), align: 'left' },
+  { key: 'attendanceDate', label: t('preschoolTeacherAttendancePage.columns.date'), align: 'left' },
+  { key: 'status', label: t('preschoolTeacherAttendancePage.columns.status'), align: 'left' },
+  { key: 'note', label: t('preschoolTeacherAttendancePage.columns.note'), align: 'left' },
+])
 
 const mappedAttendance = computed(() =>
   attendance.value.map((row) => ({
@@ -56,7 +66,7 @@ async function loadAttendance() {
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     attendance.value = []
-    errorMessage.value = error?.message || 'Failed to load attendance.'
+    errorMessage.value = error?.message || t('preschoolTeacherAttendancePage.messages.loadFailed')
   } finally {
     loading.value = false
   }
@@ -80,8 +90,8 @@ onMounted(() => {
   <MainLayout>
     <section class="attendance-page">
       <HeaderSection
-        title="Preschool Attendance"
-        subtitle="Track attendance for your assigned preschool classes."
+        :title="t('preschoolTeacherAttendancePage.title')"
+        :subtitle="t('preschoolTeacherAttendancePage.subtitle')"
       />
 
       <div class="attendance-page__panel">
@@ -90,12 +100,12 @@ onMounted(() => {
             v-model="searchQuery"
             class="attendance-page__input"
             type="search"
-            placeholder="Search attendance"
+            :placeholder="t('preschoolTeacherAttendancePage.searchPlaceholder')"
           >
           <select v-model="statusFilter" class="attendance-page__input">
-            <option value="">All status</option>
-            <option v-for="option in statusOptions" :key="option" :value="option">
-              {{ option }}
+            <option value="">{{ t('preschoolTeacherAttendancePage.filters.allStatus') }}</option>
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
             </option>
           </select>
           <input
@@ -116,7 +126,7 @@ onMounted(() => {
           :rows="mappedAttendance"
           :columns="tableColumns"
           :loading="loading"
-          empty-text="No attendance records found."
+          :empty-text="t('preschoolTeacherAttendancePage.messages.noResults')"
         />
 
         <div v-if="pagination.totalPages > 1" class="flex justify-end">

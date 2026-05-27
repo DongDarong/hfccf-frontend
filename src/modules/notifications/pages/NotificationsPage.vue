@@ -1,19 +1,20 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Card from 'primevue/card'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import SearchInputField from '@/components/forms/SearchInputField.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import NotificationFilterTabs from '@/modules/dashboard/components/notifications/NotificationFilterTabs.vue'
 import NotificationInboxCard from '@/modules/notifications/components/NotificationInboxCard.vue'
+import { useNotifications } from '@/modules/notifications/composables/useNotifications'
+import { useUnreadNotifications } from '@/modules/notifications/composables/useUnreadNotifications'
 import { useLanguage } from '@/composables/useLanguage'
 import { hasPermission } from '@/services/auth'
 import { useUserStore } from '@/store/userStore'
-import { useNotificationsStore } from '@/modules/notifications/stores/notificationsStore'
 
 defineOptions({
   name: 'NotificationsPage',
@@ -21,7 +22,8 @@ defineOptions({
 
 const router = useRouter()
 const userStore = useUserStore()
-const notificationsStore = useNotificationsStore()
+const notifications = useNotifications({ defaultPerPage: 10 })
+const unreadNotifications = useUnreadNotifications()
 const { t } = useLanguage()
 
 const typeOptions = computed(() => [
@@ -43,10 +45,10 @@ const moduleOptions = computed(() => [
 ])
 
 const statusTabs = computed(() => [
-  { value: 'all', label: t('notifications.filters.all'), count: notificationsStore.pagination.total || notificationsStore.items.length },
-  { value: 'unread', label: t('notifications.unread'), count: notificationsStore.items.filter((item) => !item.read && !item.dismissed).length },
-  { value: 'read', label: t('notifications.read'), count: notificationsStore.items.filter((item) => item.read && !item.dismissed).length },
-  { value: 'dismissed', label: t('notifications.dismissed'), count: notificationsStore.items.filter((item) => item.dismissed).length },
+  { value: 'all', label: t('notifications.filters.all'), count: notifications.pagination.total || notifications.items.value.length },
+  { value: 'unread', label: t('notifications.unread'), count: notifications.items.value.filter((item) => !item.read && !item.dismissed).length },
+  { value: 'read', label: t('notifications.read'), count: notifications.items.value.filter((item) => item.read && !item.dismissed).length },
+  { value: 'dismissed', label: t('notifications.dismissed'), count: notifications.items.value.filter((item) => item.dismissed).length },
 ])
 
 const pageTitle = computed(() => t('notifications.title'))
@@ -63,15 +65,15 @@ const createLabel = computed(() => t('notifications.create'))
 const showCreateAction = computed(() => hasPermission('all:*', userStore.currentUser))
 
 const filteredNotifications = computed(() => {
-  const status = String(notificationsStore.filters.status || 'all')
+  const status = String(notifications.filters.status || 'all')
 
-  return notificationsStore.items.filter((item) => {
+  return notifications.items.value.filter((item) => {
     const readState = item.read ? 'read' : 'unread'
     const itemStatus = item.dismissed ? 'dismissed' : readState
     const matchesStatus = status === 'all' || itemStatus === status
-    const matchesType = !notificationsStore.filters.type || item.type === notificationsStore.filters.type
-    const matchesModule = !notificationsStore.filters.module || item.module === notificationsStore.filters.module
-    const search = String(notificationsStore.filters.search || '').trim().toLowerCase()
+    const matchesType = !notifications.filters.type || item.type === notifications.filters.type
+    const matchesModule = !notifications.filters.module || item.module === notifications.filters.module
+    const search = String(notifications.filters.search || '').trim().toLowerCase()
     const haystack = `${item.title} ${item.message}`.toLowerCase()
     const matchesSearch = !search || haystack.includes(search)
 
@@ -80,23 +82,27 @@ const filteredNotifications = computed(() => {
 })
 
 const pageCount = computed(() =>
-  Math.max(notificationsStore.pagination.lastPage || Math.ceil((notificationsStore.pagination.total || filteredNotifications.value.length) / notificationsStore.pagination.perPage), 1),
+  Math.max(
+    notifications.pagination.lastPage ||
+      Math.ceil((notifications.pagination.total || filteredNotifications.value.length) / notifications.pagination.perPage),
+    1,
+  ),
 )
 
 let searchDebounceId = null
 
 async function loadCurrentPage() {
-  await notificationsStore.loadNotifications({
-    page: notificationsStore.pagination.page,
-    perPage: notificationsStore.pagination.perPage,
+  await notifications.loadNotifications({
+    page: notifications.pagination.page,
+    perPage: notifications.pagination.perPage,
   })
 }
 
 async function loadPageFromFilters({ resetPage = false } = {}) {
-  const shouldLoadImmediately = resetPage && notificationsStore.pagination.page === 1
+  const shouldLoadImmediately = resetPage && notifications.pagination.page === 1
 
   if (resetPage) {
-    notificationsStore.pagination.page = 1
+    notifications.pagination.page = 1
   }
 
   if (shouldLoadImmediately) {
@@ -105,19 +111,23 @@ async function loadPageFromFilters({ resetPage = false } = {}) {
 }
 
 async function handleMarkAllRead() {
-  await notificationsStore.markAllAsRead()
+  await notifications.markAllAsRead()
+  await unreadNotifications.loadUnreadCount()
 }
 
 async function handleRead(notification) {
-  await notificationsStore.markAsRead(notification.id)
+  await notifications.markAsRead(notification.id)
+  await unreadNotifications.loadUnreadCount()
 }
 
 async function handleDismiss(notification) {
-  await notificationsStore.dismiss(notification.id)
+  await notifications.dismiss(notification.id)
+  await unreadNotifications.loadUnreadCount()
 }
 
 async function handleUndismiss(notification) {
-  await notificationsStore.undismiss(notification.id)
+  await notifications.undismiss(notification.id)
+  await unreadNotifications.loadUnreadCount()
 }
 
 function goToCreateNotification() {
@@ -125,22 +135,22 @@ function goToCreateNotification() {
 }
 
 function onStatusTabChange(value) {
-  notificationsStore.filters.status = value
+  notifications.filters.status = value
   void loadPageFromFilters({ resetPage: true })
 }
 
 function onTypeChange(value) {
-  notificationsStore.filters.type = value
+  notifications.filters.type = value
   void loadPageFromFilters({ resetPage: true })
 }
 
 function onModuleChange(value) {
-  notificationsStore.filters.module = value
+  notifications.filters.module = value
   void loadPageFromFilters({ resetPage: true })
 }
 
 function onSearchChange(value) {
-  notificationsStore.filters.search = value
+  notifications.filters.search = value
 
   if (searchDebounceId) {
     window.clearTimeout(searchDebounceId)
@@ -152,7 +162,7 @@ function onSearchChange(value) {
 }
 
 watch(
-  () => notificationsStore.pagination.page,
+  () => notifications.pagination.page,
   () => {
     void loadCurrentPage()
   },
@@ -160,8 +170,8 @@ watch(
 
 onMounted(async () => {
   await Promise.all([
-    notificationsStore.loadUnreadCount(),
-    notificationsStore.loadNotifications(),
+    loadCurrentPage(),
+    unreadNotifications.loadUnreadCount(),
   ])
 })
 
@@ -182,14 +192,14 @@ onBeforeUnmount(() => {
 
       <div class="notifications-page__toolbar">
         <SearchInputField
-          :model-value="notificationsStore.filters.search"
+          :model-value="notifications.filters.search"
           :placeholder="searchPlaceholder"
           @update:model-value="onSearchChange"
         />
 
         <div class="notifications-page__selects">
           <Select
-            :model-value="notificationsStore.filters.type"
+            :model-value="notifications.filters.type"
             :options="typeOptions"
             option-label="label"
             option-value="value"
@@ -198,7 +208,7 @@ onBeforeUnmount(() => {
           />
 
           <Select
-            :model-value="notificationsStore.filters.module"
+            :model-value="notifications.filters.module"
             :options="moduleOptions"
             option-label="label"
             option-value="value"
@@ -218,8 +228,8 @@ onBeforeUnmount(() => {
 
       <NotificationFilterTabs
         :tabs="statusTabs"
-        :active-tab="notificationsStore.filters.status"
-        :disabled="notificationsStore.loading"
+        :active-tab="notifications.filters.status"
+        :disabled="notifications.loading"
         @update:activeTab="onStatusTabChange"
       />
 
@@ -227,7 +237,7 @@ onBeforeUnmount(() => {
         :title="t('notifications.inbox')"
         :subtitle="t('notifications.inboxSubtitle')"
         :notifications="filteredNotifications"
-        :loading="notificationsStore.loading"
+        :loading="notifications.loading"
         :loading-label="loadingLabel"
         :empty-title="emptyTitle"
         :empty-description="emptyDescription"
@@ -246,14 +256,14 @@ onBeforeUnmount(() => {
         class="notifications-page__pagination"
       >
         <Pagination
-          v-model="notificationsStore.pagination.page"
+          v-model="notifications.pagination.page"
           :total-pages="pageCount"
-          :disabled="notificationsStore.loading"
+          :disabled="notifications.loading"
         />
       </div>
 
       <Card
-        v-if="notificationsStore.error"
+        v-if="notifications.error"
         class="notifications-page__error-card"
       >
         <template #title>
@@ -263,7 +273,7 @@ onBeforeUnmount(() => {
         <template #content>
           <div class="flex flex-col gap-3">
             <p class="text-sm text-slate-600">
-              {{ notificationsStore.error }}
+              {{ notifications.error }}
             </p>
 
             <div>
@@ -271,7 +281,7 @@ onBeforeUnmount(() => {
                 type="button"
                 severity="secondary"
                 outlined
-                :disabled="notificationsStore.loading"
+                :disabled="notifications.loading"
                 @click="loadCurrentPage"
               >
                 {{ t('common.refresh') }}

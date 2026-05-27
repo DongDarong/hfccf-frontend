@@ -14,6 +14,7 @@ import {
   fetchSportTeams,
   updateSportTeam,
 } from '@/modules/sport/services/sportApi'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
@@ -180,7 +181,7 @@ function validateForm() {
   return ''
 }
 
-function onLogoChange(event) {
+async function onLogoChange(event) {
   if (isFormLocked.value) return
 
   const [file] = event?.target?.files || []
@@ -198,10 +199,16 @@ function onLogoChange(event) {
     return
   }
 
+  const optimizedFile = await optimizeImageFile(file, {
+    maxWidth: 512,
+    maxHeight: 512,
+    quality: 0.84,
+  }).catch(() => file)
+
   cleanupLogoObjectUrl()
-  logoObjectUrl.value = URL.createObjectURL(file)
+  logoObjectUrl.value = URL.createObjectURL(optimizedFile)
   logoPreview.value = logoObjectUrl.value
-  form.logo = file
+  form.logo = optimizedFile
 }
 
 function removeLogo() {

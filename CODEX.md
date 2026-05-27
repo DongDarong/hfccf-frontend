@@ -72,7 +72,8 @@ Use the smallest valid scope first. For example:
 ## 7. Backend API Connection Rules
 
 - Use `src/services/http.js` for shared API requests.
-- In local development, `VITE_API_BASE_URL=/api` is proxied by Vite to `http://hfccf-backend.test`.
+- In local development, `VITE_API_BASE_URL=http://hfccf-backend.test/api` points directly to the Laravel backend origin.
+- If the backend returns public avatar URLs from Cloudflare R2, set `VITE_IMAGE_PUBLIC_ORIGIN` to the exact trusted image origin so CSP and avatar rendering allow it.
 - Do not bypass the shared HTTP client for authenticated frontend requests.
 - Store backend bearer tokens only through `src/services/auth.js`.
 - Keep auth response mapping compatible with the backend `AuthUserResource` shape:
@@ -102,13 +103,11 @@ Use the smallest valid scope first. For example:
   - `POST /auth/reset-password`
 - Restart `npm run dev` after changing `.env.*` or Vite proxy settings.
 
-## 8. Current Frontend-Only Persistence
+## 8. Super Admin User API
 
-- Super Admin user add/edit/delete is currently frontend-only.
-- The storage service is `src/modules/super-admin/services/adminUsersStorage.js`.
-- It persists admin users in `localStorage` using the key `hfccf-super-admin-users`.
-- Keep all Super Admin user CRUD page logic routed through this service until a backend users API exists.
-- When the backend users CRUD API is created, replace this service implementation with API calls and keep page components unchanged where possible.
+- Super Admin user add/edit/delete is backed by the real backend Users API.
+- All CRUD calls go through `src/modules/super-admin/services/adminUsersApi.js`.
+- Do not restore localStorage persistence for this feature.
 
 ## 9. Domain Boundaries
 

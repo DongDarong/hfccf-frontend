@@ -14,6 +14,7 @@ import {
   fetchSportCoach,
   updateSportCoach,
 } from '@/modules/sport/services/sportApi'
+import { optimizeImageFile } from '@/utils/imageOptimization'
 import AddCoachIntro from '@/modules/sport/admin/components/add-coach/AddCoachIntro.vue'
 import AddCoachFormFields from '@/modules/sport/admin/components/add-coach/AddCoachFormFields.vue'
 import AddCoachFormActions from '@/modules/sport/admin/components/add-coach/AddCoachFormActions.vue'
@@ -192,7 +193,7 @@ function toggleConfirmPasswordVisibility() {
   isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value
 }
 
-function onProfileImageChange(event) {
+async function onProfileImageChange(event) {
   if (isFormLocked.value) return
 
   const [file] = event?.target?.files || []
@@ -210,10 +211,16 @@ function onProfileImageChange(event) {
     return
   }
 
+  const optimizedFile = await optimizeImageFile(file, {
+    maxWidth: 512,
+    maxHeight: 512,
+    quality: 0.84,
+  }).catch(() => file)
+
   cleanupProfileImageObjectUrl()
-  profileImageObjectUrl.value = URL.createObjectURL(file)
+  profileImageObjectUrl.value = URL.createObjectURL(optimizedFile)
   profileImagePreview.value = profileImageObjectUrl.value
-  form.profileImage = file
+  form.profileImage = optimizedFile
 }
 
 function removeProfileImage() {

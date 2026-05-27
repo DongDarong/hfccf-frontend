@@ -9,10 +9,14 @@ export default {
   logout: 'Logout',
   logoutConfirm: 'Are you sure you want to log out?',
   cancel: 'Cancel',
+  save: 'Save',
   clear: 'Clear',
   confirm: 'Confirm',
   close: 'Close',
   continue: 'Continue',
+  enabled: 'Enabled',
+  disabled: 'Disabled',
+  reset: 'Reset',
   calendar: 'Calendar',
   profileSettings: 'Profile & Settings',
   empty: 'No data available',
@@ -49,6 +53,7 @@ export default {
   allRoles: 'All roles',
   allDivisions: 'All divisions',
   allTeams: 'All teams',
+  allClasses: 'All classes',
   allStatus: 'All statuses',
   status: {
     success: 'Success',
@@ -65,6 +70,8 @@ export default {
     suspended: 'Suspended',
   },
   role: {
+    // Keep Preschool level labels under the shared role namespace so class
+    // filters and add-class forms resolve them consistently across pages.
     superadmin: 'Super Admin',
     coach: 'Coach',
     teacher: 'Teacher',
@@ -75,6 +82,10 @@ export default {
     adminscholarship: 'Scholarship Admin',
     adminenglish: 'English Admin',
     adminsport: 'Sport Admin',
+    nursery: 'Nursery',
+    kindergarten_a: 'Kindergarten A',
+    kindergarten_b: 'Kindergarten B',
+    prep: 'Prep',
   },
   dashboard: {
     calendar: {

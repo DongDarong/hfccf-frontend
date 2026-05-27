@@ -67,7 +67,7 @@ const loginAccessPolicy = Object.freeze({
               aria-label="Khmer"
               @click="setLanguage('KH')"
             >
-              ខ្មែរ
+              {{ t('common.navigation.languages.khmer') }}
             </button>
           </div>
 
@@ -137,7 +137,7 @@ const loginAccessPolicy = Object.freeze({
 
             <div class="mb-4 px-1">
               <p class="login-page-eyebrow" :class="{ 'login-page-khmer': language === 'KH' }">
-                {{ t('auth.login.staff') }}
+                {{ t('auth.login.staffPortal') }}
               </p>
 
               <h1
@@ -412,3 +412,4 @@ const loginAccessPolicy = Object.freeze({
   }
 }
 </style>
+

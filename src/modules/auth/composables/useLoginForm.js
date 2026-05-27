@@ -68,6 +68,7 @@ export function useLoginForm({ accessPolicy, language }) {
   const errorMessage = ref('')
   const showLoginSuccess = ref(false)
   const shouldRedirectAfterSuccess = ref(false)
+  const loginRedirectTarget = ref('')
 
   const allowedRoleValues = computed(() => normalizeRoleList(accessPolicy.allowedRoles))
 
@@ -204,6 +205,7 @@ export function useLoginForm({ accessPolicy, language }) {
         throw new Error(t('auth.loginForm.missingRequiredPermissions'))
       }
 
+      loginRedirectTarget.value = getRedirectTargetForRole(authenticatedUser)
       shouldRedirectAfterSuccess.value = true
       showLoginSuccess.value = true
     } catch (error) {
@@ -221,13 +223,17 @@ export function useLoginForm({ accessPolicy, language }) {
     return redirect
   }
 
+  function getRedirectTargetForRole(_user) {
+    return getSafeRedirectTarget(route.query.redirect || accessPolicy.defaultRedirect)
+  }
+
   async function onLoginSuccessClose() {
     showLoginSuccess.value = false
 
     if (!shouldRedirectAfterSuccess.value) return
 
     shouldRedirectAfterSuccess.value = false
-    await router.push(getSafeRedirectTarget(route.query.redirect))
+    await router.push(loginRedirectTarget.value || getSafeRedirectTarget(route.query.redirect))
   }
 
   return {

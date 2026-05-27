@@ -1,0 +1,45 @@
+// Keep Khmer report labels aligned with EN so the reporting pages do not drift
+// into missing-key warnings or mixed-language copy later on.
+export default {
+  preschoolReportsShared: {
+    loading: 'កំពុងផ្ទុកទិន្នន័យរបាយការណ៍...',
+    emptyReport: 'សូមជ្រើសសិស្ស ឬថ្នាក់ និងរយៈពេលរបាយការណ៍ ដើម្បីមើលរបាយការណ៍។',
+    emptyOverview: 'នៅមិនទាន់មានរយៈពេលរបាយការណ៍ដែលបានបញ្ចប់នៅឡើយទេ។',
+    periodHint: 'របាយការណ៍ត្រូវបានបង្កើតពីការវាយតម្លៃដែលបានបញ្ចប់តែប៉ុណ្ណោះ។',
+    summary: {
+      finalized: 'ការវាយតម្លៃដែលបានបញ្ចប់',
+      finalizedCaption: 'កំណត់ត្រារបាយការណ៍ដែលបានចាក់សោ',
+      average: 'ពិន្ទុមធ្យម',
+      averageCaption: 'ពិន្ទុមធ្យមនៃការវាយតម្លៃដែលបានបញ្ចប់',
+      observations: 'ការសង្កេត',
+      observationsCaption: 'កំណត់សម្គាល់ និងមតិរបស់គ្រូ',
+      latest: 'ការវាយតម្លៃចុងក្រោយ',
+      latestCaption: 'កំណត់ត្រាដែលបានបញ្ចប់ថ្មីបំផុត',
+      students: 'សិស្ស',
+      studentsCaption: 'សិស្សដែលបានតាមដានក្នុងថ្នាក់',
+    },
+    attendanceTitle: 'សង្ខេបវត្តមាន',
+    attendanceSubtext: 'កំណត់ត្រាវត្តមានក្នុងរយៈពេលរបាយការណ៍ដែលបានជ្រើសរើស។',
+    attendance: {
+      total: 'កំណត់ត្រាវត្តមាន',
+      present: 'មករៀន',
+      late: 'មកយឺត',
+      absent: 'អវត្តមាន',
+      excused: 'អវត្តមានមានហេតុផល',
+      latest: 'វត្តមានចុងក្រោយ៖ {date}',
+      totalShort: '{count} កំណត់ត្រា',
+    },
+    observationsTitle: 'ការសង្កេតរបស់គ្រូ',
+    emptyObservations: 'មិនទាន់មានកំណត់សម្គាល់ពីគ្រូសម្រាប់រយៈពេលនេះទេ។',
+    assessmentsTitle: 'ការវាយតម្លៃដែលបានបញ្ចប់',
+    emptyAssessments: 'មិនទាន់មានការវាយតម្លៃដែលបានបញ្ចប់សម្រាប់រយៈពេលនេះទេ។',
+    labels: {
+      studentFallback: 'សិស្សដែលបានជ្រើសរើស',
+      categoryFallback: 'ប្រភេទ',
+      score: 'ពិន្ទុ៖ {score}',
+    },
+    actions: {
+      refresh: 'ធ្វើឱ្យរបាយការណ៍ថ្មី',
+    },
+  },
+}

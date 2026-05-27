@@ -3,77 +3,92 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
+import {
+  createSecurityHeaders,
+  getApiBaseOrigin,
+  getImagePublicOrigin,
+} from './src/utils/securityHeaders.js'
 
-function getApiBaseOrigin(env) {
-  const rawBaseUrl = String(env.VITE_API_BASE_URL || '').trim()
+function createManualChunks(id) {
+  if (!id.includes('node_modules')) return undefined
 
-  if (!rawBaseUrl) return ''
-
-  try {
-    return new URL(rawBaseUrl, 'http://localhost').origin
-  } catch {
-    return ''
-  }
-}
-
-function createContentSecurityPolicy({ isDev, apiBaseOrigin }) {
-  const connectSources = ["'self'"]
-  const imgSources = ["'self'", 'data:', 'blob:']
-
-  if (isDev) {
-    connectSources.push('ws:', 'wss:', 'http:', 'https:')
-    imgSources.push(
-      'http://hfccf-backend.test',
-      'http://localhost',
-      'http://127.0.0.1',
-    )
-  } else {
-    connectSources.push('https:')
+  // Keep the largest UI/runtime dependencies in predictable buckets so the
+  // main application chunk does not absorb every vendor package.
+  if (id.includes('/@primeuix/styles/')) {
+    return 'vendor-primevue-styles'
   }
 
   if (
-    apiBaseOrigin &&
-    (isDev || apiBaseOrigin.startsWith('https://')) &&
-    !imgSources.includes(apiBaseOrigin)
+    id.includes('/primevue/datatable/') ||
+    id.includes('/primevue/column/') ||
+    id.includes('/primevue/paginator/')
   ) {
-    imgSources.push(apiBaseOrigin)
+    return 'vendor-primevue-table'
   }
 
-  const scriptSources = ["'self'"]
-
-  if (isDev) {
-    scriptSources.push("'unsafe-eval'")
+  if (
+    id.includes('/primevue/inputtext/') ||
+    id.includes('/primevue/inputnumber/') ||
+    id.includes('/primevue/textarea/') ||
+    id.includes('/primevue/select/') ||
+    id.includes('/primevue/selectbutton/') ||
+    id.includes('/primevue/password/') ||
+    id.includes('/primevue/checkbox/') ||
+    id.includes('/primevue/calendar/') ||
+    id.includes('/primevue/inputswitch/') ||
+    id.includes('/primevue/togglebutton/') ||
+    id.includes('/primevue/autocomplete/') ||
+    id.includes('/primevue/multiselect/') ||
+    id.includes('/primevue/iconfield/') ||
+    id.includes('/primevue/inputicon/')
+  ) {
+    return 'vendor-primevue-forms'
   }
 
-  const directives = [
-    `default-src 'self'`,
-    `base-uri 'self'`,
-    `object-src 'none'`,
-    `frame-ancestors 'none'`,
-    `form-action 'self'`,
-    `img-src ${imgSources.join(' ')}`,
-    `font-src 'self' data: https://fonts.gstatic.com`,
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
-    `script-src ${scriptSources.join(' ')}`,
-    `connect-src ${connectSources.join(' ')}`,
-  ]
-
-  if (!isDev) {
-    directives.push('upgrade-insecure-requests')
+  if (
+    id.includes('/primevue/dialog/') ||
+    id.includes('/primevue/drawer/') ||
+    id.includes('/primevue/popover/') ||
+    id.includes('/primevue/menu/') ||
+    id.includes('/primevue/blockui/') ||
+    id.includes('/primevue/scrollpanel/')
+  ) {
+    return 'vendor-primevue-overlays'
   }
 
-  return directives.join('; ')
-}
-
-function createSecurityHeaders({ isDev, apiBaseOrigin }) {
-  return {
-    'Content-Security-Policy': createContentSecurityPolicy({ isDev, apiBaseOrigin }),
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'X-Content-Type-Options': 'nosniff',
-    'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Resource-Policy': 'same-site',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+  if (
+    id.includes('/primevue/card/') ||
+    id.includes('/primevue/tag/') ||
+    id.includes('/primevue/badge/') ||
+    id.includes('/primevue/avatar/') ||
+    id.includes('/primevue/progressspinner/') ||
+    id.includes('/primevue/divider/')
+  ) {
+    return 'vendor-primevue-display'
   }
+
+  if (id.includes('/@primevue/icons/')) {
+    return 'vendor-primevue-icons'
+  }
+
+  if (
+    id.includes('/@primevue/core/') ||
+    id.includes('/@primeuix/utils/') ||
+    id.includes('/@primeuix/styled/')
+  ) {
+    return 'vendor-primevue-runtime'
+  }
+
+  if (
+    id.includes('/vue/') ||
+    id.includes('/vue-router/') ||
+    id.includes('/vue-i18n/') ||
+    id.includes('/pinia/')
+  ) {
+    return 'vendor-core'
+  }
+
+  return 'vendor-other'
 }
 
 function securityHeadersPlugin() {
@@ -100,7 +115,8 @@ export default defineConfig(({ command }) => {
   const projectRoot = fileURLToPath(new URL('.', import.meta.url))
   const env = loadEnv(command === 'serve' ? 'development' : 'production', projectRoot, '')
   const apiBaseOrigin = getApiBaseOrigin(env)
-  const securityHeaders = createSecurityHeaders({ isDev, apiBaseOrigin })
+  const imagePublicOrigin = getImagePublicOrigin(env)
+  const securityHeaders = createSecurityHeaders({ isDev, apiBaseOrigin, imagePublicOrigin })
 
   return {
     plugins: [vue(), tailwindcss(), securityHeadersPlugin()],
@@ -116,11 +132,22 @@ export default defineConfig(({ command }) => {
       },
     },
     preview: {
-      headers: createSecurityHeaders({ isDev: false, apiBaseOrigin }),
+      headers: createSecurityHeaders({
+        isDev: false,
+        apiBaseOrigin,
+        imagePublicOrigin,
+      }),
     },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: createManualChunks,
+        },
       },
     },
   }
