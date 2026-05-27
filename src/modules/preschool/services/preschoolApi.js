@@ -2,6 +2,17 @@ import http from '@/services/http'
 import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
 import { fetchReportPeriods as fetchPreschoolReportPeriods } from '@/modules/preschool/services/api/preschoolReportsApi'
+import {
+  activateAcademicTerm,
+  activateAcademicYear,
+  closeAcademicTerm,
+  closeAcademicYear,
+  createAcademicTerm,
+  createAcademicYear,
+  fetchAcademicLifecycle,
+  updateAcademicTerm,
+  updateAcademicYear,
+} from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -335,6 +346,18 @@ export async function fetchPreschoolSettingsBackbone(options = {}) {
     settings: normalizePreschoolSettingsSnapshot(payload.settings || {}),
     academicContext: payload.academicContext || {},
   }
+}
+
+export {
+  activateAcademicTerm,
+  activateAcademicYear,
+  closeAcademicTerm,
+  closeAcademicYear,
+  createAcademicTerm,
+  createAcademicYear,
+  fetchAcademicLifecycle,
+  updateAcademicTerm,
+  updateAcademicYear,
 }
 
 export async function updatePreschoolSettingsBackbone(payload = {}) {

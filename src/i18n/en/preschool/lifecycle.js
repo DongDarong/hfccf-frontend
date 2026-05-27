@@ -1,0 +1,81 @@
+export default {
+  preschoolLifecyclePage: {
+    sections: {
+      academicYears: {
+        eyebrow: 'Academic lifecycle',
+        title: 'Academic Year Management',
+        subtitle: 'Create, activate, and close the operational years that drive Preschool attendance, schedules, assignments, and reports.',
+        description: 'Academic years are the first-class lifecycle record for Preschool operations.',
+        currentContext: 'The current academic year is the source of truth for new lifecycle writes.',
+      },
+      terms: {
+        eyebrow: 'Term lifecycle',
+        title: 'Term Management',
+        subtitle: 'Maintain terms under the selected academic year so reports and workflow windows stay aligned.',
+        description: 'Terms belong to one academic year and can be opened, activated, or closed independently.',
+      },
+    },
+    actions: {
+      addAcademicYear: 'Add Academic Year',
+      saveAcademicYear: 'Save Academic Year',
+      addTerm: 'Add Term',
+      saveTerm: 'Save Term',
+      edit: 'Edit',
+      activate: 'Activate',
+      close: 'Close',
+    },
+    status: {
+      current: 'Current',
+      active: 'Active',
+      closed: 'Closed',
+      archived: 'Archived',
+    },
+    fields: {
+      yearCode: 'Year code',
+      yearLabel: 'Academic year label',
+      academicYear: 'Academic year',
+      currentYear: 'Mark as current year',
+      termCode: 'Term code',
+      sortOrder: 'Sort order',
+      notes: 'Notes',
+    },
+    placeholders: {
+      yearCode: 'Example: AY-2025-2026',
+      yearLabel: 'Example: 2025 - 2026',
+      academicYear: 'Select an academic year',
+      currentYear: 'Mark this year as current',
+      termCode: 'Example: TERM-1',
+      sortOrder: 'Example: 1',
+      notes: 'Optional notes for admin reference',
+    },
+    dialogs: {
+      academicYear: {
+        subtitle: 'Keep the lifecycle year record aligned with the administrative backbone.',
+        createTitle: 'Add Academic Year',
+        editTitle: 'Edit Academic Year',
+      },
+      term: {
+        subtitle: 'Use one term at a time so operational windows stay easy to review.',
+        createTitle: 'Add Term',
+        editTitle: 'Edit Term',
+      },
+    },
+    labels: {
+      currentContext: 'Current lifecycle context',
+      termsCount: '{count} terms',
+      sortOrder: 'Sort order: {value}',
+    },
+    help: {
+      currentYear: 'Only one year should be marked as current at a time.',
+    },
+    validation: {
+      required: 'This field is required.',
+      range: 'The end date must be on or after the start date.',
+      positive: 'Please enter a positive number.',
+    },
+    emptyStates: {
+      academicYears: 'No academic years have been created yet.',
+      terms: 'No terms have been created yet.',
+    },
+  },
+}

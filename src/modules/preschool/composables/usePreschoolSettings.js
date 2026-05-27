@@ -79,6 +79,19 @@ export function createDefaultAcademicYear() {
   }
 }
 
+export function createEmptyAcademicYearDraft() {
+  return {
+    id: '',
+    code: '',
+    label: '',
+    startDate: null,
+    endDate: null,
+    status: 'active',
+    isCurrent: false,
+    notes: '',
+  }
+}
+
 export function createDefaultTerm(id = 'term-1', name = 'Term 1', startDate = createDate(2025, 6, 1), endDate = createDate(2025, 9, 30), status = 'active') {
   return {
     id,
@@ -173,15 +186,60 @@ function createSectionValidation() {
 export function createEmptyTermDraft() {
   return {
     id: '',
+    academicYearId: '',
+    code: '',
     name: '',
     startDate: null,
     endDate: null,
     status: 'active',
+    sortOrder: 0,
+    notes: '',
+  }
+}
+
+export function validatePreschoolAcademicYearDraft(yearDraft = {}) {
+  const errors = createSectionValidation()
+
+  if (!validateRequiredText(yearDraft.code)) {
+    errors.code = 'required'
+  }
+
+  if (!validateRequiredText(yearDraft.label)) {
+    errors.label = 'required'
+  }
+
+  if (!isDateValue(yearDraft.startDate)) {
+    errors.startDate = 'required'
+  }
+
+  if (!isDateValue(yearDraft.endDate)) {
+    errors.endDate = 'required'
+  }
+
+  if (isDateValue(yearDraft.startDate) && isDateValue(yearDraft.endDate) && !compareDateOrder(yearDraft.startDate, yearDraft.endDate)) {
+    errors.endDate = 'range'
+  }
+
+  if (!validateRequiredText(yearDraft.status)) {
+    errors.status = 'required'
+  }
+
+  return {
+    errors,
+    isValid: Object.keys(errors).length === 0,
   }
 }
 
 export function validatePreschoolTermDraft(termDraft = {}) {
   const errors = createSectionValidation()
+
+  if (!validateRequiredText(termDraft.academicYearId)) {
+    errors.academicYearId = 'required'
+  }
+
+  if (!validateRequiredText(termDraft.code)) {
+    errors.code = 'required'
+  }
 
   if (!validateRequiredText(termDraft.name)) {
     errors.name = 'required'
@@ -201,6 +259,10 @@ export function validatePreschoolTermDraft(termDraft = {}) {
 
   if (!validateRequiredText(termDraft.status)) {
     errors.status = 'required'
+  }
+
+  if (!(Number(termDraft.sortOrder) >= 0)) {
+    errors.sortOrder = 'positive'
   }
 
   return {

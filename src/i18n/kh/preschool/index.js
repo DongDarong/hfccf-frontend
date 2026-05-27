@@ -11,6 +11,7 @@ import reports from './reports'
 import schedules from './schedules'
 import settings from './settings'
 import settingsBackbone from './settings.backbone'
+import lifecycle from './lifecycle'
 import classroomResources from './classroom-resources'
 import assignments from './assignments'
 
@@ -30,6 +31,7 @@ export default {
   ...schedules,
   ...settings,
   ...settingsBackbone,
+  ...lifecycle,
   ...classroomResources,
   ...assignments,
 }

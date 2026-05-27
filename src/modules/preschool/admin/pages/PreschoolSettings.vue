@@ -5,20 +5,25 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import {
+  createEmptyAcademicYearDraft,
   createDefaultClassConfiguration,
   createEmptyTermDraft,
   usePreschoolSettings,
+  validatePreschoolAcademicYearDraft,
   validatePreschoolTermDraft,
 } from '@/modules/preschool/composables/usePreschoolSettings'
 import PreschoolAssessmentConfiguration from '@/modules/preschool/shared/components/settings/PreschoolAssessmentConfiguration.vue'
-import PreschoolAcademicYearSettings from '@/modules/preschool/shared/components/settings/PreschoolAcademicYearSettings.vue'
+import PreschoolAcademicYearDialog from '@/modules/preschool/shared/components/settings/PreschoolAcademicYearDialog.vue'
+import PreschoolAcademicYearManager from '@/modules/preschool/shared/components/settings/PreschoolAcademicYearManager.vue'
 import PreschoolAttendanceConfiguration from '@/modules/preschool/shared/components/settings/PreschoolAttendanceConfiguration.vue'
 import PreschoolClassConfiguration from '@/modules/preschool/shared/components/settings/PreschoolClassConfiguration.vue'
 import PreschoolEnrollmentConfiguration from '@/modules/preschool/shared/components/settings/PreschoolEnrollmentConfiguration.vue'
 import PreschoolPaymentConfiguration from '@/modules/preschool/shared/components/settings/PreschoolPaymentConfiguration.vue'
 import PreschoolScheduleConfiguration from '@/modules/preschool/shared/components/settings/PreschoolScheduleConfiguration.vue'
 import PreschoolSettingsSectionCard from '@/modules/preschool/shared/components/settings/PreschoolSettingsSectionCard.vue'
-import PreschoolTermSetup from '@/modules/preschool/shared/components/settings/PreschoolTermSetup.vue'
+import PreschoolTermDialog from '@/modules/preschool/shared/components/settings/PreschoolTermDialog.vue'
+import PreschoolTermManager from '@/modules/preschool/shared/components/settings/PreschoolTermManager.vue'
+import { usePreschoolAcademicLifecycle } from '@/modules/preschool/composables/usePreschoolAcademicLifecycle'
 
 // Parent owns the full settings snapshot so the reusable section components can
 // stay presentation-focused and preserve a single validation source of truth.
@@ -42,13 +47,31 @@ const {
   loadReportPeriods,
   saveSettings,
   resetSettings,
-  addTerm,
-  updateTerm,
-  removeTerm,
   addClassConfiguration,
   updateClassConfiguration,
   removeClassConfiguration,
 } = usePreschoolSettings()
+
+const {
+  academicYears,
+  terms,
+  currentContext,
+  loadAcademicLifecycle,
+  createYear,
+  updateYear,
+  activateYear,
+  closeYear,
+  createTerm: createLifecycleTerm,
+  updateTerm: updateLifecycleTerm,
+  activateTerm: activateLifecycleTerm,
+  closeTerm: closeLifecycleTerm,
+} = usePreschoolAcademicLifecycle()
+
+const yearDialogVisible = ref(false)
+const yearDialogMode = ref('create')
+const yearDraft = ref(createEmptyAcademicYearDraft())
+const yearDraftErrors = ref({})
+const editingYearIndex = ref(-1)
 
 const termDialogVisible = ref(false)
 const termDialogMode = ref('create')
@@ -164,6 +187,203 @@ const lastSavedLabel = computed(() => {
 })
 
 const reportPeriodPreview = computed(() => reportPeriods.value.slice(0, 3))
+const academicYearOptions = computed(() => academicYears.value.map((year) => ({
+  label: year.label || year.code || `Year ${year.id}`,
+  value: year.id,
+})))
+const currentAcademicYearRecord = computed(() => academicYears.value.find((year) => year.isCurrent) || academicYears.value[0] || null)
+const currentLifecycleTerms = computed(() => {
+  const yearId = currentAcademicYearRecord.value?.id
+  return terms.value.filter((term) => String(term.academicYearId || '') === String(yearId || ''))
+})
+
+function toDateOrNull(value) {
+  if (!value) return null
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function syncBackboneAcademicDraft() {
+  const year = currentAcademicYearRecord.value
+
+  if (year) {
+    settings.value.academicYear = {
+      currentAcademicYear: year.label || year.code || '',
+      startDate: toDateOrNull(year.startDate),
+      endDate: toDateOrNull(year.endDate),
+      status: year.status || 'active',
+    }
+  }
+
+  settings.value.terms = currentLifecycleTerms.value.map((term) => ({
+    id: term.id,
+    name: term.name,
+    startDate: toDateOrNull(term.startDate),
+    endDate: toDateOrNull(term.endDate),
+    status: term.status || 'active',
+  }))
+}
+
+function openCreateYear() {
+  yearDialogMode.value = 'create'
+  yearDialogVisible.value = true
+  yearDraft.value = createEmptyAcademicYearDraft()
+  yearDraftErrors.value = {}
+  editingYearIndex.value = -1
+}
+
+function openEditYear(index) {
+  const nextYear = academicYears.value[index]
+
+  if (!nextYear) return
+
+  yearDialogMode.value = 'edit'
+  yearDialogVisible.value = true
+  editingYearIndex.value = index
+  yearDraft.value = {
+    ...createEmptyAcademicYearDraft(),
+    ...nextYear,
+    startDate: toDateOrNull(nextYear.startDate),
+    endDate: toDateOrNull(nextYear.endDate),
+  }
+  yearDraftErrors.value = {}
+}
+
+function closeYearDialog() {
+  yearDialogVisible.value = false
+  yearDraftErrors.value = {}
+}
+
+async function saveYearDraft() {
+  const result = validatePreschoolAcademicYearDraft(yearDraft.value)
+  yearDraftErrors.value = result.errors
+
+  if (!result.isValid) {
+    return
+  }
+
+  const payload = {
+    code: yearDraft.value.code,
+    label: yearDraft.value.label,
+    start_date: formatLifecycleDate(yearDraft.value.startDate),
+    end_date: formatLifecycleDate(yearDraft.value.endDate),
+    status: yearDraft.value.status,
+    is_current: Boolean(yearDraft.value.isCurrent),
+    notes: yearDraft.value.notes,
+  }
+
+  if (yearDialogMode.value === 'edit' && editingYearIndex.value > -1) {
+    await updateYear(yearDraft.value.id, payload)
+  } else {
+    await createYear(payload)
+  }
+
+  syncBackboneAcademicDraft()
+  closeYearDialog()
+}
+
+async function activateYearRow(index) {
+  const nextYear = academicYears.value[index]
+  if (!nextYear) return
+
+  await activateYear(nextYear.id)
+  syncBackboneAcademicDraft()
+}
+
+async function closeYearRow(index) {
+  const nextYear = academicYears.value[index]
+  if (!nextYear) return
+
+  await closeYear(nextYear.id)
+  syncBackboneAcademicDraft()
+}
+
+function openCreateTerm() {
+  termDialogMode.value = 'create'
+  termDialogVisible.value = true
+  termDraft.value = createEmptyTermDraft()
+  if (currentAcademicYearRecord.value) {
+    termDraft.value.academicYearId = currentAcademicYearRecord.value.id
+  }
+  termDraftErrors.value = {}
+  editingTermIndex.value = -1
+}
+
+function openEditTerm(index) {
+  const nextTerm = terms.value[index]
+
+  if (!nextTerm) return
+
+  termDialogMode.value = 'edit'
+  termDialogVisible.value = true
+  editingTermIndex.value = index
+  termDraft.value = {
+    ...createEmptyTermDraft(),
+    ...nextTerm,
+    academicYearId: nextTerm.academicYearId,
+    startDate: toDateOrNull(nextTerm.startDate),
+    endDate: toDateOrNull(nextTerm.endDate),
+  }
+  termDraftErrors.value = {}
+}
+
+function closeTermDialog() {
+  termDialogVisible.value = false
+  termDraftErrors.value = {}
+}
+
+function formatLifecycleDate(value) {
+  if (!value) return ''
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString().slice(0, 10)
+}
+
+async function saveTermDraft() {
+  const result = validatePreschoolTermDraft(termDraft.value)
+  termDraftErrors.value = result.errors
+
+  if (!result.isValid) {
+    return
+  }
+
+  const payload = {
+    academic_year_id: termDraft.value.academicYearId,
+    code: termDraft.value.code,
+    name: termDraft.value.name,
+    start_date: formatLifecycleDate(termDraft.value.startDate),
+    end_date: formatLifecycleDate(termDraft.value.endDate),
+    status: termDraft.value.status,
+    is_current: Boolean(termDraft.value.isCurrent),
+    sort_order: Number(termDraft.value.sortOrder ?? 0),
+    notes: termDraft.value.notes,
+  }
+
+  if (termDialogMode.value === 'edit' && editingTermIndex.value > -1) {
+    await updateLifecycleTerm(termDraft.value.id, payload)
+  } else {
+    await createLifecycleTerm(payload)
+  }
+
+  syncBackboneAcademicDraft()
+  closeTermDialog()
+}
+
+async function activateTermRow(index) {
+  const nextTerm = terms.value[index]
+  if (!nextTerm) return
+
+  await activateLifecycleTerm(nextTerm.id)
+  syncBackboneAcademicDraft()
+}
+
+async function closeTermRow(index) {
+  const nextTerm = terms.value[index]
+  if (!nextTerm) return
+
+  await closeLifecycleTerm(nextTerm.id)
+  syncBackboneAcademicDraft()
+}
 
 function formatPreviewDate(value) {
   if (!value) return '-'
@@ -176,54 +396,11 @@ function formatPreviewDate(value) {
   }).format(date)
 }
 
-function openCreateTerm() {
-  termDialogMode.value = 'create'
-  termDialogVisible.value = true
-  termDraft.value = createEmptyTermDraft()
-  termDraftErrors.value = {}
-  editingTermIndex.value = -1
-}
-
-function openEditTerm(index) {
-  const nextTerm = settings.value.terms[index]
-
-  if (!nextTerm) return
-
-  termDialogMode.value = 'edit'
-  termDialogVisible.value = true
-  editingTermIndex.value = index
-  termDraft.value = {
-    ...nextTerm,
-    startDate: nextTerm.startDate ? new Date(nextTerm.startDate) : null,
-    endDate: nextTerm.endDate ? new Date(nextTerm.endDate) : null,
-  }
-  termDraftErrors.value = {}
-}
-
-function closeTermDialog() {
-  termDialogVisible.value = false
-  termDraftErrors.value = {}
-}
-
-function saveTermDraft() {
-  const result = validatePreschoolTermDraft(termDraft.value)
-  termDraftErrors.value = result.errors
-
-  if (!result.isValid) {
-    return
-  }
-
-  if (termDialogMode.value === 'edit' && editingTermIndex.value > -1) {
-    updateTerm(editingTermIndex.value, termDraft.value)
-  } else {
-    addTerm(termDraft.value)
-  }
-
-  closeTermDialog()
-}
-
 function handleReset() {
   resetSettings()
+  yearDialogVisible.value = false
+  yearDraftErrors.value = {}
+  editingYearIndex.value = -1
   termDialogVisible.value = false
   termDraftErrors.value = {}
   editingTermIndex.value = -1
@@ -238,6 +415,7 @@ function updateClass(item) {
 }
 
 async function handleSave() {
+  syncBackboneAcademicDraft()
   await saveSettings()
 }
 
@@ -247,6 +425,15 @@ onMounted(async () => {
   } catch {
     // Keep the local draft visible if the backbone endpoint is temporarily
     // unavailable. Preschool admins can still review the fallback config.
+  }
+
+  try {
+    await loadAcademicLifecycle()
+    syncBackboneAcademicDraft()
+  } catch {
+    // Academic lifecycle records are the operational source of truth for the
+    // current year and term, but the configuration fallback keeps the page
+    // usable if the lifecycle endpoint is temporarily unavailable.
   }
 
   try {
@@ -340,6 +527,9 @@ onMounted(async () => {
             <p class="mt-1 text-sm text-slate-600">
               {{ formatPreviewDate(period.fromDate) }} - {{ formatPreviewDate(period.toDate) }}
             </p>
+            <p v-if="period.academicYear || period.termLabel" class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              {{ period.academicYear || '-' }}<span v-if="period.termLabel"> · {{ period.termLabel }}</span>
+            </p>
             <p class="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               {{ period.assessmentCount }} {{ t('preschoolSettingsPage.reporting.assessments') }}
             </p>
@@ -353,28 +543,25 @@ onMounted(async () => {
 
       <!-- two-column section grid -->
       <div class="grid gap-6 xl:grid-cols-2">
-        <PreschoolAcademicYearSettings
-          :model-value="settings.academicYear"
-          :status-options="statusOptions"
-          :errors="validationErrors.academicYear"
-          @update:model-value="settings.academicYear = $event"
+        <PreschoolAcademicYearManager
+          :academic-years="academicYears"
+          :current-context="currentContext"
+          :loading="loading"
+          :saving="saving"
+          @open-add="openCreateYear"
+          @open-edit="openEditYear"
+          @activate="activateYearRow"
+          @close="closeYearRow"
         />
 
-        <PreschoolTermSetup
-          :terms="settings.terms"
-          :status-options="statusOptions"
-          :dialog-visible="termDialogVisible"
-          :dialog-title="termDialogMode === 'edit'
-            ? t('preschoolSettingsPage.termDialog.editTitle')
-            : t('preschoolSettingsPage.termDialog.createTitle')"
-          :dialog-draft="termDraft"
-          :dialog-errors="termDraftErrors"
+        <PreschoolTermManager
+          :terms="terms"
+          :loading="loading"
+          :saving="saving"
           @open-add="openCreateTerm"
           @open-edit="openEditTerm"
-          @remove="removeTerm"
-          @cancel="closeTermDialog"
-          @save="saveTermDraft"
-          @update:dialogDraft="termDraft = $event"
+          @activate="activateTermRow"
+          @close="closeTermRow"
         />
 
         <PreschoolEnrollmentConfiguration
@@ -430,6 +617,33 @@ onMounted(async () => {
           @update:model-value="settings.payment = $event"
         />
       </div>
+
+      <PreschoolAcademicYearDialog
+        :visible="yearDialogVisible"
+        :title="yearDialogMode === 'edit'
+          ? t('preschoolLifecyclePage.dialogs.academicYear.editTitle')
+          : t('preschoolLifecyclePage.dialogs.academicYear.createTitle')"
+        :draft="yearDraft"
+        :status-options="statusOptions"
+        :errors="yearDraftErrors"
+        @cancel="closeYearDialog"
+        @save="saveYearDraft"
+        @update:draft="yearDraft = $event"
+      />
+
+      <PreschoolTermDialog
+        :visible="termDialogVisible"
+        :title="termDialogMode === 'edit'
+          ? t('preschoolLifecyclePage.dialogs.term.editTitle')
+          : t('preschoolLifecyclePage.dialogs.term.createTitle')"
+        :draft="termDraft"
+        :year-options="academicYearOptions"
+        :status-options="statusOptions"
+        :errors="termDraftErrors"
+        @cancel="closeTermDialog"
+        @save="saveTermDraft"
+        @update:draft="termDraft = $event"
+      />
 
       <!-- save / reset footer -->
       <div class="preschool-settings__footer">

@@ -10,6 +10,7 @@ import progress from './progress'
 import reports from './reports'
 import schedules from './schedules'
 import settings from './settings'
+import lifecycle from './lifecycle'
 import classroomResources from './classroom-resources'
 import assignments from './assignments'
 
@@ -28,6 +29,7 @@ export default {
   ...reports,
   ...schedules,
   ...settings,
+  ...lifecycle,
   ...classroomResources,
   ...assignments,
 }
