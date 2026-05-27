@@ -1,6 +1,7 @@
 import http from '@/services/http'
 import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
+import { fetchReportPeriods as fetchPreschoolReportPeriods } from '@/modules/preschool/services/api/preschoolReportsApi'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -15,6 +16,8 @@ function normalizeClassAssignmentRow(row = {}) {
     teacherDisplayName: normalizeText(row.teacherDisplayName || row.teacher_display_name || row.teacher || row.teacherName),
     status: normalizeText(row.status || 'active'),
     enrolledAt: row.enrolledAt || row.enrolled_at || '',
+    academicYear: normalizeText(row.academicYear || row.academic_year),
+    termLabel: normalizeText(row.termLabel || row.term_label),
     updatedAt: row.updatedAt || row.updated_at || '',
     raw: row,
   }
@@ -27,6 +30,25 @@ function normalizeStudentAssignmentRow(row = {}) {
     fullName: normalizeText(row.fullName || row.full_name),
     status: normalizeText(row.status || 'active'),
     enrolledAt: row.enrolledAt || row.enrolled_at || '',
+    academicYear: normalizeText(row.academicYear || row.academic_year),
+    termLabel: normalizeText(row.termLabel || row.term_label),
+    updatedAt: row.updatedAt || row.updated_at || '',
+    raw: row,
+  }
+}
+
+function normalizeTeacherAssignmentRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    classId: row.classId ?? row.class_id ?? '',
+    teacherUserId: row.teacherUserId ?? row.teacher_user_id ?? '',
+    teacherDisplayName: normalizeText(row.teacherDisplayName || row.teacher_display_name),
+    status: normalizeText(row.status || 'active'),
+    assignedAt: row.assignedAt || row.assigned_at || '',
+    academicYear: normalizeText(row.academicYear || row.academic_year),
+    termLabel: normalizeText(row.termLabel || row.term_label),
+    endedAt: row.endedAt || row.ended_at || '',
+    notes: normalizeText(row.notes),
     updatedAt: row.updatedAt || row.updated_at || '',
     raw: row,
   }
@@ -53,6 +75,7 @@ function normalizeClassRow(row = {}) {
     activeStudentAssignments: Array.isArray(row.activeStudentAssignments)
       ? row.activeStudentAssignments.map(normalizeStudentAssignmentRow)
       : studentAssignments.filter((item) => item.status === 'active'),
+    teacherAssignments: Array.isArray(row.teacherAssignments) ? row.teacherAssignments.map(normalizeTeacherAssignmentRow) : [],
     status: normalizeText(row.status || 'active'),
     room: normalizeText(row.room),
     notes: normalizeText(row.notes),
@@ -241,6 +264,87 @@ export async function fetchPreschoolDashboard(options = {}) {
   })
 
   return unwrapApiData(response) || {}
+}
+
+export async function fetchReportPeriods(params = {}, options = {}) {
+  return fetchPreschoolReportPeriods(params, options)
+}
+
+function normalizePreschoolSettingsSnapshot(payload = {}) {
+  const academicYear = payload.academicYear || {}
+  const terms = Array.isArray(payload.terms) ? payload.terms : []
+
+  return {
+    academicYear: {
+      currentAcademicYear: normalizeText(academicYear.currentAcademicYear || academicYear.current_academic_year),
+      startDate: academicYear.startDate || academicYear.start_date || '',
+      endDate: academicYear.endDate || academicYear.end_date || '',
+      status: normalizeText(academicYear.status || 'active'),
+    },
+    terms: terms.map((term, index) => ({
+      id: term.id || term.key || `term-${index + 1}`,
+      name: normalizeText(term.name),
+      startDate: term.startDate || term.start_date || '',
+      endDate: term.endDate || term.end_date || '',
+      status: normalizeText(term.status || 'active'),
+    })),
+    classConfigurations: Array.isArray(payload.classConfigurations)
+      ? payload.classConfigurations.map((item, index) => ({
+        id: item.id || item.key || `class-${index + 1}`,
+        classLevel: normalizeText(item.classLevel || item.class_level),
+        capacity: Number(item.capacity ?? 0),
+        assignedTeacher: normalizeText(item.assignedTeacher || item.assigned_teacher),
+        room: normalizeText(item.room),
+        status: normalizeText(item.status || 'active'),
+      }))
+      : [],
+    attendance: {
+      markingWindow: normalizeText(payload.attendance?.markingWindow || payload.attendance?.marking_window),
+      lateThreshold: Number(payload.attendance?.lateThreshold ?? payload.attendance?.late_threshold ?? 0),
+      absenceRule: normalizeText(payload.attendance?.absenceRule || payload.attendance?.absence_rule),
+      teacherCanEditAttendance: Boolean(payload.attendance?.teacherCanEditAttendance ?? payload.attendance?.teacher_can_edit_attendance),
+    },
+    assessment: {
+      assessmentCycle: normalizeText(payload.assessment?.assessmentCycle || payload.assessment?.assessment_cycle),
+      finalizationMode: normalizeText(payload.assessment?.finalizationMode || payload.assessment?.finalization_mode),
+      defaultTemplate: normalizeText(payload.assessment?.defaultTemplate || payload.assessment?.default_template),
+      requireTeacherNotes: Boolean(payload.assessment?.requireTeacherNotes ?? payload.assessment?.require_teacher_notes),
+    },
+    schedule: {
+      weeklyMode: normalizeText(payload.schedule?.weeklyMode || payload.schedule?.weekly_mode),
+      defaultSlotMinutes: Number(payload.schedule?.defaultSlotMinutes ?? payload.schedule?.default_slot_minutes ?? 0),
+      planningWindow: normalizeText(payload.schedule?.planningWindow || payload.schedule?.planning_window),
+      allowTeacherOverrides: Boolean(payload.schedule?.allowTeacherOverrides ?? payload.schedule?.allow_teacher_overrides),
+    },
+    enrollment: {
+      enrollmentCycle: normalizeText(payload.enrollment?.enrollmentCycle || payload.enrollment?.enrollment_cycle),
+      defaultClassLevel: normalizeText(payload.enrollment?.defaultClassLevel || payload.enrollment?.default_class_level),
+      transferPolicy: normalizeText(payload.enrollment?.transferPolicy || payload.enrollment?.transfer_policy),
+      capacityReviewMode: normalizeText(payload.enrollment?.capacityReviewMode || payload.enrollment?.capacity_review_mode),
+    },
+  }
+}
+
+export async function fetchPreschoolSettingsBackbone(options = {}) {
+  const response = await http.get('/preschool/settings/backbone', {
+    signal: options.signal,
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return {
+    settings: normalizePreschoolSettingsSnapshot(payload.settings || {}),
+    academicContext: payload.academicContext || {},
+  }
+}
+
+export async function updatePreschoolSettingsBackbone(payload = {}) {
+  const response = await http.patch('/preschool/settings/backbone', payload)
+  const responsePayload = unwrapApiData(response) || {}
+
+  return {
+    settings: normalizePreschoolSettingsSnapshot(responsePayload.settings || {}),
+    academicContext: responsePayload.academicContext || {},
+  }
 }
 
 export async function fetchPreschoolTeachers(

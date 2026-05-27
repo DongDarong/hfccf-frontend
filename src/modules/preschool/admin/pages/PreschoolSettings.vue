@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -10,15 +10,20 @@ import {
   usePreschoolSettings,
   validatePreschoolTermDraft,
 } from '@/modules/preschool/composables/usePreschoolSettings'
+import PreschoolAssessmentConfiguration from '@/modules/preschool/shared/components/settings/PreschoolAssessmentConfiguration.vue'
 import PreschoolAcademicYearSettings from '@/modules/preschool/shared/components/settings/PreschoolAcademicYearSettings.vue'
 import PreschoolAttendanceConfiguration from '@/modules/preschool/shared/components/settings/PreschoolAttendanceConfiguration.vue'
 import PreschoolClassConfiguration from '@/modules/preschool/shared/components/settings/PreschoolClassConfiguration.vue'
+import PreschoolEnrollmentConfiguration from '@/modules/preschool/shared/components/settings/PreschoolEnrollmentConfiguration.vue'
 import PreschoolPaymentConfiguration from '@/modules/preschool/shared/components/settings/PreschoolPaymentConfiguration.vue'
+import PreschoolScheduleConfiguration from '@/modules/preschool/shared/components/settings/PreschoolScheduleConfiguration.vue'
 import PreschoolSettingsSectionCard from '@/modules/preschool/shared/components/settings/PreschoolSettingsSectionCard.vue'
 import PreschoolTermSetup from '@/modules/preschool/shared/components/settings/PreschoolTermSetup.vue'
 
 // Parent owns the full settings snapshot so the reusable section components can
 // stay presentation-focused and preserve a single validation source of truth.
+// This page is the admin-only academic backbone for Preschool reporting,
+// assignments, attendance, schedules, and assessment defaults.
 defineOptions({
   name: 'PreschoolSettings',
 })
@@ -30,6 +35,11 @@ const {
   lastSavedAt,
   issueCount,
   hasValidationIssues,
+  loading,
+  saving,
+  reportPeriods,
+  loadSettings,
+  loadReportPeriods,
   saveSettings,
   resetSettings,
   addTerm,
@@ -81,6 +91,46 @@ const lateFeeRuleOptions = computed(() => [
   { label: t('preschoolSettingsPage.lateFeeRules.percentage'), value: 'percentage' },
 ])
 
+const assessmentCycleOptions = computed(() => [
+  { label: t('preschoolSettingsPage.assessmentCycles.term'), value: 'term' },
+  { label: t('preschoolSettingsPage.assessmentCycles.semester'), value: 'semester' },
+  { label: t('preschoolSettingsPage.assessmentCycles.monthly'), value: 'monthly' },
+])
+
+const finalizationModeOptions = computed(() => [
+  { label: t('preschoolSettingsPage.finalizationModes.publishOnly'), value: 'publish-only' },
+  { label: t('preschoolSettingsPage.finalizationModes.manualReview'), value: 'manual-review' },
+  { label: t('preschoolSettingsPage.finalizationModes.draftOnly'), value: 'draft-only' },
+])
+
+const weeklyModeOptions = computed(() => [
+  { label: t('preschoolSettingsPage.weeklyModes.fiveDay'), value: 'five-day' },
+  { label: t('preschoolSettingsPage.weeklyModes.sixDay'), value: 'six-day' },
+])
+
+const planningWindowOptions = computed(() => [
+  { label: t('preschoolSettingsPage.planningWindows.weekly'), value: 'weekly' },
+  { label: t('preschoolSettingsPage.planningWindows.term'), value: 'term' },
+  { label: t('preschoolSettingsPage.planningWindows.monthly'), value: 'monthly' },
+])
+
+const enrollmentCycleOptions = computed(() => [
+  { label: t('preschoolSettingsPage.enrollmentCycles.term'), value: 'term' },
+  { label: t('preschoolSettingsPage.enrollmentCycles.yearly'), value: 'yearly' },
+  { label: t('preschoolSettingsPage.enrollmentCycles.rolling'), value: 'rolling' },
+])
+
+const transferPolicyOptions = computed(() => [
+  { label: t('preschoolSettingsPage.transferPolicies.adminOnly'), value: 'admin-only' },
+  { label: t('preschoolSettingsPage.transferPolicies.adminPlusTeacher'), value: 'admin-plus-teacher' },
+  { label: t('preschoolSettingsPage.transferPolicies.teacherRequest'), value: 'teacher-request' },
+])
+
+const capacityReviewOptions = computed(() => [
+  { label: t('preschoolSettingsPage.capacityReviewModes.manual'), value: 'manual' },
+  { label: t('preschoolSettingsPage.capacityReviewModes.automatic'), value: 'automatic' },
+])
+
 const operationalState = computed(() => {
   if (hasValidationIssues.value) {
     return {
@@ -112,6 +162,19 @@ const lastSavedLabel = computed(() => {
     timeStyle: 'short',
   }).format(lastSavedAt.value)
 })
+
+const reportPeriodPreview = computed(() => reportPeriods.value.slice(0, 3))
+
+function formatPreviewDate(value) {
+  if (!value) return '-'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+
+  return new Intl.DateTimeFormat(language.value === 'KH' ? 'km-KH' : 'en-GB', {
+    dateStyle: 'medium',
+  }).format(date)
+}
 
 function openCreateTerm() {
   termDialogMode.value = 'create'
@@ -173,6 +236,26 @@ function addClass() {
 function updateClass(item) {
   updateClassConfiguration(item.index, item.field, item.value)
 }
+
+async function handleSave() {
+  await saveSettings()
+}
+
+onMounted(async () => {
+  try {
+    await loadSettings()
+  } catch {
+    // Keep the local draft visible if the backbone endpoint is temporarily
+    // unavailable. Preschool admins can still review the fallback config.
+  }
+
+  try {
+    await loadReportPeriods()
+  } catch {
+    // Report periods are read-only context, so loading failures should not
+    // block the rest of the settings backbone UI.
+  }
+})
 </script>
 
 <template>
@@ -214,14 +297,18 @@ function updateClass(item) {
         :title="t('preschoolSettingsPage.sections.summary.title')"
         :subtitle="t('preschoolSettingsPage.sections.summary.subtitle')"
       >
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <div class="preschool-settings__stat-card">
             <p class="preschool-settings__stat-label">{{ t('preschoolSettingsPage.summary.academicYear') }}</p>
-            <p class="preschool-settings__stat-value">{{ settings.academicYear.currentAcademicYear || '—' }}</p>
+            <p class="preschool-settings__stat-value">{{ settings.academicYear.currentAcademicYear || '-' }}</p>
           </div>
           <div class="preschool-settings__stat-card">
             <p class="preschool-settings__stat-label">{{ t('preschoolSettingsPage.summary.terms') }}</p>
             <p class="preschool-settings__stat-value">{{ settings.terms.length }}</p>
+          </div>
+          <div class="preschool-settings__stat-card">
+            <p class="preschool-settings__stat-label">{{ t('preschoolSettingsPage.summary.reportPeriods') }}</p>
+            <p class="preschool-settings__stat-value">{{ reportPeriods.length }}</p>
           </div>
           <div class="preschool-settings__stat-card">
             <p class="preschool-settings__stat-label">{{ t('preschoolSettingsPage.summary.classes') }}</p>
@@ -233,6 +320,33 @@ function updateClass(item) {
           >
             <p class="preschool-settings__stat-label">{{ t('preschoolSettingsPage.summary.issues') }}</p>
             <p class="preschool-settings__stat-value">{{ issueCount }}</p>
+          </div>
+        </div>
+      </PreschoolSettingsSectionCard>
+
+      <!-- reporting context -->
+      <PreschoolSettingsSectionCard
+        :eyebrow="t('preschoolSettingsPage.sections.reporting.eyebrow')"
+        :title="t('preschoolSettingsPage.sections.reporting.title')"
+        :subtitle="t('preschoolSettingsPage.sections.reporting.subtitle')"
+      >
+        <div class="grid gap-4 md:grid-cols-3">
+          <article
+            v-for="period in reportPeriodPreview"
+            :key="period.label"
+            class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          >
+            <p class="text-sm font-semibold text-slate-900">{{ period.label }}</p>
+            <p class="mt-1 text-sm text-slate-600">
+              {{ formatPreviewDate(period.fromDate) }} - {{ formatPreviewDate(period.toDate) }}
+            </p>
+            <p class="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              {{ period.assessmentCount }} {{ t('preschoolSettingsPage.reporting.assessments') }}
+            </p>
+          </article>
+
+          <div v-if="!reportPeriodPreview.length" class="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-500 md:col-span-3">
+            {{ t('preschoolSettingsPage.emptyStates.reportPeriods') }}
           </div>
         </div>
       </PreschoolSettingsSectionCard>
@@ -263,6 +377,16 @@ function updateClass(item) {
           @update:dialogDraft="termDraft = $event"
         />
 
+        <PreschoolEnrollmentConfiguration
+          :model-value="settings.enrollment"
+          :cycle-options="enrollmentCycleOptions"
+          :class-level-options="classLevelOptions"
+          :transfer-policy-options="transferPolicyOptions"
+          :capacity-review-options="capacityReviewOptions"
+          :errors="validationErrors.enrollment"
+          @update:model-value="settings.enrollment = $event"
+        />
+
         <PreschoolClassConfiguration
           :items="settings.classConfigurations"
           :level-options="classLevelOptions"
@@ -279,6 +403,22 @@ function updateClass(item) {
           :absence-rule-options="absenceRuleOptions"
           :errors="validationErrors.attendance"
           @update:model-value="settings.attendance = $event"
+        />
+
+        <PreschoolAssessmentConfiguration
+          :model-value="settings.assessment"
+          :cycle-options="assessmentCycleOptions"
+          :finalization-options="finalizationModeOptions"
+          :errors="validationErrors.assessment"
+          @update:model-value="settings.assessment = $event"
+        />
+
+        <PreschoolScheduleConfiguration
+          :model-value="settings.schedule"
+          :weekly-mode-options="weeklyModeOptions"
+          :planning-window-options="planningWindowOptions"
+          :errors="validationErrors.schedule"
+          @update:model-value="settings.schedule = $event"
         />
 
         <PreschoolPaymentConfiguration
@@ -305,7 +445,7 @@ function updateClass(item) {
           <Button variant="ghost" rounded="xl" @click="handleReset">
             {{ t('preschoolSettingsPage.actions.reset') }}
           </Button>
-          <Button variant="primary" rounded="xl" @click="saveSettings()">
+          <Button variant="primary" rounded="xl" :disabled="loading || saving" @click="handleSave">
             {{ t('preschoolSettingsPage.actions.saveChanges') }}
           </Button>
         </div>
