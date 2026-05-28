@@ -255,6 +255,36 @@
             ]
           }
         },
+        {
+          "id": "preschool-governance-review",
+          "routeName": "dashboard-preschool-admin-governance-review",
+          "labelKey": "nav.items.governanceReview",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
+          "id": "preschool-institutional-reconstruction",
+          "routeName": "dashboard-preschool-admin-reconstruction",
+          "labelKey": "nav.items.institutionalReconstruction",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

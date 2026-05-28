@@ -50,6 +50,8 @@ export default {
     preschoolAssignments: 'Assignments',
     reportSnapshots: 'Snapshot Archive',
     exportGovernance: 'Export Governance',
+    governanceReview: 'Governance Review',
+    institutionalReconstruction: 'Institutional Reconstruction',
     scholarshipDashboard: 'Scholarship Dashboard',
     sportDashboard: 'Sport Dashboard',
     teachers: 'Teachers',

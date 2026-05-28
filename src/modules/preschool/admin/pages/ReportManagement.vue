@@ -88,6 +88,14 @@ function goToExportGovernance() {
   router.push({ name: 'dashboard-preschool-admin-export-governance' })
 }
 
+function goToGovernanceReview() {
+  router.push({ name: 'dashboard-preschool-admin-governance-review' })
+}
+
+function goToInstitutionalReconstruction() {
+  router.push({ name: 'dashboard-preschool-admin-reconstruction' })
+}
+
 async function loadAuditPreview() {
   auditLoading.value = true
   auditError.value = ''
@@ -180,6 +188,12 @@ onMounted(async () => {
             </Button>
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToExportGovernance">
               {{ t('preschoolExportGovernancePage.actions.openGovernance') }}
+            </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceReview">
+              {{ t('preschoolGovernanceReviewPage.actions.openGovernanceReview') }}
+            </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
+              {{ t('preschoolInstitutionalReconstructionPage.actions.openReconstruction') }}
             </Button>
           </div>
         </div>
