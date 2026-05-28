@@ -12,8 +12,10 @@ import schedules from './schedules'
 import settings from './settings'
 import lifecycle from './lifecycle'
 import lifecycleAudit from './lifecycle-audit'
+import lifecycleAnalytics from './lifecycle-analytics'
 import classroomResources from './classroom-resources'
 import assignments from './assignments'
+import reportSnapshots from './report-snapshots'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -32,6 +34,8 @@ export default {
   ...settings,
   ...lifecycle,
   ...lifecycleAudit,
+  ...lifecycleAnalytics,
   ...classroomResources,
   ...assignments,
+  ...reportSnapshots,
 }

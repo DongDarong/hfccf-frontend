@@ -40,6 +40,18 @@ function normalizeAuditListPayload(payload = {}) {
   }
 }
 
+function normalizeAuditAnalyticsPayload(payload = {}) {
+  return {
+    overview: payload.overview || {},
+    actionCounts: Array.isArray(payload.actionCounts) ? payload.actionCounts : [],
+    entityCounts: Array.isArray(payload.entityCounts) ? payload.entityCounts : [],
+    actorCounts: Array.isArray(payload.actorCounts) ? payload.actorCounts : [],
+    blockedWriteTrend: Array.isArray(payload.blockedWriteTrend) ? payload.blockedWriteTrend : [],
+    lifecycleTimeline: Array.isArray(payload.lifecycleTimeline) ? payload.lifecycleTimeline : [],
+    overrideReasons: Array.isArray(payload.overrideReasons) ? payload.overrideReasons : [],
+  }
+}
+
 export async function fetchLifecycleAuditLogs(params = {}, options = {}) {
   const response = await http.get('/preschool/lifecycle-audit-logs', {
     params: buildQueryParams({
@@ -59,3 +71,16 @@ export async function fetchLifecycleAuditLogs(params = {}, options = {}) {
   return normalizeAuditListPayload(unwrapApiData(response) || {})
 }
 
+export async function fetchLifecycleAuditAnalytics(params = {}, options = {}) {
+  const response = await http.get('/preschool/lifecycle-audit-analytics', {
+    params: buildQueryParams({
+      report_period_id: params.reportPeriodId || '',
+      term_id: params.termId || '',
+      academic_year_id: params.academicYearId || '',
+      days: params.days || 30,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeAuditAnalyticsPayload(unwrapApiData(response) || {})
+}

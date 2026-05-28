@@ -6,6 +6,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import ProgressTrendList from '@/modules/preschool/shared/components/assessment/ProgressTrendList.vue'
 import ReportSummaryCard from './ReportSummaryCard.vue'
 import AttendanceSummaryCard from './AttendanceSummaryCard.vue'
+import ReportSnapshotBadge from './ReportSnapshotBadge.vue'
 import TeacherObservationPanel from './TeacherObservationPanel.vue'
 
 const props = defineProps({
@@ -55,6 +56,14 @@ const summaryCards = computed(() => [
   </div>
 
   <div v-else class="space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div class="space-y-1">
+        <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolReportSnapshots.labels.classroomReportTitle') }}</h3>
+        <p class="text-sm text-slate-500">{{ t('preschoolReportSnapshots.labels.classroomReportSubtitle') }}</p>
+      </div>
+      <ReportSnapshotBadge :snapshot="report.snapshot" :source="report.source" :frozen="report.frozen" :generated-at="report.generatedAt" />
+    </div>
+
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <ReportSummaryCard
         v-for="card in summaryCards"

@@ -11,6 +11,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
 import { fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
 import ReportSummaryCard from '@/modules/preschool/shared/components/report/ReportSummaryCard.vue'
+import ReportSnapshotBadge from '@/modules/preschool/shared/components/report/ReportSnapshotBadge.vue'
 import ReportPeriodStatusBadge from '@/modules/preschool/shared/components/report/ReportPeriodStatusBadge.vue'
 
 defineOptions({
@@ -125,13 +126,28 @@ onMounted(async () => {
             <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolReportsPage.selectedPeriod.title') }}</h3>
             <p class="text-sm text-slate-500">{{ t('preschoolReportsPage.selectedPeriod.subtitle') }}</p>
           </div>
-          <ReportPeriodStatusBadge :status="selectedPeriodSummary.status" />
+          <div class="flex flex-wrap items-center gap-3">
+            <ReportPeriodStatusBadge :status="selectedPeriodSummary.status" />
+            <ReportSnapshotBadge
+              v-if="selectedPeriodSummary.summarySnapshot || selectedPeriodSummary.reportSnapshot"
+              :snapshot="selectedPeriodSummary.reportSnapshot || selectedPeriodSummary.summarySnapshot"
+            />
+          </div>
         </div>
         <div
           v-if="reportPeriodLockMessage"
           class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
         >
           {{ reportPeriodLockMessage }}
+        </div>
+        <div
+          v-if="selectedPeriodSummary.summarySnapshot || selectedPeriodSummary.reportSnapshot"
+          class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
+        >
+          <p class="font-medium text-slate-900">{{ t('preschoolReportSnapshots.labels.immutableSnapshot') }}</p>
+          <p class="mt-1">
+            {{ selectedPeriodSummary.reportSnapshot?.generatedAt || selectedPeriodSummary.summarySnapshot?.generatedAt || '-' }}
+          </p>
         </div>
       </div>
 

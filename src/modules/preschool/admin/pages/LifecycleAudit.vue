@@ -7,10 +7,11 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
+import ReportSummaryCard from '@/modules/preschool/shared/components/report/ReportSummaryCard.vue'
 import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
-import { fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
+import { fetchLifecycleAuditAnalytics, fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
 
 defineOptions({
   name: 'PreschoolLifecycleAuditPage',
@@ -20,9 +21,20 @@ const { t } = useLanguage()
 const { loadReportPeriodOptions, reportPeriods } = usePreschoolReports()
 
 const loading = ref(false)
+const analyticsLoading = ref(false)
 const auditLogs = ref([])
+const auditAnalytics = ref({
+  overview: {},
+  actionCounts: [],
+  entityCounts: [],
+  actorCounts: [],
+  blockedWriteTrend: [],
+  lifecycleTimeline: [],
+  overrideReasons: [],
+})
 const pagination = ref({ page: 1, perPage: 20, total: 0, totalPages: 1 })
 const errorMessage = ref('')
+const analyticsError = ref('')
 const filters = ref({
   actionType: '',
   entityType: '',
@@ -65,6 +77,33 @@ const reportPeriodOptions = computed(() => [
   })),
 ])
 
+const analyticsCards = computed(() => {
+  const overview = auditAnalytics.value.overview || {}
+
+  return [
+    {
+      title: t('preschoolLifecycleAnalyticsPage.cards.totalEvents'),
+      value: overview.totalEvents ?? 0,
+      caption: t('preschoolLifecycleAnalyticsPage.cards.totalEventsCaption'),
+    },
+    {
+      title: t('preschoolLifecycleAnalyticsPage.cards.blockedWrites'),
+      value: overview.blockedWrites ?? 0,
+      caption: t('preschoolLifecycleAnalyticsPage.cards.blockedWritesCaption'),
+    },
+    {
+      title: t('preschoolLifecycleAnalyticsPage.cards.overrides'),
+      value: overview.overrideApprovals ?? 0,
+      caption: t('preschoolLifecycleAnalyticsPage.cards.overridesCaption'),
+    },
+    {
+      title: t('preschoolLifecycleAnalyticsPage.cards.snapshots'),
+      value: overview.snapshotCount ?? 0,
+      caption: t('preschoolLifecycleAnalyticsPage.cards.snapshotsCaption'),
+    },
+  ]
+})
+
 async function loadAuditLogs(page = 1) {
   loading.value = true
   errorMessage.value = ''
@@ -88,8 +127,33 @@ async function loadAuditLogs(page = 1) {
   }
 }
 
+async function loadAuditAnalytics() {
+  analyticsLoading.value = true
+  analyticsError.value = ''
+
+  try {
+    auditAnalytics.value = await fetchLifecycleAuditAnalytics({
+      reportPeriodId: filters.value.reportPeriodId,
+      days: 30,
+    })
+  } catch (error) {
+    auditAnalytics.value = {
+      overview: {},
+      actionCounts: [],
+      entityCounts: [],
+      actorCounts: [],
+      blockedWriteTrend: [],
+      lifecycleTimeline: [],
+      overrideReasons: [],
+    }
+    analyticsError.value = error?.message || t('preschoolLifecycleAnalyticsPage.loadingError')
+  } finally {
+    analyticsLoading.value = false
+  }
+}
+
 function refresh() {
-  return loadAuditLogs(1)
+  return Promise.all([loadAuditLogs(1), loadAuditAnalytics()])
 }
 
 function changePage(delta) {
@@ -125,7 +189,7 @@ function formatContext(item) {
 
 onMounted(async () => {
   await loadReportPeriodOptions()
-  await loadAuditLogs()
+  await Promise.all([loadAuditLogs(), loadAuditAnalytics()])
 })
 </script>
 
@@ -138,6 +202,107 @@ onMounted(async () => {
       />
 
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="space-y-1">
+              <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAnalyticsPage.title') }}</h3>
+              <p class="text-sm text-slate-500">{{ t('preschoolLifecycleAnalyticsPage.subtitle') }}</p>
+            </div>
+            <Button type="button" variant="ghost" size="md" rounded="xl" :loading="analyticsLoading" @click="loadAuditAnalytics">
+              {{ t('preschoolLifecycleAnalyticsPage.actions.refresh') }}
+            </Button>
+          </div>
+
+          <div v-if="analyticsError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {{ analyticsError }}
+          </div>
+
+          <div v-if="analyticsLoading" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+            {{ t('preschoolLifecycleAnalyticsPage.loading') }}
+          </div>
+
+          <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <ReportSummaryCard
+              v-for="card in analyticsCards"
+              :key="card.title"
+              :title="card.title"
+              :value="card.value"
+              :caption="card.caption"
+            />
+          </div>
+
+          <div v-if="!analyticsLoading" class="grid gap-4 lg:grid-cols-3">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h4 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAnalyticsPage.sections.overrideTrends') }}</h4>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                <li v-for="item in auditAnalytics.overrideReasons.slice(0, 5)" :key="item.reason" class="flex items-center justify-between gap-3">
+                  <span class="truncate">{{ item.reason || '-' }}</span>
+                  <span class="font-semibold text-slate-900">{{ item.total }}</span>
+                </li>
+                <li v-if="!auditAnalytics.overrideReasons.length" class="text-slate-500">
+                  {{ t('preschoolLifecycleAnalyticsPage.emptyOverrideReasons') }}
+                </li>
+              </ul>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h4 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAnalyticsPage.sections.blockedWrites') }}</h4>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                <li v-for="item in auditAnalytics.blockedWriteTrend.slice(-5)" :key="item.day" class="flex items-center justify-between gap-3">
+                  <span>{{ item.day }}</span>
+                  <span class="font-semibold text-slate-900">{{ item.total }}</span>
+                </li>
+                <li v-if="!auditAnalytics.blockedWriteTrend.length" class="text-slate-500">
+                  {{ t('preschoolLifecycleAnalyticsPage.emptyBlockedWrites') }}
+                </li>
+              </ul>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h4 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAnalyticsPage.sections.lifecycleActivity') }}</h4>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                <li v-for="item in auditAnalytics.actionCounts.slice(0, 5)" :key="item.actionType" class="flex items-center justify-between gap-3">
+                  <span class="truncate">{{ item.actionType }}</span>
+                  <span class="font-semibold text-slate-900">{{ item.total }}</span>
+                </li>
+                <li v-if="!auditAnalytics.actionCounts.length" class="text-slate-500">
+                  {{ t('preschoolLifecycleAnalyticsPage.emptyLifecycleActivity') }}
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div v-if="!analyticsLoading" class="grid gap-4 lg:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h4 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAnalyticsPage.sections.actorActivity') }}</h4>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                <li v-for="item in auditAnalytics.actorCounts.slice(0, 5)" :key="item.actorRole" class="flex items-center justify-between gap-3">
+                  <span class="truncate">{{ item.actorRole || '-' }}</span>
+                  <span class="font-semibold text-slate-900">{{ item.total }}</span>
+                </li>
+                <li v-if="!auditAnalytics.actorCounts.length" class="text-slate-500">
+                  {{ t('preschoolLifecycleAnalyticsPage.emptyActorActivity') }}
+                </li>
+              </ul>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h4 class="text-sm font-semibold text-slate-900">{{ t('preschoolLifecycleAnalyticsPage.sections.lifecycleTimeline') }}</h4>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                <li
+                  v-for="item in auditAnalytics.lifecycleTimeline.slice(-6)"
+                  :key="`${item.day}-${item.actionType}`"
+                  class="flex items-center justify-between gap-3"
+                >
+                  <span class="truncate">{{ item.day }} · {{ item.actionType }}</span>
+                  <span class="font-semibold text-slate-900">{{ item.total }}</span>
+                </li>
+                <li v-if="!auditAnalytics.lifecycleTimeline.length" class="text-slate-500">
+                  {{ t('preschoolLifecycleAnalyticsPage.emptyLifecycleTimeline') }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
         <div class="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
           <label class="space-y-2 text-sm font-medium text-slate-700">
             <span>{{ t('preschoolLifecycleAuditPage.filters.actionType') }}</span>
@@ -175,6 +340,7 @@ onMounted(async () => {
               {{ t('preschoolLifecycleAuditPage.actions.refresh') }}
             </Button>
           </div>
+        </div>
         </div>
       </div>
 
@@ -262,4 +428,3 @@ onMounted(async () => {
     </section>
   </MainLayout>
 </template>
-

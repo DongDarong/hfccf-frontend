@@ -11,6 +11,45 @@ function normalizeNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+function normalizeSnapshotSummary(row = {}) {
+  if (!row || typeof row !== 'object') {
+    return null
+  }
+
+  return {
+    generatedAt: row.generatedAt || row.generated_at || '',
+    generatedByUserId: row.generatedByUserId ?? row.generated_by_user_id ?? '',
+    snapshotState: normalizeText(row.snapshotState || row.snapshot_state),
+    snapshotVersion: normalizeNumber(row.snapshotVersion ?? row.snapshot_version),
+    studentReportSnapshots: normalizeNumber(row.studentReportSnapshots ?? row.student_report_snapshots),
+    classroomReportSnapshots: normalizeNumber(row.classroomReportSnapshots ?? row.classroom_report_snapshots),
+    progressSummarySnapshots: normalizeNumber(row.progressSummarySnapshots ?? row.progress_summary_snapshots),
+    raw: row,
+  }
+}
+
+function normalizeReportSnapshot(row = {}) {
+  if (!row || typeof row !== 'object') {
+    return null
+  }
+
+  return {
+    snapshotType: normalizeText(row.snapshotType || row.snapshot_type),
+    studentId: row.studentId ?? row.student_id ?? '',
+    classId: row.classId ?? row.class_id ?? '',
+    academicYearId: row.academicYearId ?? row.academic_year_id ?? '',
+    termId: row.termId ?? row.term_id ?? '',
+    reportPeriodId: row.reportPeriodId ?? row.report_period_id ?? '',
+    generatedByUserId: row.generatedByUserId ?? row.generated_by_user_id ?? '',
+    lifecycleState: normalizeText(row.lifecycleState || row.lifecycle_state),
+    snapshotVersion: normalizeNumber(row.snapshotVersion ?? row.snapshot_version),
+    generatedAt: row.generatedAt || row.generated_at || '',
+    lockedAt: row.lockedAt || row.locked_at || '',
+    payload: row.payload || row.snapshot_payload || null,
+    raw: row,
+  }
+}
+
 export function normalizeReportPeriod(row = {}) {
   const status = normalizeText(row.status || 'draft').toLowerCase()
 
@@ -42,6 +81,8 @@ export function normalizeReportPeriod(row = {}) {
     isFinalized: status === 'finalized',
     isLocked: status === 'locked',
     isArchived: status === 'archived',
+    summarySnapshot: normalizeSnapshotSummary(row.summarySnapshot || row.summary_snapshot),
+    reportSnapshot: normalizeSnapshotSummary(row.reportSnapshot || row.report_snapshot),
     raw: row,
   }
 }
@@ -154,6 +195,9 @@ function normalizeReportPayload(row = {}) {
     studentSummaries: Array.isArray(sourceStudentSummaries) ? sourceStudentSummaries.map(normalizeStudentSummary) : [],
     assessments: Array.isArray(sourceAssessments) ? sourceAssessments.map(normalizeAssessment) : [],
     generatedAt: row.generatedAt || row.generated_at || '',
+    source: normalizeText(row.source || row.data?.source || 'live') || 'live',
+    snapshot: normalizeReportSnapshot(row.snapshot || row.data?.snapshot || null),
+    frozen: Boolean(row.frozen || row.data?.frozen || false),
     raw: row,
   }
 }

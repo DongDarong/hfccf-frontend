@@ -7,6 +7,9 @@ export function usePreschoolProgressSummary() {
   const summary = ref({})
   const categories = ref([])
   const recentAssessments = ref([])
+  const snapshot = ref(null)
+  const source = ref('live')
+  const frozen = ref(false)
   const loading = ref(false)
   const errorMessage = ref('')
 
@@ -22,10 +25,16 @@ export function usePreschoolProgressSummary() {
       summary.value = payload.summary || {}
       categories.value = payload.categories || []
       recentAssessments.value = payload.recentAssessments || []
+      snapshot.value = payload.snapshot || null
+      source.value = payload.source || 'live'
+      frozen.value = Boolean(payload.frozen)
     } catch (error) {
       summary.value = {}
       categories.value = []
       recentAssessments.value = []
+      snapshot.value = null
+      source.value = 'live'
+      frozen.value = false
       errorMessage.value = error?.message || 'Failed to load Preschool progress summary.'
     } finally {
       loading.value = false
@@ -38,6 +47,9 @@ export function usePreschoolProgressSummary() {
     loadProgressSummary,
     loading,
     recentAssessments,
+    snapshot,
+    source,
+    frozen,
     summary,
   }
 }
