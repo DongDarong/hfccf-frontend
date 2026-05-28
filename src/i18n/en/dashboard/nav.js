@@ -49,6 +49,7 @@ export default {
     preschoolSettings: 'Preschool Settings',
     preschoolAssignments: 'Assignments',
     reportSnapshots: 'Snapshot Archive',
+    exportGovernance: 'Export Governance',
     scholarshipDashboard: 'Scholarship Dashboard',
     sportDashboard: 'Sport Dashboard',
     teachers: 'Teachers',

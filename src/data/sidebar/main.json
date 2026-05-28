@@ -240,6 +240,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-export-governance",
+          "routeName": "dashboard-preschool-admin-export-governance",
+          "labelKey": "nav.items.exportGovernance",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

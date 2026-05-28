@@ -84,6 +84,10 @@ function goToSnapshotArchive() {
   router.push({ name: 'dashboard-preschool-admin-report-snapshots' })
 }
 
+function goToExportGovernance() {
+  router.push({ name: 'dashboard-preschool-admin-export-governance' })
+}
+
 async function loadAuditPreview() {
   auditLoading.value = true
   auditError.value = ''
@@ -173,6 +177,9 @@ onMounted(async () => {
             </Button>
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToSnapshotArchive">
               {{ t('preschoolSnapshotArchivePage.actions.openArchive') }}
+            </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToExportGovernance">
+              {{ t('preschoolExportGovernancePage.actions.openGovernance') }}
             </Button>
           </div>
         </div>

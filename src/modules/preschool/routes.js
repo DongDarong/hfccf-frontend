@@ -166,6 +166,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Export governance stays admin-only so institutional exports and historical
+  // comparisons remain read-only review surfaces rather than a teacher tool.
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/export-governance',
+    name: 'dashboard-preschool-admin-export-governance',
+    component: () => import('@/modules/preschool/admin/pages/ReportExportGovernance.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Reports stay split into overview, student, and classroom routes so the UI
   // can navigate to real finalized data without exposing placeholder screens.
   defineAppRoute({
