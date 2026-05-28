@@ -17,6 +17,7 @@ import lifecycleAnalytics from './lifecycle-analytics'
 import classroomResources from './classroom-resources'
 import assignments from './assignments'
 import reportSnapshots from './report-snapshots'
+import snapshotArchive from './snapshot-archive'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -40,4 +41,5 @@ export default {
   ...classroomResources,
   ...assignments,
   ...reportSnapshots,
+  ...snapshotArchive,
 }

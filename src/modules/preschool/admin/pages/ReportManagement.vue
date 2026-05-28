@@ -80,6 +80,10 @@ function goToAuditLogs() {
   router.push({ name: 'dashboard-preschool-admin-lifecycle-audit' })
 }
 
+function goToSnapshotArchive() {
+  router.push({ name: 'dashboard-preschool-admin-report-snapshots' })
+}
+
 async function loadAuditPreview() {
   auditLoading.value = true
   auditError.value = ''
@@ -166,6 +170,9 @@ onMounted(async () => {
             </Button>
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToAuditLogs">
               {{ t('preschoolLifecycleAuditPage.actions.openAuditLogs') }}
+            </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToSnapshotArchive">
+              {{ t('preschoolSnapshotArchivePage.actions.openArchive') }}
             </Button>
           </div>
         </div>

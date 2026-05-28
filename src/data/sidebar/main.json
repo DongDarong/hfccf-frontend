@@ -225,6 +225,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-report-snapshots",
+          "routeName": "dashboard-preschool-admin-report-snapshots",
+          "labelKey": "nav.items.reportSnapshots",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

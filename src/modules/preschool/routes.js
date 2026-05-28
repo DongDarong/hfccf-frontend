@@ -155,6 +155,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Snapshot archive is admin-only because it exposes immutable historical
+  // report output for browsing, comparison, and export rather than editing.
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/snapshots',
+    name: 'dashboard-preschool-admin-report-snapshots',
+    component: () => import('@/modules/preschool/admin/pages/ReportSnapshotArchive.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Reports stay split into overview, student, and classroom routes so the UI
   // can navigate to real finalized data without exposing placeholder screens.
   defineAppRoute({
