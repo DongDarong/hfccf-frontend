@@ -12,6 +12,12 @@ export default {
       refresh: 'Refresh',
       openAuditLogs: 'Open Audit Logs',
       writeBlocked: 'Write Blocked',
+      assessment: {
+        finalized: 'Assessment Finalized',
+      },
+      write: {
+        blocked: 'Write Blocked',
+      },
       overrideAttempt: 'Override Attempt',
       overrideApproved: 'Override Approved',
       reportPeriodCreated: 'Report Period Created',
@@ -28,6 +34,7 @@ export default {
       all: 'All Entities',
       academicTerm: 'Academic Term',
       reportPeriod: 'Report Period',
+      report_period: 'Report Period',
       assessment: 'Assessment',
       attendance: 'Attendance',
       schedule: 'Schedule',
@@ -46,6 +53,7 @@ export default {
       actor: 'Actor',
       context: 'Context',
       reason: 'Reason',
+      at: 'At',
       createdAt: 'Created At',
     },
     context: {
@@ -56,7 +64,8 @@ export default {
     pagination: {
       summary: '{total} audit log entries',
       page: 'Page {page} of {totalPages}',
+      previous: 'Previous',
+      next: 'Next',
     },
   },
 }
-

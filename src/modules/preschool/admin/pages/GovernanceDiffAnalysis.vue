@@ -376,11 +376,11 @@ async function loadLookupOptions() {
 
   try {
     const [classesResponse, studentsResponse, reportPeriodsResponse, snapshotsResponse, exportsResponse] = await Promise.all([
-      fetchPreschoolClasses({ page: 1, perPage: 200 }),
-      fetchPreschoolStudents({ page: 1, perPage: 200 }),
+      fetchPreschoolClasses({ page: 1, perPage: 100 }),
+      fetchPreschoolStudents({ page: 1, perPage: 100 }),
       fetchReportPeriods(),
-      fetchSnapshotArchive({ page: 1, perPage: 120 }),
-      fetchExportGovernanceHistory({ page: 1, perPage: 120 }),
+      fetchSnapshotArchive({ page: 1, perPage: 100 }),
+      fetchExportGovernanceHistory({ page: 1, perPage: 100 }),
     ])
 
     classOptions.value = (classesResponse.items || []).map((item) => ({

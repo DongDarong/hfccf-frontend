@@ -172,8 +172,8 @@ function exportQuery() {
 async function loadLookupOptions() {
   try {
     const [classesResponse, studentsResponse, reportPeriodsResponse] = await Promise.all([
-      fetchPreschoolClasses({ page: 1, perPage: 200 }),
-      fetchPreschoolStudents({ page: 1, perPage: 200 }),
+      fetchPreschoolClasses({ page: 1, perPage: 100 }),
+      fetchPreschoolStudents({ page: 1, perPage: 100 }),
       fetchReportPeriods(),
     ])
 

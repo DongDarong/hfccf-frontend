@@ -2,7 +2,7 @@
 // immutable historical reports can be browsed and exported without mixing the
 // archive contract into the operational report pages.
 import http from '@/services/http'
-import { buildQueryParams, unwrapApiData } from '@/services/api'
+import { buildQueryParams, normalizePerPage, unwrapApiData } from '@/services/api'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -142,10 +142,11 @@ function normalizeListPayload(payload = {}) {
 }
 
 export async function fetchSnapshotArchive(params = {}, options = {}) {
+  const perPage = normalizePerPage(params.perPage ?? 20, 20, 100)
   const response = await http.get('/preschool/report-snapshots', {
     params: buildQueryParams({
       page: params.page ?? 1,
-      per_page: params.perPage ?? 20,
+      per_page: perPage,
       academic_year_id: params.academicYearId || '',
       term_id: params.termId || '',
       report_period_id: params.reportPeriodId || '',

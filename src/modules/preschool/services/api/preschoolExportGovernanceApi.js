@@ -2,7 +2,7 @@
 // rendering so immutable export history, comparison, and timeline views can
 // stay admin-only and clearly source-bound.
 import http from '@/services/http'
-import { buildQueryParams, unwrapApiData } from '@/services/api'
+import { buildQueryParams, normalizePerPage, unwrapApiData } from '@/services/api'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -166,10 +166,11 @@ function normalizeTimelinePayload(payload = {}) {
 }
 
 export async function fetchExportGovernanceHistory(params = {}, options = {}) {
+  const perPage = normalizePerPage(params.perPage ?? 20, 20, 100)
   const response = await http.get('/preschool/report-exports', {
     params: buildQueryParams({
       page: params.page ?? 1,
-      per_page: params.perPage ?? 20,
+      per_page: perPage,
       export_type: params.exportType || '',
       export_format: params.exportFormat || '',
       academic_year_id: params.academicYearId || '',

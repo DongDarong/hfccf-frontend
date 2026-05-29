@@ -201,7 +201,7 @@ onMounted(async () => {
               {{ t('preschoolGovernanceReviewPage.actions.openGovernanceReview') }}
             </Button>
               <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
-                {{ t('preschoolInstitutionalReconstructionPage.actions.openReconstruction') }}
+          Open Reconstruction
               </Button>
               <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
                 {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}

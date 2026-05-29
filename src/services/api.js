@@ -3,6 +3,10 @@ export function toPositiveInteger(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback
 }
 
+export function normalizePerPage(value, fallback = 10, max = 100) {
+  return Math.min(toPositiveInteger(value, fallback), max)
+}
+
 export function unwrapApiData(response) {
   return response?.data?.data ?? response?.data ?? null
 }

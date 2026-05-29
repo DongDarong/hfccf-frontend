@@ -1,5 +1,5 @@
 import http from '@/services/http'
-import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
+import { buildQueryParams, normalizePerPage, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
 import { fetchReportPeriods as fetchPreschoolReportPeriods } from '@/modules/preschool/services/api/preschoolReportsApi'
 import {
@@ -434,10 +434,11 @@ export async function fetchPreschoolClasses(
   { page = 1, perPage = 10, search = '', status = '', level = '', teacherUserId = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
   options = {},
 ) {
+  const normalizedPerPage = normalizePerPage(perPage, 10, 100)
   const response = await http.get('/preschool/classes', {
     params: buildQueryParams({
       page,
-      per_page: perPage,
+      per_page: normalizedPerPage,
       search,
       status,
       level,
@@ -448,7 +449,7 @@ export async function fetchPreschoolClasses(
     signal: options.signal,
   })
 
-  return normalizeClassListResponse(response, page, perPage)
+  return normalizeClassListResponse(response, page, normalizedPerPage)
 }
 
 export async function fetchPreschoolClass(id, options = {}) {
@@ -496,10 +497,11 @@ export async function fetchPreschoolStudents(
   { page = 1, perPage = 10, search = '', status = '', gender = '', classId = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
   options = {},
 ) {
+  const normalizedPerPage = normalizePerPage(perPage, 10, 100)
   const response = await http.get('/preschool/students', {
     params: buildQueryParams({
       page,
-      per_page: perPage,
+      per_page: normalizedPerPage,
       search,
       status,
       gender,
@@ -510,7 +512,7 @@ export async function fetchPreschoolStudents(
     signal: options.signal,
   })
 
-  return normalizeStudentListResponse(response, page, perPage)
+  return normalizeStudentListResponse(response, page, normalizedPerPage)
 }
 
 export async function fetchPreschoolStudent(id, options = {}) {
