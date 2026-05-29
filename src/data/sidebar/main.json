@@ -300,6 +300,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-governance-cases",
+          "routeName": "dashboard-preschool-admin-governance-cases",
+          "labelKey": "nav.items.governanceCases",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

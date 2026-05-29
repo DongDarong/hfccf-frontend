@@ -588,6 +588,10 @@ function goToReconstruction() {
   router.push({ name: 'dashboard-preschool-admin-reconstruction' })
 }
 
+function goToGovernanceCases() {
+  router.push({ name: 'dashboard-preschool-admin-governance-cases' })
+}
+
 onMounted(async () => {
   await loadAcademicLifecycle()
   await loadLookupOptions()
@@ -617,6 +621,9 @@ onMounted(async () => {
         </Button>
         <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToReconstruction">
           {{ t('preschoolGovernanceDiffPage.actions.openReconstruction') }}
+        </Button>
+        <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceCases">
+          {{ t('preschoolGovernanceCasesPage.actions.openGovernanceCases') }}
         </Button>
         <Button type="button" variant="secondary" size="md" rounded="xl" :loading="summaryLoading || integrityLoading || comparisonLoading || optionsLoading" @click="refreshAll">
           {{ t('preschoolGovernanceDiffPage.actions.refresh') }}

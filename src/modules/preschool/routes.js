@@ -210,6 +210,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Governance cases keep diff and integrity findings in a review workflow so
+  // administrators can assign, escalate, and resolve institutional risk.
+  defineAppRoute({
+    path: '/module/preschool-admin/governance/cases',
+    name: 'dashboard-preschool-admin-governance-cases',
+    component: () => import('@/modules/preschool/admin/pages/GovernanceCases.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Reports stay split into overview, student, and classroom routes so the UI
   // can navigate to real finalized data without exposing placeholder screens.
   defineAppRoute({

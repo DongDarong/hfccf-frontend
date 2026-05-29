@@ -100,6 +100,10 @@ function goToGovernanceDiffAnalysis() {
   router.push({ name: 'dashboard-preschool-admin-governance-diff' })
 }
 
+function goToGovernanceCases() {
+  router.push({ name: 'dashboard-preschool-admin-governance-cases' })
+}
+
 async function loadAuditPreview() {
   auditLoading.value = true
   auditError.value = ''
@@ -196,13 +200,16 @@ onMounted(async () => {
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceReview">
               {{ t('preschoolGovernanceReviewPage.actions.openGovernanceReview') }}
             </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
-              {{ t('preschoolInstitutionalReconstructionPage.actions.openReconstruction') }}
-            </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
-              {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}
-            </Button>
-          </div>
+              <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
+                {{ t('preschoolInstitutionalReconstructionPage.actions.openReconstruction') }}
+              </Button>
+              <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
+                {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}
+              </Button>
+              <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceCases">
+                {{ t('preschoolGovernanceCasesPage.actions.openGovernanceCases') }}
+              </Button>
+            </div>
         </div>
 
         <div v-if="errorMessage" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
