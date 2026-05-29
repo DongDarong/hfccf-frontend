@@ -131,6 +131,12 @@ export default {
       comparisonSubtitle: 'ប្រៀបធៀបកំណែ {previous} ទៅ {current}។',
       emptyAudit: 'មិនរកឃើញកំណត់ហេតុសវនកម្មសម្រាប់រូបភាពនេះទេ។',
     },
+    pagination: {
+      summary: 'បង្ហាញរូបភាពចំនួន {total}',
+      page: 'ទំព័រ {page} នៃ {totalPages}',
+      previous: 'មុន',
+      next: 'បន្ទាប់',
+    },
     errors: {
       loading: 'ផ្ទុកបណ្ណសាររូបភាពមិនបានជោគជ័យ។',
       analytics: 'ផ្ទុកការវិភាគរូបភាពមិនបានជោគជ័យ។',

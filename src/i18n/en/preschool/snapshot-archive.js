@@ -131,6 +131,12 @@ export default {
       comparisonSubtitle: 'Comparing version {previous} to {current}.',
       emptyAudit: 'No audit trail was found for this snapshot.',
     },
+    pagination: {
+      summary: 'Showing {total} snapshots',
+      page: 'Page {page} of {totalPages}',
+      previous: 'Previous',
+      next: 'Next',
+    },
     errors: {
       loading: 'Failed to load snapshot archive.',
       analytics: 'Failed to load snapshot analytics.',
