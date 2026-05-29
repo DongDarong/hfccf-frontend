@@ -3,8 +3,8 @@
 // events can be reviewed without creating another mutation surface.
 import { useLanguage } from '@/composables/useLanguage'
 import {
-  formatAuditCodeFallback,
   resolveLifecycleActionLabel,
+  resolveLifecycleContextLabel,
 } from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
 defineProps({
@@ -53,7 +53,7 @@ function timelineLabel(item) {
         </div>
         <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
           <span>{{ item.actor?.displayName || item.actor?.roleCode || '-' }}</span>
-          <span>{{ t('preschoolExportGovernancePage.timeline.contextLabel') }}: {{ formatAuditCodeFallback(item.context?.reportPeriodId || item.context?.termId || item.context?.academicYearId) }}</span>
+          <span>{{ t('preschoolExportGovernancePage.timeline.contextLabel') }}: {{ resolveLifecycleContextLabel(t, item.context?.contextLabel || item.context?.label || item.context?.reportPeriodId || item.context?.termId || item.context?.academicYearId, te) }}</span>
         </div>
       </div>
     </div>

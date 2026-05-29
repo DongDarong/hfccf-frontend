@@ -8,6 +8,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import {
   formatAuditCodeFallback,
   resolveLifecycleActionLabel,
+  resolveLifecycleContextLabel,
   resolveLifecycleEntityLabel,
 } from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
@@ -170,7 +171,7 @@ function entityLabel(entityType) {
               <div class="flex items-start justify-between gap-2">
                 <div>
                   <p class="font-medium text-slate-900">{{ reasonLabel(event.actionType) }}</p>
-                  <p class="text-xs text-slate-500">{{ entityLabel(event.entityType) }} {{ formatAuditCodeFallback(event.entityId) }}</p>
+                  <p class="text-xs text-slate-500">{{ entityLabel(event.entityType) }} · {{ resolveLifecycleContextLabel(t, event.entityId, te) }}</p>
                 </div>
                 <p class="text-xs text-slate-500">{{ event.createdAt || '-' }}</p>
               </div>
@@ -212,7 +213,7 @@ function entityLabel(entityType) {
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   <div class="space-y-1">
-                    <p>{{ formatAuditCodeFallback(snapshot.contextLabel) }}</p>
+                    <p>{{ resolveLifecycleContextLabel(t, snapshot.contextLabel, te) }}</p>
                     <p class="text-xs text-slate-500">{{ formatAuditCodeFallback(snapshot.academicYear?.label || snapshot.academicYear?.code) }}</p>
                   </div>
                 </td>

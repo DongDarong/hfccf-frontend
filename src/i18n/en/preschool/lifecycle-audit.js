@@ -42,6 +42,8 @@ export default {
         archive_viewed: 'Snapshot archive viewed',
       },
       report_export: {
+        analytics_viewed: 'Report export analytics viewed',
+        timeline_viewed: 'Report export timeline viewed',
         created: 'Report export created',
         archive_viewed: 'Report export archive viewed',
       },
@@ -111,6 +113,11 @@ export default {
       academicYear: 'Academic Year',
       term: 'Term',
       reportPeriod: 'Report Period',
+    },
+    contexts: {
+      analytics: 'Analytics View',
+      timeline: 'Timeline View',
+      list: 'Archive List',
     },
     pagination: {
       summary: '{total} audit log entries',

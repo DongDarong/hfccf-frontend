@@ -47,3 +47,24 @@ export function resolveLifecycleEntityLabel(t, entity, te) {
 
   return formatAuditCodeFallback(raw)
 }
+
+function normalizeContextKey(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/^#/, '')
+    .replace(/[._-]+/g, '_')
+    .replace(/\s+/g, '_')
+    .toLowerCase()
+}
+
+export function resolveLifecycleContextLabel(t, context, te) {
+  const raw = String(context ?? '').trim()
+  if (!raw) return '-'
+
+  const key = `preschoolLifecycleAuditPage.contexts.${normalizeContextKey(raw)}`
+  if (typeof te === 'function' && te(key)) {
+    return t(key)
+  }
+
+  return formatAuditCodeFallback(raw)
+}
