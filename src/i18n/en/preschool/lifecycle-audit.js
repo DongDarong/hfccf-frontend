@@ -47,6 +47,20 @@ export default {
         created: 'Report export created',
         archive_viewed: 'Report export archive viewed',
       },
+      governance_case: {
+        listed: 'Governance case list viewed',
+      },
+      governance: {
+        review: {
+          viewed: 'Governance review viewed',
+        },
+        analytics: {
+          viewed: 'Governance analytics viewed',
+        },
+        replay: {
+          viewed: 'Governance replay viewed',
+        },
+      },
       governance_diff: {
         generated: 'Governance Diff Generated',
       },
@@ -83,7 +97,10 @@ export default {
       report_export_archive: 'Report export archive',
       report_snapshot_archive: 'Report Snapshot Archive',
       report_export_record: 'Report Export Record',
+      governance_case_collection: 'Governance case collection',
       governance_case: 'Governance Case',
+      institutional_governance_review: 'Institutional governance review',
+      institutional_replay: 'Institutional replay',
       governance_diff: 'Governance Diff',
       integrity_review: 'Integrity Review',
       institutional_integrity_review: 'Institutional Integrity Review',
@@ -118,6 +135,7 @@ export default {
       analytics: 'Analytics view',
       timeline: 'Timeline view',
       list: 'Archive list',
+      review: 'Review',
     },
     pagination: {
       summary: '{total} audit log entries',

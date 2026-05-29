@@ -1,5 +1,13 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
+import {
+  resolveLifecycleActionLabel,
+  resolveLifecycleContextLabel,
+  resolveLifecycleEntityLabel,
+} from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
+
+const { t, te } = useLanguage()
 
 defineProps({
   title: {
@@ -32,6 +40,29 @@ function tone(source) {
   if (normalized === 'report_period') return 'info'
   return 'primary'
 }
+
+function resolveItemAction(item = {}) {
+  return resolveLifecycleActionLabel(t, item.actionType || item.title, te)
+}
+
+function resolveItemEntityContext(item = {}) {
+  const entity = resolveLifecycleEntityLabel(t, item.entityType, te)
+  const context = resolveLifecycleContextLabel(t, item.context, te)
+
+  if (entity === '-' && context === '-') {
+    return '-'
+  }
+
+  if (entity === '-') {
+    return context
+  }
+
+  if (context === '-') {
+    return entity
+  }
+
+  return `${entity} · ${context}`
+}
 </script>
 
 <template>
@@ -59,9 +90,10 @@ function tone(source) {
           <div class="space-y-1">
             <div class="flex flex-wrap items-center gap-2">
               <StatusBadge :status="tone(item.source)" :label="item.source" :translate-label="false" :dot="false" size="sm" />
-              <span class="text-sm font-medium text-slate-900">{{ item.title || item.actionType || '-' }}</span>
+              <span class="text-sm font-medium text-slate-900">{{ resolveItemAction(item) }}</span>
             </div>
             <p class="text-sm text-slate-600">{{ item.description || '-' }}</p>
+            <p v-if="item.entityType || item.context" class="text-xs text-slate-500">{{ resolveItemEntityContext(item) }}</p>
           </div>
           <div class="text-right text-xs text-slate-500">
             <p class="font-medium text-slate-800">{{ item.recordedAt || '-' }}</p>

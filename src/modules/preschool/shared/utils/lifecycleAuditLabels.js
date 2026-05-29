@@ -107,13 +107,31 @@ export function splitLifecycleEntityContext(value) {
   return splitCombinedText(raw)
 }
 
+function hasLocaleKey(te, key) {
+  return typeof te === 'function' && te(key)
+}
+
+function actionKeyCandidates(raw) {
+  const candidates = [`preschoolLifecycleAuditPage.actions.${raw}`]
+
+  if (!raw.includes('.') && raw.includes('_')) {
+    const lastUnderscore = raw.lastIndexOf('_')
+    if (lastUnderscore > 0 && lastUnderscore < raw.length - 1) {
+      candidates.push(`preschoolLifecycleAuditPage.actions.${raw.slice(0, lastUnderscore)}.${raw.slice(lastUnderscore + 1)}`)
+    }
+  }
+
+  return candidates
+}
+
 export function resolveLifecycleActionLabel(t, action, te) {
   const raw = String(action ?? '').trim()
   if (!raw) return '-'
 
-  const key = `preschoolLifecycleAuditPage.actions.${raw}`
-  if (typeof te === 'function' && te(key)) {
-    return t(key)
+  for (const key of actionKeyCandidates(raw)) {
+    if (hasLocaleKey(te, key)) {
+      return t(key)
+    }
   }
 
   return formatAuditCodeFallback(raw)

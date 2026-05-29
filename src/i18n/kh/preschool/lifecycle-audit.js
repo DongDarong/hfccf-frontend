@@ -45,7 +45,21 @@ export default {
         analytics_viewed: 'បានមើលវិភាគការនាំចេញរបាយការណ៍',
         timeline_viewed: 'បានមើលបន្ទាត់ពេលវេលានៃការនាំចេញរបាយការណ៍',
         created: 'បានបង្កើតការនាំចេញរបាយការណ៍',
-        archive_viewed: 'បានមើលបណ្ណសារការនាំចេញរបាយការណ៍',
+        archive_viewed: 'បានមើលបណ្ណសារនាំចេញរបាយការណ៍',
+      },
+      governance_case: {
+        listed: 'បានមើលបញ្ជីករណីអភិបាលកិច្ច',
+      },
+      governance: {
+        review: {
+          viewed: 'បានមើលការត្រួតពិនិត្យអភិបាលកិច្ច',
+        },
+        analytics: {
+          viewed: 'បានមើលវិភាគអភិបាលកិច្ច',
+        },
+        replay: {
+          viewed: 'បានមើលការចាក់ឡើងវិញអភិបាលកិច្ច',
+        },
       },
       governance_diff: {
         generated: 'បានបង្កើតការប្រៀបធៀបអភិបាលកិច្ច',
@@ -115,9 +129,10 @@ export default {
       reportPeriod: 'រយៈពេលរបាយការណ៍',
     },
     contexts: {
-      analytics: 'ទិដ្ឋភាពវិភាគ',
+      analytics: 'វិភាគ',
       timeline: 'បន្ទាត់ពេលវេលា',
-      list: 'បញ្ជីបណ្ណសារ',
+      list: 'បញ្ជី',
+      review: 'ការត្រួតពិនិត្យ',
     },
     pagination: {
       summary: 'មានកំណត់ហេតុសវនកម្ម {total} ចំណុច',

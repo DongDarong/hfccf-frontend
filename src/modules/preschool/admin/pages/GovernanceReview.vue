@@ -20,13 +20,18 @@ import {
 } from '@/modules/preschool/services/api/preschoolGovernanceReviewApi'
 import GovernanceAnalyticsCards from '@/modules/preschool/shared/components/governance/GovernanceAnalyticsCards.vue'
 import InstitutionalReplayTimeline from '@/modules/preschool/shared/components/governance/InstitutionalReplayTimeline.vue'
+import {
+  resolveLifecycleActionLabel,
+  resolveLifecycleContextLabel,
+  resolveLifecycleEntityLabel,
+} from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
 defineOptions({
   name: 'PreschoolGovernanceReviewPage',
 })
 
 const router = useRouter()
-const { t } = useLanguage()
+const { t, te } = useLanguage()
 const { academicYears, terms, loadAcademicLifecycle } = usePreschoolAcademicLifecycle()
 
 const loading = ref(false)
@@ -303,6 +308,37 @@ function goToGovernanceCases() {
   router.push({ name: 'dashboard-preschool-admin-governance-cases' })
 }
 
+function resolveAuditAction(item = {}) {
+  return resolveLifecycleActionLabel(t, item.actionType || item.title, te)
+}
+
+function resolveAuditEntity(item = {}) {
+  return resolveLifecycleEntityLabel(t, item.entityType, te)
+}
+
+function resolveAuditContext(item = {}) {
+  return resolveLifecycleContextLabel(t, item.context, te)
+}
+
+function resolveAuditEntityContext(item = {}) {
+  const entity = resolveAuditEntity(item)
+  const context = resolveAuditContext(item)
+
+  if (entity === '-' && context === '-') {
+    return '-'
+  }
+
+  if (entity === '-') {
+    return context
+  }
+
+  if (context === '-') {
+    return entity
+  }
+
+  return `${entity} · ${context}`
+}
+
 onMounted(async () => {
   await loadAcademicLifecycle()
   await loadLookupOptions()
@@ -485,16 +521,17 @@ onMounted(async () => {
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
                 <tr v-for="item in section.items" :key="item.id">
-                  <td class="px-4 py-3 text-slate-900">{{ item.actionType || '-' }}</td>
+                  <td class="px-4 py-3 text-slate-900">{{ resolveAuditAction(item) }}</td>
                   <td class="px-4 py-3 text-slate-600">
                     <div class="space-y-1">
-                      <p>{{ item.entityType || '-' }}</p>
+                      <p>{{ resolveAuditEntity(item) }}</p>
                       <p class="text-xs text-slate-500">#{{ item.entityId || '-' }}</p>
                     </div>
                   </td>
                   <td class="px-4 py-3 text-slate-600">{{ item.actor?.displayName || item.actor?.roleCode || '-' }}</td>
                   <td class="px-4 py-3 text-slate-600">
                     <div class="space-y-1">
+                      <p>{{ resolveAuditEntityContext(item) }}</p>
                       <p v-if="item.context?.academicYearId">{{ t('preschoolGovernanceReviewPage.context.academicYear') }}: {{ item.context.academicYearId }}</p>
                       <p v-if="item.context?.termId">{{ t('preschoolGovernanceReviewPage.context.term') }}: {{ item.context.termId }}</p>
                       <p v-if="item.context?.reportPeriodId">{{ t('preschoolGovernanceReviewPage.context.reportPeriod') }}: {{ item.context.reportPeriodId }}</p>
