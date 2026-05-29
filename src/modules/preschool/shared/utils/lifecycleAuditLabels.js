@@ -5,6 +5,33 @@ function humanizeSegment(segment) {
     .trim()
 }
 
+function pickFirstTextValue(source, keys) {
+  for (const key of keys) {
+    const value = source?.[key]
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim()
+    }
+  }
+
+  return ''
+}
+
+function splitCombinedText(value) {
+  const raw = String(value ?? '').trim()
+  if (!raw) return { entity: '', context: '' }
+
+  if (raw.includes(' ')) {
+    const [entity, ...contextParts] = raw.split(/\s+/)
+    const context = contextParts.join(' ').trim()
+
+    if (entity && context) {
+      return { entity, context }
+    }
+  }
+
+  return { entity: raw, context: '' }
+}
+
 export function formatAuditCodeFallback(value) {
   const raw = String(value ?? '').trim()
   if (!raw) return '-'
@@ -24,6 +51,62 @@ export function formatAuditCodeFallback(value) {
     .join(' ')
 }
 
+export function splitLifecycleEntityContext(value) {
+  if (value && typeof value === 'object') {
+    const entity = pickFirstTextValue(value, [
+      'entity',
+      'entityType',
+      'entity_type',
+      'entityCode',
+      'entity_code',
+      'type',
+      'code',
+      'name',
+      'label',
+    ])
+
+    const context = pickFirstTextValue(value, [
+      'context',
+      'contextLabel',
+      'context_label',
+      'contextCode',
+      'context_code',
+      'entityId',
+      'entity_id',
+      'id',
+      'value',
+    ])
+
+    if (entity && !context) {
+      const split = splitCombinedText(entity)
+      if (split.context) {
+        return split
+      }
+    }
+
+    if (context && !entity) {
+      const split = splitCombinedText(context)
+      if (split.context) {
+        return split
+      }
+    }
+
+    if (entity || context) {
+      return {
+        entity: entity || '',
+        context: context || '',
+      }
+    }
+  }
+
+  const raw = String(value ?? '').trim()
+  if (!raw) {
+    return { entity: '', context: '' }
+  }
+
+  return splitCombinedText(raw)
+}
+
 export function resolveLifecycleActionLabel(t, action, te) {
   const raw = String(action ?? '').trim()
   if (!raw) return '-'
@@ -37,7 +120,7 @@ export function resolveLifecycleActionLabel(t, action, te) {
 }
 
 export function resolveLifecycleEntityLabel(t, entity, te) {
-  const raw = String(entity ?? '').trim()
+  const { entity: raw } = splitLifecycleEntityContext(entity)
   if (!raw) return '-'
 
   const key = `preschoolLifecycleAuditPage.entities.${raw}`
@@ -58,7 +141,8 @@ function normalizeContextKey(value) {
 }
 
 export function resolveLifecycleContextLabel(t, context, te) {
-  const raw = String(context ?? '').trim()
+  const { context: rawContext, entity: entityFallback } = splitLifecycleEntityContext(context)
+  const raw = rawContext || entityFallback
   if (!raw) return '-'
 
   const key = `preschoolLifecycleAuditPage.contexts.${normalizeContextKey(raw)}`

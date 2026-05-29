@@ -81,7 +81,7 @@ export default {
       report: 'របាយការណ៍',
       report_snapshot: 'រូបភាពរបាយការណ៍',
       report_snapshot_archive: 'បណ្ណសាររូបភាពរបាយការណ៍',
-      report_export_archive: 'បណ្ណសារការនាំចេញរបាយការណ៍',
+      report_export_archive: 'បណ្ណសារនាំចេញរបាយការណ៍',
       report_export_record: 'កំណត់ត្រានាំចេញរបាយការណ៍',
       governance_case: 'ករណីអភិបាលកិច្ច',
       governance_diff: 'ការប្រៀបធៀបអភិបាលកិច្ច',

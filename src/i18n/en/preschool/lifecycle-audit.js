@@ -80,7 +80,7 @@ export default {
       payment: 'Payment',
       report: 'Report',
       report_snapshot: 'Report Snapshot',
-      report_export_archive: 'Report Export Archive',
+      report_export_archive: 'Report export archive',
       report_snapshot_archive: 'Report Snapshot Archive',
       report_export_record: 'Report Export Record',
       governance_case: 'Governance Case',
@@ -115,9 +115,9 @@ export default {
       reportPeriod: 'Report Period',
     },
     contexts: {
-      analytics: 'Analytics View',
-      timeline: 'Timeline View',
-      list: 'Archive List',
+      analytics: 'Analytics view',
+      timeline: 'Timeline view',
+      list: 'Archive list',
     },
     pagination: {
       summary: '{total} audit log entries',

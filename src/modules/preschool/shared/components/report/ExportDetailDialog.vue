@@ -10,6 +10,7 @@ import {
   resolveLifecycleActionLabel,
   resolveLifecycleContextLabel,
   resolveLifecycleEntityLabel,
+  splitLifecycleEntityContext,
 } from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
 defineProps({
@@ -65,6 +66,11 @@ function reasonLabel(reason) {
 
 function entityLabel(entityType) {
   return resolveLifecycleEntityLabel(t, entityType, te)
+}
+
+function contextLabel(value) {
+  const { context, entity } = splitLifecycleEntityContext(value)
+  return resolveLifecycleContextLabel(t, context || entity, te)
 }
 </script>
 
@@ -171,7 +177,7 @@ function entityLabel(entityType) {
               <div class="flex items-start justify-between gap-2">
                 <div>
                   <p class="font-medium text-slate-900">{{ reasonLabel(event.actionType) }}</p>
-                  <p class="text-xs text-slate-500">{{ entityLabel(event.entityType) }} · {{ resolveLifecycleContextLabel(t, event.entityId, te) }}</p>
+                  <p class="text-xs text-slate-500">{{ entityLabel(event.entityType || event.entity) }} · {{ contextLabel(event.entityId || event.context || event) }}</p>
                 </div>
                 <p class="text-xs text-slate-500">{{ event.createdAt || '-' }}</p>
               </div>
@@ -213,7 +219,7 @@ function entityLabel(entityType) {
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   <div class="space-y-1">
-                    <p>{{ resolveLifecycleContextLabel(t, snapshot.contextLabel, te) }}</p>
+                    <p>{{ contextLabel(snapshot.contextLabel || snapshot.context) }}</p>
                     <p class="text-xs text-slate-500">{{ formatAuditCodeFallback(snapshot.academicYear?.label || snapshot.academicYear?.code) }}</p>
                   </div>
                 </td>
