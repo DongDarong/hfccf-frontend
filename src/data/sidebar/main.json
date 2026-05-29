@@ -285,6 +285,21 @@
             ]
           }
         },
+        {
+          "id": "preschool-governance-diff",
+          "routeName": "dashboard-preschool-admin-governance-diff",
+          "labelKey": "nav.items.governanceDiff",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin",
+          "access": {
+            "scopes": [
+              "admin"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
          {
           "id": "preschool-teacher-report",
           "routeName": "dashboard-preschool-teacher-report",

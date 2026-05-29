@@ -295,6 +295,10 @@ function goToSnapshotArchive() {
   router.push({ name: 'dashboard-preschool-admin-report-snapshots' })
 }
 
+function goToGovernanceDiffAnalysis() {
+  router.push({ name: 'dashboard-preschool-admin-governance-diff' })
+}
+
 onMounted(async () => {
   await loadAcademicLifecycle()
   await loadLookupOptions()
@@ -385,6 +389,9 @@ onMounted(async () => {
           </Button>
           <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToExportGovernance">
             {{ t('preschoolGovernanceReviewPage.actions.openExportGovernance') }}
+          </Button>
+          <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
+            {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}
           </Button>
           <Button type="button" variant="secondary" size="md" rounded="xl" @click="goToReconstruction">
             {{ t('preschoolGovernanceReviewPage.actions.openReconstruction') }}

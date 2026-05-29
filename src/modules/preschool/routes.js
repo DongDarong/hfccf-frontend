@@ -199,6 +199,17 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  // Governance diff analysis stays admin-only so institutional comparisons
+  // remain snapshot-first, review-focused, and separate from operational CRUD.
+  defineAppRoute({
+    path: '/module/preschool-admin/governance/diff',
+    name: 'dashboard-preschool-admin-governance-diff',
+    component: () => import('@/modules/preschool/admin/pages/GovernanceDiffAnalysis.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Reports stay split into overview, student, and classroom routes so the UI
   // can navigate to real finalized data without exposing placeholder screens.
   defineAppRoute({

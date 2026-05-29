@@ -96,6 +96,10 @@ function goToInstitutionalReconstruction() {
   router.push({ name: 'dashboard-preschool-admin-reconstruction' })
 }
 
+function goToGovernanceDiffAnalysis() {
+  router.push({ name: 'dashboard-preschool-admin-governance-diff' })
+}
+
 async function loadAuditPreview() {
   auditLoading.value = true
   auditError.value = ''
@@ -194,6 +198,9 @@ onMounted(async () => {
             </Button>
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
               {{ t('preschoolInstitutionalReconstructionPage.actions.openReconstruction') }}
+            </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
+              {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}
             </Button>
           </div>
         </div>

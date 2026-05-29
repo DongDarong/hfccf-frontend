@@ -20,6 +20,7 @@ import reportSnapshots from './report-snapshots'
 import snapshotArchive from './snapshot-archive'
 import exportGovernance from './export-governance'
 import governance from './governance'
+import governanceDiff from './governance-diff'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -46,4 +47,5 @@ export default {
   ...snapshotArchive,
   ...exportGovernance,
   ...governance,
+  ...governanceDiff,
 }

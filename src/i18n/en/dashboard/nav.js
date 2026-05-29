@@ -52,6 +52,7 @@ export default {
     exportGovernance: 'Export Governance',
     governanceReview: 'Governance Review',
     institutionalReconstruction: 'Institutional Reconstruction',
+    governanceDiff: 'Governance Diff',
     scholarshipDashboard: 'Scholarship Dashboard',
     sportDashboard: 'Sport Dashboard',
     teachers: 'Teachers',
