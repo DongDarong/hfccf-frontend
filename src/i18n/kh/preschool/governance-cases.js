@@ -154,7 +154,7 @@ export default {
         evidenceReference: 'SN-20260529-01',
         evidenceLabel: 'ឯកសារយោងភាពមិនស្របគ្នា',
         evidenceDescription: 'ពន្យល់ថាហេតុអ្វីភស្តុតាងនេះសំខាន់សម្រាប់ករណី',
-        metadata: '{"source":"snapshot"}',
+        metadata: 'source: snapshot',
       },
     },
     assignment: {

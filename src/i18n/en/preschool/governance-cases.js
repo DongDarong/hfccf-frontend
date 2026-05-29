@@ -154,7 +154,7 @@ export default {
         evidenceReference: 'SN-20260529-01',
         evidenceLabel: 'Snapshot mismatch reference',
         evidenceDescription: 'Explain why this evidence matters to the case',
-        metadata: '{"source":"snapshot"}',
+        metadata: 'source: snapshot',
       },
     },
     assignment: {
