@@ -19,7 +19,7 @@ defineOptions({
 })
 
 const router = useRouter()
-const { t } = useLanguage()
+const { t, te } = useLanguage()
 
 const {
   errorMessage,
@@ -119,6 +119,68 @@ async function loadAuditPreview() {
   }
 }
 
+function humanizeAuditSegment(segment) {
+  return String(segment || '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim()
+}
+
+function humanizeAuditCode(code) {
+  const normalized = String(code || '').trim()
+  if (!normalized) return '-'
+  if (/^\d+$/.test(normalized)) return `#${normalized}`
+  return normalized
+    .split('.')
+    .map((segment) => humanizeAuditSegment(segment))
+    .join(' ')
+}
+
+function resolveAuditActionLabel(actionType) {
+  const raw = String(actionType || '').trim()
+  if (!raw) return '-'
+
+  const translationKey = `preschoolLifecycleAuditPage.actions.${raw}`
+  if (te(translationKey)) {
+    return t(translationKey)
+  }
+
+  return humanizeAuditCode(raw)
+}
+
+function resolveAuditEntityLabel(entityType) {
+  const raw = String(entityType || '').trim()
+  if (!raw) return '-'
+
+  const translationKey = `preschoolLifecycleAuditPage.entities.${raw}`
+  if (te(translationKey)) {
+    return t(translationKey)
+  }
+
+  return humanizeAuditCode(raw)
+}
+
+function formatAuditReason(reason) {
+  const raw = String(reason || '').trim()
+  if (!raw) return '-'
+
+  const translationKey = `preschoolLifecycleAuditPage.actions.${raw}`
+  if (te(translationKey)) {
+    return t(translationKey)
+  }
+
+  return humanizeAuditCode(raw)
+}
+
+function formatEntityReference(entityId) {
+  const raw = String(entityId || '').trim()
+  if (!raw || raw === '-') return '-'
+
+  const value = raw.startsWith('#') ? raw.slice(1) : raw
+  if (/^\d+$/.test(value)) return `#${value}`
+  return humanizeAuditSegment(value)
+}
+
 onMounted(async () => {
   await loadLookupData()
   await loadReportPeriodOptions()
@@ -200,9 +262,9 @@ onMounted(async () => {
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceReview">
               {{ t('preschoolGovernanceReviewPage.actions.openGovernanceReview') }}
             </Button>
-              <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
-          Open Reconstruction
-              </Button>
+            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
+              {{ t('preschoolGovernanceReviewPage.actions.openReconstruction') }}
+            </Button>
               <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
                 {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}
               </Button>
@@ -297,19 +359,19 @@ onMounted(async () => {
               <tr v-for="item in auditLogs" :key="item.id">
                 <td class="px-4 py-3">
                   <div class="space-y-1">
-                    <p class="font-medium text-slate-900">{{ t(`preschoolLifecycleAuditPage.actions.${item.actionType}`) || item.actionType }}</p>
+                    <p class="font-medium text-slate-900">{{ resolveAuditActionLabel(item.actionType) }}</p>
                     <p class="text-xs text-slate-500">{{ item.actor?.roleCode || item.actorRole || '-' }}</p>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   <div class="space-y-1">
-                    <p>{{ t(`preschoolLifecycleAuditPage.entities.${item.entityType}`) || item.entityType }}</p>
-                    <p class="text-xs text-slate-500">#{{ item.entityId || '-' }}</p>
+                    <p>{{ resolveAuditEntityLabel(item.entityType) }}</p>
+                    <p class="text-xs text-slate-500">{{ formatEntityReference(item.entityId) }}</p>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   <div class="space-y-1">
-                    <p>{{ item.reportPeriod?.periodLabel || item.reportPeriodId || '-' }}</p>
+                    <p>{{ item.reportPeriod?.periodLabel || formatEntityReference(item.reportPeriodId) }}</p>
                     <p class="text-xs text-slate-500">
                       {{ item.actor?.firstName || item.actor?.lastName ? `${item.actor.firstName || ''} ${item.actor.lastName || ''}`.trim() : '-' }}
                     </p>
@@ -317,8 +379,8 @@ onMounted(async () => {
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   <div class="space-y-1">
-                    <p>{{ item.lockReason || item.overrideReason || '-' }}</p>
-                    <p v-if="item.lockCode" class="text-xs text-slate-500">{{ item.lockCode }}</p>
+                    <p>{{ formatAuditReason(item.lockReason || item.overrideReason) }}</p>
+                    <p v-if="item.lockCode" class="text-xs text-slate-500">{{ humanizeAuditCode(item.lockCode) }}</p>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-slate-600">{{ item.createdAt || '-' }}</td>
