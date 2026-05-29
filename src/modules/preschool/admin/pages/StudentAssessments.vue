@@ -28,10 +28,13 @@ const {
   classOptions,
   errorMessage,
   finalizeAssessmentById,
+  isTermLocked,
+  isReportPeriodLocked,
   loadAssessments,
   loadLookupData,
   loading,
   pagination,
+  lockMessage,
   saveAssessment,
   searchQuery,
   selectedCategoryId,
@@ -117,18 +120,30 @@ async function applyFilters() {
 }
 
 async function onSaveAssessment() {
-  const result = await saveAssessment(selectedStudentId.value, formModel.value, editingAssessment.value?.id || '')
-  isFormOpen.value = false
-  editingAssessment.value = result
-  await applyFilters()
+  try {
+    const result = await saveAssessment(selectedStudentId.value, formModel.value, editingAssessment.value?.id || '')
+    isFormOpen.value = false
+    editingAssessment.value = result
+    await applyFilters()
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAssessmentPage.messages.saveFailed')
+  }
 }
 
 async function onFinalizeAssessment(assessment) {
-  await finalizeAssessmentById(assessment?.id)
+  try {
+    await finalizeAssessmentById(assessment?.id)
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAssessmentPage.messages.finalizeFailed')
+  }
 }
 
 async function onArchiveAssessment(assessment) {
-  await archiveAssessmentById(assessment?.id)
+  try {
+    await archiveAssessmentById(assessment?.id)
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAssessmentPage.messages.archiveFailed')
+  }
 }
 
 function onPageChange(page) {
@@ -248,7 +263,14 @@ onMounted(async () => {
             <Button type="button" variant="primary" size="md" rounded="xl" :loading="loading" @click="applyFilters">
               {{ t('preschoolAssessmentPage.actions.search') }}
             </Button>
-            <Button type="button" variant="secondary" size="md" rounded="xl" @click="openCreateForm">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              rounded="xl"
+              :disabled="isTermLocked || isReportPeriodLocked"
+              @click="openCreateForm"
+            >
               {{ t('preschoolAssessmentPage.actions.addAssessment') }}
             </Button>
           </div>
@@ -268,10 +290,19 @@ onMounted(async () => {
         {{ errorMessage }}
       </div>
 
+      <div
+        v-if="(isTermLocked || isReportPeriodLocked) && lockMessage"
+        class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+      >
+        {{ lockMessage }}
+      </div>
+
       <AssessmentList
         :assessments="assessmentItems"
         :loading="loading"
         :pagination="pagination"
+        :is-locked="isTermLocked || isReportPeriodLocked"
+        :lock-message="lockMessage"
         @edit="openEditForm"
         @finalize="onFinalizeAssessment"
         @archive="onArchiveAssessment"
@@ -284,6 +315,8 @@ onMounted(async () => {
           :categories="categoryOptions"
           :classes="classOptions"
           :loading="saving"
+          :is-locked="isTermLocked || isReportPeriodLocked"
+          :lock-message="lockMessage"
           :submit-label="editingAssessment ? t('preschoolAssessmentFormPage.actions.update') : t('preschoolAssessmentFormPage.actions.save')"
           @submit="onSaveAssessment"
           @cancel="closeForm"

@@ -4,6 +4,7 @@ import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentWizard } from '../../composables/useAssessmentWizard'
 import http from '@/services/http'
+import { normalizePerPage } from '@/services/api'
 
 const { t } = useLanguage()
 const { store, selectStudent } = useAssessmentWizard()
@@ -14,7 +15,9 @@ const isLoading = ref(false)
 async function load() {
   isLoading.value = true
   try {
-    const res = await http.get('/preschool/students', { params: { per_page: 200 } })
+    const res = await http.get('/preschool/students', {
+      params: { per_page: normalizePerPage(200, 10, 100) },
+    })
     students.value = res.data.data
   } finally {
     isLoading.value = false

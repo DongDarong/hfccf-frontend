@@ -37,10 +37,31 @@ export default {
         title: 'Payment Configuration',
         subtitle: 'Set tuition defaults and reminder behavior for Preschool payments.',
       },
+      reporting: {
+        eyebrow: 'Reporting periods',
+        title: 'Reporting context',
+        subtitle: 'Review the latest finalized report periods derived from Preschool assessments.',
+      },
+      assessment: {
+        eyebrow: 'Assessment settings',
+        title: 'Assessment Configuration',
+        subtitle: 'Control the assessment cycle, publishing flow, and teacher note requirements.',
+      },
+      schedule: {
+        eyebrow: 'Schedule settings',
+        title: 'Schedule Configuration',
+        subtitle: 'Define how weekly timetables and schedule planning should behave for Preschool.',
+      },
+      enrollment: {
+        eyebrow: 'Enrollment settings',
+        title: 'Enrollment Configuration',
+        subtitle: 'Set the default intake rules used when class and student assignments are created.',
+      },
     },
     summary: {
       academicYear: 'Academic year',
       terms: 'Terms',
+      reportPeriods: 'Report periods',
       classes: 'Classes',
       issues: 'Validation issues',
     },
@@ -63,6 +84,18 @@ export default {
       dueDay: 'Due day',
       lateFeeRule: 'Late fee rule',
       enableOverdueReminders: 'Enable overdue reminders',
+      assessmentCycle: 'Assessment cycle',
+      finalizationMode: 'Finalization mode',
+      defaultTemplate: 'Default template',
+      requireTeacherNotes: 'Require teacher notes',
+      weeklyMode: 'Weekly mode',
+      defaultSlotMinutes: 'Default slot minutes',
+      planningWindow: 'Planning window',
+      allowTeacherOverrides: 'Allow teacher overrides',
+      enrollmentCycle: 'Enrollment cycle',
+      defaultClassLevel: 'Default class level',
+      transferPolicy: 'Transfer policy',
+      capacityReviewMode: 'Capacity review mode',
     },
     placeholders: {
       currentAcademicYear: 'Example: 2025 - 2026',
@@ -81,6 +114,16 @@ export default {
       paymentCycle: 'Select payment cycle',
       dueDay: 'Choose a day between 1 and 31',
       lateFeeRule: 'Select late fee rule',
+      assessmentCycle: 'Select assessment cycle',
+      finalizationMode: 'Select finalization mode',
+      defaultTemplate: 'Enter the default assessment template code',
+      weeklyMode: 'Select weekly mode',
+      defaultSlotMinutes: 'Enter default slot minutes',
+      planningWindow: 'Select planning window',
+      enrollmentCycle: 'Select enrollment cycle',
+      defaultClassLevel: 'Select default class level',
+      transferPolicy: 'Select transfer policy',
+      capacityReviewMode: 'Select capacity review mode',
     },
     actions: {
       addTerm: 'Add Term',
@@ -124,6 +167,39 @@ export default {
       perDay: 'Per day',
       percentage: 'Percentage',
     },
+    assessmentCycles: {
+      term: 'Per term',
+      semester: 'Per semester',
+      monthly: 'Monthly',
+    },
+    finalizationModes: {
+      publishOnly: 'Publish only',
+      manualReview: 'Manual review',
+      draftOnly: 'Draft only',
+    },
+    weeklyModes: {
+      fiveDay: 'Five-day week',
+      sixDay: 'Six-day week',
+    },
+    planningWindows: {
+      weekly: 'Weekly',
+      term: 'Per term',
+      monthly: 'Monthly',
+    },
+    enrollmentCycles: {
+      term: 'Per term',
+      yearly: 'Yearly',
+      rolling: 'Rolling',
+    },
+    transferPolicies: {
+      adminOnly: 'Admin only',
+      adminPlusTeacher: 'Admin + teacher request',
+      teacherRequest: 'Teacher request',
+    },
+    capacityReviewModes: {
+      manual: 'Manual review',
+      automatic: 'Automatic review',
+    },
     termStatuses: {
       active: 'Active',
       inactive: 'Inactive',
@@ -139,10 +215,13 @@ export default {
     help: {
       teacherCanEditAttendance: 'Allow staff teachers to adjust attendance entries inside the configured window.',
       enableOverdueReminders: 'Send internal overdue reminders when payment records remain unpaid.',
+      requireTeacherNotes: 'Require teacher observations before assessment records can be finalized.',
+      allowTeacherOverrides: 'Allow teachers to adjust schedule planning inside the admin-defined window.',
     },
     emptyStates: {
       terms: 'No terms have been configured yet.',
       classConfigurations: 'No class configuration rows have been added yet.',
+      reportPeriods: 'No finalized report periods are available yet.',
       unsaved: 'Draft not saved yet',
     },
     footer: {
@@ -159,6 +238,9 @@ export default {
       ready: 'Ready for review',
       saved: 'Saved locally',
       needsAttention: 'Validation needed',
+    },
+    reporting: {
+      assessments: 'assessments',
     },
   },
 }

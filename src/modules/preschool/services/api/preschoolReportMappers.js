@@ -11,15 +11,78 @@ function normalizeNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-export function normalizeReportPeriod(row = {}) {
+function normalizeSnapshotSummary(row = {}) {
+  if (!row || typeof row !== 'object') {
+    return null
+  }
+
   return {
+    generatedAt: row.generatedAt || row.generated_at || '',
+    generatedByUserId: row.generatedByUserId ?? row.generated_by_user_id ?? '',
+    snapshotState: normalizeText(row.snapshotState || row.snapshot_state),
+    snapshotVersion: normalizeNumber(row.snapshotVersion ?? row.snapshot_version),
+    studentReportSnapshots: normalizeNumber(row.studentReportSnapshots ?? row.student_report_snapshots),
+    classroomReportSnapshots: normalizeNumber(row.classroomReportSnapshots ?? row.classroom_report_snapshots),
+    progressSummarySnapshots: normalizeNumber(row.progressSummarySnapshots ?? row.progress_summary_snapshots),
+    raw: row,
+  }
+}
+
+function normalizeReportSnapshot(row = {}) {
+  if (!row || typeof row !== 'object') {
+    return null
+  }
+
+  return {
+    snapshotType: normalizeText(row.snapshotType || row.snapshot_type),
+    studentId: row.studentId ?? row.student_id ?? '',
+    classId: row.classId ?? row.class_id ?? '',
+    academicYearId: row.academicYearId ?? row.academic_year_id ?? '',
+    termId: row.termId ?? row.term_id ?? '',
+    reportPeriodId: row.reportPeriodId ?? row.report_period_id ?? '',
+    generatedByUserId: row.generatedByUserId ?? row.generated_by_user_id ?? '',
+    lifecycleState: normalizeText(row.lifecycleState || row.lifecycle_state),
+    snapshotVersion: normalizeNumber(row.snapshotVersion ?? row.snapshot_version),
+    generatedAt: row.generatedAt || row.generated_at || '',
+    lockedAt: row.lockedAt || row.locked_at || '',
+    payload: row.payload || row.snapshot_payload || null,
+    raw: row,
+  }
+}
+
+export function normalizeReportPeriod(row = {}) {
+  const status = normalizeText(row.status || 'draft').toLowerCase()
+
+  return {
+    id: row.id ?? '',
     label: normalizeText(row.label || row.periodLabel || row.period_label),
+    academicYearId: row.academicYearId ?? row.academic_year_id ?? '',
+    academicYear: normalizeText(row.academicYear || row.academic_year || row.academic_year_label),
+    academicYearCode: normalizeText(row.academicYearCode || row.academic_year_code),
+    termId: row.termId ?? row.term_id ?? '',
+    termLabel: normalizeText(row.termLabel || row.term_label),
+    termCode: normalizeText(row.termCode || row.term_code),
     fromDate: row.fromDate || row.from_date || '',
     toDate: row.toDate || row.to_date || '',
     latestAssessmentDate: row.latestAssessmentDate || row.latest_assessment_date || row.toDate || row.to_date || '',
     assessmentCount: normalizeNumber(row.assessmentCount ?? row.assessment_count),
     studentCount: normalizeNumber(row.studentCount ?? row.student_count),
     classCount: normalizeNumber(row.classCount ?? row.class_count),
+    status,
+    lockedAt: row.lockedAt || row.locked_at || '',
+    finalizedAt: row.finalizedAt || row.finalized_at || '',
+    archivedAt: row.archivedAt || row.archived_at || '',
+    lockedByUserId: row.lockedByUserId ?? row.locked_by_user_id ?? row.lockedByUserId ?? row.locked_by ?? '',
+    finalizedByUserId: row.finalizedByUserId ?? row.finalized_by_user_id ?? row.finalized_by ?? '',
+    archivedByUserId: row.archivedByUserId ?? row.archived_by_user_id ?? row.archived_by ?? '',
+    notes: normalizeText(row.notes),
+    isDraft: status === 'draft',
+    isActive: status === 'active',
+    isFinalized: status === 'finalized',
+    isLocked: status === 'locked',
+    isArchived: status === 'archived',
+    summarySnapshot: normalizeSnapshotSummary(row.summarySnapshot || row.summary_snapshot),
+    reportSnapshot: normalizeSnapshotSummary(row.reportSnapshot || row.report_snapshot),
     raw: row,
   }
 }
@@ -132,6 +195,9 @@ function normalizeReportPayload(row = {}) {
     studentSummaries: Array.isArray(sourceStudentSummaries) ? sourceStudentSummaries.map(normalizeStudentSummary) : [],
     assessments: Array.isArray(sourceAssessments) ? sourceAssessments.map(normalizeAssessment) : [],
     generatedAt: row.generatedAt || row.generated_at || '',
+    source: normalizeText(row.source || row.data?.source || 'live') || 'live',
+    snapshot: normalizeReportSnapshot(row.snapshot || row.data?.snapshot || null),
+    frozen: Boolean(row.frozen || row.data?.frozen || false),
     raw: row,
   }
 }

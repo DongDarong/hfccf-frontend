@@ -7,6 +7,7 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import { fetchMyPreschoolAttendance } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
@@ -18,6 +19,7 @@ const { t } = useLanguage()
 const attendance = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
+const lifecycleContext = ref({})
 const searchQuery = ref('')
 const statusFilter = ref('')
 const attendanceDate = ref('')
@@ -49,6 +51,33 @@ const mappedAttendance = computed(() =>
   })),
 )
 
+const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
+const isReportPeriodLocked = computed(() =>
+  ['closed', 'archived'].includes(
+    String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
+  ),
+)
+const lockMessage = computed(() => {
+  const status = String(lifecycleContext.value.term_status || '').toLowerCase()
+  const reportPeriodStatus = String(
+    lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '',
+  ).toLowerCase()
+
+  if (status === 'closed') {
+    return t('preschoolLifecyclePage.messages.termClosed')
+  }
+
+  if (status === 'archived') {
+    return t('preschoolLifecyclePage.messages.termArchived')
+  }
+
+  if (['closed', 'archived'].includes(reportPeriodStatus)) {
+    return t('preschoolLifecyclePage.messages.reportPeriodLocked')
+  }
+
+  return ''
+})
+
 async function loadAttendance() {
   loading.value = true
   errorMessage.value = ''
@@ -64,8 +93,16 @@ async function loadAttendance() {
 
     attendance.value = response.items || []
     pagination.value = response.pagination || pagination.value
+    try {
+      const lifecycle = await fetchAcademicLifecycle()
+      lifecycleContext.value = lifecycle.currentContext || {}
+    } catch (lifecycleError) {
+      lifecycleContext.value = {}
+      console.warn('Preschool teacher attendance lifecycle snapshot unavailable.', lifecycleError)
+    }
   } catch (error) {
     attendance.value = []
+    lifecycleContext.value = {}
     errorMessage.value = error?.message || t('preschoolTeacherAttendancePage.messages.loadFailed')
   } finally {
     loading.value = false
@@ -95,6 +132,13 @@ onMounted(() => {
       />
 
       <div class="attendance-page__panel">
+        <div
+          v-if="(isTermLocked || isReportPeriodLocked) && lockMessage"
+          class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          {{ lockMessage }}
+        </div>
+
         <div class="attendance-page__filters">
           <input
             v-model="searchQuery"

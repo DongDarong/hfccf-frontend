@@ -20,6 +20,14 @@ defineProps({
     type: Object,
     default: () => ({ page: 1, perPage: 10, total: 0, totalPages: 1 }),
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
+  lockMessage: {
+    type: String,
+    default: '',
+  },
 })
 
 defineEmits(['edit', 'finalize', 'archive', 'page-change'])
@@ -28,6 +36,13 @@ const { t } = useLanguage()
 
 <template>
   <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <div
+      v-if="isLocked && lockMessage"
+      class="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+    >
+      {{ lockMessage }}
+    </div>
+
     <div v-if="loading" class="border-b border-slate-200 px-4 py-3 text-sm text-slate-500">
       {{ t('preschoolAssessmentPage.loading') }}
     </div>
@@ -66,13 +81,13 @@ const { t } = useLanguage()
           </td>
           <td class="px-4 py-3">
             <div class="flex justify-end gap-2">
-              <Button size="sm" variant="ghost" type="button" @click="$emit('edit', assessment)">
+              <Button size="sm" variant="ghost" type="button" :disabled="isLocked" @click="$emit('edit', assessment)">
                 {{ t('common.actions.edit') }}
               </Button>
-              <Button size="sm" variant="ghost" type="button" @click="$emit('finalize', assessment)">
+              <Button size="sm" variant="ghost" type="button" :disabled="isLocked" @click="$emit('finalize', assessment)">
                 {{ t('preschoolAssessmentPage.actions.finalize') }}
               </Button>
-              <Button size="sm" variant="ghost" type="button" @click="$emit('archive', assessment)">
+              <Button size="sm" variant="ghost" type="button" :disabled="isLocked" @click="$emit('archive', assessment)">
                 {{ t('preschoolAssessmentPage.actions.archive') }}
               </Button>
             </div>

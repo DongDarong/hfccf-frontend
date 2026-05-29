@@ -18,7 +18,17 @@ defineOptions({
 
 const router = useRouter()
 const { t } = useLanguage()
-const { errorMessage, loadMySchedule, loading, schedules, teacherSummary } = usePreschoolTeacherSchedule()
+const {
+  errorMessage,
+  isTermLocked,
+  isReportPeriodLocked,
+  loadMySchedule,
+  loading,
+  lockMessage,
+  schedules,
+  teacherSummary,
+} =
+  usePreschoolTeacherSchedule()
 
 const dayOptions = computed(() => [
   { label: t('preschoolSchedulesShared.days.monday'), value: PreschoolScheduleDay.MONDAY },
@@ -64,6 +74,13 @@ onMounted(() => {
         class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
       >
         {{ errorMessage }}
+      </div>
+
+      <div
+        v-if="(isTermLocked || isReportPeriodLocked) && lockMessage"
+        class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+      >
+        {{ lockMessage }}
       </div>
 
       <div class="flex items-end justify-between gap-2">

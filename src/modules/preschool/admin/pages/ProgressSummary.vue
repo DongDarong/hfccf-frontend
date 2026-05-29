@@ -12,6 +12,7 @@ import { usePreschoolAssessments } from '@/modules/preschool/composables/usePres
 import { usePreschoolProgressSummary } from '@/modules/preschool/composables/usePreschoolProgressSummary'
 import ProgressSummaryCard from '@/modules/preschool/shared/components/assessment/ProgressSummaryCard.vue'
 import ProgressTrendList from '@/modules/preschool/shared/components/assessment/ProgressTrendList.vue'
+import ReportSnapshotBadge from '@/modules/preschool/shared/components/report/ReportSnapshotBadge.vue'
 
 defineOptions({
   name: 'PreschoolProgressSummaryPage',
@@ -22,7 +23,17 @@ const router = useRouter()
 const { t } = useLanguage()
 
 const { studentOptions, loadLookupData, selectedStudentId, setSelectedStudentId } = usePreschoolAssessments()
-const { categories, errorMessage, loadProgressSummary, loading, recentAssessments, summary } = usePreschoolProgressSummary()
+const {
+  categories,
+  errorMessage,
+  frozen,
+  loadProgressSummary,
+  loading,
+  recentAssessments,
+  snapshot,
+  source,
+  summary,
+} = usePreschoolProgressSummary()
 const selectedStudentLabel = ref('')
 
 const summaryCards = computed(() => [
@@ -108,6 +119,14 @@ onMounted(async () => {
         class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
       >
         {{ errorMessage }}
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div class="space-y-1">
+          <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolReportSnapshots.labels.progressSummaryTitle') }}</h3>
+          <p class="text-sm text-slate-500">{{ t('preschoolReportSnapshots.labels.progressSummarySubtitle') }}</p>
+        </div>
+        <ReportSnapshotBadge :snapshot="snapshot" :source="source" :frozen="frozen" />
       </div>
 
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

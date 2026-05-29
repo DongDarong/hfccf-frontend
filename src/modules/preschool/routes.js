@@ -146,6 +146,81 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/audit',
+    name: 'dashboard-preschool-admin-lifecycle-audit',
+    component: () => import('@/modules/preschool/admin/pages/LifecycleAudit.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  // Snapshot archive is admin-only because it exposes immutable historical
+  // report output for browsing, comparison, and export rather than editing.
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/snapshots',
+    name: 'dashboard-preschool-admin-report-snapshots',
+    component: () => import('@/modules/preschool/admin/pages/ReportSnapshotArchive.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  // Export governance stays admin-only so institutional exports and historical
+  // comparisons remain read-only review surfaces rather than a teacher tool.
+  defineAppRoute({
+    path: '/module/preschool-admin/reports/export-governance',
+    name: 'dashboard-preschool-admin-export-governance',
+    component: () => import('@/modules/preschool/admin/pages/ReportExportGovernance.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  // Governance review stays admin-only so institutional reconstruction and
+  // historical anomaly review never create a write surface for staff users.
+  defineAppRoute({
+    path: '/module/preschool-admin/governance/review',
+    name: 'dashboard-preschool-admin-governance-review',
+    component: () => import('@/modules/preschool/admin/pages/GovernanceReview.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  // Institutional reconstruction stays admin-only so historical state can be
+  // replayed from immutable records without mutating live operational data.
+  defineAppRoute({
+    path: '/module/preschool-admin/governance/reconstruction',
+    name: 'dashboard-preschool-admin-reconstruction',
+    component: () => import('@/modules/preschool/admin/pages/InstitutionalReconstruction.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  // Governance diff analysis stays admin-only so institutional comparisons
+  // remain snapshot-first, review-focused, and separate from operational CRUD.
+  defineAppRoute({
+    path: '/module/preschool-admin/governance/diff',
+    name: 'dashboard-preschool-admin-governance-diff',
+    component: () => import('@/modules/preschool/admin/pages/GovernanceDiffAnalysis.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  // Governance cases keep diff and integrity findings in a review workflow so
+  // administrators can assign, escalate, and resolve institutional risk.
+  defineAppRoute({
+    path: '/module/preschool-admin/governance/cases',
+    name: 'dashboard-preschool-admin-governance-cases',
+    component: () => import('@/modules/preschool/admin/pages/GovernanceCases.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Reports stay split into overview, student, and classroom routes so the UI
   // can navigate to real finalized data without exposing placeholder screens.
   defineAppRoute({

@@ -3,12 +3,14 @@
 // HTTP calls in the template.
 import { computed, ref } from 'vue'
 import { getCurrentUser } from '@/services/auth'
+import { useLanguage } from '@/composables/useLanguage'
 import {
   archiveSchedule,
   createSchedule,
   fetchSchedules,
   updateSchedule,
 } from '@/modules/preschool/services/api/preschoolScheduleApi'
+import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import { fetchPreschoolClasses, fetchPreschoolTeachers } from '@/modules/preschool/services/preschoolApi'
 
 function normalizeText(value) {
@@ -33,6 +35,7 @@ function buildTeacherOptions(items = []) {
 
 export function usePreschoolSchedules() {
   const currentUser = computed(() => getCurrentUser() || {})
+  const { t } = useLanguage()
   const loading = ref(false)
   const saving = ref(false)
   const errorMessage = ref('')
@@ -47,6 +50,7 @@ export function usePreschoolSchedules() {
   const selectedClassId = ref('')
   const selectedTeacherId = ref('')
   const searchQuery = ref('')
+  const lifecycleContext = ref({})
 
   async function loadLookups() {
     loading.value = true
@@ -60,6 +64,12 @@ export function usePreschoolSchedules() {
 
       classOptions.value = buildClassOptions(classesResponse.items || [])
       teacherOptions.value = buildTeacherOptions(teachersResponse.items || [])
+      try {
+        const lifecycle = await fetchAcademicLifecycle()
+        lifecycleContext.value = lifecycle.currentContext || {}
+      } catch {
+        lifecycleContext.value = {}
+      }
     } catch (error) {
       classOptions.value = []
       teacherOptions.value = []
@@ -161,6 +171,43 @@ export function usePreschoolSchedules() {
     searchQuery.value = String(search || '')
   }
 
+  const lockedReportStatuses = ['finalized', 'locked', 'archived']
+  const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
+  const lockMessage = computed(() => {
+    const status = String(lifecycleContext.value.term_status || '').toLowerCase()
+    const reportPeriodStatus = String(
+      lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '',
+    ).toLowerCase()
+
+    if (status === 'closed') {
+      return t('preschoolLifecyclePage.messages.termClosed')
+    }
+
+    if (status === 'archived') {
+      return t('preschoolLifecyclePage.messages.termArchived')
+    }
+
+    if (reportPeriodStatus === 'finalized') {
+      return t('preschoolLifecyclePage.messages.reportPeriodFinalized')
+    }
+
+    if (reportPeriodStatus === 'archived') {
+      return t('preschoolLifecyclePage.messages.reportPeriodArchived')
+    }
+
+    if (lockedReportStatuses.includes(reportPeriodStatus)) {
+      return t('preschoolLifecyclePage.messages.reportPeriodLocked')
+    }
+
+    return ''
+  })
+
+  const isReportPeriodLocked = computed(() =>
+    lockedReportStatuses.includes(
+      String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
+    ),
+  )
+
   return {
     archiveSchedule: removeSchedule,
     classOptions,
@@ -170,6 +217,9 @@ export function usePreschoolSchedules() {
     loading,
     loadLookups,
     loadSchedules,
+    lifecycleContext,
+    isTermLocked,
+    isReportPeriodLocked,
     pagination,
     saveSchedule,
     schedules,
@@ -187,5 +237,6 @@ export function usePreschoolSchedules() {
     setSelectedTeacherId,
     saving,
     teacherOptions,
+    lockMessage,
   }
 }

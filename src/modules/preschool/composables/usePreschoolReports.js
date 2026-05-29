@@ -2,6 +2,7 @@
 // focused on rendering finalized assessment summaries and period filters.
 import { computed, ref } from 'vue'
 import { getCurrentUser } from '@/services/auth'
+import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchMyPreschoolStudents,
   fetchPreschoolStudents,
@@ -27,6 +28,7 @@ function buildStudentOptions(items = []) {
 export function usePreschoolReports() {
   const currentUser = computed(() => getCurrentUser() || {})
   const isTeacher = computed(() => String(currentUser.value?.role || '') === 'teacher-preschool')
+  const { t } = useLanguage()
 
   const loading = ref(false)
   const errorMessage = ref('')
@@ -35,6 +37,28 @@ export function usePreschoolReports() {
   const selectedStudentId = ref('')
   const selectedPeriodLabel = ref('')
   const reportBundle = ref({ student: null, periods: [], period: null, report: null })
+  const selectedReportPeriod = computed(() =>
+    reportPeriods.value.find((period) => String(period.label || '') === String(selectedPeriodLabel.value || '')) || null,
+  )
+
+  const isReportPeriodLocked = computed(() => ['finalized', 'locked', 'archived'].includes(String(selectedReportPeriod.value?.status || '').toLowerCase()))
+  const reportPeriodLockMessage = computed(() => {
+    const status = String(selectedReportPeriod.value?.status || '').toLowerCase()
+
+    if (status === 'finalized') {
+      return t('preschoolLifecyclePage.messages.reportPeriodFinalized')
+    }
+
+    if (status === 'locked') {
+      return t('preschoolLifecyclePage.messages.reportPeriodLocked')
+    }
+
+    if (status === 'archived') {
+      return t('preschoolLifecyclePage.messages.reportPeriodArchived')
+    }
+
+    return ''
+  })
 
   async function loadLookupData() {
     loading.value = true
@@ -122,8 +146,11 @@ export function usePreschoolReports() {
     loading,
     reportBundle,
     reportPeriods,
+    reportPeriodLockMessage,
+    isReportPeriodLocked,
     selectedPeriodLabel,
     selectedStudentId,
+    selectedReportPeriod,
     setSelectedPeriodLabel,
     setSelectedStudentId,
     studentOptions,

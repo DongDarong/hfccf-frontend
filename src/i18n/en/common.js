@@ -12,6 +12,7 @@ export default {
   save: 'Save',
   clear: 'Clear',
   confirm: 'Confirm',
+  submit: 'Submit',
   close: 'Close',
   continue: 'Continue',
   enabled: 'Enabled',
@@ -68,6 +69,8 @@ export default {
     active: 'Active',
     inactive: 'Inactive',
     suspended: 'Suspended',
+    closed: 'Closed',
+    archived: 'Archived',
   },
   role: {
     // Keep Preschool level labels under the shared role namespace so class

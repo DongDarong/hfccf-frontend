@@ -76,6 +76,9 @@ export function normalizeProgressSummary(row = {}) {
     },
     categories,
     recentAssessments,
+    source: String(row.source || row.data?.source || 'live').trim() || 'live',
+    snapshot: row.snapshot || row.data?.snapshot || null,
+    frozen: Boolean(row.frozen || row.data?.frozen || false),
     raw: row,
   }
 }

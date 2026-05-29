@@ -12,6 +12,7 @@ export default {
   save: 'រក្សាទុក',
   clear: 'ជម្រះ',
   confirm: 'បញ្ជាក់',
+  submit: 'ដាក់ស្នើ',
   close: 'បិទ',
   continue: 'បន្ត',
   enabled: 'បើក',
@@ -69,6 +70,8 @@ export default {
     active: 'សកម្ម',
     inactive: 'អសកម្ម',
     suspended: 'ផ្អាក',
+    closed: 'បានបិទ',
+    archived: 'បានទុកក្នុងបណ្ណសារ',
   },
   role: {
     superadmin: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ',
