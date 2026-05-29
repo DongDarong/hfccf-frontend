@@ -120,18 +120,30 @@ async function applyFilters() {
 }
 
 async function onSaveAssessment() {
-  const result = await saveAssessment(selectedStudentId.value, formModel.value, editingAssessment.value?.id || '')
-  isFormOpen.value = false
-  editingAssessment.value = result
-  await applyFilters()
+  try {
+    const result = await saveAssessment(selectedStudentId.value, formModel.value, editingAssessment.value?.id || '')
+    isFormOpen.value = false
+    editingAssessment.value = result
+    await applyFilters()
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAssessmentPage.messages.saveFailed')
+  }
 }
 
 async function onFinalizeAssessment(assessment) {
-  await finalizeAssessmentById(assessment?.id)
+  try {
+    await finalizeAssessmentById(assessment?.id)
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAssessmentPage.messages.finalizeFailed')
+  }
 }
 
 async function onArchiveAssessment(assessment) {
-  await archiveAssessmentById(assessment?.id)
+  try {
+    await archiveAssessmentById(assessment?.id)
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAssessmentPage.messages.archiveFailed')
+  }
 }
 
 function onPageChange(page) {
