@@ -38,8 +38,8 @@ export default {
         activated: 'Academic Term Activated',
       },
       report_snapshot: {
-        analytics_viewed: 'Analytics Viewed',
-        archive_viewed: 'Archive Viewed',
+        analytics_viewed: 'Snapshot analytics viewed',
+        archive_viewed: 'Snapshot archive viewed',
       },
       report_export: {
         created: 'Report export created',
@@ -78,6 +78,7 @@ export default {
       payment: 'Payment',
       report: 'Report',
       report_snapshot: 'Report Snapshot',
+      report_export_archive: 'Report Export Archive',
       report_snapshot_archive: 'Report Snapshot Archive',
       report_export_record: 'Report Export Record',
       governance_case: 'Governance Case',

@@ -5,6 +5,11 @@ import Dialog from 'primevue/dialog'
 import Button from '@/components/buttons/Button.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import {
+  formatAuditCodeFallback,
+  resolveLifecycleActionLabel,
+  resolveLifecycleEntityLabel,
+} from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
 defineProps({
   visible: {
@@ -26,7 +31,7 @@ defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'download'])
-const { t } = useLanguage()
+const { t, te } = useLanguage()
 
 function sourceStatus(source) {
   return source === 'snapshot' ? 'success' : 'warning'
@@ -51,6 +56,14 @@ function exportTypeLabel(type) {
   }
 
   return labels[type] || type || '-'
+}
+
+function reasonLabel(reason) {
+  return resolveLifecycleActionLabel(t, reason, te)
+}
+
+function entityLabel(entityType) {
+  return resolveLifecycleEntityLabel(t, entityType, te)
 }
 </script>
 
@@ -156,13 +169,13 @@ function exportTypeLabel(type) {
             >
               <div class="flex items-start justify-between gap-2">
                 <div>
-                  <p class="font-medium text-slate-900">{{ event.actionType || '-' }}</p>
-                  <p class="text-xs text-slate-500">{{ event.entityType || '-' }} #{{ event.entityId || '-' }}</p>
+                  <p class="font-medium text-slate-900">{{ reasonLabel(event.actionType) }}</p>
+                  <p class="text-xs text-slate-500">{{ entityLabel(event.entityType) }} {{ formatAuditCodeFallback(event.entityId) }}</p>
                 </div>
                 <p class="text-xs text-slate-500">{{ event.createdAt || '-' }}</p>
               </div>
               <p class="mt-2 text-slate-600">
-                {{ event.overrideReason || event.lockReason || '-' }}
+                {{ formatAuditCodeFallback(event.overrideReason || event.lockReason) }}
               </p>
             </div>
           </div>
@@ -199,8 +212,8 @@ function exportTypeLabel(type) {
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   <div class="space-y-1">
-                    <p>{{ snapshot.contextLabel || '-' }}</p>
-                    <p class="text-xs text-slate-500">{{ snapshot.academicYear?.label || snapshot.academicYear?.code || '-' }}</p>
+                    <p>{{ formatAuditCodeFallback(snapshot.contextLabel) }}</p>
+                    <p class="text-xs text-slate-500">{{ formatAuditCodeFallback(snapshot.academicYear?.label || snapshot.academicYear?.code) }}</p>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-slate-600">

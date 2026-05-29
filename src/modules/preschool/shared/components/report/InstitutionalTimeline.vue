@@ -2,6 +2,10 @@
 // Keep the institutional timeline read-only so export history and lifecycle
 // events can be reviewed without creating another mutation surface.
 import { useLanguage } from '@/composables/useLanguage'
+import {
+  formatAuditCodeFallback,
+  resolveLifecycleActionLabel,
+} from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
 defineProps({
   items: {
@@ -14,7 +18,11 @@ defineProps({
   },
 })
 
-const { t } = useLanguage()
+const { t, te } = useLanguage()
+
+function timelineLabel(item) {
+  return resolveLifecycleActionLabel(t, item.eventType || item.title, te)
+}
 </script>
 
 <template>
@@ -38,14 +46,14 @@ const { t } = useLanguage()
       <div v-for="item in items" :key="item.id" class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
         <div class="flex flex-wrap items-start justify-between gap-2">
           <div>
-            <p class="text-sm font-medium text-slate-900">{{ item.title || item.eventType || '-' }}</p>
+            <p class="text-sm font-medium text-slate-900">{{ timelineLabel(item) }}</p>
             <p class="text-xs text-slate-500">{{ item.description || '-' }}</p>
           </div>
           <p class="text-xs text-slate-500">{{ item.recordedAt || '-' }}</p>
         </div>
         <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
           <span>{{ item.actor?.displayName || item.actor?.roleCode || '-' }}</span>
-          <span>{{ t('preschoolExportGovernancePage.timeline.contextLabel') }}: {{ item.context?.reportPeriodId || item.context?.termId || item.context?.academicYearId || '-' }}</span>
+          <span>{{ t('preschoolExportGovernancePage.timeline.contextLabel') }}: {{ formatAuditCodeFallback(item.context?.reportPeriodId || item.context?.termId || item.context?.academicYearId) }}</span>
         </div>
       </div>
     </div>

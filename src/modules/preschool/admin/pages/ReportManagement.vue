@@ -13,6 +13,11 @@ import { fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/presch
 import ReportSummaryCard from '@/modules/preschool/shared/components/report/ReportSummaryCard.vue'
 import ReportSnapshotBadge from '@/modules/preschool/shared/components/report/ReportSnapshotBadge.vue'
 import ReportPeriodStatusBadge from '@/modules/preschool/shared/components/report/ReportPeriodStatusBadge.vue'
+import {
+  formatAuditCodeFallback,
+  resolveLifecycleActionLabel as resolveAuditActionLabel,
+  resolveLifecycleEntityLabel as resolveAuditEntityLabel,
+} from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
 
 defineOptions({
   name: 'PreschoolReportPeriodOverviewPage',
@@ -119,66 +124,12 @@ async function loadAuditPreview() {
   }
 }
 
-function humanizeAuditSegment(segment) {
-  return String(segment || '')
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-    .trim()
-}
-
-function humanizeAuditCode(code) {
-  const normalized = String(code || '').trim()
-  if (!normalized) return '-'
-  if (/^\d+$/.test(normalized)) return `#${normalized}`
-  return normalized
-    .split('.')
-    .map((segment) => humanizeAuditSegment(segment))
-    .join(' ')
-}
-
-function resolveAuditActionLabel(actionType) {
-  const raw = String(actionType || '').trim()
-  if (!raw) return '-'
-
-  const translationKey = `preschoolLifecycleAuditPage.actions.${raw}`
-  if (te(translationKey)) {
-    return t(translationKey)
-  }
-
-  return humanizeAuditCode(raw)
-}
-
-function resolveAuditEntityLabel(entityType) {
-  const raw = String(entityType || '').trim()
-  if (!raw) return '-'
-
-  const translationKey = `preschoolLifecycleAuditPage.entities.${raw}`
-  if (te(translationKey)) {
-    return t(translationKey)
-  }
-
-  return humanizeAuditCode(raw)
-}
-
 function formatAuditReason(reason) {
-  const raw = String(reason || '').trim()
-  if (!raw) return '-'
-
-  const translationKey = `preschoolLifecycleAuditPage.actions.${raw}`
-  if (te(translationKey)) {
-    return t(translationKey)
-  }
-
-  return humanizeAuditCode(raw)
+  return resolveAuditActionLabel(t, reason, te)
 }
 
 function formatEntityReference(entityId) {
-  const raw = String(entityId || '').trim()
-  if (!raw || raw === '-') return '-'
-
-  const value = raw.startsWith('#') ? raw.slice(1) : raw
-  if (/^\d+$/.test(value)) return `#${value}`
-  return humanizeAuditSegment(value)
+  return formatAuditCodeFallback(entityId)
 }
 
 onMounted(async () => {
