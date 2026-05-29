@@ -270,7 +270,7 @@ export default {
       fullName: 'Full Name',
       fullNamePlaceholder: 'Enter full name',
       email: 'Email',
-      emailPlaceholder: 'teacher@example.com',
+      emailPlaceholder: 'teacher at example.com',
       phone: 'Phone',
       phonePlaceholder: 'Enter phone number',
       role: 'Role',

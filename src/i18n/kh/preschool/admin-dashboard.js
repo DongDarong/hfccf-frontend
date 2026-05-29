@@ -269,7 +269,7 @@ export default {
       fullName: 'ឈ្មោះពេញ',
       fullNamePlaceholder: 'បញ្ចូលឈ្មោះពេញ',
       email: 'អ៊ីមែល',
-      emailPlaceholder: 'teacher@example.com',
+      emailPlaceholder: 'teacher at example.com',
       phone: 'ទូរស័ព្ទ',
       phonePlaceholder: 'បញ្ចូលលេខទូរស័ព្ទ',
       role: 'តួនាទី',
