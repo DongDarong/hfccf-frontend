@@ -77,6 +77,13 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-enrollments",
+          "routeName": "dashboard-preschool-admin-enrollments",
+          "labelKey": "nav.items.preschoolEnrollments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
+        },
+        {
           "id": "preschool-forms",
           "routeName": "dashboard-preschool-admin-forms",
           "labelKey": "nav.items.forms",
