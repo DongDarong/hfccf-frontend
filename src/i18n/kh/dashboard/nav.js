@@ -77,6 +77,7 @@ export default {
     classroomResources: 'ធនធានថ្នាក់រៀន',
     healthy: 'សុខភាព',
     classroomresources: 'ធនធានថ្នាក់រៀន',
+    preschoolEnrollments: 'ការចុះឈ្មោះចូលរៀន',
     preschoolAssessments: 'ការវាយតម្លៃមត្តេយ្យសិក្សា',
     preschoolProgressSummary: 'សេចក្តីសង្ខេបវឌ្ឍនភាពមត្តេយ្យសិក្សា',
     myTeams: 'ក្រុមរបស់ខ្ញុំ',
