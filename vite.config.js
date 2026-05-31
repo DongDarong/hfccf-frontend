@@ -129,6 +129,13 @@ export default defineConfig(({ command }) => {
           changeOrigin: true,
           secure: false,
         },
+        // Avatars and other public storage assets should also flow through the dev server
+        // so teammate machines do not need the backend hostname resolved locally.
+        '/storage': {
+          target: 'http://hfccf-backend.test',
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     preview: {

@@ -32,6 +32,14 @@ describe('avatar utils', () => {
     expect(resolveAvatarSource(src)).toBe(src)
   })
 
+  it('rewrites local backend storage avatar urls to the dev proxy path', async () => {
+    const { resolveAvatarSource } = await import('@/utils/avatar')
+
+    const src = 'http://hfccf-backend.test/storage/avatars/user.jpg?token=abc#view'
+
+    expect(resolveAvatarSource(src)).toBe('/storage/avatars/user.jpg?token=abc#view')
+  })
+
   it('rejects unrelated external avatar URLs', async () => {
     const { isSafeAvatarSource, resolveAvatarSource } = await import('@/utils/avatar')
 

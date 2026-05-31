@@ -41,6 +41,40 @@ function getConfiguredImageOrigins() {
 const apiOrigin = getApiOrigin()
 const configuredImageOrigins = getConfiguredImageOrigins()
 
+function isLocalBrowserHost() {
+  if (typeof window === 'undefined') return false
+
+  return isLocalHostname(window.location.hostname)
+}
+
+function isLocalHostname(hostname) {
+  return (
+    hostname === 'localhost'
+    || hostname === '127.0.0.1'
+    || hostname === '::1'
+    || hostname.endsWith('.local')
+    || hostname.endsWith('.test')
+  )
+}
+
+function rewriteLocalBackendStorageAvatarSource(source) {
+  if (!apiOrigin || !isLocalBrowserHost()) {
+    return source
+  }
+
+  try {
+    const url = new URL(source, window.location.origin)
+
+    if (url.origin !== apiOrigin || !url.pathname.startsWith('/storage/')) {
+      return source
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return source
+  }
+}
+
 /**
  * Keep avatar URLs on the local app origin or trusted backend/public image origin.
  * R2 public origins are allowed so uploaded avatars can render directly in the UI.
@@ -74,7 +108,7 @@ export function isSafeAvatarSource(value) {
 export function resolveAvatarSource(value, { fallbackToAsset = false } = {}) {
   const source = String(value || '').trim()
 
-  if (isSafeAvatarSource(source)) return source
+  if (isSafeAvatarSource(source)) return rewriteLocalBackendStorageAvatarSource(source)
 
   return fallbackToAsset ? defaultAvatar : ''
 }
