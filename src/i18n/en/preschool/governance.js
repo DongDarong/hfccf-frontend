@@ -135,6 +135,7 @@ export default {
       allClasses: 'All Classes',
       allStudents: 'All Students',
       allSnapshotTypes: 'All Snapshot Types',
+      allStates: 'All States',
     },
     actions: {
       refresh: 'Reconstruct',

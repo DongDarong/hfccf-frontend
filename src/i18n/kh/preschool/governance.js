@@ -135,6 +135,7 @@ export default {
       allClasses: 'ថ្នាក់ទាំងអស់',
       allStudents: 'សិស្សទាំងអស់',
       allSnapshotTypes: 'ប្រភេទសញ្ញាសម្គាល់ទាំងអស់',
+      allStates: 'ស្ថានភាពទាំងអស់',
     },
     actions: {
       refresh: 'កសាងឡើងវិញ',
