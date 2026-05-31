@@ -1,6 +1,7 @@
 <script setup>
 import GovernanceCaseSeverityBadge from './GovernanceCaseSeverityBadge.vue'
 import GovernanceCaseStatusBadge from './GovernanceCaseStatusBadge.vue'
+import { formatDatetimeShort } from '@/utils/date'
 
 defineOptions({
   name: 'GovernanceCaseTable',
@@ -86,7 +87,7 @@ function selectCase(record) {
             {{ sourceLabelMap[record.sourceType] || record.sourceType || '-' }}
           </td>
           <td class="px-4 py-3 text-slate-600">
-            {{ record.updatedAt || '-' }}
+            {{ formatDatetimeShort(record.updatedAt) }}
           </td>
         </tr>
         <tr v-if="!items.length">

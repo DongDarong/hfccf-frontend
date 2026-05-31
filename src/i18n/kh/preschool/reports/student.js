@@ -10,10 +10,12 @@ export default {
     },
     placeholders: {
       student: 'ជ្រើសសិស្ស',
-      period: 'ជ្រើសរយៈពេលរបាយការណ៍',
+      period: 'ជ្រើសរយៈពេល',
     },
     actions: {
-      back: 'ត្រឡប់ទៅទិដ្ឋភាពទូទៅ',
+      back: 'ត្រឡប់',
+      load: 'ផ្ទុករបាយការណ៍',
+      loading: 'កំពុងផ្ទុក…',
     },
   },
 }

@@ -12,6 +12,7 @@ import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoo
 import { fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
 import ReportSummaryCard from '@/modules/preschool/shared/components/report/ReportSummaryCard.vue'
 import ReportSnapshotBadge from '@/modules/preschool/shared/components/report/ReportSnapshotBadge.vue'
+import { formatDatetimeShort } from '@/utils/date'
 import ReportPeriodStatusBadge from '@/modules/preschool/shared/components/report/ReportPeriodStatusBadge.vue'
 import {
   formatAuditCodeFallback,
@@ -183,7 +184,7 @@ onMounted(async () => {
         >
           <p class="font-medium text-slate-900">{{ t('preschoolReportSnapshots.labels.immutableSnapshot') }}</p>
           <p class="mt-1">
-            {{ selectedPeriodSummary.reportSnapshot?.generatedAt || selectedPeriodSummary.summarySnapshot?.generatedAt || '-' }}
+            {{ formatDatetimeShort(selectedPeriodSummary.reportSnapshot?.generatedAt || selectedPeriodSummary.summarySnapshot?.generatedAt) }}
           </p>
         </div>
       </div>
@@ -334,7 +335,7 @@ onMounted(async () => {
                     <p v-if="item.lockCode" class="text-xs text-slate-500">{{ humanizeAuditCode(item.lockCode) }}</p>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-slate-600">{{ item.createdAt || '-' }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ formatDatetimeShort(item.createdAt) }}</td>
               </tr>
             </tbody>
           </table>

@@ -17,6 +17,7 @@ import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
 import { fetchLifecycleAuditAnalytics, fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
+import { formatDatetimeShort } from '@/utils/date'
 
 defineOptions({
   name: 'PreschoolLifecycleAuditPage',
@@ -399,7 +400,7 @@ onMounted(async () => {
                 <td class="px-4 py-3 text-slate-600">{{ formatActor(item) }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ formatContext(item) }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ formatAuditReason(item.lockReason || item.overrideReason) }}</td>
-                <td class="px-4 py-3 text-slate-600">{{ item.createdAt || '-' }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ formatDatetimeShort(item.createdAt) }}</td>
               </tr>
             </tbody>
           </table>

@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { formatDatetimeShort } from '@/utils/date'
 
 defineOptions({ name: 'EnrollmentTimeline' })
 
@@ -23,10 +24,9 @@ function actionLabel(action) {
   return map[action] ?? action
 }
 
-function formatDate(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString()
-}
+// Delegate to the shared utility — removes the inline toLocaleString() call
+// that was printing raw ISO strings on some locales/browsers.
+const formatDate = formatDatetimeShort
 </script>
 
 <template>

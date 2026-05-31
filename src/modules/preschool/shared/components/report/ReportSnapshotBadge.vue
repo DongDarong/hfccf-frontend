@@ -3,6 +3,7 @@
 // show whether content is live or frozen without duplicating lifecycle logic.
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { formatDatetimeShort } from '@/utils/date'
 
 const props = defineProps({
   snapshot: {
@@ -57,7 +58,7 @@ const detail = computed(() => {
   const version = props.snapshot?.snapshotVersion ? `${t('preschoolReportSnapshots.labels.version')} ${props.snapshot.snapshotVersion}` : ''
   const stateLabel = snapshotState.value ? t(`preschoolReportSnapshots.states.${snapshotState.value}`) || snapshotState.value : ''
 
-  return [generatedAt && `${t('preschoolReportSnapshots.labels.generatedAt')}: ${generatedAt}`, generatedBy, version, stateLabel]
+  return [generatedAt && `${t('preschoolReportSnapshots.labels.generatedAt')}: ${formatDatetimeShort(generatedAt)}`, generatedBy, version, stateLabel]
     .filter(Boolean)
     .join(' | ')
 })

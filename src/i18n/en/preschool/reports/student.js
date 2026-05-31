@@ -3,17 +3,19 @@
 export default {
   preschoolStudentReportsPage: {
     title: 'Student Reports',
-    subtitle: 'Review a student’s finalized assessments, attendance, and observations.',
+    subtitle: 'Review finalized assessments, attendance, and teacher observations for a student.',
     filters: {
       student: 'Student',
       period: 'Reporting Period',
     },
     placeholders: {
       student: 'Select a student',
-      period: 'Select a report period',
+      period: 'Select a period',
     },
     actions: {
-      back: 'Back to Overview',
+      back: 'Back',
+      load: 'Load Report',
+      loading: 'Loading…',
     },
   },
 }

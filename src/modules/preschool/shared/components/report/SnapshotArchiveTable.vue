@@ -2,6 +2,7 @@
 // Keep the snapshot archive table focused on browsing immutable records and
 // not on editing. The admin page owns filtering and export behavior.
 import { useLanguage } from '@/composables/useLanguage'
+import { formatDatetimeShort } from '@/utils/date'
 import Button from '@/components/buttons/Button.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import ReportSnapshotBadge from './ReportSnapshotBadge.vue'
@@ -95,7 +96,7 @@ function tone(state) {
             </td>
             <td class="px-4 py-3 text-slate-600">
               <div class="space-y-1">
-                <p>{{ item.generatedAt || '-' }}</p>
+                <p>{{ formatDatetimeShort(item.generatedAt) }}</p>
                 <p class="text-xs text-slate-500">{{ item.generatedBy?.displayName || item.generatedBy?.username || '-' }}</p>
               </div>
             </td>

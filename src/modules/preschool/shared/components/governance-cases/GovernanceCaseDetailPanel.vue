@@ -1,6 +1,7 @@
 <script setup>
 import GovernanceCaseSeverityBadge from './GovernanceCaseSeverityBadge.vue'
 import GovernanceCaseStatusBadge from './GovernanceCaseStatusBadge.vue'
+import { formatDatetimeShort } from '@/utils/date'
 
 defineOptions({
   name: 'GovernanceCaseDetailPanel',
@@ -107,7 +108,7 @@ function joinContext(context = {}) {
       <div class="rounded-xl border border-slate-200 p-3">
         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ labels.statusSummary || 'Status summary' }}</p>
         <p class="mt-1 text-sm text-slate-700">{{ labels.createdBy || 'Created by' }}: {{ record.createdBy?.displayName || '-' }}</p>
-        <p class="text-xs text-slate-500">{{ labels.updatedAt || 'Updated' }}: {{ record.updatedAt || '-' }}</p>
+        <p class="text-xs text-slate-500">{{ labels.updatedAt || 'Updated' }}: {{ formatDatetimeShort(record.updatedAt) }}</p>
       </div>
     </div>
 
@@ -140,7 +141,7 @@ function joinContext(context = {}) {
     <div class="mt-4 grid gap-3 md:grid-cols-2">
       <div class="rounded-xl border border-slate-200 p-3">
         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ labels.createdAt || 'Created at' }}</p>
-        <p class="mt-1 text-sm text-slate-700">{{ record.createdAt || '-' }}</p>
+        <p class="mt-1 text-sm text-slate-700">{{ formatDatetimeShort(record.createdAt) }}</p>
       </div>
       <div class="rounded-xl border border-slate-200 p-3">
         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ labels.resolutionTimeline || 'Resolution timeline' }}</p>

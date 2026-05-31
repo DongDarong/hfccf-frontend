@@ -5,6 +5,7 @@ import Dialog from 'primevue/dialog'
 import Button from '@/components/buttons/Button.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { formatDatetimeShort } from '@/utils/date'
 import {
   formatAuditCodeFallback,
   resolveLifecycleActionLabel,
@@ -179,7 +180,7 @@ function contextLabel(value) {
                   <p class="font-medium text-slate-900">{{ reasonLabel(event.actionType) }}</p>
                   <p class="text-xs text-slate-500">{{ entityLabel(event.entityType || event.entity) }} · {{ contextLabel(event.entityId || event.context || event) }}</p>
                 </div>
-                <p class="text-xs text-slate-500">{{ event.createdAt || '-' }}</p>
+                <p class="text-xs text-slate-500">{{ formatDatetimeShort(event.createdAt) }}</p>
               </div>
               <p class="mt-2 text-slate-600">
                 {{ formatAuditCodeFallback(event.overrideReason || event.lockReason) }}
