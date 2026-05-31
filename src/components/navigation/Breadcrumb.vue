@@ -25,9 +25,8 @@ const { t } = useLanguage()
  * The first item is always the module root.
  */
 const CRUMB_MAP = {
-  // ── Admin dashboard ───────────────────────────────────────────────────────
+  // ── Admin dashboard — root of the module; single crumb, no parent link ───
   'dashboard-preschool-admin': [
-    { labelKey: 'breadcrumb.preschool' },
     { labelKey: 'breadcrumb.dashboard' },
   ],
 
@@ -188,8 +187,8 @@ const CRUMB_MAP = {
   ],
 
   // ── Teacher portal ──────────────────────────────────────────────────��─────
+  // root of the teacher section — single crumb, no parent link
   'dashboard-preschool-teacher': [
-    { labelKey: 'breadcrumb.preschool' },
     { labelKey: 'breadcrumb.teacherDashboard' },
   ],
   'dashboard-preschool-teacher-students': [
