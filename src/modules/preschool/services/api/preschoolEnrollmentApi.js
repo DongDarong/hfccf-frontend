@@ -64,7 +64,25 @@ export async function cancelEnrollment(id, payload = {}, options = {}) {
   return unwrapApiData(res)
 }
 
+/**
+ * Enroll an approved application, converting it to an active student record.
+ * The response includes both the updated application and the auto-created
+ * pending payment (null when no class was assigned).
+ *
+ * @param {string|number} id      - Enrollment application ID
+ * @param {Object} [payload={}]
+ * @param {number}  [payload.class_id]         - Class to enroll into
+ * @param {number}  [payload.academic_year_id] - Override academic year
+ * @param {number}  [payload.term_id]          - Override term
+ * @param {Object} [options={}]
+ * @param {AbortSignal} [options.signal]
+ * @returns {Promise<{application: Object, payment: Object|null}>}
+ *   application — updated enrollment application (camelCase fields)
+ *   payment     — auto-created pending payment, or null if no class was set
+ * @throws {AxiosError} on network, auth, or validation failure
+ */
 export async function enrollStudent(id, payload = {}, options = {}) {
+  // POST /preschool/enrollments/:id/enroll — returns application + payment summary
   const res = await http.post(`/preschool/enrollments/${id}/enroll`, payload, options)
   return unwrapApiData(res)
 }

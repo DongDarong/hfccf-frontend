@@ -245,6 +245,8 @@ export default {
       waitlistSuccess: 'Application moved to waitlist.',
       cancelSuccess: 'Application cancelled.',
       enrollSuccess: 'Student enrolled successfully.',
+      paymentCreated: 'Pending payment created',
+      paymentCreatedDetail: 'A pending tuition payment of {amount} has been created',
       documentUpdateSuccess: 'Document checklist updated.',
       errorLoad: 'Failed to load applications.',
       errorSave: 'Failed to save application.',

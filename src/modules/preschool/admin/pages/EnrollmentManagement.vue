@@ -194,6 +194,17 @@ async function handleQuickAction(fn, app, msgKey) {
   }
 }
 
+/**
+ * Handle a confirmed decision from EnrollmentDecisionDialog.
+ * Routes to the correct API handler, applies the response to local state,
+ * and — for the 'enroll' action — shows a second toast with the auto-created
+ * pending payment amount and term so the admin has immediate confirmation.
+ *
+ * @param {{ action: string, payload: Object }} param0
+ *   action  — one of: approve | reject | waitlist | cancel | enroll | review
+ *   payload — request body forwarded to the API handler
+ * @returns {Promise<void>}
+ */
 async function confirmDecision({ action, payload }) {
   decisionLoading.value = true
   const HANDLERS = {
@@ -215,10 +226,31 @@ async function confirmDecision({ action, payload }) {
   try {
     const fn = HANDLERS[action]
     if (!fn) return
+
+    // updated is { application, payment } for the enroll action;
+    // { application } (or similar shape) for all other actions
     const updated = await fn(selected.value.id, payload)
+
     toast.add({ severity: 'success', summary: t(`preschoolEnrollmentPage.messages.${MSG_KEYS[action]}`), life: 3000 })
+
+    // For the enroll action, show a second toast with the payment summary.
+    // payment data comes from updated.payment — null when no class was assigned.
+    if (action === 'enroll' && updated?.payment) {
+      const { amount, currency, description } = updated.payment
+      // Format the amount as a currency string for the notification
+      const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: currency ?? 'USD' }).format(Number(amount))
+      toast.add({
+        severity: 'info',
+        summary: t('preschoolEnrollmentPage.messages.paymentCreated'),
+        detail: `${t('preschoolEnrollmentPage.messages.paymentCreatedDetail', { amount: formatted })} — ${description ?? ''}`.trim(),
+        life: 6000,
+      })
+    }
+
     showDecision.value = false
-    applyUpdate(selected.value.id, updated)
+    // Pass the application object (not the full envelope) so applyUpdate
+    // stores a shape consistent with what the list API returns
+    applyUpdate(selected.value.id, updated?.application ?? updated)
     loadSummary()
     if (action === 'enroll') loadList()
   } catch {
