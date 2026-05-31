@@ -42,3 +42,4 @@ Prompt Note:
 codex resume 019e1f19-c117-7c13-92bc-1465ac070122
 
 
+claude --resume 77ac123e-fab8-473e-b922-9543ceb867c6

@@ -1,5 +1,6 @@
 import localLanguage from '../local-language'
 import common from './common'
+import breadcrumb from './breadcrumb'
 import auth from './auth'
 import dashboard from './dashboard'
 import dashboardNav from './dashboard/nav'
@@ -16,6 +17,7 @@ export default {
   // and Vue I18n resolves audit log keys without accidental flattening.
   ...localLanguage.kh,
   ...dashboard,
+  ...breadcrumb,
   common,
   nav: dashboardNav,
   auth,

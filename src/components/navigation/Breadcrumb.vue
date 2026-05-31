@@ -27,193 +27,193 @@ const { t } = useLanguage()
 const CRUMB_MAP = {
   // ── Admin dashboard — root of the module; single crumb, no parent link ───
   'dashboard-preschool-admin': [
-    { labelKey: 'common.breadcrumb.dashboard' },
+    { labelKey: 'breadcrumb.dashboard' },
   ],
 
   // ── Students ��─────────────────────��────────────────────────────────��──────
   'dashboard-preschool-admin-students': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.students' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.students' },
   ],
 
   // ── Teachers ─────��────────────────────────────��───────────────────────────
   'dashboard-preschool-admin-users': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.teachers' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.teachers' },
   ],
   'dashboard-preschool-admin-users-add': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.teachers', to: { name: 'dashboard-preschool-admin-users' } },
-    { labelKey: 'common.breadcrumb.addTeacher' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.teachers', to: { name: 'dashboard-preschool-admin-users' } },
+    { labelKey: 'breadcrumb.addTeacher' },
   ],
   'dashboard-preschool-admin-teacher-view': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.teachers', to: { name: 'dashboard-preschool-admin-users' } },
-    { labelKey: 'common.breadcrumb.teacherDetail' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.teachers', to: { name: 'dashboard-preschool-admin-users' } },
+    { labelKey: 'breadcrumb.teacherDetail' },
   ],
 
   // ── Classes ───────────────────────��─────────────────────────────���─────────
   'dashboard-preschool-admin-classes': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.classes' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.classes' },
   ],
   'dashboard-preschool-admin-classes-add': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.classes', to: { name: 'dashboard-preschool-admin-classes' } },
-    { labelKey: 'common.breadcrumb.addClass' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.classes', to: { name: 'dashboard-preschool-admin-classes' } },
+    { labelKey: 'breadcrumb.addClass' },
   ],
 
   // ── Payment ───────────────────────���───────────────────────────────────────
   'dashboard-preschool-admin-payment': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.payment' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.payment' },
   ],
 
   // ── Attendance ────────────────────���───────────────────────────────────────
   'dashboard-preschool-admin-attendance': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.attendance' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance' },
   ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
   'dashboard-preschool-admin-enrollments': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.enrollment' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.enrollment' },
   ],
 
   // ── Assignments ────────────────────────────────────────────────────��──────
   'dashboard-preschool-admin-assignments': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.assignments' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.assignments' },
   ],
 
   // ── Assessments ───────────────────────────────────────��───────────────────
   'dashboard-preschool-assessments': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.assessments' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.assessments' },
   ],
   'dashboard-preschool-assessments-add': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.assessments', to: { name: 'dashboard-preschool-assessments' } },
-    { labelKey: 'common.breadcrumb.addAssessment' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.assessments', to: { name: 'dashboard-preschool-assessments' } },
+    { labelKey: 'breadcrumb.addAssessment' },
   ],
   'dashboard-preschool-progress-summary': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.assessments', to: { name: 'dashboard-preschool-assessments' } },
-    { labelKey: 'common.breadcrumb.progressSummary' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.assessments', to: { name: 'dashboard-preschool-assessments' } },
+    { labelKey: 'breadcrumb.progressSummary' },
   ],
 
   // ── Schedules ───────────────────��─────────────────────────────────────────
   'dashboard-preschool-admin-schedules': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.schedules' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.schedules' },
   ],
   'dashboard-preschool-admin-class-schedule': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.schedules', to: { name: 'dashboard-preschool-admin-schedules' } },
-    { labelKey: 'common.breadcrumb.classSchedule' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.schedules', to: { name: 'dashboard-preschool-admin-schedules' } },
+    { labelKey: 'breadcrumb.classSchedule' },
   ],
   'dashboard-preschool-admin-teacher-schedule': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.schedules', to: { name: 'dashboard-preschool-admin-schedules' } },
-    { labelKey: 'common.breadcrumb.teacherSchedule' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.schedules', to: { name: 'dashboard-preschool-admin-schedules' } },
+    { labelKey: 'breadcrumb.teacherSchedule' },
   ],
 
   // ── Reports ──────────────────────────��─────────────────────────────────��──
   'dashboard-preschool-admin-reports': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.reports' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.reports' },
   ],
   'dashboard-preschool-admin-student-reports': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
-    { labelKey: 'common.breadcrumb.studentReports' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
+    { labelKey: 'breadcrumb.studentReports' },
   ],
   'dashboard-preschool-admin-classroom-reports': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
-    { labelKey: 'common.breadcrumb.classroomReports' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
+    { labelKey: 'breadcrumb.classroomReports' },
   ],
   'dashboard-preschool-admin-lifecycle-audit': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
-    { labelKey: 'common.breadcrumb.lifecycleAudit' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
+    { labelKey: 'breadcrumb.lifecycleAudit' },
   ],
   'dashboard-preschool-admin-report-snapshots': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
-    { labelKey: 'common.breadcrumb.snapshotArchive' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
+    { labelKey: 'breadcrumb.snapshotArchive' },
   ],
   'dashboard-preschool-admin-export-governance': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
-    { labelKey: 'common.breadcrumb.exportGovernance' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.reports', to: { name: 'dashboard-preschool-admin-reports' } },
+    { labelKey: 'breadcrumb.exportGovernance' },
   ],
 
   // ── Governance ────────────────────────────────────────────────────────────
   'dashboard-preschool-admin-governance-review': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.governance' },
-    { labelKey: 'common.breadcrumb.governanceReview' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.governance' },
+    { labelKey: 'breadcrumb.governanceReview' },
   ],
   'dashboard-preschool-admin-reconstruction': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.governance' },
-    { labelKey: 'common.breadcrumb.reconstruction' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.governance' },
+    { labelKey: 'breadcrumb.reconstruction' },
   ],
   'dashboard-preschool-admin-governance-diff': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.governance' },
-    { labelKey: 'common.breadcrumb.diffAnalysis' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.governance' },
+    { labelKey: 'breadcrumb.diffAnalysis' },
   ],
   'dashboard-preschool-admin-governance-cases': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.governance' },
-    { labelKey: 'common.breadcrumb.governanceCases' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.governance' },
+    { labelKey: 'breadcrumb.governanceCases' },
   ],
 
   // ── Other admin pages ───────────────────────���─────────────────────────────
   'dashboard-preschool-admin-forms': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.forms' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.forms' },
   ],
   'dashboard-preschool-admin-classroom-resources': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.classroomResources' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.classroomResources' },
   ],
   'dashboard-preschool-admin-settings': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'common.breadcrumb.settings' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.settings' },
   ],
 
   // ── Teacher portal ──────────────────────────────────────────────────��─────
   // root of the teacher section — single crumb, no parent link
   'dashboard-preschool-teacher': [
-    { labelKey: 'common.breadcrumb.teacherDashboard' },
+    { labelKey: 'breadcrumb.teacherDashboard' },
   ],
   'dashboard-preschool-teacher-students': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'common.breadcrumb.myStudents' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.myStudents' },
   ],
   'dashboard-preschool-teacher-attendance': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'common.breadcrumb.attendance' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.attendance' },
   ],
   'dashboard-preschool-teacher-schedule': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'common.breadcrumb.mySchedule' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.mySchedule' },
   ],
   'dashboard-preschool-teacher-report': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'common.breadcrumb.studentReports' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.studentReports' },
   ],
   'dashboard-preschool-teacher-classroomresources': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'common.breadcrumb.classroomResources' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.classroomResources' },
   ],
   'dashboard-preschool-teacher-healthy': [
-    { labelKey: 'common.breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'common.breadcrumb.health' },
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.health' },
   ],
 }
 
