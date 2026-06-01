@@ -1,77 +1,65 @@
-// Keep placeholder copy explicit so unfinished Preschool routes stay visible
-// without pretending that a real workflow is already implemented.
 export default {
   preschoolScaffold: {
-    attendanceManagement: {
-      eyebrow: 'Scaffold',
-      title: 'Attendance Management',
-      subtitle: 'This Preschool attendance workspace is not implemented yet.',
-      description: 'The route stays visible so the Preschool navigation remains stable while this workflow is still a scaffold.',
-    },
     formManagement: {
-      eyebrow: 'Assessment',
-      title: 'Assessment Workspace',
-      subtitle: 'Choose a card below to open the Assessment page you need.',
-      description: 'These cards act as shortcuts into the Preschool assessment workflow.',
+      loading: 'Loading form data...',
+      title: 'Form Management',
+      subtitle: 'Create, organize, review, and manage Preschool forms.',
+      eyebrow: 'Form overview',
+      description:
+        'Manage the launch points for form builders, recent forms, submissions, and review tools.',
+      hero: {
+        summaryWithForms: '{count} forms are currently active.',
+        summaryNoForms: 'No forms have been created yet.',
+        metricForms: 'Total Forms',
+        formRequired: 'Form required',
+        openLabel: 'Open',
+      },
       cards: {
         dashboard: {
-          description: 'Open the assessment overview and quick metrics.',
+          title: 'Dashboard',
+          description: 'View overall status and quickly jump into key areas.',
         },
         forms: {
-          description: 'Manage templates, versions, sections, and questions.',
+          title: 'Forms',
+          description: 'Review and organize the current form catalog.',
         },
         newForm: {
-          description: 'Create a new assessment template from scratch.',
+          title: 'New Form',
+          description: 'Create a new form for a workflow or data collection flow.',
         },
         submissions: {
-          description: 'Review submitted assessments and open individual records.',
+          title: 'Submissions',
+          description: 'Track submissions and monitor their processing status.',
         },
         wizard: {
-          description: 'Launch the guided assessment entry workflow.',
+          title: 'Wizard',
+          description: 'Build forms step by step with guided assistance.',
         },
         scoring: {
-          description: 'Configure scoring rules and risk levels.',
+          title: 'Scoring',
+          description: 'Define and manage form scoring rules.',
         },
         printDesigner: {
-          description: 'Design Khmer-friendly print layouts and templates.',
+          title: 'Print Designer',
+          description: 'Arrange print layouts and present forms cleanly.',
         },
         reports: {
-          description: 'Analyze trends, risk breakdowns, and completion rates.',
+          title: 'Reports',
+          description: 'View summary data and reports for forms.',
         },
         auditLogs: {
-          description: 'Inspect assessment action history and changes.',
+          title: 'Audit Logs',
+          description: 'Review activity and the history of changes.',
         },
       },
     },
-    classroomResources: {
-      eyebrow: 'Scaffold',
-      title: 'Classroom Resources',
-      subtitle: 'This Preschool resource page is not implemented yet.',
-      description: 'The placeholder makes the unfinished state explicit and avoids a fake production impression.',
-    },
-    reportManagement: {
-      eyebrow: 'Scaffold',
-      title: 'Report Management',
-      subtitle: 'This Preschool reporting page is not implemented yet.',
-      description: 'Reports stay visible in the sidebar, but the feature still needs a real backend workflow.',
-    },
-    teacherReport: {
-      eyebrow: 'Scaffold',
-      title: 'Teacher Report',
-      subtitle: 'This teacher report page is not implemented yet.',
-      description: 'The route remains available for future work without implying a completed workflow.',
-    },
-    teacherClassroomResources: {
-      eyebrow: 'Scaffold',
-      title: 'Classroom Resources',
-      subtitle: 'This teacher resource page is not implemented yet.',
-      description: 'Keeping the placeholder explicit reduces confusion while the route remains wired.',
-    },
-    healthy: {
-      eyebrow: 'Scaffold',
-      title: 'Healthy Habits',
-      subtitle: 'This health guidance page is not implemented yet.',
-      description: 'The route is preserved for navigation stability and future implementation.',
+  },
+  preschoolAdminAttendancePage: {
+    status: {
+      present: 'Present',
+      absent: 'Absent',
+      late: 'Late',
+      excused: 'Excused',
     },
   },
 }
