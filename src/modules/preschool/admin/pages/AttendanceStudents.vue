@@ -183,7 +183,7 @@ onMounted(async () => {
 
           <div class="flex items-end">
             <Button type="button" variant="ghost" size="md" rounded="xl" @click="router.push({ name: 'dashboard-preschool-admin-attendance' })">
-              {{ t('preschoolAdminAttendancePage.actions.back') ?? 'Back' }}
+              {{ t('preschoolAdminAttendancePage.actions.back') }}
             </Button>
           </div>
         </div>

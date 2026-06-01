@@ -199,6 +199,7 @@ export default {
       saving: 'Saving…',
       prevDay: 'Previous Day',
       nextDay: 'Next Day',
+      back: 'Back',
     },
     summary: '{marked} of {total} students marked',
     messages: {

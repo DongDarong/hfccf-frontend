@@ -193,6 +193,7 @@ export default {
       saving: 'កំពុងរក្សាទុក…',
       prevDay: 'ថ្ងៃមុន',
       nextDay: 'ថ្ងៃបន្ទាប់',
+      back: 'ត្រឡប់',
     },
     summary: '{marked} ក្នុង {total} សិស្សបានកត់ត្រា',
     messages: {
