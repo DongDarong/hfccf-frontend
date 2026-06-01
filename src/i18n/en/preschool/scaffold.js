@@ -13,32 +13,45 @@ export default {
       title: 'Assessment Workspace',
       subtitle: 'Choose a card below to open the Assessment page you need.',
       description: 'These cards act as shortcuts into the Preschool assessment workflow.',
+      intro: 'Scoring and print tools use the first available form template when one exists.',
+      loading: 'Loading assessment tools…',
+      noForms: 'No form templates yet. Create your first form to unlock scoring and print tools.',
+      formsAvailable: '{count} form template available | {count} form templates available',
       cards: {
         dashboard: {
+          title: 'Dashboard',
           description: 'Open the assessment overview and quick metrics.',
         },
         forms: {
+          title: 'Form Library',
           description: 'Manage templates, versions, sections, and questions.',
         },
         newForm: {
+          title: 'Create Form',
           description: 'Create a new assessment template from scratch.',
         },
         submissions: {
+          title: 'Submissions',
           description: 'Review submitted assessments and open individual records.',
         },
         wizard: {
+          title: 'Assessment Wizard',
           description: 'Launch the guided assessment entry workflow.',
         },
         scoring: {
+          title: 'Scoring Manager',
           description: 'Configure scoring rules and risk levels.',
         },
         printDesigner: {
+          title: 'Print Designer',
           description: 'Design Khmer-friendly print layouts and templates.',
         },
         reports: {
+          title: 'Reports',
           description: 'Analyze trends, risk breakdowns, and completion rates.',
         },
         auditLogs: {
+          title: 'Audit Logs',
           description: 'Inspect assessment action history and changes.',
         },
       },
