@@ -128,18 +128,24 @@ export default {
     subtitle: 'Browse and filter all past attendance records.',
     filters: {
       search: 'Search',
+      type: 'Record Type',
       class: 'Class',
       status: 'Status',
       date: 'Date',
+      student: 'Student',
+      teacher: 'Teacher',
       allStatuses: 'All Statuses',
       allClasses: 'All Classes',
     },
     placeholders: {
-      search: 'Search by student name…',
+      search: 'Search records…',
+      searchStudent: 'Search by student name…',
+      searchTeacher: 'Search by teacher name…',
     },
     columns: {
       no: 'No.',
       student: 'Student',
+      teacher: 'Teacher',
       class: 'Class',
       date: 'Date',
       status: 'Status',
@@ -283,9 +289,11 @@ export default {
     title: 'Student Attendance Profile',
     subtitle: 'Full attendance history and rate breakdown for a single student.',
     filters: {
+      class: 'Class',
       student: 'Student',
     },
     placeholders: {
+      class: 'All Classes',
       student: 'Select a student',
     },
     actions: {

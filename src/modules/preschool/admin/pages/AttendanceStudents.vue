@@ -38,10 +38,10 @@ function todayIso() {
 }
 
 const statusOptions = computed(() => [
-  { value: 'present', label: t('preschoolAdminAttendancePage.status.present'), short: t('preschoolAttendanceStatus.presentShort'), active: 'border-emerald-300 bg-emerald-50 text-emerald-700', ring: 'ring-emerald-200' },
-  { value: 'absent',  label: t('preschoolAdminAttendancePage.status.absent'),  short: t('preschoolAttendanceStatus.absentShort'),  active: 'border-rose-300 bg-rose-50 text-rose-700',       ring: 'ring-rose-200' },
-  { value: 'late',    label: t('preschoolAdminAttendancePage.status.late'),    short: t('preschoolAttendanceStatus.lateShort'),    active: 'border-amber-300 bg-amber-50 text-amber-700',    ring: 'ring-amber-200' },
-  { value: 'excused', label: t('preschoolAdminAttendancePage.status.excused'), short: t('preschoolAttendanceStatus.excusedShort'), active: 'border-sky-300 bg-sky-50 text-sky-700',          ring: 'ring-sky-200' },
+  { value: 'present', label: t('preschoolAttendanceStatus.present'), short: t('preschoolAttendanceStatus.presentShort'), active: 'border-emerald-300 bg-emerald-50 text-emerald-700', ring: 'ring-emerald-200' },
+  { value: 'absent',  label: t('preschoolAttendanceStatus.absent'),  short: t('preschoolAttendanceStatus.absentShort'),  active: 'border-rose-300 bg-rose-50 text-rose-700',       ring: 'ring-rose-200' },
+  { value: 'late',    label: t('preschoolAttendanceStatus.late'),    short: t('preschoolAttendanceStatus.lateShort'),    active: 'border-amber-300 bg-amber-50 text-amber-700',    ring: 'ring-amber-200' },
+  { value: 'excused', label: t('preschoolAttendanceStatus.excused'), short: t('preschoolAttendanceStatus.excusedShort'), active: 'border-sky-300 bg-sky-50 text-sky-700',          ring: 'ring-sky-200' },
 ])
 
 const isLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))

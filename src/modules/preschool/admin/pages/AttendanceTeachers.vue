@@ -27,10 +27,10 @@ const saving = ref(false)
 const errorMessage = ref('')
 
 const statusOptions = computed(() => [
-  { value: 'present', short: t('preschoolAttendanceStatus.presentShort'), label: t('preschoolAdminAttendancePage.status.present'), active: 'border-emerald-300 bg-emerald-50 text-emerald-700', ring: 'ring-emerald-200' },
-  { value: 'absent',  short: t('preschoolAttendanceStatus.absentShort'),  label: t('preschoolAdminAttendancePage.status.absent'),  active: 'border-rose-300 bg-rose-50 text-rose-700',       ring: 'ring-rose-200' },
-  { value: 'late',    short: t('preschoolAttendanceStatus.lateShort'),    label: t('preschoolAdminAttendancePage.status.late'),    active: 'border-amber-300 bg-amber-50 text-amber-700',    ring: 'ring-amber-200' },
-  { value: 'excused', short: t('preschoolAttendanceStatus.excusedShort'), label: t('preschoolAdminAttendancePage.status.excused'), active: 'border-sky-300 bg-sky-50 text-sky-700',          ring: 'ring-sky-200' },
+  { value: 'present', short: t('preschoolAttendanceStatus.presentShort'), label: t('preschoolAttendanceStatus.present'), active: 'border-emerald-300 bg-emerald-50 text-emerald-700', ring: 'ring-emerald-200' },
+  { value: 'absent',  short: t('preschoolAttendanceStatus.absentShort'),  label: t('preschoolAttendanceStatus.absent'),  active: 'border-rose-300 bg-rose-50 text-rose-700',       ring: 'ring-rose-200' },
+  { value: 'late',    short: t('preschoolAttendanceStatus.lateShort'),    label: t('preschoolAttendanceStatus.late'),    active: 'border-amber-300 bg-amber-50 text-amber-700',    ring: 'ring-amber-200' },
+  { value: 'excused', short: t('preschoolAttendanceStatus.excusedShort'), label: t('preschoolAttendanceStatus.excused'), active: 'border-sky-300 bg-sky-50 text-sky-700',          ring: 'ring-sky-200' },
 ])
 
 const markedCount = computed(() => Object.values(attendanceMap.value).filter((e) => e.status).length)

@@ -4,6 +4,7 @@ import players from './players'
 import matches from './matches'
 import results from './results'
 import tournament from './tournament'
+import attendance from './attendance'
 import coachManagement from './admin/coach-management'
 import addCoach from './admin/add-coach'
 import addPlayer from './admin/add-player'
@@ -25,6 +26,7 @@ export default {
   ...matches,
   ...results,
   ...tournament,
+  ...attendance,
   ...coachManagement,
   ...addCoach,
   ...addPlayer,

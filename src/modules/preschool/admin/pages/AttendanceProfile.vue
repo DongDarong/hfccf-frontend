@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -7,14 +7,20 @@ import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
-import { fetchPreschoolAttendance, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
+import {
+  fetchPreschoolAttendance,
+  fetchPreschoolClasses,
+  fetchPreschoolStudents,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({ name: 'PreschoolAdminAttendanceProfilePage' })
 
 const { t } = useLanguage()
 const router = useRouter()
 
+const classOptions = ref([])
 const studentOptions = ref([])
+const selectedClassId = ref('')
 const selectedStudentId = ref('')
 const records = ref([])
 const loading = ref(false)
@@ -61,13 +67,33 @@ const sortedRecords = computed(() =>
 async function loadStudents() {
   loadingStudents.value = true
   try {
-    const res = await fetchPreschoolStudents({ page: 1, perPage: 200 })
+    const res = await fetchPreschoolStudents({
+      page: 1,
+      perPage: 200,
+      classId: selectedClassId.value,
+    })
     studentOptions.value = (res.items || []).map((s) => ({
       label: `${s.fullName || s.name}${s.studentCode ? ` (${s.studentCode})` : ''}`,
       value: s.id,
     }))
+    if (selectedStudentId.value && !studentOptions.value.some((option) => String(option.value) === String(selectedStudentId.value))) {
+      selectedStudentId.value = ''
+      records.value = []
+    }
   } catch { studentOptions.value = [] }
   finally { loadingStudents.value = false }
+}
+
+async function loadClasses() {
+  try {
+    const res = await fetchPreschoolClasses({ page: 1, perPage: 200 })
+    classOptions.value = (res.items || []).map((c) => ({
+      label: c.name,
+      value: c.id,
+    }))
+  } catch {
+    classOptions.value = []
+  }
 }
 
 async function loadProfile() {
@@ -84,7 +110,17 @@ async function loadProfile() {
   }
 }
 
-loadStudents()
+watch(selectedClassId, async () => {
+  selectedStudentId.value = ''
+  records.value = []
+  errorMessage.value = ''
+  await loadStudents()
+})
+
+onMounted(async () => {
+  await loadClasses()
+  await loadStudents()
+})
 </script>
 
 <template>
@@ -98,6 +134,19 @@ loadStudents()
       <!-- Filters -->
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-wrap items-end gap-3">
+          <label class="flex flex-col gap-1.5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolAttendanceProfilePage.filters.class') }}</span>
+            <Select
+              v-model="selectedClassId"
+              :options="classOptions"
+              option-label="label"
+              option-value="value"
+              class="min-w-[220px]"
+              :placeholder="t('preschoolAttendanceProfilePage.placeholders.class')"
+              :loading="false"
+              show-clear
+            />
+          </label>
           <label class="flex flex-col gap-1.5">
             <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolAttendanceProfilePage.filters.student') }}</span>
             <Select

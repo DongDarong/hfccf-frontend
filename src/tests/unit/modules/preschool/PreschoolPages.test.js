@@ -6,6 +6,7 @@ import PreschoolDashboard from '@/modules/preschool/admin/pages/PreschoolDashboa
 import ClassesManagement from '@/modules/preschool/admin/pages/ClassesManagement.vue'
 import StudentInfo from '@/modules/preschool/admin/pages/StudentInfo.vue'
 import AddClass from '@/modules/preschool/admin/pages/AddClass.vue'
+import AttendanceHistory from '@/modules/preschool/admin/pages/AttendanceHistory.vue'
 import Attendance from '@/modules/preschool/teacher/pages/Attendance.vue'
 
 // Keep the stable Preschool pages mount-tested so real backend data, locale
@@ -131,12 +132,36 @@ const mockAttendance = vi.fn(() =>
   }),
 )
 
+const mockTeacherAttendance = vi.fn(() =>
+  Promise.resolve({
+    items: [
+      {
+        id: 2,
+        teacherId: 10,
+        teacherName: 'Teacher A',
+        className: 'Morning Nursery',
+        attendanceDate: '2026-05-19',
+        status: 'present',
+        note: 'On time',
+      },
+    ],
+    pagination: {
+      page: 1,
+      perPage: 20,
+      total: 1,
+      totalPages: 1,
+    },
+  }),
+)
+
 vi.mock('@/modules/preschool/services/preschoolApi', () => ({
   fetchPreschoolDashboard: (...args) => mockDashboard(...args),
   fetchPreschoolClasses: (...args) => mockClasses(...args),
   fetchPreschoolTeachers: (...args) => mockTeachers(...args),
   fetchPreschoolStudents: (...args) => mockStudents(...args),
+  fetchPreschoolAttendance: (...args) => mockAttendance(...args),
   fetchMyPreschoolAttendance: (...args) => mockAttendance(...args),
+  fetchPreschoolTeacherAttendance: (...args) => mockTeacherAttendance(...args),
   fetchPreschoolClass: vi.fn(() => Promise.resolve(null)),
   createPreschoolClass: vi.fn(() => Promise.resolve({})),
   updatePreschoolClass: vi.fn(() => Promise.resolve({})),
@@ -157,6 +182,10 @@ function baseStubs() {
     AlertError: { template: '<div class="alert-error-stub" />' },
     Table: { props: ['rows'], template: '<div class="table-stub">{{ rows?.[0]?.studentName || rows?.[0]?.name }}</div>' },
     ClassTable: { props: ['classes'], template: '<div class="class-table-stub">{{ classes?.[0]?.name }}</div>' },
+    Select: {
+      props: ['modelValue', 'options', 'optionLabel', 'optionValue', 'placeholder', 'loading', 'disabled'],
+      template: '<div class="select-stub" />',
+    },
     PreschoolDashboardSummary: { props: ['cards'], template: '<div class="summary-stub">{{ cards?.[0]?.title }}</div>' },
     PreschoolDashboardSpotlight: { props: ['title', 'text'], template: '<div class="spotlight-stub">{{ title }} {{ text }}</div>' },
     PreschoolDashboardActionList: { props: ['title', 'items'], template: '<div class="actions-stub">{{ title }} {{ items?.length }}</div>' },
@@ -275,6 +304,7 @@ describe('Preschool real pages', () => {
     })
 
     await flushPromises()
+    await flushPromises()
 
     expect(mockAttendance).toHaveBeenCalled()
     expect(wrapper.text()).toContain('Preschool Attendance')
@@ -282,5 +312,37 @@ describe('Preschool real pages', () => {
     expect(warnSpy).not.toHaveBeenCalled()
     expect(errorSpy).not.toHaveBeenCalled()
   })
-})
 
+  it('switches attendance history between student and teacher records', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const wrapper = mountWithPlugins(AttendanceHistory, {
+      messages: {
+        en: enPreschool,
+      },
+      global: {
+        stubs: baseStubs(),
+      },
+    })
+
+    await flushPromises()
+
+    expect(mockAttendance).toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Attendance History')
+    expect(wrapper.text()).toContain('Alice Student')
+
+    const selects = wrapper.findAll('select')
+    await selects[0].setValue('teacher')
+    const applyButton = wrapper.findAll('button').find((button) => button.text().includes('Apply Filters'))
+    expect(applyButton).toBeTruthy()
+    await applyButton.trigger('click')
+
+    await flushPromises()
+
+    expect(mockTeacherAttendance).toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Teacher A')
+    expect(warnSpy).not.toHaveBeenCalled()
+    expect(errorSpy).not.toHaveBeenCalled()
+  })
+})

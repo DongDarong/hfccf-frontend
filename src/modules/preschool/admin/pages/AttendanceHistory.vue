@@ -7,7 +7,11 @@ import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
-import { fetchPreschoolAttendance, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
+import {
+  fetchPreschoolAttendance,
+  fetchPreschoolClasses,
+  fetchPreschoolTeacherAttendance,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({ name: 'PreschoolAdminAttendanceHistoryPage' })
 
@@ -23,10 +27,16 @@ const pagination = ref({ page: 1, perPage: 20, total: 0, totalPages: 1 })
 
 const filters = ref({
   search: '',
+  type: 'student',
   classId: '',
   status: '',
   date: '',
 })
+
+const typeOptions = [
+  { value: 'student', label: 'student' },
+  { value: 'teacher', label: 'teacher' },
+]
 
 const statusOptions = [
   { value: '', label: '' },
@@ -35,6 +45,29 @@ const statusOptions = [
   { value: 'late', label: 'late' },
   { value: 'excused', label: 'excused' },
 ]
+
+function getTypeLabel(type) {
+  return t(`preschoolAdminAttendanceHistoryPage.filters.${type}`) || type
+}
+
+function getTypeColumnLabel() {
+  return t(`preschoolAdminAttendanceHistoryPage.columns.${filters.value.type}`) || t('preschoolAdminAttendanceHistoryPage.columns.student')
+}
+
+function getTypeName(record) {
+  return filters.value.type === 'teacher'
+    ? record.teacherName || record.teacherDisplayName || record.teacher || record.recordedByName
+    : record.studentName || record.studentFullName || record.student || record.recordedByName
+}
+
+function getTypeId(record) {
+  return filters.value.type === 'teacher' ? record.teacherId : record.studentId
+}
+
+function getSearchPlaceholder() {
+  return t(`preschoolAdminAttendanceHistoryPage.placeholders.search${filters.value.type === 'teacher' ? 'Teacher' : 'Student'}`)
+    || t('preschoolAdminAttendanceHistoryPage.placeholders.search')
+}
 
 const STATUS_STYLE = {
   present: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100',
@@ -67,7 +100,8 @@ async function loadRecords(page = 1) {
   loading.value = true
   errorMessage.value = ''
   try {
-    const res = await fetchPreschoolAttendance({
+    const fetchAttendance = filters.value.type === 'teacher' ? fetchPreschoolTeacherAttendance : fetchPreschoolAttendance
+    const res = await fetchAttendance({
       page,
       perPage: pagination.value.perPage,
       search: filters.value.search.trim(),
@@ -124,8 +158,22 @@ onMounted(async () => {
               v-model="filters.search"
               type="text"
               class="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300"
-              :placeholder="t('preschoolAdminAttendanceHistoryPage.placeholders.search')"
+              :placeholder="getSearchPlaceholder()"
             >
+          </label>
+
+          <label class="flex flex-col gap-1.5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {{ t('preschoolAdminAttendanceHistoryPage.filters.type') }}
+            </span>
+            <select
+              v-model="filters.type"
+              class="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-300"
+            >
+              <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">
+                {{ getTypeLabel(opt.label) }}
+              </option>
+            </select>
           </label>
 
           <label class="flex flex-col gap-1.5">
@@ -198,7 +246,7 @@ onMounted(async () => {
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th class="w-16 px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.no') }}</th>
-                <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.student') }}</th>
+                <th class="px-4 py-3 font-semibold">{{ getTypeColumnLabel() }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.class') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.date') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.status') }}</th>
@@ -207,13 +255,13 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-              <tr v-for="(record, index) in records" :key="record.id || `${record.studentId}-${record.attendanceDate}-${index}`">
+              <tr v-for="(record, index) in records" :key="record.id || `${getTypeId(record) || 'record'}-${record.attendanceDate}-${index}`">
                 <td class="px-4 py-3 text-slate-400 tabular-nums">
                   {{ (pagination.page - 1) * pagination.perPage + index + 1 }}
                 </td>
                 <td class="px-4 py-3">
-                  <p class="font-medium text-slate-900">{{ record.studentName || '—' }}</p>
-                  <p v-if="record.studentId" class="text-xs text-slate-400">#{{ record.studentId }}</p>
+                  <p class="font-medium text-slate-900">{{ getTypeName(record) || '—' }}</p>
+                  <p v-if="getTypeId(record)" class="text-xs text-slate-400">#{{ getTypeId(record) }}</p>
                 </td>
                 <td class="px-4 py-3 text-slate-600">
                   {{ record.className || '—' }}

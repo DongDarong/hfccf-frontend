@@ -14,6 +14,42 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/attendance',
+    name: 'dashboard-sport-admin-attendance',
+    component: () => import('@/modules/sport/admin/pages/AttendanceManagement.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/attendance/players',
+    name: 'dashboard-sport-admin-attendance-players',
+    component: () => import('@/modules/sport/admin/pages/AttendancePlayers.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/attendance/coaches',
+    name: 'dashboard-sport-admin-attendance-coaches',
+    component: () => import('@/modules/sport/admin/pages/AttendanceCoaches.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/attendance/history',
+    name: 'dashboard-sport-admin-attendance-history',
+    component: () => import('@/modules/sport/admin/pages/AttendanceHistory.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/users',
     name: 'dashboard-sport-admin-users',
     component: () => import('@/modules/sport/admin/pages/CoachManagement.vue'),

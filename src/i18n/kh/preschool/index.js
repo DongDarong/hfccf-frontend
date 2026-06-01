@@ -1,9 +1,9 @@
 import dashboard from './dashboard'
 import classes from './classes'
 import students from './students'
-import attendance from './attendance'
 import payments from './payments'
 import scaffold from './scaffold'
+import attendance from './attendance'
 import adminDashboard from './admin-dashboard'
 import assessment from './assessment'
 import progress from './progress'
@@ -30,9 +30,9 @@ export default {
   ...dashboard,
   ...classes,
   ...students,
-  ...attendance,
   ...payments,
   ...scaffold,
+  ...attendance,
   ...adminDashboard,
   ...assessment,
   ...progress,
