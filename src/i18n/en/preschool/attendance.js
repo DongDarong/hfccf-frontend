@@ -70,6 +70,7 @@ export default {
       search: 'Search by student or teacher name…',
     },
     columns: {
+      no: 'No.',
       student: 'Student',
       class: 'Class',
       date: 'Date',

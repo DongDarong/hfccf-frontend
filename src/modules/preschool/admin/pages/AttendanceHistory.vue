@@ -141,6 +141,7 @@ onMounted(async () => {
           <table class="min-w-full divide-y divide-slate-100 text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
+                <th class="w-12 px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.no') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.student') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.class') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendanceHistoryPage.columns.date') }}</th>
@@ -150,7 +151,8 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-50 bg-white">
-              <tr v-for="record in records" :key="record.id">
+              <tr v-for="(record, index) in records" :key="record.id">
+                <td class="px-4 py-3 text-slate-400 tabular-nums">{{ (pagination.currentPage - 1) * 20 + index + 1 }}</td>
                 <td class="px-4 py-3 font-medium text-slate-900">{{ record.studentName || '—' }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ record.className || '—' }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ formatDate(record.attendanceDate) || record.attendanceDate || '—' }}</td>

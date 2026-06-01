@@ -67,6 +67,7 @@ export default {
       search: 'ស្វែងរកតាមឈ្មោះសិស្ស ឬគ្រូ…',
     },
     columns: {
+      no: 'ល.រ.',
       student: 'សិស្ស',
       class: 'ថ្នាក់',
       date: 'កាលបរិច្ឆេទ',
