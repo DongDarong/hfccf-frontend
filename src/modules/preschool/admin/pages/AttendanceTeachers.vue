@@ -20,6 +20,7 @@ const toast = useToast()
 const router = useRouter()
 
 const selectedDate = ref(todayIso())
+const saveUnavailable = ref(false)
 const teachers = ref([])
 const attendanceMap = ref({})
 const loading = ref(false)
@@ -59,17 +60,25 @@ async function loadDay() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [teachersRes, attendanceRes] = await Promise.all([
-      fetchPreschoolTeachers({ page: 1, perPage: 200 }),
-      fetchPreschoolTeacherAttendance({ attendanceDate: selectedDate.value }),
-    ])
+    const teachersRes = await fetchPreschoolTeachers({ page: 1, perPage: 100 })
     teachers.value = teachersRes.items || []
-    attendanceMap.value = buildMap(teachers.value, attendanceRes.items || [])
   } catch (e) {
     errorMessage.value = e?.message || t('preschoolAdminTeacherAttendancePage.messages.loadFailed')
-  } finally {
     loading.value = false
+    return
   }
+
+  // Load existing attendance records separately — endpoint may not exist yet
+  let existingRecords = []
+  try {
+    const attendanceRes = await fetchPreschoolTeacherAttendance({ attendanceDate: selectedDate.value })
+    existingRecords = attendanceRes.items || []
+  } catch {
+    // Endpoint not yet available; teachers still shown with blank statuses
+  }
+
+  attendanceMap.value = buildMap(teachers.value, existingRecords)
+  loading.value = false
 }
 
 function markAll(status) {
@@ -107,8 +116,13 @@ async function saveAll() {
     await Promise.all(tasks)
     toast.add({ severity: 'success', summary: t('preschoolAdminTeacherAttendancePage.messages.saved'), life: 3000 })
     await loadDay()
-  } catch {
-    toast.add({ severity: 'error', summary: t('preschoolAdminTeacherAttendancePage.messages.saveFailed'), life: 4000 })
+  } catch (e) {
+    const is404 = e?.response?.status === 404 || String(e?.message || '').includes('404')
+    if (is404) {
+      saveUnavailable.value = true
+    } else {
+      toast.add({ severity: 'error', summary: t('preschoolAdminTeacherAttendancePage.messages.saveFailed'), life: 4000 })
+    }
   } finally {
     saving.value = false
   }
@@ -200,8 +214,11 @@ onMounted(loadDay)
 
         <!-- Footer -->
         <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
-          <p class="text-xs text-slate-400">{{ t('preschoolAdminTeacherAttendancePage.messages.skippedNote') }}</p>
-          <Button type="button" variant="primary" size="md" rounded="xl" :loading="saving" :disabled="saving || markedCount === 0" @click="saveAll">
+          <p v-if="saveUnavailable" class="text-xs text-amber-600">
+            Teacher attendance saving is not yet available on the backend.
+          </p>
+          <p v-else class="text-xs text-slate-400">{{ t('preschoolAdminTeacherAttendancePage.messages.skippedNote') }}</p>
+          <Button type="button" variant="primary" size="md" rounded="xl" :loading="saving" :disabled="saving || markedCount === 0 || saveUnavailable" @click="saveAll">
             {{ saving ? t('preschoolAdminTeacherAttendancePage.actions.saving') : t('preschoolAdminTeacherAttendancePage.actions.save') }}
           </Button>
         </div>
