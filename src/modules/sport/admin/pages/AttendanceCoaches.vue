@@ -50,7 +50,7 @@ const heroStats = computed(() => [
   },
   {
     key: 'progress',
-    label: 'Progress',
+    label: t('sportAttendanceShared.progress'),
     value: `${markedCount.value}/${coaches.value.length}`,
   },
 ])
@@ -169,7 +169,7 @@ watch(selectedDate, () => {
 
       <div class="att-hero">
         <div class="att-hero__copy">
-          <p class="att-hero__eyebrow">Coaches</p>
+          <p class="att-hero__eyebrow">{{ t('sportAttendanceShared.coachesEyebrow') }}</p>
           <h2 class="att-hero__title">{{ t('sportAdminCoachAttendancePage.title') }}</h2>
           <p class="att-hero__text">{{ t('sportAdminCoachAttendancePage.subtitle') }}</p>
         </div>

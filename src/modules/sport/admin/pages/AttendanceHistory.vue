@@ -1,10 +1,11 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
 import Toast from 'primevue/toast'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import Button from '@/components/buttons/Button.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useToast } from 'primevue/usetoast'
@@ -26,10 +27,19 @@ const dateFrom = ref('')
 const dateTo = ref('')
 const teamOptions = ref([])
 const records = ref([])
+const currentPage = ref(1)
+const pageSize = 20
+const pagination = ref({
+  page: 1,
+  perPage: pageSize,
+  total: 0,
+  totalPages: 1,
+})
 const loading = ref(false)
 const teamsLoading = ref(false)
+const suppressFilterWatch = ref(false)
 const errorMessage = ref('')
-const resultCount = computed(() => records.value.length)
+const resultCount = computed(() => Number(pagination.value.total) || records.value.length)
 const activeFiltersCount = computed(() => {
   return [
     selectedType.value !== 'player',
@@ -81,7 +91,7 @@ async function loadTeams() {
   }
 }
 
-async function loadHistory() {
+async function loadHistory(page = currentPage.value) {
   loading.value = true
   errorMessage.value = ''
 
@@ -92,11 +102,18 @@ async function loadHistory() {
       search: searchQuery.value,
       dateFrom: dateFrom.value,
       dateTo: dateTo.value,
-      page: 1,
-      perPage: 100,
+      page,
+      perPage: pageSize,
     })
 
     records.value = response.items || []
+    pagination.value = response.pagination || {
+      page,
+      perPage: pageSize,
+      total: records.value.length,
+      totalPages: 1,
+    }
+    currentPage.value = pagination.value.page || page
   } catch (error) {
     errorMessage.value = error?.message || t('sportAdminAttendanceHistoryPage.messages.loadFailed')
     toast.add({ severity: 'error', summary: t('sportAdminAttendanceHistoryPage.messages.loadFailed'), life: 4000 })
@@ -105,12 +122,27 @@ async function loadHistory() {
   }
 }
 
-function resetFilters() {
+function applyFilters() {
+  currentPage.value = 1
+  void loadHistory(1)
+}
+
+async function resetFilters() {
+  suppressFilterWatch.value = true
   selectedType.value = 'player'
   selectedTeamId.value = ''
   searchQuery.value = ''
   dateFrom.value = ''
   dateTo.value = ''
+  currentPage.value = 1
+  await nextTick()
+  suppressFilterWatch.value = false
+  void loadHistory(1)
+}
+
+function goToPage(page) {
+  currentPage.value = page
+  void loadHistory(page)
 }
 
 const heroStats = computed(() => [
@@ -121,18 +153,22 @@ const heroStats = computed(() => [
   },
   {
     key: 'filters',
-    label: 'Active filters',
+    label: t('sportAttendanceShared.activeFilters'),
     value: `${activeFiltersCount.value}`,
   },
   {
     key: 'records',
-    label: 'Results',
+    label: t('sportAttendanceShared.results'),
     value: `${resultCount.value}`,
   },
 ])
 
 watch([selectedType, selectedTeamId, dateFrom, dateTo], () => {
-  void loadHistory()
+  if (suppressFilterWatch.value) {
+    return
+  }
+  currentPage.value = 1
+  void loadHistory(1)
 }, { immediate: true })
 
 onMounted(() => {
@@ -151,7 +187,7 @@ onMounted(() => {
 
       <div class="att-hero">
         <div class="att-hero__copy">
-          <p class="att-hero__eyebrow">History</p>
+          <p class="att-hero__eyebrow">{{ t('sportAttendanceShared.historyEyebrow') }}</p>
           <h2 class="att-hero__title">{{ t('sportAdminAttendanceHistoryPage.title') }}</h2>
           <p class="att-hero__text">{{ t('sportAdminAttendanceHistoryPage.subtitle') }}</p>
         </div>
@@ -207,11 +243,11 @@ onMounted(() => {
             type="search"
             class="sport-attendance-history__input"
             :placeholder="t('sportAdminAttendanceHistoryPage.placeholders.search')"
-            @keyup.enter="loadHistory"
+            @keyup.enter="applyFilters"
           >
         </label>
 
-        <Button type="button" variant="primary" size="md" rounded="xl" :disabled="loading" @click="loadHistory">
+        <Button type="button" variant="primary" size="md" rounded="xl" :disabled="loading" @click="applyFilters">
           {{ t('sportAdminAttendanceHistoryPage.actions.apply') }}
         </Button>
 
@@ -269,6 +305,14 @@ onMounted(() => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div v-if="pagination.totalPages > 1" class="sport-attendance-history__pagination">
+          <Pagination
+            v-model="currentPage"
+            :total-pages="pagination.totalPages"
+            @change="goToPage"
+          />
         </div>
       </div>
     </section>
@@ -465,5 +509,11 @@ onMounted(() => {
 
 .sport-attendance-history__table tbody tr:hover {
   background: #eff6ff;
+}
+
+.sport-attendance-history__pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
 }
 </style>

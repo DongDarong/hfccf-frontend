@@ -13,6 +13,14 @@ export default {
     player: 'កីឡាករ',
     coach: 'គ្រូបង្វឹក',
   },
+  sportAttendanceShared: {
+    playersEyebrow: 'áž€áž¸áž¡áž¶áž€ážš',
+    coachesEyebrow: 'áž‚áŸ’ážšáž¼áž”áž„áŸ’ážœáž¹áž€',
+    historyEyebrow: 'áž”áŸ’ážšážœážáŸ’ážáž·',
+    progress: 'ážœáž·ážœážáŸ’ážáž—áž¶áž–',
+    activeFilters: 'តម្រងសកម្ម',
+    results: 'លទ្ធផល',
+  },
   sportAttendanceHubPage: {
     title: 'ការគ្រប់គ្រងវត្តមានកីឡា',
     subtitle: 'កត់ត្រាវត្តមានកីឡាករ និងគ្រូបង្វឹក ហើយមើលប្រវត្តិបានពីកន្លែងតែមួយ។',

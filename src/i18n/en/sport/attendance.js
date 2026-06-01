@@ -13,6 +13,14 @@ export default {
     player: 'Player',
     coach: 'Coach',
   },
+  sportAttendanceShared: {
+    playersEyebrow: 'Players',
+    coachesEyebrow: 'Coaches',
+    historyEyebrow: 'History',
+    progress: 'Progress',
+    activeFilters: 'Active filters',
+    results: 'Results',
+  },
   sportAttendanceHubPage: {
     title: 'Attendance Management',
     subtitle: 'Track player and coach attendance, then review records from a single workflow.',
