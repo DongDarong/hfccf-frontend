@@ -96,13 +96,13 @@ async function loadDay() {
 
   try {
     const [playersResponse, attendanceResponse] = await Promise.all([
-      fetchSportPlayers({ teamId: selectedTeamId.value, page: 1, perPage: 200 }),
+      fetchSportPlayers({ teamId: selectedTeamId.value, page: 1, perPage: 100 }),
       fetchSportAttendance({
         attendanceType: 'player',
         teamId: selectedTeamId.value,
         attendanceDate: selectedDate.value,
         page: 1,
-        perPage: 200,
+        perPage: 100,
       }),
     ])
 

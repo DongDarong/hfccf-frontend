@@ -1,8 +1,10 @@
 <script setup>
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { fetchSportDashboard } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportAdminAttendanceManagementPage',
@@ -11,11 +13,50 @@ defineOptions({
 const { t } = useLanguage()
 const router = useRouter()
 
-const cards = [
-  { key: 'players', icon: 'pi-users', accent: 'card--emerald', route: 'dashboard-sport-admin-attendance-players' },
-  { key: 'coaches', icon: 'pi-id-card', accent: 'card--sky', route: 'dashboard-sport-admin-attendance-coaches' },
-  { key: 'history', icon: 'pi-history', accent: 'card--slate', route: 'dashboard-sport-admin-attendance-history' },
-]
+const dashboard = ref({ summary: {} })
+const loading = ref(false)
+
+const summary = computed(() => dashboard.value.summary || {})
+
+const cards = computed(() => [
+  {
+    key: 'players',
+    icon: 'pi-users',
+    accent: 'card--emerald',
+    route: 'dashboard-sport-admin-attendance-players',
+    metric: summary.value.players ?? 0,
+  },
+  {
+    key: 'coaches',
+    icon: 'pi-id-card',
+    accent: 'card--sky',
+    route: 'dashboard-sport-admin-attendance-coaches',
+    metric: summary.value.coaches ?? 0,
+  },
+  {
+    key: 'history',
+    icon: 'pi-history',
+    accent: 'card--slate',
+    route: 'dashboard-sport-admin-attendance-history',
+    metric: summary.value.matches ?? 0,
+  },
+])
+
+async function loadOverview() {
+  loading.value = true
+
+  try {
+    dashboard.value = await fetchSportDashboard()
+  } catch {
+    dashboard.value = { summary: {} }
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  void loadOverview()
+})
 </script>
 
 <template>
@@ -33,6 +74,7 @@ const cards = [
           type="button"
           class="att-card"
           :class="card.accent"
+          :disabled="loading"
           @click="router.push({ name: card.route })"
         >
           <div class="att-card__icon-wrap">
@@ -40,6 +82,7 @@ const cards = [
           </div>
 
           <div class="att-card__body">
+            <p class="att-card__metric">{{ card.metric }}</p>
             <h3 class="att-card__title">{{ t(`sportAttendanceHubPage.cards.${card.key}.title`) }}</h3>
             <p class="att-card__desc">{{ t(`sportAttendanceHubPage.cards.${card.key}.description`) }}</p>
           </div>
@@ -98,6 +141,14 @@ const cards = [
 .att-card__body {
   flex: 1;
   min-width: 0;
+}
+
+.att-card__metric {
+  margin: 0 0 0.2rem;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .att-card__title {
