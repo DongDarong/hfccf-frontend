@@ -605,6 +605,34 @@ export async function savePreschoolAttendance(payload = {}) {
   return normalizeAttendanceRow(responsePayload.attendance || responsePayload)
 }
 
+export async function fetchPreschoolTeacherAttendance(
+  { page = 1, perPage = 200, attendanceDate = '' } = {},
+  options = {},
+) {
+  const response = await http.get('/preschool/teacher-attendance', {
+    params: buildQueryParams({ page, per_page: perPage, attendance_date: attendanceDate }),
+    signal: options.signal,
+  })
+  return normalizeAttendanceListResponse(response, page, perPage)
+}
+
+export async function savePreschoolTeacherAttendance(payload = {}) {
+  const attendanceId = resolveId(payload)
+  const method = attendanceId ? 'put' : 'post'
+  const url = attendanceId
+    ? `/preschool/teacher-attendance/${encodeURIComponent(attendanceId)}`
+    : '/preschool/teacher-attendance'
+  const response = await http[method](url, payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeAttendanceRow(responsePayload.attendance || responsePayload)
+}
+
+export async function saveTeacherSelfAttendance(payload = {}) {
+  const response = await http.post('/preschool/teacher/self-attendance', payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return responsePayload.attendance || responsePayload
+}
+
 export async function fetchPreschoolPayments(
   { page = 1, perPage = 10, search = '', classId = '', studentId = '', paymentStatus = '', paymentMethod = '' } = {},
   options = {},

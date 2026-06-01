@@ -1,431 +1,131 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Button from '@/components/buttons/Button.vue'
-import Select from 'primevue/select'
-import Toast from 'primevue/toast'
-import { useToast } from 'primevue/usetoast'
 import { useLanguage } from '@/composables/useLanguage'
-import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
-import {
-  fetchPreschoolAttendance,
-  fetchPreschoolClasses,
-  fetchPreschoolStudents,
-  savePreschoolAttendance,
-} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({ name: 'PreschoolAdminAttendanceManagementPage' })
 
 const { t } = useLanguage()
-const toast = useToast()
+const router = useRouter()
 
-const selectedClassId = ref('')
-const selectedDate = ref(todayIso())
-const classOptions = ref([])
-const students = ref([])
-const attendanceMap = ref({})
-const loading = ref(false)
-const saving = ref(false)
-const errorMessage = ref('')
-const lifecycleContext = ref({})
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-const statusOptions = computed(() => [
+const CARDS = [
   {
-    value: 'present',
-    label: t('preschoolAdminAttendancePage.status.present'),
-    short: t('preschoolAdminAttendancePage.status.presentShort'),
-    active: 'border-emerald-300 bg-emerald-50 text-emerald-700',
-    ring: 'ring-emerald-200',
+    key: 'students',
+    icon: 'pi-users',
+    accent: 'card--violet',
+    route: 'dashboard-preschool-admin-attendance-students',
   },
   {
-    value: 'absent',
-    label: t('preschoolAdminAttendancePage.status.absent'),
-    short: t('preschoolAdminAttendancePage.status.absentShort'),
-    active: 'border-rose-300 bg-rose-50 text-rose-700',
-    ring: 'ring-rose-200',
+    key: 'teachers',
+    icon: 'pi-id-card',
+    accent: 'card--sky',
+    route: 'dashboard-preschool-admin-attendance-teachers',
   },
   {
-    value: 'late',
-    label: t('preschoolAdminAttendancePage.status.late'),
-    short: t('preschoolAdminAttendancePage.status.lateShort'),
-    active: 'border-amber-300 bg-amber-50 text-amber-700',
-    ring: 'ring-amber-200',
+    key: 'history',
+    icon: 'pi-history',
+    accent: 'card--slate',
+    route: 'dashboard-preschool-admin-attendance-history',
   },
-  {
-    value: 'excused',
-    label: t('preschoolAdminAttendancePage.status.excused'),
-    short: t('preschoolAdminAttendancePage.status.excusedShort'),
-    active: 'border-sky-300 bg-sky-50 text-sky-700',
-    ring: 'ring-sky-200',
-  },
-])
-
-const isLocked = computed(() =>
-  ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()),
-)
-
-const markedCount = computed(() =>
-  Object.values(attendanceMap.value).filter((e) => e.status).length,
-)
-
-const summary = computed(() =>
-  t('preschoolAdminAttendancePage.summary', { marked: markedCount.value, total: students.value.length }),
-)
-
-function shiftDate(days) {
-  const d = new Date(selectedDate.value)
-  d.setDate(d.getDate() + days)
-  selectedDate.value = d.toISOString().slice(0, 10)
-}
-
-function buildMap(studentList, existingRecords) {
-  const map = {}
-  for (const s of studentList) {
-    const existing = existingRecords.find((r) => String(r.studentId) === String(s.id))
-    map[s.id] = {
-      status: existing?.status || '',
-      note: existing?.note || '',
-      existingId: existing?.id || null,
-    }
-  }
-  return map
-}
-
-async function loadClasses() {
-  try {
-    const res = await fetchPreschoolClasses({ page: 1, perPage: 100 })
-    classOptions.value = (res.items || []).map((c) => ({ label: c.name, value: c.id }))
-  } catch {
-    classOptions.value = []
-  }
-}
-
-async function loadDay() {
-  if (!selectedClassId.value || !selectedDate.value) return
-  loading.value = true
-  errorMessage.value = ''
-  try {
-    const [studentsRes, attendanceRes] = await Promise.all([
-      fetchPreschoolStudents({ classId: selectedClassId.value, page: 1, perPage: 200 }),
-      fetchPreschoolAttendance({
-        classId: selectedClassId.value,
-        attendanceDate: selectedDate.value,
-        page: 1,
-        perPage: 200,
-      }),
-    ])
-    students.value = studentsRes.items || []
-    attendanceMap.value = buildMap(students.value, attendanceRes.items || [])
-    try {
-      const lifecycle = await fetchAcademicLifecycle()
-      lifecycleContext.value = lifecycle.currentContext || {}
-    } catch {
-      lifecycleContext.value = {}
-    }
-  } catch (e) {
-    errorMessage.value = e?.message || t('preschoolAdminAttendancePage.messages.loadFailed')
-  } finally {
-    loading.value = false
-  }
-}
-
-function markAll(status) {
-  for (const id of Object.keys(attendanceMap.value)) {
-    attendanceMap.value[id].status = status
-  }
-}
-
-function clearAll() {
-  for (const id of Object.keys(attendanceMap.value)) {
-    attendanceMap.value[id].status = ''
-    attendanceMap.value[id].note = ''
-  }
-}
-
-function toggleStatus(studentId, value) {
-  if (!attendanceMap.value[studentId]) return
-  attendanceMap.value[studentId].status =
-    attendanceMap.value[studentId].status === value ? '' : value
-}
-
-async function saveAll() {
-  if (!selectedClassId.value || !selectedDate.value || isLocked.value) return
-  saving.value = true
-  try {
-    const tasks = students.value
-      .filter((s) => attendanceMap.value[s.id]?.status)
-      .map((s) => {
-        const entry = attendanceMap.value[s.id]
-        return savePreschoolAttendance({
-          ...(entry.existingId ? { id: entry.existingId } : {}),
-          student_id: s.id,
-          class_id: selectedClassId.value,
-          attendance_date: selectedDate.value,
-          status: entry.status,
-          note: entry.note || '',
-        })
-      })
-    await Promise.all(tasks)
-    toast.add({ severity: 'success', summary: t('preschoolAdminAttendancePage.messages.saved'), life: 3000 })
-    await loadDay()
-  } catch {
-    toast.add({ severity: 'error', summary: t('preschoolAdminAttendancePage.messages.saveFailed'), life: 4000 })
-  } finally {
-    saving.value = false
-  }
-}
-
-watch([selectedClassId, selectedDate], () => {
-  if (selectedClassId.value && selectedDate.value) loadDay()
-})
-
-onMounted(async () => {
-  await loadClasses()
-})
+]
 </script>
 
 <template>
   <MainLayout>
-    <Toast />
-    <section class="space-y-4">
+    <section class="space-y-6">
       <HeaderSection
-        :title="t('preschoolAdminAttendancePage.title')"
-        :subtitle="t('preschoolAdminAttendancePage.subtitle')"
+        :title="t('preschoolAttendanceHubPage.title')"
+        :subtitle="t('preschoolAttendanceHubPage.subtitle')"
       />
 
-      <!-- ── Filter bar ──────────────────────────────────────────────────── -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-
-          <!-- Class picker -->
-          <label class="flex flex-col gap-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {{ t('preschoolAdminAttendancePage.filters.class') }}
-            </span>
-            <Select
-              v-model="selectedClassId"
-              :options="classOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-              :placeholder="t('preschoolAdminAttendancePage.placeholders.class')"
-              :disabled="loading"
-            />
-          </label>
-
-          <!-- Date navigation -->
-          <label class="flex flex-col gap-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {{ t('preschoolAdminAttendancePage.filters.date') }}
-            </span>
-            <div class="flex items-center gap-1">
-              <button
-                type="button"
-                class="flex h-10 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-40"
-                :disabled="loading"
-                :title="t('preschoolAdminAttendancePage.actions.prevDay')"
-                @click="shiftDate(-1)"
-              >
-                ‹
-              </button>
-              <input
-                v-model="selectedDate"
-                type="date"
-                class="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-300"
-                :disabled="loading"
-              >
-              <button
-                type="button"
-                class="flex h-10 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-40"
-                :disabled="loading"
-                :title="t('preschoolAdminAttendancePage.actions.nextDay')"
-                @click="shiftDate(1)"
-              >
-                ›
-              </button>
-            </div>
-          </label>
-
-          <!-- Today shortcut -->
-          <div class="flex items-end">
-            <Button
-              type="button"
-              variant="ghost"
-              size="md"
-              rounded="xl"
-              :disabled="loading"
-              @click="selectedDate = todayIso()"
-            >
-              Today
-            </Button>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <button
+          v-for="card in CARDS"
+          :key="card.key"
+          type="button"
+          class="att-card"
+          :class="card.accent"
+          @click="router.push({ name: card.route })"
+        >
+          <div class="att-card__icon-wrap">
+            <i :class="['pi', card.icon]" aria-hidden="true" />
           </div>
-        </div>
-      </div>
-
-      <!-- ── Lifecycle lock banner ────────────────────────────────────────── -->
-      <div
-        v-if="isLocked"
-        class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-      >
-        {{ t('preschoolLifecyclePage.messages.termClosed') }}
-      </div>
-
-      <!-- ── Error banner ─────────────────────────────────────────────────── -->
-      <div
-        v-if="errorMessage"
-        class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-      >
-        {{ errorMessage }}
-      </div>
-
-      <!-- ── Empty state — no class selected ────────────────────────────────  -->
-      <div
-        v-if="!selectedClassId"
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400"
-      >
-        {{ t('preschoolAdminAttendancePage.messages.selectClass') }}
-      </div>
-
-      <!-- ── Loading skeleton ────────────────────────────────────────────── -->
-      <div
-        v-else-if="loading"
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400"
-      >
-        {{ t('preschoolReportsShared.loading') }}
-      </div>
-
-      <!-- ── Empty students ──────────────────────────────────────────────── -->
-      <div
-        v-else-if="!students.length"
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400"
-      >
-        {{ t('preschoolAdminAttendancePage.messages.noStudents') }}
-      </div>
-
-      <!-- ── Attendance grid ─────────────────────────────────────────────── -->
-      <div v-else class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-
-        <!-- Toolbar -->
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
-          <span class="text-sm text-slate-500">{{ summary }}</span>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              rounded="xl"
-              :disabled="isLocked || saving"
-              @click="markAll('present')"
-            >
-              {{ t('preschoolAdminAttendancePage.actions.markAllPresent') }}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              rounded="xl"
-              :disabled="isLocked || saving"
-              @click="markAll('absent')"
-            >
-              {{ t('preschoolAdminAttendancePage.actions.markAllAbsent') }}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              rounded="xl"
-              :disabled="isLocked || saving"
-              @click="clearAll"
-            >
-              {{ t('preschoolAdminAttendancePage.actions.clearAll') }}
-            </Button>
+          <div class="att-card__body">
+            <h3 class="att-card__title">{{ t(`preschoolAttendanceHubPage.cards.${card.key}.title`) }}</h3>
+            <p class="att-card__desc">{{ t(`preschoolAttendanceHubPage.cards.${card.key}.description`) }}</p>
           </div>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-slate-100 text-sm">
-            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendancePage.columns.student') }}</th>
-                <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendancePage.columns.status') }}</th>
-                <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendancePage.columns.note') }}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50 bg-white">
-              <tr
-                v-for="(student, index) in students"
-                :key="student.id"
-                class="transition-colors"
-                :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'"
-              >
-                <!-- Student name -->
-                <td class="px-4 py-3">
-                  <p class="font-medium text-slate-900">{{ student.fullName || student.name }}</p>
-                  <p v-if="student.studentCode" class="text-xs text-slate-400">{{ student.studentCode }}</p>
-                </td>
-
-                <!-- Status toggle buttons -->
-                <td class="px-4 py-3">
-                  <div class="flex gap-1">
-                    <button
-                      v-for="opt in statusOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="min-w-[2.2rem] rounded-lg border px-2 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2"
-                      :class="attendanceMap[student.id]?.status === opt.value
-                        ? `${opt.active} ${opt.ring}`
-                        : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'"
-                      :disabled="isLocked"
-                      :title="opt.label"
-                      @click="toggleStatus(student.id, opt.value)"
-                    >
-                      {{ opt.short }}
-                    </button>
-                  </div>
-                </td>
-
-                <!-- Note input -->
-                <td class="px-4 py-3">
-                  <input
-                    v-model="attendanceMap[student.id].note"
-                    type="text"
-                    class="w-full min-w-[140px] rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-300 focus:border-violet-300 focus:outline-none focus:ring-1 focus:ring-violet-200 disabled:opacity-50"
-                    :placeholder="t('preschoolAdminAttendancePage.placeholders.note')"
-                    :disabled="isLocked"
-                  >
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Footer with save -->
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
-          <p class="text-xs text-slate-400">
-            {{ t('preschoolAdminAttendancePage.messages.skippedNote') }}
-          </p>
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            rounded="xl"
-            :loading="saving"
-            :disabled="isLocked || saving || markedCount === 0"
-            @click="saveAll"
-          >
-            {{ saving
-              ? t('preschoolAdminAttendancePage.actions.saving')
-              : t('preschoolAdminAttendancePage.actions.save') }}
-          </Button>
-        </div>
+          <i class="pi pi-arrow-right att-card__arrow" aria-hidden="true" />
+        </button>
       </div>
-
     </section>
   </MainLayout>
 </template>
+
+<style scoped>
+.att-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 14px 36px -28px rgba(15, 23, 42, 0.3);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.att-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 48px -28px rgba(15, 23, 42, 0.4);
+}
+
+.att-card__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 0.85rem;
+  flex-shrink: 0;
+  font-size: 1.15rem;
+}
+
+.att-card__body { flex: 1; min-width: 0; }
+
+.att-card__title {
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.att-card__desc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.att-card__arrow {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  align-self: center;
+  flex-shrink: 0;
+  transition: color 0.14s, transform 0.14s;
+}
+
+.att-card:hover .att-card__arrow { color: #94a3b8; transform: translateX(3px); }
+
+.card--violet .att-card__icon-wrap { background: #ede9fe; color: #6d28d9; }
+.card--violet:hover { border-color: #c4b5fd; }
+
+.card--sky .att-card__icon-wrap { background: #e0f2fe; color: #0369a1; }
+.card--sky:hover { border-color: #7dd3fc; }
+
+.card--slate .att-card__icon-wrap { background: #f1f5f9; color: #475569; }
+.card--slate:hover { border-color: #cbd5e1; }
+</style>
