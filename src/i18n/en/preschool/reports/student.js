@@ -16,6 +16,7 @@ export default {
       back: 'Back',
       load: 'Load Report',
       loading: 'Loading…',
+      printReportCard: 'Print Report Card',
     },
   },
 }

@@ -16,6 +16,7 @@ export default {
       back: 'ត្រឡប់',
       load: 'ផ្ទុករបាយការណ៍',
       loading: 'កំពុងផ្ទុក…',
+      printReportCard: 'បោះពុម្ពប័ណ្ណវឌ្ឍនភាព',
     },
   },
 }
