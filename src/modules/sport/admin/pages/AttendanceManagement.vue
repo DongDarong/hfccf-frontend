@@ -1,92 +1,45 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { fetchSportDashboard } from '@/modules/sport/services/sportApi'
 
-defineOptions({
-  name: 'SportAdminAttendanceManagementPage',
-})
+defineOptions({ name: 'SportAdminAttendanceManagementPage' })
 
 const { t } = useLanguage()
 const router = useRouter()
 
-const dashboard = ref({ summary: {} })
-const loading = ref(false)
-
-const summary = computed(() => dashboard.value.summary || {})
-
-const cards = computed(() => [
-  {
-    key: 'players',
-    icon: 'pi-users',
-    accent: 'card--emerald',
-    route: 'dashboard-sport-admin-attendance-players',
-    metric: summary.value.players ?? 0,
-  },
-  {
-    key: 'coaches',
-    icon: 'pi-id-card',
-    accent: 'card--sky',
-    route: 'dashboard-sport-admin-attendance-coaches',
-    metric: summary.value.coaches ?? 0,
-  },
-  {
-    key: 'history',
-    icon: 'pi-history',
-    accent: 'card--slate',
-    route: 'dashboard-sport-admin-attendance-history',
-    metric: summary.value.matches ?? 0,
-  },
-])
-
-async function loadOverview() {
-  loading.value = true
-
-  try {
-    dashboard.value = await fetchSportDashboard()
-  } catch {
-    dashboard.value = { summary: {} }
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  void loadOverview()
-})
+const CARDS = [
+  { key: 'players', icon: 'pi-users', accent: 'card--emerald', route: 'dashboard-sport-admin-attendance-players' },
+  { key: 'coaches', icon: 'pi-id-card', accent: 'card--sky', route: 'dashboard-sport-admin-attendance-coaches' },
+  { key: 'history', icon: 'pi-history', accent: 'card--slate', route: 'dashboard-sport-admin-attendance-history' },
+]
 </script>
 
 <template>
   <MainLayout>
-    <section class="sport-attendance-page">
+    <section class="space-y-5">
       <HeaderSection
         :title="t('sportAttendanceHubPage.title')"
         :subtitle="t('sportAttendanceHubPage.subtitle')"
       />
 
-      <div class="sport-attendance-page__grid">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <button
-          v-for="card in cards"
+          v-for="card in CARDS"
           :key="card.key"
           type="button"
           class="att-card"
           :class="card.accent"
-          :disabled="loading"
           @click="router.push({ name: card.route })"
         >
           <div class="att-card__icon-wrap">
             <i :class="['pi', card.icon]" aria-hidden="true" />
           </div>
-
           <div class="att-card__body">
-            <p class="att-card__metric">{{ card.metric }}</p>
             <h3 class="att-card__title">{{ t(`sportAttendanceHubPage.cards.${card.key}.title`) }}</h3>
             <p class="att-card__desc">{{ t(`sportAttendanceHubPage.cards.${card.key}.description`) }}</p>
           </div>
-
           <i class="pi pi-arrow-right att-card__arrow" aria-hidden="true" />
         </button>
       </div>
@@ -95,18 +48,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.sport-attendance-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.sport-attendance-page__grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
 .att-card {
   display: flex;
   align-items: flex-start;
@@ -141,14 +82,6 @@ onMounted(() => {
 .att-card__body {
   flex: 1;
   min-width: 0;
-}
-
-.att-card__metric {
-  margin: 0 0 0.2rem;
-  color: #0f172a;
-  font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1;
 }
 
 .att-card__title {

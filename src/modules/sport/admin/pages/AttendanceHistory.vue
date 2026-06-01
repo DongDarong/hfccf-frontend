@@ -29,6 +29,16 @@ const records = ref([])
 const loading = ref(false)
 const teamsLoading = ref(false)
 const errorMessage = ref('')
+const resultCount = computed(() => records.value.length)
+const activeFiltersCount = computed(() => {
+  return [
+    selectedType.value !== 'player',
+    selectedTeamId.value !== '',
+    searchQuery.value.trim() !== '',
+    dateFrom.value !== '',
+    dateTo.value !== '',
+  ].filter(Boolean).length
+})
 
 const typeOptions = computed(() => [
   { label: t('sportAttendanceType.player'), value: 'player' },
@@ -103,6 +113,24 @@ function resetFilters() {
   dateTo.value = ''
 }
 
+const heroStats = computed(() => [
+  {
+    key: 'type',
+    label: t('sportAdminAttendanceHistoryPage.filters.type'),
+    value: typeLabel(selectedType.value),
+  },
+  {
+    key: 'filters',
+    label: 'Active filters',
+    value: `${activeFiltersCount.value}`,
+  },
+  {
+    key: 'records',
+    label: 'Results',
+    value: `${resultCount.value}`,
+  },
+])
+
 watch([selectedType, selectedTeamId, dateFrom, dateTo], () => {
   void loadHistory()
 }, { immediate: true })
@@ -121,7 +149,22 @@ onMounted(() => {
         :subtitle="t('sportAdminAttendanceHistoryPage.subtitle')"
       />
 
-      <div class="sport-attendance-history__filters">
+      <div class="att-hero">
+        <div class="att-hero__copy">
+          <p class="att-hero__eyebrow">History</p>
+          <h2 class="att-hero__title">{{ t('sportAdminAttendanceHistoryPage.title') }}</h2>
+          <p class="att-hero__text">{{ t('sportAdminAttendanceHistoryPage.subtitle') }}</p>
+        </div>
+
+        <div class="att-hero__stats">
+          <div v-for="stat in heroStats" :key="stat.key" class="att-stat">
+            <p class="att-stat__value">{{ stat.value }}</p>
+            <p class="att-stat__label">{{ stat.label }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sport-attendance-history__filters att-toolbar">
         <label class="sport-attendance-history__field">
           <span class="sport-attendance-history__label">{{ t('sportAdminAttendanceHistoryPage.filters.type') }}</span>
           <Select
@@ -193,7 +236,7 @@ onMounted(() => {
         {{ t('sportAdminAttendanceHistoryPage.messages.noRecords') }}
       </div>
 
-      <div v-else class="sport-attendance-history__panel">
+      <div v-else class="sport-attendance-history__panel att-panel">
         <div class="overflow-x-auto">
           <table class="sport-attendance-history__table">
             <thead>
@@ -239,6 +282,84 @@ onMounted(() => {
   gap: 1.1rem;
 }
 
+.att-hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 1.45rem;
+  border: 1px solid #dbe7f3;
+  background:
+    radial-gradient(circle at top right, rgba(125, 211, 252, 0.18), transparent 22%),
+    radial-gradient(circle at bottom left, rgba(167, 243, 208, 0.15), transparent 24%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 250, 252, 0.98) 100%);
+  box-shadow: 0 26px 70px -46px rgba(15, 23, 42, 0.52);
+}
+
+.att-hero__copy {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.att-hero__eyebrow {
+  margin: 0 0 0.35rem;
+  color: #0f766e;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.att-hero__title {
+  margin: 0 0 0.35rem;
+  color: #0f172a;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.att-hero__text {
+  margin: 0;
+  max-width: 56ch;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.att-hero__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+  flex: 0 1 420px;
+  width: 100%;
+}
+
+.att-stat {
+  padding: 0.9rem 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid #dce6f2;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.att-stat__value {
+  margin: 0 0 0.2rem;
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.att-stat__label {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .sport-attendance-history__filters {
   display: flex;
   flex-wrap: wrap;
@@ -249,6 +370,10 @@ onMounted(() => {
   border: 1px solid #dce6f2;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
   box-shadow: 0 20px 54px -42px rgba(15, 23, 42, 0.45);
+}
+
+.att-toolbar {
+  position: relative;
 }
 
 .sport-attendance-history__field {
@@ -305,6 +430,10 @@ onMounted(() => {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
+.att-panel {
+  position: relative;
+}
+
 .sport-attendance-history__table {
   width: 100%;
   border-collapse: collapse;
@@ -332,5 +461,9 @@ onMounted(() => {
 
 .sport-attendance-history__table tbody tr.is-odd {
   background: #f8fafc;
+}
+
+.sport-attendance-history__table tbody tr:hover {
+  background: #eff6ff;
 }
 </style>
