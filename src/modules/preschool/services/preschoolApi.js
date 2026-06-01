@@ -557,7 +557,7 @@ export async function deletePreschoolStudent(id) {
 }
 
 export async function fetchPreschoolAttendance(
-  { page = 1, perPage = 10, search = '', classId = '', studentId = '', status = '', attendanceDate = '' } = {},
+  { page = 1, perPage = 10, search = '', classId = '', studentId = '', status = '', attendanceDate = '', dateFrom = '', dateTo = '' } = {},
   options = {},
 ) {
   const response = await http.get('/preschool/attendance', {
@@ -569,11 +569,28 @@ export async function fetchPreschoolAttendance(
       student_id: studentId,
       status,
       attendance_date: attendanceDate,
+      date_from: dateFrom,
+      date_to: dateTo,
     }),
     signal: options.signal,
   })
 
   return normalizeAttendanceListResponse(response, page, perPage)
+}
+
+export async function savePreschoolTeacherAttendance(payload = {}) {
+  const id = resolveId(payload)
+  const method = id ? 'put' : 'post'
+  const url = id ? `/preschool/teacher-attendance/${encodeURIComponent(id)}` : '/preschool/teacher-attendance'
+  const response = await http[method](url, payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeAttendanceRow(responsePayload.attendance || responsePayload)
+}
+
+export async function saveTeacherSelfAttendance(payload = {}) {
+  const response = await http.post('/preschool/teacher/self-attendance', payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return responsePayload.attendance || responsePayload
 }
 
 export async function fetchMyPreschoolAttendance(
