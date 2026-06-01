@@ -9,7 +9,6 @@ import { useToast } from 'primevue/usetoast'
 import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchPreschoolTeachers,
-  fetchPreschoolTeacherAttendance,
   savePreschoolTeacherAttendance,
 } from '@/modules/preschool/services/preschoolApi'
 
@@ -68,16 +67,7 @@ async function loadDay() {
     return
   }
 
-  // Load existing attendance records separately — endpoint may not exist yet
-  let existingRecords = []
-  try {
-    const attendanceRes = await fetchPreschoolTeacherAttendance({ attendanceDate: selectedDate.value })
-    existingRecords = attendanceRes.items || []
-  } catch {
-    // Endpoint not yet available; teachers still shown with blank statuses
-  }
-
-  attendanceMap.value = buildMap(teachers.value, existingRecords)
+  attendanceMap.value = buildMap(teachers.value, [])
   loading.value = false
 }
 
