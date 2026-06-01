@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 
 import EnrollmentSummaryCards from '@/modules/preschool/admin/components/enrollment/EnrollmentSummaryCards.vue'
