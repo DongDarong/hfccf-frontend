@@ -80,10 +80,49 @@ export const preschoolRoutes = [
     path: '/module/preschool-admin/attendance',
     name: 'dashboard-preschool-admin-attendance',
     component: () => import('@/modules/preschool/admin/pages/AttendanceManagement.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/students',
+    name: 'dashboard-preschool-admin-attendance-students',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceStudents.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/teachers',
+    name: 'dashboard-preschool-admin-attendance-teachers',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceTeachers.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/history',
+    name: 'dashboard-preschool-admin-attendance-history',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceHistory.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/dashboard',
+    name: 'dashboard-preschool-admin-attendance-dashboard',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceDashboard.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/alerts',
+    name: 'dashboard-preschool-admin-attendance-alerts',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceAlerts.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/calendar',
+    name: 'dashboard-preschool-admin-attendance-calendar',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceCalendar.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/profile',
+    name: 'dashboard-preschool-admin-attendance-profile',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceProfile.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.

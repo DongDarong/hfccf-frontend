@@ -74,6 +74,41 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.attendance' },
   ],
+  'dashboard-preschool-admin-attendance-students': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceStudents' },
+  ],
+  'dashboard-preschool-admin-attendance-teachers': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceTeachers' },
+  ],
+  'dashboard-preschool-admin-attendance-history': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceHistory' },
+  ],
+  'dashboard-preschool-admin-attendance-dashboard': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceDashboard' },
+  ],
+  'dashboard-preschool-admin-attendance-alerts': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceAlerts' },
+  ],
+  'dashboard-preschool-admin-attendance-calendar': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceCalendar' },
+  ],
+  'dashboard-preschool-admin-attendance-profile': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceProfile' },
+  ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
   'dashboard-preschool-admin-enrollments': [

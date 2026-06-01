@@ -135,6 +135,15 @@ function normalizeAttendanceRow(row = {}) {
     className: normalizeText(row.className || row.class_name || row.preschoolClass?.name),
     studentId: row.studentId ?? row.student_id ?? '',
     studentName: normalizeText(row.studentName || row.student_name || row.student?.fullName || `${row.student?.first_name || ''} ${row.student?.last_name || ''}`),
+    teacherId: row.teacherId ?? row.teacher_id ?? row.teacherUserId ?? row.teacher_user_id ?? '',
+    teacherName: normalizeText(
+      row.teacherName
+      || row.teacher_name
+      || row.teacherDisplayName
+      || row.teacher_display_name
+      || row.teacher?.fullName
+      || row.teacher?.name,
+    ),
     recordedByUserId: row.recordedByUserId ?? row.recorded_by_user_id ?? '',
     recordedByName: normalizeText(row.recordedByName || row.recorded_by_name || row.recordedBy?.name),
     attendanceDate: row.attendanceDate || row.attendance_date || '',
@@ -557,7 +566,7 @@ export async function deletePreschoolStudent(id) {
 }
 
 export async function fetchPreschoolAttendance(
-  { page = 1, perPage = 10, search = '', classId = '', studentId = '', status = '', attendanceDate = '' } = {},
+  { page = 1, perPage = 10, search = '', classId = '', studentId = '', status = '', attendanceDate = '', dateFrom = '', dateTo = '' } = {},
   options = {},
 ) {
   const response = await http.get('/preschool/attendance', {
@@ -569,11 +578,49 @@ export async function fetchPreschoolAttendance(
       student_id: studentId,
       status,
       attendance_date: attendanceDate,
+      date_from: dateFrom,
+      date_to: dateTo,
     }),
     signal: options.signal,
   })
 
   return normalizeAttendanceListResponse(response, page, perPage)
+}
+
+export async function fetchPreschoolTeacherAttendance(
+  { page = 1, perPage = 10, search = '', classId = '', status = '', attendanceDate = '', dateFrom = '', dateTo = '' } = {},
+  options = {},
+) {
+  const response = await http.get('/preschool/teacher-attendance', {
+    params: buildQueryParams({
+      page,
+      per_page: perPage,
+      search,
+      class_id: classId,
+      status,
+      attendance_date: attendanceDate,
+      date_from: dateFrom,
+      date_to: dateTo,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeAttendanceListResponse(response, page, perPage)
+}
+
+export async function savePreschoolTeacherAttendance(payload = {}) {
+  const id = resolveId(payload)
+  const method = id ? 'put' : 'post'
+  const url = id ? `/preschool/teacher-attendance/${encodeURIComponent(id)}` : '/preschool/teacher-attendance'
+  const response = await http[method](url, payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeAttendanceRow(responsePayload.attendance || responsePayload)
+}
+
+export async function saveTeacherSelfAttendance(payload = {}) {
+  const response = await http.post('/preschool/teacher/self-attendance', payload)
+  const responsePayload = unwrapApiData(response) || {}
+  return responsePayload.attendance || responsePayload
 }
 
 export async function fetchMyPreschoolAttendance(

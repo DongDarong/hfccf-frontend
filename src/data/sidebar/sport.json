@@ -20,6 +20,13 @@
           "badgeKey": "nav.badges.admin"
         },
         {
+          "id": "sport-attendance",
+          "routeName": "dashboard-sport-admin-attendance",
+          "labelKey": "nav.items.attendanceManagement",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "sport-coaches",
           "routeName": "dashboard-sport-admin-users",
           "labelKey": "nav.items.coaches",

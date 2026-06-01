@@ -16,6 +16,7 @@ import {
   deleteSportPlayer,
   deleteSportTeam,
   deleteSportTournament,
+  fetchSportAttendance,
   fetchCoachDashboard,
   fetchMatchEvents,
   fetchSportCoach,
@@ -32,6 +33,9 @@ import {
   fetchTournamentStandings,
   normalizeBooleanLike,
   normalizePerPage,
+  saveSportAttendance,
+  saveSportCoachAttendance,
+  saveSportPlayerAttendance,
   recalculateTournamentStandings,
   removeTournamentTeam,
   updateMatchEvent,
@@ -247,6 +251,108 @@ describe('sport coach APIs', () => {
     http.delete.mockResolvedValueOnce(stubResponse(null))
     await expect(deleteSportCoach(5)).resolves.toBe(true)
     expect(http.delete).toHaveBeenCalledWith('/sport/coaches/5')
+  })
+})
+
+describe('sport attendance APIs', () => {
+  it('fetches and saves player and coach attendance with normalized payloads', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        items: [
+          {
+            id: 1,
+            attendance_type: 'player',
+            team_id: 2,
+            player: { id: 3, first_name: 'Ada', last_name: 'Lovelace' },
+            attendance_date: '2026-06-01',
+            status: 'present',
+            note: 'on time',
+          },
+        ],
+        pagination: { page: 1, perPage: 25, total: 1, totalPages: 1 },
+      }),
+    )
+
+    const playerList = await fetchSportAttendance({
+      attendanceType: 'player',
+      teamId: 2,
+      attendanceDate: '2026-06-01',
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/sport/attendance', {
+      params: expect.objectContaining({
+        attendance_type: 'player',
+        team_id: 2,
+        attendance_date: '2026-06-01',
+      }),
+      signal: undefined,
+    })
+    expect(playerList.items[0]).toMatchObject({
+      attendanceType: 'player',
+      teamId: 2,
+      personName: 'Ada Lovelace',
+      status: 'present',
+    })
+
+    http.post.mockResolvedValueOnce(
+      stubResponse({
+        attendance: {
+          id: 4,
+          attendance_type: 'coach',
+          coach: { id: 5, name: 'Coach One' },
+          attendance_date: '2026-06-01',
+          status: 'absent',
+        },
+      }),
+    )
+
+    await expect(
+      saveSportAttendance({
+        attendanceType: 'coach',
+        coachId: 5,
+        attendanceDate: '2026-06-01',
+        status: 'absent',
+      }),
+    ).resolves.toMatchObject({
+      id: 4,
+      attendanceType: 'coach',
+      coachName: 'Coach One',
+      status: 'absent',
+    })
+
+    expect(http.post).toHaveBeenCalledWith(
+      '/sport/attendance',
+      expect.objectContaining({
+        attendance_type: 'coach',
+        coach_id: 5,
+        attendance_date: '2026-06-01',
+        status: 'absent',
+      }),
+    )
+
+    http.post.mockResolvedValueOnce(stubResponse({ attendance: { id: 6, attendance_type: 'player' } }))
+    await expect(
+      saveSportPlayerAttendance({
+        playerId: 9,
+        attendanceDate: '2026-06-01',
+        status: 'present',
+      }),
+    ).resolves.toMatchObject({
+      id: 6,
+      attendanceType: 'player',
+    })
+
+    http.post.mockResolvedValueOnce(stubResponse({ attendance: { id: 7, attendance_type: 'coach' } }))
+    await expect(
+      saveSportCoachAttendance({
+        coachId: 10,
+        attendanceDate: '2026-06-01',
+        status: 'late',
+      }),
+    ).resolves.toMatchObject({
+      id: 7,
+      attendanceType: 'coach',
+    })
   })
 })
 
