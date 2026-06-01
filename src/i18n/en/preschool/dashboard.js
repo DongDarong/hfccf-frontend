@@ -75,10 +75,28 @@ export default {
       noUpcomingClasses: 'No upcoming classes',
       assignedTeacher: 'Assigned teacher',
       fallback: 'Your assigned classes will appear here once they are created.',
+      studentsEnrolled: '{count} students enrolled',
     },
     activity: {
       title: 'Recent activity',
       fallback: 'Attendance entries will appear here once they are recorded.',
+    },
+    classes: {
+      title: 'My Classes',
+      subtitle: 'Classes assigned to you this term.',
+      noClasses: 'No classes are assigned to you yet.',
+      studentsCount: '{count} students',
+      level: 'Level',
+      room: 'Room',
+      viewStudents: 'Students',
+      viewAttendance: 'Attendance',
+    },
+    quickNav: {
+      title: 'Quick Access',
+      schedule: 'My Schedule',
+      students: 'My Students',
+      attendance: 'Attendance Records',
+      reports: 'Student Reports',
     },
     errors: {
       loadFailed: 'Failed to load teacher dashboard.',

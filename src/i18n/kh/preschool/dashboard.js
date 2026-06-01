@@ -75,10 +75,28 @@ export default {
       noUpcomingClasses: 'មិនមានថ្នាក់រៀនខាងមុខទេ',
       assignedTeacher: 'គ្រូដែលបានចាត់តាំង',
       fallback: 'ថ្នាក់ដែលបានចាត់តាំងនឹងបង្ហាញទីនេះ នៅពេលបង្កើតរួច។',
+      studentsEnrolled: 'សិស្ស {count} នាក់ចុះឈ្មោះ',
     },
     activity: {
       title: 'សកម្មភាពថ្មីៗ',
       fallback: 'កំណត់ត្រាវត្តមាននឹងបង្ហាញទីនេះ នៅពេលបានកត់ត្រា។',
+    },
+    classes: {
+      title: 'ថ្នាក់របស់ខ្ញុំ',
+      subtitle: 'ថ្នាក់ដែលបានចាត់តាំងឱ្យអ្នកក្នុងឆមាសនេះ។',
+      noClasses: 'មិនទាន់មានថ្នាក់ចាត់តាំងឱ្យអ្នកនៅឡើយទេ។',
+      studentsCount: 'សិស្ស {count} នាក់',
+      level: 'កម្រិត',
+      room: 'បន្ទប់',
+      viewStudents: 'សិស្ស',
+      viewAttendance: 'វត្តមាន',
+    },
+    quickNav: {
+      title: 'ការចូលរហ័ស',
+      schedule: 'កាលវិភាគរបស់ខ្ញុំ',
+      students: 'សិស្សរបស់ខ្ញុំ',
+      attendance: 'កំណត់ត្រាវត្តមាន',
+      reports: 'របាយការណ៍សិស្ស',
     },
     errors: {
       loadFailed: 'មិនអាចផ្ទុកផ្ទាំងគ្រូបានទេ។',
