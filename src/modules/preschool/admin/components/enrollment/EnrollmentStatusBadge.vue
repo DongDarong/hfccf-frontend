@@ -1,9 +1,13 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
+
 defineOptions({ name: 'EnrollmentStatusBadge' })
 
-defineProps({
+const props = defineProps({
   status: { type: String, default: '' },
 })
+
+const { t, te } = useI18n()
 
 const TONE = {
   draft: 'neutral',
@@ -16,21 +20,15 @@ const TONE = {
   cancelled: 'muted',
 }
 
-const LABEL = {
-  draft: 'Draft',
-  submitted: 'Submitted',
-  under_review: 'Under Review',
-  approved: 'Approved',
-  waitlisted: 'Waitlisted',
-  rejected: 'Rejected',
-  enrolled: 'Enrolled',
-  cancelled: 'Cancelled',
+function label(status) {
+  const key = `preschoolEnrollmentPage.statuses.${status}`
+  return te(key) ? t(key) : status
 }
 </script>
 
 <template>
-  <span class="enr-badge" :class="`enr-badge--${TONE[status] ?? 'neutral'}`">
-    {{ LABEL[status] ?? status }}
+  <span class="enr-badge" :class="`enr-badge--${TONE[props.status] ?? 'neutral'}`">
+    {{ label(props.status) }}
   </span>
 </template>
 

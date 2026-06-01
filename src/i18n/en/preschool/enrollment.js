@@ -131,6 +131,7 @@ export default {
     reviewPanel: {
       title: 'Review Application',
       applicationCode: 'Application Code',
+      status: 'Status',
       appliedDate: 'Applied Date',
       reviewedBy: 'Reviewed By',
       approvedBy: 'Approved By',
@@ -235,7 +236,15 @@ export default {
       noTimeline: 'No decisions recorded.',
     },
 
+    pagination: {
+      page: 'Page {page} of {lastPage}',
+      total: '{count} applications',
+      previous: 'Previous',
+      next: 'Next',
+    },
+
     messages: {
+      loading: 'Loading…',
       createSuccess: 'Application created successfully.',
       updateSuccess: 'Application updated successfully.',
       submitSuccess: 'Application submitted for review.',

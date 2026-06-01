@@ -321,6 +321,30 @@ function clearFilters() {
       @action="onTableAction"
     />
 
+    <!-- Pagination -->
+    <div v-if="pagination.lastPage > 1" class="enr-pagination">
+      <span class="enr-pagination__info">
+        {{ t('preschoolEnrollmentPage.pagination.total', { count: pagination.total }) }}
+        · {{ t('preschoolEnrollmentPage.pagination.page', { page: pagination.currentPage, lastPage: pagination.lastPage }) }}
+      </span>
+      <div class="enr-pagination__controls">
+        <button
+          class="enr-pagination__btn"
+          :disabled="pagination.currentPage <= 1 || loadingList"
+          @click="loadList(pagination.currentPage - 1)"
+        >
+          {{ t('preschoolEnrollmentPage.pagination.previous') }}
+        </button>
+        <button
+          class="enr-pagination__btn enr-pagination__btn--primary"
+          :disabled="pagination.currentPage >= pagination.lastPage || loadingList"
+          @click="loadList(pagination.currentPage + 1)"
+        >
+          {{ t('preschoolEnrollmentPage.pagination.next') }}
+        </button>
+      </div>
+    </div>
+
     <!-- Detail side panel -->
     <Teleport to="body">
       <div v-if="showDetail" class="enr-detail-overlay" @click.self="showDetail = false">
@@ -344,7 +368,7 @@ function clearFilters() {
           </div>
 
           <div v-if="loadingDetail" class="enr-detail-panel__loading">
-            <i class="pi pi-spin pi-spinner" /> Loading…
+            <i class="pi pi-spin pi-spinner" /> {{ t('preschoolEnrollmentPage.messages.loading') }}
           </div>
 
           <div v-else-if="selected" class="enr-detail-panel__body">
@@ -442,6 +466,48 @@ function clearFilters() {
 </template>
 
 <style scoped>
+.enr-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0;
+}
+
+.enr-pagination__info {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.enr-pagination__controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.enr-pagination__btn {
+  padding: 0.45rem 1rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  transition: background 0.15s;
+}
+
+.enr-pagination__btn:hover:not(:disabled) { background: #f1f5f9; }
+.enr-pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.enr-pagination__btn--primary {
+  background: #6366f1;
+  color: #fff;
+  border-color: transparent;
+}
+
+.enr-pagination__btn--primary:hover:not(:disabled) { background: #4f46e5; }
+
 .enr-page {
   padding: 1.5rem;
   display: flex;

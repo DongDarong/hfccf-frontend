@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { formatDatetimeShort } from '@/utils/date'
 import EnrollmentStatusBadge from './EnrollmentStatusBadge.vue'
 
 defineOptions({ name: 'EnrollmentReviewPanel' })
@@ -9,11 +10,6 @@ defineProps({
 })
 
 const { t } = useI18n()
-
-function formatDate(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString()
-}
 </script>
 
 <template>
@@ -25,7 +21,7 @@ function formatDate(iso) {
         <dd class="enr-review__code">{{ application.applicationCode ?? '—' }}</dd>
       </div>
       <div class="enr-review__row">
-        <dt>Status</dt>
+        <dt>{{ t('preschoolEnrollmentPage.reviewPanel.status') }}</dt>
         <dd><EnrollmentStatusBadge :status="application.status" /></dd>
       </div>
       <div class="enr-review__row">
@@ -34,15 +30,15 @@ function formatDate(iso) {
       </div>
       <div v-if="application.reviewedByName" class="enr-review__row">
         <dt>{{ t('preschoolEnrollmentPage.reviewPanel.reviewedBy') }}</dt>
-        <dd>{{ application.reviewedByName }} <span class="enr-review__ts">{{ formatDate(application.reviewedAt) }}</span></dd>
+        <dd>{{ application.reviewedByName }} <span class="enr-review__ts">{{ formatDatetimeShort(application.reviewedAt) }}</span></dd>
       </div>
       <div v-if="application.approvedByName" class="enr-review__row">
         <dt>{{ t('preschoolEnrollmentPage.reviewPanel.approvedBy') }}</dt>
-        <dd>{{ application.approvedByName }} <span class="enr-review__ts">{{ formatDate(application.approvedAt) }}</span></dd>
+        <dd>{{ application.approvedByName }} <span class="enr-review__ts">{{ formatDatetimeShort(application.approvedAt) }}</span></dd>
       </div>
       <div v-if="application.enrolledByName" class="enr-review__row">
         <dt>{{ t('preschoolEnrollmentPage.reviewPanel.enrolledBy') }}</dt>
-        <dd>{{ application.enrolledByName }} <span class="enr-review__ts">{{ formatDate(application.enrolledAt) }}</span></dd>
+        <dd>{{ application.enrolledByName }} <span class="enr-review__ts">{{ formatDatetimeShort(application.enrolledAt) }}</span></dd>
       </div>
       <div class="enr-review__row enr-review__row--full">
         <dt>{{ t('preschoolEnrollmentPage.reviewPanel.adminNotes') }}</dt>
