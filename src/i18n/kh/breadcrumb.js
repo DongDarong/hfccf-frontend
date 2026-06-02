@@ -53,6 +53,7 @@ export default {
     attendanceAlerts: 'សញ្ញាព្រមានអវត្តមាន',
     attendanceCalendar: 'ប្រតិទិន',
     attendanceProfile: 'ប្រវត្តិសិស្ស',
+    attendanceIdCard: 'បង្កើតប័ណ្ណសម្គាល់ខ្លួន',
     attendanceSelf: 'វត្តមានរបស់ខ្ញុំ',
     enrollment: 'ការចុះឈ្មោះ',
     assignments: 'ការចាត់តាំង',

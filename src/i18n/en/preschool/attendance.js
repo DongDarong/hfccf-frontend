@@ -46,6 +46,10 @@ export default {
         title: 'Student Profile',
         description: 'Full attendance history and rate breakdown for a single student.',
       },
+      idCard: {
+        title: 'Generate ID Card',
+        description: 'Generate and download student ID cards as a PDF file.',
+      },
     },
   },
 

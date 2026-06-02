@@ -124,6 +124,12 @@ export const preschoolRoutes = [
     component: () => import('@/modules/preschool/admin/pages/AttendanceProfile.vue'),
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
+  defineAppRoute({
+    path: '/module/preschool-admin/attendance/id-card',
+    name: 'dashboard-preschool-admin-attendance-id-card',
+    component: () => import('@/modules/preschool/admin/pages/AttendanceIdCard.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
+  }),
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.
   defineAppRoute({

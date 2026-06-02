@@ -53,6 +53,7 @@ export default {
     attendanceAlerts: 'Absence Alerts',
     attendanceCalendar: 'Calendar',
     attendanceProfile: 'Student Profile',
+    attendanceIdCard: 'Generate ID Card',
     attendanceSelf: 'My Attendance',
     enrollment: 'Enrollment',
     assignments: 'Assignments',

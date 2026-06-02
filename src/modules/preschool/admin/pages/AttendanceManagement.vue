@@ -17,6 +17,7 @@ const CARDS = [
   { key: 'alerts',    icon: 'pi-bell',        accent: 'card--rose',   route: 'dashboard-preschool-admin-attendance-alerts' },
   { key: 'calendar',  icon: 'pi-calendar',    accent: 'card--emerald',route: 'dashboard-preschool-admin-attendance-calendar' },
   { key: 'profile',   icon: 'pi-user-edit',   accent: 'card--amber',  route: 'dashboard-preschool-admin-attendance-profile' },
+  { key: 'idCard',    icon: 'pi-id-card',     accent: 'card--teal',   route: 'dashboard-preschool-admin-attendance-id-card' },
 ]
 </script>
 
@@ -100,4 +101,6 @@ const CARDS = [
 .card--emerald:hover { border-color: #6ee7b7; }
 .card--amber .att-card__icon-wrap { background: #fef3c7; color: #92400e; }
 .card--amber:hover { border-color: #fcd34d; }
+.card--teal .att-card__icon-wrap { background: #ccfbf1; color: #0f766e; }
+.card--teal:hover { border-color: #5eead4; }
 </style>
