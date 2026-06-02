@@ -22,9 +22,42 @@ const selectedStudentIds  = ref([])
 const selectedFormat      = ref('pdf')
 const selectedOrientation = ref('landscape')
 const selectedSize        = ref('standard')
+const selectedLang        = ref('en')
 const loadingClasses      = ref(false)
 const loadingStudents     = ref(false)
 const generating          = ref(false)
+
+const LANG_OPTIONS = [
+  { value: 'en', label: 'EN', desc: 'English' },
+  { value: 'kh', label: 'ខ្មែរ', desc: 'Khmer' },
+]
+
+const CARD_TEXT = {
+  en: {
+    school:      'HFCCF PRESCHOOL',
+    tagline:     'Hope for Cambodian Children',
+    badge:       'STUDENT ID CARD',
+    studentId:   'STUDENT ID',
+    class:       'CLASS',
+    grade:       'GRADE',
+    dob:         'DATE OF BIRTH',
+    male:        'MALE',
+    female:      'FEMALE',
+    academicYear: 'Academic Year',
+  },
+  kh: {
+    school:      'សាលាមត្តេយ្យ HFCCF',
+    tagline:     'សង្ឃឹមសម្រាប់កុមារកម្ពុជា',
+    badge:       'អត្តសញ្ញាណបណ្ណ',
+    studentId:   'លេខសម្គាល់',
+    class:       'ថ្នាក់',
+    grade:       'ថ្នាក់ទី',
+    dob:         'ថ្ងៃកំណើត',
+    male:        'ប្រុស',
+    female:      'ស្រី',
+    academicYear: 'ឆ្នាំសិក្សា',
+  },
+}
 
 const FORMAT_OPTIONS = [
   { value: 'pdf', label: 'PDF', icon: 'pi-file-pdf', desc: 'Print-ready A4 sheet' },
@@ -164,12 +197,13 @@ function doc_splitFirst(ctx, text, maxPx) {
 // ═════════════════════════════════════════════════════════════════════════════
 //  jsPDF renderers  (W, H = actual card dimensions in mm)
 // ═════════════════════════════════════════════════════════════════════════════
-function drawCardPdf(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, photoData) {
-  if (orientation === 'portrait') return _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData)
-  _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData)
+function drawCardPdf(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, photoData, lang = 'en') {
+  if (orientation === 'portrait') return _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang)
+  _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang)
 }
 
-function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData) {
+function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang) {
+  const T = CARD_TEXT[lang] || CARD_TEXT.en
   const SW = W / 85.6, SH = H / 54, FS = Math.sqrt(SW * SH), RS = Math.min(SW, SH)
   const HEADER_H = 14.5 * SH, BAR_H = 1.8 * SH, FOOTER_H = 8.5 * SH
   const BODY_Y   = y + HEADER_H + BAR_H
@@ -185,13 +219,13 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
   doc.rect(x, y+HEADER_H-3*SH, W, 3*SH, 'F')
   if (logoData) doc.addImage(logoData, 'JPEG', x+2.5*SW, y+2*SH, 10.5*SW, 10.5*SH)
   doc.setTextColor(255,255,255); doc.setFontSize(7.5*FS); doc.setFont('helvetica','bold')
-  doc.text('HFCCF PRESCHOOL', x+15*SW, y+6.5*SH)
+  doc.text(T.school, x+15*SW, y+6.5*SH)
   doc.setFontSize(5.5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(147,197,253)
-  doc.text('Hope for Cambodian Children', x+15*SW, y+10.5*SH)
+  doc.text(T.tagline, x+15*SW, y+10.5*SH)
   doc.setDrawColor(255,255,255); doc.setLineWidth(0.3)
   doc.roundedRect(x+W-24*SW, y+3.5*SH, 22*SW, 7*SH, 1.2*RS, 1.2*RS, 'S')
   doc.setTextColor(255,255,255); doc.setFontSize(5*FS); doc.setFont('helvetica','bold')
-  doc.text('STUDENT ID CARD', x+W-13*SW, y+8*SH, { align: 'center' })
+  doc.text(T.badge, x+W-13*SW, y+8*SH, { align: 'center' })
 
   ACCENT.forEach(([r,g,b],i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
 
@@ -215,7 +249,7 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
     doc.roundedRect(CX-6*SW, CY+13*RS, 12*SW, 4.5*SH, RS, RS, 'F')
     doc.setFontSize(5*FS); doc.setFont('helvetica','bold')
     doc.setTextColor(m?109:190, m?40:24, m?217:93)
-    doc.text(m?'MALE':'FEMALE', CX, CY+16.4*RS, { align: 'center' })
+    doc.text(m ? T.male : T.female, CX, CY+16.4*RS, { align: 'center' })
   }
 
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
@@ -226,12 +260,12 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
   doc.text(doc.splitTextToSize(student.fullName||student.name||'—', W-35*SW)[0], IX, IY); IY += 5*SH
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x+W-3*SW, IY); IY += 3.5*SH
   doc.setFontSize(4.8*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text('STUDENT ID', IX, IY); IY += 3.5*SH
+  doc.text(T.studentId, IX, IY); IY += 3.5*SH
   doc.setFontSize(7*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
   doc.text(String(student.studentCode||student.id||'—'), IX, IY); IY += 5*SH
   const GX = x+58*SW
   doc.setFontSize(4.8*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text('CLASS', IX, IY); if (classLevel) doc.text('GRADE', GX, IY); IY += 3.5*SH
+  doc.text(T.class, IX, IY); if (classLevel) doc.text(T.grade, GX, IY); IY += 3.5*SH
   doc.setFontSize(7*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
   doc.text(className||'—', IX, IY); if (classLevel) doc.text(classLevel, GX, IY)
 
@@ -239,10 +273,11 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
   doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5*SW,2.5*SH,'F'); doc.rect(x+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH,'F')
   doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x,FOOTER_Y,x+W,FOOTER_Y)
   doc.setTextColor(30,64,175); doc.setFontSize(6*FS); doc.setFont('helvetica','bold')
-  doc.text(`Academic Year  ${academicYear}`, x+W/2, FOOTER_Y+5.2*SH, { align: 'center' })
+  doc.text(`${T.academicYear}  ${academicYear}`, x+W/2, FOOTER_Y+5.2*SH, { align: 'center' })
 }
 
-function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData) {
+function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang) {
+  const T = CARD_TEXT[lang] || CARD_TEXT.en
   const SW = W / 54, SH = H / 85.6, FS = Math.sqrt(SW * SH), RS = Math.min(SW, SH)
   const HEADER_H = 20*SH, BAR_H = 1.8*SH, FOOTER_H = 8.5*SH
   const BODY_Y   = y + HEADER_H + BAR_H
@@ -256,9 +291,9 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
   doc.rect(x, y+HEADER_H-3*SH, W, 3*SH, 'F')
   if (logoData) doc.addImage(logoData, 'JPEG', CX-5*SW, y+2*SH, 10*SW, 10*SH)
   doc.setTextColor(255,255,255); doc.setFontSize(7.5*FS); doc.setFont('helvetica','bold')
-  doc.text('HFCCF PRESCHOOL', CX, y+14.5*SH, { align: 'center' })
+  doc.text(T.school, CX, y+14.5*SH, { align: 'center' })
   doc.setFontSize(5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(147,197,253)
-  doc.text('Hope for Cambodian Children', CX, y+18*SH, { align: 'center' })
+  doc.text(T.tagline, CX, y+18*SH, { align: 'center' })
   ACCENT.forEach(([r,g,b],i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
 
   const CY_AV = BODY_Y + 12*SH
@@ -282,7 +317,7 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
     doc.roundedRect(CX-6.5*SW, CY_AV+11.5*RS, 13*SW, 4*SH, RS, RS, 'F')
     doc.setFontSize(5*FS); doc.setFont('helvetica','bold')
     doc.setTextColor(m?109:190, m?40:24, m?217:93)
-    doc.text(m?'MALE':'FEMALE', CX, CY_AV+14.5*RS, { align: 'center' })
+    doc.text(m ? T.male : T.female, CX, CY_AV+14.5*RS, { align: 'center' })
   }
 
   const nameY = CY_AV + 19*SH
@@ -293,13 +328,13 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
 
   const IY0 = divY + 3.5*SH, C1 = x+5*SW, C2 = x+W/2+1.5*SW
   doc.setFontSize(4.5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text('STUDENT ID', C1, IY0); if (classLevel) doc.text('GRADE', C2, IY0)
+  doc.text(T.studentId, C1, IY0); if (classLevel) doc.text(T.grade, C2, IY0)
   doc.setFontSize(6.5*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
   doc.text(String(student.studentCode||student.id||'—'), C1, IY0+3.5*SH)
   if (classLevel) doc.text(classLevel, C2, IY0+3.5*SH)
   const R2Y = IY0+8.5*SH
   doc.setFontSize(4.5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text('CLASS', C1, R2Y); if (student.dateOfBirth) doc.text('DATE OF BIRTH', C2, R2Y)
+  doc.text(T.class, C1, R2Y); if (student.dateOfBirth) doc.text(T.dob, C2, R2Y)
   doc.setFontSize(6.5*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
   doc.text(className||'—', C1, R2Y+3.5*SH)
   if (student.dateOfBirth) doc.text(student.dateOfBirth, C2, R2Y+3.5*SH)
@@ -308,23 +343,26 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
   doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5*SW,2.5*SH,'F'); doc.rect(x+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH,'F')
   doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x,FOOTER_Y,x+W,FOOTER_Y)
   doc.setTextColor(30,64,175); doc.setFontSize(5.5*FS); doc.setFont('helvetica','bold')
-  doc.text(`Academic Year  ${academicYear}`, CX, FOOTER_Y+5.2*SH, { align: 'center' })
+  doc.text(`${T.academicYear}  ${academicYear}`, CX, FOOTER_Y+5.2*SH, { align: 'center' })
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  Canvas renderers
 // ═════════════════════════════════════════════════════════════════════════════
-function drawCardCanvas(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation, W, H, photoImg) {
-  if (orientation === 'portrait') return _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg)
-  _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg)
+function drawCardCanvas(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation, W, H, photoImg, lang = 'en') {
+  if (orientation === 'portrait') return _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang)
+  _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang)
 }
 
-function _makeCanvasHelpers(ctx, SC) {
+function _makeCanvasHelpers(ctx, SC, lang = 'en') {
+  const fontFamily = lang === 'kh'
+    ? '"Khmer OS", Hanuman, Battambang, "Noto Sans Khmer", sans-serif'
+    : 'Arial, sans-serif'
   const p   = (v) => v * SC
   const sf  = (r,g,b,a=1)  => { ctx.fillStyle   = `rgba(${r},${g},${b},${a})` }
   const ss  = (r,g,b,a=1)  => { ctx.strokeStyle = `rgba(${r},${g},${b},${a})` }
   const slw = (mm)          => { ctx.lineWidth   = p(mm) }
-  const fnt = (pt, w='normal') => { ctx.font = `${w} ${p(pt*0.352778)}px Arial,sans-serif` }
+  const fnt = (pt, w='normal') => { ctx.font = `${w} ${p(pt*0.352778)}px ${fontFamily}` }
   const fr  = (x,y,w,h)    => ctx.fillRect(p(x),p(y),p(w),p(h))
   const txt = (t,x,y,al='left',col=[15,23,42]) => {
     sf(...col); ctx.textAlign=al; ctx.textBaseline='alphabetic'; ctx.fillText(String(t),p(x),p(y))
@@ -352,8 +390,9 @@ function _makeCanvasHelpers(ctx, SC) {
   return { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln }
 }
 
-function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg) {
-  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC)
+function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang) {
+  const T = CARD_TEXT[lang] || CARD_TEXT.en
+  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC, lang)
   const SW = W/85.6, SH = H/54, FS = Math.sqrt(SW*SH), RS = Math.min(SW, SH)
   const HEADER_H = 14.5*SH, BAR_H = 1.8*SH, FOOTER_H = 8.5*SH
   const BODY_Y   = yMm+HEADER_H+BAR_H
@@ -364,10 +403,10 @@ function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academi
   sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,2.5*RS,'FD')
   sf(10,36,80); rr(xMm,yMm,W,HEADER_H,2.5*RS,'F'); fr(xMm,yMm+HEADER_H-3*SH,W,3*SH)
   if (logoImg) ctx.drawImage(logoImg,p(xMm+2.5*SW),p(yMm+2*SH),p(10.5*SW),p(10.5*SH))
-  fnt(7.5*FS,'bold'); txt('HFCCF PRESCHOOL',xMm+15*SW,yMm+6.5*SH,'left',[255,255,255])
-  fnt(5.5*FS,'normal'); txt('Hope for Cambodian Children',xMm+15*SW,yMm+10.5*SH,'left',[147,197,253])
+  fnt(7.5*FS,'bold'); txt(T.school,xMm+15*SW,yMm+6.5*SH,'left',[255,255,255])
+  fnt(5.5*FS,'normal'); txt(T.tagline,xMm+15*SW,yMm+10.5*SH,'left',[147,197,253])
   ss(255,255,255,0.8); slw(0.3); ctx.strokeRect(p(xMm+W-24*SW),p(yMm+3.5*SH),p(22*SW),p(7*SH))
-  fnt(5*FS,'bold'); txt('STUDENT ID CARD',xMm+W-13*SW,yMm+8*SH,'center',[255,255,255])
+  fnt(5*FS,'bold'); txt(T.badge,xMm+W-13*SW,yMm+8*SH,'center',[255,255,255])
   ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
 
   // Avatar
@@ -389,7 +428,7 @@ function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academi
     const m=student.gender.toLowerCase().startsWith('m')
     sf(m?219:252,m?234:231,m?254:243)
     ctx.beginPath(); ctx.roundRect(p(CX-6*SW),p(CY+13*RS),p(12*SW),p(4.5*SH),p(RS)); ctx.fill()
-    fnt(5*FS,'bold'); txt(m?'MALE':'FEMALE',CX,CY+16.4*RS,'center',[m?109:190,m?40:24,m?217:93])
+    fnt(5*FS,'bold'); txt(m ? T.male : T.female,CX,CY+16.4*RS,'center',[m?109:190,m?40:24,m?217:93])
   }
   ss(226,232,240); slw(0.25); ln(xMm+29.5*SW,BODY_Y+2*SH,xMm+29.5*SW,FOOTER_Y-SH)
 
@@ -397,21 +436,22 @@ function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academi
   fnt(8.5*FS,'bold'); sf(15,23,42); ctx.textAlign='left'
   ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-35*SW)),p(IX),p(IY)); IY+=5*SH
   ss(226,232,240); slw(0.25); ln(IX,IY,xMm+W-3*SW,IY); IY+=3.5*SH
-  fnt(4.8*FS,'normal'); sf(148,163,184); ctx.fillText('STUDENT ID',p(IX),p(IY)); IY+=3.5*SH
+  fnt(4.8*FS,'normal'); sf(148,163,184); ctx.fillText(T.studentId,p(IX),p(IY)); IY+=3.5*SH
   fnt(7*FS,'bold'); sf(30,64,175); ctx.fillText(String(student.studentCode||student.id||'—'),p(IX),p(IY)); IY+=5*SH
   fnt(4.8*FS,'normal'); sf(148,163,184)
-  ctx.fillText('CLASS',p(IX),p(IY)); if(classLevel) ctx.fillText('GRADE',p(GX),p(IY)); IY+=3.5*SH
+  ctx.fillText(T.class,p(IX),p(IY)); if(classLevel) ctx.fillText(T.grade,p(GX),p(IY)); IY+=3.5*SH
   fnt(7*FS,'bold'); sf(30,64,175)
   ctx.fillText(className||'—',p(IX),p(IY)); if(classLevel) ctx.fillText(classLevel,p(GX),p(IY))
 
   sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
   sf(255,255,255); fr(xMm,FOOTER_Y,2.5*SW,2.5*SH); fr(xMm+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH)
   ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
-  fnt(6*FS,'bold'); txt(`Academic Year  ${academicYear}`,xMm+W/2,FOOTER_Y+5.2*SH,'center',[30,64,175])
+  fnt(6*FS,'bold'); txt(`${T.academicYear}  ${academicYear}`,xMm+W/2,FOOTER_Y+5.2*SH,'center',[30,64,175])
 }
 
-function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg) {
-  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC)
+function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang) {
+  const T = CARD_TEXT[lang] || CARD_TEXT.en
+  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC, lang)
   const SW = W/54, SH = H/85.6, FS = Math.sqrt(SW*SH), RS = Math.min(SW, SH)
   const HEADER_H = 20*SH, BAR_H = 1.8*SH, FOOTER_H = 8.5*SH
   const BODY_Y   = yMm+HEADER_H+BAR_H
@@ -421,8 +461,8 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
   sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,2.5*RS,'FD')
   sf(10,36,80); rr(xMm,yMm,W,HEADER_H,2.5*RS,'F'); fr(xMm,yMm+HEADER_H-3*SH,W,3*SH)
   if (logoImg) ctx.drawImage(logoImg,p(CX-5*SW),p(yMm+2*SH),p(10*SW),p(10*SH))
-  fnt(7.5*FS,'bold'); txt('HFCCF PRESCHOOL',CX,yMm+14.5*SH,'center',[255,255,255])
-  fnt(5*FS,'normal'); txt('Hope for Cambodian Children',CX,yMm+18*SH,'center',[147,197,253])
+  fnt(7.5*FS,'bold'); txt(T.school,CX,yMm+14.5*SH,'center',[255,255,255])
+  fnt(5*FS,'normal'); txt(T.tagline,CX,yMm+18*SH,'center',[147,197,253])
   ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
 
   const CY_AV=BODY_Y+12*SH
@@ -445,7 +485,7 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
     const m=student.gender.toLowerCase().startsWith('m')
     sf(m?219:252,m?234:231,m?254:243)
     ctx.beginPath(); ctx.roundRect(p(CX-6.5*SW),p(CY_AV+11.5*RS),p(13*SW),p(4*SH),p(RS)); ctx.fill()
-    fnt(5*FS,'bold'); txt(m?'MALE':'FEMALE',CX,CY_AV+14.5*RS,'center',[m?109:190,m?40:24,m?217:93])
+    fnt(5*FS,'bold'); txt(m ? T.male : T.female,CX,CY_AV+14.5*RS,'center',[m?109:190,m?40:24,m?217:93])
   }
 
   const nameY=CY_AV+19*SH
@@ -455,13 +495,13 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
 
   const IY0=divY+3.5*SH, C1=xMm+5*SW, C2=xMm+W/2+1.5*SW
   fnt(4.5*FS,'normal'); sf(148,163,184); ctx.textAlign='left'
-  ctx.fillText('STUDENT ID',p(C1),p(IY0)); if(classLevel) ctx.fillText('GRADE',p(C2),p(IY0))
+  ctx.fillText(T.studentId,p(C1),p(IY0)); if(classLevel) ctx.fillText(T.grade,p(C2),p(IY0))
   fnt(6.5*FS,'bold'); sf(30,64,175)
   ctx.fillText(String(student.studentCode||student.id||'—'),p(C1),p(IY0+3.5*SH))
   if(classLevel) ctx.fillText(classLevel,p(C2),p(IY0+3.5*SH))
   const R2Y=IY0+8.5*SH
   fnt(4.5*FS,'normal'); sf(148,163,184)
-  ctx.fillText('CLASS',p(C1),p(R2Y)); if(student.dateOfBirth) ctx.fillText('DATE OF BIRTH',p(C2),p(R2Y))
+  ctx.fillText(T.class,p(C1),p(R2Y)); if(student.dateOfBirth) ctx.fillText(T.dob,p(C2),p(R2Y))
   fnt(6.5*FS,'bold'); sf(30,64,175)
   ctx.fillText(className||'—',p(C1),p(R2Y+3.5*SH))
   if(student.dateOfBirth) ctx.fillText(student.dateOfBirth,p(C2),p(R2Y+3.5*SH))
@@ -469,7 +509,7 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
   sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
   sf(255,255,255); fr(xMm,FOOTER_Y,2.5*SW,2.5*SH); fr(xMm+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH)
   ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
-  fnt(5.5*FS,'bold'); txt(`Academic Year  ${academicYear}`,CX,FOOTER_Y+5.2*SH,'center',[30,64,175])
+  fnt(5.5*FS,'bold'); txt(`${T.academicYear}  ${academicYear}`,CX,FOOTER_Y+5.2*SH,'center',[30,64,175])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -511,6 +551,7 @@ async function generateFile() {
     const safeName   = className.replace(/[^a-z0-9]/gi,'-').toLowerCase() || 'students'
     const fmt        = selectedFormat.value
     const orient     = selectedOrientation.value
+    const lang       = selectedLang.value
 
     const { W: CARD_W, H: CARD_H } =
       (CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1])[orient]
@@ -531,13 +572,27 @@ async function generateFile() {
     if (fmt === 'pdf') {
       const { jsPDF } = await import('jspdf')
       const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [CARD_W, CARD_H] })
-      let logoData = null
-      try { logoData = imgToDataUrl(await loadImg(logoUrl)) } catch {}
-      for (let i = 0; i < chosen.length; i++) {
-        if (i > 0) doc.addPage([CARD_W, CARD_H])
-        const photoImg  = photoImgCache.get(chosen[i].id) || null
-        const photoData = photoImg ? circularCrop(photoImg) : null
-        drawCardPdf(doc, 0, 0, chosen[i], className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData)
+
+      if (lang === 'kh') {
+        // jsPDF has no Khmer font — render each card via canvas then embed as image
+        const SC2 = 300 / 25.4
+        let logoImg2 = null; try { logoImg2 = await loadImg(logoUrl) } catch {}
+        for (let i = 0; i < chosen.length; i++) {
+          if (i > 0) doc.addPage([CARD_W, CARD_H])
+          const cv = document.createElement('canvas')
+          cv.width = Math.round(CARD_W * SC2); cv.height = Math.round(CARD_H * SC2)
+          drawCardCanvas(cv.getContext('2d'), 0, 0, chosen[i], className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null, 'kh')
+          doc.addImage(cv.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
+        }
+      } else {
+        let logoData = null
+        try { logoData = imgToDataUrl(await loadImg(logoUrl)) } catch {}
+        for (let i = 0; i < chosen.length; i++) {
+          if (i > 0) doc.addPage([CARD_W, CARD_H])
+          const photoImg  = photoImgCache.get(chosen[i].id) || null
+          const photoData = photoImg ? circularCrop(photoImg) : null
+          drawCardPdf(doc, 0, 0, chosen[i], className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData, 'en')
+        }
       }
       doc.save(`id-cards-${safeName}-${year}.pdf`)
       return
@@ -554,7 +609,7 @@ async function generateFile() {
     if (fmt === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height) }
     let logoImg = null; try { logoImg = await loadImg(logoUrl) } catch {}
     for (let i = 0; i < chosen.length; i++) {
-      drawCardCanvas(ctx, 0, CARD_H * i, chosen[i], className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null)
+      drawCardCanvas(ctx, 0, CARD_H * i, chosen[i], className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null, lang)
     }
     const mime    = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
     const dataUrl = fmt === 'jpg' ? canvas.toDataURL(mime, 0.92) : canvas.toDataURL(mime)
@@ -620,6 +675,29 @@ onMounted(loadClasses)
             </div>
             <span class="text-xs text-slate-400">
               {{ currentSizeConfig.W }} × {{ currentSizeConfig.H }} mm
+            </span>
+          </label>
+
+          <!-- Language -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Language</span>
+            <div class="flex gap-1">
+              <button
+                v-for="lo in LANG_OPTIONS"
+                :key="lo.value"
+                type="button"
+                class="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
+                :class="selectedLang === lo.value
+                  ? 'border-amber-400 bg-amber-50 text-amber-700'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'"
+                :title="lo.desc"
+                @click="selectedLang = lo.value"
+              >
+                {{ lo.label }}
+              </button>
+            </div>
+            <span v-if="selectedLang === 'kh' && selectedFormat === 'pdf'" class="text-xs text-amber-600">
+              PDF in KH renders via canvas image
             </span>
           </label>
 
@@ -763,6 +841,7 @@ onMounted(loadClasses)
               ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}`
               : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`"
             :orientation="selectedOrientation"
+            :lang="selectedLang"
             :width="selectedOrientation === 'portrait' ? 160 : 260"
           />
         </div>

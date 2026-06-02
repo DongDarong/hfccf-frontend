@@ -12,8 +12,24 @@ const props = defineProps({
   classLevel:   { type: String,  default: '' },
   academicYear: { type: String,  default: '' },
   orientation:  { type: String,  default: 'landscape' }, // 'landscape' | 'portrait'
+  lang:         { type: String,  default: 'en' },        // 'en' | 'kh'
   width:        { type: Number,  default: 300 },         // rendered px width
 })
+
+const CARD_TEXT = {
+  en: {
+    school: 'HFCCF PRESCHOOL', tagline: 'Hope for Cambodian Children',
+    badge: 'STUDENT ID CARD', studentId: 'Student ID', class: 'Class',
+    grade: 'Grade', dob: 'DOB', male: 'MALE', female: 'FEMALE', academicYear: 'Academic Year',
+  },
+  kh: {
+    school: 'សាលាមត្តេយ្យ HFCCF', tagline: 'សង្ឃឹមសម្រាប់កុមារកម្ពុជា',
+    badge: 'អត្តសញ្ញាណបណ្ណ', studentId: 'លេខសម្គាល់', class: 'ថ្នាក់',
+    grade: 'ថ្នាក់ទី', dob: 'ថ្ងៃកំណើត', male: 'ប្រុស', female: 'ស្រី', academicYear: 'ឆ្នាំសិក្សា',
+  },
+}
+
+const T = computed(() => CARD_TEXT[props.lang] || CARD_TEXT.en)
 
 // ── Shared constants ──────────────────────────────────────────────────────────
 const ACCENT = ['#22c55e', '#f97316', '#ef4444', '#3b82f6']
@@ -76,14 +92,14 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
           :style="{ width: mm(10.5), height: mm(10.5) }"
         />
         <div class="flex-1 min-w-0 flex flex-col justify-center">
-          <span class="font-bold text-white truncate leading-none" :style="{ fontSize: pt(7.5), marginBottom: mm(0.8) }">HFCCF PRESCHOOL</span>
-          <span class="text-sky-300 truncate leading-none" :style="{ fontSize: pt(5.5) }">Hope for Cambodian Children</span>
+          <span class="font-bold text-white truncate leading-none" :style="{ fontSize: pt(7.5), marginBottom: mm(0.8) }">{{ T.school }}</span>
+          <span class="text-sky-300 truncate leading-none" :style="{ fontSize: pt(5.5) }">{{ T.tagline }}</span>
         </div>
         <div
           class="border border-white/60 rounded font-bold text-white shrink-0"
           :style="{ fontSize: pt(4.8), padding: `${mmn(0.8)}px ${mmn(1.8)}px` }"
         >
-          STUDENT ID CARD
+          {{ T.badge }}
         </div>
       </div>
 
@@ -94,8 +110,8 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
           class="object-contain shrink-0"
           :style="{ width: mm(10), height: mm(10) }"
         />
-        <span class="font-bold text-white leading-none" :style="{ fontSize: pt(7.5) }">HFCCF PRESCHOOL</span>
-        <span class="text-sky-300 leading-none" :style="{ fontSize: pt(5) }">Hope for Cambodian Children</span>
+        <span class="font-bold text-white leading-none" :style="{ fontSize: pt(7.5) }">{{ T.school }}</span>
+        <span class="text-sky-300 leading-none" :style="{ fontSize: pt(5) }">{{ T.tagline }}</span>
       </div>
 
     </div>
@@ -148,7 +164,7 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
               background: isMale ? '#ede9fe' : '#fce7f3',
               color:      isMale ? '#6d28d9' : '#be185d',
             }"
-          >{{ isMale ? 'MALE' : 'FEMALE' }}</div>
+          >{{ isMale ? T.male : T.female }}</div>
 
         </div>
 
@@ -174,18 +190,18 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
           <!-- STUDENT ID -->
           <div :style="{ marginBottom: mm(2) }">
-            <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">Student ID</p>
+            <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.studentId }}</p>
             <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ sid }}</p>
           </div>
 
           <!-- CLASS | GRADE row -->
           <div class="flex" :style="{ gap: mm(5) }">
             <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">Class</p>
+              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.class }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ className || '—' }}</p>
             </div>
             <div v-if="classLevel">
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">Grade</p>
+              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.grade }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ classLevel }}</p>
             </div>
           </div>
@@ -224,7 +240,7 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
               background: isMale ? '#ede9fe' : '#fce7f3',
               color:      isMale ? '#6d28d9' : '#be185d',
             }"
-          >{{ isMale ? 'MALE' : 'FEMALE' }}</div>
+          >{{ isMale ? T.male : T.female }}</div>
 
           <!-- Name -->
           <p
@@ -244,19 +260,19 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
             :style="{ paddingInline: mm(5), rowGap: mm(1.5), columnGap: mm(2) }"
           >
             <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">Student ID</p>
+              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">{{ T.studentId }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.5) }">{{ sid }}</p>
             </div>
             <div v-if="classLevel">
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">Grade</p>
+              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">{{ T.grade }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.5) }">{{ classLevel }}</p>
             </div>
             <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">Class</p>
+              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">{{ T.class }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.5) }">{{ className || '—' }}</p>
             </div>
             <div v-if="student.dateOfBirth">
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">DOB</p>
+              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.5) }">{{ T.dob }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.5) }">{{ student.dateOfBirth }}</p>
             </div>
           </div>
@@ -272,7 +288,7 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
       :style="{ height: mm(FOOTER_H) }"
     >
       <span class="font-bold text-blue-800" :style="{ fontSize: pt(isPortrait ? 5.5 : 6) }">
-        Academic Year&nbsp;&nbsp;{{ academicYear }}
+        {{ T.academicYear }}&nbsp;&nbsp;{{ academicYear }}
       </span>
     </div>
 
