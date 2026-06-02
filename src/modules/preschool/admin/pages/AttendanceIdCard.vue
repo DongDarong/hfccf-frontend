@@ -9,6 +9,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
 import logoUrl from '@/assets/images/logo.jpg'
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
+import { drawCardPdfBack, drawCardCanvasBack } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
@@ -24,6 +25,7 @@ const selectedFormat      = ref('pdf')
 const selectedOrientation = ref('landscape')
 const selectedSize        = ref('standard')
 const selectedLang        = ref('en')
+const selectedGapMm       = ref(4)
 const loadingClasses      = ref(false)
 const loadingStudents     = ref(false)
 const generating          = ref(false)
@@ -572,6 +574,7 @@ async function generateFile() {
     const year       = getAcademicYear()
     const safeName   = className.replace(/[^a-z0-9]/gi,'-').toLowerCase() || 'students'
     const fmt        = selectedFormat.value
+    const batchFmt    = chosen.length > 1 ? 'pdf' : fmt
     const orient     = selectedOrientation.value
     const lang       = selectedLang.value
 
@@ -605,7 +608,7 @@ async function generateFile() {
     }))
 
     // ── PDF: one card per page, page = card dimensions ────────────────
-    if (fmt === 'pdf') {
+    if (batchFmt === 'pdf') {
       const { jsPDF } = await import('jspdf')
       const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [CARD_W, CARD_H] })
 
@@ -618,12 +621,21 @@ async function generateFile() {
         } catch (error) {
           console.warn('[ID Card] Logo load failed for Khmer PDF export:', error)
         }
-        for (let i = 0; i < chosen.length; i++) {
-          if (i > 0) doc.addPage([CARD_W, CARD_H])
-          const cv = document.createElement('canvas')
-          cv.width = Math.round(CARD_W * SC2); cv.height = Math.round(CARD_H * SC2)
-          drawCardCanvas(cv.getContext('2d'), 0, 0, chosen[i], className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null, 'kh')
-          doc.addImage(cv.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
+        let pageIndex = 0
+        for (const student of chosen) {
+          if (pageIndex > 0) doc.addPage([CARD_W, CARD_H])
+          const front = document.createElement('canvas')
+          front.width = Math.round(CARD_W * SC2); front.height = Math.round(CARD_H * SC2)
+          drawCardCanvas(front.getContext('2d'), 0, 0, student, className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, photoImgCache.get(student.id) || null, 'kh')
+          doc.addImage(front.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
+          pageIndex += 1
+
+          doc.addPage([CARD_W, CARD_H])
+          const back = document.createElement('canvas')
+          back.width = Math.round(CARD_W * SC2); back.height = Math.round(CARD_H * SC2)
+          drawCardCanvasBack(back.getContext('2d'), 0, 0, student, className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, 'kh')
+          doc.addImage(back.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
+          pageIndex += 1
         }
       } else {
         let logoData = null
@@ -632,11 +644,17 @@ async function generateFile() {
         } catch (error) {
           console.warn('[ID Card] Logo load failed for PDF export:', error)
         }
-        for (let i = 0; i < chosen.length; i++) {
-          if (i > 0) doc.addPage([CARD_W, CARD_H])
-          const photoImg  = photoImgCache.get(chosen[i].id) || null
+        let pageIndex = 0
+        for (const student of chosen) {
+          if (pageIndex > 0) doc.addPage([CARD_W, CARD_H])
+          const photoImg  = photoImgCache.get(student.id) || null
           const photoData = photoImg ? circularCrop(photoImg) : null
-          drawCardPdf(doc, 0, 0, chosen[i], className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData, 'en')
+          drawCardPdf(doc, 0, 0, student, className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData, 'en')
+          pageIndex += 1
+
+          doc.addPage([CARD_W, CARD_H])
+          drawCardPdfBack(doc, 0, 0, student, className, classLevel, year, logoData, orient, CARD_W, CARD_H, 'en')
+          pageIndex += 1
         }
       }
       doc.save(`id-cards-${safeName}-${year}.pdf`)
@@ -644,22 +662,34 @@ async function generateFile() {
     }
 
     // ── PNG / JPG: card-width image, cards stacked vertically ─────────
+    if (chosen.length > 1) {
+      console.warn('[ID Card] Batch export forced to PDF; PNG/JPG is reserved for single-card exports.')
+    }
     const SC      = 300 / 25.4   // 300 DPI
     const cardPxW = Math.round(CARD_W * SC)
     const cardPxH = Math.round(CARD_H * SC)
+    const gapMm   = Math.max(0, Number(selectedGapMm.value) || 0)
+    const gapPx   = Math.round(gapMm * SC)
     const canvas  = document.createElement('canvas')
     canvas.width  = cardPxW
-    canvas.height = cardPxH * chosen.length
+    canvas.height = cardPxH * (chosen.length * 2) + gapPx * Math.max(chosen.length * 2 - 1, 0)
     const ctx = canvas.getContext('2d')
-    if (fmt === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height) }
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
     let logoImg = null
     try {
       logoImg = await loadImg(logoUrl)
     } catch (error) {
       console.warn('[ID Card] Logo load failed for image export:', error)
     }
-    for (let i = 0; i < chosen.length; i++) {
-      drawCardCanvas(ctx, 0, CARD_H * i, chosen[i], className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null, lang)
+    let index = 0
+    for (const student of chosen) {
+      const frontY = index * (cardPxH + gapPx)
+      drawCardCanvas(ctx, 0, frontY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(student.id) || null, lang)
+      index += 1
+      const backY = index * (cardPxH + gapPx)
+      drawCardCanvasBack(ctx, 0, backY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, lang)
+      index += 1
     }
     const mime    = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
     const dataUrl = fmt === 'jpg' ? canvas.toDataURL(mime, 0.92) : canvas.toDataURL(mime)
@@ -790,6 +820,19 @@ onMounted(loadClasses)
               </button>
             </div>
             <span class="text-xs text-slate-400">{{ FORMAT_OPTIONS.find((f) => f.value === selectedFormat)?.desc }}</span>
+            <span class="text-xs text-amber-600">Each generated card includes front + back. 2+ selected cards export as PDF automatically.</span>
+          </label>
+
+          <label class="flex flex-col gap-1.5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Card Gap (mm)</span>
+            <input
+              v-model.number="selectedGapMm"
+              type="number"
+              min="0"
+              step="1"
+              class="w-28 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-colors focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+            >
+            <span class="text-xs text-slate-400">Used for PNG/JPG exports only</span>
           </label>
 
           <div class="ml-auto self-end">
@@ -885,8 +928,9 @@ onMounted(loadClasses)
         </div>
 
         <div
-          class="flex flex-wrap gap-4 p-4"
+          class="flex flex-wrap p-4"
           :class="selectedOrientation === 'portrait' ? 'items-start' : 'items-center'"
+          :style="{ gap: `${Math.max(0, Number(selectedGapMm) || 0)}mm` }"
         >
           <IdCardPreview
             v-for="student in (selectedStudentIds.length ? students.filter(s => selectedStudentIds.includes(s.id)) : students)"
