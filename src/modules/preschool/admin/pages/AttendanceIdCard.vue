@@ -14,25 +14,29 @@ defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 const { t } = useLanguage()
 const router = useRouter()
 
-const classOptions  = ref([])
-const students      = ref([])
-const selectedClassId   = ref('')
+const classOptions       = ref([])
+const students           = ref([])
+const selectedClassId    = ref('')
 const selectedStudentIds = ref([])
-const selectedFormat    = ref('pdf')
-const loadingClasses    = ref(false)
-const loadingStudents   = ref(false)
-const generating        = ref(false)
+const selectedFormat     = ref('pdf')
+const selectedOrientation = ref('landscape')
+const loadingClasses     = ref(false)
+const loadingStudents    = ref(false)
+const generating         = ref(false)
 
 const FORMAT_OPTIONS = [
-  { value: 'pdf', label: 'PDF',  icon: 'pi-file-pdf',   desc: 'Print-ready A4 sheet' },
-  { value: 'png', label: 'PNG',  icon: 'pi-image',       desc: 'Transparent background' },
-  { value: 'jpg', label: 'JPG',  icon: 'pi-image',       desc: 'Smaller file size' },
+  { value: 'pdf', label: 'PDF', icon: 'pi-file-pdf',  desc: 'Print-ready A4 sheet' },
+  { value: 'png', label: 'PNG', icon: 'pi-image',      desc: 'Transparent background' },
+  { value: 'jpg', label: 'JPG', icon: 'pi-image',      desc: 'Smaller file size' },
+]
+const ORIENT_OPTIONS = [
+  { value: 'landscape', label: 'Landscape', icon: 'pi-stop',          desc: '85.6 × 54 mm  ·  2 × 4 / page' },
+  { value: 'portrait',  label: 'Portrait',  icon: 'pi-tablet-phone',  desc: '54 × 85.6 mm  ·  3 × 3 / page' },
 ]
 
 const allSelected = computed(() =>
   students.value.length > 0 && selectedStudentIds.value.length === students.value.length,
 )
-
 function toggleSelectAll() {
   if (allSelected.value) selectedStudentIds.value = []
   else selectedStudentIds.value = students.value.map((s) => s.id)
@@ -51,137 +55,198 @@ function getAcademicYear() {
   return now.getMonth() >= 8 ? `${y}-${y + 1}` : `${y - 1}-${y}`
 }
 
-// ── Image loader ─────────────────────────────────────────────────────────────
+// ── Image helpers ─────────────────────────────────────────────────────────────
 function loadImg(url) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload  = () => resolve(img)
-    img.onerror = () => reject(new Error('Failed to load: ' + url))
+    img.onerror = () => reject(new Error('load failed'))
     img.src = url
   })
 }
 function imgToDataUrl(img) {
   const c = document.createElement('canvas')
-  c.width = img.naturalWidth || 200
-  c.height = img.naturalHeight || 200
+  c.width = img.naturalWidth || 200; c.height = img.naturalHeight || 200
   c.getContext('2d').drawImage(img, 0, 0)
   return c.toDataURL('image/jpeg', 0.85)
 }
 
-// ── Shared card spec (mm) ────────────────────────────────────────────────────
-const CARD = { W: 85.6, H: 54, HEADER_H: 14.5, BAR_H: 1.8, FOOTER_H: 8.5, RADIUS: 2.5 }
+// ── Shared constants ──────────────────────────────────────────────────────────
 const ACCENT = [[34,197,94],[249,115,22],[239,68,68],[59,130,246]]
 
-// ─────────────────────────────────────────────────────────────────────────────
-// jsPDF card renderer
-// ─────────────────────────────────────────────────────────────────────────────
-function drawCardPdf(doc, x, y, student, className, academicYear, logoData) {
-  const { W, H, HEADER_H, BAR_H, FOOTER_H, RADIUS } = CARD
+// ═════════════════════════════════════════════════════════════════════════════
+//  jsPDF renderers
+// ═════════════════════════════════════════════════════════════════════════════
+function drawCardPdf(doc, x, y, student, className, academicYear, logoData, orientation) {
+  if (orientation === 'portrait') return _pdfPortrait(doc, x, y, student, className, academicYear, logoData)
+  _pdfLandscape(doc, x, y, student, className, academicYear, logoData)
+}
+
+function _pdfLandscape(doc, x, y, student, className, academicYear, logoData) {
+  const W = 85.6, H = 54, R = 2.5, HEADER_H = 14.5, BAR_H = 1.8, FOOTER_H = 8.5
   const BODY_Y   = y + HEADER_H + BAR_H
   const FOOTER_Y = y + H - FOOTER_H
-  const CX = x + 14.8
-  const CY = BODY_Y + (FOOTER_Y - BODY_Y) / 2
+  const CX = x + 14.8, CY = BODY_Y + (FOOTER_Y - BODY_Y) / 2
 
-  // card bg
   doc.setFillColor(255,255,255); doc.setDrawColor(203,213,225); doc.setLineWidth(0.25)
-  doc.roundedRect(x, y, W, H, RADIUS, RADIUS, 'FD')
+  doc.roundedRect(x, y, W, H, R, R, 'FD')
 
-  // header
   doc.setFillColor(10,36,80)
-  doc.roundedRect(x, y, W, HEADER_H, RADIUS, RADIUS, 'F')
+  doc.roundedRect(x, y, W, HEADER_H, R, R, 'F')
   doc.rect(x, y + HEADER_H - 3, W, 3, 'F')
-
   if (logoData) doc.addImage(logoData, 'JPEG', x + 2.5, y + 2, 10.5, 10.5)
-
   doc.setTextColor(255,255,255); doc.setFontSize(7.5); doc.setFont('helvetica','bold')
   doc.text('HFCCF PRESCHOOL', x + 15, y + 6.5)
   doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(147,197,253)
   doc.text('Hope for Cambodian Children', x + 15, y + 10.5)
-
-  // badge top-right
   doc.setDrawColor(255,255,255); doc.setLineWidth(0.3)
   doc.roundedRect(x + W - 24, y + 3.5, 22, 7, 1.2, 1.2, 'S')
   doc.setTextColor(255,255,255); doc.setFontSize(5); doc.setFont('helvetica','bold')
   doc.text('STUDENT ID CARD', x + W - 13, y + 8, { align: 'center' })
 
-  // accent bar
-  ACCENT.forEach(([r,g,b], i) => {
-    doc.setFillColor(r,g,b); doc.rect(x + i * (W/4), y + HEADER_H, W/4, BAR_H, 'F')
-  })
+  ACCENT.forEach(([r,g,b], i) => { doc.setFillColor(r,g,b); doc.rect(x + i*(W/4), y + HEADER_H, W/4, BAR_H, 'F') })
 
-  // avatar
   doc.setFillColor(219,234,254); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
   doc.circle(CX, CY, 11.5, 'FD')
   doc.setFillColor(239,246,255); doc.setDrawColor(191,219,254); doc.setLineWidth(0.3)
   doc.circle(CX, CY, 10, 'FD')
   const ini = getInitials(student)
-  doc.setTextColor(30,64,175); doc.setFontSize(ini.length > 2 ? 8.5 : 11); doc.setFont('helvetica','bold')
-  doc.text(ini, CX, CY + (ini.length > 2 ? 3 : 4), { align: 'center' })
-
+  doc.setTextColor(30,64,175); doc.setFontSize(ini.length>2?8.5:11); doc.setFont('helvetica','bold')
+  doc.text(ini, CX, CY + (ini.length>2?3:4), { align: 'center' })
   if (student.gender) {
-    const isMale = student.gender.toLowerCase().startsWith('m')
-    doc.setFillColor(isMale?219:252, isMale?234:231, isMale?254:243)
+    const m = student.gender.toLowerCase().startsWith('m')
+    doc.setFillColor(m?219:252, m?234:231, m?254:243)
     doc.roundedRect(CX-6, CY+13, 12, 4.5, 1, 1, 'F')
     doc.setFontSize(5); doc.setFont('helvetica','bold')
-    doc.setTextColor(isMale?109:190, isMale?40:24, isMale?217:93)
-    doc.text(isMale ? 'MALE' : 'FEMALE', CX, CY + 16.4, { align: 'center' })
+    doc.setTextColor(m?109:190, m?40:24, m?217:93)
+    doc.text(m?'MALE':'FEMALE', CX, CY+16.4, { align: 'center' })
   }
 
-  // separator
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
-  doc.line(x + 29.5, BODY_Y + 2, x + 29.5, FOOTER_Y - 1)
+  doc.line(x+29.5, BODY_Y+2, x+29.5, FOOTER_Y-1)
 
-  // info rows
-  const IX = x + 32
-  let IY = BODY_Y + 5.5
-  const name = student.fullName || student.name || '—'
+  const IX = x+32; let IY = BODY_Y+5.5
+  const name = student.fullName||student.name||'—'
   doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
-  const nameLines = doc.splitTextToSize(name, W - 35)
-  doc.text(nameLines.slice(0, 2), IX, IY)
-  IY += nameLines.length > 1 ? 9.5 : 5.5
-  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x + W - 3, IY); IY += 4
-
-  const infoRow = (label, value) => {
+  const nl = doc.splitTextToSize(name, W-35)
+  doc.text(nl.slice(0,2), IX, IY); IY += nl.length>1 ? 9.5 : 5.5
+  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x+W-3, IY); IY += 4
+  const row = (lbl, val) => {
     doc.setFontSize(4.8); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-    doc.text(label, IX, IY); IY += 3.5
+    doc.text(lbl, IX, IY); IY += 3.5
     doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-    doc.text(String(value || '—'), IX, IY); IY += 5
+    doc.text(String(val||'—'), IX, IY); IY += 5
   }
-  infoRow('STUDENT ID', student.studentCode || student.id || '—')
-  infoRow('CLASS', className || '—')
-  if (student.dateOfBirth) infoRow('DATE OF BIRTH', student.dateOfBirth)
+  row('STUDENT ID', student.studentCode||student.id||'—')
+  row('CLASS', className||'—')
+  if (student.dateOfBirth) row('DATE OF BIRTH', student.dateOfBirth)
 
-  // footer
   doc.setFillColor(239,246,255); doc.rect(x, FOOTER_Y, W, FOOTER_H, 'F')
-  doc.setFillColor(255,255,255); doc.rect(x, FOOTER_Y, 2.5, 2.5, 'F'); doc.rect(x+W-2.5, FOOTER_Y, 2.5, 2.5, 'F')
-  doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x, FOOTER_Y, x+W, FOOTER_Y)
+  doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5,2.5,'F'); doc.rect(x+W-2.5,FOOTER_Y,2.5,2.5,'F')
+  doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x,FOOTER_Y,x+W,FOOTER_Y)
   doc.setTextColor(30,64,175); doc.setFontSize(6); doc.setFont('helvetica','bold')
-  doc.text(`Academic Year  ${academicYear}`, x + W/2, FOOTER_Y + 5.2, { align: 'center' })
+  doc.text(`Academic Year  ${academicYear}`, x+W/2, FOOTER_Y+5.2, { align: 'center' })
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Canvas card renderer (for PNG / JPG)
-// ─────────────────────────────────────────────────────────────────────────────
-function drawCardCanvas(ctx, xMm, yMm, student, className, academicYear, logoImg, SC) {
-  const { W, H, HEADER_H, BAR_H, FOOTER_H, RADIUS } = CARD
-  const p = (v) => v * SC           // mm → px
-  const BODY_Y   = yMm + HEADER_H + BAR_H
-  const FOOTER_Y = yMm + H - FOOTER_H
-  const CX = xMm + 14.8
-  const CY = BODY_Y + (FOOTER_Y - BODY_Y) / 2
+function _pdfPortrait(doc, x, y, student, className, academicYear, logoData) {
+  const W = 54, H = 85.6, R = 2.5, HEADER_H = 20, BAR_H = 1.8, FOOTER_H = 8.5
+  const BODY_Y   = y + HEADER_H + BAR_H
+  const FOOTER_Y = y + H - FOOTER_H
+  const CX = x + W / 2   // 27mm from left edge
 
-  // helpers
-  const setFill   = (r,g,b,a=1)  => { ctx.fillStyle   = `rgba(${r},${g},${b},${a})` }
-  const setStroke = (r,g,b,a=1)  => { ctx.strokeStyle = `rgba(${r},${g},${b},${a})` }
-  const setLW     = (mm)          => { ctx.lineWidth   = p(mm) }
-  const setFont   = (pt, w='normal') => { ctx.font = `${w} ${p(pt * 0.352778)}px Arial, sans-serif` }
-  const fillRect  = (x,y,w,h)    => ctx.fillRect(p(x),p(y),p(w),p(h))
-  const fillText  = (txt,x,y,align='left',color=[15,23,42]) => {
-    setFill(...color); ctx.textAlign = align; ctx.textBaseline = 'alphabetic'
-    ctx.fillText(String(txt), p(x), p(y))
+  doc.setFillColor(255,255,255); doc.setDrawColor(203,213,225); doc.setLineWidth(0.25)
+  doc.roundedRect(x, y, W, H, R, R, 'FD')
+
+  // Header
+  doc.setFillColor(10,36,80)
+  doc.roundedRect(x, y, W, HEADER_H, R, R, 'F')
+  doc.rect(x, y+HEADER_H-3, W, 3, 'F')
+  if (logoData) doc.addImage(logoData, 'JPEG', CX-5, y+2, 10, 10)
+  doc.setTextColor(255,255,255); doc.setFontSize(7.5); doc.setFont('helvetica','bold')
+  doc.text('HFCCF PRESCHOOL', CX, y+14.5, { align: 'center' })
+  doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.setTextColor(147,197,253)
+  doc.text('Hope for Cambodian Children', CX, y+18, { align: 'center' })
+
+  // Accent bar
+  ACCENT.forEach(([r,g,b], i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
+
+  // Avatar
+  const CY_AV = BODY_Y + 13
+  doc.setFillColor(219,234,254); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
+  doc.circle(CX, CY_AV, 11, 'FD')
+  doc.setFillColor(239,246,255); doc.setDrawColor(191,219,254); doc.setLineWidth(0.3)
+  doc.circle(CX, CY_AV, 9.2, 'FD')
+  const ini = getInitials(student)
+  doc.setTextColor(30,64,175); doc.setFontSize(ini.length>2?8:10); doc.setFont('helvetica','bold')
+  doc.text(ini, CX, CY_AV+(ini.length>2?2.8:3.5), { align: 'center' })
+
+  // Gender badge
+  if (student.gender) {
+    const m = student.gender.toLowerCase().startsWith('m')
+    doc.setFillColor(m?219:252, m?234:231, m?254:243)
+    doc.roundedRect(CX-6.5, CY_AV+12.5, 13, 4.2, 1, 1, 'F')
+    doc.setFontSize(5); doc.setFont('helvetica','bold')
+    doc.setTextColor(m?109:190, m?40:24, m?217:93)
+    doc.text(m?'MALE':'FEMALE', CX, CY_AV+15.6, { align: 'center' })
   }
-  function rrect(x,y,w,h,r) {
+
+  // Name (single line, centred)
+  const nameY = CY_AV + 20.5
+  const name = student.fullName||student.name||'—'
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
+  const nl = doc.splitTextToSize(name, W-8)
+  doc.text(nl[0], CX, nameY, { align: 'center' })
+
+  // Divider
+  const divY = nameY + 3.5
+  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
+  doc.line(x+4, divY, x+W-4, divY)
+
+  // 2-column info grid
+  const IY0 = divY + 4.5
+  const C1 = x+5, C2 = x+W/2+1.5
+
+  doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
+  doc.text('STUDENT ID', C1, IY0); doc.text('CLASS', C2, IY0)
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
+  doc.text(String(student.studentCode||student.id||'—'), C1, IY0+4)
+  doc.text(className||'—', C2, IY0+4)
+
+  if (student.dateOfBirth) {
+    doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
+    doc.text('DATE OF BIRTH', C1, IY0+9)
+    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
+    doc.text(student.dateOfBirth, C1, IY0+13)
+  }
+
+  // Footer
+  doc.setFillColor(239,246,255); doc.rect(x, FOOTER_Y, W, FOOTER_H, 'F')
+  doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5,2.5,'F'); doc.rect(x+W-2.5,FOOTER_Y,2.5,2.5,'F')
+  doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x,FOOTER_Y,x+W,FOOTER_Y)
+  doc.setTextColor(30,64,175); doc.setFontSize(5.5); doc.setFont('helvetica','bold')
+  doc.text(`Academic Year  ${academicYear}`, CX, FOOTER_Y+5.2, { align: 'center' })
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  Canvas renderers
+// ═════════════════════════════════════════════════════════════════════════════
+function drawCardCanvas(ctx, xMm, yMm, student, className, academicYear, logoImg, SC, orientation) {
+  if (orientation === 'portrait') return _canvasPortrait(ctx, xMm, yMm, student, className, academicYear, logoImg, SC)
+  _canvasLandscape(ctx, xMm, yMm, student, className, academicYear, logoImg, SC)
+}
+
+function _makeCanvasHelpers(ctx, SC) {
+  const p   = (v) => v * SC
+  const sf  = (r,g,b,a=1)  => { ctx.fillStyle   = `rgba(${r},${g},${b},${a})` }
+  const ss  = (r,g,b,a=1)  => { ctx.strokeStyle = `rgba(${r},${g},${b},${a})` }
+  const slw = (mm)          => { ctx.lineWidth   = p(mm) }
+  const fnt = (pt, w='normal') => { ctx.font = `${w} ${p(pt*0.352778)}px Arial,sans-serif` }
+  const fr  = (x,y,w,h)    => ctx.fillRect(p(x),p(y),p(w),p(h))
+  const txt = (t,x,y,al='left',col=[15,23,42]) => {
+    sf(...col); ctx.textAlign=al; ctx.textBaseline='alphabetic'; ctx.fillText(String(t),p(x),p(y))
+  }
+  function rr(x,y,w,h,r,mode='F') {
     ctx.beginPath()
     ctx.moveTo(p(x+r),p(y)); ctx.lineTo(p(x+w-r),p(y))
     ctx.arcTo(p(x+w),p(y),   p(x+w),p(y+r),   p(r))
@@ -192,112 +257,138 @@ function drawCardCanvas(ctx, xMm, yMm, student, className, academicYear, logoImg
     ctx.lineTo(p(x),p(y+r))
     ctx.arcTo(p(x),p(y),     p(x+r),p(y),     p(r))
     ctx.closePath()
+    if (mode==='F'||mode==='FD') ctx.fill()
+    if (mode==='S'||mode==='FD') ctx.stroke()
   }
-  function arc(cx,cy,r) { ctx.beginPath(); ctx.arc(p(cx),p(cy),p(r),0,Math.PI*2); ctx.closePath() }
-  function hline(x1,y1,x2,y2) { ctx.beginPath(); ctx.moveTo(p(x1),p(y1)); ctx.lineTo(p(x2),p(y2)); ctx.stroke() }
+  function arc(cx,cy,r,mode='F') {
+    ctx.beginPath(); ctx.arc(p(cx),p(cy),p(r),0,Math.PI*2); ctx.closePath()
+    if (mode==='F'||mode==='FD') ctx.fill()
+    if (mode==='S'||mode==='FD') ctx.stroke()
+  }
+  const ln = (x1,y1,x2,y2) => { ctx.beginPath(); ctx.moveTo(p(x1),p(y1)); ctx.lineTo(p(x2),p(y2)); ctx.stroke() }
+  return { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln }
+}
 
-  // card bg
-  setFill(255,255,255); setStroke(203,213,225); setLW(0.25)
-  rrect(xMm,yMm,W,H,RADIUS); ctx.fill(); ctx.stroke()
+function _canvasLandscape(ctx, xMm, yMm, student, className, academicYear, logoImg, SC) {
+  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC)
+  const W=85.6, H=54, R=2.5, HEADER_H=14.5, BAR_H=1.8, FOOTER_H=8.5
+  const BODY_Y   = yMm+HEADER_H+BAR_H
+  const FOOTER_Y = yMm+H-FOOTER_H
+  const CX=xMm+14.8, CY=BODY_Y+(FOOTER_Y-BODY_Y)/2
 
-  // header
-  setFill(10,36,80)
-  rrect(xMm,yMm,W,HEADER_H,RADIUS); ctx.fill()
-  fillRect(xMm, yMm+HEADER_H-3, W, 3)
+  sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,R,'FD')
+  sf(10,36,80); rr(xMm,yMm,W,HEADER_H,R,'F'); fr(xMm,yMm+HEADER_H-3,W,3)
+  if (logoImg) ctx.drawImage(logoImg,p(xMm+2.5),p(yMm+2),p(10.5),p(10.5))
+  fnt(7.5,'bold'); txt('HFCCF PRESCHOOL',xMm+15,yMm+6.5,'left',[255,255,255])
+  fnt(5.5,'normal'); txt('Hope for Cambodian Children',xMm+15,yMm+10.5,'left',[147,197,253])
+  ss(255,255,255,0.8); slw(0.3); ctx.strokeRect(p(xMm+W-24),p(yMm+3.5),p(22),p(7))
+  fnt(5,'bold'); txt('STUDENT ID CARD',xMm+W-13,yMm+8,'center',[255,255,255])
+  ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
 
-  if (logoImg) ctx.drawImage(logoImg, p(xMm+2.5), p(yMm+2), p(10.5), p(10.5))
-
-  setFont(7.5,'bold'); fillText('HFCCF PRESCHOOL', xMm+15, yMm+6.5,'left',[255,255,255])
-  setFont(5.5,'normal'); fillText('Hope for Cambodian Children', xMm+15, yMm+10.5,'left',[147,197,253])
-
-  // badge
-  setStroke(255,255,255,0.8); setLW(0.3)
-  ctx.strokeRect(p(xMm+W-24), p(yMm+3.5), p(22), p(7))
-  setFont(5,'bold'); fillText('STUDENT ID CARD', xMm+W-13, yMm+8,'center',[255,255,255])
-
-  // accent bar
-  ACCENT.forEach(([r,g,b], i) => { setFill(r,g,b); fillRect(xMm+i*(W/4), yMm+HEADER_H, W/4, BAR_H) })
-
-  // avatar outer ring
-  setFill(219,234,254); setStroke(59,130,246); setLW(0.6)
-  arc(CX,CY,11.5); ctx.fill(); ctx.stroke()
-  setFill(239,246,255); setStroke(191,219,254); setLW(0.3)
-  arc(CX,CY,10); ctx.fill(); ctx.stroke()
-
-  // initials
-  const ini = getInitials(student)
-  setFont(ini.length>2?8.5:11,'bold')
-  setFill(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
-  ctx.fillText(ini, p(CX), p(CY)); ctx.textBaseline='alphabetic'
-
-  // gender badge
+  sf(219,234,254); ss(59,130,246); slw(0.6); arc(CX,CY,11.5,'FD')
+  sf(239,246,255); ss(191,219,254); slw(0.3); arc(CX,CY,10,'FD')
+  const ini=getInitials(student)
+  fnt(ini.length>2?8.5:11,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
+  ctx.fillText(ini,p(CX),p(CY)); ctx.textBaseline='alphabetic'
   if (student.gender) {
-    const isMale = student.gender.toLowerCase().startsWith('m')
-    setFill(isMale?219:252, isMale?234:231, isMale?254:243)
+    const m=student.gender.toLowerCase().startsWith('m')
+    sf(m?219:252,m?234:231,m?254:243)
     ctx.beginPath(); ctx.roundRect(p(CX-6),p(CY+13),p(12),p(4.5),p(1)); ctx.fill()
-    setFont(5,'bold'); fillText(isMale?'MALE':'FEMALE',CX,CY+16.4,'center',[isMale?109:190,isMale?40:24,isMale?217:93])
+    fnt(5,'bold'); txt(m?'MALE':'FEMALE',CX,CY+16.4,'center',[m?109:190,m?40:24,m?217:93])
   }
+  ss(226,232,240); slw(0.25); ln(xMm+29.5,BODY_Y+2,xMm+29.5,FOOTER_Y-1)
+  const IX=xMm+32; let IY=BODY_Y+5.5
+  const name=student.fullName||student.name||'—'
+  fnt(8.5,'bold'); sf(15,23,42); ctx.textAlign='left'
+  const maxW=p(W-35), words=name.split(' '); let l1='',l2=''
+  for (const w of words) { const t=l1?l1+' '+w:w; if (ctx.measureText(t).width<=maxW) l1=t; else l2=l2?l2+' '+w:w }
+  ctx.fillText(l1,p(IX),p(IY)); if(l2){ctx.fillText(l2,p(IX),p(IY+4.5));IY+=9.5}else IY+=5.5
+  ss(226,232,240); slw(0.25); ln(IX,IY,xMm+W-3,IY); IY+=4
+  const irow=(lbl,val)=>{fnt(4.8,'normal');sf(148,163,184);ctx.textAlign='left';ctx.fillText(lbl,p(IX),p(IY));IY+=3.5;fnt(7,'bold');sf(30,64,175);ctx.fillText(String(val||'—'),p(IX),p(IY));IY+=5}
+  irow('STUDENT ID',student.studentCode||student.id||'—')
+  irow('CLASS',className||'—')
+  if(student.dateOfBirth) irow('DATE OF BIRTH',student.dateOfBirth)
+  sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
+  sf(255,255,255); fr(xMm,FOOTER_Y,2.5,2.5); fr(xMm+W-2.5,FOOTER_Y,2.5,2.5)
+  ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
+  fnt(6,'bold'); txt(`Academic Year  ${academicYear}`,xMm+W/2,FOOTER_Y+5.2,'center',[30,64,175])
+}
 
-  // separator
-  setStroke(226,232,240); setLW(0.25); hline(xMm+29.5,BODY_Y+2,xMm+29.5,FOOTER_Y-1)
+function _canvasPortrait(ctx, xMm, yMm, student, className, academicYear, logoImg, SC) {
+  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC)
+  const W=54, H=85.6, R=2.5, HEADER_H=20, BAR_H=1.8, FOOTER_H=8.5
+  const BODY_Y   = yMm+HEADER_H+BAR_H
+  const FOOTER_Y = yMm+H-FOOTER_H
+  const CX=xMm+W/2
 
-  // info
-  const IX = xMm+32
-  let IY = BODY_Y+5.5
-  const name = student.fullName||student.name||'—'
-  setFont(8.5,'bold'); ctx.textAlign='left'
-  // simple word-wrap
-  const words = name.split(' '), maxW = p(W-35)
-  let l1='', l2=''
-  for (const w of words) {
-    const test = l1 ? l1+' '+w : w
-    if (ctx.measureText(test).width <= maxW) l1=test
-    else l2 = l2 ? l2+' '+w : w
+  sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,R,'FD')
+  sf(10,36,80); rr(xMm,yMm,W,HEADER_H,R,'F'); fr(xMm,yMm+HEADER_H-3,W,3)
+  if (logoImg) ctx.drawImage(logoImg,p(CX-5),p(yMm+2),p(10),p(10))
+  fnt(7.5,'bold'); txt('HFCCF PRESCHOOL',CX,yMm+14.5,'center',[255,255,255])
+  fnt(5,'normal'); txt('Hope for Cambodian Children',CX,yMm+18,'center',[147,197,253])
+  ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
+
+  const CY_AV=BODY_Y+13
+  sf(219,234,254); ss(59,130,246); slw(0.6); arc(CX,CY_AV,11,'FD')
+  sf(239,246,255); ss(191,219,254); slw(0.3); arc(CX,CY_AV,9.2,'FD')
+  const ini=getInitials(student)
+  fnt(ini.length>2?8:10,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
+  ctx.fillText(ini,p(CX),p(CY_AV)); ctx.textBaseline='alphabetic'
+  if (student.gender) {
+    const m=student.gender.toLowerCase().startsWith('m')
+    sf(m?219:252,m?234:231,m?254:243)
+    ctx.beginPath(); ctx.roundRect(p(CX-6.5),p(CY_AV+12.5),p(13),p(4.2),p(1)); ctx.fill()
+    fnt(5,'bold'); txt(m?'MALE':'FEMALE',CX,CY_AV+15.6,'center',[m?109:190,m?40:24,m?217:93])
   }
-  setFill(15,23,42); ctx.fillText(l1, p(IX), p(IY))
-  if (l2) { ctx.fillText(l2, p(IX), p(IY+4.5)); IY+=9.5 } else IY+=5.5
-  setStroke(226,232,240); setLW(0.25); hline(IX,IY,xMm+W-3,IY); IY+=4
-
-  const infoRow = (label, value) => {
-    setFont(4.8,'normal'); setFill(148,163,184); ctx.textAlign='left'; ctx.fillText(label, p(IX), p(IY)); IY+=3.5
-    setFont(7,'bold');     setFill(30,64,175);  ctx.fillText(String(value||'—'), p(IX), p(IY)); IY+=5
+  const nameY=CY_AV+20.5
+  const name=student.fullName||student.name||'—'
+  fnt(8,'bold'); sf(15,23,42)
+  const measW=p(W-8); ctx.textAlign='center'
+  // first line only for portrait
+  const words=name.split(' '); let l1=''
+  for(const w of words){const t=l1?l1+' '+w:w; if(ctx.measureText(t).width<=measW) l1=t; else break}
+  ctx.fillText(l1||name,p(CX),p(nameY))
+  const divY=nameY+3.5; ss(226,232,240); slw(0.25); ln(xMm+4,divY,xMm+W-4,divY)
+  const IY0=divY+4.5
+  const C1=xMm+5, C2=xMm+W/2+1.5
+  fnt(4.5,'normal'); sf(148,163,184)
+  ctx.textAlign='left'; ctx.fillText('STUDENT ID',p(C1),p(IY0)); ctx.fillText('CLASS',p(C2),p(IY0))
+  fnt(6.5,'bold'); sf(30,64,175)
+  ctx.fillText(String(student.studentCode||student.id||'—'),p(C1),p(IY0+4))
+  ctx.fillText(className||'—',p(C2),p(IY0+4))
+  if (student.dateOfBirth) {
+    fnt(4.5,'normal'); sf(148,163,184); ctx.fillText('DATE OF BIRTH',p(C1),p(IY0+9))
+    fnt(6.5,'bold'); sf(30,64,175); ctx.fillText(student.dateOfBirth,p(C1),p(IY0+13))
   }
-  infoRow('STUDENT ID', student.studentCode||student.id||'—')
-  infoRow('CLASS', className||'—')
-  if (student.dateOfBirth) infoRow('DATE OF BIRTH', student.dateOfBirth)
-
-  // footer
-  setFill(239,246,255); fillRect(xMm,FOOTER_Y,W,FOOTER_H)
-  setFill(255,255,255); fillRect(xMm,FOOTER_Y,2.5,2.5); fillRect(xMm+W-2.5,FOOTER_Y,2.5,2.5)
-  setStroke(191,219,254); setLW(0.25); hline(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
-  setFont(6,'bold'); fillText(`Academic Year  ${academicYear}`, xMm+W/2, FOOTER_Y+5.2,'center',[30,64,175])
+  sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
+  sf(255,255,255); fr(xMm,FOOTER_Y,2.5,2.5); fr(xMm+W-2.5,FOOTER_Y,2.5,2.5)
+  ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
+  fnt(5.5,'bold'); txt(`Academic Year  ${academicYear}`,CX,FOOTER_Y+5.2,'center',[30,64,175])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Data loaders
+//  Data loaders
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadClasses() {
   loadingClasses.value = true
   try {
     const res = await fetchPreschoolClasses({ page: 1, perPage: 100 })
-    classOptions.value = (res.items || []).map((c) => ({ label: c.name || c.code || String(c.id), value: c.id }))
+    classOptions.value = (res.items||[]).map((c) => ({ label: c.name||c.code||String(c.id), value: c.id }))
   } catch { classOptions.value = [] }
   finally { loadingClasses.value = false }
 }
-
 async function loadStudents() {
-  if (!selectedClassId.value) { students.value = []; return }
-  loadingStudents.value = true
-  selectedStudentIds.value = []
+  if (!selectedClassId.value) { students.value=[]; return }
+  loadingStudents.value = true; selectedStudentIds.value = []
   try {
-    const res = await fetchPreschoolStudents({ page: 1, perPage: 200, classId: selectedClassId.value })
+    const res = await fetchPreschoolStudents({ page:1, perPage:200, classId: selectedClassId.value })
     students.value = res.items || []
   } catch { students.value = [] }
   finally { loadingStudents.value = false }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Generate file
+//  Generate
 // ─────────────────────────────────────────────────────────────────────────────
 async function generateFile() {
   if (!selectedStudentIds.value.length) return
@@ -306,15 +397,20 @@ async function generateFile() {
     const chosen    = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
     const className = classOptions.value.find((c) => c.value === selectedClassId.value)?.label || ''
     const year      = getAcademicYear()
-    const safeName  = className.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'students'
+    const safeName  = className.replace(/[^a-z0-9]/gi,'-').toLowerCase() || 'students'
     const fmt       = selectedFormat.value
+    const orient    = selectedOrientation.value
+    const isPort    = orient === 'portrait'
 
     // Layout constants (mm)
-    const MARGIN_X = 12.9, GAP_X = 12.9
-    const MARGIN_Y = 15,   GAP_Y = 8
-    const { W: CW, H: CH } = CARD
-    const COLS = 2
-    const ROWS = Math.floor((297 - MARGIN_Y * 2 + GAP_Y) / (CH + GAP_Y))  // 4
+    const CARD_W   = isPort ? 54   : 85.6
+    const CARD_H   = isPort ? 85.6 : 54
+    const MARGIN_X = isPort ? 18   : 12.9
+    const GAP_X    = isPort ? 6    : 12.9
+    const MARGIN_Y = isPort ? 15   : 15
+    const GAP_Y    = isPort ? 5    : 8
+    const COLS     = isPort ? 3    : 2
+    const ROWS     = isPort ? 3    : 4
     const PER_PAGE = COLS * ROWS
 
     // ── PDF ───────────────────────────────────────────────────────────
@@ -322,61 +418,48 @@ async function generateFile() {
       const { jsPDF } = await import('jspdf')
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
       let logoData = null
-      try { const img = await loadImg(logoUrl); logoData = imgToDataUrl(img) } catch {}
-
+      try { logoData = imgToDataUrl(await loadImg(logoUrl)) } catch {}
       for (let i = 0; i < chosen.length; i++) {
         if (i > 0 && i % PER_PAGE === 0) doc.addPage()
         const col = i % COLS
         const row = Math.floor((i % PER_PAGE) / COLS)
-        const x = MARGIN_X + col * (CW + GAP_X)
-        const y = MARGIN_Y + row * (CH + GAP_Y)
-        drawCardPdf(doc, x, y, chosen[i], className, year, logoData)
+        const x = MARGIN_X + col * (CARD_W + GAP_X)
+        const y = MARGIN_Y + row * (CARD_H + GAP_Y)
+        drawCardPdf(doc, x, y, chosen[i], className, year, logoData, orient)
       }
-      doc.save(`id-cards-${safeName}-${year}.pdf`)
+      doc.save(`id-cards-${safeName}-${year}-${orient}.pdf`)
       return
     }
 
     // ── PNG / JPG ─────────────────────────────────────────────────────
-    const SC  = 150 / 25.4          // 150 DPI  ≈ 5.906 px/mm
+    const SC    = 150 / 25.4
     const pages = Math.ceil(chosen.length / PER_PAGE)
-    const totalH = MARGIN_Y * 2 + pages * (ROWS * CH + (ROWS-1) * GAP_Y) + (pages-1) * GAP_Y
-    const canvas = document.createElement('canvas')
+    const totalPageH = ROWS * CARD_H + (ROWS - 1) * GAP_Y
+    const canvasH = MARGIN_Y * 2 + pages * totalPageH + (pages - 1) * GAP_Y
+    const canvas  = document.createElement('canvas')
     canvas.width  = Math.round(210 * SC)
-    canvas.height = Math.round(totalH * SC)
+    canvas.height = Math.round(canvasH * SC)
     const ctx = canvas.getContext('2d')
-    ctx.fillStyle = '#f8fafc'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    let logoImg = null
-    try { logoImg = await loadImg(logoUrl) } catch {}
-
-    // Page label helper
-    for (let p = 0; p < pages; p++) {
-      const pageOffsetY = p * (MARGIN_Y + ROWS * CH + (ROWS-1) * GAP_Y + GAP_Y)
+    ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, canvas.width, canvas.height)
+    let logoImg = null; try { logoImg = await loadImg(logoUrl) } catch {}
+    for (let pg = 0; pg < pages; pg++) {
+      const pageOffsetY = pg * (totalPageH + GAP_Y)
       for (let i = 0; i < PER_PAGE; i++) {
-        const idx = p * PER_PAGE + i
-        if (idx >= chosen.length) break
+        const idx = pg * PER_PAGE + i; if (idx >= chosen.length) break
         const col = i % COLS
         const row = Math.floor(i / COLS)
-        const xMm = MARGIN_X + col * (CW + GAP_X)
-        const yMm = MARGIN_Y + pageOffsetY + row * (CH + GAP_Y)
-        drawCardCanvas(ctx, xMm, yMm, chosen[idx], className, year, logoImg, SC)
+        const xMm = MARGIN_X + col * (CARD_W + GAP_X)
+        const yMm = MARGIN_Y + pageOffsetY + row * (CARD_H + GAP_Y)
+        drawCardCanvas(ctx, xMm, yMm, chosen[idx], className, year, logoImg, SC, orient)
       }
     }
-
-    const mimeType = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
-    const quality  = fmt === 'jpg' ? 0.92 : undefined
-    const dataUrl  = quality ? canvas.toDataURL(mimeType, quality) : canvas.toDataURL(mimeType)
+    const mime = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
+    const dataUrl = fmt === 'jpg' ? canvas.toDataURL(mime, 0.92) : canvas.toDataURL(mime)
     const a = document.createElement('a')
-    a.href = dataUrl
-    a.download = `id-cards-${safeName}-${year}.${fmt}`
-    a.click()
+    a.href = dataUrl; a.download = `id-cards-${safeName}-${year}-${orient}.${fmt}`; a.click()
   } catch (e) {
-    console.error('Generation failed', e)
-    alert('Generation failed: ' + (e?.message || e))
-  } finally {
-    generating.value = false
-  }
+    console.error('Generation failed', e); alert('Generation failed: ' + (e?.message || e))
+  } finally { generating.value = false }
 }
 
 onMounted(loadClasses)
@@ -392,7 +475,8 @@ onMounted(loadClasses)
 
       <!-- Controls -->
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-end gap-3">
+        <div class="flex flex-wrap items-end gap-4">
+
           <!-- Class picker -->
           <label class="flex flex-col gap-1.5">
             <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -410,11 +494,33 @@ onMounted(loadClasses)
             />
           </label>
 
-          <!-- Format selector -->
+          <!-- Orientation -->
           <label class="flex flex-col gap-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              File Format
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Orientation</span>
+            <div class="flex gap-1">
+              <button
+                v-for="opt in ORIENT_OPTIONS"
+                :key="opt.value"
+                type="button"
+                class="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
+                :class="selectedOrientation === opt.value
+                  ? 'border-teal-400 bg-teal-50 text-teal-700'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'"
+                :title="opt.desc"
+                @click="selectedOrientation = opt.value"
+              >
+                <i :class="['pi text-base', opt.icon]" />
+                {{ opt.label }}
+              </button>
+            </div>
+            <span class="text-xs text-slate-400">
+              {{ ORIENT_OPTIONS.find((o) => o.value === selectedOrientation)?.desc }}
             </span>
+          </label>
+
+          <!-- Format -->
+          <label class="flex flex-col gap-1.5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">File Format</span>
             <div class="flex gap-1">
               <button
                 v-for="fmt in FORMAT_OPTIONS"
@@ -424,18 +530,17 @@ onMounted(loadClasses)
                 :class="selectedFormat === fmt.value
                   ? 'border-violet-400 bg-violet-50 text-violet-700'
                   : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'"
+                :title="fmt.desc"
                 @click="selectedFormat = fmt.value"
               >
                 <i :class="['pi text-base', fmt.icon]" />
                 {{ fmt.label }}
               </button>
             </div>
+            <span class="text-xs text-slate-400">
+              {{ FORMAT_OPTIONS.find((f) => f.value === selectedFormat)?.desc }}
+            </span>
           </label>
-
-          <!-- Format description -->
-          <p class="self-end pb-2 text-xs text-slate-400">
-            {{ FORMAT_OPTIONS.find((f) => f.value === selectedFormat)?.desc }}
-          </p>
 
           <div class="ml-auto self-end">
             <Button
@@ -452,43 +557,27 @@ onMounted(loadClasses)
       </div>
 
       <!-- Loading -->
-      <div
-        v-if="loadingStudents"
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400"
-      >
+      <div v-if="loadingStudents" class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400">
         {{ t('preschoolReportsShared.loading') }}
       </div>
 
       <!-- No students -->
-      <div
-        v-else-if="selectedClassId && !students.length"
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400"
-      >
+      <div v-else-if="selectedClassId && !students.length" class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400">
         No students found in this class.
       </div>
 
       <!-- Student list -->
       <div v-else-if="students.length" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <!-- Toolbar -->
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div class="flex items-center gap-3">
             <label class="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
-              <input
-                type="checkbox"
-                :checked="allSelected"
-                class="h-4 w-4 rounded accent-violet-600"
-                @change="toggleSelectAll"
-              >
+              <input type="checkbox" :checked="allSelected" class="h-4 w-4 rounded accent-violet-600" @change="toggleSelectAll">
               <span>Select all <span class="text-slate-400">({{ students.length }})</span></span>
             </label>
-            <span
-              v-if="selectedStudentIds.length"
-              class="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700"
-            >
+            <span v-if="selectedStudentIds.length" class="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">
               {{ selectedStudentIds.length }} selected
             </span>
           </div>
-
           <Button
             type="button"
             variant="primary"
@@ -503,7 +592,6 @@ onMounted(loadClasses)
           </Button>
         </div>
 
-        <!-- Student grid -->
         <div class="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <label
             v-for="student in students"
@@ -523,9 +611,7 @@ onMounted(loadClasses)
               {{ getInitials(student) }}
             </div>
             <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-slate-900">
-                {{ student.fullName || student.name || '—' }}
-              </p>
+              <p class="truncate text-sm font-semibold text-slate-900">{{ student.fullName||student.name||'—' }}</p>
               <p class="text-xs text-slate-400">
                 <span v-if="student.studentCode">#{{ student.studentCode }}</span>
                 <span v-if="student.studentCode && student.gender"> · </span>
@@ -537,10 +623,7 @@ onMounted(loadClasses)
       </div>
 
       <!-- Empty state -->
-      <div
-        v-else
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400"
-      >
+      <div v-else class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400">
         Select a class above to load students.
       </div>
     </section>
