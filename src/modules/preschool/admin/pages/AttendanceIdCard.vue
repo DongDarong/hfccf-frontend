@@ -75,15 +75,25 @@ function imgToDataUrl(img) {
 // ── Shared constants ──────────────────────────────────────────────────────────
 const ACCENT = [[34,197,94],[249,115,22],[239,68,68],[59,130,246]]
 
+// Fit text to maxPx width on a canvas ctx, return the first line only
+function doc_splitFirst(ctx, text, maxPx) {
+  const words = text.split(' '); let line = ''
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w
+    if (ctx.measureText(test).width <= maxPx) line = test; else break
+  }
+  return line || text
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 //  jsPDF renderers
 // ═════════════════════════════════════════════════════════════════════════════
-function drawCardPdf(doc, x, y, student, className, academicYear, logoData, orientation) {
-  if (orientation === 'portrait') return _pdfPortrait(doc, x, y, student, className, academicYear, logoData)
-  _pdfLandscape(doc, x, y, student, className, academicYear, logoData)
+function drawCardPdf(doc, x, y, student, className, classLevel, academicYear, logoData, orientation) {
+  if (orientation === 'portrait') return _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData)
+  _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData)
 }
 
-function _pdfLandscape(doc, x, y, student, className, academicYear, logoData) {
+function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData) {
   const W = 85.6, H = 54, R = 2.5, HEADER_H = 14.5, BAR_H = 1.8, FOOTER_H = 8.5
   const BODY_Y   = y + HEADER_H + BAR_H
   const FOOTER_Y = y + H - FOOTER_H
@@ -126,21 +136,25 @@ function _pdfLandscape(doc, x, y, student, className, academicYear, logoData) {
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
   doc.line(x+29.5, BODY_Y+2, x+29.5, FOOTER_Y-1)
 
-  const IX = x+32; let IY = BODY_Y+5.5
+  const IX = x+32; let IY = BODY_Y+5
   const name = student.fullName||student.name||'—'
   doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
-  const nl = doc.splitTextToSize(name, W-35)
-  doc.text(nl.slice(0,2), IX, IY); IY += nl.length>1 ? 9.5 : 5.5
-  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x+W-3, IY); IY += 4
-  const row = (lbl, val) => {
-    doc.setFontSize(4.8); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-    doc.text(lbl, IX, IY); IY += 3.5
-    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-    doc.text(String(val||'—'), IX, IY); IY += 5
-  }
-  row('STUDENT ID', student.studentCode||student.id||'—')
-  row('CLASS', className||'—')
-  if (student.dateOfBirth) row('DATE OF BIRTH', student.dateOfBirth)
+  doc.text(doc.splitTextToSize(name, W-35)[0], IX, IY); IY += 5
+  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x+W-3, IY); IY += 3.5
+  // STUDENT ID — full width
+  doc.setFontSize(4.8); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
+  doc.text('STUDENT ID', IX, IY); IY += 3.5
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
+  doc.text(String(student.studentCode||student.id||'—'), IX, IY); IY += 5
+  // CLASS | GRADE — 2-col
+  const GX = x+58
+  doc.setFontSize(4.8); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
+  doc.text('CLASS', IX, IY)
+  if (classLevel) doc.text('GRADE', GX, IY)
+  IY += 3.5
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
+  doc.text(className||'—', IX, IY)
+  if (classLevel) doc.text(classLevel, GX, IY)
 
   doc.setFillColor(239,246,255); doc.rect(x, FOOTER_Y, W, FOOTER_H, 'F')
   doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5,2.5,'F'); doc.rect(x+W-2.5,FOOTER_Y,2.5,2.5,'F')
@@ -149,7 +163,7 @@ function _pdfLandscape(doc, x, y, student, className, academicYear, logoData) {
   doc.text(`Academic Year  ${academicYear}`, x+W/2, FOOTER_Y+5.2, { align: 'center' })
 }
 
-function _pdfPortrait(doc, x, y, student, className, academicYear, logoData) {
+function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData) {
   const W = 54, H = 85.6, R = 2.5, HEADER_H = 20, BAR_H = 1.8, FOOTER_H = 8.5
   const BODY_Y   = y + HEADER_H + BAR_H
   const FOOTER_Y = y + H - FOOTER_H
@@ -171,54 +185,55 @@ function _pdfPortrait(doc, x, y, student, className, academicYear, logoData) {
   // Accent bar
   ACCENT.forEach(([r,g,b], i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
 
-  // Avatar
-  const CY_AV = BODY_Y + 13
+  // Avatar (radius 10 for more body space)
+  const CY_AV = BODY_Y + 12
   doc.setFillColor(219,234,254); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
-  doc.circle(CX, CY_AV, 11, 'FD')
+  doc.circle(CX, CY_AV, 10, 'FD')
   doc.setFillColor(239,246,255); doc.setDrawColor(191,219,254); doc.setLineWidth(0.3)
-  doc.circle(CX, CY_AV, 9.2, 'FD')
+  doc.circle(CX, CY_AV, 8.4, 'FD')
   const ini = getInitials(student)
-  doc.setTextColor(30,64,175); doc.setFontSize(ini.length>2?8:10); doc.setFont('helvetica','bold')
-  doc.text(ini, CX, CY_AV+(ini.length>2?2.8:3.5), { align: 'center' })
+  doc.setTextColor(30,64,175); doc.setFontSize(ini.length>2?7.5:9.5); doc.setFont('helvetica','bold')
+  doc.text(ini, CX, CY_AV+(ini.length>2?2.6:3.2), { align: 'center' })
 
   // Gender badge
   if (student.gender) {
     const m = student.gender.toLowerCase().startsWith('m')
     doc.setFillColor(m?219:252, m?234:231, m?254:243)
-    doc.roundedRect(CX-6.5, CY_AV+12.5, 13, 4.2, 1, 1, 'F')
+    doc.roundedRect(CX-6.5, CY_AV+11.5, 13, 4, 1, 1, 'F')
     doc.setFontSize(5); doc.setFont('helvetica','bold')
     doc.setTextColor(m?109:190, m?40:24, m?217:93)
-    doc.text(m?'MALE':'FEMALE', CX, CY_AV+15.6, { align: 'center' })
+    doc.text(m?'MALE':'FEMALE', CX, CY_AV+14.5, { align: 'center' })
   }
 
   // Name (single line, centred)
-  const nameY = CY_AV + 20.5
+  const nameY = CY_AV + 19
   const name = student.fullName||student.name||'—'
   doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
-  const nl = doc.splitTextToSize(name, W-8)
-  doc.text(nl[0], CX, nameY, { align: 'center' })
+  doc.text(doc.splitTextToSize(name, W-8)[0], CX, nameY, { align: 'center' })
 
   // Divider
   const divY = nameY + 3.5
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
   doc.line(x+4, divY, x+W-4, divY)
 
-  // 2-column info grid
-  const IY0 = divY + 4.5
+  // 2×2 info grid  (row1: STUDENT ID | GRADE  /  row2: CLASS | DOB)
+  const IY0 = divY + 3.5
   const C1 = x+5, C2 = x+W/2+1.5
 
   doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text('STUDENT ID', C1, IY0); doc.text('CLASS', C2, IY0)
+  doc.text('STUDENT ID', C1, IY0)
+  if (classLevel) doc.text('GRADE', C2, IY0)
   doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-  doc.text(String(student.studentCode||student.id||'—'), C1, IY0+4)
-  doc.text(className||'—', C2, IY0+4)
+  doc.text(String(student.studentCode||student.id||'—'), C1, IY0+3.5)
+  if (classLevel) doc.text(classLevel, C2, IY0+3.5)
 
-  if (student.dateOfBirth) {
-    doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-    doc.text('DATE OF BIRTH', C1, IY0+9)
-    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-    doc.text(student.dateOfBirth, C1, IY0+13)
-  }
+  const R2Y = IY0+8.5
+  doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
+  doc.text('CLASS', C1, R2Y)
+  if (student.dateOfBirth) doc.text('DATE OF BIRTH', C2, R2Y)
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
+  doc.text(className||'—', C1, R2Y+3.5)
+  if (student.dateOfBirth) doc.text(student.dateOfBirth, C2, R2Y+3.5)
 
   // Footer
   doc.setFillColor(239,246,255); doc.rect(x, FOOTER_Y, W, FOOTER_H, 'F')
@@ -231,9 +246,9 @@ function _pdfPortrait(doc, x, y, student, className, academicYear, logoData) {
 // ═════════════════════════════════════════════════════════════════════════════
 //  Canvas renderers
 // ═════════════════════════════════════════════════════════════════════════════
-function drawCardCanvas(ctx, xMm, yMm, student, className, academicYear, logoImg, SC, orientation) {
-  if (orientation === 'portrait') return _canvasPortrait(ctx, xMm, yMm, student, className, academicYear, logoImg, SC)
-  _canvasLandscape(ctx, xMm, yMm, student, className, academicYear, logoImg, SC)
+function drawCardCanvas(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation) {
+  if (orientation === 'portrait') return _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC)
+  _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC)
 }
 
 function _makeCanvasHelpers(ctx, SC) {
@@ -269,7 +284,7 @@ function _makeCanvasHelpers(ctx, SC) {
   return { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln }
 }
 
-function _canvasLandscape(ctx, xMm, yMm, student, className, academicYear, logoImg, SC) {
+function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC) {
   const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC)
   const W=85.6, H=54, R=2.5, HEADER_H=14.5, BAR_H=1.8, FOOTER_H=8.5
   const BODY_Y   = yMm+HEADER_H+BAR_H
@@ -297,24 +312,29 @@ function _canvasLandscape(ctx, xMm, yMm, student, className, academicYear, logoI
     fnt(5,'bold'); txt(m?'MALE':'FEMALE',CX,CY+16.4,'center',[m?109:190,m?40:24,m?217:93])
   }
   ss(226,232,240); slw(0.25); ln(xMm+29.5,BODY_Y+2,xMm+29.5,FOOTER_Y-1)
-  const IX=xMm+32; let IY=BODY_Y+5.5
+  const IX=xMm+32, GX=xMm+58; let IY=BODY_Y+5
   const name=student.fullName||student.name||'—'
   fnt(8.5,'bold'); sf(15,23,42); ctx.textAlign='left'
-  const maxW=p(W-35), words=name.split(' '); let l1='',l2=''
-  for (const w of words) { const t=l1?l1+' '+w:w; if (ctx.measureText(t).width<=maxW) l1=t; else l2=l2?l2+' '+w:w }
-  ctx.fillText(l1,p(IX),p(IY)); if(l2){ctx.fillText(l2,p(IX),p(IY+4.5));IY+=9.5}else IY+=5.5
-  ss(226,232,240); slw(0.25); ln(IX,IY,xMm+W-3,IY); IY+=4
-  const irow=(lbl,val)=>{fnt(4.8,'normal');sf(148,163,184);ctx.textAlign='left';ctx.fillText(lbl,p(IX),p(IY));IY+=3.5;fnt(7,'bold');sf(30,64,175);ctx.fillText(String(val||'—'),p(IX),p(IY));IY+=5}
-  irow('STUDENT ID',student.studentCode||student.id||'—')
-  irow('CLASS',className||'—')
-  if(student.dateOfBirth) irow('DATE OF BIRTH',student.dateOfBirth)
+  ctx.fillText(doc_splitFirst(ctx,name,p(W-35)), p(IX), p(IY)); IY+=5
+  ss(226,232,240); slw(0.25); ln(IX,IY,xMm+W-3,IY); IY+=3.5
+  // STUDENT ID full-width
+  fnt(4.8,'normal'); sf(148,163,184); ctx.fillText('STUDENT ID',p(IX),p(IY)); IY+=3.5
+  fnt(7,'bold'); sf(30,64,175); ctx.fillText(String(student.studentCode||student.id||'—'),p(IX),p(IY)); IY+=5
+  // CLASS | GRADE 2-col
+  fnt(4.8,'normal'); sf(148,163,184)
+  ctx.fillText('CLASS',p(IX),p(IY))
+  if(classLevel) ctx.fillText('GRADE',p(GX),p(IY))
+  IY+=3.5
+  fnt(7,'bold'); sf(30,64,175)
+  ctx.fillText(className||'—',p(IX),p(IY))
+  if(classLevel) ctx.fillText(classLevel,p(GX),p(IY))
   sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
   sf(255,255,255); fr(xMm,FOOTER_Y,2.5,2.5); fr(xMm+W-2.5,FOOTER_Y,2.5,2.5)
   ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
   fnt(6,'bold'); txt(`Academic Year  ${academicYear}`,xMm+W/2,FOOTER_Y+5.2,'center',[30,64,175])
 }
 
-function _canvasPortrait(ctx, xMm, yMm, student, className, academicYear, logoImg, SC) {
+function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC) {
   const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC)
   const W=54, H=85.6, R=2.5, HEADER_H=20, BAR_H=1.8, FOOTER_H=8.5
   const BODY_Y   = yMm+HEADER_H+BAR_H
@@ -328,38 +348,45 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, academicYear, logoIm
   fnt(5,'normal'); txt('Hope for Cambodian Children',CX,yMm+18,'center',[147,197,253])
   ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
 
-  const CY_AV=BODY_Y+13
-  sf(219,234,254); ss(59,130,246); slw(0.6); arc(CX,CY_AV,11,'FD')
-  sf(239,246,255); ss(191,219,254); slw(0.3); arc(CX,CY_AV,9.2,'FD')
+  // Avatar — radius 10 for more body room
+  const CY_AV=BODY_Y+12
+  sf(219,234,254); ss(59,130,246); slw(0.6); arc(CX,CY_AV,10,'FD')
+  sf(239,246,255); ss(191,219,254); slw(0.3); arc(CX,CY_AV,8.4,'FD')
   const ini=getInitials(student)
-  fnt(ini.length>2?8:10,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
+  fnt(ini.length>2?7.5:9.5,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
   ctx.fillText(ini,p(CX),p(CY_AV)); ctx.textBaseline='alphabetic'
   if (student.gender) {
     const m=student.gender.toLowerCase().startsWith('m')
     sf(m?219:252,m?234:231,m?254:243)
-    ctx.beginPath(); ctx.roundRect(p(CX-6.5),p(CY_AV+12.5),p(13),p(4.2),p(1)); ctx.fill()
-    fnt(5,'bold'); txt(m?'MALE':'FEMALE',CX,CY_AV+15.6,'center',[m?109:190,m?40:24,m?217:93])
+    ctx.beginPath(); ctx.roundRect(p(CX-6.5),p(CY_AV+11.5),p(13),p(4),p(1)); ctx.fill()
+    fnt(5,'bold'); txt(m?'MALE':'FEMALE',CX,CY_AV+14.5,'center',[m?109:190,m?40:24,m?217:93])
   }
-  const nameY=CY_AV+20.5
-  const name=student.fullName||student.name||'—'
-  fnt(8,'bold'); sf(15,23,42)
-  const measW=p(W-8); ctx.textAlign='center'
-  // first line only for portrait
-  const words=name.split(' '); let l1=''
-  for(const w of words){const t=l1?l1+' '+w:w; if(ctx.measureText(t).width<=measW) l1=t; else break}
-  ctx.fillText(l1||name,p(CX),p(nameY))
+
+  // Name
+  const nameY=CY_AV+19
+  fnt(8,'bold'); sf(15,23,42); ctx.textAlign='center'
+  ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-8)),p(CX),p(nameY))
+
   const divY=nameY+3.5; ss(226,232,240); slw(0.25); ln(xMm+4,divY,xMm+W-4,divY)
-  const IY0=divY+4.5
+
+  // 2×2 info grid  (row1: STUDENT ID | GRADE  /  row2: CLASS | DOB)
+  const IY0=divY+3.5
   const C1=xMm+5, C2=xMm+W/2+1.5
-  fnt(4.5,'normal'); sf(148,163,184)
-  ctx.textAlign='left'; ctx.fillText('STUDENT ID',p(C1),p(IY0)); ctx.fillText('CLASS',p(C2),p(IY0))
+  fnt(4.5,'normal'); sf(148,163,184); ctx.textAlign='left'
+  ctx.fillText('STUDENT ID',p(C1),p(IY0))
+  if(classLevel) ctx.fillText('GRADE',p(C2),p(IY0))
   fnt(6.5,'bold'); sf(30,64,175)
-  ctx.fillText(String(student.studentCode||student.id||'—'),p(C1),p(IY0+4))
-  ctx.fillText(className||'—',p(C2),p(IY0+4))
-  if (student.dateOfBirth) {
-    fnt(4.5,'normal'); sf(148,163,184); ctx.fillText('DATE OF BIRTH',p(C1),p(IY0+9))
-    fnt(6.5,'bold'); sf(30,64,175); ctx.fillText(student.dateOfBirth,p(C1),p(IY0+13))
-  }
+  ctx.fillText(String(student.studentCode||student.id||'—'),p(C1),p(IY0+3.5))
+  if(classLevel) ctx.fillText(classLevel,p(C2),p(IY0+3.5))
+
+  const R2Y=IY0+8.5
+  fnt(4.5,'normal'); sf(148,163,184)
+  ctx.fillText('CLASS',p(C1),p(R2Y))
+  if(student.dateOfBirth) ctx.fillText('DATE OF BIRTH',p(C2),p(R2Y))
+  fnt(6.5,'bold'); sf(30,64,175)
+  ctx.fillText(className||'—',p(C1),p(R2Y+3.5))
+  if(student.dateOfBirth) ctx.fillText(student.dateOfBirth,p(C2),p(R2Y+3.5))
+
   sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
   sf(255,255,255); fr(xMm,FOOTER_Y,2.5,2.5); fr(xMm+W-2.5,FOOTER_Y,2.5,2.5)
   ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
@@ -373,7 +400,11 @@ async function loadClasses() {
   loadingClasses.value = true
   try {
     const res = await fetchPreschoolClasses({ page: 1, perPage: 100 })
-    classOptions.value = (res.items||[]).map((c) => ({ label: c.name||c.code||String(c.id), value: c.id }))
+    classOptions.value = (res.items||[]).map((c) => ({
+      label: c.name||c.code||String(c.id),
+      value: c.id,
+      level: c.level || '',
+    }))
   } catch { classOptions.value = [] }
   finally { loadingClasses.value = false }
 }
@@ -394,9 +425,11 @@ async function generateFile() {
   if (!selectedStudentIds.value.length) return
   generating.value = true
   try {
-    const chosen    = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
-    const className = classOptions.value.find((c) => c.value === selectedClassId.value)?.label || ''
-    const year      = getAcademicYear()
+    const chosen      = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
+    const classObj    = classOptions.value.find((c) => c.value === selectedClassId.value)
+    const className   = classObj?.label || ''
+    const classLevel  = classObj?.level || ''
+    const year        = getAcademicYear()
     const safeName  = className.replace(/[^a-z0-9]/gi,'-').toLowerCase() || 'students'
     const fmt       = selectedFormat.value
     const orient    = selectedOrientation.value
@@ -425,7 +458,7 @@ async function generateFile() {
         const row = Math.floor((i % PER_PAGE) / COLS)
         const x = MARGIN_X + col * (CARD_W + GAP_X)
         const y = MARGIN_Y + row * (CARD_H + GAP_Y)
-        drawCardPdf(doc, x, y, chosen[i], className, year, logoData, orient)
+        drawCardPdf(doc, x, y, chosen[i], className, classLevel, year, logoData, orient)
       }
       doc.save(`id-cards-${safeName}-${year}-${orient}.pdf`)
       return
@@ -450,7 +483,7 @@ async function generateFile() {
         const row = Math.floor(i / COLS)
         const xMm = MARGIN_X + col * (CARD_W + GAP_X)
         const yMm = MARGIN_Y + pageOffsetY + row * (CARD_H + GAP_Y)
-        drawCardCanvas(ctx, xMm, yMm, chosen[idx], className, year, logoImg, SC, orient)
+        drawCardCanvas(ctx, xMm, yMm, chosen[idx], className, classLevel, year, logoImg, SC, orient)
       }
     }
     const mime = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
