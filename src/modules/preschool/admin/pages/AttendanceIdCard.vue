@@ -14,6 +14,7 @@ defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
 const { t } = useLanguage()
 const router = useRouter()
+const PUBLIC_IMAGE_ORIGIN = String(import.meta.env.VITE_IMAGE_PUBLIC_ORIGIN || import.meta.env.VITE_IMAGE_PUBLIC_URL || '').trim()
 
 const classOptions        = ref([])
 const students            = ref([])
@@ -134,15 +135,36 @@ function resolveBackendUrl(url) {
   try { return new URL(url, base).href } catch { return url }
 }
 
+function resolveFetchablePhotoUrl(avatarUrl) {
+  const url = resolveBackendUrl(avatarUrl)
+  if (!url) return ''
+
+  try {
+    const parsed = new URL(url, window.location.origin)
+    const imageOrigin = PUBLIC_IMAGE_ORIGIN ? new URL(PUBLIC_IMAGE_ORIGIN, window.location.origin).origin : ''
+
+    if (imageOrigin && parsed.origin === imageOrigin) {
+      return `/__image-proxy${parsed.pathname}${parsed.search}`
+    }
+  } catch {
+    return url
+  }
+
+  return url
+}
+
 // Load a student photo via fetch (sends auth header, returns a same-origin blob
 // URL so the canvas never gets tainted regardless of CORS headers on the server)
 async function loadStudentPhotoAsImg(avatarUrl) {
-  const url = resolveBackendUrl(avatarUrl)
+  const url = resolveFetchablePhotoUrl(avatarUrl)
   if (!url) throw new Error('empty url')
 
+  const isProxyRequest = url.startsWith('/__image-proxy')
   const token =
-    window.localStorage.getItem('hfccf-auth-token') ||
-    window.sessionStorage.getItem('hfccf-auth-token') || ''
+    isProxyRequest ? '' : (
+      window.localStorage.getItem('hfccf-auth-token') ||
+      window.sessionStorage.getItem('hfccf-auth-token') || ''
+    )
 
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -590,7 +612,12 @@ async function generateFile() {
       if (lang === 'kh') {
         // jsPDF has no Khmer font — render each card via canvas then embed as image
         const SC2 = 300 / 25.4
-        let logoImg2 = null; try { logoImg2 = await loadImg(logoUrl) } catch {}
+        let logoImg2 = null
+        try {
+          logoImg2 = await loadImg(logoUrl)
+        } catch (error) {
+          console.warn('[ID Card] Logo load failed for Khmer PDF export:', error)
+        }
         for (let i = 0; i < chosen.length; i++) {
           if (i > 0) doc.addPage([CARD_W, CARD_H])
           const cv = document.createElement('canvas')
@@ -600,7 +627,11 @@ async function generateFile() {
         }
       } else {
         let logoData = null
-        try { logoData = imgToDataUrl(await loadImg(logoUrl)) } catch {}
+        try {
+          logoData = imgToDataUrl(await loadImg(logoUrl))
+        } catch (error) {
+          console.warn('[ID Card] Logo load failed for PDF export:', error)
+        }
         for (let i = 0; i < chosen.length; i++) {
           if (i > 0) doc.addPage([CARD_W, CARD_H])
           const photoImg  = photoImgCache.get(chosen[i].id) || null
@@ -621,7 +652,12 @@ async function generateFile() {
     canvas.height = cardPxH * chosen.length
     const ctx = canvas.getContext('2d')
     if (fmt === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height) }
-    let logoImg = null; try { logoImg = await loadImg(logoUrl) } catch {}
+    let logoImg = null
+    try {
+      logoImg = await loadImg(logoUrl)
+    } catch (error) {
+      console.warn('[ID Card] Logo load failed for image export:', error)
+    }
     for (let i = 0; i < chosen.length; i++) {
       drawCardCanvas(ctx, 0, CARD_H * i, chosen[i], className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null, lang)
     }
