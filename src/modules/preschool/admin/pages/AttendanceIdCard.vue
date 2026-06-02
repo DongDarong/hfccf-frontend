@@ -10,6 +10,7 @@ import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/prescho
 import logoUrl from '@/assets/images/logo.jpg'
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
 import { drawCardPdfBack, drawCardCanvasBack } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
+import IdCardBackPreview from '@/modules/preschool/admin/components/IdCardBackPreview.vue'
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
@@ -927,24 +928,45 @@ onMounted(loadClasses)
           </span>
         </div>
 
-        <div
-          class="flex flex-wrap p-4"
-          :class="selectedOrientation === 'portrait' ? 'items-start' : 'items-center'"
-          :style="{ gap: `${Math.max(0, Number(selectedGapMm) || 0)}mm` }"
-        >
-          <IdCardPreview
+        <div class="flex flex-wrap p-4" :style="{ gap: `${Math.max(0, Number(selectedGapMm) || 0)}mm` }">
+          <div
             v-for="student in (selectedStudentIds.length ? students.filter(s => selectedStudentIds.includes(s.id)) : students)"
             :key="student.id"
-            :student="student"
-            :class-name="classOptions.find(c => c.value === selectedClassId)?.label || ''"
-            :class-level="classOptions.find(c => c.value === selectedClassId)?.level || ''"
-            :academic-year="new Date().getMonth() >= 8
-              ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}`
-              : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`"
-            :orientation="selectedOrientation"
-            :lang="selectedLang"
-            :width="selectedOrientation === 'portrait' ? 160 : 260"
-          />
+            class="flex flex-col gap-2"
+          >
+            <div class="flex items-center justify-between px-1">
+              <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                Front
+              </span>
+              <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+                Back
+              </span>
+            </div>
+            <div class="flex flex-wrap items-start gap-3">
+              <IdCardPreview
+                :student="student"
+                :class-name="classOptions.find(c => c.value === selectedClassId)?.label || ''"
+                :class-level="classOptions.find(c => c.value === selectedClassId)?.level || ''"
+                :academic-year="new Date().getMonth() >= 8
+                  ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}`
+                  : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`"
+                :orientation="selectedOrientation"
+                :lang="selectedLang"
+                :width="selectedOrientation === 'portrait' ? 160 : 260"
+              />
+              <IdCardBackPreview
+                :student="student"
+                :class-name="classOptions.find(c => c.value === selectedClassId)?.label || ''"
+                :class-level="classOptions.find(c => c.value === selectedClassId)?.level || ''"
+                :academic-year="new Date().getMonth() >= 8
+                  ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}`
+                  : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`"
+                :orientation="selectedOrientation"
+                :lang="selectedLang"
+                :width="selectedOrientation === 'portrait' ? 160 : 260"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
