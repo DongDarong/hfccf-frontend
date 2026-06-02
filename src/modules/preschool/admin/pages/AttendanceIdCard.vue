@@ -8,6 +8,7 @@ import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
 import logoUrl from '@/assets/images/logo.jpg'
+import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
@@ -709,6 +710,36 @@ onMounted(loadClasses)
       <div v-else class="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-400">
         Select a class above to load students.
       </div>
+
+      <!-- ── Card Preview ──────────────────────────────────────────────────── -->
+      <div v-if="students.length" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+          <span class="text-sm font-semibold text-slate-700">Card Preview</span>
+          <span class="text-xs text-slate-400">
+            {{ selectedStudentIds.length || students.length }} card{{ (selectedStudentIds.length || students.length) !== 1 ? 's' : '' }}
+            · {{ selectedOrientation }} · {{ CARD_SIZES.find(s => s.value === selectedSize)?.label }}
+          </span>
+        </div>
+
+        <div
+          class="flex flex-wrap gap-4 p-4"
+          :class="selectedOrientation === 'portrait' ? 'items-start' : 'items-center'"
+        >
+          <IdCardPreview
+            v-for="student in (selectedStudentIds.length ? students.filter(s => selectedStudentIds.includes(s.id)) : students)"
+            :key="student.id"
+            :student="student"
+            :class-name="classOptions.find(c => c.value === selectedClassId)?.label || ''"
+            :class-level="classOptions.find(c => c.value === selectedClassId)?.level || ''"
+            :academic-year="new Date().getMonth() >= 8
+              ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}`
+              : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`"
+            :orientation="selectedOrientation"
+            :width="selectedOrientation === 'portrait' ? 160 : 260"
+          />
+        </div>
+      </div>
+
     </section>
   </MainLayout>
 </template>
