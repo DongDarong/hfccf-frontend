@@ -82,17 +82,53 @@ function getAcademicYear() {
 }
 
 // ── Image helpers ─────────────────────────────────────────────────────────────
+
+// Load a plain asset (no auth, no CORS issues expected — e.g. bundled logo)
 function loadImg(url) {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
     img.onload  = () => resolve(img)
     img.onerror = () => reject(new Error('load failed'))
     img.src = url
   })
 }
 
-// Pre-crop an HTMLImageElement to a circle, returns a JPEG data URL for jsPDF
+// Resolve a possibly-relative backend URL to an absolute one
+function resolveBackendUrl(url) {
+  if (!url) return ''
+  if (/^https?:\/\//.test(url) || url.startsWith('//')) return url
+  const base = String(import.meta.env.VITE_API_BASE_URL || window.location.origin)
+  try { return new URL(url, base).href } catch { return url }
+}
+
+// Load a student photo via fetch (sends auth header, returns a same-origin blob
+// URL so the canvas never gets tainted regardless of CORS headers on the server)
+async function loadStudentPhotoAsImg(avatarUrl) {
+  const url = resolveBackendUrl(avatarUrl)
+  if (!url) throw new Error('empty url')
+
+  const token =
+    window.localStorage.getItem('hfccf-auth-token') ||
+    window.sessionStorage.getItem('hfccf-auth-token') || ''
+
+  const res = await fetch(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+  const blob      = await res.blob()
+  const objectUrl = URL.createObjectURL(blob)
+
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload  = () => resolve({ img, objectUrl })
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('img load')) }
+    img.src = objectUrl
+  })
+}
+
+// Pre-crop an HTMLImageElement to a circle; returns a JPEG data URL for jsPDF.
+// Safe to call because blob-URL images never taint the canvas.
 function circularCrop(img, size = 240) {
   const c = document.createElement('canvas')
   c.width = c.height = size
@@ -465,6 +501,7 @@ async function loadStudents() {
 async function generateFile() {
   if (!selectedStudentIds.value.length) return
   generating.value = true
+  const blobUrls = []   // declared here so finally can revoke them
   try {
     const chosen     = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
     const classObj   = classOptions.value.find((c) => c.value === selectedClassId.value)
@@ -481,11 +518,16 @@ async function generateFile() {
             marginX: MARGIN_X, gapX: GAP_X, marginY: MARGIN_Y, gapY: GAP_Y } = layout
     const PER_PAGE = COLS * ROWS
 
-    // Pre-load all student photos (best-effort, failures silently skip)
+    // Pre-load student photos via fetch+blob so canvas is never tainted.
+    // Failures (404, CORS, missing URL) silently fall back to initials.
     const photoImgCache = new Map()
     await Promise.allSettled(chosen.map(async (s) => {
       if (!s.avatarUrl) return
-      try { photoImgCache.set(s.id, await loadImg(s.avatarUrl)) } catch {}
+      try {
+        const { img, objectUrl } = await loadStudentPhotoAsImg(s.avatarUrl)
+        photoImgCache.set(s.id, img)
+        blobUrls.push(objectUrl)
+      } catch {}
     }))
 
     // ── PDF ───────────────────────────────────────────────────────────
@@ -537,7 +579,10 @@ async function generateFile() {
     a.href=dataUrl; a.download=`id-cards-${safeName}-${year}-${orient}-${selectedSize.value}.${fmt}`; a.click()
   } catch (e) {
     console.error('Generation failed', e); alert('Generation failed: '+(e?.message||e))
-  } finally { generating.value = false }
+  } finally {
+    blobUrls.forEach((u) => URL.revokeObjectURL(u))
+    generating.value = false
+  }
 }
 
 onMounted(loadClasses)
