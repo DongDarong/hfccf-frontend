@@ -36,22 +36,22 @@ const ORIENT_OPTIONS = [
   { value: 'portrait',  label: 'Portrait',  icon: 'pi-tablet-phone', desc: 'Taller than wide' },
 ]
 
-// Card size configs — landscape { W, H } and portrait { W, H } with A4 grid layout
+// Card size configs — just the card dimensions (mm), no A4 grid needed
 const CARD_SIZES = [
   {
-    value: 'small', label: 'Small', icon: 'pi-minus-circle',
-    landscape: { W: 70,   H: 44,   cols: 2, rows: 5, marginX: 23.3, gapX: 23.3, marginY: 24.5, gapY: 7   },
-    portrait:  { W: 44,   H: 70,   cols: 3, rows: 3, marginX: 19.5, gapX: 19.5, marginY: 21.75, gapY: 21.75 },
+    value: 'small',    label: 'Small',    icon: 'pi-minus-circle',
+    landscape: { W: 70,   H: 44   },
+    portrait:  { W: 44,   H: 70   },
   },
   {
     value: 'standard', label: 'Standard', icon: 'pi-id-card',
-    landscape: { W: 85.6, H: 54,   cols: 2, rows: 4, marginX: 12.9, gapX: 12.9, marginY: 15,   gapY: 8   },
-    portrait:  { W: 54,   H: 85.6, cols: 3, rows: 3, marginX: 18,   gapX: 6,    marginY: 15,   gapY: 5   },
+    landscape: { W: 85.6, H: 54   },
+    portrait:  { W: 54,   H: 85.6 },
   },
   {
-    value: 'large', label: 'Large', icon: 'pi-plus-circle',
-    landscape: { W: 100,  H: 63,   cols: 2, rows: 4, marginX: 2.5,  gapX: 5,    marginY: 12,   gapY: 7   },
-    portrait:  { W: 63,   H: 100,  cols: 2, rows: 2, marginX: 28,   gapX: 28,   marginY: 43.5, gapY: 10  },
+    value: 'large',    label: 'Large',    icon: 'pi-plus-circle',
+    landscape: { W: 100,  H: 63   },
+    portrait:  { W: 63,   H: 100  },
   },
 ]
 
@@ -512,11 +512,8 @@ async function generateFile() {
     const fmt        = selectedFormat.value
     const orient     = selectedOrientation.value
 
-    const sizeConf = CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1]
-    const layout   = sizeConf[orient]
-    const { W: CARD_W, H: CARD_H, cols: COLS, rows: ROWS,
-            marginX: MARGIN_X, gapX: GAP_X, marginY: MARGIN_Y, gapY: GAP_Y } = layout
-    const PER_PAGE = COLS * ROWS
+    const { W: CARD_W, H: CARD_H } =
+      (CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1])[orient]
 
     // Pre-load student photos via fetch+blob so canvas is never tainted.
     // Failures (404, CORS, missing URL) silently fall back to initials.
@@ -530,53 +527,39 @@ async function generateFile() {
       } catch {}
     }))
 
-    // ── PDF ───────────────────────────────────────────────────────────
+    // ── PDF: one card per page, page = card dimensions ────────────────
     if (fmt === 'pdf') {
       const { jsPDF } = await import('jspdf')
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [CARD_W, CARD_H] })
       let logoData = null
       try { logoData = imgToDataUrl(await loadImg(logoUrl)) } catch {}
       for (let i = 0; i < chosen.length; i++) {
-        if (i > 0 && i % PER_PAGE === 0) doc.addPage()
-        const col = i % COLS
-        const row = Math.floor((i % PER_PAGE) / COLS)
+        if (i > 0) doc.addPage([CARD_W, CARD_H])
         const photoImg  = photoImgCache.get(chosen[i].id) || null
         const photoData = photoImg ? circularCrop(photoImg) : null
-        drawCardPdf(doc,
-          MARGIN_X + col*(CARD_W+GAP_X),
-          MARGIN_Y + row*(CARD_H+GAP_Y),
-          chosen[i], className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData)
+        drawCardPdf(doc, 0, 0, chosen[i], className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData)
       }
-      doc.save(`id-cards-${safeName}-${year}-${orient}-${selectedSize.value}.pdf`)
+      doc.save(`id-cards-${safeName}-${year}.pdf`)
       return
     }
 
-    // ── PNG / JPG ─────────────────────────────────────────────────────
-    const SC    = 150 / 25.4
-    const pages = Math.ceil(chosen.length / PER_PAGE)
-    const totalPageH = ROWS*CARD_H + (ROWS-1)*GAP_Y
-    const canvasH = MARGIN_Y*2 + pages*totalPageH + (pages-1)*GAP_Y
+    // ── PNG / JPG: card-width image, cards stacked vertically ─────────
+    const SC      = 300 / 25.4   // 300 DPI
+    const cardPxW = Math.round(CARD_W * SC)
+    const cardPxH = Math.round(CARD_H * SC)
     const canvas  = document.createElement('canvas')
-    canvas.width  = Math.round(210 * SC)
-    canvas.height = Math.round(canvasH * SC)
+    canvas.width  = cardPxW
+    canvas.height = cardPxH * chosen.length
     const ctx = canvas.getContext('2d')
-    ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, canvas.width, canvas.height)
+    if (fmt === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height) }
     let logoImg = null; try { logoImg = await loadImg(logoUrl) } catch {}
-    for (let pg = 0; pg < pages; pg++) {
-      const pageOffsetY = pg*(totalPageH+GAP_Y)
-      for (let i = 0; i < PER_PAGE; i++) {
-        const idx = pg*PER_PAGE+i; if (idx >= chosen.length) break
-        drawCardCanvas(ctx,
-          MARGIN_X + (i%COLS)*(CARD_W+GAP_X),
-          MARGIN_Y + pageOffsetY + Math.floor(i/COLS)*(CARD_H+GAP_Y),
-          chosen[idx], className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H,
-          photoImgCache.get(chosen[idx].id) || null)
-      }
+    for (let i = 0; i < chosen.length; i++) {
+      drawCardCanvas(ctx, 0, CARD_H * i, chosen[i], className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(chosen[i].id) || null)
     }
-    const mime = fmt==='jpg' ? 'image/jpeg' : 'image/png'
-    const dataUrl = fmt==='jpg' ? canvas.toDataURL(mime,0.92) : canvas.toDataURL(mime)
+    const mime    = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
+    const dataUrl = fmt === 'jpg' ? canvas.toDataURL(mime, 0.92) : canvas.toDataURL(mime)
     const a = document.createElement('a')
-    a.href=dataUrl; a.download=`id-cards-${safeName}-${year}-${orient}-${selectedSize.value}.${fmt}`; a.click()
+    a.href = dataUrl; a.download = `id-cards-${safeName}-${year}.${fmt}`; a.click()
   } catch (e) {
     console.error('Generation failed', e); alert('Generation failed: '+(e?.message||e))
   } finally {
@@ -637,7 +620,6 @@ onMounted(loadClasses)
             </div>
             <span class="text-xs text-slate-400">
               {{ currentSizeConfig.W }} × {{ currentSizeConfig.H }} mm
-              · {{ currentSizeConfig.cols * currentSizeConfig.rows }} cards/page
             </span>
           </label>
 
@@ -763,6 +745,7 @@ onMounted(loadClasses)
           <span class="text-xs text-slate-400">
             {{ selectedStudentIds.length || students.length }} card{{ (selectedStudentIds.length || students.length) !== 1 ? 's' : '' }}
             · {{ selectedOrientation }} · {{ CARD_SIZES.find(s => s.value === selectedSize)?.label }}
+            · {{ currentSizeConfig.W }}×{{ currentSizeConfig.H }} mm
           </span>
         </div>
 
