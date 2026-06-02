@@ -76,6 +76,28 @@ const guardianPhone = computed(() => props.student.guardianPhone || props.studen
 const studentName = computed(() => props.student.fullName || props.student.name || '—')
 const studentCode = computed(() => props.student.studentCode || props.student.id || '—')
 const guardianInitials = computed(() => getInitials(guardianName.value === '—' ? '' : guardianName.value))
+const codeSeed = computed(() => `${studentCode.value}-${guardianPhone.value}`)
+
+function hashString(value) {
+  let hash = 0
+  const text = String(value || '')
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) - hash) + text.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
+
+const codeBits = computed(() => {
+  const hash = hashString(codeSeed.value)
+  const bits = []
+  for (let i = 0; i < 25; i++) {
+    bits.push(((hash >> (i % 16)) & 1) || ((i + hash) % 3 === 0))
+  }
+  return bits
+})
+
+const codeTitle = computed(() => `${T.value.studentId} / ${T.value.guardianPhone}`)
 </script>
 
 <template>
@@ -110,6 +132,12 @@ const guardianInitials = computed(() => getInitials(guardianName.value === '—'
       <div class="flex-1 bg-[#f97316]" />
       <div class="flex-1 bg-[#ef4444]" />
       <div class="flex-1 bg-[#3b82f6]" />
+    </div>
+
+    <div class="pointer-events-none absolute inset-0 opacity-60">
+      <div class="absolute right-[-18px] top-[78px] h-36 w-36 rounded-full border border-slate-200/70" />
+      <div class="absolute right-[-30px] top-[110px] h-52 w-52 rounded-full border border-slate-100/80" />
+      <div class="absolute left-[-20px] top-[146px] h-24 w-24 rounded-full border border-slate-100/70" />
     </div>
 
     <div class="absolute inset-x-0 flex" :style="{ top: mm(HEADER_H + BAR_H), height: mm(bodyH) }">
@@ -151,6 +179,28 @@ const guardianInitials = computed(() => getInitials(guardianName.value === '—'
               <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.class }}</p>
               <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.8) }">{{ className || '—' }}</p>
             </div>
+          </div>
+          <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
+            <div class="grid h-full w-full grid-cols-5 gap-[1px]">
+              <span
+                v-for="(bit, index) in codeBits"
+                :key="index"
+                class="block rounded-[1px]"
+                :class="bit ? 'bg-blue-800' : 'bg-transparent'"
+              />
+            </div>
+            <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
+          </div>
+          <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
+            <div class="grid h-full w-full grid-cols-5 gap-[1px]">
+              <span
+                v-for="(bit, index) in codeBits"
+                :key="index"
+                class="block rounded-[1px]"
+                :class="bit ? 'bg-blue-800' : 'bg-transparent'"
+              />
+            </div>
+            <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
           </div>
         </div>
       </template>

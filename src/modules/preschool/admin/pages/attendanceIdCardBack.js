@@ -25,6 +25,53 @@ const BACK_TEXT = {
 
 const ACCENT = [[34,197,94],[249,115,22],[239,68,68],[59,130,246]]
 
+function hashString(value) {
+  let hash = 0
+  const text = String(value || '')
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) - hash) + text.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
+
+function drawCodeBlockPdf(doc, x, y, seed, size, cell, color = [30,64,175]) {
+  const hash = hashString(seed)
+  doc.setDrawColor(...color)
+  doc.setFillColor(255,255,255)
+  doc.roundedRect(x, y, size, size, 1.8, 1.8, 'FD')
+  const grid = 5
+  const step = size / grid
+  for (let row = 0; row < grid; row++) {
+    for (let col = 0; col < grid; col++) {
+      const bit = (hash >> ((row * grid + col) % 16)) & 1
+      const alt = ((hash + row + col) % 3) === 0
+      if (bit || alt) {
+        doc.setFillColor(...color)
+        doc.rect(x + col * step + cell * 0.18, y + row * step + cell * 0.18, step - cell * 0.36, step - cell * 0.36, 'F')
+      }
+    }
+  }
+}
+
+function drawCodeBlockCanvas(ctx, helpers, xMm, yMm, seed, sizeMm, cellMm, color = [30,64,175]) {
+  const { sf, ss, slw, rr, fr } = helpers
+  const hash = hashString(seed)
+  sf(255,255,255); ss(...color); slw(0.22); rr(xMm, yMm, sizeMm, sizeMm, 1.8, 'FD')
+  const grid = 5
+  const step = sizeMm / grid
+  for (let row = 0; row < grid; row++) {
+    for (let col = 0; col < grid; col++) {
+      const bit = (hash >> ((row * grid + col) % 16)) & 1
+      const alt = ((hash + row + col) % 3) === 0
+      if (bit || alt) {
+        sf(...color)
+        fr(xMm + col * step + cellMm * 0.18, yMm + row * step + cellMm * 0.18, step - cellMm * 0.36, step - cellMm * 0.36)
+      }
+    }
+  }
+}
+
 function makeCanvasHelpers(ctx, SC, lang = 'en') {
   const fontFamily = lang === 'kh'
     ? '"Khmer OS", Hanuman, Battambang, "Noto Sans Khmer", sans-serif'
@@ -110,6 +157,62 @@ function drawShellPdf(doc, x, y, W, H, logoData, badgeText, headerText, subText,
     doc.rect(x + i * (W / 4), y + HEADER_H, W / 4, BAR_H, 'F')
   })
   return { HEADER_H, BAR_H }
+}
+
+function drawBackPatternPdf(doc, x, y, W, H, HEADER_H, BAR_H, FOOTER_H, SW, SH) {
+  const bodyTop = y + HEADER_H + BAR_H
+  const bodyBottom = y + H - FOOTER_H
+  doc.setDrawColor(226,232,240)
+  doc.setLineWidth(0.12)
+  for (let i = 0; i < 4; i++) {
+    const px = x + W - (12 + i * 7) * SW
+    const py = bodyTop + (6 + i * 5) * SH
+    doc.circle(px, py, 0.6 * SW, 'F')
+    doc.circle(px - 5 * SW, py + 4 * SH, 0.5 * SW, 'F')
+    doc.line(px - 9 * SW, py - 2 * SH, px - 1 * SW, py + 6 * SH)
+  }
+  doc.setFillColor(248,250,252)
+  doc.roundedRect(x + W - 24 * SW, bodyBottom - 22 * SH, 18 * SW, 18 * SH, 1.4 * SW, 1.4 * SW, 'F')
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      const fill = ((r * 5 + c) % 2 === 0) || ((r + c) % 3 === 0)
+      if (fill) {
+        doc.setFillColor(30,64,175)
+        doc.rect(x + W - 23 * SW + c * 3 * SW, bodyBottom - 21 * SH + r * 3 * SH, 2.2 * SW, 2.2 * SH, 'F')
+      }
+    }
+  }
+  doc.setTextColor(30,64,175)
+  doc.setFontSize(4.2 * Math.sqrt(SW * SH))
+  doc.setFont('helvetica', 'bold')
+  doc.text('SCAN / CODE', x + W - 15 * SW, bodyBottom - 2 * SH, { align: 'center' })
+}
+
+function drawBackPatternCanvas(ctx, helpers, xMm, yMm, W, H, HEADER_H, BAR_H, FOOTER_H, SC, SW, SH) {
+  const { sf, ss, slw, fr, rr, ln, arc } = helpers
+  const bodyTop = yMm + HEADER_H + BAR_H
+  const bodyBottom = yMm + H - FOOTER_H
+  ss(226,232,240,0.9); slw(0.12)
+  for (let i = 0; i < 4; i++) {
+    const px = xMm + W - (12 + i * 7) * SW
+    const py = bodyTop + (6 + i * 5) * SH
+    sf(226,232,240,0.7); arc(px, py, 0.6 * SW, 'F')
+    sf(226,232,240,0.55); arc(px - 5 * SW, py + 4 * SH, 0.5 * SW, 'F')
+    ln(px - 9 * SW, py - 2 * SH, px - 1 * SW, py + 6 * SH)
+  }
+  sf(248,250,252,1); rr(xMm + W - 24 * SW, bodyBottom - 22 * SH, 18 * SW, 18 * SH, 1.4 * SW, 'F')
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      const fill = ((r * 5 + c) % 2 === 0) || ((r + c) % 3 === 0)
+      if (fill) {
+        sf(30,64,175,1)
+        fr(xMm + W - 23 * SW + c * 3 * SW, bodyBottom - 21 * SH + r * 3 * SH, 2.2 * SW, 2.2 * SH)
+      }
+    }
+  }
+  sf(30,64,175,1); ss(30,64,175,1)
+  helpers.fnt(4.2 * Math.sqrt(SW * SH), 'bold')
+  helpers.txt('SCAN / CODE', xMm + W - 15 * SW, bodyBottom - 2 * SH, 'center', [30,64,175])
 }
 
 function drawShellCanvas(ctx, xMm, yMm, W, H, logoImg, badgeText, headerText, subText, SC, SW, SH, FS, RS, helpers) {
@@ -214,6 +317,7 @@ export function drawCardPdfBack(doc, x, y, student, className, classLevel, acade
   const CX = orientation === 'portrait' ? x + W / 2 : x + 15.5 * SW
   const CY = orientation === 'portrait' ? y + 14 * SH : y + 11 * SH
   const { HEADER_H, BAR_H } = drawShellPdf(doc, x, y, W, H, logoData, T.badge, 'HFCCF PRESCHOOL', headerSub, SW, SH, FS, RS)
+  drawBackPatternPdf(doc, x, y, W, H, HEADER_H, BAR_H, 8.5 * SH, SW, SH)
 
   if (orientation === 'portrait') {
     const profileY = y + HEADER_H + BAR_H + 12 * SH
@@ -244,6 +348,7 @@ export function drawCardPdfBack(doc, x, y, student, className, classLevel, acade
   doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x, y + H - 8.5 * SH, x + W, y + H - 8.5 * SH)
   doc.setTextColor(30,64,175); doc.setFontSize(5.7 * FS); doc.setFont('helvetica', 'bold')
   doc.text(T.contactNote, x + W / 2, y + H - 4.4 * SH, { align: 'center' })
+  drawCodeBlockPdf(doc, x + W - 24 * SW, y + HEADER_H + BAR_H + 18.5 * SH, `${student.studentCode || student.id || ''}-${student.guardianPhone || ''}`, 18 * SW, 3 * SW)
 }
 
 export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation, W, H, lang = 'en') {
@@ -256,6 +361,7 @@ export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel
   const helpers = makeCanvasHelpers(ctx, SC, lang)
   const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = helpers
   const { HEADER_H, BAR_H } = drawShellCanvas(ctx, xMm, yMm, W, H, logoImg, T.badge, 'HFCCF PRESCHOOL', headerSub, SC, SW, SH, FS, RS, helpers)
+  drawBackPatternCanvas(ctx, helpers, xMm, yMm, W, H, HEADER_H, BAR_H, 8.5 * SH, SC, SW, SH)
 
   if (orientation === 'portrait') {
     const profileY = yMm + HEADER_H + BAR_H + 12 * SH
@@ -306,4 +412,5 @@ export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel
   sf(239,246,255); fr(xMm, yMm + H - 8.5 * SH, W, 8.5 * SH)
   ss(191,219,254); slw(0.25); ln(xMm, yMm + H - 8.5 * SH, xMm + W, yMm + H - 8.5 * SH)
   fnt(5.7 * FS, 'bold'); txt(T.contactNote, xMm + W / 2, yMm + H - 4.4 * SH, 'center', [30,64,175])
+  drawCodeBlockCanvas(ctx, helpers, xMm + W - 24 * SW, yMm + HEADER_H + BAR_H + 18.5 * SH, `${student.studentCode || student.id || ''}-${student.guardianPhone || ''}`, 18 * SW, 3 * SW)
 }
