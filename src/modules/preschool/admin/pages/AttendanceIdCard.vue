@@ -556,16 +556,30 @@ async function generateFile() {
     const { W: CARD_W, H: CARD_H } =
       (CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1])[orient]
 
+    // Diagnostic: log raw API data for the first student so the developer
+    // can check which field name the backend uses for the photo.
+    if (chosen.length > 0) {
+      console.groupCollapsed('[ID Card] Photo diagnostic')
+      console.log('First student raw API payload:', chosen[0].raw)
+      console.log('Resolved avatarUrl:', chosen[0].avatarUrl || '(empty — no photo field found)')
+      console.groupEnd()
+    }
+
     // Pre-load student photos via fetch+blob so canvas is never tainted.
-    // Failures (404, CORS, missing URL) silently fall back to initials.
     const photoImgCache = new Map()
     await Promise.allSettled(chosen.map(async (s) => {
-      if (!s.avatarUrl) return
+      if (!s.avatarUrl) {
+        console.warn(`[ID Card] No avatarUrl for "${s.fullName || s.id}" — showing initials`)
+        return
+      }
       try {
         const { img, objectUrl } = await loadStudentPhotoAsImg(s.avatarUrl)
         photoImgCache.set(s.id, img)
         blobUrls.push(objectUrl)
-      } catch {}
+        console.log(`[ID Card] Photo loaded for "${s.fullName || s.id}"`)
+      } catch (e) {
+        console.warn(`[ID Card] Photo failed for "${s.fullName || s.id}" (${s.avatarUrl}):`, e.message)
+      }
     }))
 
     // ── PDF: one card per page, page = card dimensions ────────────────
@@ -800,7 +814,7 @@ onMounted(loadClasses)
             <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800 ring-2 ring-blue-200">
               {{ getInitials(student) }}
             </div>
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-semibold text-slate-900">{{ student.fullName||student.name||'—' }}</p>
               <p class="text-xs text-slate-400">
                 <span v-if="student.studentCode">#{{ student.studentCode }}</span>
@@ -808,6 +822,13 @@ onMounted(loadClasses)
                 <span v-if="student.gender" class="capitalize">{{ student.gender }}</span>
               </p>
             </div>
+            <span
+              :title="student.avatarUrl ? 'Has photo' : 'No photo'"
+              class="shrink-0 text-xs"
+              :class="student.avatarUrl ? 'text-emerald-500' : 'text-slate-300'"
+            >
+              <i class="pi pi-image" />
+            </span>
           </label>
         </div>
       </div>

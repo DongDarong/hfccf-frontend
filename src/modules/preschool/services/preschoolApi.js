@@ -117,7 +117,14 @@ function normalizeStudentRow(row = {}) {
     guardianPhone: normalizeText(row.guardianPhone || row.guardian_phone),
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
-    avatarUrl: normalizeText(row.avatarUrl || row.avatar_url || row.avatar || row.photo || ''),
+    avatarUrl: normalizeText(
+      row.avatarUrl || row.avatar_url ||
+      row.profile_photo_url || row.profilePhotoUrl ||
+      row.profile_photo_path || row.profilePhotoPath ||
+      row.photo_url || row.photoUrl ||
+      row.image_url || row.imageUrl ||
+      row.avatar || row.photo || row.image || row.thumbnail || '',
+    ),
     classesCount: Number(row.classesCount ?? row.classes_count ?? activeClasses.length ?? 0),
     classes: activeClasses,
     classAssignments,
