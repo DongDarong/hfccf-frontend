@@ -11,6 +11,7 @@ const props = defineProps({
   orientation:  { type: String,  default: 'landscape' },
   lang:         { type: String,  default: 'en' },
   width:        { type: Number,  default: 300 },
+  qrDataUrl:    { type: String,  default: '' },
 })
 
 const TEXT = {
@@ -78,19 +79,20 @@ const studentName = computed(() => props.student.fullName || props.student.name 
 const studentCode = computed(() => props.student.studentCode || props.student.id || '—')
 const guardianInitials = computed(() => getInitials(guardianName.value === '—' ? '' : guardianName.value))
 const codeSeed = computed(() => `${studentCode.value}-${guardianPhone.value}`)
-const qrDataUrl = ref('')
+const qrDataUrlInternal = ref('')
+const resolvedQrDataUrl = computed(() => props.qrDataUrl || qrDataUrlInternal.value)
 const codeTitle = computed(() => `${T.value.studentId} / ${T.value.guardianPhone}`)
 
 watch(codeSeed, async (seed) => {
   try {
-    qrDataUrl.value = await QRCode.toDataURL(seed || 'HFCCF-PRESCHOOL', {
+    qrDataUrlInternal.value = await QRCode.toDataURL(seed || 'HFCCF-PRESCHOOL', {
       errorCorrectionLevel: 'M',
       margin: 1,
       scale: 6,
       color: { dark: '#1e40af', light: '#ffffff' },
     })
   } catch {
-    qrDataUrl.value = ''
+    qrDataUrlInternal.value = ''
   }
 }, { immediate: true })
 </script>
@@ -181,7 +183,7 @@ watch(codeSeed, async (seed) => {
           </div>
           <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
             <img
-              :src="qrDataUrl"
+              :src="resolvedQrDataUrl"
               :alt="codeTitle"
               class="h-full w-full rounded-[4px] bg-white object-contain"
             >

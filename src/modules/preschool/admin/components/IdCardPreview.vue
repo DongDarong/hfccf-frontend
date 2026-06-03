@@ -14,6 +14,7 @@ const props = defineProps({
   orientation:  { type: String,  default: 'landscape' }, // 'landscape' | 'portrait'
   lang:         { type: String,  default: 'en' },        // 'en' | 'kh'
   width:        { type: Number,  default: 300 },         // rendered px width
+  photoSrc:     { type: String,  default: '' },
 })
 
 const CARD_TEXT = {
@@ -63,7 +64,7 @@ const AV_R = computed(() => isPortrait.value ? 10 : 11.5)  // mm radius
 // ── Student data ──────────────────────────────────────────────────────────────
 const name      = computed(() => props.student.fullName || props.student.name || '—')
 const sid       = computed(() => props.student.studentCode || props.student.id || '—')
-const photoUrl  = computed(() => props.student.avatarUrl || '')
+const photoUrl  = computed(() => props.photoSrc || props.student.avatarUrl || '')
 const initials  = computed(() =>
   name.value.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?',
 )

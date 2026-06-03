@@ -1,15 +1,14 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, createApp, h, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { toCanvas } from 'html-to-image'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
-import logoUrl from '@/assets/images/logo.jpg'
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
-import { drawCardPdfBack, drawCardCanvasBack } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
 import IdCardBackPreview from '@/modules/preschool/admin/components/IdCardBackPreview.vue'
 import { buildBackQrDataUrl } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
 
@@ -37,32 +36,6 @@ const LANG_OPTIONS = [
   { value: 'kh', label: 'ខ្មែរ', desc: 'Khmer' },
 ]
 
-const CARD_TEXT = {
-  en: {
-    school:      'HFCCF PRESCHOOL',
-    tagline:     'Hope for Cambodian Children',
-    badge:       'STUDENT ID CARD',
-    studentId:   'STUDENT ID',
-    class:       'CLASS',
-    grade:       'GRADE',
-    dob:         'DATE OF BIRTH',
-    male:        'MALE',
-    female:      'FEMALE',
-    academicYear: 'Academic Year',
-  },
-  kh: {
-    school:      'សាលាមត្តេយ្យ HFCCF',
-    tagline:     'សង្ឃឹមសម្រាប់កុមារកម្ពុជា',
-    badge:       'អត្តសញ្ញាណបណ្ណ',
-    studentId:   'លេខសម្គាល់',
-    class:       'ថ្នាក់',
-    grade:       'ថ្នាក់ទី',
-    dob:         'ថ្ងៃកំណើត',
-    male:        'ប្រុស',
-    female:      'ស្រី',
-    academicYear: 'ឆ្នាំសិក្សា',
-  },
-}
 
 const FORMAT_OPTIONS = [
   { value: 'pdf', label: 'PDF', icon: 'pi-file-pdf', desc: 'Print-ready A4 sheet' },
@@ -122,16 +95,6 @@ function getAcademicYear() {
 // ── Image helpers ─────────────────────────────────────────────────────────────
 
 // Load a plain asset (no auth, no CORS issues expected — e.g. bundled logo)
-function loadImg(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload  = () => resolve(img)
-    img.onerror = () => reject(new Error('load failed'))
-    img.src = url
-  })
-}
-
-// Resolve a possibly-relative backend URL to an absolute one
 function resolveBackendUrl(url) {
   if (!url) return ''
   if (/^https?:\/\//.test(url) || url.startsWith('//')) return url
@@ -188,19 +151,6 @@ async function loadStudentPhotoAsImg(avatarUrl) {
 
 // Pre-crop an HTMLImageElement to a circle; returns a JPEG data URL for jsPDF.
 // Safe to call because blob-URL images never taint the canvas.
-function circularCrop(img, size = 240) {
-  const c = document.createElement('canvas')
-  c.width = c.height = size
-  const ctx = c.getContext('2d')
-  ctx.beginPath()
-  ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2)
-  ctx.clip()
-  const nw = img.naturalWidth || size, nh = img.naturalHeight || size
-  const scale = Math.max(size / nw, size / nh)
-  const w = nw * scale, h = nh * scale
-  ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h)
-  return c.toDataURL('image/jpeg', 0.88)
-}
 function imgToDataUrl(img) {
   const c = document.createElement('canvas')
   c.width = img.naturalWidth || 200; c.height = img.naturalHeight || 200
@@ -208,384 +158,50 @@ function imgToDataUrl(img) {
   return c.toDataURL('image/jpeg', 0.85)
 }
 
+async function waitForFonts() {
+  if (document.fonts?.ready) {
+    try {
+      await document.fonts.ready
+    } catch {
+      // Ignore font-loading failures and continue with the rendered fallback.
+    }
+  }
+}
+
+async function renderCardComponentToCanvas(component, props, widthPx) {
+  const host = document.createElement('div')
+  host.style.position = 'fixed'
+  host.style.left = '-10000px'
+  host.style.top = '0'
+  host.style.width = `${widthPx}px`
+  host.style.pointerEvents = 'none'
+  host.style.opacity = '0'
+  host.style.zIndex = '-1'
+  document.body.appendChild(host)
+
+  const app = createApp({
+    render: () => h(component, props),
+  })
+
+  try {
+    app.mount(host)
+    await nextTick()
+    await waitForFonts()
+
+    const node = host.firstElementChild || host
+    return await toCanvas(node, {
+      backgroundColor: '#ffffff',
+      cacheBust: true,
+      pixelRatio: 1,
+    })
+  } finally {
+    app.unmount()
+    host.remove()
+  }
+}
+
 // ── Shared constants ──────────────────────────────────────────────────────────
-const ACCENT = [[34,197,94],[249,115,22],[239,68,68],[59,130,246]]
 
-function doc_splitFirst(ctx, text, maxPx) {
-  const words = text.split(' '); let line = ''
-  for (const w of words) {
-    const test = line ? line + ' ' + w : w
-    if (ctx.measureText(test).width <= maxPx) line = test; else break
-  }
-  return line || text
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  jsPDF renderers  (W, H = actual card dimensions in mm)
-// ═════════════════════════════════════════════════════════════════════════════
-function drawCardPdf(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, photoData, lang = 'en') {
-  if (orientation === 'portrait') return _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang)
-  _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang)
-}
-
-function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang) {
-  const T = CARD_TEXT[lang] || CARD_TEXT.en
-  const SW = W / 85.6, SH = H / 54, FS = Math.sqrt(SW * SH), RS = Math.min(SW, SH)
-  const HEADER_H = 14.5 * SH, BAR_H = 1.8 * SH, FOOTER_H = 8.5 * SH
-  const BODY_Y   = y + HEADER_H + BAR_H
-  const FOOTER_Y = y + H - FOOTER_H
-  const CX = x + 14.8 * SW
-  const CY = BODY_Y + (FOOTER_Y - BODY_Y) / 2
-
-  doc.setFillColor(255,255,255); doc.setDrawColor(203,213,225); doc.setLineWidth(0.25)
-  doc.roundedRect(x, y, W, H, 2.5*RS, 2.5*RS, 'FD')
-
-  doc.setFillColor(10,36,80)
-  doc.roundedRect(x, y, W, HEADER_H, 2.5*RS, 2.5*RS, 'F')
-  doc.rect(x, y+HEADER_H-3*SH, W, 3*SH, 'F')
-  // Header watermark circles
-  doc.setFillColor(16,44,90); doc.circle(x+W-6*SW, y-3*SH, 15*RS, 'F')
-  doc.setFillColor(13,38,78); doc.circle(x+W+2*SW, y+4*SH, 10*RS, 'F')
-  if (logoData) doc.addImage(logoData, 'JPEG', x+2.5*SW, y+2*SH, 10.5*SW, 10.5*SH)
-  doc.setTextColor(255,255,255); doc.setFontSize(7.5*FS); doc.setFont('helvetica','bold')
-  doc.text(T.school, x+15*SW, y+6.5*SH)
-  doc.setFontSize(5.5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(147,197,253)
-  doc.text(T.tagline, x+15*SW, y+10.5*SH)
-  doc.setDrawColor(255,255,255); doc.setLineWidth(0.3)
-  doc.roundedRect(x+W-24*SW, y+3.5*SH, 22*SW, 7*SH, 1.2*RS, 1.2*RS, 'S')
-  doc.setTextColor(255,255,255); doc.setFontSize(5*FS); doc.setFont('helvetica','bold')
-  doc.text(T.badge, x+W-13*SW, y+8*SH, { align: 'center' })
-
-  ACCENT.forEach(([r,g,b],i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
-
-  // Avatar — white outer ring + blue inner ring
-  doc.setFillColor(219,234,254); doc.circle(CX, CY, 13.2*RS, 'F')
-  doc.setFillColor(255,255,255); doc.circle(CX, CY, 13*RS, 'F')
-  doc.setFillColor(219,234,254); doc.circle(CX, CY, 11.5*RS, 'F')
-  if (photoData) {
-    const r = 11.5*RS
-    doc.addImage(photoData, 'JPEG', CX-r, CY-r, r*2, r*2)
-  } else {
-    doc.setFillColor(239,246,255); doc.setDrawColor(191,219,254); doc.setLineWidth(0.3)
-    doc.circle(CX, CY, 10*RS, 'FD')
-    const ini = getInitials(student)
-    doc.setTextColor(30,64,175); doc.setFontSize((ini.length>2?8.5:11)*FS); doc.setFont('helvetica','bold')
-    doc.text(ini, CX, CY+(ini.length>2?3:4)*RS, { align: 'center' })
-  }
-  doc.setDrawColor(96,165,250); doc.setLineWidth(0.4); doc.circle(CX, CY, 11.5*RS, 'S')
-  doc.setDrawColor(147,197,253); doc.setLineWidth(0.3); doc.circle(CX, CY, 13*RS, 'S')
-  if (student.gender) {
-    const m = student.gender.toLowerCase().startsWith('m')
-    doc.setFillColor(m?219:252, m?234:231, m?254:243)
-    doc.roundedRect(CX-6*SW, CY+13*RS, 12*SW, 4.2*SH, 2.1*SH, 2.1*SH, 'F')
-    doc.setFontSize(4.8*FS); doc.setFont('helvetica','bold')
-    doc.setTextColor(m?109:190, m?40:24, m?217:93)
-    doc.text(m ? T.male : T.female, CX, CY+16.2*RS, { align: 'center' })
-  }
-
-  // Separator — fade via three segments
-  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
-  doc.line(x+29.5*SW, BODY_Y+2*SH, x+29.5*SW, FOOTER_Y-SH)
-
-  const IX = x+32*SW; let IY = BODY_Y+5*SH
-  doc.setFontSize(8.5*FS); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
-  doc.text(doc.splitTextToSize(student.fullName||student.name||'—', W-35*SW)[0], IX, IY); IY += 2.5*SH
-  // Name underline accent
-  doc.setFillColor(59,130,246); doc.roundedRect(IX, IY, 8*SW, 0.7*SH, 0.35*SH, 0.35*SH, 'F'); IY += 3*SH
-  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x+W-3*SW, IY); IY += 3.5*SH
-  // Student ID with left accent bar
-  doc.setFillColor(147,197,253); doc.rect(IX, IY-3*SH, 0.8*SW, 6.5*SH, 'F')
-  doc.setFontSize(4.8*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text(T.studentId, IX+1.8*SW, IY); IY += 3.5*SH
-  doc.setFontSize(7*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-  doc.text(String(student.studentCode||student.id||'—'), IX+1.8*SW, IY); IY += 5*SH
-  const GX = x+58*SW
-  doc.setFontSize(4.8*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text(T.class, IX, IY); if (classLevel) doc.text(T.grade, GX, IY); IY += 3.5*SH
-  doc.setFontSize(7*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-  doc.text(className||'—', IX, IY); if (classLevel) doc.text(classLevel, GX, IY)
-
-  doc.setFillColor(239,246,255); doc.rect(x, FOOTER_Y, W, FOOTER_H, 'F')
-  doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5*SW,2.5*SH,'F'); doc.rect(x+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH,'F')
-  doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x,FOOTER_Y,x+W,FOOTER_Y)
-  doc.setTextColor(30,64,175); doc.setFontSize(6*FS); doc.setFont('helvetica','bold')
-  doc.text(`${T.academicYear}  ${academicYear}`, x+W/2, FOOTER_Y+5.2*SH, { align: 'center' })
-}
-
-function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, logoData, W, H, photoData, lang) {
-  const T = CARD_TEXT[lang] || CARD_TEXT.en
-  const SW = W / 54, SH = H / 85.6, FS = Math.sqrt(SW * SH), RS = Math.min(SW, SH)
-  const HEADER_H = 20*SH, BAR_H = 1.8*SH, FOOTER_H = 8.5*SH
-  const BODY_Y   = y + HEADER_H + BAR_H
-  const FOOTER_Y = y + H - FOOTER_H
-  const CX = x + W/2
-
-  doc.setFillColor(255,255,255); doc.setDrawColor(203,213,225); doc.setLineWidth(0.25)
-  doc.roundedRect(x, y, W, H, 2.5*RS, 2.5*RS, 'FD')
-  doc.setFillColor(10,36,80)
-  doc.roundedRect(x, y, W, HEADER_H, 2.5*RS, 2.5*RS, 'F')
-  doc.rect(x, y+HEADER_H-3*SH, W, 3*SH, 'F')
-  // Header watermark circles
-  doc.setFillColor(16,44,90); doc.circle(x+W-4*SW, y-6*SH, 16*RS, 'F')
-  doc.setFillColor(13,38,78); doc.circle(x+W+2*SW, y+5*SH, 11*RS, 'F')
-  if (logoData) doc.addImage(logoData, 'JPEG', CX-5*SW, y+2*SH, 10*SW, 10*SH)
-  doc.setTextColor(255,255,255); doc.setFontSize(7.5*FS); doc.setFont('helvetica','bold')
-  doc.text(T.school, CX, y+14.5*SH, { align: 'center' })
-  doc.setFontSize(5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(147,197,253)
-  doc.text(T.tagline, CX, y+18*SH, { align: 'center' })
-  ACCENT.forEach(([r,g,b],i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
-
-  const CY_AV = BODY_Y + 12*SH
-  // Avatar — white outer ring + blue inner ring
-  doc.setFillColor(219,234,254); doc.circle(CX, CY_AV, 11.5*RS, 'F')
-  doc.setFillColor(255,255,255); doc.circle(CX, CY_AV, 11.3*RS, 'F')
-  doc.setFillColor(219,234,254); doc.circle(CX, CY_AV, 10*RS, 'F')
-  if (photoData) {
-    const r = 10*RS
-    doc.addImage(photoData, 'JPEG', CX-r, CY_AV-r, r*2, r*2)
-  } else {
-    doc.setFillColor(239,246,255); doc.setDrawColor(191,219,254); doc.setLineWidth(0.3)
-    doc.circle(CX, CY_AV, 8.4*RS, 'FD')
-    const ini = getInitials(student)
-    doc.setTextColor(30,64,175); doc.setFontSize((ini.length>2?7.5:9.5)*FS); doc.setFont('helvetica','bold')
-    doc.text(ini, CX, CY_AV+(ini.length>2?2.6:3.2)*RS, { align: 'center' })
-  }
-  doc.setDrawColor(96,165,250); doc.setLineWidth(0.4); doc.circle(CX, CY_AV, 10*RS, 'S')
-  doc.setDrawColor(147,197,253); doc.setLineWidth(0.3); doc.circle(CX, CY_AV, 11.3*RS, 'S')
-  if (student.gender) {
-    const m = student.gender.toLowerCase().startsWith('m')
-    doc.setFillColor(m?219:252, m?234:231, m?254:243)
-    doc.roundedRect(CX-6.5*SW, CY_AV+11.5*RS, 13*SW, 4*SH, 2*SH, 2*SH, 'F')
-    doc.setFontSize(4.8*FS); doc.setFont('helvetica','bold')
-    doc.setTextColor(m?109:190, m?40:24, m?217:93)
-    doc.text(m ? T.male : T.female, CX, CY_AV+14.5*RS, { align: 'center' })
-  }
-
-  const nameY = CY_AV + 19*SH
-  doc.setFontSize(8*FS); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
-  doc.text(doc.splitTextToSize(student.fullName||student.name||'—', W-8*SW)[0], CX, nameY, { align: 'center' })
-  // Name underline accent
-  doc.setFillColor(59,130,246); doc.roundedRect(CX-4*SW, nameY+1.5*SH, 8*SW, 0.7*SH, 0.35*SH, 0.35*SH, 'F')
-  const divY = nameY + 4*SH
-  doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(x+4*SW, divY, x+W-4*SW, divY)
-
-  const IY0 = divY + 3.5*SH, C1 = x+5*SW, C2 = x+W/2+1.5*SW
-  doc.setFontSize(4.5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text(T.studentId, C1, IY0); if (classLevel) doc.text(T.grade, C2, IY0)
-  doc.setFontSize(6.5*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-  doc.text(String(student.studentCode||student.id||'—'), C1, IY0+3.5*SH)
-  if (classLevel) doc.text(classLevel, C2, IY0+3.5*SH)
-  const R2Y = IY0+8.5*SH
-  doc.setFontSize(4.5*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text(T.class, C1, R2Y); if (student.dateOfBirth) doc.text(T.dob, C2, R2Y)
-  doc.setFontSize(6.5*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-  doc.text(className||'—', C1, R2Y+3.5*SH)
-  if (student.dateOfBirth) doc.text(student.dateOfBirth, C2, R2Y+3.5*SH)
-
-  doc.setFillColor(239,246,255); doc.rect(x, FOOTER_Y, W, FOOTER_H, 'F')
-  doc.setFillColor(255,255,255); doc.rect(x,FOOTER_Y,2.5*SW,2.5*SH,'F'); doc.rect(x+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH,'F')
-  doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x,FOOTER_Y,x+W,FOOTER_Y)
-  doc.setTextColor(30,64,175); doc.setFontSize(5.5*FS); doc.setFont('helvetica','bold')
-  doc.text(`${T.academicYear}  ${academicYear}`, CX, FOOTER_Y+5.2*SH, { align: 'center' })
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  Canvas renderers
-// ═════════════════════════════════════════════════════════════════════════════
-function drawCardCanvas(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation, W, H, photoImg, lang = 'en') {
-  if (orientation === 'portrait') return _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang)
-  _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang)
-}
-
-function _makeCanvasHelpers(ctx, SC, lang = 'en') {
-  const fontFamily = lang === 'kh'
-    ? '"Khmer OS", Hanuman, Battambang, "Noto Sans Khmer", sans-serif'
-    : 'Arial, sans-serif'
-  const p   = (v) => v * SC
-  const sf  = (r,g,b,a=1)  => { ctx.fillStyle   = `rgba(${r},${g},${b},${a})` }
-  const ss  = (r,g,b,a=1)  => { ctx.strokeStyle = `rgba(${r},${g},${b},${a})` }
-  const slw = (mm)          => { ctx.lineWidth   = p(mm) }
-  const fnt = (pt, w='normal') => { ctx.font = `${w} ${p(pt*0.352778)}px ${fontFamily}` }
-  const fr  = (x,y,w,h)    => ctx.fillRect(p(x),p(y),p(w),p(h))
-  const txt = (t,x,y,al='left',col=[15,23,42]) => {
-    sf(...col); ctx.textAlign=al; ctx.textBaseline='alphabetic'; ctx.fillText(String(t),p(x),p(y))
-  }
-  function rr(x,y,w,h,r,mode='F') {
-    ctx.beginPath()
-    ctx.moveTo(p(x+r),p(y)); ctx.lineTo(p(x+w-r),p(y))
-    ctx.arcTo(p(x+w),p(y),   p(x+w),p(y+r),   p(r))
-    ctx.lineTo(p(x+w),p(y+h-r))
-    ctx.arcTo(p(x+w),p(y+h), p(x+w-r),p(y+h), p(r))
-    ctx.lineTo(p(x+r),p(y+h))
-    ctx.arcTo(p(x),p(y+h),   p(x),p(y+h-r),   p(r))
-    ctx.lineTo(p(x),p(y+r))
-    ctx.arcTo(p(x),p(y),     p(x+r),p(y),     p(r))
-    ctx.closePath()
-    if (mode==='F'||mode==='FD') ctx.fill()
-    if (mode==='S'||mode==='FD') ctx.stroke()
-  }
-  function arc(cx,cy,r,mode='F') {
-    ctx.beginPath(); ctx.arc(p(cx),p(cy),p(r),0,Math.PI*2); ctx.closePath()
-    if (mode==='F'||mode==='FD') ctx.fill()
-    if (mode==='S'||mode==='FD') ctx.stroke()
-  }
-  const ln = (x1,y1,x2,y2) => { ctx.beginPath(); ctx.moveTo(p(x1),p(y1)); ctx.lineTo(p(x2),p(y2)); ctx.stroke() }
-  return { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln }
-}
-
-function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang) {
-  const T = CARD_TEXT[lang] || CARD_TEXT.en
-  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC, lang)
-  const SW = W/85.6, SH = H/54, FS = Math.sqrt(SW*SH), RS = Math.min(SW, SH)
-  const HEADER_H = 14.5*SH, BAR_H = 1.8*SH, FOOTER_H = 8.5*SH
-  const BODY_Y   = yMm+HEADER_H+BAR_H
-  const FOOTER_Y = yMm+H-FOOTER_H
-  const CX = xMm+14.8*SW
-  const CY = BODY_Y+(FOOTER_Y-BODY_Y)/2
-
-  sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,2.5*RS,'FD')
-  sf(10,36,80); rr(xMm,yMm,W,HEADER_H,2.5*RS,'F'); fr(xMm,yMm+HEADER_H-3*SH,W,3*SH)
-  // Header watermark circles
-  ctx.save(); ctx.globalAlpha=0.35; sf(16,44,90); arc(xMm+W-6*SW,yMm-3*SH,15*RS,'F')
-  sf(13,38,78); arc(xMm+W+2*SW,yMm+4*SH,10*RS,'F'); ctx.globalAlpha=1; ctx.restore()
-  if (logoImg) ctx.drawImage(logoImg,p(xMm+2.5*SW),p(yMm+2*SH),p(10.5*SW),p(10.5*SH))
-  fnt(7.5*FS,'bold'); txt(T.school,xMm+15*SW,yMm+6.5*SH,'left',[255,255,255])
-  fnt(5.5*FS,'normal'); txt(T.tagline,xMm+15*SW,yMm+10.5*SH,'left',[147,197,253])
-  ss(255,255,255,0.6); slw(0.3); ctx.strokeRect(p(xMm+W-24*SW),p(yMm+3.5*SH),p(22*SW),p(7*SH))
-  fnt(5*FS,'bold'); txt(T.badge,xMm+W-13*SW,yMm+8*SH,'center',[255,255,255])
-  ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
-
-  // Avatar — drop shadow + white outer ring + blue inner ring
-  ctx.save(); ctx.globalAlpha=0.12; sf(59,130,246); arc(CX,CY+0.4*RS,13.5*RS,'F'); ctx.restore()
-  sf(255,255,255); arc(CX,CY,13.2*RS,'F')
-  sf(219,234,254); arc(CX,CY,11.5*RS,'F')
-  if (photoImg) {
-    const r=p(11.5*RS), nw=photoImg.naturalWidth||100, nh=photoImg.naturalHeight||100
-    const scale=Math.max((r*2)/nw,(r*2)/nh), dw=nw*scale, dh=nh*scale
-    ctx.save(); ctx.beginPath(); ctx.arc(p(CX),p(CY),r,0,Math.PI*2); ctx.clip()
-    ctx.drawImage(photoImg,p(CX)-dw/2,p(CY)-dh/2,dw,dh)
-    ctx.restore()
-  } else {
-    sf(239,246,255); ss(191,219,254); slw(0.3); arc(CX,CY,10*RS,'FD')
-    const ini=getInitials(student)
-    fnt((ini.length>2?8.5:11)*FS,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
-    ctx.fillText(ini,p(CX),p(CY)); ctx.textBaseline='alphabetic'
-  }
-  ss(96,165,250); slw(0.4); arc(CX,CY,11.5*RS,'S')
-  ss(147,197,253); slw(0.3); arc(CX,CY,13.2*RS,'S')
-  if (student.gender) {
-    const m=student.gender.toLowerCase().startsWith('m')
-    sf(m?219:252,m?234:231,m?254:243)
-    ctx.beginPath(); ctx.roundRect(p(CX-6*SW),p(CY+13*RS),p(12*SW),p(4.2*SH),p(2.1*SH)); ctx.fill()
-    fnt(4.8*FS,'bold'); txt(m ? T.male : T.female,CX,CY+16.2*RS,'center',[m?109:190,m?40:24,m?217:93])
-  }
-  ss(226,232,240); slw(0.25); ln(xMm+29.5*SW,BODY_Y+2*SH,xMm+29.5*SW,FOOTER_Y-SH)
-
-  const IX=xMm+32*SW, GX=xMm+58*SW; let IY=BODY_Y+5*SH
-  fnt(8.5*FS,'bold'); sf(15,23,42); ctx.textAlign='left'
-  ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-35*SW)),p(IX),p(IY)); IY+=2.5*SH
-  // Name underline accent
-  sf(59,130,246); ctx.beginPath(); ctx.roundRect(p(IX),p(IY),p(8*SW),p(0.7*SH),p(0.35*SH)); ctx.fill(); IY+=3*SH
-  ss(226,232,240); slw(0.25); ln(IX,IY,xMm+W-3*SW,IY); IY+=3.5*SH
-  // Student ID with left accent bar
-  sf(147,197,253); fr(IX,IY-3*SH,0.8*SW,6.5*SH)
-  fnt(4.8*FS,'normal'); sf(148,163,184); ctx.fillText(T.studentId,p(IX+1.8*SW),p(IY)); IY+=3.5*SH
-  fnt(7*FS,'bold'); sf(30,64,175); ctx.fillText(String(student.studentCode||student.id||'—'),p(IX+1.8*SW),p(IY)); IY+=5*SH
-  fnt(4.8*FS,'normal'); sf(148,163,184)
-  ctx.fillText(T.class,p(IX),p(IY)); if(classLevel) ctx.fillText(T.grade,p(GX),p(IY)); IY+=3.5*SH
-  fnt(7*FS,'bold'); sf(30,64,175)
-  ctx.fillText(className||'—',p(IX),p(IY)); if(classLevel) ctx.fillText(classLevel,p(GX),p(IY))
-
-  // Footer gradient
-  const fGrad=ctx.createLinearGradient(p(xMm),p(FOOTER_Y),p(xMm+W),p(FOOTER_Y+FOOTER_H))
-  fGrad.addColorStop(0,'#eff6ff'); fGrad.addColorStop(1,'#dbeafe')
-  ctx.fillStyle=fGrad; ctx.fillRect(p(xMm),p(FOOTER_Y),p(W),p(FOOTER_H))
-  sf(255,255,255); fr(xMm,FOOTER_Y,2.5*SW,2.5*SH); fr(xMm+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH)
-  ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
-  fnt(6*FS,'bold'); txt(`${T.academicYear}  ${academicYear}`,xMm+W/2,FOOTER_Y+5.2*SH,'center',[30,64,175])
-}
-
-function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, W, H, photoImg, lang) {
-  const T = CARD_TEXT[lang] || CARD_TEXT.en
-  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = _makeCanvasHelpers(ctx, SC, lang)
-  const SW = W/54, SH = H/85.6, FS = Math.sqrt(SW*SH), RS = Math.min(SW, SH)
-  const HEADER_H = 20*SH, BAR_H = 1.8*SH, FOOTER_H = 8.5*SH
-  const BODY_Y   = yMm+HEADER_H+BAR_H
-  const FOOTER_Y = yMm+H-FOOTER_H
-  const CX = xMm+W/2
-
-  sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,2.5*RS,'FD')
-  sf(10,36,80); rr(xMm,yMm,W,HEADER_H,2.5*RS,'F'); fr(xMm,yMm+HEADER_H-3*SH,W,3*SH)
-  // Header watermark circles
-  ctx.save(); ctx.globalAlpha=0.35; sf(16,44,90); arc(xMm+W-4*SW,yMm-6*SH,16*RS,'F')
-  sf(13,38,78); arc(xMm+W+2*SW,yMm+5*SH,11*RS,'F'); ctx.globalAlpha=1; ctx.restore()
-  if (logoImg) ctx.drawImage(logoImg,p(CX-5*SW),p(yMm+2*SH),p(10*SW),p(10*SH))
-  fnt(7.5*FS,'bold'); txt(T.school,CX,yMm+14.5*SH,'center',[255,255,255])
-  fnt(5*FS,'normal'); txt(T.tagline,CX,yMm+18*SH,'center',[147,197,253])
-  ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
-
-  const CY_AV=BODY_Y+12*SH
-  // Avatar — drop shadow + white outer ring + blue inner ring
-  ctx.save(); ctx.globalAlpha=0.12; sf(59,130,246); arc(CX,CY_AV+0.4*RS,11.5*RS,'F'); ctx.restore()
-  sf(255,255,255); arc(CX,CY_AV,11.3*RS,'F')
-  sf(219,234,254); arc(CX,CY_AV,10*RS,'F')
-  if (photoImg) {
-    const r=p(10*RS), nw=photoImg.naturalWidth||100, nh=photoImg.naturalHeight||100
-    const scale=Math.max((r*2)/nw,(r*2)/nh), dw=nw*scale, dh=nh*scale
-    ctx.save(); ctx.beginPath(); ctx.arc(p(CX),p(CY_AV),r,0,Math.PI*2); ctx.clip()
-    ctx.drawImage(photoImg,p(CX)-dw/2,p(CY_AV)-dh/2,dw,dh)
-    ctx.restore()
-  } else {
-    sf(239,246,255); ss(191,219,254); slw(0.3); arc(CX,CY_AV,8.4*RS,'FD')
-    const ini=getInitials(student)
-    fnt((ini.length>2?7.5:9.5)*FS,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
-    ctx.fillText(ini,p(CX),p(CY_AV)); ctx.textBaseline='alphabetic'
-  }
-  ss(96,165,250); slw(0.4); arc(CX,CY_AV,10*RS,'S')
-  ss(147,197,253); slw(0.3); arc(CX,CY_AV,11.3*RS,'S')
-  if (student.gender) {
-    const m=student.gender.toLowerCase().startsWith('m')
-    sf(m?219:252,m?234:231,m?254:243)
-    ctx.beginPath(); ctx.roundRect(p(CX-6.5*SW),p(CY_AV+11.5*RS),p(13*SW),p(4*SH),p(2*SH)); ctx.fill()
-    fnt(4.8*FS,'bold'); txt(m ? T.male : T.female,CX,CY_AV+14.5*RS,'center',[m?109:190,m?40:24,m?217:93])
-  }
-
-  const nameY=CY_AV+19*SH
-  fnt(8*FS,'bold'); sf(15,23,42); ctx.textAlign='center'
-  ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-8*SW)),p(CX),p(nameY))
-  // Name underline accent
-  sf(59,130,246); ctx.beginPath(); ctx.roundRect(p(CX-4*SW),p(nameY+1.5*SH),p(8*SW),p(0.6*SH),p(0.3*SH)); ctx.fill()
-  const divY=nameY+4*SH
-  // Faded divider
-  const dg=ctx.createLinearGradient(p(xMm+4*SW),0,p(xMm+W-4*SW),0)
-  dg.addColorStop(0,'transparent'); dg.addColorStop(0.2,'#cbd5e1'); dg.addColorStop(0.8,'#cbd5e1'); dg.addColorStop(1,'transparent')
-  ctx.strokeStyle=dg; ctx.lineWidth=p(0.25); ctx.beginPath(); ctx.moveTo(p(xMm+4*SW),p(divY)); ctx.lineTo(p(xMm+W-4*SW),p(divY)); ctx.stroke()
-
-  const IY0=divY+3.5*SH, C1=xMm+5*SW, C2=xMm+W/2+1.5*SW
-  fnt(4.5*FS,'normal'); sf(148,163,184); ctx.textAlign='left'
-  ctx.fillText(T.studentId,p(C1),p(IY0)); if(classLevel) ctx.fillText(T.grade,p(C2),p(IY0))
-  fnt(6.5*FS,'bold'); sf(30,64,175)
-  ctx.fillText(String(student.studentCode||student.id||'—'),p(C1),p(IY0+3.5*SH))
-  if(classLevel) ctx.fillText(classLevel,p(C2),p(IY0+3.5*SH))
-  const R2Y=IY0+8.5*SH
-  fnt(4.5*FS,'normal'); sf(148,163,184)
-  ctx.fillText(T.class,p(C1),p(R2Y)); if(student.dateOfBirth) ctx.fillText(T.dob,p(C2),p(R2Y))
-  fnt(6.5*FS,'bold'); sf(30,64,175)
-  ctx.fillText(className||'—',p(C1),p(R2Y+3.5*SH))
-  if(student.dateOfBirth) ctx.fillText(student.dateOfBirth,p(C2),p(R2Y+3.5*SH))
-
-  // Footer gradient
-  const fGrad2=ctx.createLinearGradient(p(xMm),p(FOOTER_Y),p(xMm+W),p(FOOTER_Y+FOOTER_H))
-  fGrad2.addColorStop(0,'#eff6ff'); fGrad2.addColorStop(1,'#dbeafe')
-  ctx.fillStyle=fGrad2; ctx.fillRect(p(xMm),p(FOOTER_Y),p(W),p(FOOTER_H))
-  sf(255,255,255); fr(xMm,FOOTER_Y,2.5*SW,2.5*SH); fr(xMm+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH)
-  ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
-  fnt(5.5*FS,'bold'); txt(`${T.academicYear}  ${academicYear}`,CX,FOOTER_Y+5.2*SH,'center',[30,64,175])
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Data loaders
-// ─────────────────────────────────────────────────────────────────────────────
 async function loadClasses() {
   loadingClasses.value = true
   try {
@@ -609,163 +225,136 @@ async function loadStudents() {
 // ─────────────────────────────────────────────────────────────────────────────
 //  Generate
 // ─────────────────────────────────────────────────────────────────────────────
-async function generateFile() {
+async function generateFilePreview() {
   if (!selectedStudentIds.value.length) return
   generating.value = true
-  const blobUrls = []   // declared here so finally can revoke them
+  const blobUrls = []
   try {
-    const chosen     = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
-    const classObj   = classOptions.value.find((c) => c.value === selectedClassId.value)
-    const className  = classObj?.label || ''
+    const chosen = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
+    const classObj = classOptions.value.find((c) => c.value === selectedClassId.value)
+    const className = classObj?.label || ''
     const classLevel = classObj?.level || ''
-    const year       = getAcademicYear()
-    const safeName   = className.replace(/[^a-z0-9]/gi,'-').toLowerCase() || 'students'
-    const fmt        = selectedFormat.value
-    const batchFmt    = chosen.length > 1 ? 'pdf' : fmt
-    const orient     = selectedOrientation.value
-    const lang       = selectedLang.value
-
+    const year = getAcademicYear()
+    const safeName = className.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'students'
+    const fmt = selectedFormat.value
+    const batchFmt = chosen.length > 1 ? 'pdf' : fmt
+    const orient = selectedOrientation.value
+    const lang = selectedLang.value
     const { W: CARD_W, H: CARD_H } =
       (CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1])[orient]
+    const exportWidthPx = Math.round(CARD_W * (300 / 25.4))
+    const gapMm = Math.max(0, Number(selectedGapMm.value) || 0)
+    const gapPx = Math.round(gapMm * (300 / 25.4))
 
-    // Diagnostic: log raw API data for the first student so the developer
-    // can check which field name the backend uses for the photo.
-    if (chosen.length > 0) {
-      console.groupCollapsed('[ID Card] Photo diagnostic')
-      console.log('First student raw API payload:', chosen[0].raw)
-      console.log('Resolved avatarUrl:', chosen[0].avatarUrl || '(empty — no photo field found)')
-      console.groupEnd()
-    }
-
-    // Pre-load student photos via fetch+blob so canvas is never tainted.
     const photoImgCache = new Map()
     await Promise.allSettled(chosen.map(async (s) => {
-      if (!s.avatarUrl) {
-        console.warn(`[ID Card] No avatarUrl for "${s.fullName || s.id}" — showing initials`)
-        return
-      }
+      if (!s.avatarUrl) return
       try {
         const { img, objectUrl } = await loadStudentPhotoAsImg(s.avatarUrl)
         photoImgCache.set(s.id, img)
         blobUrls.push(objectUrl)
-        console.log(`[ID Card] Photo loaded for "${s.fullName || s.id}"`)
-      } catch (e) {
-        console.warn(`[ID Card] Photo failed for "${s.fullName || s.id}" (${s.avatarUrl}):`, e.message)
+      } catch (error) {
+        console.warn(`[ID Card] Photo failed for "${s.fullName || s.id}" (${s.avatarUrl}):`, error)
       }
     }))
+
+    const photoDataUrlCache = new Map()
+    for (const [studentId, photoImg] of photoImgCache.entries()) {
+      try {
+        photoDataUrlCache.set(studentId, imgToDataUrl(photoImg))
+      } catch (error) {
+        console.warn(`[ID Card] Photo data URL failed for "${studentId}":`, error)
+      }
+    }
 
     const qrDataCache = new Map()
     await Promise.allSettled(chosen.map(async (s) => {
       try {
-        const qrDataUrl = await buildBackQrDataUrl(s)
-        qrDataCache.set(s.id, qrDataUrl)
+        qrDataCache.set(s.id, await buildBackQrDataUrl(s))
       } catch (error) {
         console.warn(`[ID Card] QR generation failed for "${s.fullName || s.id}":`, error)
       }
     }))
 
-    const qrImgCache = new Map()
-    await Promise.allSettled(chosen.map(async (s) => {
-      const qrDataUrl = qrDataCache.get(s.id)
-      if (!qrDataUrl) return
-      try {
-        const qrImg = await loadImg(qrDataUrl)
-        qrImgCache.set(s.id, qrImg)
-      } catch (error) {
-        console.warn(`[ID Card] QR image load failed for "${s.fullName || s.id}":`, error)
-      }
-    }))
+    const captureFront = (student) => renderCardComponentToCanvas(
+      IdCardPreview,
+      {
+        student: { ...student, avatarUrl: '' },
+        className,
+        classLevel,
+        academicYear: year,
+        orientation: orient,
+        lang,
+        width: exportWidthPx,
+        photoSrc: photoDataUrlCache.get(student.id) || '',
+      },
+      exportWidthPx,
+    )
 
-    // ── PDF: one card per page, page = card dimensions ────────────────
+    const captureBack = (student) => renderCardComponentToCanvas(
+      IdCardBackPreview,
+      {
+        student: { ...student, avatarUrl: '' },
+        className,
+        classLevel,
+        academicYear: year,
+        orientation: orient,
+        lang,
+        width: exportWidthPx,
+        qrDataUrl: qrDataCache.get(student.id) || '',
+      },
+      exportWidthPx,
+    )
+
     if (batchFmt === 'pdf') {
       const { jsPDF } = await import('jspdf')
       const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [CARD_W, CARD_H] })
+      let pageIndex = 0
 
-      if (lang === 'kh') {
-        // jsPDF has no Khmer font — render each card via canvas then embed as image
-        const SC2 = 300 / 25.4
-        let logoImg2 = null
-        try {
-          logoImg2 = await loadImg(logoUrl)
-        } catch (error) {
-          console.warn('[ID Card] Logo load failed for Khmer PDF export:', error)
-        }
-        let pageIndex = 0
-        for (const student of chosen) {
-          if (pageIndex > 0) doc.addPage([CARD_W, CARD_H])
-          const front = document.createElement('canvas')
-          front.width = Math.round(CARD_W * SC2); front.height = Math.round(CARD_H * SC2)
-          drawCardCanvas(front.getContext('2d'), 0, 0, student, className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, photoImgCache.get(student.id) || null, 'kh')
-          doc.addImage(front.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
-          pageIndex += 1
+      for (const student of chosen) {
+        if (pageIndex > 0) doc.addPage([CARD_W, CARD_H])
+        const frontCanvas = await captureFront(student)
+        doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, CARD_W, CARD_H)
+        pageIndex += 1
 
-          doc.addPage([CARD_W, CARD_H])
-          const back = document.createElement('canvas')
-          back.width = Math.round(CARD_W * SC2); back.height = Math.round(CARD_H * SC2)
-          drawCardCanvasBack(back.getContext('2d'), 0, 0, student, className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, 'kh', qrImgCache.get(student.id) || null)
-          doc.addImage(back.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
-          pageIndex += 1
-        }
-      } else {
-        let logoData = null
-        try {
-          logoData = imgToDataUrl(await loadImg(logoUrl))
-        } catch (error) {
-          console.warn('[ID Card] Logo load failed for PDF export:', error)
-        }
-        let pageIndex = 0
-        for (const student of chosen) {
-          if (pageIndex > 0) doc.addPage([CARD_W, CARD_H])
-          const photoImg  = photoImgCache.get(student.id) || null
-          const photoData = photoImg ? circularCrop(photoImg) : null
-          drawCardPdf(doc, 0, 0, student, className, classLevel, year, logoData, orient, CARD_W, CARD_H, photoData, 'en')
-          pageIndex += 1
-
-          doc.addPage([CARD_W, CARD_H])
-          drawCardPdfBack(doc, 0, 0, student, className, classLevel, year, logoData, orient, CARD_W, CARD_H, 'en', qrDataCache.get(student.id) || '')
-          pageIndex += 1
-        }
+        doc.addPage([CARD_W, CARD_H])
+        const backCanvas = await captureBack(student)
+        doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, CARD_W, CARD_H)
+        pageIndex += 1
       }
+
       doc.save(`id-cards-${safeName}-${year}.pdf`)
       return
     }
 
-    // ── PNG / JPG: card-width image, cards stacked vertically ─────────
-    if (chosen.length > 1) {
-      console.warn('[ID Card] Batch export forced to PDF; PNG/JPG is reserved for single-card exports.')
+    const renderedCards = []
+    for (const student of chosen) {
+      renderedCards.push(await captureFront(student))
+      renderedCards.push(await captureBack(student))
     }
-    const SC      = 300 / 25.4   // 300 DPI
-    const cardPxW = Math.round(CARD_W * SC)
-    const cardPxH = Math.round(CARD_H * SC)
-    const gapMm   = Math.max(0, Number(selectedGapMm.value) || 0)
-    const gapPx   = Math.round(gapMm * SC)
-    const canvas  = document.createElement('canvas')
-    canvas.width  = cardPxW
-    canvas.height = cardPxH * (chosen.length * 2) + gapPx * Math.max(chosen.length * 2 - 1, 0)
+
+    const canvas = document.createElement('canvas')
+    canvas.width = renderedCards[0]?.width || exportWidthPx
+    canvas.height = renderedCards.reduce((sum, card, index) => sum + card.height + (index > 0 ? gapPx : 0), 0)
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-    let logoImg = null
-    try {
-      logoImg = await loadImg(logoUrl)
-    } catch (error) {
-      console.warn('[ID Card] Logo load failed for image export:', error)
-    }
-    let index = 0
-    for (const student of chosen) {
-      const frontY = index * (cardPxH + gapPx)
-      drawCardCanvas(ctx, 0, frontY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(student.id) || null, lang)
-      index += 1
-      const backY = index * (cardPxH + gapPx)
-      drawCardCanvasBack(ctx, 0, backY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, lang, qrImgCache.get(student.id) || null)
-      index += 1
-    }
-    const mime    = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
+    let y = 0
+    renderedCards.forEach((card, index) => {
+      ctx.drawImage(card, 0, y)
+      y += card.height
+      if (index < renderedCards.length - 1) y += gapPx
+    })
+
+    const mime = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
     const dataUrl = fmt === 'jpg' ? canvas.toDataURL(mime, 0.92) : canvas.toDataURL(mime)
     const a = document.createElement('a')
-    a.href = dataUrl; a.download = `id-cards-${safeName}-${year}.${fmt}`; a.click()
-  } catch (e) {
-    console.error('Generation failed', e); alert('Generation failed: '+(e?.message||e))
+    a.href = dataUrl
+    a.download = `id-cards-${safeName}-${year}.${fmt}`
+    a.click()
+  } catch (error) {
+    console.error('Preview generation failed', error)
+    alert('Generation failed: ' + (error?.message || error))
   } finally {
     blobUrls.forEach((u) => URL.revokeObjectURL(u))
     generating.value = false
@@ -942,7 +531,7 @@ onMounted(loadClasses)
           <Button
             type="button" variant="primary" size="md" rounded="xl"
             :loading="generating" :disabled="generating || !selectedStudentIds.length"
-            @click="generateFile"
+            @click="generateFilePreview"
           >
             <i :class="['pi mr-1.5', selectedFormat==='pdf' ? 'pi-file-pdf' : 'pi-image']" />
             {{ generating ? 'Generating…' : `Generate ${selectedFormat.toUpperCase()}` }}
@@ -1041,3 +630,5 @@ onMounted(loadClasses)
     </section>
   </MainLayout>
 </template>
+
+
