@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import QRCode from 'qrcode'
 import logoSrc from '@/assets/images/logo.jpg'
 
 const props = defineProps({
@@ -77,27 +78,21 @@ const studentName = computed(() => props.student.fullName || props.student.name 
 const studentCode = computed(() => props.student.studentCode || props.student.id || '—')
 const guardianInitials = computed(() => getInitials(guardianName.value === '—' ? '' : guardianName.value))
 const codeSeed = computed(() => `${studentCode.value}-${guardianPhone.value}`)
-
-function hashString(value) {
-  let hash = 0
-  const text = String(value || '')
-  for (let i = 0; i < text.length; i++) {
-    hash = ((hash << 5) - hash) + text.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash)
-}
-
-const codeBits = computed(() => {
-  const hash = hashString(codeSeed.value)
-  const bits = []
-  for (let i = 0; i < 25; i++) {
-    bits.push(((hash >> (i % 16)) & 1) || ((i + hash) % 3 === 0))
-  }
-  return bits
-})
-
+const qrDataUrl = ref('')
 const codeTitle = computed(() => `${T.value.studentId} / ${T.value.guardianPhone}`)
+
+watch(codeSeed, async (seed) => {
+  try {
+    qrDataUrl.value = await QRCode.toDataURL(seed || 'HFCCF-PRESCHOOL', {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      scale: 6,
+      color: { dark: '#1e40af', light: '#ffffff' },
+    })
+  } catch {
+    qrDataUrl.value = ''
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -181,25 +176,19 @@ const codeTitle = computed(() => `${T.value.studentId} / ${T.value.guardianPhone
             </div>
           </div>
           <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
-            <div class="grid h-full w-full grid-cols-5 gap-[1px]">
-              <span
-                v-for="(bit, index) in codeBits"
-                :key="index"
-                class="block rounded-[1px]"
-                :class="bit ? 'bg-blue-800' : 'bg-transparent'"
-              />
-            </div>
+            <img
+              :src="qrDataUrl"
+              :alt="codeTitle"
+              class="h-full w-full rounded-[4px] bg-white object-contain"
+            >
             <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
           </div>
           <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
-            <div class="grid h-full w-full grid-cols-5 gap-[1px]">
-              <span
-                v-for="(bit, index) in codeBits"
-                :key="index"
-                class="block rounded-[1px]"
-                :class="bit ? 'bg-blue-800' : 'bg-transparent'"
-              />
-            </div>
+            <img
+              :src="qrDataUrl"
+              :alt="codeTitle"
+              class="h-full w-full rounded-[4px] bg-white object-contain"
+            >
             <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
           </div>
         </div>

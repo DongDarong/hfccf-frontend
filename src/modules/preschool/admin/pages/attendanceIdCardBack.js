@@ -1,3 +1,5 @@
+import QRCode from 'qrcode'
+
 const BACK_TEXT = {
   en: {
     badge: 'GUARDIAN CARD',
@@ -25,51 +27,25 @@ const BACK_TEXT = {
 
 const ACCENT = [[34,197,94],[249,115,22],[239,68,68],[59,130,246]]
 
-function hashString(value) {
-  let hash = 0
-  const text = String(value || '')
-  for (let i = 0; i < text.length; i++) {
-    hash = ((hash << 5) - hash) + text.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash)
+function buildGuardianQrPayload(student) {
+  const studentCode = student?.studentCode || student?.id || ''
+  const guardianPhone = student?.guardianPhone || student?.guardian_phone || ''
+  const guardianName = student?.guardianName || student?.guardian_name || ''
+  return [
+    'HFCCF-PRESCHOOL',
+    `student:${studentCode}`,
+    `guardian:${guardianName}`,
+    `phone:${guardianPhone}`,
+  ].join('|')
 }
 
-function drawCodeBlockPdf(doc, x, y, seed, size, cell, color = [30,64,175]) {
-  const hash = hashString(seed)
-  doc.setDrawColor(...color)
-  doc.setFillColor(255,255,255)
-  doc.roundedRect(x, y, size, size, 1.8, 1.8, 'FD')
-  const grid = 5
-  const step = size / grid
-  for (let row = 0; row < grid; row++) {
-    for (let col = 0; col < grid; col++) {
-      const bit = (hash >> ((row * grid + col) % 16)) & 1
-      const alt = ((hash + row + col) % 3) === 0
-      if (bit || alt) {
-        doc.setFillColor(...color)
-        doc.rect(x + col * step + cell * 0.18, y + row * step + cell * 0.18, step - cell * 0.36, step - cell * 0.36, 'F')
-      }
-    }
-  }
-}
-
-function drawCodeBlockCanvas(ctx, helpers, xMm, yMm, seed, sizeMm, cellMm, color = [30,64,175]) {
-  const { sf, ss, slw, rr, fr } = helpers
-  const hash = hashString(seed)
-  sf(255,255,255); ss(...color); slw(0.22); rr(xMm, yMm, sizeMm, sizeMm, 1.8, 'FD')
-  const grid = 5
-  const step = sizeMm / grid
-  for (let row = 0; row < grid; row++) {
-    for (let col = 0; col < grid; col++) {
-      const bit = (hash >> ((row * grid + col) % 16)) & 1
-      const alt = ((hash + row + col) % 3) === 0
-      if (bit || alt) {
-        sf(...color)
-        fr(xMm + col * step + cellMm * 0.18, yMm + row * step + cellMm * 0.18, step - cellMm * 0.36, step - cellMm * 0.36)
-      }
-    }
-  }
+export async function buildBackQrDataUrl(student) {
+  return QRCode.toDataURL(buildGuardianQrPayload(student), {
+    errorCorrectionLevel: 'M',
+    margin: 1,
+    scale: 6,
+    color: { dark: '#1e40af', light: '#ffffff' },
+  })
 }
 
 function makeCanvasHelpers(ctx, SC, lang = 'en') {
@@ -133,6 +109,20 @@ function getInitials(name) {
 function getGuardianInitials(student) {
   const name = getGuardianName(student)
   return getInitials(name === '—' ? '' : name)
+}
+
+function drawQrPdf(doc, x, y, size, label, qrDataUrl) {
+  doc.setFillColor(255,255,255)
+  doc.setDrawColor(191,219,254)
+  doc.setLineWidth(0.3)
+  doc.roundedRect(x, y, size, size, 1.5, 1.5, 'FD')
+  if (qrDataUrl) {
+    doc.addImage(qrDataUrl, 'PNG', x + 1.3, y + 1.3, size - 2.6, size - 2.6)
+  }
+  doc.setTextColor(30,64,175)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(4.2)
+  doc.text(label, x + size / 2, y + size + 2.6, { align: 'center' })
 }
 
 function drawShellPdf(doc, x, y, W, H, logoData, badgeText, headerText, subText, SW, SH, FS, RS) {
@@ -230,6 +220,15 @@ function drawShellCanvas(ctx, xMm, yMm, W, H, logoImg, badgeText, headerText, su
   return { HEADER_H, BAR_H }
 }
 
+function drawQrCanvas(ctx, helpers, xMm, yMm, sizeMm, label, qrImg) {
+  const { p, sf, ss, slw, rr, txt } = helpers
+  sf(255,255,255); ss(191,219,254); slw(0.3); rr(xMm, yMm, sizeMm, sizeMm, 1.5, 'FD')
+  if (qrImg) {
+    ctx.drawImage(qrImg, p(xMm + 1.3), p(yMm + 1.3), p(sizeMm - 2.6), p(sizeMm - 2.6))
+  }
+  txt(label, xMm + sizeMm / 2, yMm + sizeMm + 2.6, 'center', [30,64,175])
+}
+
 function drawFrontInfoPdf(doc, x, y, student, className, classLevel, W, H, SW, SH, FS, lang = 'en') {
   const T = getBackText(lang)
   const RX = x + 34 * SW
@@ -307,7 +306,7 @@ function drawFrontInfoCanvas(ctx, xMm, yMm, student, className, classLevel, W, H
   if (classLevel) txt(classLevel, xMm + 58 * SW, IY, 'left', [30,64,175])
 }
 
-export function drawCardPdfBack(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, lang = 'en') {
+export function drawCardPdfBack(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, lang = 'en', qrDataUrl = '') {
   const T = getBackText(lang)
   const headerSub = lang === 'kh' ? 'ព័ត៌មានអាណាព្យាបាល' : 'Guardian details on reverse'
   const SW = W / 85.6
@@ -348,10 +347,10 @@ export function drawCardPdfBack(doc, x, y, student, className, classLevel, acade
   doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x, y + H - 8.5 * SH, x + W, y + H - 8.5 * SH)
   doc.setTextColor(30,64,175); doc.setFontSize(5.7 * FS); doc.setFont('helvetica', 'bold')
   doc.text(T.contactNote, x + W / 2, y + H - 4.4 * SH, { align: 'center' })
-  drawCodeBlockPdf(doc, x + W - 24 * SW, y + HEADER_H + BAR_H + 18.5 * SH, `${student.studentCode || student.id || ''}-${student.guardianPhone || ''}`, 18 * SW, 3 * SW)
+  drawQrPdf(doc, x + W - 24 * SW, y + HEADER_H + BAR_H + 18.5 * SH, 18 * SW, 'QR / CONTACT', qrDataUrl)
 }
 
-export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation, W, H, lang = 'en') {
+export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel, academicYear, logoImg, SC, orientation, W, H, lang = 'en', qrDataUrl = '') {
   const T = getBackText(lang)
   const headerSub = lang === 'kh' ? 'ព័ត៌មានអាណាព្យាបាល' : 'Guardian details on reverse'
   const SW = W / (orientation === 'portrait' ? 54 : 85.6)
@@ -412,5 +411,5 @@ export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel
   sf(239,246,255); fr(xMm, yMm + H - 8.5 * SH, W, 8.5 * SH)
   ss(191,219,254); slw(0.25); ln(xMm, yMm + H - 8.5 * SH, xMm + W, yMm + H - 8.5 * SH)
   fnt(5.7 * FS, 'bold'); txt(T.contactNote, xMm + W / 2, yMm + H - 4.4 * SH, 'center', [30,64,175])
-  drawCodeBlockCanvas(ctx, helpers, xMm + W - 24 * SW, yMm + HEADER_H + BAR_H + 18.5 * SH, `${student.studentCode || student.id || ''}-${student.guardianPhone || ''}`, 18 * SW, 3 * SW)
+  drawQrCanvas(ctx, helpers, xMm + W - 24 * SW, yMm + HEADER_H + BAR_H + 18.5 * SH, 18 * SW, 'QR / CONTACT', qrDataUrl)
 }

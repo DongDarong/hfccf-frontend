@@ -11,6 +11,7 @@ import logoUrl from '@/assets/images/logo.jpg'
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
 import { drawCardPdfBack, drawCardCanvasBack } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
 import IdCardBackPreview from '@/modules/preschool/admin/components/IdCardBackPreview.vue'
+import { buildBackQrDataUrl } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
@@ -608,6 +609,28 @@ async function generateFile() {
       }
     }))
 
+    const qrDataCache = new Map()
+    await Promise.allSettled(chosen.map(async (s) => {
+      try {
+        const qrDataUrl = await buildBackQrDataUrl(s)
+        qrDataCache.set(s.id, qrDataUrl)
+      } catch (error) {
+        console.warn(`[ID Card] QR generation failed for "${s.fullName || s.id}":`, error)
+      }
+    }))
+
+    const qrImgCache = new Map()
+    await Promise.allSettled(chosen.map(async (s) => {
+      const qrDataUrl = qrDataCache.get(s.id)
+      if (!qrDataUrl) return
+      try {
+        const qrImg = await loadImg(qrDataUrl)
+        qrImgCache.set(s.id, qrImg)
+      } catch (error) {
+        console.warn(`[ID Card] QR image load failed for "${s.fullName || s.id}":`, error)
+      }
+    }))
+
     // ── PDF: one card per page, page = card dimensions ────────────────
     if (batchFmt === 'pdf') {
       const { jsPDF } = await import('jspdf')
@@ -634,7 +657,7 @@ async function generateFile() {
           doc.addPage([CARD_W, CARD_H])
           const back = document.createElement('canvas')
           back.width = Math.round(CARD_W * SC2); back.height = Math.round(CARD_H * SC2)
-          drawCardCanvasBack(back.getContext('2d'), 0, 0, student, className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, 'kh')
+          drawCardCanvasBack(back.getContext('2d'), 0, 0, student, className, classLevel, year, logoImg2, SC2, orient, CARD_W, CARD_H, 'kh', qrImgCache.get(student.id) || null)
           doc.addImage(back.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, CARD_W, CARD_H)
           pageIndex += 1
         }
@@ -654,7 +677,7 @@ async function generateFile() {
           pageIndex += 1
 
           doc.addPage([CARD_W, CARD_H])
-          drawCardPdfBack(doc, 0, 0, student, className, classLevel, year, logoData, orient, CARD_W, CARD_H, 'en')
+          drawCardPdfBack(doc, 0, 0, student, className, classLevel, year, logoData, orient, CARD_W, CARD_H, 'en', qrDataCache.get(student.id) || '')
           pageIndex += 1
         }
       }
@@ -689,7 +712,7 @@ async function generateFile() {
       drawCardCanvas(ctx, 0, frontY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, photoImgCache.get(student.id) || null, lang)
       index += 1
       const backY = index * (cardPxH + gapPx)
-      drawCardCanvasBack(ctx, 0, backY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, lang)
+      drawCardCanvasBack(ctx, 0, backY, student, className, classLevel, year, logoImg, SC, orient, CARD_W, CARD_H, lang, qrImgCache.get(student.id) || null)
       index += 1
     }
     const mime    = fmt === 'jpg' ? 'image/jpeg' : 'image/png'
