@@ -74,21 +74,26 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 <template>
   <!-- ── Card shell ─────────────────────────────────────────────────────────── -->
   <div
-    class="relative overflow-hidden rounded-[3px] border border-slate-200 bg-white shadow select-none shrink-0"
+    class="relative overflow-hidden rounded-[4px] border border-slate-200/80 bg-white shadow-lg select-none shrink-0"
     :style="cardPx"
   >
 
     <!-- ══ HEADER ════════════════════════════════════════════════════════════ -->
     <div
-      class="absolute inset-x-0 top-0 bg-[#0a2450] overflow-hidden"
-      :style="{ height: mm(HEADER_H) }"
+      class="absolute inset-x-0 top-0 overflow-hidden"
+      :style="{ height: mm(HEADER_H), background: 'linear-gradient(135deg, #102d60 0%, #0a2450 60%, #071a3a 100%)' }"
     >
+      <!-- Watermark circles -->
+      <div class="pointer-events-none absolute rounded-full border-[1.5px] border-white/[0.06]"
+        :style="{ width: mm(26), height: mm(26), right: mm(-9), top: mm(-12) }" />
+      <div class="pointer-events-none absolute rounded-full border border-white/[0.05]"
+        :style="{ width: mm(17), height: mm(17), right: mm(2), top: mm(-4) }" />
 
       <!-- Landscape header -->
       <div v-if="!isPortrait" class="flex items-center h-full" :style="{ gap: mm(1.5), padding: `0 ${mm(2)}` }">
         <img
           :src="logoSrc"
-          class="object-contain shrink-0"
+          class="object-contain shrink-0 drop-shadow-sm"
           :style="{ width: mm(10.5), height: mm(10.5) }"
         />
         <div class="flex-1 min-w-0 flex flex-col justify-center">
@@ -96,7 +101,7 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
           <span class="text-sky-300 truncate leading-none" :style="{ fontSize: pt(5.5) }">{{ T.tagline }}</span>
         </div>
         <div
-          class="border border-white/60 rounded font-bold text-white shrink-0"
+          class="border border-white/50 rounded bg-white/[0.07] font-bold text-white shrink-0"
           :style="{ fontSize: pt(4.8), padding: `${mmn(0.8)}px ${mmn(1.8)}px` }"
         >
           {{ T.badge }}
@@ -107,7 +112,7 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
       <div v-else class="flex flex-col items-center justify-center h-full" :style="{ gap: mm(1) }">
         <img
           :src="logoSrc"
-          class="object-contain shrink-0"
+          class="object-contain shrink-0 drop-shadow-sm"
           :style="{ width: mm(10), height: mm(10) }"
         />
         <span class="font-bold text-white leading-none" :style="{ fontSize: pt(7.5) }">{{ T.school }}</span>
@@ -138,8 +143,11 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
           <!-- Circle photo / initials -->
           <div
-            class="rounded-full overflow-hidden bg-blue-100 flex items-center justify-center ring-[1.5px] ring-blue-400"
-            :style="{ width: mm(AV_R * 2), height: mm(AV_R * 2) }"
+            class="rounded-full overflow-hidden bg-blue-100 flex items-center justify-center"
+            :style="{
+              width: mm(AV_R * 2), height: mm(AV_R * 2),
+              boxShadow: `0 0 0 ${mmn(0.7)}px #fff, 0 0 0 ${mmn(1.6)}px #60a5fa, 0 ${mmn(1)}px ${mmn(3)}px rgba(59,130,246,0.25)`,
+            }"
           >
             <img
               v-if="photoUrl"
@@ -156,10 +164,10 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
           <!-- Gender badge -->
           <div
             v-if="hasGender"
-            class="rounded font-bold leading-none"
+            class="rounded-full font-bold leading-none"
             :style="{
-              fontSize:   pt(5),
-              padding:    `${mmn(0.6)}px ${mmn(1.8)}px`,
+              fontSize:   pt(4.8),
+              padding:    `${mmn(0.7)}px ${mmn(2.2)}px`,
               marginTop:  mm(1.5),
               background: isMale ? '#ede9fe' : '#fce7f3',
               color:      isMale ? '#6d28d9' : '#be185d',
@@ -170,8 +178,12 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
         <!-- Vertical separator -->
         <div
-          class="border-l border-slate-200 shrink-0"
-          :style="{ margin: `${mmn(2)}px 0` }"
+          class="shrink-0"
+          :style="{
+            margin: `${mmn(2)}px 0`,
+            width: '1px',
+            background: 'linear-gradient(to bottom, transparent, #cbd5e1 20%, #cbd5e1 80%, transparent)',
+          }"
         />
 
         <!-- Info column -->
@@ -181,15 +193,17 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
         >
           <!-- Name -->
           <p
-            class="font-bold text-slate-900 truncate leading-tight"
-            :style="{ fontSize: pt(8.5), marginBottom: mm(1.5) }"
+            class="font-extrabold text-slate-900 truncate leading-tight"
+            :style="{ fontSize: pt(8.5), marginBottom: mm(0.8) }"
           >{{ name }}</p>
+          <!-- Name underline accent -->
+          <div
+            class="rounded-full"
+            :style="{ width: mm(8), height: mm(0.7), marginBottom: mm(1.5), background: 'linear-gradient(to right, #3b82f6, #93c5fd)' }"
+          />
 
-          <!-- Divider -->
-          <div class="border-t border-slate-200" :style="{ marginBottom: mm(2) }" />
-
-          <!-- STUDENT ID -->
-          <div :style="{ marginBottom: mm(2) }">
+          <!-- STUDENT ID with accent border -->
+          <div :style="{ marginBottom: mm(2), borderLeft: `${mmn(0.8)}px solid #93c5fd`, paddingLeft: mm(1.5) }">
             <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.studentId }}</p>
             <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ sid }}</p>
           </div>
@@ -218,8 +232,11 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
           <!-- Avatar circle -->
           <div
-            class="rounded-full overflow-hidden bg-blue-100 flex items-center justify-center ring-[1.5px] ring-blue-400 shrink-0"
-            :style="{ width: mm(AV_R * 2), height: mm(AV_R * 2) }"
+            class="rounded-full overflow-hidden bg-blue-100 flex items-center justify-center shrink-0"
+            :style="{
+              width: mm(AV_R * 2), height: mm(AV_R * 2),
+              boxShadow: `0 0 0 ${mmn(0.7)}px #fff, 0 0 0 ${mmn(1.6)}px #60a5fa, 0 ${mmn(1)}px ${mmn(3)}px rgba(59,130,246,0.25)`,
+            }"
           >
             <img v-if="photoUrl" :src="photoUrl" class="w-full h-full object-cover" />
             <span
@@ -232,10 +249,10 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
           <!-- Gender badge -->
           <div
             v-if="hasGender"
-            class="rounded font-bold leading-none shrink-0"
+            class="rounded-full font-bold leading-none shrink-0"
             :style="{
-              fontSize:   pt(5),
-              padding:    `${mmn(0.5)}px ${mmn(2.5)}px`,
+              fontSize:   pt(4.8),
+              padding:    `${mmn(0.6)}px ${mmn(2.5)}px`,
               marginTop:  mm(1.5),
               background: isMale ? '#ede9fe' : '#fce7f3',
               color:      isMale ? '#6d28d9' : '#be185d',
@@ -244,14 +261,23 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
           <!-- Name -->
           <p
-            class="font-bold text-slate-900 truncate max-w-full leading-tight"
+            class="font-extrabold text-slate-900 truncate max-w-full leading-tight"
             :style="{ fontSize: pt(8), marginTop: mm(2), paddingInline: mm(3) }"
           >{{ name }}</p>
+          <!-- Name underline accent -->
+          <div
+            class="rounded-full self-center"
+            :style="{ width: mm(8), height: mm(0.6), marginTop: mm(0.8), marginBottom: mm(0.5), background: 'linear-gradient(to right, #3b82f6, #93c5fd)' }"
+          />
 
           <!-- Divider -->
           <div
-            class="border-t border-slate-200 self-stretch"
-            :style="{ margin: `${mmn(2)}px ${mmn(4)}px` }"
+            class="self-stretch"
+            :style="{
+              height: '1px',
+              margin: `${mmn(1.5)}px ${mmn(4)}px`,
+              background: 'linear-gradient(to right, transparent, #cbd5e1 30%, #cbd5e1 70%, transparent)',
+            }"
           />
 
           <!-- 2×2 info grid -->
@@ -284,8 +310,8 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
     <!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
     <div
-      class="absolute inset-x-0 bottom-0 flex items-center justify-center bg-blue-50 border-t border-blue-200"
-      :style="{ height: mm(FOOTER_H) }"
+      class="absolute inset-x-0 bottom-0 flex items-center justify-center border-t border-blue-200/70"
+      :style="{ height: mm(FOOTER_H), background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' }"
     >
       <span class="font-bold text-blue-800" :style="{ fontSize: pt(isPortrait ? 5.5 : 6) }">
         {{ T.academicYear }}&nbsp;&nbsp;{{ academicYear }}

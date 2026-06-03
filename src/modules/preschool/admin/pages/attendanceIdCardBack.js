@@ -133,6 +133,9 @@ function drawShellPdf(doc, x, y, W, H, logoData, badgeText, headerText, subText,
   doc.setFillColor(10,36,80)
   doc.roundedRect(x, y, W, HEADER_H, 2.5 * RS, 2.5 * RS, 'F')
   doc.rect(x, y + HEADER_H - 3 * SH, W, 3 * SH, 'F')
+  // Header watermark circles
+  doc.setFillColor(16,44,90); doc.circle(x + W - 6 * SW, y - 3 * SH, 15 * RS, 'F')
+  doc.setFillColor(13,38,78); doc.circle(x + W + 2 * SW, y + 4 * SH, 10 * RS, 'F')
   if (logoData) doc.addImage(logoData, 'JPEG', x + 2.5 * SW, y + 2 * SH, 10.5 * SW, 10.5 * SH)
   doc.setTextColor(255,255,255); doc.setFontSize(7.5 * FS); doc.setFont('helvetica', 'bold')
   doc.text(headerText, x + 15 * SW, y + 6.5 * SH)
@@ -206,15 +209,18 @@ function drawBackPatternCanvas(ctx, helpers, xMm, yMm, W, H, HEADER_H, BAR_H, FO
 }
 
 function drawShellCanvas(ctx, xMm, yMm, W, H, logoImg, badgeText, headerText, subText, SC, SW, SH, FS, RS, helpers) {
-  const { p, sf, ss, slw, fnt, fr, txt, rr } = helpers
+  const { p, sf, ss, slw, fnt, fr, txt, rr, arc } = helpers
   const HEADER_H = 14.5 * SH
   const BAR_H = 1.8 * SH
   sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm, yMm, W, H, 2.5 * RS, 'FD')
   sf(10,36,80); rr(xMm, yMm, W, HEADER_H, 2.5 * RS, 'F'); fr(xMm, yMm + HEADER_H - 3 * SH, W, 3 * SH)
+  // Header watermark circles
+  ctx.save(); ctx.globalAlpha = 0.35; sf(16,44,90); arc(xMm + W - 6 * SW, yMm - 3 * SH, 15 * RS, 'F')
+  sf(13,38,78); arc(xMm + W + 2 * SW, yMm + 4 * SH, 10 * RS, 'F'); ctx.globalAlpha = 1; ctx.restore()
   if (logoImg) ctx.drawImage(logoImg, p(xMm + 2.5 * SW), p(yMm + 2 * SH), p(10.5 * SW), p(10.5 * SH))
   fnt(7.5 * FS, 'bold'); txt(headerText, xMm + 15 * SW, yMm + 6.5 * SH, 'left', [255,255,255])
   fnt(5.5 * FS, 'normal'); txt(subText, xMm + 15 * SW, yMm + 10.5 * SH, 'left', [147,197,253])
-  ss(255,255,255,0.8); slw(0.3); ctx.strokeRect(p(xMm + W - 26 * SW), p(yMm + 3.5 * SH), p(24 * SW), p(7 * SH))
+  ss(255,255,255,0.6); slw(0.3); ctx.strokeRect(p(xMm + W - 26 * SW), p(yMm + 3.5 * SH), p(24 * SW), p(7 * SH))
   fnt(4.8 * FS, 'bold'); txt(badgeText, xMm + W - 14 * SW, yMm + 8 * SH, 'center', [255,255,255])
   ACCENT.forEach(([r,g,b], i) => { sf(r,g,b); fr(xMm + i * (W / 4), yMm + HEADER_H, W / 4, BAR_H) })
   return { HEADER_H, BAR_H }

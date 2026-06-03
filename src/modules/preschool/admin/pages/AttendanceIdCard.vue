@@ -243,6 +243,9 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
   doc.setFillColor(10,36,80)
   doc.roundedRect(x, y, W, HEADER_H, 2.5*RS, 2.5*RS, 'F')
   doc.rect(x, y+HEADER_H-3*SH, W, 3*SH, 'F')
+  // Header watermark circles
+  doc.setFillColor(16,44,90); doc.circle(x+W-6*SW, y-3*SH, 15*RS, 'F')
+  doc.setFillColor(13,38,78); doc.circle(x+W+2*SW, y+4*SH, 10*RS, 'F')
   if (logoData) doc.addImage(logoData, 'JPEG', x+2.5*SW, y+2*SH, 10.5*SW, 10.5*SH)
   doc.setTextColor(255,255,255); doc.setFontSize(7.5*FS); doc.setFont('helvetica','bold')
   doc.text(T.school, x+15*SW, y+6.5*SH)
@@ -255,9 +258,10 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
 
   ACCENT.forEach(([r,g,b],i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
 
-  // Avatar
-  doc.setFillColor(219,234,254); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
-  doc.circle(CX, CY, 11.5*RS, 'F')
+  // Avatar — white outer ring + blue inner ring
+  doc.setFillColor(219,234,254); doc.circle(CX, CY, 13.2*RS, 'F')
+  doc.setFillColor(255,255,255); doc.circle(CX, CY, 13*RS, 'F')
+  doc.setFillColor(219,234,254); doc.circle(CX, CY, 11.5*RS, 'F')
   if (photoData) {
     const r = 11.5*RS
     doc.addImage(photoData, 'JPEG', CX-r, CY-r, r*2, r*2)
@@ -268,27 +272,33 @@ function _pdfLandscape(doc, x, y, student, className, classLevel, academicYear, 
     doc.setTextColor(30,64,175); doc.setFontSize((ini.length>2?8.5:11)*FS); doc.setFont('helvetica','bold')
     doc.text(ini, CX, CY+(ini.length>2?3:4)*RS, { align: 'center' })
   }
-  doc.setDrawColor(59,130,246); doc.setLineWidth(0.6); doc.circle(CX, CY, 11.5*RS, 'S')
+  doc.setDrawColor(96,165,250); doc.setLineWidth(0.4); doc.circle(CX, CY, 11.5*RS, 'S')
+  doc.setDrawColor(147,197,253); doc.setLineWidth(0.3); doc.circle(CX, CY, 13*RS, 'S')
   if (student.gender) {
     const m = student.gender.toLowerCase().startsWith('m')
     doc.setFillColor(m?219:252, m?234:231, m?254:243)
-    doc.roundedRect(CX-6*SW, CY+13*RS, 12*SW, 4.5*SH, RS, RS, 'F')
-    doc.setFontSize(5*FS); doc.setFont('helvetica','bold')
+    doc.roundedRect(CX-6*SW, CY+13*RS, 12*SW, 4.2*SH, 2.1*SH, 2.1*SH, 'F')
+    doc.setFontSize(4.8*FS); doc.setFont('helvetica','bold')
     doc.setTextColor(m?109:190, m?40:24, m?217:93)
-    doc.text(m ? T.male : T.female, CX, CY+16.4*RS, { align: 'center' })
+    doc.text(m ? T.male : T.female, CX, CY+16.2*RS, { align: 'center' })
   }
 
+  // Separator — fade via three segments
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25)
   doc.line(x+29.5*SW, BODY_Y+2*SH, x+29.5*SW, FOOTER_Y-SH)
 
   const IX = x+32*SW; let IY = BODY_Y+5*SH
   doc.setFontSize(8.5*FS); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
-  doc.text(doc.splitTextToSize(student.fullName||student.name||'—', W-35*SW)[0], IX, IY); IY += 5*SH
+  doc.text(doc.splitTextToSize(student.fullName||student.name||'—', W-35*SW)[0], IX, IY); IY += 2.5*SH
+  // Name underline accent
+  doc.setFillColor(59,130,246); doc.roundedRect(IX, IY, 8*SW, 0.7*SH, 0.35*SH, 0.35*SH, 'F'); IY += 3*SH
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(IX, IY, x+W-3*SW, IY); IY += 3.5*SH
+  // Student ID with left accent bar
+  doc.setFillColor(147,197,253); doc.rect(IX, IY-3*SH, 0.8*SW, 6.5*SH, 'F')
   doc.setFontSize(4.8*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
-  doc.text(T.studentId, IX, IY); IY += 3.5*SH
+  doc.text(T.studentId, IX+1.8*SW, IY); IY += 3.5*SH
   doc.setFontSize(7*FS); doc.setFont('helvetica','bold'); doc.setTextColor(30,64,175)
-  doc.text(String(student.studentCode||student.id||'—'), IX, IY); IY += 5*SH
+  doc.text(String(student.studentCode||student.id||'—'), IX+1.8*SW, IY); IY += 5*SH
   const GX = x+58*SW
   doc.setFontSize(4.8*FS); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184)
   doc.text(T.class, IX, IY); if (classLevel) doc.text(T.grade, GX, IY); IY += 3.5*SH
@@ -315,6 +325,9 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
   doc.setFillColor(10,36,80)
   doc.roundedRect(x, y, W, HEADER_H, 2.5*RS, 2.5*RS, 'F')
   doc.rect(x, y+HEADER_H-3*SH, W, 3*SH, 'F')
+  // Header watermark circles
+  doc.setFillColor(16,44,90); doc.circle(x+W-4*SW, y-6*SH, 16*RS, 'F')
+  doc.setFillColor(13,38,78); doc.circle(x+W+2*SW, y+5*SH, 11*RS, 'F')
   if (logoData) doc.addImage(logoData, 'JPEG', CX-5*SW, y+2*SH, 10*SW, 10*SH)
   doc.setTextColor(255,255,255); doc.setFontSize(7.5*FS); doc.setFont('helvetica','bold')
   doc.text(T.school, CX, y+14.5*SH, { align: 'center' })
@@ -323,9 +336,10 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
   ACCENT.forEach(([r,g,b],i) => { doc.setFillColor(r,g,b); doc.rect(x+i*(W/4), y+HEADER_H, W/4, BAR_H, 'F') })
 
   const CY_AV = BODY_Y + 12*SH
-  // Avatar
-  doc.setFillColor(219,234,254); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
-  doc.circle(CX, CY_AV, 10*RS, 'F')
+  // Avatar — white outer ring + blue inner ring
+  doc.setFillColor(219,234,254); doc.circle(CX, CY_AV, 11.5*RS, 'F')
+  doc.setFillColor(255,255,255); doc.circle(CX, CY_AV, 11.3*RS, 'F')
+  doc.setFillColor(219,234,254); doc.circle(CX, CY_AV, 10*RS, 'F')
   if (photoData) {
     const r = 10*RS
     doc.addImage(photoData, 'JPEG', CX-r, CY_AV-r, r*2, r*2)
@@ -336,12 +350,13 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
     doc.setTextColor(30,64,175); doc.setFontSize((ini.length>2?7.5:9.5)*FS); doc.setFont('helvetica','bold')
     doc.text(ini, CX, CY_AV+(ini.length>2?2.6:3.2)*RS, { align: 'center' })
   }
-  doc.setDrawColor(59,130,246); doc.setLineWidth(0.6); doc.circle(CX, CY_AV, 10*RS, 'S')
+  doc.setDrawColor(96,165,250); doc.setLineWidth(0.4); doc.circle(CX, CY_AV, 10*RS, 'S')
+  doc.setDrawColor(147,197,253); doc.setLineWidth(0.3); doc.circle(CX, CY_AV, 11.3*RS, 'S')
   if (student.gender) {
     const m = student.gender.toLowerCase().startsWith('m')
     doc.setFillColor(m?219:252, m?234:231, m?254:243)
-    doc.roundedRect(CX-6.5*SW, CY_AV+11.5*RS, 13*SW, 4*SH, RS, RS, 'F')
-    doc.setFontSize(5*FS); doc.setFont('helvetica','bold')
+    doc.roundedRect(CX-6.5*SW, CY_AV+11.5*RS, 13*SW, 4*SH, 2*SH, 2*SH, 'F')
+    doc.setFontSize(4.8*FS); doc.setFont('helvetica','bold')
     doc.setTextColor(m?109:190, m?40:24, m?217:93)
     doc.text(m ? T.male : T.female, CX, CY_AV+14.5*RS, { align: 'center' })
   }
@@ -349,7 +364,9 @@ function _pdfPortrait(doc, x, y, student, className, classLevel, academicYear, l
   const nameY = CY_AV + 19*SH
   doc.setFontSize(8*FS); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42)
   doc.text(doc.splitTextToSize(student.fullName||student.name||'—', W-8*SW)[0], CX, nameY, { align: 'center' })
-  const divY = nameY + 3.5*SH
+  // Name underline accent
+  doc.setFillColor(59,130,246); doc.roundedRect(CX-4*SW, nameY+1.5*SH, 8*SW, 0.7*SH, 0.35*SH, 0.35*SH, 'F')
+  const divY = nameY + 4*SH
   doc.setDrawColor(226,232,240); doc.setLineWidth(0.25); doc.line(x+4*SW, divY, x+W-4*SW, divY)
 
   const IY0 = divY + 3.5*SH, C1 = x+5*SW, C2 = x+W/2+1.5*SW
@@ -428,14 +445,19 @@ function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academi
 
   sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,2.5*RS,'FD')
   sf(10,36,80); rr(xMm,yMm,W,HEADER_H,2.5*RS,'F'); fr(xMm,yMm+HEADER_H-3*SH,W,3*SH)
+  // Header watermark circles
+  ctx.save(); ctx.globalAlpha=0.35; sf(16,44,90); arc(xMm+W-6*SW,yMm-3*SH,15*RS,'F')
+  sf(13,38,78); arc(xMm+W+2*SW,yMm+4*SH,10*RS,'F'); ctx.globalAlpha=1; ctx.restore()
   if (logoImg) ctx.drawImage(logoImg,p(xMm+2.5*SW),p(yMm+2*SH),p(10.5*SW),p(10.5*SH))
   fnt(7.5*FS,'bold'); txt(T.school,xMm+15*SW,yMm+6.5*SH,'left',[255,255,255])
   fnt(5.5*FS,'normal'); txt(T.tagline,xMm+15*SW,yMm+10.5*SH,'left',[147,197,253])
-  ss(255,255,255,0.8); slw(0.3); ctx.strokeRect(p(xMm+W-24*SW),p(yMm+3.5*SH),p(22*SW),p(7*SH))
+  ss(255,255,255,0.6); slw(0.3); ctx.strokeRect(p(xMm+W-24*SW),p(yMm+3.5*SH),p(22*SW),p(7*SH))
   fnt(5*FS,'bold'); txt(T.badge,xMm+W-13*SW,yMm+8*SH,'center',[255,255,255])
   ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
 
-  // Avatar
+  // Avatar — drop shadow + white outer ring + blue inner ring
+  ctx.save(); ctx.globalAlpha=0.12; sf(59,130,246); arc(CX,CY+0.4*RS,13.5*RS,'F'); ctx.restore()
+  sf(255,255,255); arc(CX,CY,13.2*RS,'F')
   sf(219,234,254); arc(CX,CY,11.5*RS,'F')
   if (photoImg) {
     const r=p(11.5*RS), nw=photoImg.naturalWidth||100, nh=photoImg.naturalHeight||100
@@ -449,27 +471,35 @@ function _canvasLandscape(ctx, xMm, yMm, student, className, classLevel, academi
     fnt((ini.length>2?8.5:11)*FS,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
     ctx.fillText(ini,p(CX),p(CY)); ctx.textBaseline='alphabetic'
   }
-  ss(59,130,246); slw(0.6); arc(CX,CY,11.5*RS,'S')
+  ss(96,165,250); slw(0.4); arc(CX,CY,11.5*RS,'S')
+  ss(147,197,253); slw(0.3); arc(CX,CY,13.2*RS,'S')
   if (student.gender) {
     const m=student.gender.toLowerCase().startsWith('m')
     sf(m?219:252,m?234:231,m?254:243)
-    ctx.beginPath(); ctx.roundRect(p(CX-6*SW),p(CY+13*RS),p(12*SW),p(4.5*SH),p(RS)); ctx.fill()
-    fnt(5*FS,'bold'); txt(m ? T.male : T.female,CX,CY+16.4*RS,'center',[m?109:190,m?40:24,m?217:93])
+    ctx.beginPath(); ctx.roundRect(p(CX-6*SW),p(CY+13*RS),p(12*SW),p(4.2*SH),p(2.1*SH)); ctx.fill()
+    fnt(4.8*FS,'bold'); txt(m ? T.male : T.female,CX,CY+16.2*RS,'center',[m?109:190,m?40:24,m?217:93])
   }
   ss(226,232,240); slw(0.25); ln(xMm+29.5*SW,BODY_Y+2*SH,xMm+29.5*SW,FOOTER_Y-SH)
 
   const IX=xMm+32*SW, GX=xMm+58*SW; let IY=BODY_Y+5*SH
   fnt(8.5*FS,'bold'); sf(15,23,42); ctx.textAlign='left'
-  ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-35*SW)),p(IX),p(IY)); IY+=5*SH
+  ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-35*SW)),p(IX),p(IY)); IY+=2.5*SH
+  // Name underline accent
+  sf(59,130,246); ctx.beginPath(); ctx.roundRect(p(IX),p(IY),p(8*SW),p(0.7*SH),p(0.35*SH)); ctx.fill(); IY+=3*SH
   ss(226,232,240); slw(0.25); ln(IX,IY,xMm+W-3*SW,IY); IY+=3.5*SH
-  fnt(4.8*FS,'normal'); sf(148,163,184); ctx.fillText(T.studentId,p(IX),p(IY)); IY+=3.5*SH
-  fnt(7*FS,'bold'); sf(30,64,175); ctx.fillText(String(student.studentCode||student.id||'—'),p(IX),p(IY)); IY+=5*SH
+  // Student ID with left accent bar
+  sf(147,197,253); fr(IX,IY-3*SH,0.8*SW,6.5*SH)
+  fnt(4.8*FS,'normal'); sf(148,163,184); ctx.fillText(T.studentId,p(IX+1.8*SW),p(IY)); IY+=3.5*SH
+  fnt(7*FS,'bold'); sf(30,64,175); ctx.fillText(String(student.studentCode||student.id||'—'),p(IX+1.8*SW),p(IY)); IY+=5*SH
   fnt(4.8*FS,'normal'); sf(148,163,184)
   ctx.fillText(T.class,p(IX),p(IY)); if(classLevel) ctx.fillText(T.grade,p(GX),p(IY)); IY+=3.5*SH
   fnt(7*FS,'bold'); sf(30,64,175)
   ctx.fillText(className||'—',p(IX),p(IY)); if(classLevel) ctx.fillText(classLevel,p(GX),p(IY))
 
-  sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
+  // Footer gradient
+  const fGrad=ctx.createLinearGradient(p(xMm),p(FOOTER_Y),p(xMm+W),p(FOOTER_Y+FOOTER_H))
+  fGrad.addColorStop(0,'#eff6ff'); fGrad.addColorStop(1,'#dbeafe')
+  ctx.fillStyle=fGrad; ctx.fillRect(p(xMm),p(FOOTER_Y),p(W),p(FOOTER_H))
   sf(255,255,255); fr(xMm,FOOTER_Y,2.5*SW,2.5*SH); fr(xMm+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH)
   ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
   fnt(6*FS,'bold'); txt(`${T.academicYear}  ${academicYear}`,xMm+W/2,FOOTER_Y+5.2*SH,'center',[30,64,175])
@@ -486,13 +516,18 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
 
   sf(255,255,255); ss(203,213,225); slw(0.25); rr(xMm,yMm,W,H,2.5*RS,'FD')
   sf(10,36,80); rr(xMm,yMm,W,HEADER_H,2.5*RS,'F'); fr(xMm,yMm+HEADER_H-3*SH,W,3*SH)
+  // Header watermark circles
+  ctx.save(); ctx.globalAlpha=0.35; sf(16,44,90); arc(xMm+W-4*SW,yMm-6*SH,16*RS,'F')
+  sf(13,38,78); arc(xMm+W+2*SW,yMm+5*SH,11*RS,'F'); ctx.globalAlpha=1; ctx.restore()
   if (logoImg) ctx.drawImage(logoImg,p(CX-5*SW),p(yMm+2*SH),p(10*SW),p(10*SH))
   fnt(7.5*FS,'bold'); txt(T.school,CX,yMm+14.5*SH,'center',[255,255,255])
   fnt(5*FS,'normal'); txt(T.tagline,CX,yMm+18*SH,'center',[147,197,253])
   ACCENT.forEach(([r,g,b],i) => { sf(r,g,b); fr(xMm+i*(W/4),yMm+HEADER_H,W/4,BAR_H) })
 
   const CY_AV=BODY_Y+12*SH
-  // Avatar
+  // Avatar — drop shadow + white outer ring + blue inner ring
+  ctx.save(); ctx.globalAlpha=0.12; sf(59,130,246); arc(CX,CY_AV+0.4*RS,11.5*RS,'F'); ctx.restore()
+  sf(255,255,255); arc(CX,CY_AV,11.3*RS,'F')
   sf(219,234,254); arc(CX,CY_AV,10*RS,'F')
   if (photoImg) {
     const r=p(10*RS), nw=photoImg.naturalWidth||100, nh=photoImg.naturalHeight||100
@@ -506,18 +541,25 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
     fnt((ini.length>2?7.5:9.5)*FS,'bold'); sf(30,64,175); ctx.textAlign='center'; ctx.textBaseline='middle'
     ctx.fillText(ini,p(CX),p(CY_AV)); ctx.textBaseline='alphabetic'
   }
-  ss(59,130,246); slw(0.6); arc(CX,CY_AV,10*RS,'S')
+  ss(96,165,250); slw(0.4); arc(CX,CY_AV,10*RS,'S')
+  ss(147,197,253); slw(0.3); arc(CX,CY_AV,11.3*RS,'S')
   if (student.gender) {
     const m=student.gender.toLowerCase().startsWith('m')
     sf(m?219:252,m?234:231,m?254:243)
-    ctx.beginPath(); ctx.roundRect(p(CX-6.5*SW),p(CY_AV+11.5*RS),p(13*SW),p(4*SH),p(RS)); ctx.fill()
-    fnt(5*FS,'bold'); txt(m ? T.male : T.female,CX,CY_AV+14.5*RS,'center',[m?109:190,m?40:24,m?217:93])
+    ctx.beginPath(); ctx.roundRect(p(CX-6.5*SW),p(CY_AV+11.5*RS),p(13*SW),p(4*SH),p(2*SH)); ctx.fill()
+    fnt(4.8*FS,'bold'); txt(m ? T.male : T.female,CX,CY_AV+14.5*RS,'center',[m?109:190,m?40:24,m?217:93])
   }
 
   const nameY=CY_AV+19*SH
   fnt(8*FS,'bold'); sf(15,23,42); ctx.textAlign='center'
   ctx.fillText(doc_splitFirst(ctx,student.fullName||student.name||'—',p(W-8*SW)),p(CX),p(nameY))
-  const divY=nameY+3.5*SH; ss(226,232,240); slw(0.25); ln(xMm+4*SW,divY,xMm+W-4*SW,divY)
+  // Name underline accent
+  sf(59,130,246); ctx.beginPath(); ctx.roundRect(p(CX-4*SW),p(nameY+1.5*SH),p(8*SW),p(0.6*SH),p(0.3*SH)); ctx.fill()
+  const divY=nameY+4*SH
+  // Faded divider
+  const dg=ctx.createLinearGradient(p(xMm+4*SW),0,p(xMm+W-4*SW),0)
+  dg.addColorStop(0,'transparent'); dg.addColorStop(0.2,'#cbd5e1'); dg.addColorStop(0.8,'#cbd5e1'); dg.addColorStop(1,'transparent')
+  ctx.strokeStyle=dg; ctx.lineWidth=p(0.25); ctx.beginPath(); ctx.moveTo(p(xMm+4*SW),p(divY)); ctx.lineTo(p(xMm+W-4*SW),p(divY)); ctx.stroke()
 
   const IY0=divY+3.5*SH, C1=xMm+5*SW, C2=xMm+W/2+1.5*SW
   fnt(4.5*FS,'normal'); sf(148,163,184); ctx.textAlign='left'
@@ -532,7 +574,10 @@ function _canvasPortrait(ctx, xMm, yMm, student, className, classLevel, academic
   ctx.fillText(className||'—',p(C1),p(R2Y+3.5*SH))
   if(student.dateOfBirth) ctx.fillText(student.dateOfBirth,p(C2),p(R2Y+3.5*SH))
 
-  sf(239,246,255); fr(xMm,FOOTER_Y,W,FOOTER_H)
+  // Footer gradient
+  const fGrad2=ctx.createLinearGradient(p(xMm),p(FOOTER_Y),p(xMm+W),p(FOOTER_Y+FOOTER_H))
+  fGrad2.addColorStop(0,'#eff6ff'); fGrad2.addColorStop(1,'#dbeafe')
+  ctx.fillStyle=fGrad2; ctx.fillRect(p(xMm),p(FOOTER_Y),p(W),p(FOOTER_H))
   sf(255,255,255); fr(xMm,FOOTER_Y,2.5*SW,2.5*SH); fr(xMm+W-2.5*SW,FOOTER_Y,2.5*SW,2.5*SH)
   ss(191,219,254); slw(0.25); ln(xMm,FOOTER_Y,xMm+W,FOOTER_Y)
   fnt(5.5*FS,'bold'); txt(`${T.academicYear}  ${academicYear}`,CX,FOOTER_Y+5.2*SH,'center',[30,64,175])

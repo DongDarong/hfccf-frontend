@@ -97,20 +97,24 @@ watch(codeSeed, async (seed) => {
 
 <template>
   <div
-    class="relative overflow-hidden rounded-[3px] border border-slate-200 bg-white shadow select-none shrink-0"
+    class="relative overflow-hidden rounded-[4px] border border-slate-200/80 bg-white shadow-lg select-none shrink-0"
     :style="cardPx"
   >
     <div
-      class="absolute inset-x-0 top-0 bg-[#0a2450] overflow-hidden"
-      :style="{ height: mm(HEADER_H) }"
+      class="absolute inset-x-0 top-0 overflow-hidden"
+      :style="{ height: mm(HEADER_H), background: 'linear-gradient(135deg, #102d60 0%, #0a2450 60%, #071a3a 100%)' }"
     >
+      <div class="pointer-events-none absolute rounded-full border-[1.5px] border-white/[0.06]"
+        :style="{ width: mm(26), height: mm(26), right: mm(-9), top: mm(-12) }" />
+      <div class="pointer-events-none absolute rounded-full border border-white/[0.05]"
+        :style="{ width: mm(17), height: mm(17), right: mm(2), top: mm(-4) }" />
       <div v-if="!isPortrait" class="flex items-center h-full" :style="{ gap: mm(1.5), padding: `0 ${mm(2)}` }">
         <img :src="logoSrc" class="object-contain shrink-0" :style="{ width: mm(10.5), height: mm(10.5) }">
         <div class="flex-1 min-w-0 flex flex-col justify-center">
           <span class="font-bold text-white truncate leading-none" :style="{ fontSize: pt(7.2), marginBottom: mm(0.8) }">{{ T.school }}</span>
           <span class="text-sky-300 truncate leading-none" :style="{ fontSize: pt(5.2) }">{{ T.tagline }}</span>
         </div>
-        <div class="border border-white/60 rounded font-bold text-white shrink-0" :style="{ fontSize: pt(4.7), padding: `${mmn(0.8)}px ${mmn(1.8)}px` }">
+        <div class="border border-white/50 rounded bg-white/[0.07] font-bold text-white shrink-0" :style="{ fontSize: pt(4.7), padding: `${mmn(0.8)}px ${mmn(1.8)}px` }">
           {{ T.badge }}
         </div>
       </div>
@@ -223,7 +227,7 @@ watch(codeSeed, async (seed) => {
       </template>
     </div>
 
-    <div class="absolute inset-x-0 bottom-0 flex items-center justify-center bg-blue-50 border-t border-blue-200" :style="{ height: mm(FOOTER_H) }">
+    <div class="absolute inset-x-0 bottom-0 flex items-center justify-center border-t border-blue-200/70" :style="{ height: mm(FOOTER_H), background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' }">
       <span class="font-bold text-blue-800" :style="{ fontSize: pt(isPortrait ? 5.5 : 6) }">
         {{ T.note }}
       </span>
