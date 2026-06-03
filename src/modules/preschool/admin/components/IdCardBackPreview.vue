@@ -183,14 +183,6 @@ watch(codeSeed, async (seed) => {
             >
             <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
           </div>
-          <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
-            <img
-              :src="qrDataUrl"
-              :alt="codeTitle"
-              class="h-full w-full rounded-[4px] bg-white object-contain"
-            >
-            <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
-          </div>
         </div>
       </template>
 

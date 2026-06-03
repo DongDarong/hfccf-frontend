@@ -309,25 +309,43 @@ function drawFrontInfoCanvas(ctx, xMm, yMm, student, className, classLevel, W, H
 export function drawCardPdfBack(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, lang = 'en', qrDataUrl = '') {
   const T = getBackText(lang)
   const headerSub = lang === 'kh' ? 'ព័ត៌មានអាណាព្យាបាល' : 'Guardian details on reverse'
-  const SW = W / 85.6
-  const SH = H / 54
+  const SW = W / (orientation === 'portrait' ? 54 : 85.6)
+  const SH = H / (orientation === 'portrait' ? 85.6 : 54)
   const FS = Math.sqrt(SW * SH)
   const RS = Math.min(SW, SH)
-  const CX = orientation === 'portrait' ? x + W / 2 : x + 15.5 * SW
-  const CY = orientation === 'portrait' ? y + 14 * SH : y + 11 * SH
   const { HEADER_H, BAR_H } = drawShellPdf(doc, x, y, W, H, logoData, T.badge, 'HFCCF PRESCHOOL', headerSub, SW, SH, FS, RS)
   drawBackPatternPdf(doc, x, y, W, H, HEADER_H, BAR_H, 8.5 * SH, SW, SH)
 
   if (orientation === 'portrait') {
+    const CX = x + W / 2
     const profileY = y + HEADER_H + BAR_H + 12 * SH
     doc.setFillColor(239,246,255); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
     doc.circle(CX, profileY, 10 * RS, 'F')
     doc.setTextColor(30,64,175); doc.setFontSize(8.5 * FS); doc.setFont('helvetica', 'bold')
     doc.text(getGuardianInitials(student), CX, profileY + 2.4 * RS, { align: 'center' })
     doc.setDrawColor(59,130,246); doc.circle(CX, profileY, 10 * RS, 'S')
-    doc.setFontSize(5 * FS)
+    doc.setFontSize(5 * FS); doc.setFont('helvetica', 'bold')
     doc.text(T.profile, CX, profileY + 13.5 * RS, { align: 'center' })
-    drawFrontInfoPdf(doc, x, y + HEADER_H + BAR_H, student, className, classLevel, W, H, SW, SH, FS, lang)
+    // Portrait uses a 2-column grid — drawFrontInfoPdf places grade at x+58mm which overflows a 54mm card
+    const C1 = x + 5 * SW, C2 = x + W / 2 + 1.5 * SW
+    const IY0 = y + HEADER_H + BAR_H + 27 * SH
+    doc.setFontSize(4.5 * FS); doc.setFont('helvetica', 'normal'); doc.setTextColor(148,163,184)
+    doc.text(T.guardianName, C1, IY0); doc.text(T.guardianPhone, C2, IY0)
+    doc.setFontSize(6.8 * FS); doc.setFont('helvetica', 'bold')
+    doc.setTextColor(15,23,42); doc.text(getGuardianName(student), C1, IY0 + 4 * SH)
+    doc.setTextColor(30,64,175); doc.text(getGuardianPhone(student), C2, IY0 + 4 * SH)
+    const R2Y = IY0 + 9 * SH
+    doc.setFontSize(4.5 * FS); doc.setFont('helvetica', 'normal'); doc.setTextColor(148,163,184)
+    doc.text(T.studentRef, C1, R2Y); doc.text(T.studentId, C2, R2Y)
+    doc.setFontSize(6.5 * FS); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,64,175)
+    doc.text(doc.splitTextToSize(student.fullName || student.name || '—', (W / 2 - 6.5) * SW)[0], C1, R2Y + 4 * SH)
+    doc.text(String(student.studentCode || student.id || '—'), C2, R2Y + 4 * SH)
+    const R3Y = R2Y + 9 * SH
+    doc.setFontSize(4.5 * FS); doc.setFont('helvetica', 'normal'); doc.setTextColor(148,163,184)
+    doc.text(T.class, C1, R3Y); if (classLevel) doc.text(T.grade, C2, R3Y)
+    doc.setFontSize(6.5 * FS); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,64,175)
+    doc.text(className || '—', C1, R3Y + 4 * SH)
+    if (classLevel) doc.text(classLevel, C2, R3Y + 4 * SH)
     doc.setFillColor(239,246,255); doc.rect(x, y + H - 8.5 * SH, W, 8.5 * SH, 'F')
     doc.setDrawColor(191,219,254); doc.setLineWidth(0.25); doc.line(x, y + H - 8.5 * SH, x + W, y + H - 8.5 * SH)
     doc.setTextColor(30,64,175); doc.setFontSize(5.2 * FS); doc.setFont('helvetica', 'bold')
@@ -335,6 +353,8 @@ export function drawCardPdfBack(doc, x, y, student, className, classLevel, acade
     return
   }
 
+  const CX = x + 15.5 * SW
+  const CY = y + 11 * SH
   doc.setFillColor(239,246,255); doc.setDrawColor(59,130,246); doc.setLineWidth(0.6)
   doc.circle(CX, CY, 11 * RS, 'F')
   doc.setTextColor(30,64,175); doc.setFontSize(8.5 * FS); doc.setFont('helvetica', 'bold')
