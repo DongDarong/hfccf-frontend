@@ -19,7 +19,7 @@ function normalizeText(value) {
 
 function buildStudentOptions(items = []) {
   return items.map((item) => ({
-    label: `${normalizeText(item.fullName || item.name)}${item.studentCode ? ` (${item.studentCode})` : ''}`,
+    label: `${normalizeText(item.fullName || item.name)}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
     value: item.id,
     raw: item,
   }))

@@ -10,6 +10,10 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
   columns: {
     type: Array,
     default: () => [],
@@ -27,8 +31,8 @@ defineEmits(['view', 'edit', 'delete'])
   <Table
     :rows="payments"
     :columns="columns"
+    :loading="loading"
     :empty-text="emptyText"
-    action-style="buttons"
     @view="$emit('view', $event)"
     @edit="$emit('edit', $event)"
     @delete="$emit('delete', $event)"

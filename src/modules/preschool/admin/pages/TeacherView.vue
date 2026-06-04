@@ -26,6 +26,46 @@ const teacherId = computed(() => String(route.params.id || '').trim())
 const avatarSrc = computed(() => resolveAvatarSource(teacher.value?.avatar || teacher.value?.avatarUrl || ''))
 const avatarInitials = computed(() => getAvatarInitials(teacher.value?.name || '', '?'))
 const showImage = ref(false)
+const teacherName = computed(() => teacher.value?.name || teacher.value?.fullName || '—')
+const permissionCount = computed(() => permissions.value.length)
+const hasEmail = computed(() => Boolean(String(teacher.value?.email || '').trim()))
+const hasPhone = computed(() => Boolean(String(teacher.value?.phone || '').trim()))
+const statusLabel = computed(() => String(teacher.value?.status || '—'))
+
+function formatPermissionLabel(permission) {
+  return String(permission || '')
+    .replace(/[:_.-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase()) || '—'
+}
+
+const summaryCards = computed(() => [
+  {
+    key: 'permissions',
+    label: t('preschoolTeacherView.summary.permissions'),
+    value: String(permissionCount.value),
+    caption: t('preschoolTeacherView.summary.permissionsCaption'),
+  },
+  {
+    key: 'contact',
+    label: t('preschoolTeacherView.summary.contact'),
+    value: hasEmail.value || hasPhone.value ? t('preschoolTeacherView.summary.contactReady') : t('preschoolTeacherView.summary.contactMissing'),
+    caption: t('preschoolTeacherView.summary.contactCaption'),
+  },
+  {
+    key: 'account',
+    label: t('preschoolTeacherView.summary.account'),
+    value: teacher.value?.username || '—',
+    caption: t('preschoolTeacherView.summary.accountCaption'),
+  },
+  {
+    key: 'status',
+    label: t('preschoolTeacherView.summary.status'),
+    value: statusLabel.value,
+    caption: t('preschoolTeacherView.summary.statusCaption'),
+  },
+])
 
 function onImgLoad() { showImage.value = true }
 function onImgError() { showImage.value = false }
@@ -35,6 +75,14 @@ const permissions = computed(() => {
   if (Array.isArray(perms)) return perms
   return []
 })
+
+const permissionChips = computed(() =>
+  permissions.value.map((permission, index) => ({
+    raw: permission,
+    label: formatPermissionLabel(permission),
+    tone: index % 4,
+  })),
+)
 
 async function loadTeacher() {
   if (!teacherId.value) return
@@ -94,7 +142,7 @@ onMounted(loadTeacher)
               <img
                 v-if="avatarSrc"
                 :src="avatarSrc"
-                :alt="teacher.name"
+                :alt="teacherName"
                 class="teacher-view__avatar-img"
                 :class="{ 'teacher-view__avatar-img--visible': showImage }"
                 @load="onImgLoad"
@@ -105,7 +153,7 @@ onMounted(loadTeacher)
 
           <!-- identity -->
           <div class="teacher-view__identity">
-            <h2 class="teacher-view__name">{{ teacher.name || teacher.fullName || '—' }}</h2>
+            <h2 class="teacher-view__name">{{ teacherName }}</h2>
             <p v-if="teacher.username" class="teacher-view__username">@{{ teacher.username }}</p>
             <div class="teacher-view__badges">
               <StatusBadge :status="teacher.status" :label="teacher.status" size="sm" />
@@ -115,13 +163,21 @@ onMounted(loadTeacher)
 
           <!-- actions -->
           <div class="teacher-view__profile-actions">
-            <Button variant="ghost" rounded="xl" size="sm" @click="goBack">
+            <Button
+              variant="ghost"
+              rounded="xl"
+              size="sm"
+              class="teacher-view__back-btn"
+              @click="goBack"
+            >
               <template #iconLeft>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="teacher-view__btn-icon">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
               </template>
-              {{ t('preschoolTeacherView.actions.back') }}
+              <span class="teacher-view__back-label">
+                {{ t('preschoolTeacherView.actions.back') }}
+              </span>
             </Button>
             <Button variant="primary" rounded="xl" size="sm" @click="goEdit">
               {{ t('preschoolTeacherView.actions.edit') }}
@@ -133,6 +189,14 @@ onMounted(loadTeacher)
               </template>
             </Button>
           </div>
+        </div>
+
+        <div class="teacher-view__stats">
+          <article v-for="card in summaryCards" :key="card.key" class="teacher-view__stat-card">
+            <p class="teacher-view__stat-label">{{ card.label }}</p>
+            <p class="teacher-view__stat-value">{{ card.value }}</p>
+            <p class="teacher-view__stat-caption">{{ card.caption }}</p>
+          </article>
         </div>
 
         <!-- info grid -->
@@ -189,9 +253,15 @@ onMounted(loadTeacher)
           <!-- permissions section (full width) -->
           <div class="teacher-view__section teacher-view__section--full">
             <p class="teacher-view__section-title">{{ t('preschoolTeacherView.sections.permissions') }}</p>
-            <div v-if="permissions.length" class="teacher-view__permissions">
-              <span v-for="perm in permissions" :key="perm" class="teacher-view__perm-chip">
-                {{ perm }}
+            <div v-if="permissionChips.length" class="teacher-view__permissions">
+              <span
+                v-for="perm in permissionChips"
+                :key="perm.raw"
+                class="teacher-view__perm-chip"
+                :class="`teacher-view__perm-chip--tone-${perm.tone}`"
+              >
+                <span class="teacher-view__perm-chip-dot" />
+                <span class="teacher-view__perm-chip-text">{{ perm.label }}</span>
               </span>
             </div>
             <p v-else class="teacher-view__field-value teacher-view__field-value--empty">
@@ -368,8 +438,41 @@ onMounted(loadTeacher)
 .teacher-view__profile-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.6rem;
+  margin-left: auto;
+  max-width: 100%;
   flex-shrink: 0;
+}
+
+.teacher-view__back-btn {
+  flex: 0 0 auto;
+  border: 1px solid #bfdbfe;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  color: #0f172a;
+  box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.35);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.teacher-view__back-btn:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+  box-shadow: 0 16px 30px -22px rgba(15, 23, 42, 0.42);
+}
+
+.teacher-view__back-btn:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.teacher-view__back-label {
+  display: inline-flex;
 }
 
 .teacher-view__btn-icon {
@@ -377,11 +480,53 @@ onMounted(loadTeacher)
   height: 0.95rem;
 }
 
+/* summary cards */
+.teacher-view__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.teacher-view__stat-card {
+  padding: 1rem 1.05rem;
+  border-radius: 1.1rem;
+  border: 1px solid #dbeafe;
+  background:
+    radial-gradient(circle at top right, rgba(186, 230, 253, 0.18), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 16px 32px -26px rgba(15, 23, 42, 0.45);
+}
+
+.teacher-view__stat-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0369a1;
+}
+
+.teacher-view__stat-value {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.teacher-view__stat-caption {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
 /* info grid */
 .teacher-view__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-auto-flow: dense;
   gap: 1rem;
+  align-items: start;
 }
 
 .teacher-view__section {
@@ -392,7 +537,19 @@ onMounted(loadTeacher)
 }
 
 .teacher-view__section--full {
-  grid-column: 1 / -1;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.teacher-view__section--accent {
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-color: #bfdbfe;
+}
+
+.teacher-view__field-list--compact {
+  gap: 0.65rem;
 }
 
 .teacher-view__section-title {
@@ -450,19 +607,58 @@ onMounted(loadTeacher)
 .teacher-view__permissions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.55rem;
 }
 
 .teacher-view__perm-chip {
   display: inline-flex;
   align-items: center;
-  padding: 0.22rem 0.65rem;
+  gap: 0.45rem;
+  padding: 0.42rem 0.75rem;
   border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: #f0f9ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+  border: 1px solid transparent;
+  box-shadow: 0 10px 20px -16px rgba(15, 23, 42, 0.35);
+}
+
+.teacher-view__perm-chip-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  background: currentColor;
+  opacity: 0.95;
+}
+
+.teacher-view__perm-chip-text {
+  min-width: 0;
+}
+
+.teacher-view__perm-chip--tone-0 {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
   color: #0369a1;
-  border: 1px solid #bae6fd;
+  border-color: #bae6fd;
+}
+
+.teacher-view__perm-chip--tone-1 {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.teacher-view__perm-chip--tone-2 {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+
+.teacher-view__perm-chip--tone-3 {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  color: #7c3aed;
+  border-color: #ddd6fe;
 }
 
 @media (max-width: 768px) {
@@ -477,8 +673,18 @@ onMounted(loadTeacher)
     justify-content: flex-end;
   }
 
+  .teacher-view__back-label {
+    display: none;
+  }
+
+  .teacher-view__stats,
   .teacher-view__grid {
     grid-template-columns: 1fr;
+  }
+
+  .teacher-view__section--full {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 </style>

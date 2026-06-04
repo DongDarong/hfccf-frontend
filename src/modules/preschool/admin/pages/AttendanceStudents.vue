@@ -182,7 +182,9 @@ onMounted(async () => { await loadClasses(); if (selectedClassId.value) loadDay(
               <tr v-for="(student, index) in students" :key="student.id" :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'">
                 <td class="px-4 py-3">
                   <p class="font-medium text-slate-900">{{ student.fullName || student.name }}</p>
-                  <p v-if="student.studentCode" class="text-xs text-slate-400">{{ student.studentCode }}</p>
+                  <p v-if="student.publicId || student.studentCode" class="text-xs text-slate-400">
+                    {{ student.publicId || student.studentCode }}
+                  </p>
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex gap-1">

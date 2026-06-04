@@ -10,7 +10,7 @@
  * - Dynamic columns
  * - User avatar fallback
  * - Role / permission / status badges
- * - Menu or icon-button row actions
+ * - Menu row actions
  * --------------------------------------------------------------------------
  */
 
@@ -65,11 +65,6 @@ const props = defineProps({
     type: String,
     default: 'id',
   },
-  actionStyle: {
-    type: String,
-    default: 'menu',
-    validator: (value) => ['menu', 'buttons'].includes(value),
-  },
   showViewAction: {
     type: Boolean,
     default: true,
@@ -104,7 +99,6 @@ const {
   resolvedRows,
   resolvedEmptyText,
   loadingLabel,
-  useButtonActions,
   resolvedColumns,
   resolvedSortField,
   resolvedSortOrder,
@@ -118,6 +112,41 @@ function onSort(event) {
   if (!props.serverSide) return
 
   emit('sort', event)
+}
+
+function humanizePaymentValue(value) {
+  const key = String(value || '').trim().toLowerCase()
+  const map = {
+    cash: 'Cash',
+    mobile_payment: 'Mobile Payment',
+    bank_transfer: 'Bank Transfer',
+    card: 'Card',
+    other: 'Other',
+    paid: 'Paid',
+    pending: 'Pending',
+    overdue: 'Overdue',
+    cancelled: 'Cancelled',
+  }
+
+  if (!key) return '-'
+  if (map[key]) return map[key]
+
+  return key
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function paymentTone(value) {
+  const key = String(value || '').trim().toLowerCase()
+
+  if (['paid', 'cash'].includes(key)) return 'success'
+  if (['pending', 'mobile_payment'].includes(key)) return 'info'
+  if (['overdue', 'bank_transfer'].includes(key)) return 'warning'
+  if (['cancelled', 'card'].includes(key)) return 'neutral'
+
+  return 'neutral'
 }
 </script>
 
@@ -173,7 +202,12 @@ function onSort(event) {
         <template v-else-if="column.key === 'student'">
           <div class="ui-student-cell">
             <div class="ui-user-avatar ui-user-avatar--student">
-              <span class="ui-user-avatar__initials">{{ userInitials(data) }}</span>
+              <span
+                v-if="!shouldShowImage(data)"
+                class="ui-user-avatar__initials"
+              >
+                {{ userInitials(data) }}
+              </span>
               <img
                 v-if="avatarSrc(data)"
                 :src="avatarSrc(data)"
@@ -186,7 +220,9 @@ function onSort(event) {
             </div>
             <div class="min-w-0">
               <div class="ui-student-cell__name">{{ data.name || '-' }}</div>
-              <div v-if="data.studentCode" class="ui-student-cell__code">{{ data.studentCode }}</div>
+              <div v-if="data.publicId || data.studentCode" class="ui-student-cell__code">
+                {{ data.publicId || data.studentCode }}
+              </div>
             </div>
           </div>
         </template>
@@ -260,6 +296,27 @@ function onSort(event) {
           />
         </template>
 
+        <!-- Payment method badge -->
+        <template v-else-if="column.key === 'paymentMethod'">
+          <StatusBadge
+            :status="paymentTone(data.paymentMethod)"
+            :label="humanizePaymentValue(data.paymentMethod)"
+            :translate-label="false"
+            :dot="false"
+            size="sm"
+          />
+        </template>
+
+        <!-- Payment status badge -->
+        <template v-else-if="column.key === 'paymentStatus'">
+          <StatusBadge
+            :status="paymentTone(data.paymentStatus)"
+            :label="humanizePaymentValue(data.paymentStatus)"
+            :translate-label="false"
+            size="sm"
+          />
+        </template>
+
         <!-- Created at -->
         <template v-else-if="column.key === 'created_at'">
           <span class="text-[12px] text-surface-700 sm:text-sm">
@@ -271,7 +328,6 @@ function onSort(event) {
         <template v-else-if="column.key === 'actions'">
           <TableActions
             :item="data"
-            :action-style="useButtonActions ? 'buttons' : 'menu'"
             :show-view-action="showViewAction"
             :show-edit-action="showEditAction"
             :show-delete-action="showDeleteAction"

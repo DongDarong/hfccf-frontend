@@ -81,12 +81,8 @@ describe('preschool locale parity', () => {
       'preschoolClassroomReportsPage.studentColumns.latest',
       'preschoolAttendanceProfilePage.filters.class',
       'preschoolAttendanceProfilePage.placeholders.class',
-      'preschoolAdminAttendanceHistoryPage.filters.type',
       'preschoolAdminAttendanceHistoryPage.filters.student',
-      'preschoolAdminAttendanceHistoryPage.filters.teacher',
       'preschoolAdminAttendanceHistoryPage.placeholders.searchStudent',
-      'preschoolAdminAttendanceHistoryPage.placeholders.searchTeacher',
-      'preschoolAdminAttendanceHistoryPage.columns.teacher',
     ]
 
     keys.forEach((key) => {

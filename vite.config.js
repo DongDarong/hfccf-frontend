@@ -129,6 +129,17 @@ export default defineConfig(({ command }) => {
           changeOrigin: true,
           secure: false,
         },
+        // Proxy public image assets through Vite in dev so canvas exports can fetch them same-origin.
+        ...(imagePublicOrigin
+          ? {
+              '/__image-proxy': {
+                target: imagePublicOrigin,
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/__image-proxy/, ''),
+              },
+            }
+          : {}),
       },
     },
     preview: {

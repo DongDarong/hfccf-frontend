@@ -17,7 +17,7 @@ import { computed } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
-import Button from '@/components/buttons/Button.vue'
+import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -239,38 +239,15 @@ const tablePt = computed(() => ({
       }"
     >
       <template #body="{ data }">
-        <div class="flex justify-end gap-2">
-          <Button
-            type="button"
-            icon="pi pi-eye"
-            rounded="full"
-            variant="ghost"
-            size="sm"
-            class="class-table__action"
-            aria-label="View class"
-            @click="emit('view', data.raw)"
-          />
-
-          <Button
-            type="button"
-            icon="pi pi-pencil"
-            rounded="full"
-            variant="ghost"
-            size="sm"
-            class="class-table__action"
-            aria-label="Edit class"
-            @click="emit('edit', data.raw)"
-          />
-
-          <Button
-            type="button"
-            icon="pi pi-trash"
-            rounded="full"
-            variant="ghost"
-            size="sm"
-            class="class-table__action class-table__action--danger"
-            aria-label="Delete class"
-            @click="emit('delete', data.raw)"
+        <div class="flex justify-end">
+          <ActionsButton
+            :item="data.raw"
+            :show-view="true"
+            :show-edit="true"
+            :show-delete="true"
+            @view="emit('view', $event)"
+            @edit="emit('edit', $event)"
+            @delete="emit('delete', $event)"
           />
         </div>
       </template>
@@ -310,18 +287,4 @@ const tablePt = computed(() => ({
   font-weight: 700;
 }
 
-/**
- * Row action button size.
- */
-.class-table__action {
-  width: 2.15rem;
-  height: 2.15rem;
-}
-
-/**
- * Delete action tone.
- */
-.class-table__action--danger {
-  color: #b42318;
-}
 </style>

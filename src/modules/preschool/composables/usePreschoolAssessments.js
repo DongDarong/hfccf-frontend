@@ -25,7 +25,7 @@ function normalizeOptionLabel(item, fallback = '') {
 
 function buildStudentOptions(items = []) {
   return items.map((item) => ({
-    label: `${normalizeOptionLabel(item.fullName || item.name)}${item.studentCode ? ` (${item.studentCode})` : ''}`,
+    label: `${normalizeOptionLabel(item.fullName || item.name)}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
     value: item.id,
     raw: item,
   }))

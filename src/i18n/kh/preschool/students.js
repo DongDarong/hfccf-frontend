@@ -1,4 +1,4 @@
-// Keep student copy centralized so Khmer and English stay aligned and the
+﻿// Keep student copy centralized so Khmer and English stay aligned and the
 // roster pages do not need inline strings that can drift over time.
 export default {
   preschoolStudentInfoPage: {
@@ -14,17 +14,21 @@ export default {
     columns: {
       no: 'ល.រ.',
       student: 'សិស្ស',
-      code: 'កូដ',
+      dob: 'ថ្ងៃខែឆ្នាំកំណើត',
       gender: 'ភេទ',
       status: 'ស្ថានភាព',
-      classes: 'ថ្នាក់',
+      className: 'ឈ្មោះថ្នាក់',
       guardianPhone: 'លេខទូរស័ព្ទអាណាព្យាបាល',
       actions: 'សកម្មភាព',
     },
     dialog: {
       createTitle: 'បង្កើតសិស្ស',
       editTitle: 'កែសម្រួលសិស្ស',
-      studentCode: 'កូដសិស្ស',
+      studentCode: 'លេខសម្គាល់',
+      studentSignature: 'លេខសម្គាល់សាធារណៈ',
+      studentCodeAuto: 'បង្កើតស្វ័យប្រវត្តិក្នុងពេលរក្សាទុក',
+      studentSignatureAuto: 'បង្កើតស្វ័យប្រវត្តិក្នុងពេលរក្សាទុក',
+      studentType: 'ប្រភេទសិស្ស',
       firstName: 'នាមខ្លួន',
       lastName: 'នាមត្រកូល',
       gender: 'ភេទ',
@@ -42,6 +46,7 @@ export default {
       sectionGuardian: 'ទំនាក់ទំនងអាណាព្យាបាល',
       sectionEnrollment: 'ការចុះឈ្មោះ',
     },
+    formDescription: 'បំពេញប្រវត្តិសិស្ស ព័ត៌មានអាណាព្យាបាល និងព័ត៌មានការចុះឈ្មោះ។',
     summary: {
       total: 'សិស្សទាំងអស់',
     },
@@ -49,6 +54,8 @@ export default {
       male: 'ប្រុស',
       female: 'ស្រី',
       other: 'ផ្សេងទៀត',
+      paying: 'សិស្សបង់ថ្លៃ',
+      nonPaying: 'សិស្សមិនបង់ថ្លៃ',
       active: 'សកម្ម',
       pending: 'កំពុងរង់ចាំ',
       inactive: 'អសកម្ម',
@@ -77,7 +84,7 @@ export default {
     columns: {
       no: 'ល.រ.',
       student: 'សិស្ស',
-      code: 'កូដ',
+      code: 'លេខសម្គាល់',
       gender: 'ភេទ',
       status: 'ស្ថានភាព',
       classes: 'ថ្នាក់',
@@ -87,4 +94,48 @@ export default {
       noResults: 'មិនមានសិស្សទេ។',
     },
   },
+  preschoolStudentProfilePage: {
+    title: 'ព័ត៌មានសិស្ស',
+    subtitle: 'មើលព័ត៌មានអត្តសញ្ញាណសិស្ស ព័ត៌មានអាណាព្យាបាល និងការចុះឈ្មោះថ្នាក់។',
+    actions: {
+      back: 'ត្រឡប់ទៅសិស្ស',
+    },
+    hero: {
+      eyebrow: 'ប្រវត្តិរូបសិស្ស',
+      summary: 'ទិដ្ឋភាពមើលតែប៉ុណ្ណោះសម្រាប់កំណត់ត្រាសិស្ស ព័ត៌មានអាណាព្យាបាល និងការចុះឈ្មោះថ្នាក់។',
+    },
+    cards: {
+      studentCode: 'លេខសម្គាល់',
+      signature: 'លេខសម្គាល់សាធារណៈ',
+      gender: 'ភេទ',
+      dateOfBirth: 'ថ្ងៃខែឆ្នាំកំណើត',
+      classes: 'ថ្នាក់',
+    },
+    sections: {
+      personal: 'ព័ត៌មានផ្ទាល់ខ្លួន',
+      guardian: 'ទំនាក់ទំនងអាណាព្យាបាល',
+      enrollment: 'ការចុះឈ្មោះ',
+      record: 'ព័ត៌មានកំណត់ត្រា',
+    },
+    fields: {
+      studentCode: 'លេខសម្គាល់',
+      signature: 'លេខសម្គាល់សាធារណៈ',
+      gender: 'ភេទ',
+      dateOfBirth: 'ថ្ងៃខែឆ្នាំកំណើត',
+      address: 'អាសយដ្ឋាន',
+      guardianName: 'ឈ្មោះអាណាព្យាបាល',
+      guardianPhone: 'លេខទូរស័ព្ទអាណាព្យាបាល',
+      status: 'ស្ថានភាព',
+      createdAt: 'បានបង្កើតនៅ',
+      updatedAt: 'បានធ្វើបច្ចុប្បន្នភាពនៅ',
+      classesCount: 'ចំនួនថ្នាក់',
+    },
+    messages: {
+      loading: 'កំពុងផ្ទុកប្រវត្តិរូបសិស្ស...',
+      loadFailed: 'មិនអាចផ្ទុកប្រវត្តិរូបសិស្សបានទេ។',
+      notFound: 'រកមិនឃើញប្រវត្តិរូបសិស្សនេះទេ។',
+      noClasses: 'មិនមានការចុះឈ្មោះថ្នាក់សម្រាប់សិស្សនេះទេ។',
+    },
+  },
 }
+

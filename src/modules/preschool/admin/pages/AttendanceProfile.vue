@@ -73,7 +73,7 @@ async function loadStudents() {
       classId: selectedClassId.value,
     })
     studentOptions.value = (res.items || []).map((s) => ({
-      label: `${s.fullName || s.name}${s.studentCode ? ` (${s.studentCode})` : ''}`,
+      label: `${s.fullName || s.name}${(s.publicId || s.studentCode) ? ` (${s.publicId || s.studentCode})` : ''}`,
       value: s.id,
     }))
     if (selectedStudentId.value && !studentOptions.value.some((option) => String(option.value) === String(selectedStudentId.value))) {

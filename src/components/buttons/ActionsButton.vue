@@ -97,30 +97,6 @@ const menu = ref(null)
 const menuId = `row-actions-menu-${crypto.randomUUID()}`
 
 /**
- * PrimeVue button pass-through styling.
- */
-const triggerPt = {
-  root: {
-    class: [
-      '!h-9',
-      '!w-9',
-      '!border',
-      '!border-slate-200',
-      '!bg-white',
-      '!text-surface-600',
-      'shadow-sm',
-      'transition-all',
-      'duration-200',
-      'hover:enabled:!border-brand-300',
-      'hover:enabled:!bg-brand-50',
-      'hover:enabled:!text-brand-700',
-      'focus-visible:!outline-none',
-      'focus-visible:!shadow-focus',
-    ],
-  },
-}
-
-/**
  * Resolved localized labels.
  */
 const labels = computed(() => ({
@@ -190,15 +166,13 @@ function toggleMenu(event) {
     <!-- Action trigger button -->
     <PrimeButton
       icon="pi pi-ellipsis-h"
-      text
       rounded
       severity="secondary"
       class="actions-button-trigger"
       :disabled="disabled"
-      :pt="triggerPt"
       aria-haspopup="menu"
       :aria-controls="menuId"
-      aria-label="Row actions"
+      :aria-label="t('common.actions.menu')"
       @click="toggleMenu"
     />
 
@@ -214,11 +188,8 @@ function toggleMenu(event) {
 </template>
 
 <style scoped>
-/**
- * Trigger icon sizing.
- */
 .actions-button-trigger:deep(.p-button-icon) {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
 }
 
 /**
@@ -237,7 +208,7 @@ function toggleMenu(event) {
  * Menu list spacing.
  */
 :deep(.actions-button-menu .p-menu-list) {
-  padding: 0.35rem;
+  padding: 0.4rem;
   background: #ffffff;
 }
 
@@ -245,7 +216,7 @@ function toggleMenu(event) {
  * Menu item container.
  */
 :deep(.actions-button-menu .p-menu-item-content) {
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -255,10 +226,11 @@ function toggleMenu(event) {
  * Menu link styling.
  */
 :deep(.actions-button-menu .p-menu-item-link) {
-  gap: 0.7rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 0.7rem;
+  gap: 0.75rem;
+  padding: 0.78rem 0.9rem;
+  border-radius: 0.75rem;
   color: var(--hope-dark);
+  font-weight: 600;
 }
 
 /**
@@ -273,6 +245,7 @@ function toggleMenu(event) {
  */
 :deep(.actions-button-menu .p-menu-item-icon) {
   color: var(--brand-surface-500);
+  font-size: 0.88rem;
 }
 
 /**
@@ -303,5 +276,13 @@ function toggleMenu(event) {
 :deep(.actions-button-menu__danger .p-menu-item-content:hover .p-menu-item-link),
 :deep(.actions-button-menu__danger .p-menu-item-content:hover .p-menu-item-icon) {
   color: #be123c !important;
+}
+
+@media (max-width: 640px) {
+  .actions-button-trigger {
+    width: 2.35rem;
+    min-width: 2.35rem;
+    padding-inline: 0 !important;
+  }
 }
 </style>
