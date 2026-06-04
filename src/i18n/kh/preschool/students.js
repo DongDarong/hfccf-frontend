@@ -1,4 +1,4 @@
-﻿// Keep student copy centralized so Khmer and English stay aligned and the
+// Keep student copy centralized so Khmer and English stay aligned and the
 // roster pages do not need inline strings that can drift over time.
 export default {
   preschoolStudentInfoPage: {

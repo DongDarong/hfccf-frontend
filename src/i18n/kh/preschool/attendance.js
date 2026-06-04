@@ -1,4 +1,4 @@
-﻿export default {
+export default {
   preschoolAttendanceStatus: {
     present: 'áž˜áž¶áž“ážœážáŸ’ážáž˜áž¶áž“',
     absent: 'áž¢ážœážáŸ’ážáž˜áž¶áž“',

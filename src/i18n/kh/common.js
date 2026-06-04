@@ -1,4 +1,4 @@
-﻿import shell from './common/shell'
+import shell from './common/shell'
 import navigation from './common/navigation'
 import notifications from './common/notifications'
 import states from './common/states'
