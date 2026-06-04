@@ -166,6 +166,18 @@ export default {
     title: 'Teacher Profile',
     subtitle: 'Review teacher profile, permissions, and account details.',
     loadFailed: 'Failed to load teacher details.',
+    summary: {
+      permissions: 'Permissions',
+      permissionsCaption: 'Resolved from the teacher role',
+      contact: 'Contact',
+      contactReady: 'Ready',
+      contactMissing: 'Missing',
+      contactCaption: 'Email or phone available',
+      account: 'Account',
+      accountCaption: 'Login username',
+      status: 'Status',
+      statusCaption: 'Current account state',
+    },
     sections: {
       contact: 'Contact',
       account: 'Account',
@@ -181,10 +193,10 @@ export default {
       noPhone: 'No phone number',
       noEmail: 'No email',
     },
-    actions: {
-      back: 'Back to Teachers',
-      edit: 'Edit Teacher',
-    },
+  actions: {
+    back: 'Back',
+    edit: 'Edit Teacher',
+  },
   },
   preschoolDashboard: {
     title: 'Preschool Operations Board',
