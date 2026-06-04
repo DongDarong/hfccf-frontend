@@ -1,6 +1,7 @@
 <script setup>
 import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import Button from '@/components/buttons/Button.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'TableActions',
@@ -31,6 +32,8 @@ defineProps({
 })
 
 const emit = defineEmits(['view', 'edit', 'delete'])
+
+const { t } = useLanguage()
 </script>
 
 <template>
@@ -43,10 +46,10 @@ const emit = defineEmits(['view', 'edit', 'delete'])
       type="button"
       icon="pi pi-eye"
       rounded="full"
-      variant="ghost"
+      variant="outline"
       size="sm"
-      class="ui-data-table__row-action"
-      aria-label="View"
+      class="ui-data-table__row-action ui-data-table__row-action--view"
+      :aria-label="t('common.actions.view')"
       @click="emit('view', item)"
     />
 
@@ -55,10 +58,10 @@ const emit = defineEmits(['view', 'edit', 'delete'])
       type="button"
       icon="pi pi-pencil"
       rounded="full"
-      variant="ghost"
+      variant="primary"
       size="sm"
-      class="ui-data-table__row-action"
-      aria-label="Edit"
+      class="ui-data-table__row-action ui-data-table__row-action--edit"
+      :aria-label="t('common.actions.edit')"
       @click="emit('edit', item)"
     />
 
@@ -67,10 +70,10 @@ const emit = defineEmits(['view', 'edit', 'delete'])
       type="button"
       icon="pi pi-trash"
       rounded="full"
-      variant="ghost"
+      variant="danger"
       size="sm"
       class="ui-data-table__row-action ui-data-table__row-action--danger"
-      aria-label="Delete"
+      :aria-label="t('common.actions.delete')"
       @click="emit('delete', item)"
     />
   </div>
@@ -86,3 +89,50 @@ const emit = defineEmits(['view', 'edit', 'delete'])
     @delete="emit('delete', item)"
   />
 </template>
+
+<style scoped>
+.ui-data-table__row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ui-data-table__row-action {
+  min-width: 4.1rem;
+  justify-content: center;
+  box-shadow: 0 8px 18px -16px rgba(15, 23, 42, 0.2);
+}
+
+.ui-data-table__row-action :deep(.ui-button__label) {
+  font-size: 0.72rem;
+}
+
+.ui-data-table__row-action--view {
+  color: #334155;
+}
+
+.ui-data-table__row-action--edit {
+  min-width: 4.4rem;
+}
+
+.ui-data-table__row-action--danger {
+  min-width: 4.7rem;
+}
+
+@media (max-width: 640px) {
+  .ui-data-table__row-actions {
+    gap: 0.35rem;
+  }
+
+  .ui-data-table__row-action {
+    min-width: 0;
+    width: 2.25rem;
+  }
+
+  .ui-data-table__row-action :deep(.ui-button__label) {
+    display: none;
+  }
+}
+</style>

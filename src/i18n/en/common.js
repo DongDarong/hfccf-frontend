@@ -31,6 +31,7 @@ export default {
     cancel: 'Cancel',
     refresh: 'Refresh',
     viewAll: 'View All',
+    menu: 'Actions',
   },
   success: 'Success',
   type: 'Type',

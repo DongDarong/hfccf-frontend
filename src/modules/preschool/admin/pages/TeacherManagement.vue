@@ -223,6 +223,7 @@ onMounted(() => {
           :columns="tableColumns"
           :loading="loading"
           :empty-text="t('preschoolTeachersManagement.tableEmpty')"
+          action-style="buttons"
           @view="onViewUser"
           @edit="onEditUser"
           @delete="onDeleteUser"

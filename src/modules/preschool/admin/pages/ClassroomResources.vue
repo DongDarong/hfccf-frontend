@@ -302,6 +302,7 @@ onMounted(loadResources)
           :empty-text="searchQuery || categoryFilter || conditionFilter
             ? t('preschoolClassroomResources.messages.noResults')
             : t('preschoolClassroomResources.messages.empty')"
+          action-style="buttons"
           @edit="openEditModal"
           @delete="onDelete"
         />

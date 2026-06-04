@@ -118,6 +118,7 @@ function normalizeStudentRow(row = {}) {
     guardianPhone: normalizeText(row.guardianPhone || row.guardian_phone),
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
+    studentType: normalizeText(row.studentType || row.student_type || 'paying'),
     avatarUrl: normalizeText(
       row.avatarUrl || row.avatar_url ||
       row.profile_photo_url || row.profilePhotoUrl ||

@@ -102,13 +102,14 @@ const menuId = `row-actions-menu-${crypto.randomUUID()}`
 const triggerPt = {
   root: {
     class: [
-      '!h-9',
-      '!w-9',
+      '!h-9.5',
+      '!min-w-24',
       '!border',
       '!border-slate-200',
       '!bg-white',
-      '!text-surface-600',
-      'shadow-sm',
+      '!px-3.5',
+      '!text-surface-700',
+      'shadow-[0_8px_18px_-16px_rgba(15,23,42,0.2)]',
       'transition-all',
       'duration-200',
       'hover:enabled:!border-brand-300',
@@ -124,6 +125,7 @@ const triggerPt = {
  * Resolved localized labels.
  */
 const labels = computed(() => ({
+  trigger: t('common.actions.menu'),
   view: props.viewLabel || t('common.view'),
   edit: props.editLabel || t('common.edit'),
   delete: props.deleteLabel || t('common.delete'),
@@ -190,7 +192,7 @@ function toggleMenu(event) {
     <!-- Action trigger button -->
     <PrimeButton
       icon="pi pi-ellipsis-h"
-      text
+      :label="labels.trigger"
       rounded
       severity="secondary"
       class="actions-button-trigger"
@@ -198,7 +200,7 @@ function toggleMenu(event) {
       :pt="triggerPt"
       aria-haspopup="menu"
       :aria-controls="menuId"
-      aria-label="Row actions"
+      :aria-label="labels.trigger"
       @click="toggleMenu"
     />
 
@@ -218,7 +220,14 @@ function toggleMenu(event) {
  * Trigger icon sizing.
  */
 .actions-button-trigger:deep(.p-button-icon) {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
+}
+
+.actions-button-trigger:deep(.p-button-label) {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /**
@@ -237,7 +246,7 @@ function toggleMenu(event) {
  * Menu list spacing.
  */
 :deep(.actions-button-menu .p-menu-list) {
-  padding: 0.35rem;
+  padding: 0.4rem;
   background: #ffffff;
 }
 
@@ -245,7 +254,7 @@ function toggleMenu(event) {
  * Menu item container.
  */
 :deep(.actions-button-menu .p-menu-item-content) {
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -255,10 +264,11 @@ function toggleMenu(event) {
  * Menu link styling.
  */
 :deep(.actions-button-menu .p-menu-item-link) {
-  gap: 0.7rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 0.7rem;
+  gap: 0.75rem;
+  padding: 0.78rem 0.9rem;
+  border-radius: 0.75rem;
   color: var(--hope-dark);
+  font-weight: 600;
 }
 
 /**
@@ -273,6 +283,7 @@ function toggleMenu(event) {
  */
 :deep(.actions-button-menu .p-menu-item-icon) {
   color: var(--brand-surface-500);
+  font-size: 0.88rem;
 }
 
 /**
@@ -303,5 +314,17 @@ function toggleMenu(event) {
 :deep(.actions-button-menu__danger .p-menu-item-content:hover .p-menu-item-link),
 :deep(.actions-button-menu__danger .p-menu-item-content:hover .p-menu-item-icon) {
   color: #be123c !important;
+}
+
+@media (max-width: 640px) {
+  .actions-button-trigger:deep(.p-button-label) {
+    display: none;
+  }
+
+  .actions-button-trigger {
+    width: 2.35rem;
+    min-width: 2.35rem;
+    padding-inline: 0 !important;
+  }
 }
 </style>

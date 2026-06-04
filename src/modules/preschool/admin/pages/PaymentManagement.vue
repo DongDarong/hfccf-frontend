@@ -92,6 +92,13 @@ const studentOptionLabelMap = computed(() =>
   }, {}),
 )
 
+const studentById = computed(() =>
+  studentOptions.value.reduce((carry, item) => {
+    carry[String(item.value)] = item
+    return carry
+  }, {}),
+)
+
 function formatMoney(row) {
   return `${Number(row.amount || 0).toFixed(2)} ${row.currency || 'USD'}`
 }
@@ -185,10 +192,13 @@ async function loadClasses() {
 async function loadStudents() {
   try {
     const response = await fetchPreschoolStudents({ perPage: 100 })
-    studentOptions.value = (response.items || []).map((item) => ({
-      label: item.fullName || item.name || item.publicId || item.studentCode || item.id,
-      value: item.id,
-    }))
+    studentOptions.value = (response.items || [])
+      .filter((item) => String(item.studentType || '').trim() === 'paying')
+      .map((item) => ({
+        label: item.fullName || item.name || '-',
+        value: item.id,
+        classes: Array.isArray(item.classes) ? item.classes : [],
+      }))
   } catch {
     studentOptions.value = []
   }
@@ -237,6 +247,17 @@ function openCreateModal() {
   form.due_date = ''
   form.note = ''
   modalOpen.value = true
+}
+
+function syncClassFromStudent(studentId) {
+  const selectedStudent = studentById.value[String(studentId)]
+  const activeClasses = Array.isArray(selectedStudent?.classes)
+    ? selectedStudent.classes.filter((item) => String(item?.status || 'active') === 'active')
+    : []
+
+  if (activeClasses.length === 1) {
+    form.class_id = String(activeClasses[0]?.id || '')
+  }
 }
 
 function openEditModal(row) {
@@ -399,7 +420,7 @@ onMounted(async () => {
 
     <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? t('preschoolPaymentManagementPage.dialog.editTitle') : t('preschoolPaymentManagementPage.dialog.createTitle')" modal class="payment-management-page__dialog">
       <div class="payment-management-page__dialog-grid">
-        <select v-model="form.student_id" class="payment-management-page__input">
+        <select v-model="form.student_id" class="payment-management-page__input" @change="syncClassFromStudent($event.target.value)">
           <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
           <option v-for="option in studentOptions" :key="option.value" :value="option.value">
             {{ option.label }}

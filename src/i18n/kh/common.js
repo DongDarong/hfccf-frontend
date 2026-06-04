@@ -1,4 +1,4 @@
-import shell from './common/shell'
+﻿import shell from './common/shell'
 import navigation from './common/navigation'
 import notifications from './common/notifications'
 import states from './common/states'
@@ -31,7 +31,8 @@ export default {
     save: 'រក្សាទុក',
     cancel: 'បោះបង់',
     refresh: 'ធ្វើឱ្យស្រស់',
-    viewAll: 'មើលទាំងអស់',
+
+    menu: 'សកម្មភាព',
   },
   success: 'ជោគជ័យ',
   type: 'ប្រភេទ',
@@ -217,3 +218,4 @@ export default {
   notifications,
   states,
 }
+
