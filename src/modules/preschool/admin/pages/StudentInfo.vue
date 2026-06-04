@@ -257,7 +257,6 @@ onMounted(async () => {
           :columns="tableColumns"
           :loading="loading"
           :empty-text="t('preschoolStudentInfoPage.messages.noResults')"
-          action-style="buttons"
           @view="onViewStudent"
           @edit="onEditStudent"
           @delete="onDeleteStudent"

@@ -97,35 +97,9 @@ const menu = ref(null)
 const menuId = `row-actions-menu-${crypto.randomUUID()}`
 
 /**
- * PrimeVue button pass-through styling.
- */
-const triggerPt = {
-  root: {
-    class: [
-      '!h-9.5',
-      '!min-w-24',
-      '!border',
-      '!border-slate-200',
-      '!bg-white',
-      '!px-3.5',
-      '!text-surface-700',
-      'shadow-[0_8px_18px_-16px_rgba(15,23,42,0.2)]',
-      'transition-all',
-      'duration-200',
-      'hover:enabled:!border-brand-300',
-      'hover:enabled:!bg-brand-50',
-      'hover:enabled:!text-brand-700',
-      'focus-visible:!outline-none',
-      'focus-visible:!shadow-focus',
-    ],
-  },
-}
-
-/**
  * Resolved localized labels.
  */
 const labels = computed(() => ({
-  trigger: t('common.actions.menu'),
   view: props.viewLabel || t('common.view'),
   edit: props.editLabel || t('common.edit'),
   delete: props.deleteLabel || t('common.delete'),
@@ -192,15 +166,13 @@ function toggleMenu(event) {
     <!-- Action trigger button -->
     <PrimeButton
       icon="pi pi-ellipsis-h"
-      :label="labels.trigger"
       rounded
       severity="secondary"
       class="actions-button-trigger"
       :disabled="disabled"
-      :pt="triggerPt"
       aria-haspopup="menu"
       :aria-controls="menuId"
-      :aria-label="labels.trigger"
+      :aria-label="t('common.actions.menu')"
       @click="toggleMenu"
     />
 
@@ -216,18 +188,8 @@ function toggleMenu(event) {
 </template>
 
 <style scoped>
-/**
- * Trigger icon sizing.
- */
 .actions-button-trigger:deep(.p-button-icon) {
   font-size: 0.88rem;
-}
-
-.actions-button-trigger:deep(.p-button-label) {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 /**
@@ -317,10 +279,6 @@ function toggleMenu(event) {
 }
 
 @media (max-width: 640px) {
-  .actions-button-trigger:deep(.p-button-label) {
-    display: none;
-  }
-
   .actions-button-trigger {
     width: 2.35rem;
     min-width: 2.35rem;

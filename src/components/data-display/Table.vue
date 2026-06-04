@@ -10,7 +10,7 @@
  * - Dynamic columns
  * - User avatar fallback
  * - Role / permission / status badges
- * - Menu or icon-button row actions
+ * - Menu row actions
  * --------------------------------------------------------------------------
  */
 
@@ -65,11 +65,6 @@ const props = defineProps({
     type: String,
     default: 'id',
   },
-  actionStyle: {
-    type: String,
-    default: 'menu',
-    validator: (value) => ['menu', 'buttons'].includes(value),
-  },
   showViewAction: {
     type: Boolean,
     default: true,
@@ -104,7 +99,6 @@ const {
   resolvedRows,
   resolvedEmptyText,
   loadingLabel,
-  useButtonActions,
   resolvedColumns,
   resolvedSortField,
   resolvedSortOrder,
@@ -334,7 +328,6 @@ function paymentTone(value) {
         <template v-else-if="column.key === 'actions'">
           <TableActions
             :item="data"
-            :action-style="useButtonActions ? 'buttons' : 'menu'"
             :show-view-action="showViewAction"
             :show-edit-action="showEditAction"
             :show-delete-action="showDeleteAction"

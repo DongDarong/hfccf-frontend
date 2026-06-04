@@ -125,7 +125,6 @@ onMounted(() => {
           :columns="tableColumns"
           :loading="loading"
           empty-text="No assigned scholarship applications found."
-          action-style="buttons"
           :show-edit-action="false"
           :show-delete-action="false"
           @view="onViewApplication"

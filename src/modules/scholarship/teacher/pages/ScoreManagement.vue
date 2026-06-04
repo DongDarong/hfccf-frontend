@@ -180,7 +180,6 @@ onMounted(() => {
           :columns="tableColumns"
           :loading="loading"
           empty-text="No scholarship applications available for review."
-          action-style="buttons"
           :show-edit-action="false"
           :show-delete-action="false"
           @view="onViewApplication"

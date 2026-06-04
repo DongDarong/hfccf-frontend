@@ -82,8 +82,6 @@ export function useTableDisplay(props, t) {
     t('users.loadingUsers') || 'Loading data',
   )
 
-  const useButtonActions = computed(() => props.actionStyle === 'buttons')
-
   const defaultColumns = computed(() => [
     { key: 'number', label: t('common.table.number'), align: 'left' },
     { key: 'user', label: t('common.table.user'), align: 'left' },
@@ -139,7 +137,6 @@ export function useTableDisplay(props, t) {
     resolvedRows,
     resolvedEmptyText,
     loadingLabel,
-    useButtonActions,
     resolvedColumns,
     resolvedSortField,
     resolvedSortOrder,

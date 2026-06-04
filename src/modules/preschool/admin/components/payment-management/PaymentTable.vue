@@ -33,7 +33,6 @@ defineEmits(['view', 'edit', 'delete'])
     :columns="columns"
     :loading="loading"
     :empty-text="emptyText"
-    action-style="buttons"
     @view="$emit('view', $event)"
     @edit="$emit('edit', $event)"
     @delete="$emit('delete', $event)"
