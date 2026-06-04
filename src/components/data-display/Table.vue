@@ -173,7 +173,12 @@ function onSort(event) {
         <template v-else-if="column.key === 'student'">
           <div class="ui-student-cell">
             <div class="ui-user-avatar ui-user-avatar--student">
-              <span class="ui-user-avatar__initials">{{ userInitials(data) }}</span>
+              <span
+                v-if="!shouldShowImage(data)"
+                class="ui-user-avatar__initials"
+              >
+                {{ userInitials(data) }}
+              </span>
               <img
                 v-if="avatarSrc(data)"
                 :src="avatarSrc(data)"

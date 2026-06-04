@@ -70,6 +70,47 @@ export default {
       noResults: 'No students found.',
     },
   },
+  preschoolStudentProfilePage: {
+    title: 'Student Profile',
+    subtitle: 'View student identity, guardian contact, and class enrollment details.',
+    actions: {
+      back: 'Back to Students',
+    },
+    hero: {
+      eyebrow: 'Student Profile',
+      summary: 'A read-only view of the student record with guardian and enrollment details in one place.',
+    },
+    cards: {
+      studentCode: 'Student Code',
+      gender: 'Gender',
+      dateOfBirth: 'Date of Birth',
+      classes: 'Classes',
+    },
+    sections: {
+      personal: 'Personal Information',
+      guardian: 'Guardian Contact',
+      enrollment: 'Enrollment',
+      record: 'Record Details',
+    },
+    fields: {
+      studentCode: 'Student Code',
+      gender: 'Gender',
+      dateOfBirth: 'Date of Birth',
+      address: 'Address',
+      guardianName: 'Guardian Name',
+      guardianPhone: 'Guardian Phone',
+      status: 'Status',
+      createdAt: 'Created At',
+      updatedAt: 'Updated At',
+      classesCount: 'Classes Count',
+    },
+    messages: {
+      loading: 'Loading student profile...',
+      loadFailed: 'Failed to load student profile.',
+      notFound: 'Student profile was not found.',
+      noClasses: 'No class assignments found for this student.',
+    },
+  },
   preschoolTeacherStudentsPage: {
     title: 'My Preschool Students',
     subtitle: 'Students assigned to your preschool classes.',

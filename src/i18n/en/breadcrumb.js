@@ -59,6 +59,7 @@ export default {
     assignments: 'Assignments',
     assessments: 'Assessments',
     addAssessment: 'Add Assessment',
+    studentProfile: 'Student Profile',
     progressSummary: 'Progress Summary',
     schedules: 'Schedules',
     classSchedule: 'Class Schedule',

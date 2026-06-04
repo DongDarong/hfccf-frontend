@@ -81,5 +81,6 @@ export default {
     myStudents: 'សិស្សរបស់ខ្ញុំ',
     mySchedule: 'កាលវិភាគរបស់ខ្ញុំ',
     health: 'សុខភាព',
+    studentProfile: 'ប្រវត្តិរូបសិស្ស',
   },
 }

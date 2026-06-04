@@ -2,7 +2,8 @@
 // Keep student management text locale-driven so EN/KH parity is testable and
 // hardcoded English labels do not reappear in a production page.
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
+import { useRouter } from 'vue-router'
+import { resolveAvatarSource } from '@/utils/avatar'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -20,6 +21,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -99,11 +101,6 @@ const mappedStudents = computed(() =>
     }
   }),
 )
-
-const studentInitials = computed(() => {
-  const name = `${form.first_name} ${form.last_name}`.trim()
-  return getAvatarInitials(name, '?')
-})
 
 function clearAvatarPreview() {
   if (avatarPreview.value.startsWith('blob:')) {
@@ -284,7 +281,9 @@ async function confirmDelete() {
 }
 
 function onViewStudent(student) {
-  openEditModal(student)
+  const studentId = String(student?.id || '').trim()
+  if (!studentId) return
+  router.push({ name: 'dashboard-preschool-admin-student-profile', params: { id: studentId } })
 }
 
 watch([searchQuery, statusFilter, genderFilter, classFilter], () => {
@@ -379,14 +378,20 @@ onMounted(async () => {
             <div
               class="student-info-page__dialog-avatar"
               :class="{ 'student-info-page__dialog-avatar--empty': !avatarPreview }"
-              role="button"
-              tabindex="0"
-              :title="t('preschoolStudentInfoPage.dialog.uploadAvatar')"
-              @click="onAvatarClick"
-              @keydown.enter.space.prevent="onAvatarClick"
+              :role="modalMode === 'view' ? undefined : 'button'"
+              :tabindex="modalMode === 'view' ? -1 : 0"
+              :title="modalMode === 'view' ? `${t('common.view')} ${t('preschoolStudentInfoPage.columns.student')}` : t('preschoolStudentInfoPage.dialog.uploadAvatar')"
+              :aria-disabled="modalMode === 'view'"
+              @click="modalMode !== 'view' && onAvatarClick()"
+              @keydown.enter.space.prevent="modalMode !== 'view' && onAvatarClick()"
             >
               <img v-if="avatarPreview" :src="avatarPreview" class="student-info-page__dialog-avatar-img" alt="Student avatar" />
-              <span v-else class="student-info-page__avatar-initials">{{ studentInitials }}</span>
+              <span v-else class="student-info-page__avatar-placeholder" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21a8 8 0 0 0-16 0" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
               <div class="student-info-page__dialog-avatar-overlay" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
@@ -406,19 +411,25 @@ onMounted(async () => {
           <!-- text + actions column -->
           <div class="student-info-page__avatar-info">
             <p class="student-info-page__dialog-title">
-              {{ modalMode === 'edit' ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle') }}
+              {{
+                modalMode === 'view'
+                  ? `${t('common.view')} ${t('preschoolStudentInfoPage.columns.student')}`
+                  : modalMode === 'edit'
+                    ? t('preschoolStudentInfoPage.dialog.editTitle')
+                    : t('preschoolStudentInfoPage.dialog.createTitle')
+              }}
             </p>
-            <p v-if="modalMode === 'edit' && (form.first_name || form.last_name)" class="student-info-page__dialog-name">
+            <p v-if="modalMode !== 'create' && (form.first_name || form.last_name)" class="student-info-page__dialog-name">
               {{ `${form.first_name} ${form.last_name}`.trim() }}
             </p>
             <div class="student-info-page__avatar-btns">
-              <button class="student-info-page__avatar-upload-btn" type="button" @click="onAvatarClick">
+              <button v-if="modalMode !== 'view'" class="student-info-page__avatar-upload-btn" type="button" @click="onAvatarClick">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 {{ t('preschoolStudentInfoPage.dialog.uploadAvatar') }}
               </button>
-              <button v-if="avatarPreview" class="student-info-page__avatar-remove-btn" type="button" @click.stop="onAvatarRemove">
+              <button v-if="modalMode !== 'view' && avatarPreview" class="student-info-page__avatar-remove-btn" type="button" @click.stop="onAvatarRemove">
                 {{ t('preschoolStudentInfoPage.dialog.removeAvatar') }}
               </button>
             </div>
@@ -434,32 +445,32 @@ onMounted(async () => {
         <div class="student-info-page__form-grid">
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.studentCode') }}</label>
-            <input v-model="form.student_code" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.studentCode')" />
+            <input v-model="form.student_code" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.studentCode')" :disabled="modalMode === 'view'" />
           </div>
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.status') }}</label>
-            <select v-model="form.status" class="student-info-page__input">
+            <select v-model="form.status" class="student-info-page__input" :disabled="modalMode === 'view'">
               <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
           </div>
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.firstName') }}</label>
-            <input v-model="form.first_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.firstName')" />
+            <input v-model="form.first_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.firstName')" :disabled="modalMode === 'view'" />
           </div>
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.lastName') }}</label>
-            <input v-model="form.last_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.lastName')" />
+            <input v-model="form.last_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.lastName')" :disabled="modalMode === 'view'" />
           </div>
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.gender') }}</label>
-            <select v-model="form.gender" class="student-info-page__input">
+            <select v-model="form.gender" class="student-info-page__input" :disabled="modalMode === 'view'">
               <option value="">—</option>
               <option v-for="opt in genderOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
           </div>
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.dateOfBirth') }}</label>
-            <input v-model="form.date_of_birth" class="student-info-page__input" type="date" />
+            <input v-model="form.date_of_birth" class="student-info-page__input" type="date" :disabled="modalMode === 'view'" />
           </div>
         </div>
 
@@ -468,11 +479,11 @@ onMounted(async () => {
         <div class="student-info-page__form-grid">
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.guardianName') }}</label>
-            <input v-model="form.guardian_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianName')" />
+            <input v-model="form.guardian_name" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianName')" :disabled="modalMode === 'view'" />
           </div>
           <div class="student-info-page__field">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.guardianPhone') }}</label>
-            <input v-model="form.guardian_phone" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" />
+            <input v-model="form.guardian_phone" class="student-info-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" :disabled="modalMode === 'view'" />
           </div>
         </div>
 
@@ -489,11 +500,12 @@ onMounted(async () => {
               :placeholder="t('preschoolStudentInfoPage.dialog.assignClasses')"
               display="chip"
               class="w-full"
+              :disabled="modalMode === 'view'"
             />
           </div>
           <div class="student-info-page__field student-info-page__field--full">
             <label class="student-info-page__label">{{ t('preschoolStudentInfoPage.dialog.address') }}</label>
-            <textarea v-model="form.address" class="student-info-page__input" rows="3" :placeholder="t('preschoolStudentInfoPage.dialog.address')" />
+            <textarea v-model="form.address" class="student-info-page__input" rows="3" :placeholder="t('preschoolStudentInfoPage.dialog.address')" :disabled="modalMode === 'view'" />
           </div>
         </div>
 
@@ -505,8 +517,11 @@ onMounted(async () => {
 
       <template #footer>
         <Button type="button" variant="ghost" rounded="xl" @click="closeModal">{{ t('preschoolStudentInfoPage.dialog.cancel') }}</Button>
-        <Button type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveStudent">
+        <Button v-if="modalMode !== 'view'" type="button" variant="primary" rounded="xl" :loading="saving" :disabled="saving" @click="onSaveStudent">
           {{ t('preschoolStudentInfoPage.dialog.save') }}
+        </Button>
+        <Button v-else type="button" variant="primary" rounded="xl" @click="closeModal">
+          {{ t('common.close') }}
         </Button>
       </template>
     </Dialog>
@@ -731,9 +746,20 @@ onMounted(async () => {
   transform: scale(1.04);
 }
 
-.student-info-page__avatar-initials {
+.student-info-page__avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
   user-select: none;
   pointer-events: none;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.student-info-page__avatar-placeholder svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 .student-info-page__dialog-avatar-img {
