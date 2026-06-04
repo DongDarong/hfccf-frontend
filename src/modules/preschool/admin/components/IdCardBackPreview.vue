@@ -143,51 +143,62 @@ watch(codeSeed, async (seed) => {
 
     <div class="absolute inset-x-0 flex" :style="{ top: mm(HEADER_H + BAR_H), height: mm(bodyH) }">
       <template v-if="!isPortrait">
-        <div class="flex flex-col items-center justify-center shrink-0" :style="{ width: mm(29.5) }">
-          <div class="rounded-full overflow-hidden bg-blue-50 flex items-center justify-center ring-[1.5px] ring-blue-400"
-            :style="{ width: mm(22), height: mm(22) }">
-            <span class="font-bold text-blue-800" :style="{ fontSize: pt(8.8) }">{{ guardianInitials }}</span>
-          </div>
-          <div class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 mt-2">
-            {{ T.profile }}
-          </div>
-        </div>
+        <div class="flex h-full w-full gap-0" :style="{ padding: `${mmn(1.8)}px ${mmn(2)}px` }">
+          <div class="flex flex-col justify-between shrink-0" :style="{ width: mm(29.5) }">
+            <div class="flex flex-col items-center">
+              <div class="rounded-full overflow-hidden bg-blue-50 flex items-center justify-center ring-[1.5px] ring-blue-400 shadow-sm"
+                :style="{ width: mm(22.5), height: mm(22.5) }">
+                <span class="font-bold text-blue-800" :style="{ fontSize: pt(8.8) }">{{ guardianInitials }}</span>
+              </div>
+              <div class="rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700 mt-2">
+                {{ T.profile }}
+              </div>
+            </div>
 
-        <div class="border-l border-slate-200 shrink-0" :style="{ margin: `${mmn(2)}px 0` }" />
-
-        <div class="flex-1 flex flex-col justify-center overflow-hidden" :style="{ padding: `${mmn(2)}px ${mmn(2)}px` }">
-          <p class="font-bold text-slate-900 leading-tight" :style="{ fontSize: pt(8.2), marginBottom: mm(1.2) }">{{ guardianName }}</p>
-          <div class="border-t border-slate-200" :style="{ marginBottom: mm(1.8) }" />
-
-          <div class="grid grid-cols-2" :style="{ gap: mm(4) }">
-            <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.guardianName }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.8) }">{{ guardianName }}</p>
-            </div>
-            <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.guardianPhone }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.8) }">{{ guardianPhone }}</p>
-            </div>
-            <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.studentRef }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.8) }">{{ studentName }}</p>
-            </div>
-            <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.studentId }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.8) }">{{ studentCode }}</p>
-            </div>
-            <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.class }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.8) }">{{ className || '—' }}</p>
+            <div class="rounded-[16px] border border-slate-200/80 bg-white p-3 shadow-[0_6px_18px_rgba(15,23,42,0.05)]">
+              <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{{ T.note }}</p>
+              <p class="mt-2 text-[11px] leading-snug text-slate-500">
+                {{ guardianName }} · {{ guardianPhone }}
+              </p>
             </div>
           </div>
-          <div class="mt-3 self-end rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm" :style="{ width: mm(18), height: mm(18) }">
-            <img
-              :src="resolvedQrDataUrl"
-              :alt="codeTitle"
-              class="h-full w-full rounded-[4px] bg-white object-contain"
-            >
-            <p class="mt-1 truncate text-[10px] font-semibold text-slate-500">{{ codeTitle }}</p>
+
+          <div class="mx-4 w-px shrink-0" :style="{ background: 'linear-gradient(to bottom, transparent, #dbe4f0 18%, #dbe4f0 82%, transparent)' }" />
+
+          <div class="flex-1 flex flex-col justify-center overflow-hidden" :style="{ padding: `${mmn(0.8)}px 0` }">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-slate-900 truncate leading-tight" :style="{ fontSize: pt(8.2), marginBottom: mm(0.6) }">{{ guardianName }}</p>
+                <p class="text-slate-500 leading-none" :style="{ fontSize: pt(4.5), marginBottom: mm(1.2) }">{{ T.guardianPhone }} · {{ guardianPhone }}</p>
+                <div class="rounded-full" :style="{ width: mm(9), height: mm(0.65), background: 'linear-gradient(to right, #2563eb, #60a5fa)' }" />
+              </div>
+              <div class="shrink-0 rounded-[18px] border border-slate-200/80 bg-slate-50 p-2 shadow-[0_8px_18px_rgba(15,23,42,0.06)]" :style="{ width: mm(18), height: mm(18) }">
+                <img
+                  :src="resolvedQrDataUrl"
+                  :alt="codeTitle"
+                  class="h-full w-full rounded-[4px] bg-white object-contain"
+                >
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.guardianName }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.6) }">{{ guardianName }}</p>
+              </div>
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.studentId }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.6) }">{{ studentCode }}</p>
+              </div>
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.studentRef }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.6) }">{{ studentName }}</p>
+              </div>
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.class }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.6) }">{{ className || '—' }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </template>

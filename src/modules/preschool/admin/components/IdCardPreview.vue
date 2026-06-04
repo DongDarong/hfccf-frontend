@@ -95,15 +95,15 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
         <img
           :src="logoSrc"
           class="object-contain shrink-0 drop-shadow-sm"
-          :style="{ width: mm(10.5), height: mm(10.5) }"
+          :style="{ width: mm(10), height: mm(10) }"
         />
         <div class="flex-1 min-w-0 flex flex-col justify-center">
-          <span class="font-bold text-white truncate leading-none" :style="{ fontSize: pt(7.5), marginBottom: mm(0.8) }">{{ T.school }}</span>
-          <span class="text-sky-300 truncate leading-none" :style="{ fontSize: pt(5.5) }">{{ T.tagline }}</span>
+          <span class="font-bold text-white truncate leading-none" :style="{ fontSize: pt(7.2), marginBottom: mm(0.6) }">{{ T.school }}</span>
+          <span class="text-sky-300 truncate leading-none" :style="{ fontSize: pt(5.1) }">{{ T.tagline }}</span>
         </div>
         <div
-          class="border border-white/50 rounded bg-white/[0.07] font-bold text-white shrink-0"
-          :style="{ fontSize: pt(4.8), padding: `${mmn(0.8)}px ${mmn(1.8)}px` }"
+          class="rounded-full border border-white/40 bg-white/[0.08] font-bold text-white shrink-0 shadow-sm"
+          :style="{ fontSize: pt(4.4), padding: `${mmn(0.85)}px ${mmn(1.8)}px` }"
         >
           {{ T.badge }}
         </div>
@@ -138,90 +138,86 @@ const isMale    = computed(() => props.student.gender?.toLowerCase().startsWith(
 
       <!-- ── Landscape body ───────────────────────────────────────────────── -->
       <template v-if="!isPortrait">
-
-        <!-- Avatar column -->
-        <div class="flex flex-col items-center justify-center shrink-0" :style="{ width: mm(29.5) }">
-
-          <!-- Circle photo / initials -->
+        <div class="flex h-full w-full gap-0" :style="{ padding: `${mmn(1.8)}px ${mmn(2)}px` }">
           <div
-            class="rounded-full overflow-hidden bg-blue-100 flex items-center justify-center"
-            :style="{
-              width: mm(AV_R * 2), height: mm(AV_R * 2),
-              boxShadow: `0 0 0 ${mmn(0.7)}px #fff, 0 0 0 ${mmn(1.6)}px #60a5fa, 0 ${mmn(1)}px ${mmn(3)}px rgba(59,130,246,0.25)`,
-            }"
+            class="flex flex-col items-center justify-center shrink-0"
+            :style="{ width: mm(30) }"
           >
-            <img
-              v-if="photoUrl"
-              :src="photoUrl"
-              class="w-full h-full object-cover"
-            />
-            <span
-              v-else
-              class="font-bold text-blue-800"
-              :style="{ fontSize: pt(initials.length > 2 ? 8.5 : 11) }"
-            >{{ initials }}</span>
+            <div class="rounded-[999px] bg-white p-[2px] shadow-[0_6px_14px_rgba(15,23,42,0.12)]">
+              <div
+                class="rounded-full overflow-hidden bg-blue-100 flex items-center justify-center"
+                :style="{
+                  width: mm(AV_R * 2), height: mm(AV_R * 2),
+                  boxShadow: `inset 0 0 0 ${mmn(0.8)}px rgba(255,255,255,0.7)`,
+                }"
+              >
+                <img
+                  v-if="photoUrl"
+                  :src="photoUrl"
+                  class="w-full h-full object-cover"
+                />
+                <span
+                  v-else
+                  class="font-bold text-blue-800"
+                  :style="{ fontSize: pt(initials.length > 2 ? 8.5 : 11) }"
+                >{{ initials }}</span>
+              </div>
+            </div>
+            <div
+              v-if="hasGender"
+              class="mt-2 rounded-full font-bold leading-none shadow-sm"
+              :style="{
+                fontSize:   pt(4.5),
+                padding:    `${mmn(0.7)}px ${mmn(2.2)}px`,
+                background: isMale ? '#eef2ff' : '#fdf2f8',
+                color:      isMale ? '#4338ca' : '#be185d',
+              }"
+            >{{ isMale ? T.male : T.female }}</div>
+            <div class="mt-2 rounded-full bg-sky-50 px-3 py-1 text-[10px] font-semibold tracking-wide text-sky-700">
+              Student
+            </div>
           </div>
 
-          <!-- Gender badge -->
           <div
-            v-if="hasGender"
-            class="rounded-full font-bold leading-none"
+            class="mx-4 w-px shrink-0"
             :style="{
-              fontSize:   pt(4.8),
-              padding:    `${mmn(0.7)}px ${mmn(2.2)}px`,
-              marginTop:  mm(1.5),
-              background: isMale ? '#ede9fe' : '#fce7f3',
-              color:      isMale ? '#6d28d9' : '#be185d',
+              background: 'linear-gradient(to bottom, transparent, #dbe4f0 18%, #dbe4f0 82%, transparent)',
             }"
-          >{{ isMale ? T.male : T.female }}</div>
-
-        </div>
-
-        <!-- Vertical separator -->
-        <div
-          class="shrink-0"
-          :style="{
-            margin: `${mmn(2)}px 0`,
-            width: '1px',
-            background: 'linear-gradient(to bottom, transparent, #cbd5e1 20%, #cbd5e1 80%, transparent)',
-          }"
-        />
-
-        <!-- Info column -->
-        <div
-          class="flex-1 flex flex-col justify-center overflow-hidden"
-          :style="{ padding: `${mmn(2)}px ${mmn(2)}px` }"
-        >
-          <!-- Name -->
-          <p
-            class="font-extrabold text-slate-900 truncate leading-tight"
-            :style="{ fontSize: pt(8.5), marginBottom: mm(0.8) }"
-          >{{ name }}</p>
-          <!-- Name underline accent -->
-          <div
-            class="rounded-full"
-            :style="{ width: mm(8), height: mm(0.7), marginBottom: mm(1.5), background: 'linear-gradient(to right, #3b82f6, #93c5fd)' }"
           />
 
-          <!-- STUDENT ID with accent border -->
-          <div :style="{ marginBottom: mm(2), borderLeft: `${mmn(0.8)}px solid #93c5fd`, paddingLeft: mm(1.5) }">
-            <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.studentId }}</p>
-            <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ sid }}</p>
-          </div>
+          <div class="flex-1 flex flex-col justify-center overflow-hidden" :style="{ padding: `${mmn(0.8)}px 0` }">
+            <p
+              class="font-extrabold text-slate-900 truncate leading-tight"
+              :style="{ fontSize: pt(8.7), marginBottom: mm(0.5) }"
+            >{{ name }}</p>
+            <p class="text-slate-500 leading-none" :style="{ fontSize: pt(4.5), marginBottom: mm(1.3) }">
+              {{ T.badge }}
+            </p>
+            <div
+              class="rounded-full"
+              :style="{ width: mm(9), height: mm(0.65), marginBottom: mm(1.4), background: 'linear-gradient(to right, #2563eb, #60a5fa)' }"
+            />
 
-          <!-- CLASS | GRADE row -->
-          <div class="flex" :style="{ gap: mm(5) }">
-            <div>
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.class }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ className || '—' }}</p>
-            </div>
-            <div v-if="classLevel">
-              <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.8) }">{{ T.grade }}</p>
-              <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(7) }">{{ classLevel }}</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.studentId }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.9) }">{{ sid }}</p>
+              </div>
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.class }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.9) }">{{ className || '—' }}</p>
+              </div>
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.grade }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.9) }">{{ classLevel || '—' }}</p>
+              </div>
+              <div class="rounded-[14px] border border-slate-200/80 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+                <p class="font-semibold text-slate-400 uppercase tracking-wider leading-none" :style="{ fontSize: pt(4.4) }">{{ T.dob }}</p>
+                <p class="font-bold text-blue-800 leading-tight" :style="{ fontSize: pt(6.9) }">{{ student.dateOfBirth || '—' }}</p>
+              </div>
             </div>
           </div>
         </div>
-
       </template>
 
       <!-- ── Portrait body ────────────────────────────────────────────────── -->
