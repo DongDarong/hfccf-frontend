@@ -554,8 +554,8 @@ onMounted(loadClasses)
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-semibold text-slate-900">{{ student.fullName||student.name||'—' }}</p>
               <p class="text-xs text-slate-400">
-                <span v-if="student.studentCode">#{{ student.studentCode }}</span>
-                <span v-if="student.studentCode && student.gender"> · </span>
+                <span v-if="student.publicId || student.studentCode">#{{ student.publicId || student.studentCode }}</span>
+                <span v-if="(student.publicId || student.studentCode) && student.gender"> · </span>
                 <span v-if="student.gender" class="capitalize">{{ student.gender }}</span>
               </p>
             </div>

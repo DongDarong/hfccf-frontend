@@ -74,7 +74,7 @@ const tableColumns = computed(() => [
   { key: 'amountLabel', label: t('preschoolPaymentManagementPage.columns.amount'), align: 'left' },
   { key: 'paymentMethod', label: t('preschoolPaymentManagementPage.columns.method'), align: 'left' },
   { key: 'dueDate', label: t('preschoolPaymentManagementPage.columns.dueDate'), align: 'left' },
-  { key: 'status', label: t('preschoolPaymentManagementPage.columns.status'), align: 'left' },
+  { key: 'paymentStatus', label: t('preschoolPaymentManagementPage.columns.status'), align: 'left' },
   { key: 'actions', label: t('preschoolPaymentManagementPage.columns.actions'), align: 'right' },
 ])
 
@@ -92,21 +92,20 @@ const studentOptionLabelMap = computed(() =>
   }, {}),
 )
 
-function normalize(value) {
-  return String(value ?? '').trim().toLowerCase()
-}
-
 function formatMoney(row) {
   return `${Number(row.amount || 0).toFixed(2)} ${row.currency || 'USD'}`
 }
 
-const filteredPayments = computed(() => paymentRows.value)
+function normalize(value) {
+  return String(value ?? '').trim().toLowerCase()
+}
 
 const paidAmount = computed(() =>
   paymentRows.value
     .filter((row) => normalize(row.paymentStatus) === 'paid')
     .reduce((sum, row) => sum + Number(row.amount || 0), 0),
 )
+const totalPaymentCount = computed(() => Number(pagination.value.total || paymentRows.value.length || 0))
 const pendingCount = computed(
   () => paymentRows.value.filter((row) => normalize(row.paymentStatus) === 'pending').length,
 )
@@ -118,7 +117,7 @@ const summaryCards = computed(() => [
   {
     id: 'total',
     label: t('preschoolPaymentManagementPage.summary.total'),
-    value: paymentRows.value.length,
+    value: totalPaymentCount.value,
     tone: 'info',
     icon: 'pi pi-receipt',
   },
@@ -146,13 +145,18 @@ const summaryCards = computed(() => [
 ])
 
 const visibleRangeLabel = computed(() => {
-  if (!filteredPayments.value.length) return t('preschoolPaymentManagementPage.messages.noResults')
-  const start = (currentPage.value - 1) * pageSize + 1
-  const end = Math.min(currentPage.value * pageSize, filteredPayments.value.length)
+  const total = Number(pagination.value.total || 0)
+  if (!total) return t('preschoolPaymentManagementPage.messages.noResults')
+
+  const perPage = Number(pagination.value.perPage || pageSize || 1)
+  const page = Number(pagination.value.page || currentPage.value || 1)
+  const start = Math.min((page - 1) * perPage + 1, total)
+  const end = Math.min(page * perPage, total)
+
   return t('preschoolPaymentManagementPage.toolbar.range', {
     start,
     end,
-    total: filteredPayments.value.length,
+    total,
   })
 })
 
@@ -165,14 +169,6 @@ function mapPayment(row) {
     status: row.paymentStatus || row.status || '-',
   }
 }
-
-const paginatedPayments = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredPayments.value.slice(start, start + pageSize).map((row, index) => ({
-    ...mapPayment(row),
-    rowNumber: start + index + 1,
-  }))
-})
 
 async function loadClasses() {
   try {
@@ -190,7 +186,7 @@ async function loadStudents() {
   try {
     const response = await fetchPreschoolStudents({ perPage: 100 })
     studentOptions.value = (response.items || []).map((item) => ({
-      label: item.fullName || item.name || item.studentCode || item.id,
+      label: item.fullName || item.name || item.publicId || item.studentCode || item.id,
       value: item.id,
     }))
   } catch {
@@ -386,8 +382,9 @@ onMounted(async () => {
         </div>
 
         <PaymentTable
-          :payments="paginatedPayments"
+          :payments="paymentRows"
           :columns="tableColumns"
+          :loading="loading"
           :empty-text="t('preschoolPaymentManagementPage.messages.noResults')"
           @view="onViewPayment"
           @edit="onEditPayment"
@@ -515,4 +512,3 @@ onMounted(async () => {
   }
 }
 </style>
-

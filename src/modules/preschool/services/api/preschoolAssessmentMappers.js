@@ -24,6 +24,7 @@ export function normalizeAssessment(row = {}) {
   return {
     id: row.id ?? '',
     studentId: row.studentId ?? row.student_id ?? '',
+    studentPublicId: normalizeText(row.studentPublicId || row.student_public_id),
     studentName: normalizeText(row.studentName || row.student_name),
     classId: row.classId ?? row.class_id ?? '',
     className: normalizeText(row.className || row.class_name),

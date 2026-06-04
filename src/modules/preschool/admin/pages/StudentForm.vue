@@ -30,6 +30,7 @@ const successMessage = ref('')
 const classOptions = ref([])
 const avatarFileInput = ref(null)
 const avatarPreview = ref('')
+const loadedStudent = ref(null)
 
 const form = reactive({
   student_code: '',
@@ -57,8 +58,8 @@ const pageTitle = computed(() =>
 )
 const pageSubtitle = computed(() => t('preschoolStudentInfoPage.subtitle'))
 const studentCodeDisplay = computed(() =>
-  isEditMode.value && form.student_code
-    ? form.student_code
+  isEditMode.value && (loadedStudent.value?.publicId || form.student_code)
+    ? loadedStudent.value?.publicId || form.student_code
     : t('preschoolStudentInfoPage.dialog.studentSignatureAuto'),
 )
 const studentTypeOptions = computed(() => [
@@ -106,6 +107,7 @@ function resetForm() {
   form.remove_avatar = false
   clearAvatarPreview()
   if (avatarFileInput.value) avatarFileInput.value.value = ''
+  loadedStudent.value = null
 }
 
 async function loadClasses() {
@@ -137,6 +139,7 @@ async function loadStudent() {
       return
     }
 
+    loadedStudent.value = student
     form.student_code = student.studentCode || ''
     form.student_type = student.studentType || student.student_type || 'paying'
     form.first_name = student.firstName || ''

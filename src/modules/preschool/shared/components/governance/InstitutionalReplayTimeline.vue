@@ -72,7 +72,7 @@ function contextTags(ctx = {}) {
   else if (ctx.reportPeriodId)                    tags.push({ key: 'period', label: `Period #${ctx.reportPeriodId}` })
   if (ctx.className || ctx.classCode)             tags.push({ key: 'class',  label: ctx.className || ctx.classCode })
   else if (ctx.classId)                           tags.push({ key: 'class',  label: `Class #${ctx.classId}` })
-  if (ctx.studentName || ctx.studentCode)         tags.push({ key: 'student',label: ctx.studentName || ctx.studentCode })
+  if (ctx.studentName || ctx.studentPublicId || ctx.studentCode) tags.push({ key: 'student', label: ctx.studentName || ctx.studentPublicId || ctx.studentCode })
   else if (ctx.studentId)                         tags.push({ key: 'student',label: `Student #${ctx.studentId}` })
   return tags
 }

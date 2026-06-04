@@ -141,8 +141,8 @@ const studentAssignmentRows = computed(() =>
   studentRows.value.flatMap((student) =>
     (student.classAssignments || student.classes || []).map((assignment) => ({
       studentId: student.id,
-      studentName: student.fullName || student.name || student.studentCode || '-',
-      studentCode: student.studentCode || '-',
+      studentName: student.fullName || student.name || student.publicId || student.studentCode || '-',
+      studentCode: student.publicId || student.studentCode || '-',
       classId: assignment.id || '',
       classCode: assignment.code || '-',
       className: assignment.name || '-',

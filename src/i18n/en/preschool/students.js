@@ -24,8 +24,8 @@ export default {
     dialog: {
       createTitle: 'Create Student',
       editTitle: 'Edit Student',
-      studentCode: 'Student code',
-      studentSignature: 'Student Signature',
+      studentCode: 'Public ID',
+      studentSignature: 'Public ID',
       studentCodeAuto: 'Auto-generated on save',
       studentSignatureAuto: 'Auto-generated on save',
       studentType: 'Student Type',
@@ -88,8 +88,8 @@ export default {
       summary: 'A read-only view of the student record with guardian and enrollment details in one place.',
     },
     cards: {
-      studentCode: 'Student Code',
-      signature: 'Student Signature',
+      studentCode: 'Public ID',
+      signature: 'Public ID',
       gender: 'Gender',
       dateOfBirth: 'Date of Birth',
       classes: 'Classes',
@@ -101,8 +101,8 @@ export default {
       record: 'Record Details',
     },
     fields: {
-      studentCode: 'Student Code',
-      signature: 'Student Signature',
+      studentCode: 'Public ID',
+      signature: 'Public ID',
       gender: 'Gender',
       dateOfBirth: 'Date of Birth',
       address: 'Address',
@@ -127,7 +127,7 @@ export default {
     columns: {
       no: 'No.',
       student: 'Student',
-      code: 'Code',
+      code: 'ID',
       gender: 'Gender',
       status: 'Status',
       classes: 'Classes',

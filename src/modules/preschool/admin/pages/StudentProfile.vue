@@ -41,7 +41,7 @@ const infoCards = computed(() => [
   {
     key: 'code',
     label: t('preschoolStudentProfilePage.cards.signature'),
-    value: student.value?.studentCode || '-',
+    value: student.value?.publicId || student.value?.studentCode || '-',
   },
   {
     key: 'gender',
@@ -137,7 +137,7 @@ onMounted(loadStudent)
                   <p class="student-profile-page__eyebrow">{{ t('preschoolStudentProfilePage.hero.eyebrow') }}</p>
                   <h2 class="student-profile-page__name">{{ student.fullName || student.name || '-' }}</h2>
                   <p class="student-profile-page__code">
-                    {{ student.studentCode || '-' }}
+                    {{ student.publicId || student.studentCode || '-' }}
                   </p>
                 </div>
                 <span class="student-profile-page__status" :class="statusClasses[String(student.status || '').toLowerCase()] || statusClasses.active">
@@ -164,7 +164,7 @@ onMounted(loadStudent)
               <dl class="student-profile-page__details">
                 <div>
                   <dt>{{ t('preschoolStudentProfilePage.fields.signature') }}</dt>
-                  <dd>{{ student.studentCode || '-' }}</dd>
+                  <dd>{{ student.publicId || student.studentCode || '-' }}</dd>
                 </div>
                 <div>
                   <dt>{{ t('preschoolStudentProfilePage.fields.gender') }}</dt>

@@ -76,7 +76,7 @@ function getInitials(name) {
 const guardianName = computed(() => props.student.guardianName || props.student.guardian_name || '—')
 const guardianPhone = computed(() => props.student.guardianPhone || props.student.guardian_phone || '—')
 const studentName = computed(() => props.student.fullName || props.student.name || '—')
-const studentCode = computed(() => props.student.studentCode || props.student.id || '—')
+const studentCode = computed(() => props.student.publicId || props.student.studentCode || props.student.id || '—')
 const guardianInitials = computed(() => getInitials(guardianName.value === '—' ? '' : guardianName.value))
 const codeSeed = computed(() => `${studentCode.value}-${guardianPhone.value}`)
 const qrDataUrlInternal = ref('')

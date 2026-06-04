@@ -28,7 +28,7 @@ const BACK_TEXT = {
 const ACCENT = [[34,197,94],[249,115,22],[239,68,68],[59,130,246]]
 
 function buildGuardianQrPayload(student) {
-  const studentCode = student?.studentCode || student?.id || ''
+  const studentCode = student?.publicId || student?.studentCode || student?.id || ''
   const guardianPhone = student?.guardianPhone || student?.guardian_phone || ''
   const guardianName = student?.guardianName || student?.guardian_name || ''
   return [
@@ -263,7 +263,7 @@ function drawFrontInfoPdf(doc, x, y, student, className, classLevel, W, H, SW, S
   doc.text(T.studentId, RX, IY)
   IY += 3.2 * SH
   doc.setTextColor(30,64,175); doc.setFontSize(6.6 * FS); doc.setFont('helvetica', 'bold')
-  doc.text(String(student.studentCode || student.id || '—'), RX, IY)
+  doc.text(String(student.publicId || student.studentCode || student.id || '—'), RX, IY)
   IY += 5.2 * SH
   doc.setTextColor(148,163,184); doc.setFontSize(4.5 * FS); doc.setFont('helvetica', 'normal')
   doc.text(T.class, RX, IY)
@@ -303,7 +303,7 @@ function drawFrontInfoCanvas(ctx, xMm, yMm, student, className, classLevel, W, H
   IY += 4.6 * SH
   fnt(4.5 * FS, 'normal'); txt(T.studentId, RX, IY, 'left', [148,163,184])
   IY += 3.2 * SH
-  fnt(6.6 * FS, 'bold'); txt(String(student.studentCode || student.id || '—'), RX, IY, 'left', [30,64,175])
+  fnt(6.6 * FS, 'bold'); txt(String(student.publicId || student.studentCode || student.id || '—'), RX, IY, 'left', [30,64,175])
   IY += 5.2 * SH
   fnt(4.5 * FS, 'normal'); txt(T.class, RX, IY, 'left', [148,163,184])
   if (classLevel) txt(T.grade, xMm + 58 * SW, IY, 'left', [148,163,184])
@@ -345,7 +345,7 @@ export function drawCardPdfBack(doc, x, y, student, className, classLevel, acade
     doc.text(T.studentRef, C1, R2Y); doc.text(T.studentId, C2, R2Y)
     doc.setFontSize(6.5 * FS); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,64,175)
     doc.text(doc.splitTextToSize(student.fullName || student.name || '—', (W / 2 - 6.5) * SW)[0], C1, R2Y + 4 * SH)
-    doc.text(String(student.studentCode || student.id || '—'), C2, R2Y + 4 * SH)
+    doc.text(String(student.publicId || student.studentCode || student.id || '—'), C2, R2Y + 4 * SH)
     const R3Y = R2Y + 9 * SH
     doc.setFontSize(4.5 * FS); doc.setFont('helvetica', 'normal'); doc.setTextColor(148,163,184)
     doc.text(T.class, C1, R3Y); if (classLevel) doc.text(T.grade, C2, R3Y)
@@ -412,7 +412,7 @@ export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel
     fnt(6.8 * FS, 'bold'); txt(getGuardianName(student), left, row1Y + 4 * SH, 'left', [15,23,42]); txt(getGuardianPhone(student), right, row1Y + 4 * SH, 'left', [15,23,42])
     const row2Y = row1Y + 9 * SH
     fnt(4.5 * FS, 'normal'); txt(T.studentRef, left, row2Y, 'left', [148,163,184]); txt(T.studentId, right, row2Y, 'left', [148,163,184])
-    fnt(6.5 * FS, 'bold'); txt(student.fullName || student.name || '—', left, row2Y + 4 * SH, 'left', [30,64,175]); txt(String(student.studentCode || student.id || '—'), right, row2Y + 4 * SH, 'left', [30,64,175])
+    fnt(6.5 * FS, 'bold'); txt(student.fullName || student.name || '—', left, row2Y + 4 * SH, 'left', [30,64,175]); txt(String(student.publicId || student.studentCode || student.id || '—'), right, row2Y + 4 * SH, 'left', [30,64,175])
     const row3Y = row2Y + 9 * SH
     fnt(4.5 * FS, 'normal'); txt(T.class, left, row3Y, 'left', [148,163,184]); if (classLevel) txt(T.grade, right, row3Y, 'left', [148,163,184])
     fnt(6.4 * FS, 'bold'); txt(className || '—', left, row3Y + 4 * SH, 'left', [30,64,175]); if (classLevel) txt(classLevel, right, row3Y + 4 * SH, 'left', [30,64,175])
@@ -430,7 +430,7 @@ export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel
   fnt(4.8 * FS, 'normal'); txt(T.studentRef, RX, IY, 'left', [148,163,184]); IY += 3.4 * SH
   fnt(7 * FS, 'bold'); txt(student.fullName || student.name || '—', RX, IY, 'left', [15,23,42]); IY += 4.6 * SH
   fnt(4.5 * FS, 'normal'); txt(T.studentId, RX, IY, 'left', [148,163,184]); IY += 3.2 * SH
-  fnt(6.6 * FS, 'bold'); txt(String(student.studentCode || student.id || '—'), RX, IY, 'left', [30,64,175]); IY += 5.2 * SH
+  fnt(6.6 * FS, 'bold'); txt(String(student.publicId || student.studentCode || student.id || '—'), RX, IY, 'left', [30,64,175]); IY += 5.2 * SH
   fnt(4.5 * FS, 'normal'); txt(T.class, RX, IY, 'left', [148,163,184]); if (classLevel) txt(T.grade, xMm + 58 * SW, IY, 'left', [148,163,184]); IY += 3.2 * SH
   fnt(6.6 * FS, 'bold'); txt(className || '—', RX, IY, 'left', [30,64,175]); if (classLevel) txt(classLevel, xMm + 58 * SW, IY, 'left', [30,64,175])
 

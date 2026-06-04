@@ -390,7 +390,7 @@ async function loadLookupOptions() {
     }))
 
     studentOptions.value = (studentsResponse.items || []).map((item) => ({
-      label: `${item.fullName || item.name}${item.studentCode ? ` (${item.studentCode})` : ''}`,
+      label: `${item.fullName || item.name}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
       value: item.id,
       raw: item,
     }))

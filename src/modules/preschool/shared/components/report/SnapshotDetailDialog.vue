@@ -216,8 +216,8 @@ function close() {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
-              <tr v-for="item in progressRows" :key="item.student?.id || item.student?.studentCode || item.student?.fullName">
-                <td class="px-4 py-3 text-slate-900">{{ item.student?.fullName || item.student?.studentCode || '-' }}</td>
+            <tr v-for="item in progressRows" :key="item.student?.id || item.student?.publicId || item.student?.studentCode || item.student?.fullName">
+                <td class="px-4 py-3 text-slate-900">{{ item.student?.fullName || item.student?.publicId || item.student?.studentCode || '-' }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ item.assessmentCount ?? '-' }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ item.averageScore ?? '-' }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ item.attendanceCount ?? '-' }}</td>
@@ -285,4 +285,3 @@ function close() {
     </template>
   </Dialog>
 </template>
-

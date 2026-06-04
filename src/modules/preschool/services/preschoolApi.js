@@ -106,6 +106,7 @@ function normalizeStudentRow(row = {}) {
 
   return {
     id: row.id ?? '',
+    publicId: normalizeText(row.publicId || row.public_id),
     studentCode: normalizeText(row.studentCode || row.student_code),
     firstName,
     lastName,

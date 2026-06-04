@@ -1,4 +1,4 @@
-// Keep student copy centralized so Khmer and English stay aligned and the
+﻿// Keep student copy centralized so Khmer and English stay aligned and the
 // roster pages do not need inline strings that can drift over time.
 export default {
   preschoolStudentInfoPage: {
@@ -24,8 +24,8 @@ export default {
     dialog: {
       createTitle: 'បង្កើតសិស្ស',
       editTitle: 'កែសម្រួលសិស្ស',
-      studentCode: 'កូដសិស្ស',
-      studentSignature: 'ហត្ថលេខាសិស្ស',
+      studentCode: 'លេខសម្គាល់',
+      studentSignature: 'លេខសម្គាល់សាធារណៈ',
       studentCodeAuto: 'បង្កើតស្វ័យប្រវត្តិក្នុងពេលរក្សាទុក',
       studentSignatureAuto: 'បង្កើតស្វ័យប្រវត្តិក្នុងពេលរក្សាទុក',
       studentType: 'ប្រភេទសិស្ស',
@@ -84,7 +84,7 @@ export default {
     columns: {
       no: 'ល.រ.',
       student: 'សិស្ស',
-      code: 'កូដ',
+      code: 'លេខសម្គាល់',
       gender: 'ភេទ',
       status: 'ស្ថានភាព',
       classes: 'ថ្នាក់',
@@ -105,8 +105,8 @@ export default {
       summary: 'ទិដ្ឋភាពមើលតែប៉ុណ្ណោះសម្រាប់កំណត់ត្រាសិស្ស ព័ត៌មានអាណាព្យាបាល និងការចុះឈ្មោះថ្នាក់។',
     },
     cards: {
-      studentCode: 'លេខកូដសិស្ស',
-      signature: 'ហត្ថលេខាសិស្ស',
+      studentCode: 'លេខសម្គាល់',
+      signature: 'លេខសម្គាល់សាធារណៈ',
       gender: 'ភេទ',
       dateOfBirth: 'ថ្ងៃខែឆ្នាំកំណើត',
       classes: 'ថ្នាក់',
@@ -118,8 +118,8 @@ export default {
       record: 'ព័ត៌មានកំណត់ត្រា',
     },
     fields: {
-      studentCode: 'លេខកូដសិស្ស',
-      signature: 'ហត្ថលេខាសិស្ស',
+      studentCode: 'លេខសម្គាល់',
+      signature: 'លេខសម្គាល់សាធារណៈ',
       gender: 'ភេទ',
       dateOfBirth: 'ថ្ងៃខែឆ្នាំកំណើត',
       address: 'អាសយដ្ឋាន',
@@ -138,3 +138,4 @@ export default {
     },
   },
 }
+
