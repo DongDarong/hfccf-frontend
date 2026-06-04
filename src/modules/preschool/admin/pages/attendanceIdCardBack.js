@@ -274,43 +274,6 @@ function drawFrontInfoPdf(doc, x, y, student, className, classLevel, W, H, SW, S
   if (classLevel) doc.text(classLevel, x + 58 * SW, IY)
 }
 
-function drawFrontInfoCanvas(ctx, xMm, yMm, student, className, classLevel, W, H, SW, SH, FS, helpers, lang = 'en') {
-  const T = getBackText(lang)
-  const { p, sf, ss, slw, fnt, txt, arc } = helpers
-  const CX = xMm + 15.5 * SW
-  const CY = yMm + 11 * SH
-  const initials = getGuardianInitials(student)
-  sf(239,246,255); ss(59,130,246); slw(0.6); arc(CX, CY, 11 * Math.min(SW, SH), 'F')
-  fnt(8.5 * FS, 'bold'); txt(initials, CX, CY + 2.8 * Math.min(SW, SH), 'center', [30,64,175])
-  ss(59,130,246); slw(0.6); arc(CX, CY, 11 * Math.min(SW, SH), 'S')
-  fnt(5.2 * FS, 'bold'); txt(T.profile, CX, CY + 14.5 * Math.min(SW, SH), 'center', [30,64,175])
-
-  const RX = xMm + 34 * SW
-  let IY = yMm + 5 * SH
-  fnt(4.8 * FS, 'normal'); txt(T.guardianName, RX, IY, 'left', [148,163,184])
-  IY += 3.4 * SH
-  fnt(8.2 * FS, 'bold'); txt(student.guardianName || student.guardian_name || '—', RX, IY, 'left', [15,23,42])
-  IY += 6 * SH
-  ss(226,232,240); slw(0.25); helpers.ln(RX, IY, xMm + W - 3 * SW, IY)
-  IY += 3.5 * SH
-  fnt(4.8 * FS, 'normal'); txt(T.guardianPhone, RX, IY, 'left', [148,163,184])
-  IY += 3.4 * SH
-  fnt(7.2 * FS, 'bold'); txt(getGuardianPhone(student), RX, IY, 'left', [30,64,175])
-  IY += 6 * SH
-  fnt(4.8 * FS, 'normal'); txt(T.studentRef, RX, IY, 'left', [148,163,184])
-  IY += 3.4 * SH
-  fnt(7 * FS, 'bold'); txt(student.fullName || student.name || '—', RX, IY, 'left', [15,23,42])
-  IY += 4.6 * SH
-  fnt(4.5 * FS, 'normal'); txt(T.studentId, RX, IY, 'left', [148,163,184])
-  IY += 3.2 * SH
-  fnt(6.6 * FS, 'bold'); txt(String(student.publicId || student.studentCode || student.id || '—'), RX, IY, 'left', [30,64,175])
-  IY += 5.2 * SH
-  fnt(4.5 * FS, 'normal'); txt(T.class, RX, IY, 'left', [148,163,184])
-  if (classLevel) txt(T.grade, xMm + 58 * SW, IY, 'left', [148,163,184])
-  IY += 3.2 * SH
-  fnt(6.6 * FS, 'bold'); txt(className || '—', RX, IY, 'left', [30,64,175])
-  if (classLevel) txt(classLevel, xMm + 58 * SW, IY, 'left', [30,64,175])
-}
 
 export function drawCardPdfBack(doc, x, y, student, className, classLevel, academicYear, logoData, orientation, W, H, lang = 'en', qrDataUrl = '') {
   const T = getBackText(lang)
@@ -384,7 +347,7 @@ export function drawCardCanvasBack(ctx, xMm, yMm, student, className, classLevel
   const FS = Math.sqrt(SW * SH)
   const RS = Math.min(SW, SH)
   const helpers = makeCanvasHelpers(ctx, SC, lang)
-  const { p, sf, ss, slw, fnt, fr, txt, rr, arc, ln } = helpers
+  const { sf, ss, slw, fnt, fr, txt, arc, ln } = helpers
   const { HEADER_H, BAR_H } = drawShellCanvas(ctx, xMm, yMm, W, H, logoImg, T.badge, 'HFCCF PRESCHOOL', headerSub, SC, SW, SH, FS, RS, helpers)
   drawBackPatternCanvas(ctx, helpers, xMm, yMm, W, H, HEADER_H, BAR_H, 8.5 * SH, SC, SW, SH)
 
