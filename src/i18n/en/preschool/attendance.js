@@ -91,65 +91,26 @@ export default {
     },
   },
 
-  // ── Daily teacher attendance ───────────────────────────────────────────────
-  preschoolAdminTeacherAttendancePage: {
-    title: 'Daily Teacher Attendance',
-    subtitle: 'Record daily attendance for teaching staff.',
-    filters: {
-      date: 'Date',
-    },
-    columns: {
-      teacher: 'Teacher',
-      status: 'Status',
-      note: 'Note',
-    },
-    placeholders: {
-      note: 'Note (optional)',
-    },
-    actions: {
-      markAllPresent: 'Mark All Present',
-      markAllAbsent: 'Mark All Absent',
-      clearAll: 'Clear All',
-      save: 'Save Attendance',
-      saving: 'Saving…',
-      prevDay: 'Previous Day',
-      nextDay: 'Next Day',
-      back: 'Back',
-    },
-    summary: '{marked} of {total} teachers marked',
-    messages: {
-      noTeachers: 'No teachers found.',
-      loadFailed: 'Failed to load teacher data.',
-      saved: 'Teacher attendance saved.',
-      saveFailed: 'Some records could not be saved. Please try again.',
-      skippedNote: 'Teachers with no status selected will be skipped.',
-    },
-  },
-
   // ── Attendance history ─────────────────────────────────────────────────────
   preschoolAdminAttendanceHistoryPage: {
     title: 'Attendance History',
     subtitle: 'Browse and filter all past attendance records.',
     filters: {
       search: 'Search',
-      type: 'Record Type',
       class: 'Class',
       status: 'Status',
       date: 'Date',
       student: 'Student',
-      teacher: 'Teacher',
       allStatuses: 'All Statuses',
       allClasses: 'All Classes',
     },
     placeholders: {
       search: 'Search records…',
       searchStudent: 'Search by student name…',
-      searchTeacher: 'Search by teacher name…',
     },
     columns: {
       no: 'No.',
       student: 'Student',
-      teacher: 'Teacher',
       class: 'Class',
       date: 'Date',
       status: 'Status',

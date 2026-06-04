@@ -11,7 +11,6 @@ const router = useRouter()
 
 const CARDS = [
   { key: 'students',  icon: 'pi-users',       accent: 'card--violet', route: 'dashboard-preschool-admin-attendance-students' },
-  { key: 'teachers',  icon: 'pi-id-card',     accent: 'card--sky',    route: 'dashboard-preschool-admin-attendance-teachers' },
   { key: 'history',   icon: 'pi-history',     accent: 'card--slate',  route: 'dashboard-preschool-admin-attendance-history' },
   { key: 'dashboard', icon: 'pi-chart-bar',   accent: 'card--indigo', route: 'dashboard-preschool-admin-attendance-dashboard' },
   { key: 'alerts',    icon: 'pi-bell',        accent: 'card--rose',   route: 'dashboard-preschool-admin-attendance-alerts' },

@@ -275,11 +275,6 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
     { labelKey: 'breadcrumb.attendanceStudents' },
   ],
-  'dashboard-preschool-admin-attendance-teachers': [
-    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
-    { labelKey: 'breadcrumb.attendanceTeachers' },
-  ],
   'dashboard-preschool-admin-attendance-history': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
@@ -430,10 +425,6 @@ const CRUMB_MAP = {
   'dashboard-preschool-teacher-students': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
     { labelKey: 'breadcrumb.myStudents' },
-  ],
-  'dashboard-preschool-teacher-attendance': [
-    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'breadcrumb.attendance' },
   ],
   'dashboard-preschool-teacher-schedule': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
