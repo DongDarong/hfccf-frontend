@@ -40,7 +40,7 @@ const statusLabel = computed(() => {
 const infoCards = computed(() => [
   {
     key: 'code',
-    label: t('preschoolStudentProfilePage.cards.studentCode'),
+    label: t('preschoolStudentProfilePage.cards.signature'),
     value: student.value?.studentCode || '-',
   },
   {
@@ -163,7 +163,7 @@ onMounted(loadStudent)
               <h3 class="student-profile-page__panel-title">{{ t('preschoolStudentProfilePage.sections.personal') }}</h3>
               <dl class="student-profile-page__details">
                 <div>
-                  <dt>{{ t('preschoolStudentProfilePage.fields.studentCode') }}</dt>
+                  <dt>{{ t('preschoolStudentProfilePage.fields.signature') }}</dt>
                   <dd>{{ student.studentCode || '-' }}</dd>
                 </div>
                 <div>

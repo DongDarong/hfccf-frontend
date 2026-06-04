@@ -59,6 +59,8 @@ export default {
     assignments: 'ការចាត់តាំង',
     assessments: 'ការវាយតម្លៃ',
     addAssessment: 'បន្ថែមការវាយតម្លៃ',
+    addStudent: 'បន្ថែមសិស្ស',
+    editStudent: 'កែប្រែសិស្ស',
     progressSummary: 'សង្ខេបវឌ្ឍនភាព',
     schedules: 'កាលវិភាគ',
     classSchedule: 'កាលវិភាគថ្នាក់',
