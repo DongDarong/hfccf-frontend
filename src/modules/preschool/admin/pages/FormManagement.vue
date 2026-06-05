@@ -1,88 +1,108 @@
 <script setup>
-// This page is an assessment launcher inside the Preschool admin shell.
-// It deliberately routes into the assessment module rather than duplicating
-// the underlying assessment CRUD and reporting workflows here.
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import Button from '@/components/buttons/Button.vue'
 import Card from 'primevue/card'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { assessmentFormApi } from '@/modules/assessment/services/assessmentFormApi'
 
 defineOptions({
   name: 'PreschoolAdminFormManagementPage',
 })
 
 const { t, te } = useLanguage()
-
-const assessmentForms = ref([])
-const isLoading = ref(false)
+const router = useRouter()
 
 const launcherCards = [
   {
     key: 'dashboard',
-    title: 'Assessment Dashboard',
+    group: 'overview',
+    icon: 'pi pi-chart-bar',
+    titleFallback: 'Dashboard',
+    titleKey: 'preschoolScaffold.formManagement.cards.dashboard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.dashboard.description',
-    fallbackDescription: 'Review the overall assessment progress and quick metrics.',
+    fallbackDescription: 'View the module overview and jump into the most important areas.',
     to: { name: 'assessment-dashboard' },
   },
   {
     key: 'forms',
-    title: 'Form Library',
+    group: 'manage',
+    icon: 'pi pi-folder-open',
+    titleFallback: 'Forms',
+    titleKey: 'preschoolScaffold.formManagement.cards.forms.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.forms.description',
-    fallbackDescription: 'Open the form library to manage assessment templates.',
+    fallbackDescription: 'Review and organize the current assessment form catalog.',
     to: { name: 'assessment-form-list' },
   },
   {
     key: 'new-form',
-    title: 'Create Form',
+    group: 'build',
+    icon: 'pi pi-plus-circle',
+    titleFallback: 'New Form',
+    titleKey: 'preschoolScaffold.formManagement.cards.newForm.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.newForm.description',
-    fallbackDescription: 'Start a new assessment form from scratch.',
+    fallbackDescription: 'Create a new form for a workflow or data collection flow.',
     to: { name: 'assessment-form-create' },
   },
   {
     key: 'submissions',
-    title: 'Submissions',
+    group: 'review',
+    icon: 'pi pi-inbox',
+    titleFallback: 'Submissions',
+    titleKey: 'preschoolScaffold.formManagement.cards.submissions.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.submissions.description',
-    fallbackDescription: 'Inspect assessment submissions and completion records.',
+    fallbackDescription: 'Track submissions and monitor their processing status.',
     to: { name: 'assessment-submission-list' },
   },
   {
     key: 'wizard',
-    title: 'Assessment Wizard',
+    group: 'build',
+    icon: 'pi pi-sparkles',
+    titleFallback: 'Wizard',
+    titleKey: 'preschoolScaffold.formManagement.cards.wizard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.wizard.description',
-    fallbackDescription: 'Launch the guided assessment workflow.',
+    fallbackDescription: 'Build forms step by step with guided assistance.',
     to: { name: 'assessment-wizard' },
   },
   {
     key: 'scoring',
-    title: 'Scoring Manager',
+    group: 'build',
+    icon: 'pi pi-sliders-h',
+    titleFallback: 'Scoring',
+    titleKey: 'preschoolScaffold.formManagement.cards.scoring.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.scoring.description',
-    fallbackDescription: 'Adjust scoring rules for the selected assessment form.',
-    requiresFormId: true,
-    routeName: 'assessment-scoring',
+    fallbackDescription: 'Define and manage scoring rules for the active form.',
+    to: { name: 'assessment-form-list' },
   },
   {
     key: 'print-designer',
-    title: 'Print Designer',
+    group: 'build',
+    icon: 'pi pi-print',
+    titleFallback: 'Print Designer',
+    titleKey: 'preschoolScaffold.formManagement.cards.printDesigner.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.printDesigner.description',
-    fallbackDescription: 'Design the printable output for the selected assessment form.',
-    requiresFormId: true,
-    routeName: 'assessment-print-designer',
+    fallbackDescription: 'Arrange print layouts and present forms cleanly.',
+    to: { name: 'assessment-form-list' },
   },
   {
     key: 'reports',
-    title: 'Reports',
+    group: 'review',
+    icon: 'pi pi-chart-pie',
+    titleFallback: 'Reports',
+    titleKey: 'preschoolScaffold.formManagement.cards.reports.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.reports.description',
-    fallbackDescription: 'Review reporting insights and generated summaries.',
+    fallbackDescription: 'View summary data and reports for forms.',
     to: { name: 'assessment-reports' },
   },
   {
     key: 'audit-logs',
-    title: 'Audit Logs',
+    group: 'overview',
+    icon: 'pi pi-history',
+    titleFallback: 'Audit Logs',
+    titleKey: 'preschoolScaffold.formManagement.cards.auditLogs.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.auditLogs.description',
-    fallbackDescription: 'Track changes and activity across the assessment module.',
+    fallbackDescription: 'Review activity and the history of changes.',
     to: { name: 'assessment-audit-logs' },
   },
 ]
@@ -91,90 +111,220 @@ function safeText(key, fallback) {
   return te(key) ? t(key) : fallback
 }
 
-const primaryFormId = computed(() => String(assessmentForms.value[0]?.id || '').trim())
-
-const launchCards = computed(() =>
-  launcherCards.map((card) => {
-    if (!card.requiresFormId) {
-      return {
-        ...card,
-        description: safeText(card.descriptionKey, card.fallbackDescription),
-        to: card.to,
-      }
-    }
-
-    const id = primaryFormId.value
-    return {
-      ...card,
-      description: safeText(card.descriptionKey, card.fallbackDescription),
-      to: id ? { name: card.routeName, params: { id } } : { name: 'assessment-form-list' },
-    }
-  }),
+const heroSummary = computed(() =>
+  safeText(
+    'preschoolScaffold.formManagement.hero.summaryNoForms',
+    'Use the launcher below to open assessment forms, submissions, reports, and tools.',
+  ),
 )
 
-async function loadAssessmentForms() {
-  isLoading.value = true
-  try {
-    const response = await assessmentFormApi.list({
-      page: 1,
-      perPage: 1,
-      search: '',
-      status: '',
-    })
-    assessmentForms.value = Array.isArray(response?.data) ? response.data : response?.items || []
-  } catch {
-    assessmentForms.value = []
-  } finally {
-    isLoading.value = false
-  }
-}
+const heroActionLabel = computed(() =>
+  safeText('preschoolScaffold.formManagement.hero.openLabel', 'Open'),
+)
 
-onMounted(() => {
-  void loadAssessmentForms()
-})
+const resolvedCards = computed(() =>
+  launcherCards.map((card) => ({
+    ...card,
+    description: safeText(card.descriptionKey, card.fallbackDescription),
+    to: card.to,
+  })),
+)
+
+const groupedCards = computed(() => ({
+  overview: resolvedCards.value.filter((card) => card.group === 'overview'),
+  manage: resolvedCards.value.filter((card) => card.group === 'manage'),
+  build: resolvedCards.value.filter((card) => card.group === 'build'),
+  review: resolvedCards.value.filter((card) => card.group === 'review'),
+}))
+
+const quickLinks = computed(() => [
+  { label: safeText('preschoolScaffold.formManagement.cards.dashboard.title', 'Dashboard'), to: { name: 'assessment-dashboard' }, icon: 'pi pi-chart-bar' },
+  { label: safeText('preschoolScaffold.formManagement.cards.forms.title', 'Forms'), to: { name: 'assessment-form-list' }, icon: 'pi pi-folder-open' },
+  { label: safeText('preschoolScaffold.formManagement.cards.newForm.title', 'New Form'), to: { name: 'assessment-form-create' }, icon: 'pi pi-plus' },
+])
+
 </script>
 
 <template>
   <MainLayout>
     <section class="preschool-form-management-page">
       <HeaderSection
-        title="Form Management"
-        subtitle="Jump into the assessment tools you need most."
+        :title="safeText('preschoolScaffold.formManagement.title', 'Form Management')"
+        :subtitle="safeText('preschoolScaffold.formManagement.subtitle', 'Create, organize, review, and manage Preschool forms.')"
       />
 
-      <div class="preschool-form-management-page__intro">
-        <p>
-          Select a card to open the matching Assessment workspace. Scoring and print tools will
-          use the first available assessment form when one exists.
-        </p>
+      <div class="preschool-form-management-page__hero">
+        <div class="preschool-form-management-page__hero-copy">
+          <p class="preschool-form-management-page__eyebrow">
+            {{ safeText('preschoolScaffold.formManagement.eyebrow', 'Form overview') }}
+          </p>
+          <h2 class="preschool-form-management-page__title">
+            {{ safeText('preschoolScaffold.formManagement.title', 'Form Management') }}
+          </h2>
+          <p class="preschool-form-management-page__description">
+            {{ safeText('preschoolScaffold.formManagement.description', 'Manage the launch points for form builders, recent forms, submissions, and review tools.') }}
+          </p>
+
+          <div class="preschool-form-management-page__meta">
+            <span class="preschool-form-management-page__meta-label">
+              {{ safeText('preschoolScaffold.formManagement.hero.metricForms', 'Launcher ready') }}
+            </span>
+            <span class="preschool-form-management-page__meta-note">
+              {{ heroSummary }}
+            </span>
+          </div>
+        </div>
+
+        <div class="preschool-form-management-page__hero-actions">
+          <Button
+            v-for="link in quickLinks"
+            :key="link.label"
+            :label="link.label"
+            :icon="link.icon"
+            rounded="xl"
+            size="md"
+            variant="secondary"
+            @click="router.push(link.to)"
+          />
+        </div>
       </div>
 
-      <div v-if="isLoading" class="preschool-form-management-page__loading">
-        Loading assessment tools...
+      <div class="preschool-form-management-page__section">
+        <div class="preschool-form-management-page__section-header">
+          <div>
+            <p class="preschool-form-management-page__section-eyebrow">
+              {{ safeText('preschoolScaffold.formManagement.eyebrow', 'Form overview') }}
+            </p>
+            <h3>Overview</h3>
+          </div>
+          <span class="preschool-form-management-page__section-badge">
+            {{ heroActionLabel }}
+          </span>
+        </div>
+
+        <div class="preschool-form-management-page__grid preschool-form-management-page__grid--three">
+          <RouterLink
+            v-for="card in groupedCards.overview"
+            :key="card.key"
+            :to="card.to"
+            class="preschool-form-management-page__link group"
+          >
+            <Card class="preschool-form-management-page__card">
+              <template #content>
+                <div class="preschool-form-management-page__card-content">
+                  <div class="preschool-form-management-page__card-icon">
+                    <i :class="card.icon" aria-hidden="true" />
+                  </div>
+
+                  <div class="preschool-form-management-page__card-copy">
+                    <div class="preschool-form-management-page__card-topline">
+                      <h4>{{ safeText(card.titleKey, card.titleFallback) }}</h4>
+                      <span>{{ heroActionLabel }}</span>
+                    </div>
+                    <p>{{ card.description }}</p>
+                  </div>
+                </div>
+              </template>
+            </Card>
+          </RouterLink>
+        </div>
       </div>
 
-      <div class="preschool-form-management-page__grid">
-        <RouterLink
-          v-for="card in launchCards"
-          :key="card.key"
-          :to="card.to"
-          class="preschool-form-management-page__link group"
-        >
-          <Card class="preschool-form-management-page__card">
-            <template #content>
-              <div class="preschool-form-management-page__card-content">
-                <div class="preschool-form-management-page__card-icon">
-                  <i class="pi pi-folder-open" aria-hidden="true"></i>
-                </div>
+      <div class="preschool-form-management-page__section">
+        <div class="preschool-form-management-page__section-header">
+          <div>
+            <p class="preschool-form-management-page__section-eyebrow">Manage</p>
+            <h3>{{ safeText('preschoolScaffold.formManagement.cards.forms.title', 'Forms') }}</h3>
+          </div>
+        </div>
 
-                <div class="preschool-form-management-page__card-copy">
-                  <h3>{{ card.title }}</h3>
-                  <p>{{ card.description }}</p>
+        <div class="preschool-form-management-page__grid preschool-form-management-page__grid--two">
+          <RouterLink
+            v-for="card in groupedCards.manage"
+            :key="card.key"
+            :to="card.to"
+            class="preschool-form-management-page__link group"
+          >
+            <Card class="preschool-form-management-page__card preschool-form-management-page__card--manage">
+              <template #content>
+                <div class="preschool-form-management-page__card-content">
+                  <div class="preschool-form-management-page__card-icon">
+                    <i :class="card.icon" aria-hidden="true" />
+                  </div>
+
+                  <div class="preschool-form-management-page__card-copy">
+                    <div class="preschool-form-management-page__card-topline">
+                      <h4>{{ safeText(card.titleKey, card.titleFallback) }}</h4>
+                      <span>{{ safeText('preschoolScaffold.formManagement.hero.openLabel', 'Open') }}</span>
+                    </div>
+                    <p>{{ card.description }}</p>
+                  </div>
                 </div>
-              </div>
-            </template>
-          </Card>
-        </RouterLink>
+              </template>
+            </Card>
+          </RouterLink>
+
+          <RouterLink
+            v-for="card in groupedCards.build"
+            :key="card.key"
+            :to="card.to"
+            class="preschool-form-management-page__link group"
+          >
+            <Card class="preschool-form-management-page__card preschool-form-management-page__card--build">
+              <template #content>
+                <div class="preschool-form-management-page__card-content">
+                  <div class="preschool-form-management-page__card-icon">
+                    <i :class="card.icon" aria-hidden="true" />
+                  </div>
+
+                  <div class="preschool-form-management-page__card-copy">
+                    <div class="preschool-form-management-page__card-topline">
+                      <h4>{{ safeText(card.titleKey, card.titleFallback) }}</h4>
+                      <span>{{ heroActionLabel }}</span>
+                    </div>
+                    <p>{{ card.description }}</p>
+                  </div>
+                </div>
+              </template>
+            </Card>
+          </RouterLink>
+        </div>
+      </div>
+
+      <div class="preschool-form-management-page__section">
+        <div class="preschool-form-management-page__section-header">
+          <div>
+            <p class="preschool-form-management-page__section-eyebrow">Review</p>
+            <h3>{{ safeText('preschoolScaffold.formManagement.cards.reports.title', 'Reports') }}</h3>
+          </div>
+        </div>
+
+        <div class="preschool-form-management-page__grid preschool-form-management-page__grid--two">
+          <RouterLink
+            v-for="card in groupedCards.review"
+            :key="card.key"
+            :to="card.to"
+            class="preschool-form-management-page__link group"
+          >
+            <Card class="preschool-form-management-page__card preschool-form-management-page__card--review">
+              <template #content>
+                <div class="preschool-form-management-page__card-content">
+                  <div class="preschool-form-management-page__card-icon">
+                    <i :class="card.icon" aria-hidden="true" />
+                  </div>
+
+                  <div class="preschool-form-management-page__card-copy">
+                    <div class="preschool-form-management-page__card-topline">
+                      <h4>{{ safeText(card.titleKey, card.titleFallback) }}</h4>
+                      <span>{{ safeText('preschoolScaffold.formManagement.hero.openLabel', 'Open') }}</span>
+                    </div>
+                    <p>{{ card.description }}</p>
+                  </div>
+                </div>
+              </template>
+            </Card>
+          </RouterLink>
+        </div>
       </div>
     </section>
   </MainLayout>
@@ -187,14 +337,86 @@ onMounted(() => {
   gap: 1rem;
 }
 
-.preschool-form-management-page__intro {
+.preschool-form-management-page__hero {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+  padding: 1.35rem;
+  border: 1px solid #dbeafe;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 22%),
+    linear-gradient(180deg, rgba(239, 246, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 25px 55px -38px rgba(15, 23, 42, 0.45);
+}
+
+.preschool-form-management-page__eyebrow,
+.preschool-form-management-page__section-eyebrow {
+  margin: 0 0 0.25rem;
+  color: #2563eb;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.preschool-form-management-page__title,
+.preschool-form-management-page__section h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.preschool-form-management-page__description {
+  margin: 0.7rem 0 0;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.65;
+  max-width: 54rem;
+}
+
+.preschool-form-management-page__meta {
+  display: grid;
+  gap: 0.1rem;
+  margin-top: 1.05rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.preschool-form-management-page__meta-label {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.preschool-form-management-page__meta-value {
+  color: #0f172a;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.preschool-form-management-page__meta-note {
+  color: #1d4ed8;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.preschool-form-management-page__hero-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
   border-radius: 1.25rem;
   border: 1px solid #dbeafe;
-  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-  padding: 1rem 1.1rem;
-  color: #1e3a8a;
-  font-size: 0.95rem;
-  line-height: 1.55;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(239, 246, 255, 0.85) 100%);
 }
 
 .preschool-form-management-page__loading {
@@ -205,10 +427,46 @@ onMounted(() => {
   padding: 1rem;
 }
 
+.preschool-form-management-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.preschool-form-management-page__section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.preschool-form-management-page__section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .preschool-form-management-page__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
+}
+
+.preschool-form-management-page__grid--three {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.preschool-form-management-page__grid--two {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .preschool-form-management-page__link {
@@ -228,6 +486,14 @@ onMounted(() => {
     border-color 0.15s ease;
 }
 
+.preschool-form-management-page__card--build {
+  border-color: rgba(191, 219, 254, 0.95);
+}
+
+.preschool-form-management-page__card--review {
+  border-color: rgba(221, 214, 254, 0.9);
+}
+
 .preschool-form-management-page__link:hover .preschool-form-management-page__card,
 .preschool-form-management-page__link:focus-visible .preschool-form-management-page__card {
   transform: translateY(-2px);
@@ -245,19 +511,44 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 0.9rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 0.95rem;
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   color: #2563eb;
   flex: none;
 }
 
-.preschool-form-management-page__card-copy h3 {
-  margin: 0 0 0.35rem;
+.preschool-form-management-page__card-copy {
+  min-width: 0;
+  width: 100%;
+}
+
+.preschool-form-management-page__card-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.preschool-form-management-page__card-topline h4 {
+  margin: 0;
   color: #0f172a;
   font-size: 1rem;
+  font-weight: 850;
+}
+
+.preschool-form-management-page__card-topline span {
+  flex: none;
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.68rem;
   font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .preschool-form-management-page__card-copy p {
@@ -265,5 +556,28 @@ onMounted(() => {
   color: #475569;
   font-size: 0.92rem;
   line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .preschool-form-management-page__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .preschool-form-management-page__hero-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .preschool-form-management-page__section-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .preschool-form-management-page__hero,
+  .preschool-form-management-page__hero-actions {
+    padding: 1rem;
+  }
 }
 </style>
