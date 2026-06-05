@@ -21,6 +21,7 @@ export default {
     sportProgram: 'កម្មវិធីកីឡា',
     system: 'ប្រព័ន្ធ',
     assessment: 'ការវាយតម្លៃ',
+    dsam: 'ការវាយតម្លៃសិស្ស',
   },
   sectionCaptions: {
     main: 'កន្លែងធ្វើការបុគ្គលិក',
@@ -38,6 +39,7 @@ export default {
     sportProgram: 'EduSportPro',
     system: 'ការកំណត់វេទិកា',
     assessment: 'ការវាយតម្លៃបត់បែន',
+    dsam: 'ប្រព័ន្ធវាយតម្លៃ',
   },
   items: {
     commandCenter: 'មជ្ឈមណ្ឌលបញ្ជាការ',
@@ -99,6 +101,10 @@ export default {
     assessmentWizard: 'វាយតម្លៃថ្មី',
     assessmentReports: 'របាយការណ៍',
     assessmentAuditLogs: 'កំណត់ត្រាសវនកម្ម',
+    dsamDashboard: 'ផ្ទាំងគ្រប់គ្រង',
+    dsamForms: 'គំរូទម្រង់',
+    dsamSubmissions: 'ការវាយតម្លៃ',
+    dsamWizard: 'វាយតម្លៃថ្មី',
   },
   badges: {
     admin: 'អ្នកគ្រប់គ្រង',
