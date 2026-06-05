@@ -10,7 +10,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
 import IdCardBackPreview from '@/modules/preschool/admin/components/IdCardBackPreview.vue'
-import { buildBackQrDataUrl } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
+import { buildBackQrDataUrl } from './attendanceIdCardBack'
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
@@ -630,5 +630,6 @@ onMounted(loadClasses)
     </section>
   </MainLayout>
 </template>
+
 
 

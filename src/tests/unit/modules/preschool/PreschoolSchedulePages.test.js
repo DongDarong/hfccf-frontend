@@ -7,9 +7,9 @@ import { mountWithPlugins } from '@/tests/helpers/mount'
 import enCommon from '@/i18n/en/common'
 import enPreschool from '@/i18n/en/preschool'
 import khPreschool from '@/i18n/kh/preschool'
-import ScheduleManagement from '@/modules/preschool/admin/pages/ScheduleManagement.vue'
-import ClassSchedule from '@/modules/preschool/admin/pages/ClassSchedule.vue'
-import TeacherSchedule from '@/modules/preschool/admin/pages/TeacherSchedule.vue'
+import ScheduleManagement from '@/modules/preschool/admin/pages/schedule/ScheduleManagement.vue'
+import ClassSchedule from '@/modules/preschool/admin/pages/classes/ClassSchedule.vue'
+import TeacherSchedule from '@/modules/preschool/admin/pages/teachers/TeacherSchedule.vue'
 import MySchedule from '@/modules/preschool/teacher/pages/MySchedule.vue'
 
 const mockLoadLookups = vi.fn(() => Promise.resolve())
@@ -168,3 +168,6 @@ describe('Preschool schedule pages', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
+
+
+
