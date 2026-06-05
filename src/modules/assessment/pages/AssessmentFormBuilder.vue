@@ -22,7 +22,7 @@ const toast = useToast()
 const confirm = useConfirm()
 
 const { lastSavedAt, isSaving: autoSaving, scheduleAutoSave } = useAutoSave(
-  () => store.saveTemplate({ name: store.template?.name, description: store.template?.description }),
+  () => store.saveTemplate({ name: store.template?.name, description: store.template?.description, module: store.template?.module ?? 'preschool' }),
 )
 
 watch(() => store.isDirty, (dirty) => {
