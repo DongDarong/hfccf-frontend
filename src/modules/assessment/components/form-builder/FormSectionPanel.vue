@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import InputText from 'primevue/inputtext'
 import { useLanguage } from '@/composables/useLanguage'
@@ -9,24 +9,26 @@ import AddQuestionPanel from './AddQuestionPanel.vue'
 
 const props = defineProps({
   section: { type: Object, required: true },
+  index:   { type: Number, default: 0 },
 })
 
-const { t } = useLanguage()
-const store = useFormBuilderStore()
+const { t }  = useLanguage()
+const store  = useFormBuilderStore()
 
 const isEditingTitle = ref(false)
-const localTitle = ref(props.section.title)
-const isExpanded = ref(true)
+const localTitle     = ref(props.section.title)
+const isExpanded     = ref(true)
 const showAddQuestion = ref(false)
 
-const questions = computed(() =>
+const questions = () =>
   (store.template?.questions ?? [])
     .filter((q) => q.section_id === props.section.id)
-    .sort((a, b) => a.order - b.order),
-)
+    .sort((a, b) => a.order - b.order)
 
 async function saveTitle() {
-  await store.updateSection(props.section.id, { title: localTitle.value })
+  if (localTitle.value.trim()) {
+    await store.updateSection(props.section.id, { title: localTitle.value.trim() })
+  }
   isEditingTitle.value = false
 }
 
@@ -36,99 +38,96 @@ async function deleteSection() {
 </script>
 
 <template>
-  <div class="form-section-panel">
-    <div class="form-section-panel__header">
-      <div class="form-section-panel__title-area">
-        <Button
-          :icon="isExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-          text
-          size="sm"
-          @click="isExpanded = !isExpanded"
-        />
+  <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+
+    <!-- Section header -->
+    <div
+      :class="[
+        'flex items-center gap-3 border-b px-4 py-3 transition-colors',
+        isExpanded ? 'border-slate-200 bg-slate-50' : 'border-transparent bg-white',
+      ]"
+    >
+      <!-- Index badge -->
+      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+        {{ index + 1 }}
+      </span>
+
+      <!-- Title (editable) -->
+      <div class="flex-1 min-w-0">
         <InputText
           v-if="isEditingTitle"
           v-model="localTitle"
+          class="w-full text-sm font-semibold"
           autofocus
           @blur="saveTitle"
           @keyup.enter="saveTitle"
+          @keyup.escape="isEditingTitle = false"
         />
-        <span
+        <button
           v-else
-          class="form-section-panel__title"
+          class="w-full text-left text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors"
           @dblclick="isEditingTitle = true"
+          @click.prevent
         >
           {{ section.title }}
-        </span>
+        </button>
       </div>
-      <div class="form-section-panel__header-actions">
-        <Button icon="pi pi-pencil" text size="sm" @click="isEditingTitle = true" />
-        <Button icon="pi pi-trash" text size="sm" severity="danger" @click="deleteSection" />
+
+      <!-- Question count -->
+      <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+        {{ questions().length }} {{ questions().length === 1 ? 'question' : 'questions' }}
+      </span>
+
+      <!-- Actions -->
+      <div class="flex shrink-0 items-center gap-1">
+        <Button icon="pi pi-pencil" text size="sm" class="!text-slate-400 hover:!text-blue-600" @click="isEditingTitle = true" />
+        <Button icon="pi pi-trash"  text size="sm" severity="danger" @click="deleteSection" />
+        <button
+          class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+          @click="isExpanded = !isExpanded"
+        >
+          <i :class="['pi text-xs transition-transform duration-200', isExpanded ? 'pi-chevron-down' : 'pi-chevron-right']" />
+        </button>
       </div>
     </div>
 
-    <div v-if="isExpanded" class="form-section-panel__body">
+    <!-- Section body -->
+    <div v-if="isExpanded" class="p-4 flex flex-col gap-2">
+
+      <!-- Questions -->
       <QuestionCard
-        v-for="question in questions"
+        v-for="question in questions()"
         :key="question.id"
         :question="question"
         :form-id="store.template?.id"
       />
 
-      <Button
-        :label="t('formBuilder.questions.addQuestion')"
-        icon="pi pi-plus"
-        text
-        size="sm"
-        @click="showAddQuestion = true"
-      />
+      <!-- Empty state -->
+      <div
+        v-if="!questions().length && !showAddQuestion"
+        class="rounded-lg border border-dashed border-slate-200 py-6 text-center text-sm text-slate-400"
+      >
+        No questions yet — add your first below.
+      </div>
 
+      <!-- Add question inline panel -->
       <AddQuestionPanel
         v-if="showAddQuestion"
         :section-id="section.id"
         :form-id="store.template?.id"
         @close="showAddQuestion = false"
       />
+
+      <!-- Add question button -->
+      <button
+        v-if="!showAddQuestion"
+        class="flex items-center gap-2 rounded-lg border border-dashed border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
+        @click="showAddQuestion = true"
+      >
+        <i class="pi pi-plus text-xs" />
+        {{ t('formBuilder.questions.addQuestion') }}
+      </button>
     </div>
+
   </div>
 </template>
-
-<style scoped>
-.form-section-panel {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.form-section-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background: var(--surface-ground);
-  border-bottom: 1px solid var(--surface-border);
-}
-
-.form-section-panel__title-area {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.form-section-panel__title {
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.form-section-panel__header-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.form-section-panel__body {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-</style>
