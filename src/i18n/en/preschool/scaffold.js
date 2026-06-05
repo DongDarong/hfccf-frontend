@@ -14,6 +14,32 @@ export default {
         formRequired: 'Form required',
         openLabel: 'Open',
       },
+      pages: {
+        overview: {
+          summary: 'Choose a section below to open the forms, build, or review workspace.',
+        },
+        sections: {
+          title: 'Sections',
+        },
+        manage: {
+          title: 'Manage Forms',
+          subtitle: 'Open the form catalog and related records.',
+          eyebrow: 'Form management',
+          description: 'Open the form catalog and related records.',
+        },
+        build: {
+          title: 'Build Forms',
+          subtitle: 'Create and refine forms with the guided tools.',
+          eyebrow: 'Form builder',
+          description: 'Create and refine forms with the guided tools.',
+        },
+        review: {
+          title: 'Review Forms',
+          subtitle: 'Review submission and reporting outputs.',
+          eyebrow: 'Form review',
+          description: 'Review submission and reporting outputs.',
+        },
+      },
       cards: {
         dashboard: {
           title: 'Dashboard',
