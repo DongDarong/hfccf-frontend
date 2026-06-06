@@ -22,6 +22,7 @@ import governance from './governance'
 import governanceDiff from './governance-diff'
 import governanceCases from './governance-cases'
 import enrollment from './enrollment'
+import formsDashboard from './forms-dashboard'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -50,4 +51,5 @@ export default {
   ...governanceDiff,
   ...governanceCases,
   ...enrollment,
+  ...formsDashboard,
 }

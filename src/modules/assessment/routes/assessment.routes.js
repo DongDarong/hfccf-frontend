@@ -3,6 +3,96 @@ import { defineAppRoute } from '@/router/defineAppRoute'
 
 export const assessmentRoutes = [
   defineAppRoute({
+    path: '/forms/templates',
+    name: 'forms-templates',
+    component: () => import('../pages/AssessmentFormList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/questions',
+    name: 'forms-questions',
+    component: () => import('../pages/AssessmentFormList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/exercises',
+    name: 'forms-exercises',
+    component: () => import('../pages/AssessmentFormBuilder.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/scoring',
+    name: 'forms-scoring',
+    component: () => import('../pages/AssessmentFormList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/sessions',
+    name: 'forms-sessions',
+    component: () => import('../pages/AssessmentSubmissionList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/review',
+    name: 'forms-review',
+    component: () => import('../pages/AssessmentSubmissionList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/print-templates',
+    name: 'forms-print-templates',
+    component: () => import('../pages/AssessmentFormList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/exports',
+    name: 'forms-exports',
+    component: () => import('../pages/AssessmentReports.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/reports',
+    name: 'forms-reports',
+    component: () => import('../pages/AssessmentReports.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/forms/logs',
+    name: 'forms-logs',
+    component: () => import('../pages/AssessmentAuditLogs.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/assessment/dashboard',
     name: 'assessment-dashboard',
     component: () => import('../pages/AssessmentDashboard.vue'),
