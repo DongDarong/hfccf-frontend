@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/services/http'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -9,6 +9,8 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
+import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { dsamFormApi } from '../services/dsamFormApi'
@@ -18,28 +20,43 @@ import RiskBadge from '../components/shared/RiskBadge.vue'
 
 defineOptions({ name: 'DsamSubmissionListPage' })
 
-const router  = useRouter()
-const toast   = useToast()
+const router = useRouter()
+const toast  = useToast()
+
 const items   = ref([])
 const loading = ref(false)
 const total   = ref(0)
+
+// ── Filters & pagination ──────────────────────────────────────────────────────
+
+const search   = ref('')
+const page     = ref(1)
+const perPage  = ref(20)
 
 const filters = ref({ status: null, risk_level: null })
 
 const statusOptions  = ['draft','in_progress','submitted','under_review','approved','rejected'].map(v => ({ label: v.replace('_',' '), value: v }))
 const riskOptions    = ['low','medium','high','critical'].map(v => ({ label: v, value: v }))
+const perPageOptions = [10, 20, 50, 100].map(v => ({ label: `${v} / page`, value: v }))
 const statusSeverity = { draft: 'secondary', in_progress: 'warn', submitted: 'info', under_review: 'warn', approved: 'success', rejected: 'danger' }
+
+// Reset to page 1 whenever a filter or search changes
+watch([search, filters], () => { page.value = 1 }, { deep: true })
+
+let searchDebounce = null
+watch(search, () => {
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(load, 350)
+})
 
 // ── Start Assessment dialog ───────────────────────────────────────────────────
 
-const showDialog   = ref(false)
-const dlgLoading   = ref(false)
-const dlgStarting  = ref(false)
-
-const formOptions  = ref([])
-const yearOptions  = ref([])
+const showDialog    = ref(false)
+const dlgLoading    = ref(false)
+const dlgStarting   = ref(false)
+const formOptions   = ref([])
+const yearOptions   = ref([])
 const studentOptions = ref([])
-
 const dlgForm    = ref(null)
 const dlgYear    = ref(null)
 const dlgStudent = ref(null)
@@ -96,15 +113,27 @@ async function startAssessment() {
 async function load() {
   loading.value = true
   try {
-    const params = {}
-    if (filters.value.status)     params.status     = filters.value.status
-    if (filters.value.risk_level) params.risk_level = filters.value.risk_level
+    const params = { page: page.value, per_page: perPage.value }
+    if (search.value.trim())        params.search     = search.value.trim()
+    if (filters.value.status)       params.status     = filters.value.status
+    if (filters.value.risk_level)   params.risk_level = filters.value.risk_level
     const res = await dsamSubmissionApi.list(params)
     items.value = res.data.data ?? []
     total.value = res.data.meta?.total ?? items.value.length
   } finally {
     loading.value = false
   }
+}
+
+function onPageChange(event) {
+  page.value    = event.page + 1   // PrimeVue Paginator is 0-indexed
+  perPage.value = event.rows
+  load()
+}
+
+function onFilterChange() {
+  page.value = 1
+  load()
 }
 
 onMounted(load)
@@ -119,8 +148,16 @@ onMounted(load)
         </template>
       </HeaderSection>
 
-      <!-- Filters -->
-      <div class="flex gap-3">
+      <!-- Search + Filters -->
+      <div class="flex flex-wrap gap-3">
+        <span class="p-input-icon-left flex-1 min-w-48">
+          <i class="pi pi-search text-slate-400" />
+          <InputText
+            v-model="search"
+            placeholder="Search student or form…"
+            class="w-full pl-8"
+          />
+        </span>
         <Select
           v-model="filters.status"
           :options="statusOptions"
@@ -129,7 +166,7 @@ onMounted(load)
           placeholder="All statuses"
           show-clear
           class="w-44"
-          @change="load"
+          @change="onFilterChange"
         />
         <Select
           v-model="filters.risk_level"
@@ -139,11 +176,38 @@ onMounted(load)
           placeholder="All risk levels"
           show-clear
           class="w-44"
-          @change="load"
+          @change="onFilterChange"
+        />
+        <Select
+          v-model="perPage"
+          :options="perPageOptions"
+          option-label="label"
+          option-value="value"
+          class="w-32"
+          @change="onFilterChange"
         />
       </div>
 
-      <DataTable :value="items" :loading="loading" class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <!-- Result count -->
+      <div class="flex items-center justify-between -mt-3">
+        <p class="text-xs text-slate-400">
+          {{ total }} result{{ total !== 1 ? 's' : '' }}
+          <template v-if="search.trim()"> for "{{ search.trim() }}"</template>
+        </p>
+      </div>
+
+      <DataTable
+        :value="items"
+        :loading="loading"
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
+      >
+        <template #empty>
+          <div class="py-12 text-center text-sm text-slate-400">
+            <i class="pi pi-inbox mb-3 text-3xl block" />
+            No assessments found.
+          </div>
+        </template>
+
         <Column header="Student">
           <template #body="{ data }">
             <button
@@ -176,6 +240,13 @@ onMounted(load)
             <RiskBadge :level="data.risk_level" size="sm" />
           </template>
         </Column>
+        <Column header="Updated">
+          <template #body="{ data }">
+            <span class="text-xs text-slate-400">
+              {{ data.updated_at ? new Date(data.updated_at).toLocaleDateString() : '—' }}
+            </span>
+          </template>
+        </Column>
         <Column header="Actions">
           <template #body="{ data }">
             <div class="flex gap-1">
@@ -198,6 +269,17 @@ onMounted(load)
           </template>
         </Column>
       </DataTable>
+
+      <!-- Paginator -->
+      <Paginator
+        v-if="total > perPage"
+        :rows="perPage"
+        :total-records="total"
+        :first="(page - 1) * perPage"
+        :rows-per-page-options="[10, 20, 50, 100]"
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
+        @page="onPageChange"
+      />
     </div>
 
     <!-- Start Assessment Dialog -->
