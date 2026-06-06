@@ -104,7 +104,12 @@ async function publish() {
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await store.loadQuestionTypes()
-  if (route.params.id) await store.loadTemplate(route.params.id)
+  if (route.params.id) {
+    await store.loadTemplate(route.params.id)
+  } else {
+    await store.saveTemplate({ name: t('formBuilder.newForm'), module: 'preschool' })
+    router.replace({ name: 'assessment-form-edit', params: { id: store.template.id } })
+  }
 })
 
 onUnmounted(() => store.reset())
