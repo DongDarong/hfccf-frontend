@@ -43,7 +43,7 @@ function safeText(key, fallback) {
               <h4>{{ safeText(props.card.titleKey, props.card.titleFallback) }}</h4>
               <span>{{ badge }}</span>
             </div>
-            <p>{{ props.card.description }}</p>
+            <p>{{ safeText(props.card.descriptionKey, props.card.fallbackDescription) }}</p>
           </div>
         </div>
       </template>

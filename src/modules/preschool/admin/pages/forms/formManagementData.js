@@ -167,6 +167,16 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     to: { name: 'assessment-form-list' },
   },
   {
+    key: 'question-bank',
+    group: 'manage',
+    icon: 'pi pi-question-circle',
+    titleFallback: 'Question Library',
+    titleKey: 'formsModuleDashboard.cards.questionBank.title',
+    descriptionKey: 'formsModuleDashboard.cards.questionBank.description',
+    fallbackDescription: 'Review reusable questions within the assessment template catalog.',
+    to: { name: 'forms-questions' },
+  },
+  {
     key: 'new-form',
     group: 'build',
     icon: 'pi pi-plus-circle',
