@@ -6,6 +6,7 @@ export default {
     allStatuses:       'ស្ថានភាពទាំងអស់',
     allRiskLevels:     'កម្រិតហានិភ័យទាំងអស់',
     results:           '{n} លទ្ធផល',
+    perPage:           '{n} / ទំព័រ',
     resultsFor:        'សម្រាប់ "{term}"',
     empty:             'រកមិនឃើញការវាយតម្លៃ',
     startDialog: {

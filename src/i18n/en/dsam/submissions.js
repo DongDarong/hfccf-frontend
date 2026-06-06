@@ -6,6 +6,7 @@ export default {
     allStatuses:    'All statuses',
     allRiskLevels:  'All risk levels',
     results:        '{n} result | {n} results',
+    perPage:        '{n} / page',
     resultsFor:     'for "{term}"',
     empty:          'No assessments found.',
     startDialog: {

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import http from '@/services/http'
@@ -37,9 +37,9 @@ const perPage  = ref(20)
 
 const filters = ref({ status: null, risk_level: null })
 
-const statusOptions  = ['draft','in_progress','submitted','under_review','approved','rejected'].map(v => ({ label: v.replace('_',' '), value: v }))
-const riskOptions    = ['low','medium','high','critical'].map(v => ({ label: v, value: v }))
-const perPageOptions = [10, 20, 50, 100].map(v => ({ label: `${v} / page`, value: v }))
+const statusOptions  = computed(() => ['draft','in_progress','submitted','under_review','approved','rejected'].map(v => ({ label: t('dsamShared.statuses.' + v), value: v })))
+const riskOptions    = computed(() => ['low','medium','high','critical'].map(v => ({ label: t('dsamShared.riskLevels.' + v), value: v })))
+const perPageOptions = computed(() => [10, 20, 50, 100].map(v => ({ label: t('dsamSubmissions.perPage', { n: v }), value: v })))
 const statusSeverity = { draft: 'secondary', in_progress: 'warn', submitted: 'info', under_review: 'warn', approved: 'success', rejected: 'danger' }
 
 // Reset to page 1 whenever a filter or search changes
