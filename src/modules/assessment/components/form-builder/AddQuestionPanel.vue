@@ -16,8 +16,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const { t }  = useLanguage()
-const store  = useFormBuilderStore()
+const { t } = useLanguage()
+const store = useFormBuilderStore()
 
 const form = ref({
   section_id:       props.sectionId,
@@ -53,21 +53,24 @@ async function save() {
 </script>
 
 <template>
-  <div class="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
+  <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
 
-    <div class="mb-3 flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-slate-700">
-        {{ t('formBuilder.questions.addQuestion') }}
-      </h3>
-      <button class="text-slate-400 hover:text-slate-600" @click="emit('close')">
-        <i class="pi pi-times text-sm" />
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+      <span class="text-sm font-semibold text-slate-700">{{ t('formBuilder.questions.addQuestion') }}</span>
+      <button
+        class="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        @click="emit('close')"
+      >
+        <i class="pi pi-times text-xs" />
       </button>
     </div>
 
-    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+    <!-- Fields -->
+    <div class="grid grid-cols-1 gap-3 p-4 md:grid-cols-2">
 
       <!-- Question text -->
-      <div class="md:col-span-2 flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 md:col-span-2">
         <label class="text-xs font-medium text-slate-600">
           {{ t('formBuilder.questions.questionText') }} <span class="text-red-400">*</span>
         </label>
@@ -101,13 +104,13 @@ async function save() {
           v-model="form.help_text"
           rows="1"
           auto-resize
-          class="w-full"
+          class="w-full text-sm"
           :placeholder="t('formBuilder.questions.helpText')"
         />
       </div>
 
       <!-- Required toggle -->
-      <div class="md:col-span-2 flex items-center gap-2">
+      <div class="flex items-center gap-2 md:col-span-2">
         <Checkbox v-model="form.is_required" binary input-id="q-required" />
         <label for="q-required" class="cursor-pointer text-sm text-slate-600">
           {{ t('formBuilder.questions.required') }}
@@ -115,8 +118,8 @@ async function save() {
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="mt-4 flex justify-end gap-2">
+    <!-- Footer actions -->
+    <div class="flex justify-end gap-2 border-t border-slate-100 px-4 py-3">
       <Button :label="t('common.cancel')" severity="secondary" size="sm" @click="emit('close')" />
       <Button
         :label="t('common.save')"

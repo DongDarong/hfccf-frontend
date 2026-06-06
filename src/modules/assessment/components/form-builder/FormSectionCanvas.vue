@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import InputText from 'primevue/inputtext'
-import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
 import { useLanguage } from '@/composables/useLanguage'
 import { useFormBuilderStore } from '../../stores/useFormBuilderStore'
@@ -21,10 +20,10 @@ const emit = defineEmits(['deleted'])
 const { t }  = useLanguage()
 const store  = useFormBuilderStore()
 
-const editingTitle       = ref(false)
-const localTitle         = ref(props.section.title)
-const showAddQuestion    = ref(false)
-const deletingSection    = ref(false)
+const editingTitle    = ref(false)
+const localTitle      = ref(props.section.title)
+const showAddQuestion = ref(false)
+const deletingSection = ref(false)
 
 const isPublished = computed(() => store.template?.status === 'published')
 
@@ -34,6 +33,11 @@ const questions = computed(() =>
     .sort((a, b) => a.order - b.order),
 )
 
+const questionCountLabel = computed(() => {
+  const n = questions.value.length
+  return t('formBuilder.questions.count', { n })
+})
+
 async function saveTitle() {
   if (localTitle.value.trim() && localTitle.value.trim() !== props.section.title) {
     await store.updateSection(props.section.id, { title: localTitle.value.trim() })
@@ -42,7 +46,7 @@ async function saveTitle() {
 }
 
 async function deleteSection() {
-  if (!confirm(t('formBuilder.sections.deleteConfirm') || 'Delete this section?')) return
+  if (!confirm(t('formBuilder.sections.deleteSection') + '?')) return
   deletingSection.value = true
   try {
     await store.deleteSection(props.section.id)
@@ -56,11 +60,11 @@ async function deleteSection() {
 <template>
   <div class="flex flex-1 flex-col overflow-hidden">
 
-    <!-- Section header bar -->
+    <!-- Section header -->
     <div class="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-5 py-3">
 
       <!-- Editable title -->
-      <div class="flex-1 min-w-0">
+      <div class="min-w-0 flex-1">
         <InputText
           v-if="editingTitle"
           v-model="localTitle"
@@ -73,7 +77,7 @@ async function deleteSection() {
         <h2
           v-else
           :class="[
-            'text-base font-bold leading-tight',
+            'truncate text-base font-bold leading-tight',
             isPublished ? 'text-slate-800' : 'cursor-text text-slate-800 hover:text-blue-700',
           ]"
           @dblclick="!isPublished && (editingTitle = true)"
@@ -84,24 +88,26 @@ async function deleteSection() {
 
       <!-- Question count chip -->
       <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-        {{ questions.length }} {{ questions.length === 1 ? 'question' : 'questions' }}
+        {{ questionCountLabel }}
       </span>
 
       <!-- Section actions -->
       <div v-if="!isPublished" class="flex shrink-0 items-center gap-1">
         <Button
           icon="pi pi-pencil"
-          text size="sm"
-          v-tooltip.top="'Rename'"
+          text
+          size="sm"
+          v-tooltip.top="t('formBuilder.sections.rename')"
           class="!text-slate-400 hover:!text-blue-600"
           @click="editingTitle = true"
         />
         <Button
           icon="pi pi-trash"
-          text size="sm"
+          text
+          size="sm"
           severity="danger"
           :loading="deletingSection"
-          v-tooltip.top="'Delete section'"
+          v-tooltip.top="t('formBuilder.sections.deleteSection')"
           @click="deleteSection"
         />
       </div>
@@ -109,14 +115,15 @@ async function deleteSection() {
 
     <!-- Scrollable questions area -->
     <div class="flex-1 overflow-y-auto px-5 py-4">
-      <div class="mx-auto max-w-2xl flex flex-col gap-2.5">
+      <div class="mx-auto flex max-w-2xl flex-col gap-2.5">
 
         <!-- Question list -->
         <QuestionCard
-          v-for="question in questions"
+          v-for="(question, idx) in questions"
           :key="question.id"
           :question="question"
           :form-id="formId"
+          :order="idx + 1"
         />
 
         <!-- Empty state -->
@@ -128,8 +135,8 @@ async function deleteSection() {
             <i class="pi pi-question-circle text-lg" />
           </span>
           <div>
-            <p class="text-sm font-medium text-slate-500">No questions yet</p>
-            <p class="mt-0.5 text-xs text-slate-400">Add your first question below.</p>
+            <p class="text-sm font-medium text-slate-500">{{ t('formBuilder.questions.noQuestionsYet') }}</p>
+            <p class="mt-0.5 text-xs text-slate-400">{{ t('formBuilder.questions.addFirstQuestion') }}</p>
           </div>
         </div>
 
@@ -151,13 +158,13 @@ async function deleteSection() {
           {{ t('formBuilder.questions.addQuestion') }}
         </button>
 
-        <!-- Published notice -->
+        <!-- Published lock notice -->
         <div
           v-if="isPublished"
-          class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
+          class="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
         >
-          <i class="pi pi-lock mr-2" />
-          This form is published and locked. Create a new version to make changes.
+          <i class="pi pi-lock shrink-0" />
+          {{ t('formBuilder.publishedLock') }}
         </div>
       </div>
     </div>

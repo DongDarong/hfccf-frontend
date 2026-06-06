@@ -1,19 +1,22 @@
 <script setup>
 import Button from '@/components/buttons/Button.vue'
 import Tag from 'primevue/tag'
+import Tooltip from 'primevue/tooltip'
 import { useLanguage } from '@/composables/useLanguage'
 import { assessmentFormApi } from '../../services/assessmentFormApi'
 import { useFormBuilderStore } from '../../stores/useFormBuilderStore'
 
+defineOptions({ directives: { tooltip: Tooltip } })
+
 const props = defineProps({
   question: { type: Object, required: true },
   formId:   { type: [String, Number], required: true },
+  order:    { type: Number, default: null },
 })
 
 const { t }  = useLanguage()
 const store  = useFormBuilderStore()
 
-// Icon per question type key
 const typeIcon = {
   short_text:   'pi-align-left',
   long_text:    'pi-align-justify',
@@ -38,7 +41,15 @@ async function deleteQuestion() {
 </script>
 
 <template>
-  <div class="group flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-slate-300 hover:bg-white hover:shadow-sm">
+  <div class="group flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition-all hover:border-slate-300 hover:shadow">
+
+    <!-- Order number -->
+    <span
+      v-if="order !== null"
+      class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500"
+    >
+      {{ order }}
+    </span>
 
     <!-- Type icon -->
     <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600">
@@ -46,26 +57,33 @@ async function deleteQuestion() {
     </span>
 
     <!-- Content -->
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-sm font-medium text-slate-800 leading-snug">
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm font-medium leading-snug text-slate-800">
           {{ question.question_text }}
         </span>
         <span v-if="question.is_required" class="text-xs font-semibold text-red-500">*</span>
       </div>
-      <div class="mt-1 flex items-center gap-2">
+      <div class="mt-1.5 flex items-center gap-2">
         <Tag
           :value="t(`formBuilder.questionTypes.${question.question_type_key}`)"
           severity="secondary"
-          class="!text-xs !py-0 !px-1.5"
+          class="!px-1.5 !py-0 !text-xs"
         />
-        <span v-if="question.help_text" class="text-xs text-slate-400 truncate">{{ question.help_text }}</span>
+        <span v-if="question.help_text" class="truncate text-xs text-slate-400">{{ question.help_text }}</span>
       </div>
     </div>
 
     <!-- Actions (appear on hover) -->
     <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-      <Button icon="pi pi-trash" text size="sm" severity="danger" @click="deleteQuestion" />
+      <Button
+        icon="pi pi-trash"
+        text
+        size="sm"
+        severity="danger"
+        v-tooltip.top="t('formBuilder.questions.deleteQuestion')"
+        @click="deleteQuestion"
+      />
     </div>
   </div>
 </template>
