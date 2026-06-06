@@ -30,12 +30,15 @@ function update(val) {
 </script>
 
 <template>
-  <div class="question-renderer">
-    <div class="question-renderer__label">
+  <div class="flex flex-col gap-2">
+    <!-- Label -->
+    <p class="text-sm font-medium text-slate-800">
       {{ question.question_text }}
-      <span v-if="question.is_required" class="question-renderer__required">*</span>
-    </div>
-    <div v-if="question.help_text" class="question-renderer__help">{{ question.help_text }}</div>
+      <span v-if="question.is_required" class="ml-0.5 text-red-500">*</span>
+    </p>
+
+    <!-- Help text -->
+    <p v-if="question.help_text" class="text-xs text-slate-400">{{ question.help_text }}</p>
 
     <!-- short_text -->
     <InputText
@@ -74,28 +77,28 @@ function update(val) {
     />
 
     <!-- radio -->
-    <div v-else-if="typeKey === 'radio'" class="question-renderer__options">
-      <div v-for="opt in optionItems" :key="opt.value" class="question-renderer__option">
+    <div v-else-if="typeKey === 'radio'" class="flex flex-col gap-2">
+      <div v-for="opt in optionItems" :key="opt.value" class="flex items-center gap-2">
         <RadioButton
           :input-id="`q${question.id}_${opt.value}`"
           :model-value="modelValue"
           :value="opt.value"
           @update:model-value="update"
         />
-        <label :for="`q${question.id}_${opt.value}`">{{ opt.label }}</label>
+        <label :for="`q${question.id}_${opt.value}`" class="cursor-pointer text-sm text-slate-700">{{ opt.label }}</label>
       </div>
     </div>
 
     <!-- checkbox -->
-    <div v-else-if="typeKey === 'checkbox'" class="question-renderer__options">
-      <div v-for="opt in optionItems" :key="opt.value" class="question-renderer__option">
+    <div v-else-if="typeKey === 'checkbox'" class="flex flex-col gap-2">
+      <div v-for="opt in optionItems" :key="opt.value" class="flex items-center gap-2">
         <Checkbox
           :input-id="`q${question.id}_${opt.value}`"
           :model-value="Array.isArray(modelValue) ? modelValue : []"
           :value="opt.value"
           @update:model-value="update"
         />
-        <label :for="`q${question.id}_${opt.value}`">{{ opt.label }}</label>
+        <label :for="`q${question.id}_${opt.value}`" class="cursor-pointer text-sm text-slate-700">{{ opt.label }}</label>
       </div>
     </div>
 
@@ -137,54 +140,13 @@ function update(val) {
       auto
     />
 
-    <!-- score_rubric, matrix, dynamic_table, calculated, conditional, repeating_group, signature, gps_location -->
-    <div v-else class="question-renderer__unsupported">
-      <i class="pi pi-info-circle" />
+    <!-- unsupported -->
+    <div
+      v-else
+      class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400 italic"
+    >
+      <i class="pi pi-info-circle shrink-0" />
       <span>{{ typeKey }}</span>
     </div>
   </div>
 </template>
-
-<style scoped>
-.question-renderer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.question-renderer__label {
-  font-weight: 500;
-  font-size: 0.9375rem;
-}
-
-.question-renderer__required {
-  color: var(--red-500);
-  margin-left: 2px;
-}
-
-.question-renderer__help {
-  font-size: 0.8125rem;
-  color: var(--text-color-secondary);
-}
-
-.question-renderer__options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.question-renderer__option {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.question-renderer__unsupported {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-color-secondary);
-  font-size: 0.875rem;
-  font-style: italic;
-}
-</style>

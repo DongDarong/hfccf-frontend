@@ -97,14 +97,14 @@ onMounted(load)
 
       <!-- Filters -->
       <div class="flex flex-wrap gap-3">
-        <span class="p-input-icon-left min-w-48 flex-1">
-          <i class="pi pi-search text-slate-400" />
+        <div class="relative min-w-48 flex-1">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none" />
           <InputText
             v-model="search"
             :placeholder="t('formBuilder.searchPlaceholder')"
-            class="w-full pl-8"
+            class="w-full pl-9"
           />
-        </span>
+        </div>
         <Select
           v-model="statusFilter"
           :options="statusOptions"
