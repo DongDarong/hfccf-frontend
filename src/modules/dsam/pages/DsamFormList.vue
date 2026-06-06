@@ -34,6 +34,54 @@ async function load() {
   }
 }
 
+async function publish(id, name) {
+  confirm.require({
+    message: `Publish "${name}"? It will become available for new assessments.`,
+    header: 'Publish Form',
+    icon: 'pi pi-send',
+    acceptLabel: 'Publish',
+    rejectLabel: 'Cancel',
+    accept: async () => {
+      try {
+        await dsamFormApi.publish(id)
+        toast.add({ severity: 'success', summary: 'Published', detail: `"${name}" is now live.`, life: 3000 })
+        await load()
+      } catch (e) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+      }
+    },
+  })
+}
+
+async function archive(id, name) {
+  confirm.require({
+    message: `Archive "${name}"? It will no longer be available for new assessments.`,
+    header: 'Archive Form',
+    icon: 'pi pi-inbox',
+    acceptLabel: 'Archive',
+    rejectLabel: 'Cancel',
+    accept: async () => {
+      try {
+        await dsamFormApi.archive(id)
+        toast.add({ severity: 'info', summary: 'Archived', detail: `"${name}" archived.`, life: 3000 })
+        await load()
+      } catch (e) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+      }
+    },
+  })
+}
+
+async function newVersion(id) {
+  try {
+    const res = await dsamFormApi.newVersion(id, {})
+    toast.add({ severity: 'success', summary: 'New version created', detail: `v${res.data.data.version_number} draft ready.`, life: 3000 })
+    router.push({ name: 'dsam-form-builder-edit', params: { id: res.data.data.id } })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+  }
+}
+
 async function duplicate(id) {
   try {
     await dsamFormApi.duplicate(id)
@@ -47,13 +95,18 @@ async function duplicate(id) {
 async function remove(id) {
   confirm.require({
     message: 'Delete this form template?',
+    header: 'Delete Form',
+    icon: 'pi pi-trash',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await dsamFormApi.delete(id)
         toast.add({ severity: 'success', summary: 'Deleted', life: 3000 })
         await load()
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 4000 })
+        toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
       }
     },
   })
@@ -97,23 +150,76 @@ onMounted(load)
         <Column header="Sections">
           <template #body="{ data }">{{ data.section_count ?? '—' }}</template>
         </Column>
+        <Column header="Published">
+          <template #body="{ data }">
+            <span class="text-xs text-slate-500">
+              {{ data.published_at ? new Date(data.published_at).toLocaleDateString() : '—' }}
+            </span>
+          </template>
+        </Column>
         <Column header="Actions">
           <template #body="{ data }">
             <div class="flex gap-1">
+              <!-- Edit (draft only) -->
               <Button
+                v-if="data.status === 'draft'"
                 icon="pi pi-pencil"
                 severity="secondary"
                 size="sm"
                 title="Edit"
                 @click="router.push({ name: 'dsam-form-builder-edit', params: { id: data.id } })"
               />
+
+              <!-- View (non-draft) -->
               <Button
+                v-else
+                icon="pi pi-eye"
+                severity="secondary"
+                size="sm"
+                title="View"
+                @click="router.push({ name: 'dsam-form-builder-edit', params: { id: data.id } })"
+              />
+
+              <!-- Publish (draft only) -->
+              <Button
+                v-if="data.status === 'draft'"
+                icon="pi pi-send"
+                severity="success"
+                size="sm"
+                title="Publish"
+                @click="publish(data.id, data.name)"
+              />
+
+              <!-- New Version (published only) -->
+              <Button
+                v-if="data.status === 'published'"
                 icon="pi pi-code-branch"
                 severity="secondary"
                 size="sm"
-                title="Versions"
+                title="New Version"
+                @click="newVersion(data.id)"
+              />
+
+              <!-- Archive (published only) -->
+              <Button
+                v-if="data.status === 'published'"
+                icon="pi pi-inbox"
+                severity="secondary"
+                size="sm"
+                title="Archive"
+                @click="archive(data.id, data.name)"
+              />
+
+              <!-- Versions -->
+              <Button
+                icon="pi pi-list"
+                severity="secondary"
+                size="sm"
+                title="Version history"
                 @click="router.push({ name: 'dsam-form-versions', params: { id: data.id } })"
               />
+
+              <!-- Duplicate -->
               <Button
                 icon="pi pi-copy"
                 severity="secondary"
@@ -121,12 +227,14 @@ onMounted(load)
                 title="Duplicate"
                 @click="duplicate(data.id)"
               />
+
+              <!-- Delete (draft only, no submissions) -->
               <Button
+                v-if="data.status === 'draft'"
                 icon="pi pi-trash"
                 severity="danger"
                 size="sm"
                 title="Delete"
-                :disabled="data.is_published"
                 @click="remove(data.id)"
               />
             </div>

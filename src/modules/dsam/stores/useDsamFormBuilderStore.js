@@ -14,6 +14,7 @@ export const useDsamFormBuilderStore = defineStore('dsamFormBuilder', () => {
   const error     = ref(null)
 
   const isPublished = computed(() => template.value?.status === 'published')
+  const isEditable  = computed(() => template.value?.status === 'draft')
 
   const activeSection  = computed(() => sections.value.find(s => s.id === activeSectionId.value) ?? null)
   const activeQuestion = computed(() => {
@@ -67,6 +68,18 @@ export const useDsamFormBuilderStore = defineStore('dsamFormBuilder', () => {
     const res = await dsamFormApi.publish(template.value.id)
     template.value = res.data.data
   }
+
+  async function archive() {
+    const res = await dsamFormApi.archive(template.value.id)
+    template.value = res.data.data
+  }
+
+  async function createNewVersion(data = {}) {
+    const res = await dsamFormApi.newVersion(template.value.id, data)
+    return res.data.data
+  }
+
+  const isArchived = computed(() => template.value?.status === 'archived')
 
   // ── Sections ──────────────────────────────────────────────────────────────
 
@@ -194,8 +207,8 @@ export const useDsamFormBuilderStore = defineStore('dsamFormBuilder', () => {
     template, sections, questionTypes,
     activeSectionId, activeQuestionId,
     activeSection, activeQuestion,
-    isLoading, isSaving, error, isPublished,
-    load, saveTemplate, publish,
+    isLoading, isSaving, error, isPublished, isArchived, isEditable,
+    load, saveTemplate, publish, archive, createNewVersion,
     addSection, updateSection, deleteSection, reorderSections,
     addQuestion, updateQuestion, deleteQuestion, reorderQuestions,
     addOption, updateOption, deleteOption,

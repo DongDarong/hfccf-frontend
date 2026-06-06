@@ -13,6 +13,7 @@ export const dsamFormApi = {
   update:     (id, data) => http.put(`${BASE}/${id}`, data),
   delete:     (id) => http.delete(`${BASE}/${id}`),
   publish:    (id) => http.post(`${BASE}/${id}/publish`),
+  archive:    (id) => http.post(`${BASE}/${id}/archive`),
   duplicate:  (id) => http.post(`${BASE}/${id}/duplicate`),
   newVersion: (id, data) => http.post(`${BASE}/${id}/new-version`, data),
   versions:   (id) => http.get(`${BASE}/${id}/versions`),

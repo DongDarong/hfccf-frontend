@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useDsamFormBuilderStore } from '../stores/useDsamFormBuilderStore'
@@ -10,6 +10,7 @@ import InspectorPanel from '../components/form-builder/InspectorPanel.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
 
 defineOptions({ name: 'DsamFormBuilderPage' })
 
@@ -18,10 +19,29 @@ const router = useRouter()
 const toast  = useToast()
 const store  = useDsamFormBuilderStore()
 
-const addingQuestion = ref(false)
-const selectedTypeId = ref(null)
+const addingQuestion  = ref(false)
+const selectedTypeId  = ref(null)
+const showPublishDlg  = ref(false)
+const showVersionDlg  = ref(false)
+const versionNotes    = ref('')
+const publishing      = ref(false)
+const archiving       = ref(false)
+const creatingVersion = ref(false)
 
 const statusSeverity = { draft: 'warn', published: 'success', archived: 'secondary' }
+
+// Pre-publish readiness derived from store state
+const readiness = computed(() => {
+  const sectionCount   = store.sections.length
+  const totalQuestions = store.sections.reduce((n, s) => n + (s.questions?.length ?? 0), 0)
+  const emptySections  = store.sections.filter(s => !(s.questions?.length)).map(s => s.title)
+  return { sectionCount, totalQuestions, emptySections, ok: sectionCount > 0 && totalQuestions > 0 }
+})
+
+const publishedAt = computed(() => {
+  const d = store.template?.published_at
+  return d ? new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : null
+})
 
 onMounted(async () => {
   const id = route.params.id
@@ -36,10 +56,7 @@ onMounted(async () => {
 onUnmounted(() => store.reset())
 
 async function createNewForm() {
-  const res = await dsamFormApi.create({
-    name: 'Untitled Form',
-    category: 'annual_assessment',
-  })
+  const res = await dsamFormApi.create({ name: 'Untitled Form', category: 'annual_assessment' })
   router.replace({ name: 'dsam-form-builder-edit', params: { id: res.data.data.id } })
   return res.data.data.id
 }
@@ -54,12 +71,43 @@ async function addQuestion() {
   selectedTypeId.value = null
 }
 
-async function publish() {
+async function confirmPublish() {
+  publishing.value = true
   try {
     await store.publish()
-    toast.add({ severity: 'success', summary: 'Published', detail: 'Form is now live.', life: 3000 })
+    showPublishDlg.value = false
+    toast.add({ severity: 'success', summary: 'Published', detail: 'Form is now live and available for assessments.', life: 4000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 4000 })
+    toast.add({ severity: 'error', summary: 'Publish failed', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+  } finally {
+    publishing.value = false
+  }
+}
+
+async function archiveForm() {
+  archiving.value = true
+  try {
+    await store.archive()
+    toast.add({ severity: 'info', summary: 'Archived', detail: 'Form is archived and no longer available for new assessments.', life: 4000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+  } finally {
+    archiving.value = false
+  }
+}
+
+async function createNewVersion() {
+  creatingVersion.value = true
+  try {
+    const newForm = await store.createNewVersion({ version_notes: versionNotes.value || null })
+    showVersionDlg.value = false
+    versionNotes.value = ''
+    toast.add({ severity: 'success', summary: `v${newForm.version_number} created`, detail: 'New draft version ready to edit.', life: 4000 })
+    router.push({ name: 'dsam-form-builder-edit', params: { id: newForm.id } })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+  } finally {
+    creatingVersion.value = false
   }
 }
 </script>
@@ -75,24 +123,52 @@ async function publish() {
       >
         <i class="pi pi-arrow-left" />
       </button>
+
       <div class="flex-1 min-w-0">
         <h1 class="truncate text-sm font-semibold text-slate-800">
           {{ store.template?.name ?? 'Loading…' }}
         </h1>
-        <p class="text-xs text-slate-400">Form Builder</p>
+        <p class="text-xs text-slate-400">
+          Form Builder
+          <span v-if="store.template?.version_number"> · v{{ store.template.version_number }}</span>
+          <span v-if="publishedAt" class="ml-1">· Published {{ publishedAt }}</span>
+        </p>
       </div>
+
       <Tag
         v-if="store.template?.status"
         :severity="statusSeverity[store.template.status]"
         :value="store.template.status"
       />
-      <Button
-        v-if="!store.isPublished"
-        label="Publish"
-        icon="pi pi-send"
-        size="sm"
-        @click="publish"
-      />
+
+      <!-- Draft actions -->
+      <template v-if="store.isEditable">
+        <Button
+          label="Publish"
+          icon="pi pi-send"
+          size="sm"
+          @click="showPublishDlg = true"
+        />
+      </template>
+
+      <!-- Published actions -->
+      <template v-else-if="store.isPublished">
+        <Button
+          label="New Version"
+          icon="pi pi-code-branch"
+          size="sm"
+          severity="secondary"
+          @click="showVersionDlg = true"
+        />
+        <Button
+          label="Archive"
+          icon="pi pi-inbox"
+          size="sm"
+          severity="secondary"
+          :loading="archiving"
+          @click="archiveForm"
+        />
+      </template>
     </header>
 
     <!-- 3-panel body -->
@@ -139,8 +215,8 @@ async function publish() {
               No questions in this section yet.
             </div>
 
-            <!-- Add question -->
-            <div v-if="!store.isPublished">
+            <!-- Add question (draft only) -->
+            <div v-if="store.isEditable">
               <div v-if="addingQuestion" class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
                 <Select
                   v-model="selectedTypeId"
@@ -162,13 +238,103 @@ async function publish() {
                 Add question
               </button>
             </div>
+
+            <!-- Archived notice -->
+            <div v-else-if="store.isArchived" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+              <i class="pi pi-info-circle mr-1" />
+              This form is archived. Create a new version to make changes.
+            </div>
           </div>
         </template>
       </main>
 
       <!-- Right: Inspector -->
       <InspectorPanel />
-
     </div>
+
+    <!-- ── Publish confirmation dialog ─────────────────────────────────── -->
+    <Dialog
+      v-model:visible="showPublishDlg"
+      header="Publish Form"
+      :style="{ width: '26rem' }"
+      :modal="true"
+      :closable="!publishing"
+    >
+      <div class="space-y-4 pt-1 text-sm">
+        <p class="text-slate-600">Once published, the form becomes available for assessments. You won't be able to edit it directly — use <strong>New Version</strong> instead.</p>
+
+        <!-- Readiness checklist -->
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">Readiness check</p>
+
+          <div class="flex items-center gap-2">
+            <i :class="readiness.sectionCount > 0 ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-red-500'" class="pi text-base" />
+            <span :class="readiness.sectionCount > 0 ? 'text-slate-700' : 'text-red-600'">
+              {{ readiness.sectionCount }} section{{ readiness.sectionCount !== 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <i :class="readiness.totalQuestions > 0 ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-red-500'" class="pi text-base" />
+            <span :class="readiness.totalQuestions > 0 ? 'text-slate-700' : 'text-red-600'">
+              {{ readiness.totalQuestions }} question{{ readiness.totalQuestions !== 1 ? 's' : '' }} total
+            </span>
+          </div>
+
+          <div v-if="readiness.emptySections.length" class="flex items-start gap-2 text-amber-700">
+            <i class="pi pi-exclamation-triangle text-base mt-0.5" />
+            <span>Empty sections: {{ readiness.emptySections.join(', ') }}</span>
+          </div>
+        </div>
+
+        <p v-if="!readiness.ok" class="text-red-600 text-xs">
+          Add at least one section with one question before publishing.
+        </p>
+      </div>
+
+      <template #footer>
+        <Button label="Cancel" severity="secondary" :disabled="publishing" @click="showPublishDlg = false" />
+        <Button
+          label="Publish Now"
+          icon="pi pi-send"
+          :loading="publishing"
+          :disabled="!readiness.ok"
+          @click="confirmPublish"
+        />
+      </template>
+    </Dialog>
+
+    <!-- ── New Version dialog ──────────────────────────────────────────── -->
+    <Dialog
+      v-model:visible="showVersionDlg"
+      header="Create New Version"
+      :style="{ width: '24rem' }"
+      :modal="true"
+      :closable="!creatingVersion"
+    >
+      <div class="space-y-3 pt-1 text-sm text-slate-600">
+        <p>A new draft copy of <strong>v{{ store.template?.version_number }}</strong> will be created. The current published version stays live until the new version is published.</p>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Version notes <span class="text-slate-400">(optional)</span></label>
+          <textarea
+            v-model="versionNotes"
+            rows="2"
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="What's changing in this version?"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <Button label="Cancel" severity="secondary" :disabled="creatingVersion" @click="showVersionDlg = false" />
+        <Button
+          label="Create Draft"
+          icon="pi pi-code-branch"
+          :loading="creatingVersion"
+          @click="createNewVersion"
+        />
+      </template>
+    </Dialog>
+
   </div>
 </template>
