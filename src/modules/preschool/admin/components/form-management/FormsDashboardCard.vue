@@ -46,16 +46,19 @@ defineProps({
 
 <style scoped>
 .forms-dashboard-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
-  min-height: 8rem;
+  min-height: 11.5rem;
   align-items: flex-start;
-  gap: 0.875rem;
+  gap: 1rem;
   width: 100%;
-  padding: 1.1rem;
+  padding: 1.25rem;
   border: 1px solid #e2e8f0;
-  border-radius: 1.15rem;
-  background: #fff;
-  box-shadow: 0 12px 32px -24px rgba(15, 23, 42, 0.3);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.9));
+  box-shadow: 0 18px 42px -30px rgba(15, 23, 42, 0.42);
   color: inherit;
   text-align: left;
   text-decoration: none;
@@ -65,9 +68,26 @@ defineProps({
     border-color 0.14s ease;
 }
 
+.forms-dashboard-card::after {
+  position: absolute;
+  right: -2.5rem;
+  bottom: -3.5rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+  opacity: 0.025;
+  transition: transform 0.2s ease;
+}
+
 .forms-dashboard-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.38);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -28px rgba(15, 23, 42, 0.4);
+}
+
+.forms-dashboard-card:hover::after {
+  transform: scale(1.15);
 }
 
 .forms-dashboard-card:focus-visible {
@@ -79,11 +99,12 @@ defineProps({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 0.75rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
   flex: none;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
 .forms-dashboard-card__content {
@@ -91,7 +112,7 @@ defineProps({
   flex: 1;
   min-width: 0;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.32rem;
 }
 
 .forms-dashboard-card__workspace {
@@ -104,8 +125,8 @@ defineProps({
 
 .forms-dashboard-card__title {
   color: #0f172a;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   line-height: 1.35;
 }
 
@@ -116,18 +137,34 @@ defineProps({
 }
 
 .forms-dashboard-card__arrow {
-  align-self: center;
+  align-self: flex-end;
   flex: none;
-  color: #cbd5e1;
-  font-size: 0.75rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: #fff;
+  color: #94a3b8;
+  font-size: 0.7rem;
   transition:
     color 0.14s ease,
-    transform 0.14s ease;
+    transform 0.14s ease,
+    border-color 0.14s ease;
 }
 
 .forms-dashboard-card:hover .forms-dashboard-card__arrow {
-  color: #94a3b8;
+  border-color: currentColor;
+  color: inherit;
   transform: translateX(3px);
+}
+
+@media (max-width: 580px) {
+  .forms-dashboard-card {
+    min-height: 9.5rem;
+    padding: 1rem;
+  }
 }
 
 .forms-dashboard-card--violet .forms-dashboard-card__icon { background: #ede9fe; color: #6d28d9; }

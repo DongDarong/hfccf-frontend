@@ -91,6 +91,18 @@ export default {
       review: { label: 'Run, Review & Report', caption: 'Assess students, approve results, and analyze outcomes' },
     },
     cards: {
+      manageWorkspace: {
+        title: 'Manage & Organize',
+        description: 'Manage assessment templates, reusable questions, and activity history in one workspace.',
+      },
+      buildWorkspace: {
+        title: 'Build & Configure',
+        description: 'Create form structures, configure scoring rules, and design print layouts in one workspace.',
+      },
+      reviewWorkspace: {
+        title: 'Run, Review & Report',
+        description: 'Run assessments, review submissions, approve results, export data, and analyze outcomes in one workspace.',
+      },
       templates: {
         title: 'Assessment Templates',
         description: 'Create, edit, duplicate, publish, and archive assessment templates.',
