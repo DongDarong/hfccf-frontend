@@ -3,10 +3,13 @@ import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import Tooltip from 'primevue/tooltip'
 import { useLanguage } from '@/composables/useLanguage'
 import { useFormBuilderStore } from '../../stores/useFormBuilderStore'
 import QuestionCard from './QuestionCard.vue'
 import AddQuestionPanel from './AddQuestionPanel.vue'
+
+defineOptions({ directives: { tooltip: Tooltip } })
 
 const props = defineProps({
   section: { type: Object, required: true },
