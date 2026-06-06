@@ -1,7 +1,11 @@
 export default {
   dsamForms: {
-    title:   'Assessment Forms',
-    newForm: 'New Form',
+    title:             'Assessment Forms',
+    newForm:           'New Form',
+    searchPlaceholder: 'Search form name…',
+    allStatuses:       'All statuses',
+    results:           '{n} result | {n} results',
+    empty:             'No forms found.',
     builder: {
       subtitle:         'Form Builder',
       addSectionFirst:  'Add a section first',

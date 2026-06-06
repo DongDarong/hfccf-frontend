@@ -1,7 +1,11 @@
 export default {
   dsamForms: {
-    title:   'គំរូទម្រង់វាយតម្លៃ',
-    newForm: 'ទម្រង់ថ្មី',
+    title:             'គំរូទម្រង់វាយតម្លៃ',
+    newForm:           'ទម្រង់ថ្មី',
+    searchPlaceholder: 'ស្វែងរកឈ្មោះទម្រង់…',
+    allStatuses:       'ស្ថានភាពទាំងអស់',
+    results:           '{n} លទ្ធផល',
+    empty:             'រកមិនឃើញទម្រង់',
     builder: {
       subtitle:         'កម្មវិធីបង្កើតទម្រង់',
       addSectionFirst:  'បន្ថែមផ្នែកជាមុន',

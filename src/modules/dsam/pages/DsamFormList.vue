@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -8,6 +8,8 @@ import Button from '@/components/buttons/Button.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
+import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { dsamFormApi } from '../services/dsamFormApi'
@@ -19,16 +21,30 @@ const toast   = useToast()
 const confirm = useConfirm()
 const { t }   = useLanguage()
 
-const forms   = ref([])
-const loading = ref(false)
-const total   = ref(0)
+const forms        = ref([])
+const loading      = ref(false)
+const total        = ref(0)
+const search       = ref('')
+const statusFilter = ref(null)
 
 const statusSeverity = { draft: 'warn', published: 'success', archived: 'secondary' }
+const statusOptions  = ['draft', 'published', 'archived'].map(v => ({ label: v, value: v }))
+
+let searchDebounce = null
+watch(search, () => {
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(load, 350)
+})
+
+watch(statusFilter, load)
 
 async function load() {
   loading.value = true
   try {
-    const res = await dsamFormApi.list()
+    const params = {}
+    if (search.value.trim())  params.search = search.value.trim()
+    if (statusFilter.value)   params.status = statusFilter.value
+    const res = await dsamFormApi.list(params)
     forms.value = res.data.data ?? []
     total.value = res.data.meta?.total ?? forms.value.length
   } finally {
@@ -130,7 +146,43 @@ onMounted(load)
         </template>
       </HeaderSection>
 
+      <!-- Search + filter -->
+      <div class="flex flex-wrap gap-3">
+        <span class="p-input-icon-left flex-1 min-w-48">
+          <i class="pi pi-search text-slate-400" />
+          <InputText
+            v-model="search"
+            :placeholder="t('dsamForms.searchPlaceholder')"
+            class="w-full pl-8"
+          />
+        </span>
+        <Select
+          v-model="statusFilter"
+          :options="statusOptions"
+          option-label="label"
+          option-value="value"
+          :placeholder="t('dsamForms.allStatuses')"
+          show-clear
+          class="w-44"
+        />
+      </div>
+
+      <!-- Result count -->
+      <div class="flex items-center -mt-3">
+        <p class="text-xs text-slate-400">
+          {{ total }} {{ t('dsamForms.results', total) }}
+          <template v-if="search.trim()"> for "{{ search.trim() }}"</template>
+        </p>
+      </div>
+
       <DataTable :value="forms" :loading="loading" class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <template #empty>
+          <div class="py-12 text-center text-sm text-slate-400">
+            <i class="pi pi-file mb-3 text-3xl block" />
+            {{ t('dsamForms.empty') }}
+          </div>
+        </template>
+
         <Column field="name" :header="t('dsamShared.cols.name')" sortable>
           <template #body="{ data }">
             <div>
@@ -206,7 +258,7 @@ onMounted(load)
                 icon="pi pi-list"
                 severity="secondary"
                 size="sm"
-                :title="t('dsamForms.builder.newVersion.button')"
+                :title="t('dsamForms.versions.title')"
                 @click="router.push({ name: 'dsam-form-versions', params: { id: data.id } })"
               />
               <Button
