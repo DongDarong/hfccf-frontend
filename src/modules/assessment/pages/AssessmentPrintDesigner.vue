@@ -1211,7 +1211,7 @@ watch(() => route.params.id, () => {
 
 .print-designer-shell__meta {
   font-size: 0.8125rem;
-  color: var(--text-color-secondary);
+  color: #64748b;
 }
 
 .print-designer-shell__layout {
@@ -1224,8 +1224,8 @@ watch(() => route.params.id, () => {
 .print-panel {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)),
-    var(--surface-card);
-  border: 1px solid var(--surface-border);
+    #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 18px;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
   overflow: hidden;
@@ -1297,7 +1297,7 @@ watch(() => route.params.id, () => {
   flex-direction: column;
   gap: 0.2rem;
   margin-top: 0.5rem;
-  color: var(--text-color-secondary);
+  color: #64748b;
   font-size: 0.8125rem;
 }
 
@@ -1323,7 +1323,7 @@ watch(() => route.params.id, () => {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-color-secondary);
+  color: #64748b;
   padding: 1rem 0;
   text-align: center;
 }
@@ -1341,7 +1341,7 @@ watch(() => route.params.id, () => {
   gap: 1rem;
   background:
     linear-gradient(180deg, rgba(248, 250, 252, 0.85), rgba(241, 245, 249, 0.85)),
-    var(--surface-ground);
+    #f8fafc;
 }
 
 .print-block-card {
@@ -1368,7 +1368,7 @@ watch(() => route.params.id, () => {
 
 .print-block-card__header p {
   margin: 0;
-  color: var(--text-color-secondary);
+  color: #64748b;
   font-size: 0.825rem;
 }
 
@@ -1423,7 +1423,7 @@ watch(() => route.params.id, () => {
 .print-field span {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-color-secondary);
+  color: #64748b;
 }
 
 .print-toggles {
