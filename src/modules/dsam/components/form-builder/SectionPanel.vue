@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { useDsamFormBuilderStore } from '../../stores/useDsamFormBuilderStore'
 
-const store = useDsamFormBuilderStore()
+const { t }  = useLanguage()
+const store  = useDsamFormBuilderStore()
 
 const newTitle = ref('')
 const showAdd  = ref(false)
@@ -18,11 +20,11 @@ async function add() {
 <template>
   <aside class="flex h-full flex-col border-r border-slate-200 bg-slate-50 w-56 shrink-0">
     <div class="flex items-center justify-between px-3 py-3 border-b border-slate-200">
-      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Sections</span>
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ t('dsamForms.builder.sectionsPanelTitle') }}</span>
       <button
         v-if="!store.isPublished"
         class="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-        title="Add section"
+        :title="t('dsamForms.builder.addSection')"
         @click="showAdd = !showAdd"
       >
         <i class="pi pi-plus text-xs" />
@@ -33,14 +35,14 @@ async function add() {
       <input
         v-model="newTitle"
         class="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-        placeholder="Section title"
+        :placeholder="t('dsamForms.builder.sectionTitlePlaceholder')"
         autofocus
         @keyup.enter="add"
         @keyup.escape="showAdd = false"
       />
       <div class="mt-1.5 flex gap-1">
-        <button class="flex-1 rounded bg-blue-600 py-1 text-xs text-white hover:bg-blue-700" @click="add">Add</button>
-        <button class="flex-1 rounded bg-slate-200 py-1 text-xs text-slate-600" @click="showAdd = false">Cancel</button>
+        <button class="flex-1 rounded bg-blue-600 py-1 text-xs text-white hover:bg-blue-700" @click="add">{{ t('dsamForms.builder.add') }}</button>
+        <button class="flex-1 rounded bg-slate-200 py-1 text-xs text-slate-600" @click="showAdd = false">{{ t('common.cancel') }}</button>
       </div>
     </div>
 
@@ -63,7 +65,7 @@ async function add() {
         <span class="text-xs text-slate-400">{{ (section.questions ?? []).length }}</span>
       </li>
       <li v-if="!store.sections.length" class="px-3 py-6 text-center text-xs text-slate-400">
-        No sections yet
+        {{ t('dsamForms.builder.noSectionsYet') }}
       </li>
     </ul>
   </aside>

@@ -1,12 +1,14 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
 import { useDsamFormBuilderStore } from '../../stores/useDsamFormBuilderStore'
+
+const { t }  = useLanguage()
+const store  = useDsamFormBuilderStore()
 
 const props = defineProps({
   question:  { type: Object, required: true },
   sectionId: { type: Number, required: true },
 })
-
-const store = useDsamFormBuilderStore()
 
 const typeIcon = {
   short_text:   'pi-align-left',
@@ -29,7 +31,7 @@ function selectQuestion() {
 }
 
 async function remove() {
-  if (!confirm('Delete this question?')) return
+  if (!confirm(t('dsamForms.builder.deleteQuestionConfirm'))) return
   await store.deleteQuestion(props.sectionId, props.question.id)
 }
 </script>
@@ -56,7 +58,7 @@ async function remove() {
         <p class="mt-0.5 text-xs text-slate-400">
           {{ question.question_type?.display_name ?? question.question_type?.name }}
           <span v-if="question.is_required" class="ml-1 text-red-400">*</span>
-          <span v-if="question.is_scored" class="ml-1 text-emerald-500">(scored)</span>
+          <span v-if="question.is_scored" class="ml-1 text-emerald-500">({{ t('dsamForms.inspector.tabs.scoring') }})</span>
         </p>
       </div>
     </div>
@@ -66,13 +68,14 @@ async function remove() {
       v-if="question.is_conditional"
       class="absolute top-2 right-2 rounded bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-600"
     >
-      conditional
+      {{ t('dsamForms.builder.conditional') }}
     </span>
 
     <!-- Delete button (shown only when not published) -->
     <button
       v-if="!store.isPublished"
       class="absolute bottom-2 right-2 hidden rounded p-1 text-slate-300 hover:bg-red-50 hover:text-red-500 group-hover:flex"
+      :title="t('dsamForms.builder.deleteQuestion')"
       @click.stop="remove"
     >
       <i class="pi pi-trash text-xs" />

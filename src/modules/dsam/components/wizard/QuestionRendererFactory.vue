@@ -8,6 +8,9 @@ import RadioButton from 'primevue/radiobutton'
 import Checkbox from 'primevue/checkbox'
 import Select from 'primevue/select'
 import Rating from 'primevue/rating'
+import { useLanguage } from '@/composables/useLanguage'
+
+const { t } = useLanguage()
 
 const props = defineProps({
   question: { type: Object, required: true },
@@ -93,7 +96,7 @@ const typeName = computed(() => props.question.question_type?.name ?? '')
       option-label="label"
       option-value="value"
       class="w-full"
-      :placeholder="question.placeholder || 'Select...'"
+      :placeholder="question.placeholder || t('dsamWizard.selectPlaceholder')"
     />
 
     <!-- Rating scale -->
@@ -106,7 +109,7 @@ const typeName = computed(() => props.question.question_type?.name ?? '')
     <!-- File upload (placeholder) -->
     <div v-else-if="typeName === 'file_upload'" class="rounded-lg border-2 border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
       <i class="pi pi-upload mb-2 text-2xl" />
-      <p>Click to upload a file</p>
+      <p>{{ t('dsamWizard.uploadHint') }}</p>
     </div>
 
     <!-- Fallback -->
