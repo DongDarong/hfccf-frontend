@@ -5,8 +5,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Tag from 'primevue/tag'
-import Dropdown from 'primevue/dropdown'
-import Divider from 'primevue/divider'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useLanguage } from '@/composables/useLanguage'
 import { assessmentSubmissionApi } from '../services/assessmentSubmissionApi'
@@ -16,21 +15,21 @@ import { useConfirm } from 'primevue/useconfirm'
 
 defineOptions({ name: 'AssessmentSubmissionDetailPage' })
 
-const route = useRoute()
-const router = useRouter()
-const { t } = useLanguage()
-const toast = useToast()
+const route   = useRoute()
+const router  = useRouter()
+const { t }   = useLanguage()
+const toast   = useToast()
 const confirm = useConfirm()
 
-const submission = ref(null)
-const isLoading = ref(false)
-const isPreviewLoading = ref(false)
-const isPrintLoading = ref(false)
-const reviewNote = ref('')
-const printTemplates = ref([])
+const submission             = ref(null)
+const isLoading              = ref(false)
+const isPreviewLoading       = ref(false)
+const isPrintLoading         = ref(false)
+const reviewNote             = ref('')
+const printTemplates         = ref([])
 const selectedPrintTemplateId = ref(null)
-const printPreviewHtml = ref('')
-const printPreviewError = ref('')
+const printPreviewHtml       = ref('')
+const printPreviewError      = ref('')
 
 const previewTemplateOptions = computed(() =>
   printTemplates.value.map((template) => ({
@@ -40,11 +39,7 @@ const previewTemplateOptions = computed(() =>
 )
 
 const statusSeverity = {
-  draft: 'secondary',
-  submitted: 'info',
-  under_review: 'warn',
-  approved: 'success',
-  rejected: 'danger',
+  draft: 'secondary', submitted: 'info', under_review: 'warn', approved: 'success', rejected: 'danger',
 }
 
 const hasPrintPreview = computed(() => Boolean(printPreviewHtml.value))
@@ -70,12 +65,8 @@ async function loadPrintTemplates() {
     printPreviewError.value = ''
     return
   }
-
   try {
-    const response = await assessmentPrintApi.list({
-      form_template_id: submission.value.form_template_id,
-    })
-
+    const response = await assessmentPrintApi.list({ form_template_id: submission.value.form_template_id })
     printTemplates.value = response.data.data ?? []
     if (!printTemplates.value.length) {
       selectedPrintTemplateId.value = null
@@ -83,8 +74,7 @@ async function loadPrintTemplates() {
       printPreviewError.value = t('printDesigner.missingTemplates')
       return
     }
-
-    const defaultTemplate = printTemplates.value.find((template) => template.is_default) ?? printTemplates.value[0]
+    const defaultTemplate = printTemplates.value.find((t) => t.is_default) ?? printTemplates.value[0]
     selectedPrintTemplateId.value = defaultTemplate.id
     await refreshPrintPreview()
   } catch (error) {
@@ -100,7 +90,6 @@ async function refreshPrintPreview() {
     printPreviewHtml.value = ''
     return
   }
-
   isPreviewLoading.value = true
   printPreviewError.value = ''
   try {
@@ -108,7 +97,6 @@ async function refreshPrintPreview() {
       submission_id: submission.value.id,
       template_id: selectedPrintTemplateId.value,
     })
-
     printPreviewHtml.value = response.data?.data?.html ?? ''
   } catch (error) {
     printPreviewHtml.value = ''
@@ -119,17 +107,12 @@ async function refreshPrintPreview() {
 }
 
 async function printSubmission() {
-  if (!submission.value?.id || !selectedPrintTemplateId.value) {
-    return
-  }
-
+  if (!submission.value?.id || !selectedPrintTemplateId.value) return
   isPrintLoading.value = true
   try {
     const response = await assessmentPrintApi.print(submission.value.id, selectedPrintTemplateId.value)
-    const blob = response.data instanceof Blob
-      ? response.data
-      : new Blob([response.data], { type: 'application/pdf' })
-    const url = window.URL.createObjectURL(blob)
+    const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: 'application/pdf' })
+    const url  = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = `assessment-${submission.value.id}.pdf`
@@ -165,19 +148,16 @@ async function reject() {
 }
 
 onMounted(load)
-
-watch(selectedPrintTemplateId, () => {
-  refreshPrintPreview()
-})
+watch(selectedPrintTemplateId, refreshPrintPreview)
 </script>
 
 <template>
   <MainLayout>
-    <div class="submission-detail">
+    <div class="flex flex-col gap-6">
       <HeaderSection :title="t('submissions.title')">
         <template #actions>
           <Button
-            :label="t('common.back')"
+            :label="t('common.actions.back')"
             icon="pi pi-arrow-left"
             severity="secondary"
             @click="router.back()"
@@ -189,50 +169,52 @@ watch(selectedPrintTemplateId, () => {
         </template>
       </HeaderSection>
 
-      <div v-if="isLoading" class="submission-detail__loading">
-        <i class="pi pi-spin pi-spinner" />
+      <div v-if="isLoading" class="flex justify-center py-20 text-slate-400">
+        <i class="pi pi-spin pi-spinner text-3xl" />
       </div>
 
       <template v-else-if="submission">
-        <div class="submission-detail__meta">
-          <div class="submission-detail__meta-item">
-            <span class="submission-detail__meta-label">{{ t('submissions.student') }}</span>
-            <span>{{ submission.student?.full_name ?? '—' }}</span>
+        <!-- Meta cards -->
+        <div class="grid gap-4 lg:grid-cols-4">
+          <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ t('submissions.student') }}</p>
+            <p class="font-medium text-slate-800">{{ submission.student?.full_name ?? '—' }}</p>
+            <p class="text-xs text-slate-500">{{ submission.student?.student_code }}</p>
           </div>
-          <div class="submission-detail__meta-item">
-            <span class="submission-detail__meta-label">{{ t('submissions.form') }}</span>
-            <span>{{ submission.form_template?.name ?? '—' }}</span>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ t('submissions.form') }}</p>
+            <p class="font-medium text-slate-800">{{ submission.form_template?.name ?? '—' }}</p>
           </div>
-          <div class="submission-detail__meta-item">
-            <span class="submission-detail__meta-label">{{ t('submissions.status') }}</span>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ t('submissions.status') }}</p>
             <Tag :severity="statusSeverity[submission.status]" :value="t(`submissions.statuses.${submission.status}`)" />
           </div>
-          <div class="submission-detail__meta-item">
-            <span class="submission-detail__meta-label">{{ t('scoring.totalScore') }}</span>
-            <span>{{ submission.total_score ?? '—' }}</span>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ t('scoring.totalScore') }}</p>
+            <p class="text-2xl font-bold text-slate-800">{{ submission.total_score ?? '—' }}</p>
           </div>
         </div>
 
-        <div class="submission-detail__review">
-          <label>{{ t('submissions.reviewNote') }}</label>
-          <Textarea v-model="reviewNote" rows="3" class="w-full" />
+        <!-- Review note -->
+        <div class="rounded-xl border border-slate-200 bg-white p-4">
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('submissions.reviewNote') }}</label>
+          <Textarea v-model="reviewNote" rows="3" class="w-full text-sm" />
         </div>
 
-        <Divider />
-
-        <section class="submission-print">
-          <div class="submission-print__header">
+        <!-- Print preview section -->
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
             <div>
-              <h3>{{ t('printDesigner.preview.title') }}</h3>
-              <p>{{ t('printDesigner.preview.subtitle') }}</p>
+              <h3 class="text-sm font-semibold text-slate-800">{{ t('printDesigner.preview.title') }}</h3>
+              <p class="text-xs text-slate-400">{{ t('printDesigner.preview.subtitle') }}</p>
             </div>
-            <div class="submission-print__actions">
-              <Dropdown
+            <div class="flex items-center gap-3 flex-wrap">
+              <Select
                 v-model="selectedPrintTemplateId"
                 :options="previewTemplateOptions"
                 option-label="label"
                 option-value="value"
-                class="submission-print__selector"
+                class="w-72"
                 :placeholder="t('printDesigner.templateLibrary.title')"
                 :disabled="!previewTemplateOptions.length"
               />
@@ -246,136 +228,26 @@ watch(selectedPrintTemplateId, () => {
             </div>
           </div>
 
-          <div v-if="printPreviewError" class="submission-print__error">
+          <div v-if="printPreviewError" class="m-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
             {{ printPreviewError }}
           </div>
-
-          <div v-else class="submission-print__frame">
-            <div v-if="isPreviewLoading" class="submission-print__loading">
-              <i class="pi pi-spin pi-spinner" />
+          <div v-else class="relative min-h-96 overflow-hidden rounded-b-xl">
+            <div v-if="isPreviewLoading" class="flex min-h-96 items-center justify-center text-slate-400">
+              <i class="pi pi-spin pi-spinner text-2xl" />
             </div>
-            <iframe v-else-if="hasPrintPreview" :srcdoc="printPreviewHtml" title="assessment-print-preview" sandbox="allow-same-origin" />
-            <div v-else class="submission-print__empty">
+            <iframe
+              v-else-if="hasPrintPreview"
+              :srcdoc="printPreviewHtml"
+              title="assessment-print-preview"
+              sandbox="allow-same-origin"
+              class="w-full min-h-[720px] border-0"
+            />
+            <div v-else class="flex min-h-96 items-center justify-center text-sm text-slate-400">
               {{ t('printDesigner.missingTemplates') }}
             </div>
           </div>
-        </section>
+        </div>
       </template>
     </div>
   </MainLayout>
 </template>
-
-<style scoped>
-.submission-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.submission-detail__loading {
-  display: flex;
-  justify-content: center;
-  padding: 3rem;
-}
-
-.submission-detail__meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 1.25rem;
-}
-
-.submission-detail__meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.submission-detail__meta-label {
-  font-size: 0.8125rem;
-  color: var(--text-color-secondary);
-  font-weight: 500;
-}
-
-.submission-detail__review {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.submission-print {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.submission-print__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.submission-print__header h3 {
-  margin: 0 0 0.25rem;
-}
-
-.submission-print__header p {
-  margin: 0;
-  color: var(--text-color-secondary);
-}
-
-.submission-print__actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.submission-print__selector {
-  min-width: 280px;
-}
-
-.submission-print__frame {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: #fff;
-  min-height: 720px;
-}
-
-.submission-print__frame iframe {
-  width: 100%;
-  min-height: 720px;
-  border: 0;
-}
-
-.submission-print__loading,
-.submission-print__empty,
-.submission-print__error {
-  min-height: 320px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-}
-
-.submission-print__error {
-  color: var(--red-500, #dc2626);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  background: rgba(254, 242, 242, 0.7);
-  border-radius: 12px;
-}
-</style>

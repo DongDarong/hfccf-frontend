@@ -17,15 +17,15 @@ const { t } = useLanguage()
 const toast = useToast()
 
 const scoringRules = ref([])
-const riskLevels = ref([])
-const isLoading = ref(false)
+const riskLevels   = ref([])
+const isLoading    = ref(false)
 
 async function load() {
   isLoading.value = true
   try {
     const res = await assessmentFormApi.getScoring(route.params.id)
     scoringRules.value = res.data.data?.scoring_rules ?? []
-    riskLevels.value = res.data.data?.risk_levels ?? []
+    riskLevels.value   = res.data.data?.risk_levels ?? []
   } finally {
     isLoading.value = false
   }
@@ -34,7 +34,7 @@ async function load() {
 async function save() {
   await assessmentFormApi.updateScoring(route.params.id, {
     scoring_rules: scoringRules.value,
-    risk_levels: riskLevels.value,
+    risk_levels:   riskLevels.value,
   })
   toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
 }
@@ -44,53 +44,57 @@ onMounted(load)
 
 <template>
   <MainLayout>
-    <div class="scoring-manager">
+    <div class="flex flex-col gap-6">
       <HeaderSection :title="t('scoring.title')">
         <template #actions>
           <Button :label="t('common.save')" icon="pi pi-save" @click="save" />
         </template>
       </HeaderSection>
 
-      <div class="scoring-manager__section">
-        <h3>{{ t('scoring.scoringRules') }}</h3>
+      <!-- Scoring rules -->
+      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-3.5">
+          <h3 class="text-sm font-semibold text-slate-800">{{ t('scoring.scoringRules') }}</h3>
+        </div>
         <DataTable :value="scoringRules" :loading="isLoading">
+          <template #empty>
+            <div class="py-10 text-center text-sm text-slate-400">
+              <i class="pi pi-list-check mb-3 block text-3xl" />
+              {{ t('scoring.noRules') }}
+            </div>
+          </template>
           <Column field="rule_type" :header="t('scoring.ruleType')" />
-          <Column field="max_score" :header="t('scoring.maxScore')" />
+          <Column field="max_score"  :header="t('scoring.maxScore')" />
           <Column field="pass_score" :header="t('scoring.passScore')" />
-          <Column field="weight" :header="t('scoring.weight')" />
+          <Column field="weight"     :header="t('scoring.weight')" />
         </DataTable>
       </div>
 
-      <div class="scoring-manager__section">
-        <h3>{{ t('scoring.riskLevels') }}</h3>
+      <!-- Risk levels -->
+      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-3.5">
+          <h3 class="text-sm font-semibold text-slate-800">{{ t('scoring.riskLevels') }}</h3>
+        </div>
         <DataTable :value="riskLevels" :loading="isLoading">
+          <template #empty>
+            <div class="py-10 text-center text-sm text-slate-400">
+              <i class="pi pi-chart-bar mb-3 block text-3xl" />
+              {{ t('scoring.noRiskLevels') }}
+            </div>
+          </template>
           <Column field="level_name" :header="t('scoring.levelName')" />
-          <Column field="min_score" :header="t('scoring.minScore')" />
-          <Column field="max_score" :header="t('scoring.maxScore')" />
-          <Column field="color" :header="t('scoring.color')" />
+          <Column field="min_score"  :header="t('scoring.minScore')" />
+          <Column field="max_score"  :header="t('scoring.maxScore')" />
+          <Column :header="t('scoring.color')">
+            <template #body="{ data }">
+              <div class="flex items-center gap-2">
+                <span class="h-4 w-4 rounded-full" :style="{ background: data.color }" />
+                <span class="text-sm text-slate-700">{{ data.color }}</span>
+              </div>
+            </template>
+          </Column>
         </DataTable>
       </div>
     </div>
   </MainLayout>
 </template>
-
-<style scoped>
-.scoring-manager {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.scoring-manager__section {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 1.25rem;
-}
-
-.scoring-manager__section h3 {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-}
-</style>

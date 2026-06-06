@@ -73,5 +73,9 @@ export default {
     autoSaved: 'Auto-saved',
     autoSaving: 'Saving...',
     saveBeforeSections: 'Save the form before adding sections.',
+    searchPlaceholder:  'Search forms…',
+    allStatuses:        'All statuses',
+    results:            'forms found',
+    noForms:            'No forms found.',
   },
 }

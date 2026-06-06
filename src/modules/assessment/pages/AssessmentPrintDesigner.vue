@@ -8,7 +8,7 @@ import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import { useLanguage } from '@/composables/useLanguage'
@@ -1003,19 +1003,19 @@ watch(() => route.params.id, () => {
               </label>
               <label class="print-field">
                 <span>{{ t('printDesigner.templateSettings.format') }}</span>
-                <Dropdown v-model="templateForm.format" :options="formatOptions" option-label="label" option-value="value" class="w-full" />
+                <Selectv-model="templateForm.format" :options="formatOptions" option-label="label" option-value="value" class="w-full" />
               </label>
               <label class="print-field">
                 <span>{{ t('printDesigner.templateSettings.pageSize') }}</span>
-                <Dropdown v-model="templateForm.page_size" :options="pageSizeOptions" option-label="label" option-value="value" class="w-full" />
+                <Selectv-model="templateForm.page_size" :options="pageSizeOptions" option-label="label" option-value="value" class="w-full" />
               </label>
               <label class="print-field">
                 <span>{{ t('printDesigner.templateSettings.orientation') }}</span>
-                <Dropdown v-model="templateForm.orientation" :options="orientationOptions" option-label="label" option-value="value" class="w-full" />
+                <Selectv-model="templateForm.orientation" :options="orientationOptions" option-label="label" option-value="value" class="w-full" />
               </label>
               <label class="print-field">
                 <span>{{ t('printDesigner.templateSettings.status') }}</span>
-                <Dropdown v-model="templateForm.status" :options="statusOptions" option-label="label" option-value="value" class="w-full" />
+                <Selectv-model="templateForm.status" :options="statusOptions" option-label="label" option-value="value" class="w-full" />
               </label>
             </div>
 

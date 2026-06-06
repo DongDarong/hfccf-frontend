@@ -11,7 +11,7 @@ defineOptions({ name: 'AssessmentAuditLogsPage' })
 
 const { t } = useLanguage()
 
-const logs = ref([])
+const logs      = ref([])
 const isLoading = ref(false)
 
 async function load() {
@@ -29,27 +29,34 @@ onMounted(load)
 
 <template>
   <MainLayout>
-    <div class="audit-logs">
+    <div class="flex flex-col gap-6">
       <HeaderSection :title="t('assessmentReports.auditLogs.title')" />
 
-      <DataTable :value="logs" :loading="isLoading">
+      <DataTable
+        :value="logs"
+        :loading="isLoading"
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
+      >
+        <template #empty>
+          <div class="py-12 text-center text-sm text-slate-400">
+            <i class="pi pi-list mb-3 block text-3xl" />
+            {{ t('assessmentReports.auditLogs.noLogs') }}
+          </div>
+        </template>
+
         <Column field="event" :header="t('assessmentReports.auditLogs.event')" />
         <Column :header="t('assessmentReports.auditLogs.actor')">
           <template #body="{ data }">
-            {{ data.actor?.name ?? '—' }}
+            <span class="text-sm text-slate-700">{{ data.actor?.name ?? '—' }}</span>
           </template>
         </Column>
         <Column field="description" :header="t('assessmentReports.auditLogs.description')" />
-        <Column field="created_at" :header="t('assessmentReports.auditLogs.timestamp')" />
+        <Column :header="t('assessmentReports.auditLogs.timestamp')">
+          <template #body="{ data }">
+            <span class="text-xs text-slate-400">{{ data.created_at ? new Date(data.created_at).toLocaleString() : '—' }}</span>
+          </template>
+        </Column>
       </DataTable>
     </div>
   </MainLayout>
 </template>
-
-<style scoped>
-.audit-logs {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-</style>

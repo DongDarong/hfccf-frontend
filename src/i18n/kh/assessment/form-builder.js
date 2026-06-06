@@ -73,5 +73,9 @@ export default {
     autoSaved: 'បានរក្សាទុកដោយស្វ័យប្រវត្តិ',
     autoSaving: 'កំពុងរក្សាទុក...',
     saveBeforeSections: 'សូមរក្សាទុកទម្រង់មុនពេលបន្ថែមផ្នែក។',
+    searchPlaceholder:  'ស្វែងរកទម្រង់…',
+    allStatuses:        'ស្ថានភាពទាំងអស់',
+    results:            'ទម្រង់ត្រូវបានរកឃើញ',
+    noForms:            'រកមិនឃើញទម្រង់',
   },
 }

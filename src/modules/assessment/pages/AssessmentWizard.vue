@@ -1,5 +1,5 @@
 <script setup>
-import { onUnmounted } from 'vue'
+import { computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -16,18 +16,18 @@ import WizardStepReview from '../components/wizard/WizardStepReview.vue'
 
 defineOptions({ name: 'AssessmentWizardPage' })
 
-const router = useRouter()
-const { t } = useLanguage()
-const toast = useToast()
+const router  = useRouter()
+const { t }   = useLanguage()
+const toast   = useToast()
 const confirm = useConfirm()
 const { store } = useAssessmentWizard()
 
-const stepItems = [
+const stepItems = computed(() => [
   { label: t('assessmentWizard.steps.form') },
   { label: t('assessmentWizard.steps.student') },
   { label: t('assessmentWizard.steps.assessment') },
   { label: t('assessmentWizard.steps.review') },
-]
+])
 
 async function submitAssessment() {
   confirm.require({
@@ -45,19 +45,19 @@ onUnmounted(() => store.reset())
 
 <template>
   <MainLayout>
-    <div class="assessment-wizard">
+    <div class="flex flex-col gap-6">
       <HeaderSection :title="t('assessmentWizard.title')" />
 
-      <Steps :model="stepItems" :active-step="store.currentStep" class="assessment-wizard__steps" />
+      <Steps :model="stepItems" :active-step="store.currentStep" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" />
 
-      <div class="assessment-wizard__body">
-        <WizardStepForm v-if="store.currentStep === 0" />
-        <WizardStepStudent v-else-if="store.currentStep === 1" />
+      <div class="min-h-96 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <WizardStepForm       v-if="store.currentStep === 0" />
+        <WizardStepStudent    v-else-if="store.currentStep === 1" />
         <WizardStepAssessment v-else-if="store.currentStep === 2" />
-        <WizardStepReview v-else-if="store.currentStep === 3" />
+        <WizardStepReview     v-else-if="store.currentStep === 3" />
       </div>
 
-      <div class="assessment-wizard__footer">
+      <div class="flex items-center justify-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 shadow-sm">
         <Button
           :label="t('assessmentWizard.navigation.back')"
           icon="pi pi-arrow-left"
@@ -91,25 +91,3 @@ onUnmounted(() => store.reset())
     </div>
   </MainLayout>
 </template>
-
-<style scoped>
-.assessment-wizard {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.assessment-wizard__body {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 1.5rem;
-  min-height: 400px;
-}
-
-.assessment-wizard__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-</style>
