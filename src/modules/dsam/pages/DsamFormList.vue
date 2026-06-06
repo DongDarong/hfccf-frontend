@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -28,7 +28,9 @@ const search       = ref('')
 const statusFilter = ref(null)
 
 const statusSeverity = { draft: 'warn', published: 'success', archived: 'secondary' }
-const statusOptions  = ['draft', 'published', 'archived'].map(v => ({ label: v, value: v }))
+const statusOptions  = computed(() =>
+  ['draft', 'published', 'archived'].map(v => ({ label: t('dsamShared.statuses.' + v), value: v }))
+)
 
 let searchDebounce = null
 watch(search, () => {
