@@ -147,7 +147,7 @@ onMounted(async () => {
         <!-- Critical students -->
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 class="mb-4 text-sm font-semibold text-slate-800">{{ t('dsamDashboard.criticalStudents') }}</h3>
-          <DataTable :value="data?.critical_students ?? []" :loading="loading" size="small">
+          <DataTable :value="data?.critical_students ?? []" :loading="loading" size="sm">
             <template #empty>
               <p class="py-4 text-center text-xs text-slate-400">{{ t('dsamDashboard.noCritical') }}</p>
             </template>
@@ -188,7 +188,7 @@ onMounted(async () => {
       <!-- Recent submissions -->
       <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 class="mb-4 text-sm font-semibold text-slate-800">{{ t('dsamDashboard.recentSubmissions') }}</h3>
-        <DataTable :value="data?.recent_submissions ?? []" :loading="loading" size="small">
+        <DataTable :value="data?.recent_submissions ?? []" :loading="loading" size="sm">
           <template #empty>
             <p class="py-4 text-center text-xs text-slate-400">{{ t('dsamDashboard.noSubmissions') }}</p>
           </template>
