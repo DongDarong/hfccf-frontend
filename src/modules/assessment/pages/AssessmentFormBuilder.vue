@@ -261,7 +261,7 @@ onUnmounted(() => store.reset())
             <InputText
               v-model="addingSectionTitle"
               class="w-full text-sm"
-              placeholder="Section title"
+              :placeholder="t('formBuilder.sections.sectionTitle')"
               autofocus
               @keyup.enter="addSection"
               @keyup.escape="showAddSection = false"
@@ -271,13 +271,13 @@ onUnmounted(() => store.reset())
                 class="flex-1 rounded bg-blue-600 py-1 text-xs font-medium text-white hover:bg-blue-700"
                 @click="addSection"
               >
-                Add
+                {{ t('formBuilder.sections.addSection') }}
               </button>
               <button
                 class="flex-1 rounded bg-slate-100 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200"
                 @click="showAddSection = false"
               >
-                Cancel
+                {{ t('common.cancel') }}
               </button>
             </div>
           </div>
@@ -305,7 +305,7 @@ onUnmounted(() => store.reset())
           </div>
           <div>
             <p class="font-semibold text-slate-700">{{ t('formBuilder.saveBeforeSections') }}</p>
-            <p class="mt-1 text-sm text-slate-400">Give the form a name in the topbar — it will auto-save.</p>
+            <p class="mt-1 text-sm text-slate-400">{{ t('formBuilder.saveNameHint') }}</p>
           </div>
         </div>
 
@@ -315,7 +315,7 @@ onUnmounted(() => store.reset())
           class="flex flex-1 flex-col items-center justify-center gap-3 text-center"
         >
           <i class="pi pi-arrow-left text-3xl text-slate-200" />
-          <p class="text-sm text-slate-400">Select or create a section to start adding questions.</p>
+          <p class="text-sm text-slate-400">{{ t('formBuilder.sections.selectHint') }}</p>
         </div>
 
         <!-- Loading -->

@@ -22,7 +22,8 @@ export default {
       sectionTitle: 'Section Title',
       sectionDescription: 'Section Description',
       order: 'Order',
-      noSections: 'No sections yet. Add a section to start building your form.',
+      noSections:  'No sections yet. Add a section to start building your form.',
+      selectHint:  'Select or create a section to start adding questions.',
     },
     questions: {
       title: 'Questions',
@@ -78,6 +79,7 @@ export default {
     autoSaved: 'Auto-saved',
     autoSaving: 'Saving...',
     saveBeforeSections: 'Save the form before adding sections.',
+    saveNameHint:       'Give the form a name in the topbar — it will auto-save.',
     searchPlaceholder:  'Search forms…',
     allStatuses:        'All statuses',
     results:            'forms found',
