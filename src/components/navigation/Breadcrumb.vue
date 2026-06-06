@@ -521,6 +521,11 @@ const DSAM_CRUMB_MAP = {
     { labelKey: 'breadcrumb.dsamModule', to: { name: 'dsam-dashboard' } },
     { labelKey: 'breadcrumb.newAssessment' },
   ],
+  'dsam-student-profile': [
+    { labelKey: 'breadcrumb.dsamModule', to: { name: 'dsam-dashboard' } },
+    { labelKey: 'breadcrumb.dsamSubmissions', to: { name: 'dsam-submission-list' } },
+    { labelKey: 'breadcrumb.studentProfile' },
+  ],
 }
 
 // ── Merged map ────────────────────────────────────────────────────────────────

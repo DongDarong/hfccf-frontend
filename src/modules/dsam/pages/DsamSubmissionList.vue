@@ -146,10 +146,13 @@ onMounted(load)
       <DataTable :value="items" :loading="loading" class="rounded-xl border border-slate-200 bg-white shadow-sm">
         <Column header="Student">
           <template #body="{ data }">
-            <div>
-              <p class="font-medium text-slate-800">{{ data.student?.full_name }}</p>
+            <button
+              class="text-left hover:text-violet-700 transition-colors"
+              @click="data.student?.id && router.push({ name: 'dsam-student-profile', params: { id: data.student.id } })"
+            >
+              <p class="font-medium text-slate-800 hover:underline">{{ data.student?.full_name }}</p>
               <p class="text-xs text-slate-400">{{ data.student?.student_code }}</p>
-            </div>
+            </button>
           </template>
         </Column>
         <Column header="Form">

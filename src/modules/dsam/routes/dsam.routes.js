@@ -45,6 +45,12 @@ export const dsamRoutes = [
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF] },
   }),
   defineAppRoute({
+    path: '/module/dsam/students/:id',
+    name: 'dsam-student-profile',
+    component: () => import('../pages/DsamStudentProfile.vue'),
+    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF] },
+  }),
+  defineAppRoute({
     path: '/module/dsam/wizard',
     name: 'dsam-wizard',
     component: () => import('../pages/DsamWizard.vue'),

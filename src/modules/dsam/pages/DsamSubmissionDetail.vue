@@ -130,8 +130,13 @@ onMounted(load)
           </div>
           <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-1">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Student</h3>
-            <p class="font-medium text-slate-800">{{ submission.student?.full_name }}</p>
-            <p class="text-xs text-slate-500">{{ submission.student?.student_code }}</p>
+            <button
+              class="text-left hover:text-violet-700 transition-colors"
+              @click="submission.student?.id && router.push({ name: 'dsam-student-profile', params: { id: submission.student.id } })"
+            >
+              <p class="font-medium text-slate-800 hover:underline">{{ submission.student?.full_name }}</p>
+              <p class="text-xs text-slate-500">{{ submission.student?.student_code }}</p>
+            </button>
           </div>
           <ScoreSummary :submission="submission" />
         </div>
