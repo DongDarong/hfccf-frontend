@@ -40,7 +40,7 @@ async function createNewForm() {
     name: 'Untitled Form',
     category: 'annual_assessment',
   })
-  router.replace({ name: 'dsam-form-builder', params: { id: res.data.data.id } })
+  router.replace({ name: 'dsam-form-builder-edit', params: { id: res.data.data.id } })
   return res.data.data.id
 }
 

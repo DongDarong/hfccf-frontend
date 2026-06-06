@@ -105,7 +105,7 @@ onMounted(load)
                 severity="secondary"
                 size="sm"
                 title="Edit"
-                @click="router.push({ name: 'dsam-form-builder', params: { id: data.id } })"
+                @click="router.push({ name: 'dsam-form-builder-edit', params: { id: data.id } })"
               />
               <Button
                 icon="pi pi-code-branch"
