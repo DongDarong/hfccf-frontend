@@ -29,6 +29,10 @@ export default {
       continue:   'Continue',
       start:      'Start',
     },
+    score: {
+      overallScore: 'Overall Score',
+      section:      'Section',
+    },
     cols: {
       student:   'Student',
       form:      'Form',

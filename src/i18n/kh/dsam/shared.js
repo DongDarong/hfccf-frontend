@@ -29,6 +29,10 @@ export default {
       continue:  'បន្ត',
       start:     'ចាប់ផ្ដើម',
     },
+    score: {
+      overallScore: 'ពិន្ទុសរុប',
+      section:      'ផ្នែក',
+    },
     cols: {
       student:   'សិស្ស',
       form:      'ទម្រង់',

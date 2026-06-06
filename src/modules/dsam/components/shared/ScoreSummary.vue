@@ -1,5 +1,8 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
 import RiskBadge from './RiskBadge.vue'
+
+const { t } = useLanguage()
 
 defineProps({
   submission: { type: Object, required: true },
@@ -10,7 +13,7 @@ defineProps({
   <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
     <div class="flex items-start justify-between gap-4">
       <div>
-        <p class="text-sm font-medium text-slate-500">Overall Score</p>
+        <p class="text-sm font-medium text-slate-500">{{ t('dsamShared.score.overallScore') }}</p>
         <p class="mt-1 text-3xl font-bold text-slate-900">
           {{ submission.score_percentage != null ? submission.score_percentage.toFixed(1) + '%' : '—' }}
         </p>
@@ -27,7 +30,7 @@ defineProps({
         :key="score.id"
         class="flex items-center gap-3"
       >
-        <span class="w-36 truncate text-xs text-slate-500">{{ score.section?.title ?? 'Section' }}</span>
+        <span class="w-36 truncate text-xs text-slate-500">{{ score.section?.title ?? t('dsamShared.score.section') }}</span>
         <div class="flex-1 overflow-hidden rounded-full bg-slate-100 h-1.5">
           <div
             class="h-full rounded-full bg-blue-500 transition-all"

@@ -46,7 +46,7 @@ async function save() {
 async function addOption() {
   if (!question.value || !section.value) return
   await store.addOption(section.value.id, question.value.id, {
-    label: 'New option',
+    label: t('dsamForms.inspector.newOptionDefault'),
     value: `opt_${Date.now()}`,
     score_value: 0,
   })
