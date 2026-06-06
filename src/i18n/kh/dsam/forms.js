@@ -23,6 +23,7 @@ export default {
       deleteQuestion:        'លុបសំណួរ',
       deleteQuestionConfirm: 'លុបសំណួរនេះ?',
       conditional:           'មានលក្ខខណ្ឌ',
+      newQuestionDefault:    'សំណួរថ្មី',
       publish: {
         button:           'ផ្សព្វផ្សាយ',
         dialogHeader:     'ផ្សព្វផ្សាយទម្រង់',

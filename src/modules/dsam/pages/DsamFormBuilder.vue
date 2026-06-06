@@ -67,7 +67,7 @@ async function addQuestion() {
   if (!selectedTypeId.value || !store.activeSectionId) return
   await store.addQuestion(store.activeSectionId, {
     question_type_id: selectedTypeId.value,
-    label: 'New question',
+    label: t('dsamForms.builder.newQuestionDefault'),
   })
   addingQuestion.value = false
   selectedTypeId.value = null
@@ -133,14 +133,14 @@ async function createNewVersion() {
         <p class="text-xs text-slate-400">
           {{ t('dsamForms.builder.subtitle') }}
           <span v-if="store.template?.version_number"> · v{{ store.template.version_number }}</span>
-          <span v-if="publishedAt" class="ml-1">· Published {{ publishedAt }}</span>
+          <span v-if="publishedAt" class="ml-1">· {{ t('dsamShared.cols.published') }} {{ publishedAt }}</span>
         </p>
       </div>
 
       <Tag
         v-if="store.template?.status"
         :severity="statusSeverity[store.template.status]"
-        :value="store.template.status"
+        :value="t('dsamShared.statuses.' + store.template.status)"
       />
 
       <!-- Draft actions -->

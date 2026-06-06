@@ -23,6 +23,7 @@ export default {
       deleteQuestion:        'Delete question',
       deleteQuestionConfirm: 'Delete this question?',
       conditional:           'conditional',
+      newQuestionDefault:    'New question',
       publish: {
         button:           'Publish',
         dialogHeader:     'Publish Form',

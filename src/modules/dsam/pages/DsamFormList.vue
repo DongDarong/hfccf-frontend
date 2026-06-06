@@ -150,14 +150,14 @@ onMounted(load)
 
       <!-- Search + filter -->
       <div class="flex flex-wrap gap-3">
-        <span class="p-input-icon-left flex-1 min-w-48">
-          <i class="pi pi-search text-slate-400" />
+        <div class="relative flex-1 min-w-48">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none" />
           <InputText
             v-model="search"
             :placeholder="t('dsamForms.searchPlaceholder')"
-            class="w-full pl-8"
+            class="w-full pl-9"
           />
-        </span>
+        </div>
         <Select
           v-model="statusFilter"
           :options="statusOptions"
@@ -170,12 +170,10 @@ onMounted(load)
       </div>
 
       <!-- Result count -->
-      <div class="flex items-center -mt-3">
-        <p class="text-xs text-slate-400">
-          {{ total }} {{ t('dsamForms.results', total) }}
-          <template v-if="search.trim()"> for "{{ search.trim() }}"</template>
-        </p>
-      </div>
+      <p class="text-xs text-slate-400 -mt-3">
+        {{ t('dsamForms.results', total) }}
+        <template v-if="search.trim()"> for "{{ search.trim() }}"</template>
+      </p>
 
       <DataTable :value="forms" :loading="loading" class="rounded-xl border border-slate-200 bg-white shadow-sm">
         <template #empty>
