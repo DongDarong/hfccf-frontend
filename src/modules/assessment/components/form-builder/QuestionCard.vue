@@ -65,7 +65,7 @@ async function deleteQuestion() {
 
     <!-- Actions (appear on hover) -->
     <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-      <Button icon="pi pi-trash" text size="small" severity="danger" @click="deleteQuestion" />
+      <Button icon="pi pi-trash" text size="sm" severity="danger" @click="deleteQuestion" />
     </div>
   </div>
 </template>
