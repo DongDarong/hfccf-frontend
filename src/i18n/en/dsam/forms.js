@@ -54,6 +54,13 @@ export default {
     duplicateSuccess: 'Duplicated',
     deleteSuccess:   'Deleted',
     versionSuccess:  'v{n} draft ready.',
+    versions: {
+      title:         'Version History',
+      backToForms:   'Back to Forms',
+      empty:         'No versions found for this form.',
+      createdAt:     'Created',
+      current:       'current',
+    },
     inspector: {
       title:        'Question Settings',
       tabs: {

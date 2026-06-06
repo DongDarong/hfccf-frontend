@@ -54,6 +54,13 @@ export default {
     duplicateSuccess: 'បានចម្លង',
     deleteSuccess:    'បានលុប',
     versionSuccess:   'v{n} សេចក្ដីព្រាងត្រៀមរួច',
+    versions: {
+      title:       'ប្រវត្តិកំណែ',
+      backToForms: 'ត្រលប់ទៅបញ្ជីទម្រង់',
+      empty:       'រកមិនឃើញកំណែសម្រាប់ទម្រង់នេះ',
+      createdAt:   'បានបង្កើត',
+      current:     'បច្ចុប្បន្ន',
+    },
     inspector: {
       title: 'ការកំណត់សំណួរ',
       tabs: {

@@ -29,7 +29,7 @@ export const dsamRoutes = [
   defineAppRoute({
     path: '/module/dsam/forms/:id/versions',
     name: 'dsam-form-versions',
-    component: () => import('../pages/DsamFormList.vue'),  // reuse list; versions tab shown when id present
+    component: () => import('../pages/DsamFormVersions.vue'),
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
   defineAppRoute({
