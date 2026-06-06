@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 import { useLanguage } from '@/composables/useLanguage'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -17,12 +18,14 @@ defineOptions({ name: 'DsamSubmissionDetailPage' })
 const route   = useRoute()
 const router  = useRouter()
 const toast   = useToast()
+const confirm = useConfirm()
 const { t }   = useLanguage()
 
-const submission = ref(null)
-const loading    = ref(false)
-const rejReason  = ref('')
-const showReject = ref(false)
+const submission   = ref(null)
+const loading      = ref(false)
+const submitting   = ref(false)
+const rejReason    = ref('')
+const showReject   = ref(false)
 
 const statusSeverity = {
   draft: 'secondary', in_progress: 'warn', submitted: 'info',
@@ -42,6 +45,27 @@ async function load() {
   } finally {
     loading.value = false
   }
+}
+
+async function submitForReview() {
+  confirm.require({
+    message:     t('dsamSubmissions.detail.submitConfirmMessage'),
+    header:      t('dsamSubmissions.detail.submitConfirmHeader'),
+    icon:        'pi pi-send',
+    acceptClass: 'p-button-primary',
+    accept: async () => {
+      submitting.value = true
+      try {
+        await dsamSubmissionApi.submit(submission.value.id)
+        toast.add({ severity: 'success', summary: t('dsamSubmissions.detail.submittedSuccess'), life: 3000 })
+        await load()
+      } catch (e) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 4000 })
+      } finally {
+        submitting.value = false
+      }
+    },
+  })
 }
 
 async function approve() {
@@ -66,6 +90,9 @@ async function reject() {
   }
 }
 
+const canSubmit  = computed(() =>
+  submission.value && ['draft', 'in_progress'].includes(submission.value.status)
+)
 const canApprove = computed(() =>
   submission.value && ['submitted', 'under_review'].includes(submission.value.status)
 )
@@ -90,6 +117,13 @@ onMounted(load)
                 icon="pi pi-pencil"
                 severity="secondary"
                 @click="router.push({ name: 'dsam-wizard', query: { submission: submission.uuid } })"
+              />
+              <Button
+                v-if="canSubmit"
+                :label="t('dsamSubmissions.detail.submitForReview')"
+                icon="pi pi-send"
+                :loading="submitting"
+                @click="submitForReview"
               />
               <Button
                 v-if="canApprove"

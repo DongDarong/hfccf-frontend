@@ -23,7 +23,11 @@ export default {
       startError:       'Could not start assessment',
     },
     detail: {
-      continueEditing:     'Continue Editing',
+      continueEditing:         'Continue Editing',
+      submitForReview:         'Submit for Review',
+      submitConfirmHeader:     'Submit Assessment',
+      submitConfirmMessage:    'This will submit the assessment for review. You will no longer be able to edit it.',
+      submittedSuccess:        'Assessment submitted for review.',
       approve:             'Approve',
       reject:              'Reject',
       rejectionLabel:      'Rejection reason (required)',
