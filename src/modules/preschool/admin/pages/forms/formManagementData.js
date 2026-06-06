@@ -198,12 +198,12 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
   },
   {
     key: 'wizard',
-    group: 'build',
+    group: 'review',
     icon: 'pi pi-sparkles',
-    titleFallback: 'Wizard',
+    titleFallback: 'Run Assessment',
     titleKey: 'preschoolScaffold.formManagement.cards.wizard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.wizard.description',
-    fallbackDescription: 'Build forms step by step with guided assistance.',
+    fallbackDescription: 'Conduct a student assessment using a published form.',
     to: { name: 'assessment-wizard' },
   },
   {
