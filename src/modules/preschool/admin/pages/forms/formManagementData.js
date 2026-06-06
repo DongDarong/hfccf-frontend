@@ -1,3 +1,132 @@
+const BASE = 'preschoolScaffold.formManagement.hub'
+
+export const FM_HUB_SECTIONS = [
+  {
+    id: 'design',
+    labelKey:   `${BASE}.sections.design.label`,
+    captionKey: `${BASE}.sections.design.caption`,
+    cards: [
+      {
+        key:            'templates',
+        icon:           'pi-file-edit',
+        accent:         'purple',
+        titleKey:       `${BASE}.cards.templates.title`,
+        descriptionKey: `${BASE}.cards.templates.description`,
+        route:          { name: 'assessment-form-list' },
+      },
+      {
+        key:            'question-bank',
+        icon:           'pi-question-circle',
+        accent:         'blue',
+        titleKey:       `${BASE}.cards.questionBank.title`,
+        descriptionKey: `${BASE}.cards.questionBank.description`,
+        route:          { name: 'assessment-form-list' },
+      },
+      {
+        key:            'exercise-builder',
+        icon:           'pi-clipboard',
+        accent:         'green',
+        titleKey:       `${BASE}.cards.exerciseBuilder.title`,
+        descriptionKey: `${BASE}.cards.exerciseBuilder.description`,
+        route:          { name: 'assessment-form-create' },
+      },
+      {
+        key:            'scoring-rules',
+        icon:           'pi-sliders-h',
+        accent:         'orange',
+        titleKey:       `${BASE}.cards.scoringRules.title`,
+        descriptionKey: `${BASE}.cards.scoringRules.description`,
+        route:          { name: 'assessment-form-list' },
+      },
+    ],
+  },
+  {
+    id: 'operations',
+    labelKey:   `${BASE}.sections.operations.label`,
+    captionKey: `${BASE}.sections.operations.caption`,
+    cards: [
+      {
+        key:            'sessions',
+        icon:           'pi-users',
+        accent:         'indigo',
+        titleKey:       `${BASE}.cards.sessions.title`,
+        descriptionKey: `${BASE}.cards.sessions.description`,
+        route:          { name: 'assessment-wizard' },
+      },
+      {
+        key:            'submission-review',
+        icon:           'pi-check-circle',
+        accent:         'amber',
+        titleKey:       `${BASE}.cards.submissionReview.title`,
+        descriptionKey: `${BASE}.cards.submissionReview.description`,
+        route:          { name: 'assessment-submission-list' },
+      },
+      {
+        key:            'results',
+        icon:           'pi-chart-bar',
+        accent:         'emerald',
+        titleKey:       `${BASE}.cards.results.title`,
+        descriptionKey: `${BASE}.cards.results.description`,
+        route:          { name: 'assessment-reports' },
+      },
+    ],
+  },
+  {
+    id: 'reporting',
+    labelKey:   `${BASE}.sections.reporting.label`,
+    captionKey: `${BASE}.sections.reporting.caption`,
+    cards: [
+      {
+        key:            'print-templates',
+        icon:           'pi-print',
+        accent:         'teal',
+        titleKey:       `${BASE}.cards.printTemplates.title`,
+        descriptionKey: `${BASE}.cards.printTemplates.description`,
+        route:          { name: 'assessment-form-list' },
+      },
+      {
+        key:            'export-center',
+        icon:           'pi-download',
+        accent:         'cyan',
+        titleKey:       `${BASE}.cards.exportCenter.title`,
+        descriptionKey: `${BASE}.cards.exportCenter.description`,
+        route:          { name: 'assessment-reports' },
+      },
+      {
+        key:            'analytics',
+        icon:           'pi-chart-line',
+        accent:         'pink',
+        titleKey:       `${BASE}.cards.analytics.title`,
+        descriptionKey: `${BASE}.cards.analytics.description`,
+        route:          { name: 'assessment-reports' },
+      },
+    ],
+  },
+  {
+    id: 'admin',
+    labelKey:   `${BASE}.sections.admin.label`,
+    captionKey: `${BASE}.sections.admin.caption`,
+    cards: [
+      {
+        key:            'audit-logs',
+        icon:           'pi-history',
+        accent:         'gray',
+        titleKey:       `${BASE}.cards.auditLogs.title`,
+        descriptionKey: `${BASE}.cards.auditLogs.description`,
+        route:          { name: 'assessment-audit-logs' },
+      },
+      {
+        key:            'settings',
+        icon:           'pi-cog',
+        accent:         'slate',
+        titleKey:       `${BASE}.cards.settings.title`,
+        descriptionKey: `${BASE}.cards.settings.description`,
+        route:          { name: 'assessment-form-list' },
+      },
+    ],
+  },
+]
+
 export const FORM_MANAGEMENT_PAGE_CARDS = [
   {
     key: 'dashboard',
