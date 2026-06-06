@@ -11,6 +11,7 @@ import preschool from './preschool'
 import english from './english'
 import reports from './reports/index.js'
 import assessment from './assessment'
+import dsam from './dsam'
 
 export default {
   // Keep locale merges explicit so reports stays nested under `reports.*`
@@ -33,4 +34,5 @@ export default {
   ...sport,
   ...preschool,
   ...assessment,
+  ...dsam,
 }

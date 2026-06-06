@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
+import { useLanguage } from '@/composables/useLanguage'
 import { useDsamWizardStore } from '../stores/useDsamWizardStore'
 import QuestionRendererFactory from '../components/wizard/QuestionRendererFactory.vue'
 import ScoreSummary from '../components/shared/ScoreSummary.vue'
@@ -14,6 +15,7 @@ const route  = useRoute()
 const router = useRouter()
 const toast  = useToast()
 const store  = useDsamWizardStore()
+const { t }  = useLanguage()
 
 const showReview = ref(false)
 
@@ -72,16 +74,16 @@ async function handleNext() {
 async function handleSubmit() {
   const ok = await store.submit()
   if (ok) {
-    toast.add({ severity: 'success', summary: 'Submitted', detail: 'Assessment submitted for review.', life: 4000 })
+    toast.add({ severity: 'success', summary: t('dsamWizard.submittedTitle'), detail: t('dsamWizard.submittedDetail'), life: 4000 })
     router.push({ name: 'dsam-submission-list' })
   } else {
-    toast.add({ severity: 'error', summary: 'Error', detail: store.error?.message, life: 5000 })
+    toast.add({ severity: 'error', summary: t('dsamWizard.submitError'), detail: store.error?.message, life: 5000 })
   }
 }
 
 const lastSavedLabel = computed(() => {
   if (!store.lastSavedAt) return null
-  return 'Saved at ' + store.lastSavedAt.toLocaleTimeString()
+  return t('dsamWizard.savedAt', { time: store.lastSavedAt.toLocaleTimeString() })
 })
 </script>
 
@@ -96,7 +98,7 @@ const lastSavedLabel = computed(() => {
         </button>
         <div class="flex-1">
           <h1 class="text-sm font-semibold text-slate-800">
-            {{ store.submission?.form_template?.name ?? 'Assessment Wizard' }}
+            {{ store.submission?.form_template?.name ?? t('dsamWizard.title') }}
           </h1>
           <p class="text-xs text-slate-400">
             {{ store.submission?.student?.full_name }}
@@ -106,7 +108,7 @@ const lastSavedLabel = computed(() => {
           <i class="pi pi-check text-emerald-500" />{{ lastSavedLabel }}
         </span>
         <span v-if="store.isSaving" class="text-xs text-slate-400">
-          <i class="pi pi-spin pi-spinner" /> Saving…
+          <i class="pi pi-spin pi-spinner" /> {{ t('dsamWizard.saving') }}
         </span>
       </div>
       <ProgressBar :value="showReview ? 100 : store.progressPct" :show-value="false" class="h-1 rounded-none" />
@@ -120,8 +122,8 @@ const lastSavedLabel = computed(() => {
     <!-- Review page -->
     <div v-else-if="showReview" class="flex flex-1 flex-col overflow-hidden">
       <div class="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto w-full space-y-4">
-        <h2 class="text-lg font-bold text-slate-800">Review & Submit</h2>
-        <p class="text-sm text-slate-500">Please review your answers before submitting.</p>
+        <h2 class="text-lg font-bold text-slate-800">{{ t('dsamWizard.reviewTitle') }}</h2>
+        <p class="text-sm text-slate-500">{{ t('dsamWizard.reviewSubtitle') }}</p>
 
         <div
           v-for="section in store.sections"
@@ -145,9 +147,9 @@ const lastSavedLabel = computed(() => {
       </div>
 
       <footer class="shrink-0 border-t border-slate-200 bg-white px-6 py-3 flex justify-between">
-        <Button label="Back" severity="secondary" @click="showReview = false" />
+        <Button :label="t('dsamWizard.back')" severity="secondary" @click="showReview = false" />
         <Button
-          label="Submit Assessment"
+          :label="t('dsamWizard.submitAssessment')"
           icon="pi pi-send"
           :loading="store.isSubmitting"
           @click="handleSubmit"
@@ -164,7 +166,7 @@ const lastSavedLabel = computed(() => {
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="text-xs font-medium text-blue-600">
-                Step {{ store.currentStep + 1 }} of {{ store.totalSteps }}
+                {{ t('dsamWizard.stepOf', { current: store.currentStep + 1, total: store.totalSteps }) }}
               </span>
             </div>
             <h2 class="text-xl font-bold text-slate-800">{{ store.currentSection.title }}</h2>
@@ -195,7 +197,7 @@ const lastSavedLabel = computed(() => {
             </div>
 
             <div v-if="!(store.currentSection.questions ?? []).length" class="text-center py-8 text-sm text-slate-400">
-              This section has no questions.
+              {{ t('dsamWizard.noQuestions') }}
             </div>
           </div>
         </div>
@@ -204,7 +206,7 @@ const lastSavedLabel = computed(() => {
       <!-- Navigation footer -->
       <footer class="shrink-0 border-t border-slate-200 bg-white px-6 py-3 flex items-center justify-between">
         <Button
-          label="Back"
+          :label="t('dsamWizard.back')"
           severity="secondary"
           icon="pi pi-arrow-left"
           :disabled="store.currentStep === 0"
@@ -214,7 +216,7 @@ const lastSavedLabel = computed(() => {
           {{ store.currentStep + 1 }} / {{ store.totalSteps }}
         </span>
         <Button
-          :label="store.isLastStep ? 'Review' : 'Next'"
+          :label="store.isLastStep ? t('dsamWizard.review') : t('dsamWizard.next')"
           :icon="store.isLastStep ? 'pi pi-list' : 'pi pi-arrow-right'"
           icon-pos="right"
           :loading="store.isSaving"
@@ -227,10 +229,10 @@ const lastSavedLabel = computed(() => {
     <div v-else class="flex flex-1 items-center justify-center text-slate-400 text-center p-10">
       <div>
         <i class="pi pi-exclamation-triangle mb-3 text-4xl" />
-        <p class="font-medium">Nothing to show</p>
-        <p class="text-sm mt-1 mb-4">Please start an assessment from the submission list.</p>
+        <p class="font-medium">{{ t('dsamWizard.empty') }}</p>
+        <p class="text-sm mt-1 mb-4">{{ t('dsamWizard.emptyHint') }}</p>
         <Button
-          label="Go to Assessments"
+          :label="t('dsamWizard.goToAssessments')"
           icon="pi pi-arrow-left"
           severity="secondary"
           @click="router.push({ name: 'dsam-submission-list' })"

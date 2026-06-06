@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLanguage } from '@/composables/useLanguage'
 import http from '@/services/http'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -22,6 +23,7 @@ defineOptions({ name: 'DsamSubmissionListPage' })
 
 const router = useRouter()
 const toast  = useToast()
+const { t }  = useLanguage()
 
 const items   = ref([])
 const loading = ref(false)
@@ -83,7 +85,7 @@ async function openStartDialog() {
       value: s.id,
     }))
   } catch {
-    toast.add({ severity: 'error', summary: 'Failed to load options', life: 4000 })
+    toast.add({ severity: 'error', summary: t('dsamSubmissions.startDialog.loadError'), life: 4000 })
     showDialog.value = false
   } finally {
     dlgLoading.value = false
@@ -102,7 +104,7 @@ async function startAssessment() {
     showDialog.value = false
     router.push({ name: 'dsam-wizard', query: { submission: res.data.data.uuid } })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Could not start assessment', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+    toast.add({ severity: 'error', summary: t('dsamSubmissions.startDialog.startError'), detail: e?.response?.data?.message ?? e.message, life: 5000 })
   } finally {
     dlgStarting.value = false
   }
@@ -142,9 +144,9 @@ onMounted(load)
 <template>
   <MainLayout>
     <div class="flex flex-col gap-6">
-      <HeaderSection title="Assessments">
+      <HeaderSection :title="t('dsamSubmissions.title')">
         <template #actions>
-          <Button label="Start Assessment" icon="pi pi-plus" @click="openStartDialog" />
+          <Button :label="t('dsamSubmissions.startAssessment')" icon="pi pi-plus" @click="openStartDialog" />
         </template>
       </HeaderSection>
 
@@ -154,7 +156,7 @@ onMounted(load)
           <i class="pi pi-search text-slate-400" />
           <InputText
             v-model="search"
-            placeholder="Search student or form…"
+            :placeholder="t('dsamSubmissions.searchPlaceholder')"
             class="w-full pl-8"
           />
         </span>
@@ -163,7 +165,7 @@ onMounted(load)
           :options="statusOptions"
           option-label="label"
           option-value="value"
-          placeholder="All statuses"
+          :placeholder="t('dsamSubmissions.allStatuses')"
           show-clear
           class="w-44"
           @change="onFilterChange"
@@ -173,7 +175,7 @@ onMounted(load)
           :options="riskOptions"
           option-label="label"
           option-value="value"
-          placeholder="All risk levels"
+          :placeholder="t('dsamSubmissions.allRiskLevels')"
           show-clear
           class="w-44"
           @change="onFilterChange"
@@ -191,8 +193,8 @@ onMounted(load)
       <!-- Result count -->
       <div class="flex items-center justify-between -mt-3">
         <p class="text-xs text-slate-400">
-          {{ total }} result{{ total !== 1 ? 's' : '' }}
-          <template v-if="search.trim()"> for "{{ search.trim() }}"</template>
+          {{ total }} {{ total !== 1 ? t('dsamSubmissions.results', total) : t('dsamSubmissions.results', 1) }}
+          <template v-if="search.trim()"> {{ t('dsamSubmissions.resultsFor', { term: search.trim() }) }}</template>
         </p>
       </div>
 
@@ -204,11 +206,11 @@ onMounted(load)
         <template #empty>
           <div class="py-12 text-center text-sm text-slate-400">
             <i class="pi pi-inbox mb-3 text-3xl block" />
-            No assessments found.
+            {{ t('dsamSubmissions.empty') }}
           </div>
         </template>
 
-        <Column header="Student">
+        <Column :header="t('dsamShared.cols.student')">
           <template #body="{ data }">
             <button
               class="text-left hover:text-violet-700 transition-colors"
@@ -219,35 +221,35 @@ onMounted(load)
             </button>
           </template>
         </Column>
-        <Column header="Form">
+        <Column :header="t('dsamShared.cols.form')">
           <template #body="{ data }">
             <span class="text-sm text-slate-700">{{ data.form_template?.name }}</span>
           </template>
         </Column>
-        <Column header="Year" field="academic_year.name" />
-        <Column header="Status">
+        <Column :header="t('dsamShared.cols.year')" field="academic_year.name" />
+        <Column :header="t('dsamShared.cols.status')">
           <template #body="{ data }">
-            <Tag :severity="statusSeverity[data.status] ?? 'secondary'" :value="data.status?.replace('_', ' ')" />
+            <Tag :severity="statusSeverity[data.status] ?? 'secondary'" :value="t('dsamShared.statuses.' + data.status) || data.status?.replace('_', ' ')" />
           </template>
         </Column>
-        <Column header="Score">
+        <Column :header="t('dsamShared.cols.score')">
           <template #body="{ data }">
             {{ data.score_percentage != null ? data.score_percentage.toFixed(1) + '%' : '—' }}
           </template>
         </Column>
-        <Column header="Risk">
+        <Column :header="t('dsamShared.cols.risk')">
           <template #body="{ data }">
             <RiskBadge :level="data.risk_level" size="sm" />
           </template>
         </Column>
-        <Column header="Updated">
+        <Column :header="t('dsamShared.cols.updated')">
           <template #body="{ data }">
             <span class="text-xs text-slate-400">
               {{ data.updated_at ? new Date(data.updated_at).toLocaleDateString() : '—' }}
             </span>
           </template>
         </Column>
-        <Column header="Actions">
+        <Column :header="t('dsamShared.cols.actions')">
           <template #body="{ data }">
             <div class="flex gap-1">
               <Button
@@ -255,14 +257,14 @@ onMounted(load)
                 icon="pi pi-pencil"
                 size="sm"
                 severity="secondary"
-                title="Continue"
+                :title="t('dsamShared.actions.continue')"
                 @click="router.push({ name: 'dsam-wizard', query: { submission: data.uuid } })"
               />
               <Button
                 icon="pi pi-eye"
                 size="sm"
                 severity="secondary"
-                title="View"
+                :title="t('dsamShared.actions.view')"
                 @click="router.push({ name: 'dsam-submission-detail', params: { id: data.uuid } })"
               />
             </div>
@@ -285,7 +287,7 @@ onMounted(load)
     <!-- Start Assessment Dialog -->
     <Dialog
       v-model:visible="showDialog"
-      header="Start Assessment"
+      :header="t('dsamSubmissions.startDialog.header')"
       :style="{ width: '28rem' }"
       :modal="true"
       :closable="!dlgStarting"
@@ -296,41 +298,41 @@ onMounted(load)
 
       <div v-else class="flex flex-col gap-4 pt-1">
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-slate-700">Assessment Form</label>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('dsamSubmissions.startDialog.formLabel') }}</label>
           <Select
             v-model="dlgForm"
             :options="formOptions"
             option-label="label"
             option-value="value"
-            placeholder="Select a published form…"
+            :placeholder="t('dsamSubmissions.startDialog.formPlaceholder')"
             class="w-full"
             filter
           />
           <p v-if="!formOptions.length" class="mt-1 text-xs text-amber-600">
-            No published forms available. Publish a form template first.
+            {{ t('dsamSubmissions.startDialog.noForms') }}
           </p>
         </div>
 
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-slate-700">Academic Year</label>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('dsamSubmissions.startDialog.yearLabel') }}</label>
           <Select
             v-model="dlgYear"
             :options="yearOptions"
             option-label="label"
             option-value="value"
-            placeholder="Select an academic year…"
+            :placeholder="t('dsamSubmissions.startDialog.yearPlaceholder')"
             class="w-full"
           />
         </div>
 
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-slate-700">Student</label>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('dsamSubmissions.startDialog.studentLabel') }}</label>
           <Select
             v-model="dlgStudent"
             :options="studentOptions"
             option-label="label"
             option-value="value"
-            placeholder="Search student…"
+            :placeholder="t('dsamSubmissions.startDialog.studentPlaceholder')"
             class="w-full"
             filter
           />
@@ -338,9 +340,9 @@ onMounted(load)
       </div>
 
       <template #footer>
-        <Button label="Cancel" severity="secondary" :disabled="dlgStarting" @click="showDialog = false" />
+        <Button :label="t('dsamShared.actions.cancel')" severity="secondary" :disabled="dlgStarting" @click="showDialog = false" />
         <Button
-          label="Start"
+          :label="t('dsamSubmissions.startDialog.start')"
           icon="pi pi-play"
           :loading="dlgStarting"
           :disabled="!dlgForm || !dlgYear || !dlgStudent"

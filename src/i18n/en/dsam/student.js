@@ -1,0 +1,65 @@
+export default {
+  dsamStudent: {
+    title:          'Student Profile',
+    startAssessment: 'Start Assessment',
+    tabs: {
+      overview:    'Overview',
+      assessments: 'Assessment History',
+      school:      'School History',
+    },
+    kpi: {
+      totalAssessments: 'Total Assessments',
+      latestScore:      'Latest Score',
+      latestRisk:       'Latest Risk',
+    },
+    identity: {
+      class:  'Class',
+      gender: 'Gender',
+      dob:    'DOB',
+    },
+    scoreTrend: 'Assessment Score Trend',
+    noApproved: 'No approved assessments yet.',
+    family: {
+      title:      'Family',
+      father:     'Father',
+      mother:     'Mother',
+      guardian:   'Guardian',
+      name:       'Name',
+      phone:      'Phone',
+      occupation: 'Occupation',
+      status:     'Status',
+      relation:   'Relation',
+      noData:     'No family data on file.',
+    },
+    household: {
+      title:          'Household & Housing',
+      size:           'Household size',
+      siblings:       'Siblings',
+      monthlyIncome:  'Monthly income',
+      housingType:    'Housing',
+      electricity:    'Electricity',
+      cleanWater:     'Clean water',
+      distanceToSchool: 'Distance to school',
+      transport:      'Transport',
+    },
+    health: {
+      title:       'Health',
+      status:      'Status',
+      insurance:   'Insurance',
+      disabilities: 'Disabilities',
+    },
+    assessmentsTab: {
+      empty: 'No assessments found for this student.',
+    },
+    schoolTab: {
+      empty: 'No school history records found.',
+      statuses: {
+        active:      'Active',
+        graduated:   'Graduated',
+        dropped:     'Dropped',
+        transferred: 'Transferred',
+        suspended:   'Suspended',
+      },
+    },
+  },
+}

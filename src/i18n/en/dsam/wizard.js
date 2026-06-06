@@ -1,0 +1,22 @@
+export default {
+  dsamWizard: {
+    title:          'Assessment Wizard',
+    stepOf:         'Step {current} of {total}',
+    back:           'Back',
+    next:           'Next',
+    review:         'Review',
+    submitAssessment: 'Submit Assessment',
+    reviewTitle:    'Review & Submit',
+    reviewSubtitle: 'Please review your answers before submitting.',
+    required:       'Required',
+    noQuestions:    'This section has no questions.',
+    savedAt:        'Saved at {time}',
+    saving:         'Saving…',
+    submittedTitle:  'Submitted',
+    submittedDetail: 'Assessment submitted for review.',
+    submitError:     'Error',
+    empty:          'Nothing to show',
+    emptyHint:      'Please start an assessment from the submission list.',
+    goToAssessments: 'Go to Assessments',
+  },
+}

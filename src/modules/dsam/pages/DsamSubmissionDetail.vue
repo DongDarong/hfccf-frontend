@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
+import { useLanguage } from '@/composables/useLanguage'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -16,6 +17,7 @@ defineOptions({ name: 'DsamSubmissionDetailPage' })
 const route   = useRoute()
 const router  = useRouter()
 const toast   = useToast()
+const { t }   = useLanguage()
 
 const submission = ref(null)
 const loading    = ref(false)
@@ -45,7 +47,7 @@ async function load() {
 async function approve() {
   try {
     await dsamSubmissionApi.approve(submission.value.id, {})
-    toast.add({ severity: 'success', summary: 'Approved', life: 3000 })
+    toast.add({ severity: 'success', summary: t('dsamSubmissions.detail.approvedSuccess'), life: 3000 })
     await load()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 4000 })
@@ -56,7 +58,7 @@ async function reject() {
   if (!rejReason.value.trim()) return
   try {
     await dsamSubmissionApi.reject(submission.value.id, { reason: rejReason.value })
-    toast.add({ severity: 'info', summary: 'Rejected', life: 3000 })
+    toast.add({ severity: 'info', summary: t('dsamSubmissions.detail.rejectedInfo'), life: 3000 })
     showReject.value = false
     await load()
   } catch (e) {
@@ -84,21 +86,21 @@ onMounted(load)
             <div class="flex gap-2">
               <Button
                 v-if="submission.can_edit"
-                label="Continue Editing"
+                :label="t('dsamSubmissions.detail.continueEditing')"
                 icon="pi pi-pencil"
                 severity="secondary"
                 @click="router.push({ name: 'dsam-wizard', query: { submission: submission.uuid } })"
               />
               <Button
                 v-if="canApprove"
-                label="Approve"
+                :label="t('dsamSubmissions.detail.approve')"
                 icon="pi pi-check"
                 severity="success"
                 @click="approve"
               />
               <Button
                 v-if="canApprove"
-                label="Reject"
+                :label="t('dsamSubmissions.detail.reject')"
                 icon="pi pi-times"
                 severity="danger"
                 @click="showReject = !showReject"
@@ -109,27 +111,27 @@ onMounted(load)
 
         <!-- Reject input -->
         <div v-if="showReject" class="rounded-xl border border-red-200 bg-red-50 p-4">
-          <p class="mb-2 text-sm font-medium text-red-700">Rejection reason (required)</p>
-          <Textarea v-model="rejReason" rows="3" class="w-full text-sm" placeholder="Explain why this submission is being rejected…" />
+          <p class="mb-2 text-sm font-medium text-red-700">{{ t('dsamSubmissions.detail.rejectionLabel') }}</p>
+          <Textarea v-model="rejReason" rows="3" class="w-full text-sm" :placeholder="t('dsamSubmissions.detail.rejectionPlaceholder')" />
           <div class="mt-2 flex gap-2">
-            <Button label="Confirm Reject" severity="danger" size="sm" :disabled="!rejReason.trim()" @click="reject" />
-            <Button label="Cancel" severity="secondary" size="sm" @click="showReject = false" />
+            <Button :label="t('dsamSubmissions.detail.confirmReject')" severity="danger" size="sm" :disabled="!rejReason.trim()" @click="reject" />
+            <Button :label="t('dsamShared.actions.cancel')" severity="secondary" size="sm" @click="showReject = false" />
           </div>
         </div>
 
         <!-- Status + meta -->
         <div class="grid gap-4 lg:grid-cols-3">
           <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Status</h3>
-            <Tag :severity="statusSeverity[submission.status]" :value="submission.status?.replace('_', ' ')" />
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ t('dsamSubmissions.detail.statusCard') }}</h3>
+            <Tag :severity="statusSeverity[submission.status]" :value="t('dsamShared.statuses.' + submission.status) || submission.status?.replace('_', ' ')" />
             <div class="text-xs text-slate-500 space-y-1">
-              <p>Submitted: {{ submission.submitted_at ? new Date(submission.submitted_at).toLocaleString() : '—' }}</p>
-              <p>Approved: {{ submission.approved_at ? new Date(submission.approved_at).toLocaleString() : '—' }}</p>
-              <p v-if="submission.rejection_reason" class="text-red-500">Rejected: {{ submission.rejection_reason }}</p>
+              <p>{{ t('dsamSubmissions.detail.submittedAt') }}: {{ submission.submitted_at ? new Date(submission.submitted_at).toLocaleString() : '—' }}</p>
+              <p>{{ t('dsamSubmissions.detail.approvedAt') }}: {{ submission.approved_at ? new Date(submission.approved_at).toLocaleString() : '—' }}</p>
+              <p v-if="submission.rejection_reason" class="text-red-500">{{ t('dsamSubmissions.detail.rejectedLabel') }}: {{ submission.rejection_reason }}</p>
             </div>
           </div>
           <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Student</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ t('dsamSubmissions.detail.studentCard') }}</h3>
             <button
               class="text-left hover:text-violet-700 transition-colors"
               @click="submission.student?.id && router.push({ name: 'dsam-student-profile', params: { id: submission.student.id } })"
@@ -164,7 +166,7 @@ onMounted(load)
 
         <!-- Approval timeline -->
         <div v-if="submission.approvals?.length" class="rounded-xl border border-slate-200 bg-white p-5">
-          <h3 class="mb-4 text-sm font-semibold text-slate-800">Approval History</h3>
+          <h3 class="mb-4 text-sm font-semibold text-slate-800">{{ t('dsamSubmissions.detail.approvalHistory') }}</h3>
           <ol class="space-y-3">
             <li
               v-for="ev in submission.approvals"

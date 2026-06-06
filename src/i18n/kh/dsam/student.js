@@ -1,0 +1,65 @@
+export default {
+  dsamStudent: {
+    title:           'ប្រវត្តិរូបសិស្ស',
+    startAssessment: 'ចាប់ផ្ដើមការវាយតម្លៃ',
+    tabs: {
+      overview:    'ទិដ្ឋភាពទូទៅ',
+      assessments: 'ប្រវត្តិការវាយតម្លៃ',
+      school:      'ប្រវត្តិសាលា',
+    },
+    kpi: {
+      totalAssessments: 'ការវាយតម្លៃសរុប',
+      latestScore:      'ពិន្ទុចុងក្រោយ',
+      latestRisk:       'ហានិភ័យចុងក្រោយ',
+    },
+    identity: {
+      class:  'ថ្នាក់',
+      gender: 'ភេទ',
+      dob:    'ថ្ងៃខែឆ្នាំកំណើត',
+    },
+    scoreTrend: 'និន្នាការពិន្ទុការវាយតម្លៃ',
+    noApproved: 'មិនទាន់មានការវាយតម្លៃដែលបានអនុម័ត',
+    family: {
+      title:      'គ្រួសារ',
+      father:     'ឪពុក',
+      mother:     'មាតា',
+      guardian:   'អាណាព្យាបាល',
+      name:       'ឈ្មោះ',
+      phone:      'លេខទូរស័ព្ទ',
+      occupation: 'មុខរបរ',
+      status:     'ស្ថានភាព',
+      relation:   'ទំនាក់ទំនង',
+      noData:     'គ្មានទិន្នន័យគ្រួសារ',
+    },
+    household: {
+      title:            'គ្រួសារ និង លំនៅឋាន',
+      size:             'ទំហំគ្រួសារ',
+      siblings:         'បងប្អូន',
+      monthlyIncome:    'ចំណូលប្រចាំខែ',
+      housingType:      'ប្រភេទលំនៅឋាន',
+      electricity:      'អគ្គិសនី',
+      cleanWater:       'ទឹកស្អាត',
+      distanceToSchool: 'ចម្ងាយទៅសាលា',
+      transport:        'យានដ្ឋាន',
+    },
+    health: {
+      title:        'សុខភាព',
+      status:       'ស្ថានភាព',
+      insurance:    'ធានារ៉ាប់រង',
+      disabilities: 'ពិការភាព',
+    },
+    assessmentsTab: {
+      empty: 'រកមិនឃើញការវាយតម្លៃសម្រាប់សិស្សនេះ',
+    },
+    schoolTab: {
+      empty: 'រកមិនឃើញប្រវត្តិសាលា',
+      statuses: {
+        active:      'សកម្ម',
+        graduated:   'បានបញ្ចប់',
+        dropped:     'បោះបង់',
+        transferred: 'ផ្ទេរ',
+        suspended:   'ព្យួរ',
+      },
+    },
+  },
+}

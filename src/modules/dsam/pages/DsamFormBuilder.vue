@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
+import { useLanguage } from '@/composables/useLanguage'
 import { useDsamFormBuilderStore } from '../stores/useDsamFormBuilderStore'
 import { dsamFormApi } from '../services/dsamFormApi'
 import SectionPanel from '../components/form-builder/SectionPanel.vue'
@@ -18,6 +19,7 @@ const route  = useRoute()
 const router = useRouter()
 const toast  = useToast()
 const store  = useDsamFormBuilderStore()
+const { t }  = useLanguage()
 
 const addingQuestion  = ref(false)
 const selectedTypeId  = ref(null)
@@ -76,9 +78,9 @@ async function confirmPublish() {
   try {
     await store.publish()
     showPublishDlg.value = false
-    toast.add({ severity: 'success', summary: 'Published', detail: 'Form is now live and available for assessments.', life: 4000 })
+    toast.add({ severity: 'success', summary: t('dsamForms.builder.publish.successTitle'), detail: t('dsamForms.builder.publish.success'), life: 4000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Publish failed', detail: e?.response?.data?.message ?? e.message, life: 5000 })
+    toast.add({ severity: 'error', summary: t('dsamForms.builder.publish.failTitle'), detail: e?.response?.data?.message ?? e.message, life: 5000 })
   } finally {
     publishing.value = false
   }
@@ -88,7 +90,7 @@ async function archiveForm() {
   archiving.value = true
   try {
     await store.archive()
-    toast.add({ severity: 'info', summary: 'Archived', detail: 'Form is archived and no longer available for new assessments.', life: 4000 })
+    toast.add({ severity: 'info', summary: t('dsamForms.builder.archive.successTitle'), detail: t('dsamForms.builder.archive.success'), life: 4000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
   } finally {
@@ -102,7 +104,7 @@ async function createNewVersion() {
     const newForm = await store.createNewVersion({ version_notes: versionNotes.value || null })
     showVersionDlg.value = false
     versionNotes.value = ''
-    toast.add({ severity: 'success', summary: `v${newForm.version_number} created`, detail: 'New draft version ready to edit.', life: 4000 })
+    toast.add({ severity: 'success', summary: t('dsamForms.builder.newVersion.success', { n: newForm.version_number }), detail: t('dsamForms.builder.newVersion.successDetail'), life: 4000 })
     router.push({ name: 'dsam-form-builder-edit', params: { id: newForm.id } })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.message ?? e.message, life: 5000 })
@@ -129,7 +131,7 @@ async function createNewVersion() {
           {{ store.template?.name ?? 'Loading…' }}
         </h1>
         <p class="text-xs text-slate-400">
-          Form Builder
+          {{ t('dsamForms.builder.subtitle') }}
           <span v-if="store.template?.version_number"> · v{{ store.template.version_number }}</span>
           <span v-if="publishedAt" class="ml-1">· Published {{ publishedAt }}</span>
         </p>
@@ -144,7 +146,7 @@ async function createNewVersion() {
       <!-- Draft actions -->
       <template v-if="store.isEditable">
         <Button
-          label="Publish"
+          :label="t('dsamForms.builder.publish.button')"
           icon="pi pi-send"
           size="sm"
           @click="showPublishDlg = true"
@@ -154,14 +156,14 @@ async function createNewVersion() {
       <!-- Published actions -->
       <template v-else-if="store.isPublished">
         <Button
-          label="New Version"
+          :label="t('dsamForms.builder.newVersion.button')"
           icon="pi pi-code-branch"
           size="sm"
           severity="secondary"
           @click="showVersionDlg = true"
         />
         <Button
-          label="Archive"
+          :label="t('dsamForms.builder.archive.button')"
           icon="pi pi-inbox"
           size="sm"
           severity="secondary"
@@ -186,8 +188,8 @@ async function createNewVersion() {
         <div v-else-if="!store.activeSection" class="flex flex-1 items-center justify-center text-center text-slate-400 p-10">
           <div>
             <i class="pi pi-layout mb-3 text-4xl" />
-            <p class="font-medium">Add a section first</p>
-            <p class="text-sm mt-1">Use the panel on the left to add your first section.</p>
+            <p class="font-medium">{{ t('dsamForms.builder.addSectionFirst') }}</p>
+            <p class="text-sm mt-1">{{ t('dsamForms.builder.addSectionHint') }}</p>
           </div>
         </div>
 
@@ -198,7 +200,7 @@ async function createNewVersion() {
               {{ store.activeSection.title }}
             </h2>
             <span class="text-xs text-slate-400">
-              weight: {{ (Number(store.activeSection.scoring_weight) * 100).toFixed(0) }}%
+              {{ t('dsamForms.builder.weightLabel') }}: {{ (Number(store.activeSection.scoring_weight) * 100).toFixed(0) }}%
             </span>
           </div>
 
@@ -212,7 +214,7 @@ async function createNewVersion() {
             />
 
             <div v-if="!(store.activeSection.questions ?? []).length" class="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center text-sm text-slate-400">
-              No questions in this section yet.
+              {{ t('dsamForms.builder.noQuestions') }}
             </div>
 
             <!-- Add question (draft only) -->
@@ -223,11 +225,11 @@ async function createNewVersion() {
                   :options="store.questionTypes"
                   option-label="display_name"
                   option-value="id"
-                  placeholder="Select question type…"
+                  :placeholder="t('dsamForms.builder.selectType')"
                   class="flex-1"
                 />
-                <Button label="Add" size="sm" :disabled="!selectedTypeId" @click="addQuestion" />
-                <Button label="Cancel" size="sm" severity="secondary" @click="addingQuestion = false" />
+                <Button :label="t('dsamForms.builder.add')" size="sm" :disabled="!selectedTypeId" @click="addQuestion" />
+                <Button :label="t('dsamShared.actions.cancel')" size="sm" severity="secondary" @click="addingQuestion = false" />
               </div>
               <button
                 v-else
@@ -235,14 +237,14 @@ async function createNewVersion() {
                 @click="addingQuestion = true"
               >
                 <i class="pi pi-plus" />
-                Add question
+                {{ t('dsamForms.builder.addQuestion') }}
               </button>
             </div>
 
             <!-- Archived notice -->
             <div v-else-if="store.isArchived" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
               <i class="pi pi-info-circle mr-1" />
-              This form is archived. Create a new version to make changes.
+              {{ t('dsamForms.builder.archivedNotice') }}
             </div>
           </div>
         </template>
@@ -255,47 +257,47 @@ async function createNewVersion() {
     <!-- ── Publish confirmation dialog ─────────────────────────────────── -->
     <Dialog
       v-model:visible="showPublishDlg"
-      header="Publish Form"
+      :header="t('dsamForms.builder.publish.dialogHeader')"
       :style="{ width: '26rem' }"
       :modal="true"
       :closable="!publishing"
     >
       <div class="space-y-4 pt-1 text-sm">
-        <p class="text-slate-600">Once published, the form becomes available for assessments. You won't be able to edit it directly — use <strong>New Version</strong> instead.</p>
+        <p class="text-slate-600">{{ t('dsamForms.builder.publish.dialogBody') }}</p>
 
         <!-- Readiness checklist -->
         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">Readiness check</p>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">{{ t('dsamForms.builder.publish.readiness') }}</p>
 
           <div class="flex items-center gap-2">
             <i :class="readiness.sectionCount > 0 ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-red-500'" class="pi text-base" />
             <span :class="readiness.sectionCount > 0 ? 'text-slate-700' : 'text-red-600'">
-              {{ readiness.sectionCount }} section{{ readiness.sectionCount !== 1 ? 's' : '' }}
+              {{ readiness.sectionCount }} {{ t('dsamForms.builder.publish.sectionCount', readiness.sectionCount) }}
             </span>
           </div>
 
           <div class="flex items-center gap-2">
             <i :class="readiness.totalQuestions > 0 ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-red-500'" class="pi text-base" />
             <span :class="readiness.totalQuestions > 0 ? 'text-slate-700' : 'text-red-600'">
-              {{ readiness.totalQuestions }} question{{ readiness.totalQuestions !== 1 ? 's' : '' }} total
+              {{ readiness.totalQuestions }} {{ t('dsamForms.builder.publish.questionCount', readiness.totalQuestions) }}
             </span>
           </div>
 
           <div v-if="readiness.emptySections.length" class="flex items-start gap-2 text-amber-700">
             <i class="pi pi-exclamation-triangle text-base mt-0.5" />
-            <span>Empty sections: {{ readiness.emptySections.join(', ') }}</span>
+            <span>{{ t('dsamForms.builder.publish.emptySections', { names: readiness.emptySections.join(', ') }) }}</span>
           </div>
         </div>
 
         <p v-if="!readiness.ok" class="text-red-600 text-xs">
-          Add at least one section with one question before publishing.
+          {{ t('dsamForms.builder.publish.noQuestionsWarn') }}
         </p>
       </div>
 
       <template #footer>
-        <Button label="Cancel" severity="secondary" :disabled="publishing" @click="showPublishDlg = false" />
+        <Button :label="t('dsamShared.actions.cancel')" severity="secondary" :disabled="publishing" @click="showPublishDlg = false" />
         <Button
-          label="Publish Now"
+          :label="t('dsamForms.builder.publish.publishNow')"
           icon="pi pi-send"
           :loading="publishing"
           :disabled="!readiness.ok"
@@ -307,28 +309,31 @@ async function createNewVersion() {
     <!-- ── New Version dialog ──────────────────────────────────────────── -->
     <Dialog
       v-model:visible="showVersionDlg"
-      header="Create New Version"
+      :header="t('dsamForms.builder.newVersion.dialogHeader')"
       :style="{ width: '24rem' }"
       :modal="true"
       :closable="!creatingVersion"
     >
       <div class="space-y-3 pt-1 text-sm text-slate-600">
-        <p>A new draft copy of <strong>v{{ store.template?.version_number }}</strong> will be created. The current published version stays live until the new version is published.</p>
+        <p>{{ t('dsamForms.builder.newVersion.dialogBody', { n: store.template?.version_number }) }}</p>
         <div>
-          <label class="mb-1 block text-xs font-medium text-slate-700">Version notes <span class="text-slate-400">(optional)</span></label>
+          <label class="mb-1 block text-xs font-medium text-slate-700">
+            {{ t('dsamForms.builder.newVersion.notesLabel') }}
+            <span class="text-slate-400">{{ t('dsamForms.builder.newVersion.notesOptional') }}</span>
+          </label>
           <textarea
             v-model="versionNotes"
             rows="2"
             class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="What's changing in this version?"
+            :placeholder="t('dsamForms.builder.newVersion.notesPlaceholder')"
           />
         </div>
       </div>
 
       <template #footer>
-        <Button label="Cancel" severity="secondary" :disabled="creatingVersion" @click="showVersionDlg = false" />
+        <Button :label="t('dsamShared.actions.cancel')" severity="secondary" :disabled="creatingVersion" @click="showVersionDlg = false" />
         <Button
-          label="Create Draft"
+          :label="t('dsamForms.builder.newVersion.createDraft')"
           icon="pi pi-code-branch"
           :loading="creatingVersion"
           @click="createNewVersion"

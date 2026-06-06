@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useLanguage } from '@/composables/useLanguage'
 import http from '@/services/http'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -14,6 +15,7 @@ defineOptions({ name: 'DsamStudentProfilePage' })
 
 const route  = useRoute()
 const router = useRouter()
+const { t }  = useLanguage()
 
 const student     = ref(null)
 const profile     = ref(null)
@@ -22,11 +24,11 @@ const submissions = ref([])
 const loading     = ref(true)
 const activeTab   = ref('overview')
 
-const tabs = [
-  { id: 'overview',    label: 'Overview',          icon: 'pi-user' },
-  { id: 'assessments', label: 'Assessment History', icon: 'pi-list' },
-  { id: 'school',      label: 'School History',     icon: 'pi-book' },
-]
+const tabs = computed(() => [
+  { id: 'overview',    label: t('dsamStudent.tabs.overview'),    icon: 'pi-user' },
+  { id: 'assessments', label: t('dsamStudent.tabs.assessments'), icon: 'pi-list' },
+  { id: 'school',      label: t('dsamStudent.tabs.school'),      icon: 'pi-book' },
+])
 
 const statusSeverity = {
   draft: 'secondary', in_progress: 'warn', submitted: 'info',
@@ -99,7 +101,7 @@ onMounted(load)
           </template>
           <template #actions>
             <Button
-              label="Start Assessment"
+              :label="t('dsamStudent.startAssessment')"
               icon="pi pi-plus"
               @click="router.push({ name: 'dsam-submission-list' })"
             />
@@ -118,15 +120,15 @@ onMounted(load)
             </div>
             <div class="flex flex-col gap-1 text-xs text-slate-500 w-full">
               <div class="flex justify-between">
-                <span class="text-slate-400">Class</span>
+                <span class="text-slate-400">{{ t('dsamStudent.identity.class') }}</span>
                 <span>{{ fmt(student.current_class?.name ?? student.class_name) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-slate-400">Gender</span>
+                <span class="text-slate-400">{{ t('dsamStudent.identity.gender') }}</span>
                 <span class="capitalize">{{ fmt(student.gender) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-slate-400">DOB</span>
+                <span class="text-slate-400">{{ t('dsamStudent.identity.dob') }}</span>
                 <span>{{ fmtDate(student.date_of_birth) }}</span>
               </div>
             </div>
@@ -135,17 +137,17 @@ onMounted(load)
           <!-- KPI mini-cards -->
           <div class="lg:col-span-3 grid grid-cols-3 gap-4">
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs font-medium text-slate-400">Total Assessments</p>
+              <p class="text-xs font-medium text-slate-400">{{ t('dsamStudent.kpi.totalAssessments') }}</p>
               <p class="mt-1.5 text-2xl font-bold text-slate-900">{{ submissions.length }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs font-medium text-slate-400">Latest Score</p>
+              <p class="text-xs font-medium text-slate-400">{{ t('dsamStudent.kpi.latestScore') }}</p>
               <p class="mt-1.5 text-2xl font-bold text-slate-900">
                 {{ latestSubmission ? latestSubmission.score_percentage?.toFixed(1) + '%' : '—' }}
               </p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs font-medium text-slate-400 mb-2">Latest Risk</p>
+              <p class="text-xs font-medium text-slate-400 mb-2">{{ t('dsamStudent.kpi.latestRisk') }}</p>
               <RiskBadge :level="latestSubmission?.risk_level ?? null" />
             </div>
           </div>
@@ -176,7 +178,7 @@ onMounted(load)
 
           <!-- Score trend -->
           <div class="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
-            <h3 class="mb-4 text-sm font-semibold text-slate-800">Assessment Score Trend</h3>
+            <h3 class="mb-4 text-sm font-semibold text-slate-800">{{ t('dsamStudent.scoreTrend') }}</h3>
             <div v-if="riskTrend.length" class="space-y-3">
               <div v-for="(entry, i) in riskTrend" :key="i" class="flex items-center gap-3">
                 <div :class="['h-2.5 w-2.5 rounded-full shrink-0', riskDotColor[entry.risk] ?? 'bg-slate-300']" />
@@ -192,65 +194,65 @@ onMounted(load)
                 </span>
               </div>
             </div>
-            <p v-else class="text-sm text-slate-400">No approved assessments yet.</p>
+            <p v-else class="text-sm text-slate-400">{{ t('dsamStudent.noApproved') }}</p>
           </div>
 
           <!-- Family -->
           <div class="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 class="mb-4 text-sm font-semibold text-slate-800">Family</h3>
+            <h3 class="mb-4 text-sm font-semibold text-slate-800">{{ t('dsamStudent.family.title') }}</h3>
             <div class="space-y-4 text-sm">
               <div v-if="profile?.father?.name || profile?.mother?.name">
-                <template v-for="(parent, key) in { Father: profile?.father, Mother: profile?.mother }" :key="key">
+                <template v-for="(parent, key) in { [t('dsamStudent.family.father')]: profile?.father, [t('dsamStudent.family.mother')]: profile?.mother }" :key="key">
                   <div v-if="parent?.name" class="mb-3">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">{{ key }}</p>
                     <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                      <div><span class="text-slate-400">Name</span><br><span class="text-slate-700">{{ fmt(parent.name) }}</span></div>
-                      <div><span class="text-slate-400">Phone</span><br><span class="text-slate-700">{{ fmt(parent.phone) }}</span></div>
-                      <div><span class="text-slate-400">Occupation</span><br><span class="text-slate-700">{{ fmt(parent.occupation) }}</span></div>
-                      <div><span class="text-slate-400">Status</span><br><span class="capitalize text-slate-700">{{ fmt(parent.status) }}</span></div>
+                      <div><span class="text-slate-400">{{ t('dsamStudent.family.name') }}</span><br><span class="text-slate-700">{{ fmt(parent.name) }}</span></div>
+                      <div><span class="text-slate-400">{{ t('dsamStudent.family.phone') }}</span><br><span class="text-slate-700">{{ fmt(parent.phone) }}</span></div>
+                      <div><span class="text-slate-400">{{ t('dsamStudent.family.occupation') }}</span><br><span class="text-slate-700">{{ fmt(parent.occupation) }}</span></div>
+                      <div><span class="text-slate-400">{{ t('dsamStudent.family.status') }}</span><br><span class="capitalize text-slate-700">{{ fmt(parent.status) }}</span></div>
                     </div>
                   </div>
                 </template>
                 <div v-if="profile?.guardian?.name">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">Guardian</p>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">{{ t('dsamStudent.family.guardian') }}</p>
                   <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                    <div><span class="text-slate-400">Name</span><br><span class="text-slate-700">{{ fmt(profile.guardian.name) }}</span></div>
-                    <div><span class="text-slate-400">Relation</span><br><span class="text-slate-700">{{ fmt(profile.guardian.relation) }}</span></div>
-                    <div><span class="text-slate-400">Phone</span><br><span class="text-slate-700">{{ fmt(profile.guardian.phone) }}</span></div>
+                    <div><span class="text-slate-400">{{ t('dsamStudent.family.name') }}</span><br><span class="text-slate-700">{{ fmt(profile.guardian.name) }}</span></div>
+                    <div><span class="text-slate-400">{{ t('dsamStudent.family.relation') }}</span><br><span class="text-slate-700">{{ fmt(profile.guardian.relation) }}</span></div>
+                    <div><span class="text-slate-400">{{ t('dsamStudent.family.phone') }}</span><br><span class="text-slate-700">{{ fmt(profile.guardian.phone) }}</span></div>
                   </div>
                 </div>
               </div>
-              <p v-else class="text-slate-400 text-xs">No family data on file.</p>
+              <p v-else class="text-slate-400 text-xs">{{ t('dsamStudent.family.noData') }}</p>
             </div>
           </div>
 
           <!-- Household & Housing -->
           <div class="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 class="mb-4 text-sm font-semibold text-slate-800">Household & Housing</h3>
+            <h3 class="mb-4 text-sm font-semibold text-slate-800">{{ t('dsamStudent.household.title') }}</h3>
             <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-              <div><span class="text-slate-400">Household size</span><br><span class="text-slate-700">{{ fmt(profile?.household?.household_size) }}</span></div>
-              <div><span class="text-slate-400">Siblings</span><br><span class="text-slate-700">{{ fmt(profile?.household?.num_siblings) }}</span></div>
-              <div><span class="text-slate-400">Monthly income</span><br><span class="text-slate-700">{{ fmtCurrency(profile?.household?.monthly_income) }}</span></div>
-              <div><span class="text-slate-400">Housing</span><br><span class="capitalize text-slate-700">{{ fmt(profile?.housing?.type)?.replace('_', ' ') }}</span></div>
-              <div><span class="text-slate-400">Electricity</span><br>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.size') }}</span><br><span class="text-slate-700">{{ fmt(profile?.household?.household_size) }}</span></div>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.siblings') }}</span><br><span class="text-slate-700">{{ fmt(profile?.household?.num_siblings) }}</span></div>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.monthlyIncome') }}</span><br><span class="text-slate-700">{{ fmtCurrency(profile?.household?.monthly_income) }}</span></div>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.housingType') }}</span><br><span class="capitalize text-slate-700">{{ fmt(profile?.housing?.type)?.replace('_', ' ') }}</span></div>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.electricity') }}</span><br>
                 <i :class="profile?.housing?.has_electricity ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-slate-300'" class="pi" />
               </div>
-              <div><span class="text-slate-400">Clean water</span><br>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.cleanWater') }}</span><br>
                 <i :class="profile?.housing?.has_clean_water ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-slate-300'" class="pi" />
               </div>
-              <div><span class="text-slate-400">Distance to school</span><br><span class="text-slate-700">{{ profile?.education?.distance_to_school != null ? profile.education.distance_to_school + ' km' : '—' }}</span></div>
-              <div><span class="text-slate-400">Transport</span><br><span class="text-slate-700">{{ fmt(profile?.education?.transport_mode) }}</span></div>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.distanceToSchool') }}</span><br><span class="text-slate-700">{{ profile?.education?.distance_to_school != null ? profile.education.distance_to_school + ' km' : '—' }}</span></div>
+              <div><span class="text-slate-400">{{ t('dsamStudent.household.transport') }}</span><br><span class="text-slate-700">{{ fmt(profile?.education?.transport_mode) }}</span></div>
             </div>
 
             <div class="mt-4 pt-4 border-t border-slate-100">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Health</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">{{ t('dsamStudent.health.title') }}</p>
               <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                <div><span class="text-slate-400">Status</span><br><span class="capitalize text-slate-700">{{ fmt(profile?.health?.status) }}</span></div>
-                <div><span class="text-slate-400">Insurance</span><br>
+                <div><span class="text-slate-400">{{ t('dsamStudent.health.status') }}</span><br><span class="capitalize text-slate-700">{{ fmt(profile?.health?.status) }}</span></div>
+                <div><span class="text-slate-400">{{ t('dsamStudent.health.insurance') }}</span><br>
                   <i :class="profile?.health?.has_health_insurance ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-slate-300'" class="pi" />
                 </div>
                 <div v-if="profile?.health?.disabilities?.length" class="col-span-2">
-                  <span class="text-slate-400">Disabilities</span><br>
+                  <span class="text-slate-400">{{ t('dsamStudent.health.disabilities') }}</span><br>
                   <span class="text-slate-700">{{ profile.health.disabilities.join(', ') }}</span>
                 </div>
               </div>
@@ -261,7 +263,7 @@ onMounted(load)
         <!-- ── Tab: Assessment History ─────────────────────────────────── -->
         <div v-else-if="activeTab === 'assessments'" class="pt-6 space-y-3">
           <div v-if="!submissions.length" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">
-            No assessments found for this student.
+            {{ t('dsamStudent.assessmentsTab.empty') }}
           </div>
 
           <div
@@ -287,7 +289,7 @@ onMounted(load)
 
             <Tag
               :severity="statusSeverity[sub.status] ?? 'secondary'"
-              :value="sub.status?.replace('_', ' ')"
+              :value="t('dsamShared.statuses.' + sub.status) || sub.status?.replace('_', ' ')"
               class="shrink-0"
             />
 
@@ -295,7 +297,7 @@ onMounted(load)
               class="shrink-0 text-violet-600 hover:text-violet-800 text-xs font-medium"
               @click="router.push({ name: 'dsam-submission-detail', params: { id: sub.uuid } })"
             >
-              View
+              {{ t('dsamShared.actions.view') }}
             </button>
           </div>
         </div>
@@ -303,19 +305,19 @@ onMounted(load)
         <!-- ── Tab: School History ─────────────────────────────────────── -->
         <div v-else-if="activeTab === 'school'" class="pt-6">
           <div v-if="!histories.length" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">
-            No school history records found.
+            {{ t('dsamStudent.schoolTab.empty') }}
           </div>
 
           <div v-else class="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <table class="w-full text-sm">
               <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Academic Year</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">School</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Grade</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Class</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Status</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Notes</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">{{ t('dsamShared.cols.year') }}</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">{{ t('dsamShared.cols.school') }}</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">{{ t('dsamShared.cols.grade') }}</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">{{ t('dsamShared.cols.class') }}</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">{{ t('dsamShared.cols.status') }}</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">{{ t('dsamShared.cols.notes') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
@@ -339,7 +341,7 @@ onMounted(load)
                         suspended:   'bg-orange-50 text-orange-700 ring-orange-200',
                       }[h.status] ?? 'bg-slate-100 text-slate-600 ring-slate-200',
                     ]">
-                      {{ h.status }}
+                      {{ t('dsamStudent.schoolTab.statuses.' + h.status) || h.status }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-xs text-slate-400">{{ fmt(h.notes) }}</td>

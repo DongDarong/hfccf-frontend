@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import { useDsamFormBuilderStore } from '../../stores/useDsamFormBuilderStore'
+import { useLanguage } from '@/composables/useLanguage'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
@@ -9,6 +10,7 @@ import InputNumber from 'primevue/inputnumber'
 import Button from '@/components/buttons/Button.vue'
 
 const store = useDsamFormBuilderStore()
+const { t } = useLanguage()
 
 const activeTab = ref('general')
 const form = ref({})
@@ -65,20 +67,20 @@ const hasScoring = computed(() => question.value?.question_type?.has_scoring)
     <div v-if="!question" class="flex flex-1 items-center justify-center p-6 text-center">
       <div>
         <i class="pi pi-mouse-pointer mb-3 text-3xl text-slate-300" />
-        <p class="text-sm text-slate-400">Select a question to configure it</p>
+        <p class="text-sm text-slate-400">{{ t('dsamForms.inspector.selectQuestion') }}</p>
       </div>
     </div>
 
     <template v-else>
       <!-- Header -->
       <div class="border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-        <p class="text-sm font-semibold text-slate-800 truncate">Question Settings</p>
+        <p class="text-sm font-semibold text-slate-800 truncate">{{ t('dsamForms.inspector.title') }}</p>
         <button
           v-if="isDirty && !store.isPublished"
           class="rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
           @click="save"
         >
-          Save
+          {{ t('dsamShared.actions.save') }}
         </button>
       </div>
 
@@ -93,7 +95,7 @@ const hasScoring = computed(() => question.value?.question_type?.has_scoring)
           ]"
           @click="activeTab = tab"
         >
-          {{ tab }}
+          {{ t('dsamForms.inspector.tabs.' + tab) }}
         </button>
       </div>
 
@@ -103,23 +105,23 @@ const hasScoring = computed(() => question.value?.question_type?.has_scoring)
         <!-- General tab -->
         <template v-if="activeTab === 'general'">
           <div>
-            <label class="mb-1 block text-xs font-medium text-slate-600">Label (EN)</label>
+            <label class="mb-1 block text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.labelEn') }}</label>
             <Textarea v-model="form.label" :disabled="store.isPublished" rows="2" class="w-full text-sm" auto-resize />
           </div>
           <div>
-            <label class="mb-1 block text-xs font-medium text-slate-600">Label (KH)</label>
+            <label class="mb-1 block text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.labelKh') }}</label>
             <Textarea v-model="form.label_kh" :disabled="store.isPublished" rows="2" class="w-full text-sm" auto-resize />
           </div>
           <div>
-            <label class="mb-1 block text-xs font-medium text-slate-600">Placeholder</label>
+            <label class="mb-1 block text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.placeholder') }}</label>
             <InputText v-model="form.placeholder" :disabled="store.isPublished" class="w-full text-sm" />
           </div>
           <div>
-            <label class="mb-1 block text-xs font-medium text-slate-600">Help text</label>
+            <label class="mb-1 block text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.helpText') }}</label>
             <InputText v-model="form.help_text" :disabled="store.isPublished" class="w-full text-sm" />
           </div>
           <div class="flex items-center justify-between">
-            <label class="text-xs font-medium text-slate-600">Required</label>
+            <label class="text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.required') }}</label>
             <ToggleSwitch v-model="form.is_required" :disabled="store.isPublished" />
           </div>
         </template>
@@ -127,7 +129,7 @@ const hasScoring = computed(() => question.value?.question_type?.has_scoring)
         <!-- Options tab -->
         <template v-else-if="activeTab === 'options'">
           <div v-if="!hasOptions" class="text-center py-6 text-xs text-slate-400">
-            This question type does not have options.
+            {{ t('dsamForms.inspector.noOptions') }}
           </div>
           <template v-else>
             <div
@@ -148,7 +150,7 @@ const hasScoring = computed(() => question.value?.question_type?.has_scoring)
             </div>
             <Button
               v-if="!store.isPublished"
-              label="Add option"
+              :label="t('dsamForms.inspector.addOption')"
               icon="pi pi-plus"
               size="sm"
               severity="secondary"
@@ -161,15 +163,15 @@ const hasScoring = computed(() => question.value?.question_type?.has_scoring)
         <!-- Scoring tab -->
         <template v-else-if="activeTab === 'scoring'">
           <div v-if="!hasScoring" class="text-center py-6 text-xs text-slate-400">
-            This question type does not support scoring.
+            {{ t('dsamForms.inspector.noScoring') }}
           </div>
           <template v-else>
             <div class="flex items-center justify-between">
-              <label class="text-xs font-medium text-slate-600">Enable scoring</label>
+              <label class="text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.enableScoring') }}</label>
               <ToggleSwitch v-model="form.is_scored" :disabled="store.isPublished" />
             </div>
             <div v-if="form.is_scored">
-              <label class="mb-1 block text-xs font-medium text-slate-600">Max score</label>
+              <label class="mb-1 block text-xs font-medium text-slate-600">{{ t('dsamForms.inspector.maxScore') }}</label>
               <InputNumber v-model="form.max_score" :disabled="store.isPublished" :min="0" class="w-full" />
             </div>
           </template>
