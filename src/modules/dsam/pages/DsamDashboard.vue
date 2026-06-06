@@ -50,7 +50,7 @@ onMounted(load)
           <Button
             label="New Assessment"
             icon="pi pi-plus"
-            @click="router.push({ name: 'dsam-wizard' })"
+            @click="router.push({ name: 'dsam-submission-list' })"
           />
         </template>
       </HeaderSection>

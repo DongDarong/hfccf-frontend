@@ -228,7 +228,13 @@ const lastSavedLabel = computed(() => {
       <div>
         <i class="pi pi-exclamation-triangle mb-3 text-4xl" />
         <p class="font-medium">Nothing to show</p>
-        <p class="text-sm mt-1">Please start from the submission list.</p>
+        <p class="text-sm mt-1 mb-4">Please start an assessment from the submission list.</p>
+        <Button
+          label="Go to Assessments"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          @click="router.push({ name: 'dsam-submission-list' })"
+        />
       </div>
     </div>
   </div>
