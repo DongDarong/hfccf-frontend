@@ -100,7 +100,7 @@ onMounted(load)
             <Button
               icon="pi pi-eye"
               severity="secondary"
-              size="small"
+              size="sm"
               @click="router.push({ name: 'assessment-submission-detail', params: { id: data.id } })"
             />
           </template>

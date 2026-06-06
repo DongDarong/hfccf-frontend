@@ -960,10 +960,10 @@ watch(() => route.params.id, () => {
                   <Tag :value="block.type" severity="info" />
                 </div>
                 <div class="print-block-card__actions">
-                  <Button icon="pi pi-arrow-up" severity="secondary" text rounded size="small" :disabled="index === 0" @click.stop="moveBlock(index, -1)" />
-                  <Button icon="pi pi-arrow-down" severity="secondary" text rounded size="small" :disabled="index === templateForm.blocks.length - 1" @click.stop="moveBlock(index, 1)" />
-                  <Button icon="pi pi-copy" severity="secondary" text rounded size="small" @click.stop="duplicateBlock(index)" />
-                  <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click.stop="removeBlock(index)" />
+                  <Button icon="pi pi-arrow-up" severity="secondary" text rounded size="sm" :disabled="index === 0" @click.stop="moveBlock(index, -1)" />
+                  <Button icon="pi pi-arrow-down" severity="secondary" text rounded size="sm" :disabled="index === templateForm.blocks.length - 1" @click.stop="moveBlock(index, 1)" />
+                  <Button icon="pi pi-copy" severity="secondary" text rounded size="sm" @click.stop="duplicateBlock(index)" />
+                  <Button icon="pi pi-trash" severity="danger" text rounded size="sm" @click.stop="removeBlock(index)" />
                 </div>
               </article>
 
@@ -1163,13 +1163,13 @@ watch(() => route.params.id, () => {
               <div v-if="selectedBlock.type === 'student_info'" class="print-subeditor">
                 <div class="print-subeditor__header">
                   <strong>{{ t('printDesigner.blockEditor.fields') }}</strong>
-                  <Button :label="t('printDesigner.blockEditor.addField')" icon="pi pi-plus" size="small" severity="secondary" @click="addStudentField" />
+                  <Button :label="t('printDesigner.blockEditor.addField')" icon="pi pi-plus" size="sm" severity="secondary" @click="addStudentField" />
                 </div>
                 <div class="print-subeditor__rows">
                   <div v-for="(field, index) in selectedBlock.fields" :key="`${field.label}-${index}`" class="print-mini-row">
                     <InputText v-model="field.label" :placeholder="t('printDesigner.blockEditor.fieldLabel')" class="w-full" />
                     <InputText v-model="field.value" :placeholder="t('printDesigner.blockEditor.fieldValue')" class="w-full" />
-                    <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="removeStudentField(index)" />
+                    <Button icon="pi pi-trash" severity="danger" text rounded size="sm" @click="removeStudentField(index)" />
                   </div>
                 </div>
               </div>
@@ -1177,13 +1177,13 @@ watch(() => route.params.id, () => {
               <div v-if="selectedBlock.type === 'signature_box'" class="print-subeditor">
                 <div class="print-subeditor__header">
                   <strong>{{ t('printDesigner.blockEditor.signatureRows') }}</strong>
-                  <Button :label="t('printDesigner.blockEditor.addRow')" icon="pi pi-plus" size="small" severity="secondary" @click="addSignatureRow" />
+                  <Button :label="t('printDesigner.blockEditor.addRow')" icon="pi pi-plus" size="sm" severity="secondary" @click="addSignatureRow" />
                 </div>
                 <div class="print-subeditor__rows">
                   <div v-for="(row, index) in selectedBlock.labels" :key="`${row.label}-${index}`" class="print-mini-row">
                     <InputText v-model="row.label" :placeholder="t('printDesigner.blockEditor.rowLabel')" class="w-full" />
                     <InputText v-model="row.value" :placeholder="t('printDesigner.blockEditor.rowValue')" class="w-full" />
-                    <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="removeSignatureRow(index)" />
+                    <Button icon="pi pi-trash" severity="danger" text rounded size="sm" @click="removeSignatureRow(index)" />
                   </div>
                 </div>
               </div>
