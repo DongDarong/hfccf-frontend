@@ -133,10 +133,7 @@ onMounted(load)
             <p class="font-medium text-slate-800">{{ submission.student?.full_name }}</p>
             <p class="text-xs text-slate-500">{{ submission.student?.student_code }}</p>
           </div>
-          <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Score</h3>
-            <ScoreSummary :submission="submission" />
-          </div>
+          <ScoreSummary :submission="submission" />
         </div>
 
         <!-- Answers by section -->

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useDsamFormBuilderStore } from '../../stores/useDsamFormBuilderStore'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -17,8 +17,8 @@ const isDirty = ref(false)
 const question = computed(() => store.activeQuestion)
 const section  = computed(() => store.activeSection)
 
-watch(question, (q) => {
-  if (!q) { form.value = {}; return }
+watch(question, async (q) => {
+  if (!q) { form.value = {}; isDirty.value = false; return }
   form.value = {
     label:            q.label ?? '',
     label_kh:         q.label_kh ?? '',
@@ -29,6 +29,7 @@ watch(question, (q) => {
     max_score:        q.max_score ?? null,
     question_type_id: q.question_type_id,
   }
+  await nextTick()
   isDirty.value = false
 }, { immediate: true })
 

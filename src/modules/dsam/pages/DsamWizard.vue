@@ -109,7 +109,7 @@ const lastSavedLabel = computed(() => {
           <i class="pi pi-spin pi-spinner" /> Saving…
         </span>
       </div>
-      <ProgressBar :value="store.progressPct" :show-value="false" class="h-1 rounded-none" />
+      <ProgressBar :value="showReview ? 100 : store.progressPct" :show-value="false" class="h-1 rounded-none" />
     </header>
 
     <!-- Loading -->
