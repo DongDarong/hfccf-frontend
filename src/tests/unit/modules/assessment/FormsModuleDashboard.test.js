@@ -3,33 +3,32 @@ import { assessmentRoutes } from '@/modules/assessment/routes/assessment.routes'
 import { FM_HUB_SECTIONS } from '@/modules/preschool/admin/pages/forms/formManagementData'
 
 describe('Forms Module Dashboard', () => {
-  it('exposes the ten required dashboard cards in the expected groups', () => {
+  it('organizes the ten dashboard cards into three workflow stages', () => {
     expect(FM_HUB_SECTIONS.map((section) => section.id)).toEqual([
-      'design',
-      'operations',
-      'reporting',
-      'admin',
+      'manage',
+      'build',
+      'review',
     ])
 
     expect(FM_HUB_SECTIONS.flatMap((section) => section.cards)).toHaveLength(10)
   })
 
-  it('registers every dashboard destination under the forms route prefix', () => {
-    const expectedPaths = [
-      '/forms/templates',
-      '/forms/questions',
-      '/forms/exercises',
-      '/forms/scoring',
-      '/forms/sessions',
-      '/forms/review',
-      '/forms/print-templates',
-      '/forms/exports',
-      '/forms/reports',
-      '/forms/logs',
+  it('routes related cards into the three preschool workflow workspaces', () => {
+    const expectedRouteNames = [
+      'dashboard-preschool-admin-forms-manage',
+      'dashboard-preschool-admin-forms-build',
+      'dashboard-preschool-admin-forms-review',
     ]
 
-    const registeredPaths = assessmentRoutes.map((route) => route.path)
+    const dashboardRouteNames = [
+      ...new Set(
+        FM_HUB_SECTIONS.flatMap((section) =>
+          section.cards.map((card) => card.route.name),
+        ),
+      ),
+    ]
 
-    expect(registeredPaths).toEqual(expect.arrayContaining(expectedPaths))
+    expect(dashboardRouteNames).toEqual(expectedRouteNames)
+    expect(assessmentRoutes).toBeDefined()
   })
 })

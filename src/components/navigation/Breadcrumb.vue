@@ -436,15 +436,20 @@ const ASSESSMENT_CRUMB_MAP = {
     { labelKey: 'breadcrumb.assessmentModule', to: { name: 'assessment-dashboard' } },
     { labelKey: 'breadcrumb.assessmentForms' },
   ],
-  'assessment-form-builder': [
-    { labelKey: 'breadcrumb.assessmentModule', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.assessmentForms', to: { name: 'assessment-form-list' } },
+  'assessment-form-create': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.forms', to: { name: 'dashboard-preschool-admin-forms' } },
     { labelKey: 'breadcrumb.newForm' },
   ],
-  'assessment-form-builder-edit': [
-    { labelKey: 'breadcrumb.assessmentModule', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.assessmentForms', to: { name: 'assessment-form-list' } },
+  'assessment-form-edit': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.forms', to: { name: 'dashboard-preschool-admin-forms' } },
     { labelKey: 'breadcrumb.editForm' },
+  ],
+  'forms-exercises': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.forms', to: { name: 'dashboard-preschool-admin-forms' } },
+    { labelKey: 'breadcrumb.newForm' },
   ],
   'assessment-scoring': [
     { labelKey: 'breadcrumb.assessmentModule', to: { name: 'assessment-dashboard' } },

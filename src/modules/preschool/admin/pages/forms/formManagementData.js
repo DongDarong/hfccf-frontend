@@ -2,9 +2,11 @@ const BASE = 'formsModuleDashboard'
 
 export const FM_HUB_SECTIONS = [
   {
-    id: 'design',
-    labelKey:   `${BASE}.sections.design.label`,
-    captionKey: `${BASE}.sections.design.caption`,
+    id: 'manage',
+    step: 1,
+    labelKey:   `${BASE}.sections.manage.label`,
+    captionKey: `${BASE}.sections.manage.caption`,
+    workspaceKey: `${BASE}.workspaces.manage`,
     cards: [
       {
         key:            'templates',
@@ -12,7 +14,7 @@ export const FM_HUB_SECTIONS = [
         accent:         'violet',
         titleKey:       `${BASE}.cards.templates.title`,
         descriptionKey: `${BASE}.cards.templates.description`,
-        route:          { name: 'forms-templates' },
+        route:          { name: 'dashboard-preschool-admin-forms-manage' },
       },
       {
         key:            'question-bank',
@@ -20,15 +22,32 @@ export const FM_HUB_SECTIONS = [
         accent:         'sky',
         titleKey:       `${BASE}.cards.questionBank.title`,
         descriptionKey: `${BASE}.cards.questionBank.description`,
-        route:          { name: 'forms-questions' },
+        route:          { name: 'dashboard-preschool-admin-forms-manage' },
       },
+      {
+        key:            'audit-logs',
+        icon:           'pi-history',
+        accent:         'slate',
+        titleKey:       `${BASE}.cards.auditLogs.title`,
+        descriptionKey: `${BASE}.cards.auditLogs.description`,
+        route:          { name: 'dashboard-preschool-admin-forms-manage' },
+      },
+    ],
+  },
+  {
+    id: 'build',
+    step: 2,
+    labelKey:   `${BASE}.sections.build.label`,
+    captionKey: `${BASE}.sections.build.caption`,
+    workspaceKey: `${BASE}.workspaces.build`,
+    cards: [
       {
         key:            'exercise-builder',
         icon:           'pi-clipboard',
         accent:         'emerald',
         titleKey:       `${BASE}.cards.exerciseBuilder.title`,
         descriptionKey: `${BASE}.cards.exerciseBuilder.description`,
-        route:          { name: 'forms-exercises' },
+        route:          { name: 'dashboard-preschool-admin-forms-build' },
       },
       {
         key:            'scoring-rules',
@@ -36,14 +55,24 @@ export const FM_HUB_SECTIONS = [
         accent:         'amber',
         titleKey:       `${BASE}.cards.scoringRules.title`,
         descriptionKey: `${BASE}.cards.scoringRules.description`,
-        route:          { name: 'forms-scoring' },
+        route:          { name: 'dashboard-preschool-admin-forms-build' },
+      },
+      {
+        key:            'print-templates',
+        icon:           'pi-print',
+        accent:         'teal',
+        titleKey:       `${BASE}.cards.printTemplates.title`,
+        descriptionKey: `${BASE}.cards.printTemplates.description`,
+        route:          { name: 'dashboard-preschool-admin-forms-build' },
       },
     ],
   },
   {
-    id: 'operations',
-    labelKey:   `${BASE}.sections.operations.label`,
-    captionKey: `${BASE}.sections.operations.caption`,
+    id: 'review',
+    step: 3,
+    labelKey:   `${BASE}.sections.review.label`,
+    captionKey: `${BASE}.sections.review.caption`,
+    workspaceKey: `${BASE}.workspaces.review`,
     cards: [
       {
         key:            'sessions',
@@ -51,7 +80,7 @@ export const FM_HUB_SECTIONS = [
         accent:         'indigo',
         titleKey:       `${BASE}.cards.sessions.title`,
         descriptionKey: `${BASE}.cards.sessions.description`,
-        route:          { name: 'forms-sessions' },
+        route:          { name: 'dashboard-preschool-admin-forms-review' },
       },
       {
         key:            'submission-review',
@@ -59,22 +88,7 @@ export const FM_HUB_SECTIONS = [
         accent:         'green',
         titleKey:       `${BASE}.cards.submissionReview.title`,
         descriptionKey: `${BASE}.cards.submissionReview.description`,
-        route:          { name: 'forms-review' },
-      },
-    ],
-  },
-  {
-    id: 'reporting',
-    labelKey:   `${BASE}.sections.reporting.label`,
-    captionKey: `${BASE}.sections.reporting.caption`,
-    cards: [
-      {
-        key:            'print-templates',
-        icon:           'pi-print',
-        accent:         'teal',
-        titleKey:       `${BASE}.cards.printTemplates.title`,
-        descriptionKey: `${BASE}.cards.printTemplates.description`,
-        route:          { name: 'forms-print-templates' },
+        route:          { name: 'dashboard-preschool-admin-forms-review' },
       },
       {
         key:            'export-center',
@@ -82,7 +96,7 @@ export const FM_HUB_SECTIONS = [
         accent:         'cyan',
         titleKey:       `${BASE}.cards.exportCenter.title`,
         descriptionKey: `${BASE}.cards.exportCenter.description`,
-        route:          { name: 'forms-exports' },
+        route:          { name: 'dashboard-preschool-admin-forms-review' },
       },
       {
         key:            'analytics',
@@ -90,22 +104,7 @@ export const FM_HUB_SECTIONS = [
         accent:         'rose',
         titleKey:       `${BASE}.cards.analytics.title`,
         descriptionKey: `${BASE}.cards.analytics.description`,
-        route:          { name: 'forms-reports' },
-      },
-    ],
-  },
-  {
-    id: 'admin',
-    labelKey:   `${BASE}.sections.admin.label`,
-    captionKey: `${BASE}.sections.admin.caption`,
-    cards: [
-      {
-        key:            'audit-logs',
-        icon:           'pi-history',
-        accent:         'slate',
-        titleKey:       `${BASE}.cards.auditLogs.title`,
-        descriptionKey: `${BASE}.cards.auditLogs.description`,
-        route:          { name: 'forms-logs' },
+        route:          { name: 'dashboard-preschool-admin-forms-review' },
       },
     ],
   },

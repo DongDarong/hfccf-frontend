@@ -16,6 +16,10 @@ defineProps({
     type: String,
     required: true,
   },
+  workspace: {
+    type: String,
+    required: true,
+  },
 })
 </script>
 
@@ -31,6 +35,7 @@ defineProps({
     </span>
 
     <span class="forms-dashboard-card__content">
+      <span class="forms-dashboard-card__workspace">{{ workspace }}</span>
       <span class="forms-dashboard-card__title">{{ title }}</span>
       <span class="forms-dashboard-card__description">{{ description }}</span>
     </span>
@@ -87,6 +92,14 @@ defineProps({
   min-width: 0;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.forms-dashboard-card__workspace {
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
 }
 
 .forms-dashboard-card__title {

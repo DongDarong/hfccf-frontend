@@ -26,10 +26,13 @@ const { t } = useLanguage()
           :aria-labelledby="`forms-section-${section.id}`"
         >
           <header class="forms-dashboard__section-header">
+            <span class="forms-dashboard__step">
+              {{ t('formsModuleDashboard.step') }} {{ section.step }}
+            </span>
             <h2 :id="`forms-section-${section.id}`">
               {{ t(section.labelKey) }}
             </h2>
-            <span aria-hidden="true" />
+            <span class="forms-dashboard__divider" aria-hidden="true" />
             <p>{{ t(section.captionKey) }}</p>
           </header>
 
@@ -40,6 +43,7 @@ const { t } = useLanguage()
               :card="card"
               :title="t(card.titleKey)"
               :description="t(card.descriptionKey)"
+              :workspace="t(section.workspaceKey)"
             />
           </div>
         </section>
@@ -73,17 +77,29 @@ const { t } = useLanguage()
   gap: 0.625rem;
 }
 
+.forms-dashboard__step {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .forms-dashboard__section-header h2 {
   margin: 0;
-  color: #94a3b8;
-  font-size: 0.68rem;
-  font-weight: 700;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0.075em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-.forms-dashboard__section-header span {
+.forms-dashboard__divider {
   flex: 1;
   height: 1px;
   background: #f1f5f9;
@@ -113,7 +129,7 @@ const { t } = useLanguage()
     grid-template-columns: 1fr;
   }
 
-  .forms-dashboard__section-header span,
+  .forms-dashboard__section-header .forms-dashboard__divider,
   .forms-dashboard__section-header p {
     display: none;
   }

@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from '@/components/buttons/Button.vue'
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Tag from 'primevue/tag'
@@ -61,7 +62,7 @@ const showAddSection     = ref(false)
 
 async function addSection() {
   const title = addingSectionTitle.value.trim() || t('formBuilder.sections.sectionTitle')
-  const section = await store.addSection({ title, order: store.sections.length + 1 })
+  await store.addSection({ title, order: store.sections.length + 1 })
   showAddSection.value    = false
   addingSectionTitle.value = ''
   // section returned by addSection is pushed into store — activate the new one
@@ -114,7 +115,7 @@ onUnmounted(() => store.reset())
   <div class="flex h-screen flex-col overflow-hidden bg-slate-100">
 
     <!-- ── Top bar ────────────────────────────────────────────────────────── -->
-    <header class="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 shadow-sm">
+    <header class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 shadow-sm">
 
       <!-- Back -->
       <button
@@ -124,38 +125,42 @@ onUnmounted(() => store.reset())
         <i class="pi pi-arrow-left text-sm" />
       </button>
 
-      <!-- Form name (inline editable) -->
-      <div class="flex min-w-0 flex-1 items-center gap-2">
-        <InputText
-          v-if="editingName"
-          v-model="localName"
-          class="h-8 flex-1 text-sm font-semibold"
-          autofocus
-          @blur="commitName"
-          @keyup.enter="commitName"
-          @keyup.escape="editingName = false"
-        />
-        <button
-          v-else
-          class="group flex min-w-0 items-center gap-1.5 truncate"
-          :disabled="store.template?.status === 'published'"
-          @click="startEditName"
-        >
-          <span class="truncate text-sm font-semibold text-slate-800">
-            {{ store.template?.name || t('formBuilder.newForm') }}
-          </span>
-          <i
-            v-if="store.template?.status !== 'published'"
-            class="pi pi-pencil text-xs text-slate-300 opacity-0 transition-opacity group-hover:opacity-100"
-          />
-        </button>
+      <!-- Breadcrumb and form name -->
+      <div class="builder-heading min-w-0 flex-1">
+        <Breadcrumb />
 
-        <Tag
-          v-if="store.template?.status"
-          :severity="statusSeverity[store.template.status] ?? 'secondary'"
-          :value="store.template.status"
-          class="shrink-0"
-        />
+        <div class="flex min-w-0 items-center gap-2">
+          <InputText
+            v-if="editingName"
+            v-model="localName"
+            class="h-8 flex-1 text-sm font-semibold"
+            autofocus
+            @blur="commitName"
+            @keyup.enter="commitName"
+            @keyup.escape="editingName = false"
+          />
+          <button
+            v-else
+            class="group flex min-w-0 items-center gap-1.5 truncate"
+            :disabled="store.template?.status === 'published'"
+            @click="startEditName"
+          >
+            <span class="truncate text-sm font-semibold text-slate-800">
+              {{ store.template?.name || t('formBuilder.newForm') }}
+            </span>
+            <i
+              v-if="store.template?.status !== 'published'"
+              class="pi pi-pencil text-xs text-slate-300 opacity-0 transition-opacity group-hover:opacity-100"
+            />
+          </button>
+
+          <Tag
+            v-if="store.template?.status"
+            :severity="statusSeverity[store.template.status] ?? 'secondary'"
+            :value="store.template.status"
+            class="shrink-0"
+          />
+        </div>
       </div>
 
       <!-- Right controls -->
@@ -325,3 +330,9 @@ onUnmounted(() => store.reset())
     </div>
   </div>
 </template>
+
+<style scoped>
+.builder-heading :deep(nav) {
+  margin-bottom: 0.125rem;
+}
+</style>

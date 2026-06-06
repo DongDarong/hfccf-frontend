@@ -2,11 +2,16 @@ export default {
   formsModuleDashboard: {
     title: 'Forms Management',
     subtitle: 'Create, manage, assess, score, review, and export student assessment forms.',
+    step: 'Step',
+    workspaces: {
+      manage: 'Manage workspace',
+      build: 'Build workspace',
+      review: 'Review workspace',
+    },
     sections: {
-      design: { label: 'Assessment Design', caption: 'Build and configure assessment tools' },
-      operations: { label: 'Assessment Operations', caption: 'Run assessments and review submissions' },
-      reporting: { label: 'Reports & Export', caption: 'Generate reports and export assessment data' },
-      admin: { label: 'Administration', caption: 'Monitor system activity' },
+      manage: { label: 'Manage & Organize', caption: 'Organize templates, reusable questions, and history' },
+      build: { label: 'Build & Configure', caption: 'Create forms, scoring rules, and print layouts' },
+      review: { label: 'Run, Review & Report', caption: 'Assess students, approve results, and analyze outcomes' },
     },
     cards: {
       templates: {
