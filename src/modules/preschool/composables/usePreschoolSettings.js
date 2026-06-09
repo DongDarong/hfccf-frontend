@@ -403,7 +403,7 @@ function serializeSettingsForSave(settings = {}) {
   }
 }
 
-function validatePreschoolSettings(settings = {}) {
+export function validatePreschoolSettings(settings = {}) {
   const errors = {
     academicYear: createSectionValidation(),
     terms: {},

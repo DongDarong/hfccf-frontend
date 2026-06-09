@@ -1,5 +1,19 @@
 import { nextTick } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const mockUpdatePreschoolSettingsBackbone = vi.fn()
+
+vi.mock('@/modules/preschool/services/preschoolApi', () => ({
+  fetchPreschoolSettingsBackbone: vi.fn().mockResolvedValue({ settings: null }),
+  fetchReportPeriods: vi.fn().mockResolvedValue([]),
+  updatePreschoolSettingsBackbone: (...args) => mockUpdatePreschoolSettingsBackbone(...args),
+}))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  mockUpdatePreschoolSettingsBackbone.mockResolvedValue({ settings: null })
+})
+
 import {
   createDefaultClassConfiguration,
   createEmptyTermDraft,
@@ -85,7 +99,7 @@ describe('usePreschoolSettings', () => {
     removeClassConfiguration(3)
     expect(settings.value.classConfigurations).toHaveLength(3)
 
-    const saveResult = saveSettings()
+    const saveResult = await saveSettings()
     expect(saveResult.ok).toBe(true)
     expect(validationErrors.value.academicYear.currentAcademicYear).toBeUndefined()
 

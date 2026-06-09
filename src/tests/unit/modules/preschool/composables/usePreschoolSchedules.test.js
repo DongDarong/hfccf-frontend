@@ -12,6 +12,15 @@ const mockCreateSchedule = vi.fn()
 const mockUpdateSchedule = vi.fn()
 const mockArchiveSchedule = vi.fn()
 
+vi.mock('@/composables/useLanguage', () => ({
+  useLanguage: () => ({
+    t: (key) => key,
+    te: () => true,
+    tm: () => ({}),
+    locale: { value: 'en' },
+  }),
+}))
+
 vi.mock('@/services/auth', () => ({
   getCurrentUser: () => mockGetCurrentUser(),
 }))
