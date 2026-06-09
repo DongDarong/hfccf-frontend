@@ -11,22 +11,17 @@ function getSections(user) {
 }
 
 describe('assessment sidebar navigation', () => {
-  it('preschool admin sees the assessment section', () => {
+  it('preschool admin sees the preschool section', () => {
     const sections = getSections(makeAdminPreschool())
-    const assessmentSection = sections.find((s) => s.id === 'assessment')
-    expect(assessmentSection).toBeDefined()
+    const preschoolSection = sections.find((s) => s.id === 'preschool')
+    expect(preschoolSection).toBeDefined()
   })
 
-  it('assessment section has dashboard, forms, submissions, wizard, reports, audit-logs', () => {
+  it('preschool section includes the assessments item', () => {
     const sections = getSections(makeAdminPreschool())
-    const assessmentSection = sections.find((s) => s.id === 'assessment')
-    const itemIds = assessmentSection?.items.map((i) => i.id) ?? []
-    expect(itemIds).toContain('assessment-dashboard')
-    expect(itemIds).toContain('assessment-forms')
-    expect(itemIds).toContain('assessment-submissions')
-    expect(itemIds).toContain('assessment-wizard')
-    expect(itemIds).toContain('assessment-reports')
-    expect(itemIds).toContain('assessment-audit-logs')
+    const preschoolSection = sections.find((s) => s.id === 'preschool')
+    const itemIds = preschoolSection?.items.map((i) => i.id) ?? []
+    expect(itemIds).toContain('preschool-assessments')
   })
 
   it('assessment section routes have no dynamic parameters', () => {

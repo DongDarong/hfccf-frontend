@@ -39,8 +39,30 @@ export default {
   ...progress,
   ...reports,
   ...schedules,
-  ...settings,
-  ...settingsBackbone,
+  preschoolSettingsPage: {
+    ...settings.preschoolSettingsPage,
+    ...settingsBackbone.preschoolSettingsPage,
+    sections: {
+      ...settings.preschoolSettingsPage.sections,
+      ...settingsBackbone.preschoolSettingsPage.sections,
+    },
+    fields: {
+      ...settings.preschoolSettingsPage.fields,
+      ...settingsBackbone.preschoolSettingsPage.fields,
+    },
+    placeholders: {
+      ...settings.preschoolSettingsPage.placeholders,
+      ...settingsBackbone.preschoolSettingsPage.placeholders,
+    },
+    summary: {
+      ...settings.preschoolSettingsPage.summary,
+      ...settingsBackbone.preschoolSettingsPage.summary,
+    },
+    emptyStates: {
+      ...settings.preschoolSettingsPage.emptyStates,
+      ...settingsBackbone.preschoolSettingsPage.emptyStates,
+    },
+  },
   ...lifecycle,
   ...lifecycleAudit,
   ...lifecycleAnalytics,

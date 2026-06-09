@@ -30,6 +30,10 @@ vi.mock('@/modules/preschool/composables/usePreschoolClassroomReports', () => ({
   usePreschoolClassroomReports: () => mockUsePreschoolClassroomReports(),
 }))
 
+vi.mock('@/modules/preschool/services/api/preschoolLifecycleAuditApi', () => ({
+  fetchLifecycleAuditLogs: vi.fn().mockResolvedValue({ items: [] }),
+}))
+
 const stubs = {
   MainLayout: { template: '<div><slot /></div>' },
   HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
@@ -68,7 +72,9 @@ describe('Preschool report pages', () => {
       loadLookupData: vi.fn().mockResolvedValue(undefined),
       loadReportPeriodOptions: vi.fn().mockResolvedValue(undefined),
       loading: ref(false),
+      reportPeriodLockMessage: ref(''),
       reportPeriods: ref([{ label: 'Term 1', assessmentCount: 2, studentCount: 1, classCount: 1 }]),
+      selectedReportPeriod: ref(null),
       studentOptions: ref([{ id: 1, label: 'Student One' }]),
     })
 
