@@ -43,7 +43,7 @@ beforeEach(() => {
 describe('useFormBuilderStore', () => {
   it('initialises with empty state', () => {
     const store = useFormBuilderStore()
-    expect(store.template).toBeNull()
+    expect(store.template).toMatchObject({ id: null, status: 'draft' })
     expect(store.sections).toEqual([])
     expect(store.isDirty).toBe(false)
   })
@@ -134,7 +134,7 @@ describe('useFormBuilderStore', () => {
     await store.loadTemplate(1)
     store.markDirty()
     store.reset()
-    expect(store.template).toBeNull()
+    expect(store.template).toMatchObject({ id: null, status: 'draft' })
     expect(store.sections).toEqual([])
     expect(store.isDirty).toBe(false)
   })

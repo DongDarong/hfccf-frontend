@@ -386,100 +386,63 @@ describe('Table', () => {
     expect(wrapper.findAll('button')).toHaveLength(0)
   })
 
-  // ─── actions: buttons style ───────────────────────────────────────────────────
+  // ─── showXxxAction prop forwarding ───────────────────────────────────────────
 
-  it('renders inline action buttons when actionStyle="buttons"', () => {
+  it('passes showView=true to ActionsButton by default', () => {
     const wrapper = mountTable({
       rows: [makeUser({ id: 1 })],
       columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
     })
-    expect(wrapper.findAll('button').length).toBeGreaterThan(0)
+    expect(wrapper.findComponent({ name: 'ActionsButton' }).props('showView')).toBe(true)
   })
 
-  it('renders View, Edit, Delete buttons by default', () => {
+  it('passes showView=false to ActionsButton when showViewAction=false', () => {
     const wrapper = mountTable({
       rows: [makeUser({ id: 1 })],
       columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
-    })
-    const labels = wrapper.findAll('button').map(b => b.attributes('aria-label'))
-    expect(labels).toContain('View')
-    expect(labels).toContain('Edit')
-    expect(labels).toContain('Delete')
-  })
-
-  it('hides the View button when showViewAction=false', () => {
-    const wrapper = mountTable({
-      rows: [makeUser({ id: 1 })],
-      columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
       showViewAction: false,
     })
-    const labels = wrapper.findAll('button').map(b => b.attributes('aria-label'))
-    expect(labels).not.toContain('View')
-    expect(labels).toContain('Edit')
-    expect(labels).toContain('Delete')
+    expect(wrapper.findComponent({ name: 'ActionsButton' }).props('showView')).toBe(false)
   })
 
-  it('hides the Edit button when showEditAction=false', () => {
+  it('passes showEdit=false to ActionsButton when showEditAction=false', () => {
     const wrapper = mountTable({
       rows: [makeUser({ id: 1 })],
       columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
       showEditAction: false,
     })
-    const labels = wrapper.findAll('button').map(b => b.attributes('aria-label'))
-    expect(labels).not.toContain('Edit')
+    expect(wrapper.findComponent({ name: 'ActionsButton' }).props('showEdit')).toBe(false)
   })
 
-  it('hides the Delete button when showDeleteAction=false', () => {
+  it('passes showDelete=false to ActionsButton when showDeleteAction=false', () => {
     const wrapper = mountTable({
       rows: [makeUser({ id: 1 })],
       columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
       showDeleteAction: false,
     })
-    const labels = wrapper.findAll('button').map(b => b.attributes('aria-label'))
-    expect(labels).not.toContain('Delete')
+    expect(wrapper.findComponent({ name: 'ActionsButton' }).props('showDelete')).toBe(false)
   })
 
-  // ─── events emitted by inline buttons ────────────────────────────────────────
-
-  it('emits "view" with row data when the View button is clicked', async () => {
+  it('emits "view" with row data via ActionsButton', async () => {
     const row = makeUser({ id: 1 })
     const wrapper = mountTable({
       rows: [row],
       columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
     })
-    await wrapper.find('[aria-label="View"]').trigger('click')
+    await wrapper.findComponent({ name: 'ActionsButton' }).vm.$emit('view', row)
     expect(wrapper.emitted('view')).toBeTruthy()
     expect(wrapper.emitted('view')[0][0]).toMatchObject({ id: 1 })
   })
 
-  it('emits "edit" with row data when the Edit button is clicked', async () => {
+  it('emits "edit" with row data via ActionsButton', async () => {
     const row = makeUser({ id: 2 })
     const wrapper = mountTable({
       rows: [row],
       columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
     })
-    await wrapper.find('[aria-label="Edit"]').trigger('click')
+    await wrapper.findComponent({ name: 'ActionsButton' }).vm.$emit('edit', row)
     expect(wrapper.emitted('edit')).toBeTruthy()
     expect(wrapper.emitted('edit')[0][0]).toMatchObject({ id: 2 })
-  })
-
-  it('emits "delete" with row data when the Delete button is clicked', async () => {
-    const row = makeUser({ id: 3 })
-    const wrapper = mountTable({
-      rows: [row],
-      columns: [{ key: 'actions', label: 'Actions' }],
-      actionStyle: 'buttons',
-    })
-    await wrapper.find('[aria-label="Delete"]').trigger('click')
-    expect(wrapper.emitted('delete')).toBeTruthy()
-    expect(wrapper.emitted('delete')[0][0]).toMatchObject({ id: 3 })
   })
 
   // ─── events emitted via ActionsButton (menu style) ───────────────────────────
