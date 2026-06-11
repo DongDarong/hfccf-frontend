@@ -97,7 +97,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/payment',
     name: 'dashboard-preschool-admin-payment',
-    component: () => import('@/modules/preschool/admin/pages/PaymentManagement.vue'),
+    component: () => import('@/modules/preschool/admin/pages/PaymentManagement/PaymentManagement.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

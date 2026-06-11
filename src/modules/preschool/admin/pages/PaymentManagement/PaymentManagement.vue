@@ -15,6 +15,8 @@ import PaymentToolbar from '@/modules/preschool/admin/components/payment-managem
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolClasses, fetchPreschoolPayments, fetchPreschoolStudents, createPreschoolPayment, updatePreschoolPayment, deletePreschoolPayment } from '@/modules/preschool/services/preschoolApi'
+import { PAGE_SIZE, DEFAULT_PAGINATION, DEFAULT_FORM, MODAL_MODES } from './constants/paymentManagementConstants'
+import { buildStatusOptions, buildMethodOptions, buildTableColumns, formatMoney, normalize, mapPayment, normalizePayload, buildClassOptions, buildStudentOptions } from './utils/paymentManagementHelpers'
 
 defineOptions({
   name: 'PreschoolAdminPaymentManagementPage',
@@ -31,52 +33,20 @@ const selectedPayment = ref(null)
 const isDeleteOpen = ref(false)
 const showSuccess = ref(false)
 const successMessage = ref('')
-const pageSize = 10
 const loading = ref(false)
 const errorMessage = ref('')
-const pagination = ref({ page: 1, perPage: pageSize, total: 0, totalPages: 1 })
+const pagination = ref({ ...DEFAULT_PAGINATION })
 const classOptions = ref([])
 const studentOptions = ref([])
 const modalOpen = ref(false)
 const modalMode = ref('create')
 const paymentSaving = ref(false)
 
-const form = reactive({
-  student_id: '',
-  class_id: '',
-  payment_reference: '',
-  amount: '',
-  currency: 'USD',
-  payment_method: 'cash',
-  payment_status: 'pending',
-  paid_at: '',
-  due_date: '',
-  note: '',
-})
+const form = reactive({ ...DEFAULT_FORM })
 
-const statusOptions = computed(() => [
-  { label: t('preschoolPaymentManagementPage.options.paid'), value: 'paid' },
-  { label: t('preschoolPaymentManagementPage.options.pending'), value: 'pending' },
-  { label: t('preschoolPaymentManagementPage.options.overdue'), value: 'overdue' },
-  { label: t('preschoolPaymentManagementPage.options.cancelled'), value: 'cancelled' },
-])
-const methodOptions = computed(() => [
-  { label: t('preschoolPaymentManagementPage.options.cash'), value: 'cash' },
-  { label: t('preschoolPaymentManagementPage.options.mobilePayment'), value: 'mobile_payment' },
-  { label: t('preschoolPaymentManagementPage.options.bankTransfer'), value: 'bank_transfer' },
-  { label: t('preschoolPaymentManagementPage.options.card'), value: 'card' },
-  { label: t('preschoolPaymentManagementPage.options.other'), value: 'other' },
-])
-const tableColumns = computed(() => [
-  { key: 'number', label: t('preschoolPaymentManagementPage.columns.no'), align: 'left' },
-  { key: 'studentName', label: t('preschoolPaymentManagementPage.columns.student'), align: 'left' },
-  { key: 'className', label: t('preschoolPaymentManagementPage.columns.class'), align: 'left' },
-  { key: 'amountLabel', label: t('preschoolPaymentManagementPage.columns.amount'), align: 'left' },
-  { key: 'paymentMethod', label: t('preschoolPaymentManagementPage.columns.method'), align: 'left' },
-  { key: 'dueDate', label: t('preschoolPaymentManagementPage.columns.dueDate'), align: 'left' },
-  { key: 'paymentStatus', label: t('preschoolPaymentManagementPage.columns.status'), align: 'left' },
-  { key: 'actions', label: t('preschoolPaymentManagementPage.columns.actions'), align: 'right' },
-])
+const statusOptions = computed(() => buildStatusOptions(t))
+const methodOptions = computed(() => buildMethodOptions(t))
+const tableColumns = computed(() => buildTableColumns(t))
 
 const classOptionLabelMap = computed(() =>
   classOptions.value.reduce((carry, item) => {
@@ -99,13 +69,6 @@ const studentById = computed(() =>
   }, {}),
 )
 
-function formatMoney(row) {
-  return `${Number(row.amount || 0).toFixed(2)} ${row.currency || 'USD'}`
-}
-
-function normalize(value) {
-  return String(value ?? '').trim().toLowerCase()
-}
 
 const paidAmount = computed(() =>
   paymentRows.value
@@ -167,23 +130,11 @@ const visibleRangeLabel = computed(() => {
   })
 })
 
-function mapPayment(row) {
-  return {
-    ...row,
-    studentName: row.studentName || studentOptionLabelMap.value[String(row.studentId)] || '-',
-    className: row.className || classOptionLabelMap.value[String(row.classId)] || '-',
-    amountLabel: formatMoney(row),
-    status: row.paymentStatus || row.status || '-',
-  }
-}
 
 async function loadClasses() {
   try {
     const response = await fetchPreschoolClasses({ perPage: 100 })
-    classOptions.value = (response.items || []).map((item) => ({
-      label: `${item.code} - ${item.name}`,
-      value: item.id,
-    }))
+    classOptions.value = buildClassOptions(response.items || [])
   } catch {
     classOptions.value = []
   }
@@ -192,13 +143,7 @@ async function loadClasses() {
 async function loadStudents() {
   try {
     const response = await fetchPreschoolStudents({ perPage: 100 })
-    studentOptions.value = (response.items || [])
-      .filter((item) => String(item.studentType || '').trim() === 'paying')
-      .map((item) => ({
-        label: item.fullName || item.name || '-',
-        value: item.id,
-        classes: Array.isArray(item.classes) ? item.classes : [],
-      }))
+    studentOptions.value = buildStudentOptions(response.items || [])
   } catch {
     studentOptions.value = []
   }
@@ -211,13 +156,13 @@ async function loadPayments() {
   try {
     const response = await fetchPreschoolPayments({
       page: currentPage.value,
-      perPage: pageSize,
+      perPage: PAGE_SIZE,
       search: searchQuery.value,
       classId: classFilter.value,
       paymentStatus: statusFilter.value,
     })
 
-    paymentRows.value = (response.items || []).map(mapPayment)
+    paymentRows.value = (response.items || []).map((row) => mapPayment(row, classOptionLabelMap.value, studentOptionLabelMap.value))
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     paymentRows.value = []
@@ -234,18 +179,9 @@ function clearFilters() {
 }
 
 function openCreateModal() {
-  modalMode.value = 'create'
+  modalMode.value = MODAL_MODES.CREATE
   selectedPayment.value = null
-  form.student_id = ''
-  form.class_id = ''
-  form.payment_reference = ''
-  form.amount = ''
-  form.currency = 'USD'
-  form.payment_method = 'cash'
-  form.payment_status = 'pending'
-  form.paid_at = ''
-  form.due_date = ''
-  form.note = ''
+  Object.assign(form, { ...DEFAULT_FORM })
   modalOpen.value = true
 }
 
@@ -261,7 +197,7 @@ function syncClassFromStudent(studentId) {
 }
 
 function openEditModal(row) {
-  modalMode.value = 'edit'
+  modalMode.value = MODAL_MODES.EDIT
   selectedPayment.value = row
   form.student_id = row.studentId || row.student_id || ''
   form.class_id = row.classId || row.class_id || ''
@@ -281,28 +217,14 @@ function closeModal() {
   paymentSaving.value = false
 }
 
-function normalizePayload() {
-  return {
-    student_id: form.student_id,
-    class_id: form.class_id,
-    payment_reference: form.payment_reference.trim(),
-    amount: Number(form.amount || 0),
-    currency: form.currency,
-    payment_method: form.payment_method,
-    payment_status: form.payment_status,
-    paid_at: form.paid_at || null,
-    due_date: form.due_date || null,
-    note: form.note.trim(),
-  }
-}
 
 async function onSavePayment() {
   paymentSaving.value = true
   errorMessage.value = ''
 
   try {
-    const payload = normalizePayload()
-    if (modalMode.value === 'edit' && selectedPayment.value?.id) {
+    const payload = normalizePayload(form)
+    if (modalMode.value === MODAL_MODES.EDIT && selectedPayment.value?.id) {
       await updatePreschoolPayment(selectedPayment.value.id, payload)
       successMessage.value = t('preschoolPaymentManagementPage.messages.updateSuccess')
     } else {
@@ -418,7 +340,7 @@ onMounted(async () => {
       </div>
     </section>
 
-    <Dialog v-model:visible="modalOpen" :header="modalMode === 'edit' ? t('preschoolPaymentManagementPage.dialog.editTitle') : t('preschoolPaymentManagementPage.dialog.createTitle')" modal class="payment-management-page__dialog">
+    <Dialog v-model:visible="modalOpen" :header="modalMode === MODAL_MODES.EDIT ? t('preschoolPaymentManagementPage.dialog.editTitle') : t('preschoolPaymentManagementPage.dialog.createTitle')" modal class="payment-management-page__dialog">
       <div class="payment-management-page__dialog-grid">
         <select v-model="form.student_id" class="payment-management-page__input" @change="syncClassFromStudent($event.target.value)">
           <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
