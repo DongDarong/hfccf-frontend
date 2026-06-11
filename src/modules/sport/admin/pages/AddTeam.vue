@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -14,12 +14,23 @@ import {
   fetchSportTeams,
   updateSportTeam,
 } from '@/modules/sport/services/sportApi'
-import { optimizeImageFile } from '@/utils/imageOptimization'
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
+import { useTeamLogo } from './AddTeam/composables/useTeamLogo'
+import {
+  teamStatusLabel,
+  validateForm,
+  getFormPayload,
+  initializeFormFromTeam,
+  getLogoPreview,
+} from './AddTeam/utils/addTeamHelpers'
+import {
+  TEAMS_DIRECTORY_PATH,
+  STATUS_OPTIONS,
+} from './AddTeam/constants/addTeamConstants'
 
 defineOptions({
   name: 'SportAdminAddTeamPage',
@@ -29,10 +40,14 @@ const router = useRouter()
 const route = useRoute()
 const { t, language } = useLanguage()
 
-const teamDirectoryPath = '/module/sport-admin/teams'
-const statusOptions = ['active', 'pending', 'inactive']
-const allowedLogoImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const maxLogoImageSizeBytes = 2 * 1024 * 1024
+const {
+  logoPreview,
+  handleLogoChange: handleLogoChangeComposable,
+  removeLogo: removeLogoComposable,
+  setLogoPreview,
+  cleanup: cleanupLogo,
+} = useTeamLogo(t)
+
 const teamRows = ref([])
 
 const divisionOptions = computed(() =>
@@ -47,7 +62,7 @@ const form = reactive({
   players: 0,
   matches: 0,
   venue: '',
-  status: statusOptions[0],
+  status: STATUS_OPTIONS[0],
   wins: 0,
   draws: 0,
   losses: 0,
@@ -58,8 +73,6 @@ const isSubmitting = ref(false)
 const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
-const logoPreview = ref('')
-const logoObjectUrl = ref('')
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -72,26 +85,15 @@ const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 const isKh = computed(() => language.value === 'KH')
 const points = computed(() => Math.max(form.wins, 0) * 3 + Math.max(form.draws, 0))
+const statusOptions = STATUS_OPTIONS
 
-function cleanupLogoObjectUrl() {
-  if (!logoObjectUrl.value) return
-  URL.revokeObjectURL(logoObjectUrl.value)
-  logoObjectUrl.value = ''
+function getStatusLabel(status) {
+  return teamStatusLabel(status, t)
 }
 
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
-}
-
-function statusLabel(status) {
-  const normalized = String(status || '').trim()
-
-  if (!normalized) return '-'
-
-  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(status || '')
 }
 
 const pageTitle = computed(() => {
@@ -115,7 +117,7 @@ const formSummaryCards = computed(() => [
     value: selectedDivisionLabel.value,
     label: t('sportAddTeam.teamTrack'),
     status: 'info',
-    statusLabel: statusLabel('info'),
+    statusLabel: getStatusLabel('info'),
     surfaceClass: 'bg-cyan-50/80 border-cyan-200',
   },
   {
@@ -124,7 +126,7 @@ const formSummaryCards = computed(() => [
     value: form.players,
     label: form.players ? t('sportAddTeam.rosterReady') : t('sportAddTeam.rosterPending'),
     status: form.players ? 'success' : 'warning',
-    statusLabel: statusLabel(form.players ? 'success' : 'warning'),
+    statusLabel: getStatusLabel(form.players ? 'success' : 'warning'),
     surfaceClass: 'bg-lime-50/80 border-lime-200',
   },
   {
@@ -133,16 +135,16 @@ const formSummaryCards = computed(() => [
     value: points.value,
     label: `${form.wins}-${form.draws}-${form.losses}`,
     status: 'info',
-    statusLabel: statusLabel('info'),
+    statusLabel: getStatusLabel('info'),
     surfaceClass: 'bg-amber-50/80 border-amber-200',
   },
   {
     id: 'team-status',
     title: t('sportAddTeam.status'),
-    value: statusLabel(form.status),
+    value: getStatusLabel(form.status),
     label: form.venue.trim() ? form.venue : t('sportAddTeam.venuePending'),
     status: form.status,
-    statusLabel: statusLabel(form.status),
+    statusLabel: getStatusLabel(form.status),
     surfaceClass: 'bg-rose-50/80 border-rose-200',
   },
 ])
@@ -166,60 +168,20 @@ const checklistItems = computed(() => [
   },
 ])
 
-function validateForm() {
-  if (!form.name.trim()) return t('sportAddTeam.validation.nameRequired')
-  if (!form.division.trim()) return t('sportAddTeam.validation.divisionRequired')
-  if (!form.coach.trim()) return t('sportAddTeam.validation.coachRequired')
-  if (!form.captain.trim()) return t('sportAddTeam.validation.captainRequired')
-  if (form.players <= 0) return t('sportAddTeam.validation.playersRequired')
-  if (form.matches < 0) return t('sportAddTeam.validation.recordInvalid')
-  if (!form.venue.trim()) return t('sportAddTeam.validation.venueRequired')
-  if (!form.status) return t('sportAddTeam.validation.statusRequired')
-  if (form.wins < 0 || form.draws < 0 || form.losses < 0) {
-    return t('sportAddTeam.validation.recordInvalid')
-  }
-  return ''
-}
-
 async function onLogoChange(event) {
-  if (isFormLocked.value) return
-
-  const [file] = event?.target?.files || []
-  if (!file) return
-
-  if (!allowedLogoImageTypes.includes(file.type)) {
-    errorMessage.value = t('sportAddTeam.validation.logoType')
+  const error = await handleLogoChangeComposable(event, form, isFormLocked.value)
+  if (error) {
+    errorMessage.value = error
     showError.value = true
-    return
   }
-
-  if (file.size > maxLogoImageSizeBytes) {
-    errorMessage.value = t('sportAddTeam.validation.logoSize')
-    showError.value = true
-    return
-  }
-
-  const optimizedFile = await optimizeImageFile(file, {
-    maxWidth: 512,
-    maxHeight: 512,
-    quality: 0.84,
-  }).catch(() => file)
-
-  cleanupLogoObjectUrl()
-  logoObjectUrl.value = URL.createObjectURL(optimizedFile)
-  logoPreview.value = logoObjectUrl.value
-  form.logo = optimizedFile
 }
 
 function removeLogo() {
-  if (isFormLocked.value) return
-  cleanupLogoObjectUrl()
-  logoPreview.value = ''
-  form.logo = null
+  removeLogoComposable(form, isFormLocked.value)
 }
 
 async function goBackToTeams() {
-  await router.push(teamDirectoryPath)
+  await router.push(TEAMS_DIRECTORY_PATH)
 }
 
 async function goToEditMode() {
@@ -232,7 +194,7 @@ async function onSubmit() {
   if (isViewMode.value) return
 
   resetFeedback()
-  const validationError = validateForm()
+  const validationError = validateForm(form, t)
   if (validationError) {
     errorMessage.value = validationError
     showError.value = true
@@ -241,21 +203,7 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    const payload = {
-      name: form.name,
-      division: form.division,
-      coach: form.coach,
-      coach_display_name: form.coach,
-      captain: form.captain,
-      players: form.players,
-      matches: form.matches,
-      venue: form.venue,
-      status: form.status,
-      wins: form.wins,
-      draws: form.draws,
-      losses: form.losses,
-      logo: form.logo,
-    }
+    const payload = getFormPayload(form)
 
     if (isEditMode.value && route.query.id) {
       await updateSportTeam(route.query.id, payload)
@@ -282,28 +230,6 @@ async function onSuccessClose() {
   await goBackToTeams()
 }
 
-function populateFromTeam(team) {
-  form.name = team.name || ''
-  form.division = team.division || divisionOptions.value[0] || ''
-  form.coach = team.coachDisplayName || team.coach || ''
-  form.captain = team.captainName || team.captain || ''
-  form.players = Number(team.playersCount ?? team.players ?? 0)
-  form.matches = Number(team.matchesCount ?? team.matches ?? 0)
-  form.venue = team.venue || ''
-
-  const normalizedStatus = String(team.status || '')
-  const matchedStatus = statusOptions.find(
-    (status) => status.toLowerCase() === normalizedStatus.toLowerCase(),
-  )
-  form.status = matchedStatus || statusOptions[0]
-  form.wins = Number(team.wins || 0)
-  form.draws = Number(team.draws || 0)
-  form.losses = Number(team.losses || 0)
-  form.logo = null
-  cleanupLogoObjectUrl()
-  logoPreview.value = String(team.logo || '').trim()
-}
-
 onMounted(() => {
   fetchSportTeams({ perPage: 100 })
     .then((response) => {
@@ -321,13 +247,10 @@ onMounted(() => {
   fetchSportTeam(id)
     .then((found) => {
       if (!found?.id) return
-      populateFromTeam(found)
+      initializeFormFromTeam(found, form, statusOptions, divisionOptions.value)
+      setLogoPreview(getLogoPreview(found))
     })
     .catch(() => {})
-})
-
-onBeforeUnmount(() => {
-  cleanupLogoObjectUrl()
 })
 </script>
 
@@ -352,7 +275,7 @@ onBeforeUnmount(() => {
         >
           <AddTeamIntro
             :division-label="selectedDivisionLabel"
-            :status-label="statusLabel(form.status)"
+            :status-label="getStatusLabel(form.status)"
           />
 
           <AddAdminProfileImageField
@@ -380,7 +303,7 @@ onBeforeUnmount(() => {
             :division-options="divisionOptions"
             :status-options="statusOptions"
             :is-locked="isFormLocked"
-            :status-label="statusLabel"
+            :status-label="getStatusLabel"
             @update:name="form.name = $event"
             @update:division="form.division = $event"
             @update:coach="form.coach = $event"
