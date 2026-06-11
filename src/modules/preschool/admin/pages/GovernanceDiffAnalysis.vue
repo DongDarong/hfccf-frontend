@@ -29,6 +29,28 @@ import DiffReviewActions from '@/modules/preschool/shared/components/governance-
 import ChangeSeverityBadge from '@/modules/preschool/shared/components/governance-diff/ChangeSeverityBadge.vue'
 import GovernanceAnalyticsCards from '@/modules/preschool/shared/components/governance/GovernanceAnalyticsCards.vue'
 import InstitutionalReplayTimeline from '@/modules/preschool/shared/components/governance/InstitutionalReplayTimeline.vue'
+import {
+  DEFAULT_COMPARISON,
+  DEFAULT_INTEGRITY_REVIEW,
+  DEFAULT_LEFT_CONTEXT,
+  DEFAULT_RIGHT_CONTEXT,
+  DEFAULT_SUMMARY,
+} from './GovernanceDiffAnalysis/constants/governanceDiffConstants'
+import {
+  buildComparisonModeCatalog,
+  buildContextTypeOptions,
+  buildDiffCards,
+  buildExportOptions,
+  buildOverviewCards,
+  buildSnapshotOptions,
+  buildSummaryCards,
+  enrichRowsWithSeverity,
+  mergeTimelines,
+  normalizeClassItem,
+  normalizeReportPeriodItem,
+  normalizeStudentItem,
+  severityLabel,
+} from './GovernanceDiffAnalysis/utils/governanceDiffHelpers'
 
 defineOptions({
   name: 'PreschoolGovernanceDiffAnalysisPage',
@@ -48,70 +70,12 @@ const comparisonError = ref('')
 const integrityError = ref('')
 const actionError = ref('')
 
-const summary = ref({
-  overview: {},
-  comparisonModes: [],
-  severityBands: [],
-  reviewActions: [],
-  retentionReview: {},
-  filters: {},
-})
-
-const comparison = ref({
-  comparisonMode: '',
-  reviewKey: '',
-  left: {},
-  right: {},
-  summary: {},
-  rows: [],
-  warnings: [],
-  mismatches: [],
-  integrityWarnings: [],
-  riskScore: 0,
-  riskLevel: '',
-  timeline: [],
-  auditEvidence: {},
-  reviewStatus: 'open',
-  reviewTrail: [],
-})
-
-const integrityReview = ref({
-  overview: {},
-  warnings: [],
-  mismatches: [],
-  integrityWarnings: [],
-  riskScore: 0,
-  riskLevel: '',
-  timeline: [],
-  retentionReview: {},
-  reviewKey: '',
-  reviewStatus: 'open',
-  reviewTrail: [],
-})
-
+const summary = ref({ ...DEFAULT_SUMMARY })
+const comparison = ref({ ...DEFAULT_COMPARISON })
+const integrityReview = ref({ ...DEFAULT_INTEGRITY_REVIEW })
 const reviewNote = ref('')
-const leftContext = ref({
-  contextType: 'snapshot',
-  snapshotId: '',
-  exportRecordId: '',
-  academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  classId: '',
-  studentId: '',
-  search: '',
-})
-const rightContext = ref({
-  contextType: 'snapshot',
-  snapshotId: '',
-  exportRecordId: '',
-  academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  classId: '',
-  studentId: '',
-  search: '',
-})
+const leftContext = ref({ ...DEFAULT_LEFT_CONTEXT })
+const rightContext = ref({ ...DEFAULT_RIGHT_CONTEXT })
 const comparisonMode = ref('snapshot_vs_snapshot')
 const snapshotOptions = ref([])
 const exportOptions = ref([])
@@ -119,34 +83,9 @@ const classOptions = ref([])
 const studentOptions = ref([])
 const reportPeriodOptions = ref([])
 
-const comparisonModeCatalog = computed(() => {
-  const available = new Set((summary.value.comparisonModes || []).map((item) => item.value))
-  const modes = [
-    { value: 'snapshot_vs_snapshot', label: t('preschoolGovernanceDiffPage.modes.snapshotVsSnapshot') },
-    { value: 'reconstruction_vs_reconstruction', label: t('preschoolGovernanceDiffPage.modes.reconstructionVsReconstruction') },
-    { value: 'academic_year_vs_academic_year', label: t('preschoolGovernanceDiffPage.modes.academicYearVsAcademicYear') },
-    { value: 'term_vs_term', label: t('preschoolGovernanceDiffPage.modes.termVsTerm') },
-    { value: 'report_period_vs_report_period', label: t('preschoolGovernanceDiffPage.modes.reportPeriodVsReportPeriod') },
-    { value: 'class_vs_class', label: t('preschoolGovernanceDiffPage.modes.classVsClass') },
-    { value: 'student_progression', label: t('preschoolGovernanceDiffPage.modes.studentProgression') },
-    { value: 'report_export_vs_report_export', label: t('preschoolGovernanceDiffPage.modes.reportExportVsReportExport') },
-    { value: 'snapshot_version_vs_version', label: t('preschoolGovernanceDiffPage.modes.snapshotVersionVsVersion') },
-  ]
+const comparisonModeCatalog = computed(() => buildComparisonModeCatalog(summary.value.comparisonModes, t))
 
-  return modes.filter((mode) => available.size === 0 || available.has(mode.value))
-})
-
-const contextTypeOptions = computed(() => [
-  { label: t('preschoolGovernanceDiffPage.contextTypes.snapshot'), value: 'snapshot' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.export'), value: 'export' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.reconstruction'), value: 'reconstruction' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.academicYear'), value: 'academic_year' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.term'), value: 'term' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.reportPeriod'), value: 'report_period' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.class'), value: 'class' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.student'), value: 'student' },
-  { label: t('preschoolGovernanceDiffPage.contextTypes.system'), value: 'system' },
-])
+const contextTypeOptions = computed(() => buildContextTypeOptions(t))
 
 const academicYearOptions = computed(() => [
   { label: t('preschoolGovernanceDiffPage.filters.allAcademicYears'), value: '' },
@@ -188,170 +127,18 @@ const studentOptionsList = computed(() => [
   })),
 ])
 
-const summaryCards = computed(() => [
-  {
-    title: t('preschoolGovernanceDiffPage.summary.totalSnapshots'),
-    value: summary.value.overview?.totalSnapshots ?? 0,
-    caption: t('preschoolGovernanceDiffPage.summary.totalSnapshotsCaption'),
-  },
-  {
-    title: t('preschoolGovernanceDiffPage.summary.totalExports'),
-    value: summary.value.overview?.totalExports ?? 0,
-    caption: t('preschoolGovernanceDiffPage.summary.totalExportsCaption'),
-  },
-  {
-    title: t('preschoolGovernanceDiffPage.summary.totalAudits'),
-    value: summary.value.overview?.totalAudits ?? 0,
-    caption: t('preschoolGovernanceDiffPage.summary.totalAuditsCaption'),
-  },
-  {
-    title: t('preschoolGovernanceDiffPage.summary.blockedWrites'),
-    value: summary.value.overview?.blockedWrites ?? 0,
-    caption: t('preschoolGovernanceDiffPage.summary.blockedWritesCaption'),
-  },
-])
+const summaryCards = computed(() => buildSummaryCards(summary.value, t))
+const diffCards = computed(() => buildDiffCards(comparison.value, t))
+const overviewCards = computed(() => buildOverviewCards(integrityReview.value, t))
 
-const diffCards = computed(() => {
-  const metrics = comparison.value.summary || {}
-
-  return [
-    {
-      title: t('preschoolGovernanceDiffPage.cards.totalFieldsChanged'),
-      value: metrics.totalFieldsChanged ?? 0,
-      caption: t('preschoolGovernanceDiffPage.cards.totalFieldsChangedCaption'),
-    },
-    {
-      title: t('preschoolGovernanceDiffPage.cards.criticalChanges'),
-      value: metrics.criticalChanges ?? 0,
-      caption: t('preschoolGovernanceDiffPage.cards.criticalChangesCaption'),
-    },
-    {
-      title: t('preschoolGovernanceDiffPage.cards.governanceSensitiveChanges'),
-      value: metrics.governanceSensitiveChanges ?? 0,
-      caption: t('preschoolGovernanceDiffPage.cards.governanceSensitiveChangesCaption'),
-    },
-    {
-      title: t('preschoolGovernanceDiffPage.cards.integrityWarnings'),
-      value: metrics.integrityWarnings ?? 0,
-      caption: t('preschoolGovernanceDiffPage.cards.integrityWarningsCaption'),
-    },
-    {
-      title: t('preschoolGovernanceDiffPage.cards.unchangedSections'),
-      value: metrics.unchangedSections ?? 0,
-      caption: t('preschoolGovernanceDiffPage.cards.unchangedSectionsCaption'),
-    },
-    {
-      title: t('preschoolGovernanceDiffPage.cards.riskScore'),
-      value: metrics.riskScore ?? comparison.value.riskScore ?? 0,
-      caption: `${t('preschoolGovernanceDiffPage.cards.riskScoreCaption')} ${metrics.riskLevel || comparison.value.riskLevel || '-'}`,
-    },
-  ]
-})
-
-const overviewCards = computed(() => [
-  {
-    title: t('preschoolGovernanceDiffPage.integrityOverview.totalEvents'),
-    value: integrityReview.value.overview?.totalEvents ?? 0,
-    caption: t('preschoolGovernanceDiffPage.integrityOverview.totalEventsCaption'),
-  },
-  {
-    title: t('preschoolGovernanceDiffPage.integrityOverview.blockedWrites'),
-    value: integrityReview.value.overview?.blockedWrites ?? 0,
-    caption: t('preschoolGovernanceDiffPage.integrityOverview.blockedWritesCaption'),
-  },
-  {
-    title: t('preschoolGovernanceDiffPage.integrityOverview.overrideApprovals'),
-    value: integrityReview.value.overview?.overrideApprovals ?? 0,
-    caption: t('preschoolGovernanceDiffPage.integrityOverview.overrideApprovalsCaption'),
-  },
-  {
-    title: t('preschoolGovernanceDiffPage.integrityOverview.snapshotCount'),
-    value: integrityReview.value.overview?.snapshotCount ?? 0,
-    caption: t('preschoolGovernanceDiffPage.integrityOverview.snapshotCountCaption'),
-  },
-])
-
-const comparisonRows = computed(() => (comparison.value.rows || []).map((row) => ({
-  ...row,
-  severityLabel: severityLabel(row.severity),
-})))
-
-const mismatchItems = computed(() => (comparison.value.mismatches || []).map((row) => ({
-  ...row,
-  severityLabel: severityLabel(row.severity),
-})))
-
-const warningItems = computed(() => (integrityReview.value.warnings || []).map((row) => ({
-  ...row,
-  severityLabel: severityLabel(row.severity),
-})))
-
-const timelineItems = computed(() => {
-  const timeline = [
-    ...(integrityReview.value.timeline || []),
-    ...(integrityReview.value.reviewTrail || []),
-    ...(comparison.value.timeline || []),
-    ...(comparison.value.reviewTrail || []),
-  ]
-
-  return timeline
-    .filter((item) => item && item.recordedAt)
-    .sort((left, right) => String(right.recordedAt).localeCompare(String(left.recordedAt)))
-})
+const comparisonRows = computed(() => enrichRowsWithSeverity(comparison.value.rows, t))
+const mismatchItems = computed(() => enrichRowsWithSeverity(comparison.value.mismatches, t))
+const warningItems = computed(() => enrichRowsWithSeverity(integrityReview.value.warnings, t))
+const timelineItems = computed(() => mergeTimelines(integrityReview.value, comparison.value))
 
 const activeReviewKey = computed(() => comparison.value.reviewKey || integrityReview.value.reviewKey || '')
 const activeReviewStatus = computed(() => comparison.value.reviewStatus || integrityReview.value.reviewStatus || 'open')
 
-function severityLabel(severity) {
-  switch (String(severity || 'LOW').toUpperCase()) {
-    case 'CRITICAL':
-      return t('preschoolGovernanceDiffPage.severity.critical')
-    case 'HIGH':
-      return t('preschoolGovernanceDiffPage.severity.high')
-    case 'MEDIUM':
-      return t('preschoolGovernanceDiffPage.severity.medium')
-    case 'MODERATE':
-      return t('preschoolGovernanceDiffPage.severity.moderate')
-    default:
-      return t('preschoolGovernanceDiffPage.severity.low')
-  }
-}
-
-function defaultSnapshotLabel(item) {
-  const parts = [
-    item.contextLabel || item.snapshotType || t('preschoolGovernanceDiffPage.selectors.snapshotFallback'),
-    item.lifecycleState ? `(${item.lifecycleState})` : '',
-    item.generatedAt ? `· ${item.generatedAt}` : '',
-  ].filter(Boolean)
-
-  return parts.join(' ')
-}
-
-function defaultExportLabel(item) {
-  const parts = [
-    item.contextLabel || item.exportType || t('preschoolGovernanceDiffPage.selectors.exportFallback'),
-    item.exportFormat ? `(${item.exportFormat})` : '',
-    item.exportedAt ? `· ${item.exportedAt}` : '',
-  ].filter(Boolean)
-
-  return parts.join(' ')
-}
-
-function buildSnapshotOptions(items) {
-  return items.map((item) => ({
-    label: defaultSnapshotLabel(item),
-    value: item.id,
-    raw: item,
-  }))
-}
-
-function buildExportOptions(items) {
-  return items.map((item) => ({
-    label: defaultExportLabel(item),
-    value: item.id,
-    raw: item,
-  }))
-}
 
 function buildContextPayload(context) {
   return {
@@ -383,23 +170,9 @@ async function loadLookupOptions() {
       fetchExportGovernanceHistory({ page: 1, perPage: 100 }),
     ])
 
-    classOptions.value = (classesResponse.items || []).map((item) => ({
-      label: item.name || item.code || `#${item.id}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    studentOptions.value = (studentsResponse.items || []).map((item) => ({
-      label: `${item.fullName || item.name}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    reportPeriodOptions.value = (reportPeriodsResponse || []).map((period) => ({
-      label: `${period.label || period.periodLabel || period.period_label}${period.status ? ` (${period.status})` : ''}`,
-      value: period.id,
-      raw: period,
-    }))
+    classOptions.value = (classesResponse.items || []).map(normalizeClassItem)
+    studentOptions.value = (studentsResponse.items || []).map(normalizeStudentItem)
+    reportPeriodOptions.value = (reportPeriodsResponse || []).map(normalizeReportPeriodItem)
 
     snapshotOptions.value = buildSnapshotOptions(snapshotsResponse.items || [])
     exportOptions.value = buildExportOptions(exportsResponse.items || [])
@@ -458,14 +231,7 @@ async function loadSummary() {
       comparisonMode.value = comparisonModeCatalog.value[0].value
     }
   } catch (error) {
-    summary.value = {
-      overview: {},
-      comparisonModes: [],
-      severityBands: [],
-      reviewActions: [],
-      retentionReview: {},
-      filters: {},
-    }
+    summary.value = { ...DEFAULT_SUMMARY }
     summaryError.value = error?.message || t('preschoolGovernanceDiffPage.errors.summary')
   } finally {
     summaryLoading.value = false
@@ -479,19 +245,7 @@ async function loadIntegrityReview() {
   try {
     integrityReview.value = await fetchIntegrityReview()
   } catch (error) {
-    integrityReview.value = {
-      overview: {},
-      warnings: [],
-      mismatches: [],
-      integrityWarnings: [],
-      riskScore: 0,
-      riskLevel: '',
-      timeline: [],
-      retentionReview: {},
-      reviewKey: '',
-      reviewStatus: 'open',
-      reviewTrail: [],
-    }
+    integrityReview.value = { ...DEFAULT_INTEGRITY_REVIEW }
     integrityError.value = error?.message || t('preschoolGovernanceDiffPage.errors.integrity')
   } finally {
     integrityLoading.value = false
@@ -511,23 +265,7 @@ async function runComparison() {
 
     reviewNote.value = ''
   } catch (error) {
-    comparison.value = {
-      comparisonMode: comparisonMode.value,
-      reviewKey: '',
-      left: {},
-      right: {},
-      summary: {},
-      rows: [],
-      warnings: [],
-      mismatches: [],
-      integrityWarnings: [],
-      riskScore: 0,
-      riskLevel: '',
-      timeline: [],
-      auditEvidence: {},
-      reviewStatus: 'open',
-      reviewTrail: [],
-    }
+    comparison.value = { ...DEFAULT_COMPARISON, comparisonMode: comparisonMode.value }
     comparisonError.value = error?.message || t('preschoolGovernanceDiffPage.errors.comparison')
   } finally {
     comparisonLoading.value = false
