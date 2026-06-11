@@ -33,6 +33,35 @@ import GovernanceCaseResolutionPanel from '@/modules/preschool/shared/components
 import GovernanceCaseSummaryCards from '@/modules/preschool/shared/components/governance-cases/GovernanceCaseSummaryCards.vue'
 import GovernanceCaseTable from '@/modules/preschool/shared/components/governance-cases/GovernanceCaseTable.vue'
 import GovernanceCaseTimeline from '@/modules/preschool/shared/components/governance-cases/GovernanceCaseTimeline.vue'
+import {
+  DEFAULT_ASSIGNMENT_FORM,
+  DEFAULT_CREATE_FORM,
+  DEFAULT_EVIDENCE_FORM,
+  DEFAULT_FILTERS,
+  DEFAULT_RESOLUTION_FORM,
+  GOVERNANCE_CASE_SOURCES,
+  GOVERNANCE_CASE_SEVERITIES,
+  GOVERNANCE_CASE_STATUSES,
+  GOVERNANCE_CASE_WORKFLOW_STATUSES,
+} from './GovernanceCases/constants/governanceCasesConstants'
+import {
+  buildAssignmentPayload,
+  buildCreatePayload,
+  buildEvidencePayload,
+  buildListQuery,
+  buildResolutionPayload,
+  buildSeverityLabelMap,
+  buildSourceLabelMap,
+  buildStatusLabelMap,
+  initializeAssignmentFormFromRecord,
+  initializeResolutionFormFromRecord,
+  normalizeAssigneeItem,
+  normalizeClassItem,
+  normalizeReportPeriodItem,
+  normalizeStudentItem,
+  parseMetadataText,
+  sourceContextPayload,
+} from './GovernanceCases/utils/governanceCasesHelpers'
 
 defineOptions({
   name: 'PreschoolGovernanceCasesPage',
@@ -74,105 +103,25 @@ const studentOptions = ref([])
 const reportPeriodOptions = ref([])
 const selectedCaseId = ref('')
 
-const filters = ref({
-  academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  classId: '',
-  studentId: '',
-  ownerUserId: '',
-  reviewerUserId: '',
-  escalationOfficerUserId: '',
-  status: '',
-  severity: '',
-  sourceType: '',
-  sourceReference: '',
-  isUrgent: '',
-  dueFrom: '',
-  dueTo: '',
-  createdFrom: '',
-  createdTo: '',
-  updatedFrom: '',
-  updatedTo: '',
-  search: '',
-})
+const filters = ref({ ...DEFAULT_FILTERS })
 
-const createForm = ref({
-  title: '',
-  summary: '',
-  sourceType: 'manual_review',
-  sourceReference: '',
-  severity: 'medium',
-  riskScore: 50,
-  status: 'open',
-  isUrgent: false,
-  urgentReason: '',
-  ownerUserId: '',
-  reviewerUserId: '',
-  escalationOfficerUserId: '',
-  dueDate: '',
-  academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  classId: '',
-  studentId: '',
-  latestNote: '',
-  resolutionNote: '',
-})
+const createForm = ref({ ...DEFAULT_CREATE_FORM })
 
-const assignmentForm = ref({
-  ownerUserId: '',
-  reviewerUserId: '',
-  escalationOfficerUserId: '',
-  status: '',
-  dueDate: '',
-  note: '',
-})
+const assignmentForm = ref({ ...DEFAULT_ASSIGNMENT_FORM })
 
-const evidenceForm = ref({
-  evidenceType: 'manual_note',
-  evidenceReference: '',
-  evidenceLabel: '',
-  evidenceDescription: '',
-  metadataText: '',
-})
+const evidenceForm = ref({ ...DEFAULT_EVIDENCE_FORM })
 
-const resolutionForm = ref({
-  resolutionNote: '',
-  closureNote: '',
-  reopenReason: '',
-  escalationReason: '',
-})
+const resolutionForm = ref({ ...DEFAULT_RESOLUTION_FORM })
 
 const selectedRecord = computed(() => detailPayload.value.record || listPayload.value.items.find((item) => String(item.id) === String(selectedCaseId.value)) || null)
 
 const summaryCards = computed(() => listPayload.value.summary || {})
 
-const sourceLabelMap = computed(() => ({
-  governance_diff: t('preschoolGovernanceCasesPage.sources.governanceDiff'),
-  integrity_warning: t('preschoolGovernanceCasesPage.sources.integrityWarning'),
-  export_mismatch: t('preschoolGovernanceCasesPage.sources.exportMismatch'),
-  lifecycle_anomaly: t('preschoolGovernanceCasesPage.sources.lifecycleAnomaly'),
-  reconstruction_inconsistency: t('preschoolGovernanceCasesPage.sources.reconstructionInconsistency'),
-  manual_review: t('preschoolGovernanceCasesPage.sources.manualReview'),
-}))
+const sourceLabelMap = computed(() => buildSourceLabelMap(t))
 
-const severityLabelMap = computed(() => ({
-  low: t('preschoolGovernanceCasesPage.severities.low'),
-  medium: t('preschoolGovernanceCasesPage.severities.medium'),
-  high: t('preschoolGovernanceCasesPage.severities.high'),
-  critical: t('preschoolGovernanceCasesPage.severities.critical'),
-}))
+const severityLabelMap = computed(() => buildSeverityLabelMap(t))
 
-const statusLabelMap = computed(() => ({
-  open: t('preschoolGovernanceCasesPage.statuses.open'),
-  under_review: t('preschoolGovernanceCasesPage.statuses.underReview'),
-  investigating: t('preschoolGovernanceCasesPage.statuses.investigating'),
-  awaiting_evidence: t('preschoolGovernanceCasesPage.statuses.awaitingEvidence'),
-  escalated: t('preschoolGovernanceCasesPage.statuses.escalated'),
-  resolved: t('preschoolGovernanceCasesPage.statuses.resolved'),
-  closed: t('preschoolGovernanceCasesPage.statuses.closed'),
-}))
+const statusLabelMap = computed(() => buildStatusLabelMap(t))
 
 const sourceOptions = computed(() => {
   const items = listPayload.value.options?.sourceOptions
@@ -181,12 +130,12 @@ const sourceOptions = computed(() => {
   }
 
   return [
-    { label: sourceLabelMap.value.governance_diff, value: 'governance_diff' },
-    { label: sourceLabelMap.value.integrity_warning, value: 'integrity_warning' },
-    { label: sourceLabelMap.value.export_mismatch, value: 'export_mismatch' },
-    { label: sourceLabelMap.value.lifecycle_anomaly, value: 'lifecycle_anomaly' },
-    { label: sourceLabelMap.value.reconstruction_inconsistency, value: 'reconstruction_inconsistency' },
-    { label: sourceLabelMap.value.manual_review, value: 'manual_review' },
+    { label: sourceLabelMap.value.governance_diff, value: GOVERNANCE_CASE_SOURCES.GOVERNANCE_DIFF },
+    { label: sourceLabelMap.value.integrity_warning, value: GOVERNANCE_CASE_SOURCES.INTEGRITY_WARNING },
+    { label: sourceLabelMap.value.export_mismatch, value: GOVERNANCE_CASE_SOURCES.EXPORT_MISMATCH },
+    { label: sourceLabelMap.value.lifecycle_anomaly, value: GOVERNANCE_CASE_SOURCES.LIFECYCLE_ANOMALY },
+    { label: sourceLabelMap.value.reconstruction_inconsistency, value: GOVERNANCE_CASE_SOURCES.RECONSTRUCTION_INCONSISTENCY },
+    { label: sourceLabelMap.value.manual_review, value: GOVERNANCE_CASE_SOURCES.MANUAL_REVIEW },
   ]
 })
 
@@ -197,10 +146,10 @@ const severityOptions = computed(() => {
   }
 
   return [
-    { label: severityLabelMap.value.low, value: 'low' },
-    { label: severityLabelMap.value.medium, value: 'medium' },
-    { label: severityLabelMap.value.high, value: 'high' },
-    { label: severityLabelMap.value.critical, value: 'critical' },
+    { label: severityLabelMap.value.low, value: GOVERNANCE_CASE_SEVERITIES.LOW },
+    { label: severityLabelMap.value.medium, value: GOVERNANCE_CASE_SEVERITIES.MEDIUM },
+    { label: severityLabelMap.value.high, value: GOVERNANCE_CASE_SEVERITIES.HIGH },
+    { label: severityLabelMap.value.critical, value: GOVERNANCE_CASE_SEVERITIES.CRITICAL },
   ]
 })
 
@@ -211,13 +160,13 @@ const statusOptions = computed(() => {
   }
 
   return [
-    { label: statusLabelMap.value.open, value: 'open' },
-    { label: statusLabelMap.value.underReview, value: 'under_review' },
-    { label: statusLabelMap.value.investigating, value: 'investigating' },
-    { label: statusLabelMap.value.awaitingEvidence, value: 'awaiting_evidence' },
-    { label: statusLabelMap.value.escalated, value: 'escalated' },
-    { label: statusLabelMap.value.resolved, value: 'resolved' },
-    { label: statusLabelMap.value.closed, value: 'closed' },
+    { label: statusLabelMap.value.open, value: GOVERNANCE_CASE_STATUSES.OPEN },
+    { label: statusLabelMap.value.under_review, value: GOVERNANCE_CASE_STATUSES.UNDER_REVIEW },
+    { label: statusLabelMap.value.investigating, value: GOVERNANCE_CASE_STATUSES.INVESTIGATING },
+    { label: statusLabelMap.value.awaiting_evidence, value: GOVERNANCE_CASE_STATUSES.AWAITING_EVIDENCE },
+    { label: statusLabelMap.value.escalated, value: GOVERNANCE_CASE_STATUSES.ESCALATED },
+    { label: statusLabelMap.value.resolved, value: GOVERNANCE_CASE_STATUSES.RESOLVED },
+    { label: statusLabelMap.value.closed, value: GOVERNANCE_CASE_STATUSES.CLOSED },
   ]
 })
 
@@ -227,7 +176,7 @@ const workflowStatusOptions = computed(() => {
     return items.map((item) => ({ label: item.label || item.value, value: item.value }))
   }
 
-  return statusOptions.value.filter((item) => ['open', 'under_review', 'investigating', 'awaiting_evidence'].includes(item.value))
+  return statusOptions.value.filter((item) => GOVERNANCE_CASE_WORKFLOW_STATUSES.includes(item.value))
 })
 
 const academicYearOptions = computed(() => [
@@ -447,80 +396,6 @@ const filterLabels = computed(() => ({
   sourceReferencePlaceholder: t('preschoolGovernanceCasesPage.filters.sourceReferencePlaceholder'),
 }))
 
-function sourceContextPayload(form = {}) {
-  return {
-    academicYearId: form.academicYearId || '',
-    termId: form.termId || '',
-    reportPeriodId: form.reportPeriodId || '',
-    classId: form.classId || '',
-    studentId: form.studentId || '',
-  }
-}
-
-function normalizeNullableBoolean(value) {
-  if (value === '' || value === null || typeof value === 'undefined') {
-    return ''
-  }
-
-  return value === true || value === 'true' || value === 1 || value === '1'
-}
-
-function toNullableNumber(value) {
-  if (value === '' || value === null || typeof value === 'undefined') {
-    return null
-  }
-
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-function normalizeAssigneeItem(item) {
-  return {
-    label: item.displayName || item.username || item.email || `#${item.id}`,
-    value: item.id,
-    raw: item,
-  }
-}
-
-function parseMetadataText(text) {
-  const value = String(text || '').trim()
-  if (!value) {
-    return {}
-  }
-
-  try {
-    return JSON.parse(value)
-  } catch {
-    return { note: value }
-  }
-}
-
-function buildListQuery() {
-  return {
-    page: 1,
-    perPage: 20,
-    academicYearId: filters.value.academicYearId,
-    termId: filters.value.termId,
-    reportPeriodId: filters.value.reportPeriodId,
-    classId: filters.value.classId,
-    studentId: filters.value.studentId,
-    ownerUserId: filters.value.ownerUserId,
-    reviewerUserId: filters.value.reviewerUserId,
-    escalationOfficerUserId: filters.value.escalationOfficerUserId,
-    status: filters.value.status,
-    severity: filters.value.severity,
-    sourceType: filters.value.sourceType,
-    sourceReference: filters.value.sourceReference,
-    isUrgent: filters.value.isUrgent,
-    dueFrom: filters.value.dueFrom,
-    dueTo: filters.value.dueTo,
-    createdFrom: filters.value.createdFrom,
-    createdTo: filters.value.createdTo,
-    updatedFrom: filters.value.updatedFrom,
-    updatedTo: filters.value.updatedTo,
-    search: filters.value.search,
-  }
-}
 
 async function loadLookupOptions() {
   assigneeLoading.value = true
@@ -533,23 +408,9 @@ async function loadLookupOptions() {
       fetchGovernanceCaseAssignees(),
     ])
 
-    classOptions.value = (classesResponse.items || []).map((item) => ({
-      label: item.name || item.code || `#${item.id}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    studentOptions.value = (studentsResponse.items || []).map((item) => ({
-      label: `${item.fullName || item.name}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    reportPeriodOptions.value = (reportPeriodsResponse || []).map((period) => ({
-      label: `${period.label || period.periodLabel || period.period_label}${period.status ? ` (${period.status})` : ''}`,
-      value: period.id,
-      raw: period,
-    }))
+    classOptions.value = (classesResponse.items || []).map(normalizeClassItem)
+    studentOptions.value = (studentsResponse.items || []).map(normalizeStudentItem)
+    reportPeriodOptions.value = (reportPeriodsResponse || []).map(normalizeReportPeriodItem)
 
     assigneeOptions.value = (assigneesResponse.items || []).map(normalizeAssigneeItem)
   } catch {
@@ -567,7 +428,7 @@ async function loadCases(selectFirst = false) {
   errorMessage.value = ''
 
   try {
-    listPayload.value = await fetchGovernanceCases(buildListQuery())
+    listPayload.value = await fetchGovernanceCases(buildListQuery(filters.value))
 
     const firstItem = listPayload.value.items[0] || null
     const selectedExists = listPayload.value.items.some((item) => String(item.id) === String(selectedCaseId.value))
@@ -609,29 +470,9 @@ async function loadCaseDetail(caseId) {
     detailPayload.value = await fetchGovernanceCase(caseId)
     selectedCaseId.value = String(detailPayload.value.record?.id || caseId)
 
-    assignmentForm.value = {
-      ownerUserId: detailPayload.value.record?.owner?.id || '',
-      reviewerUserId: detailPayload.value.record?.reviewer?.id || '',
-      escalationOfficerUserId: detailPayload.value.record?.escalationOfficer?.id || '',
-      status: detailPayload.value.record?.status || '',
-      dueDate: detailPayload.value.record?.dueDate || '',
-      note: detailPayload.value.record?.latestNote || '',
-    }
-
-    resolutionForm.value = {
-      resolutionNote: detailPayload.value.record?.resolutionNote || '',
-      closureNote: detailPayload.value.record?.latestNote || '',
-      reopenReason: '',
-      escalationReason: '',
-    }
-
-    evidenceForm.value = {
-      evidenceType: 'manual_note',
-      evidenceReference: '',
-      evidenceLabel: '',
-      evidenceDescription: '',
-      metadataText: '',
-    }
+    assignmentForm.value = initializeAssignmentFormFromRecord(detailPayload.value.record)
+    resolutionForm.value = initializeResolutionFormFromRecord(detailPayload.value.record)
+    evidenceForm.value = { ...DEFAULT_EVIDENCE_FORM }
   } catch (error) {
     detailPayload.value = {
       record: null,
@@ -660,28 +501,7 @@ async function refreshAll() {
 }
 
 function resetFilters() {
-  filters.value = {
-    academicYearId: '',
-    termId: '',
-    reportPeriodId: '',
-    classId: '',
-    studentId: '',
-    ownerUserId: '',
-    reviewerUserId: '',
-    escalationOfficerUserId: '',
-    status: '',
-    severity: '',
-    sourceType: '',
-    sourceReference: '',
-    isUrgent: '',
-    dueFrom: '',
-    dueTo: '',
-    createdFrom: '',
-    createdTo: '',
-    updatedFrom: '',
-    updatedTo: '',
-    search: '',
-  }
+  filters.value = { ...DEFAULT_FILTERS }
   return loadCases(true)
 }
 
@@ -690,30 +510,7 @@ async function submitCreateCase() {
   errorMessage.value = ''
 
   try {
-    const payload = {
-      title: createForm.value.title,
-      summary: createForm.value.summary,
-      source_type: createForm.value.sourceType,
-      source_reference: createForm.value.sourceReference,
-      source_context: sourceContextPayload(createForm.value),
-      severity: createForm.value.severity,
-      risk_score: toNullableNumber(createForm.value.riskScore) ?? 0,
-      status: createForm.value.status,
-      is_urgent: normalizeNullableBoolean(createForm.value.isUrgent),
-      urgent_reason: createForm.value.urgentReason,
-      owner_user_id: createForm.value.ownerUserId || null,
-      reviewer_user_id: createForm.value.reviewerUserId || null,
-      escalation_officer_user_id: createForm.value.escalationOfficerUserId || null,
-      due_date: createForm.value.dueDate || null,
-      academic_year_id: createForm.value.academicYearId || null,
-      term_id: createForm.value.termId || null,
-      report_period_id: createForm.value.reportPeriodId || null,
-      class_id: createForm.value.classId || null,
-      student_id: createForm.value.studentId || null,
-      latest_note: createForm.value.latestNote,
-      resolution_note: createForm.value.resolutionNote,
-    }
-
+    const payload = buildCreatePayload(createForm.value)
     const response = await createGovernanceCase(payload)
     detailPayload.value = response
     selectedCaseId.value = String(response.record?.id || '')
@@ -733,15 +530,7 @@ async function submitAssignment() {
   errorMessage.value = ''
 
   try {
-    const payload = {
-      owner_user_id: assignmentForm.value.ownerUserId || null,
-      reviewer_user_id: assignmentForm.value.reviewerUserId || null,
-      escalation_officer_user_id: assignmentForm.value.escalationOfficerUserId || null,
-      due_date: assignmentForm.value.dueDate || null,
-      status: assignmentForm.value.status || null,
-      note: assignmentForm.value.note || null,
-    }
-
+    const payload = buildAssignmentPayload(assignmentForm.value)
     detailPayload.value = await assignGovernanceCase(selectedRecord.value.id, payload)
     await loadCases(false)
   } catch (error) {
@@ -758,22 +547,9 @@ async function submitEvidence() {
   errorMessage.value = ''
 
   try {
-    const payload = {
-      evidence_type: evidenceForm.value.evidenceType,
-      evidence_reference: evidenceForm.value.evidenceReference || null,
-      evidence_label: evidenceForm.value.evidenceLabel || null,
-      evidence_description: evidenceForm.value.evidenceDescription || null,
-      metadata: parseMetadataText(evidenceForm.value.metadataText),
-    }
-
+    const payload = buildEvidencePayload(evidenceForm.value)
     detailPayload.value = await addGovernanceCaseEvidence(selectedRecord.value.id, payload)
-    evidenceForm.value = {
-      evidenceType: 'manual_note',
-      evidenceReference: '',
-      evidenceLabel: '',
-      evidenceDescription: '',
-      metadataText: '',
-    }
+    evidenceForm.value = { ...DEFAULT_EVIDENCE_FORM }
     await loadCases(false)
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolGovernanceCasesPage.errors.addEvidence')
@@ -789,24 +565,15 @@ async function submitResolution(action) {
   errorMessage.value = ''
 
   try {
+    const payload = buildResolutionPayload(resolutionForm.value, action, assignmentForm.value)
     if (action === 'resolve') {
-      detailPayload.value = await resolveGovernanceCase(selectedRecord.value.id, {
-        resolution_note: resolutionForm.value.resolutionNote,
-      })
+      detailPayload.value = await resolveGovernanceCase(selectedRecord.value.id, payload)
     } else if (action === 'close') {
-      detailPayload.value = await closeGovernanceCase(selectedRecord.value.id, {
-        note: resolutionForm.value.closureNote,
-      })
+      detailPayload.value = await closeGovernanceCase(selectedRecord.value.id, payload)
     } else if (action === 'escalate') {
-      detailPayload.value = await escalateGovernanceCase(selectedRecord.value.id, {
-        reason: resolutionForm.value.escalationReason || resolutionForm.value.resolutionNote || '',
-        escalation_officer_user_id: assignmentForm.value.escalationOfficerUserId || null,
-        due_date: assignmentForm.value.dueDate || null,
-      })
+      detailPayload.value = await escalateGovernanceCase(selectedRecord.value.id, payload)
     } else if (action === 'reopen') {
-      detailPayload.value = await reopenGovernanceCase(selectedRecord.value.id, {
-        reason: resolutionForm.value.reopenReason,
-      })
+      detailPayload.value = await reopenGovernanceCase(selectedRecord.value.id, payload)
     }
 
     await loadCases(false)
