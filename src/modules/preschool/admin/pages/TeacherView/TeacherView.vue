@@ -8,6 +8,20 @@ import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolTeacher } from '@/modules/preschool/services/preschoolApi'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
+import {
+  DEFAULT_AVATAR_INITIALS,
+  DEFAULT_FALLBACK,
+  USERS_ROUTE_PATH,
+  ADD_USERS_ROUTE_PATH,
+  QUERY_KEYS,
+} from './constants/teacherViewConstants'
+import {
+  formatPermissionLabel,
+  normalizePermissions,
+  buildPermissionChips,
+  buildSummaryCards,
+  getTeacherDisplayName,
+} from './utils/teacherViewHelpers'
 
 defineOptions({
   name: 'PreschoolAdminTeacherViewPage',
@@ -24,65 +38,22 @@ const errorMessage = ref('')
 const teacherId = computed(() => String(route.params.id || '').trim())
 
 const avatarSrc = computed(() => resolveAvatarSource(teacher.value?.avatar || teacher.value?.avatarUrl || ''))
-const avatarInitials = computed(() => getAvatarInitials(teacher.value?.name || '', '?'))
+const avatarInitials = computed(() => getAvatarInitials(teacher.value?.name || '', DEFAULT_AVATAR_INITIALS))
 const showImage = ref(false)
-const teacherName = computed(() => teacher.value?.name || teacher.value?.fullName || '—')
+const teacherName = computed(() => getTeacherDisplayName(teacher.value))
 const permissionCount = computed(() => permissions.value.length)
 const hasEmail = computed(() => Boolean(String(teacher.value?.email || '').trim()))
 const hasPhone = computed(() => Boolean(String(teacher.value?.phone || '').trim()))
-const statusLabel = computed(() => String(teacher.value?.status || '—'))
+const statusLabel = computed(() => String(teacher.value?.status || DEFAULT_FALLBACK))
 
-function formatPermissionLabel(permission) {
-  return String(permission || '')
-    .replace(/[:_.-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase()) || '—'
-}
-
-const summaryCards = computed(() => [
-  {
-    key: 'permissions',
-    label: t('preschoolTeacherView.summary.permissions'),
-    value: String(permissionCount.value),
-    caption: t('preschoolTeacherView.summary.permissionsCaption'),
-  },
-  {
-    key: 'contact',
-    label: t('preschoolTeacherView.summary.contact'),
-    value: hasEmail.value || hasPhone.value ? t('preschoolTeacherView.summary.contactReady') : t('preschoolTeacherView.summary.contactMissing'),
-    caption: t('preschoolTeacherView.summary.contactCaption'),
-  },
-  {
-    key: 'account',
-    label: t('preschoolTeacherView.summary.account'),
-    value: teacher.value?.username || '—',
-    caption: t('preschoolTeacherView.summary.accountCaption'),
-  },
-  {
-    key: 'status',
-    label: t('preschoolTeacherView.summary.status'),
-    value: statusLabel.value,
-    caption: t('preschoolTeacherView.summary.statusCaption'),
-  },
-])
+const summaryCards = computed(() => buildSummaryCards(teacher.value, permissionCount.value, t))
 
 function onImgLoad() { showImage.value = true }
 function onImgError() { showImage.value = false }
 
-const permissions = computed(() => {
-  const perms = teacher.value?.permissions
-  if (Array.isArray(perms)) return perms
-  return []
-})
+const permissions = computed(() => normalizePermissions(teacher.value?.permissions))
 
-const permissionChips = computed(() =>
-  permissions.value.map((permission, index) => ({
-    raw: permission,
-    label: formatPermissionLabel(permission),
-    tone: index % 4,
-  })),
-)
+const permissionChips = computed(() => buildPermissionChips(permissions.value))
 
 async function loadTeacher() {
   if (!teacherId.value) return
@@ -99,11 +70,11 @@ async function loadTeacher() {
 }
 
 function goBack() {
-  router.push('/module/preschool-admin/users')
+  router.push(USERS_ROUTE_PATH)
 }
 
 function goEdit() {
-  router.push({ path: '/module/preschool-admin/users/add', query: { mode: 'edit', id: teacherId.value } })
+  router.push({ path: ADD_USERS_ROUTE_PATH, query: { [QUERY_KEYS.MODE]: 'edit', [QUERY_KEYS.ID]: teacherId.value } })
 }
 
 onMounted(loadTeacher)
