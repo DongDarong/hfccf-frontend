@@ -31,6 +31,32 @@ import {
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import http from '@/services/http'
 import { unwrapApiData } from '@/services/api'
+import {
+  DEFAULT_PAGINATION,
+  DEFAULT_FILTERS,
+  DEFAULT_SUMMARY,
+  FINAL_STATUSES,
+  DECISION_HANDLERS,
+  DECISION_MESSAGE_KEYS,
+} from './constants/enrollmentManagementConstants'
+import {
+  formatPaginationFromResponse,
+  extractApplicationsFromResponse,
+  isFinalStatus,
+  canShowDecisionActions,
+  canShowEditButton,
+  canShowSubmitButton,
+  canShowReviewButton,
+  canShowApproveButton,
+  canShowWaitlistButton,
+  canShowEnrollButton,
+  canShowRejectButton,
+  canShowCancelButton,
+  applyUpdate,
+  resetFilters,
+  buildPaymentToast,
+  extractApplicationFromResponse,
+} from './utils/enrollmentManagementHelpers'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -38,17 +64,17 @@ const toast = useToast()
 const canManage = true
 
 // ─── State ───────────────────────────────────────────────────────────────────
-const summary = ref({})
+const summary = ref({ ...DEFAULT_SUMMARY })
 const applications = ref([])
 const loadingSummary = ref(false)
 const loadingList = ref(false)
-const pagination = ref({ currentPage: 1, lastPage: 1, total: 0 })
+const pagination = ref({ ...DEFAULT_PAGINATION })
 
 const academicYears = ref([])
 const terms = ref([])
 const classes = ref([])
 
-const filters = ref({ search: '', status: '', academicYearId: '' })
+const filters = ref({ ...DEFAULT_FILTERS })
 
 // Active application detail (side panel / dialog view)
 const selected = ref(null)
@@ -92,12 +118,8 @@ async function loadList(page = 1) {
   loadingList.value = true
   try {
     const res = await fetchEnrollments({ ...filters.value, page })
-    applications.value = res?.data ?? []
-    pagination.value = {
-      currentPage: res?.meta?.current_page ?? 1,
-      lastPage: res?.meta?.last_page ?? 1,
-      total: res?.meta?.total ?? 0,
-    }
+    applications.value = extractApplicationsFromResponse(res)
+    pagination.value = formatPaginationFromResponse(res)
   } catch {
     toast.add({ severity: 'error', summary: t('preschoolEnrollmentPage.messages.errorLoad'), life: 4000 })
   } finally {
@@ -186,7 +208,7 @@ async function handleQuickAction(fn, app, msgKey) {
   try {
     await fn(app.id)
     toast.add({ severity: 'success', summary: t(`preschoolEnrollmentPage.messages.${msgKey}`), life: 3000 })
-    applyUpdate(app.id, null)
+    selected.value = applyUpdate(applications.value, selected.value, app.id, null)
     loadSummary()
     loadList()
   } catch {
@@ -207,7 +229,7 @@ async function handleQuickAction(fn, app, msgKey) {
  */
 async function confirmDecision({ action, payload }) {
   decisionLoading.value = true
-  const HANDLERS = {
+  const handlerMap = {
     approve: approveEnrollment,
     reject: rejectEnrollment,
     waitlist: waitlistEnrollment,
@@ -215,42 +237,18 @@ async function confirmDecision({ action, payload }) {
     enroll: enrollStudent,
     review: reviewEnrollment,
   }
-  const MSG_KEYS = {
-    approve: 'approveSuccess',
-    reject: 'rejectSuccess',
-    waitlist: 'waitlistSuccess',
-    cancel: 'cancelSuccess',
-    enroll: 'enrollSuccess',
-    review: 'reviewSuccess',
-  }
   try {
-    const fn = HANDLERS[action]
+    const fn = handlerMap[action]
     if (!fn) return
 
-    // updated is { application, payment } for the enroll action;
-    // { application } (or similar shape) for all other actions
     const updated = await fn(selected.value.id, payload)
+    toast.add({ severity: 'success', summary: t(`preschoolEnrollmentPage.messages.${DECISION_MESSAGE_KEYS[action]}`), life: 3000 })
 
-    toast.add({ severity: 'success', summary: t(`preschoolEnrollmentPage.messages.${MSG_KEYS[action]}`), life: 3000 })
-
-    // For the enroll action, show a second toast with the payment summary.
-    // payment data comes from updated.payment — null when no class was assigned.
-    if (action === 'enroll' && updated?.payment) {
-      const { amount, currency, description } = updated.payment
-      // Format the amount as a currency string for the notification
-      const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: currency ?? 'USD' }).format(Number(amount))
-      toast.add({
-        severity: 'info',
-        summary: t('preschoolEnrollmentPage.messages.paymentCreated'),
-        detail: `${t('preschoolEnrollmentPage.messages.paymentCreatedDetail', { amount: formatted })} — ${description ?? ''}`.trim(),
-        life: 6000,
-      })
-    }
+    const paymentToast = buildPaymentToast(t, action === 'enroll' ? updated?.payment : null)
+    if (paymentToast) toast.add(paymentToast)
 
     showDecision.value = false
-    // Pass the application object (not the full envelope) so applyUpdate
-    // stores a shape consistent with what the list API returns
-    applyUpdate(selected.value.id, updated?.application ?? updated)
+    selected.value = applyUpdate(applications.value, selected.value, selected.value.id, extractApplicationFromResponse(updated))
     loadSummary()
     if (action === 'enroll') loadList()
   } catch {
@@ -258,12 +256,6 @@ async function confirmDecision({ action, payload }) {
   } finally {
     decisionLoading.value = false
   }
-}
-
-function applyUpdate(id, updated) {
-  const idx = applications.value.findIndex((a) => a.id === id)
-  if (idx !== -1 && updated) applications.value[idx] = updated
-  if (selected.value?.id === id && updated) selected.value = updated
 }
 
 // ─── Document updates ─────────────────────────────────────────────────────
@@ -280,7 +272,7 @@ async function handleDocumentUpdate({ documentId, payload }) {
 }
 
 function clearFilters() {
-  filters.value = { search: '', status: '', academicYearId: '' }
+  filters.value = resetFilters()
 }
 </script>
 
@@ -330,7 +322,7 @@ function clearFilters() {
             </h2>
             <div class="enr-detail-panel__header-actions">
               <button
-                v-if="canManage && selected && !['enrolled','rejected','cancelled'].includes(selected.status)"
+                v-if="canManage && selected && canShowEditButton(selected.status)"
                 class="enr-detail-action enr-detail-action--edit"
                 @click="openEdit(selected)"
               >
@@ -358,51 +350,51 @@ function clearFilters() {
             <EnrollmentTimeline :logs="selected.decisionLogs ?? []" />
 
             <!-- Decision actions panel -->
-            <div v-if="canManage && selected && !['enrolled','rejected','cancelled'].includes(selected.status)" class="enr-detail-actions">
+            <div v-if="canManage && selected && canShowDecisionActions(selected.status)" class="enr-detail-actions">
               <button
-                v-if="selected.status === 'draft'"
+                v-if="canShowSubmitButton(selected.status)"
                 class="enr-detail-action enr-detail-action--primary"
                 @click="handleQuickAction(submitEnrollment, selected, 'submitSuccess')"
               >
                 {{ t('preschoolEnrollmentPage.actions.submit') }}
               </button>
               <button
-                v-if="['submitted','waitlisted'].includes(selected.status)"
+                v-if="canShowReviewButton(selected.status)"
                 class="enr-detail-action enr-detail-action--primary"
                 @click="openDecision('review', selected)"
               >
                 {{ t('preschoolEnrollmentPage.actions.review') }}
               </button>
               <button
-                v-if="selected.status === 'under_review'"
+                v-if="canShowApproveButton(selected.status)"
                 class="enr-detail-action enr-detail-action--success"
                 @click="openDecision('approve', selected)"
               >
                 {{ t('preschoolEnrollmentPage.actions.approve') }}
               </button>
               <button
-                v-if="['submitted','under_review'].includes(selected.status)"
+                v-if="canShowWaitlistButton(selected.status)"
                 class="enr-detail-action enr-detail-action--warning"
                 @click="openDecision('waitlist', selected)"
               >
                 {{ t('preschoolEnrollmentPage.actions.waitlist') }}
               </button>
               <button
-                v-if="selected.status === 'approved'"
+                v-if="canShowEnrollButton(selected.status)"
                 class="enr-detail-action enr-detail-action--success"
                 @click="openDecision('enroll', selected)"
               >
                 {{ t('preschoolEnrollmentPage.actions.enroll') }}
               </button>
               <button
-                v-if="['submitted','under_review'].includes(selected.status)"
+                v-if="canShowRejectButton(selected.status)"
                 class="enr-detail-action enr-detail-action--danger"
                 @click="openDecision('reject', selected)"
               >
                 {{ t('preschoolEnrollmentPage.actions.reject') }}
               </button>
               <button
-                v-if="!['enrolled','rejected'].includes(selected.status)"
+                v-if="canShowCancelButton(selected.status)"
                 class="enr-detail-action enr-detail-action--muted"
                 @click="openDecision('cancel', selected)"
               >
