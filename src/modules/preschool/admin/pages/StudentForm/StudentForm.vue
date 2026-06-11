@@ -13,6 +13,25 @@ import {
   createPreschoolStudent,
   updatePreschoolStudent,
 } from '@/modules/preschool/services/preschoolApi'
+import {
+  STUDENT_TYPES,
+  GENDERS,
+  STUDENT_STATUSES,
+  DEFAULT_FORM,
+  AVATAR_ACCEPT_TYPE,
+} from './constants/studentFormConstants'
+import {
+  buildStudentTypeOptions,
+  buildGenderOptions,
+  buildStatusOptions,
+  buildClassOptions,
+  clearAvatarPreview as performClearAvatarPreview,
+  createResetForm,
+  loadStudentIntoForm,
+  getStudentDisplayName,
+  normalizeStudentPayload as performNormalizeStudentPayload,
+  buildSuccessQuery,
+} from './utils/studentFormHelpers'
 
 defineOptions({
   name: 'PreschoolAdminStudentFormPage',
@@ -32,21 +51,7 @@ const avatarFileInput = ref(null)
 const avatarPreview = ref('')
 const loadedStudent = ref(null)
 
-const form = reactive({
-  student_code: '',
-  student_type: 'paying',
-  first_name: '',
-  last_name: '',
-  gender: '',
-  date_of_birth: '',
-  guardian_name: '',
-  guardian_phone: '',
-  address: '',
-  status: 'active',
-  class_ids: [],
-  avatar: null,
-  remove_avatar: false,
-})
+const form = reactive({ ...DEFAULT_FORM })
 
 const mode = computed(() => (route.name === 'dashboard-preschool-admin-students-edit' ? 'edit' : 'create'))
 const isEditMode = computed(() => mode.value === 'edit')
@@ -62,49 +67,22 @@ const studentCodeDisplay = computed(() =>
     ? loadedStudent.value?.publicId || form.student_code
     : t('preschoolStudentInfoPage.dialog.studentSignatureAuto'),
 )
-const studentTypeOptions = computed(() => [
-  { label: t('preschoolStudentInfoPage.options.paying'), value: 'paying' },
-  { label: t('preschoolStudentInfoPage.options.nonPaying'), value: 'non_paying' },
-])
-
-const genderOptions = computed(() => [
-  { label: t('preschoolStudentInfoPage.options.male'), value: 'male' },
-  { label: t('preschoolStudentInfoPage.options.female'), value: 'female' },
-  { label: t('preschoolStudentInfoPage.options.other'), value: 'other' },
-])
-
-const statusOptions = computed(() => [
-  { label: t('preschoolStudentInfoPage.options.active'), value: 'active' },
-  { label: t('preschoolStudentInfoPage.options.pending'), value: 'pending' },
-  { label: t('preschoolStudentInfoPage.options.inactive'), value: 'inactive' },
-  { label: t('preschoolStudentInfoPage.options.graduated'), value: 'graduated' },
-])
+const studentTypeOptions = computed(() => buildStudentTypeOptions(t))
+const genderOptions = computed(() => buildGenderOptions(t))
+const statusOptions = computed(() => buildStatusOptions(t))
 
 const avatarSrc = computed(() =>
   avatarPreview.value,
 )
 
 function clearAvatarPreview() {
-  if (avatarPreview.value.startsWith('blob:')) {
-    URL.revokeObjectURL(avatarPreview.value)
-  }
+  performClearAvatarPreview(avatarPreview.value)
   avatarPreview.value = ''
 }
 
 function resetForm() {
-  form.student_code = ''
-  form.student_type = 'paying'
-  form.first_name = ''
-  form.last_name = ''
-  form.gender = ''
-  form.date_of_birth = ''
-  form.guardian_name = ''
-  form.guardian_phone = ''
-  form.address = ''
-  form.status = 'active'
-  form.class_ids = []
-  form.avatar = null
-  form.remove_avatar = false
+  const resetData = createResetForm(DEFAULT_FORM)
+  Object.assign(form, resetData)
   clearAvatarPreview()
   if (avatarFileInput.value) avatarFileInput.value.value = ''
   loadedStudent.value = null
@@ -113,10 +91,7 @@ function resetForm() {
 async function loadClasses() {
   try {
     const response = await fetchPreschoolClasses({ perPage: 100 })
-    classOptions.value = (response.items || []).map((item) => ({
-      label: `${item.code} - ${item.name}`,
-      value: item.id,
-    }))
+    classOptions.value = buildClassOptions(response.items)
   } catch {
     classOptions.value = []
   }
@@ -140,23 +115,9 @@ async function loadStudent() {
     }
 
     loadedStudent.value = student
-    form.student_code = student.studentCode || ''
-    form.student_type = student.studentType || student.student_type || 'paying'
-    form.first_name = student.firstName || ''
-    form.last_name = student.lastName || ''
-    form.gender = student.gender || ''
-    form.date_of_birth = student.dateOfBirth || ''
-    form.guardian_name = student.guardianName || ''
-    form.guardian_phone = student.guardianPhone || ''
-    form.address = student.address || ''
-    form.status = student.status || 'active'
-    form.class_ids = Array.isArray(student.classes)
-      ? student.classes.map((item) => item.id).filter(Boolean)
-      : []
+    loadStudentIntoForm(student, form)
     clearAvatarPreview()
     avatarPreview.value = student.avatarUrl ? String(student.avatarUrl) : ''
-    form.avatar = null
-    form.remove_avatar = false
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.loadFailed')
   } finally {
@@ -185,21 +146,7 @@ function onAvatarRemove() {
 }
 
 function normalizeStudentPayload() {
-  return {
-    student_code: isEditMode.value ? form.student_code.trim() : undefined,
-    student_type: form.student_type || 'paying',
-    first_name: form.first_name.trim(),
-    last_name: form.last_name.trim(),
-    gender: form.gender || null,
-    date_of_birth: form.date_of_birth || null,
-    guardian_name: form.guardian_name.trim() || null,
-    guardian_phone: form.guardian_phone.trim() || null,
-    address: form.address.trim() || null,
-    status: form.status,
-    class_ids: form.class_ids,
-    avatar: form.avatar instanceof File ? form.avatar : undefined,
-    removeAvatar: form.remove_avatar || undefined,
-  }
+  return performNormalizeStudentPayload(form, isEditMode.value)
 }
 
 async function onSubmit() {
@@ -231,9 +178,7 @@ function onSuccessClose() {
   showSuccess.value = false
   router.push({
     name: 'dashboard-preschool-admin-students',
-    query: {
-      saved: isEditMode.value ? 'updated' : 'created',
-    },
+    query: buildSuccessQuery(isEditMode.value),
   })
 }
 
@@ -310,7 +255,7 @@ onUnmounted(clearAvatarPreview)
                     </svg>
                   </span>
                 </button>
-                <input ref="avatarFileInput" class="student-form-page__file-input" type="file" accept="image/*" @change="onAvatarChange" />
+                <input ref="avatarFileInput" class="student-form-page__file-input" type="file" :accept="AVATAR_ACCEPT_TYPE" @change="onAvatarChange" />
               </div>
 
               <div class="student-form-page__hero-content">
@@ -320,7 +265,7 @@ onUnmounted(clearAvatarPreview)
                       {{ isEditMode ? t('preschoolStudentInfoPage.dialog.editTitle') : t('preschoolStudentInfoPage.dialog.createTitle') }}
                     </p>
                     <h2 class="student-form-page__hero-title">
-                      {{ form.first_name || form.last_name ? `${form.first_name} ${form.last_name}`.trim() : '-' }}
+                      {{ getStudentDisplayName(form.first_name, form.last_name) }}
                     </h2>
                     <p class="student-form-page__hero-subtitle">
                       {{ studentCodeDisplay }}
