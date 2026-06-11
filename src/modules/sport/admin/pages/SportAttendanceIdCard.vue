@@ -12,6 +12,27 @@ import { fetchSportPlayers } from '@/modules/sport/services/api/sportPlayersApi'
 import SportIdCardPreview from '@/modules/sport/admin/components/SportIdCardPreview.vue'
 import SportIdCardBackPreview from '@/modules/sport/admin/components/SportIdCardBackPreview.vue'
 import { buildBackQrDataUrl } from '@/modules/sport/admin/pages/sportIdCardBack'
+import {
+  getInitials,
+  getSeasonYear,
+  loadStudentPhoto,
+  imgToDataUrl,
+  getCardDimensions,
+  calculatePixelDimensions,
+  logGenerationProgress,
+  logCacheStatus,
+} from './SportAttendanceIdCard/utils/idCardHelpers'
+import {
+  LANG_OPTIONS,
+  FORMAT_OPTIONS,
+  ORIENT_OPTIONS,
+  CARD_SIZES,
+  DEFAULT_FORMAT,
+  DEFAULT_ORIENTATION,
+  DEFAULT_SIZE,
+  DEFAULT_LANG,
+  DEFAULT_GAP_MM,
+} from './SportAttendanceIdCard/constants/idCardConstants'
 
 defineOptions({ name: 'SportAdminAttendanceIdCardPage' })
 
@@ -22,54 +43,14 @@ const teamOptions = ref([])
 const players = ref([])
 const selectedTeamId = ref('')
 const selectedPlayerIds = ref([])
-const selectedFormat = ref('pdf')
-const selectedOrientation = ref('landscape')
-const selectedSize = ref('standard')
-const selectedLang = ref('en')
-const selectedGapMm = ref(4)
+const selectedFormat = ref(DEFAULT_FORMAT)
+const selectedOrientation = ref(DEFAULT_ORIENTATION)
+const selectedSize = ref(DEFAULT_SIZE)
+const selectedLang = ref(DEFAULT_LANG)
+const selectedGapMm = ref(DEFAULT_GAP_MM)
 const loadingTeams = ref(false)
 const loadingPlayers = ref(false)
 const generating = ref(false)
-
-const LANG_OPTIONS = [
-  { value: 'en', label: 'EN', desc: 'English' },
-  { value: 'kh', label: 'ខ្មែរ', desc: 'Khmer' },
-]
-
-const FORMAT_OPTIONS = [
-  { value: 'pdf', label: 'PDF', icon: 'pi-file-pdf', desc: 'Print-ready A4 sheet' },
-  { value: 'png', label: 'PNG', icon: 'pi-image', desc: 'Transparent background' },
-  { value: 'jpg', label: 'JPG', icon: 'pi-image', desc: 'Smaller file size' },
-]
-
-const ORIENT_OPTIONS = [
-  { value: 'landscape', label: 'Landscape', icon: 'pi-stop', desc: 'Wider than tall' },
-  { value: 'portrait', label: 'Portrait', icon: 'pi-tablet-phone', desc: 'Taller than wide' },
-]
-
-const CARD_SIZES = [
-  {
-    value: 'small',
-    label: 'Small',
-    icon: 'pi-minus-circle',
-    landscape: { W: 70, H: 44 },
-    portrait: { W: 44, H: 70 },
-  },
-  {
-    value: 'standard',
-    label: 'Standard',
-    icon: 'pi-id-card',
-    landscape: { W: 85.6, H: 54 },
-    portrait: { W: 54, H: 85.6 },
-  },
-  {
-    value: 'large',
-    label: 'Large',
-    icon: 'pi-plus-circle',
-    landscape: { W: 100, H: 63 },
-    portrait: { W: 63, H: 100 },
-  },
-]
 
 const currentSizeConfig = computed(() => {
   const s = CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1]
@@ -89,22 +70,6 @@ function togglePlayer(id) {
   const idx = selectedPlayerIds.value.indexOf(id)
   if (idx === -1) selectedPlayerIds.value.push(id)
   else selectedPlayerIds.value.splice(idx, 1)
-}
-
-function getInitials(player) {
-  return (player.fullName || player.name || '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase() || '?'
-}
-
-function getSeasonYear() {
-  const now = new Date()
-  const y = now.getFullYear()
-  return now.getMonth() >= 8 ? `${y}-${y + 1}` : `${y - 1}-${y}`
 }
 
 async function loadTeams() {
@@ -171,36 +136,6 @@ async function renderCardComponentToCanvas(component, props, widthPx) {
   }
 }
 
-async function loadStudentPhoto(avatarUrl) {
-  if (!avatarUrl) throw new Error('no url')
-  const res = await fetch(avatarUrl, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('hfccf-auth-token') || sessionStorage.getItem('hfccf-auth-token') || ''}`,
-    },
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-  const blob = await res.blob()
-  const objectUrl = URL.createObjectURL(blob)
-
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve({ img, objectUrl })
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('img load'))
-    }
-    img.src = objectUrl
-  })
-}
-
-function imgToDataUrl(img) {
-  const c = document.createElement('canvas')
-  c.width = img.naturalWidth || 200
-  c.height = img.naturalHeight || 200
-  c.getContext('2d').drawImage(img, 0, 0)
-  return c.toDataURL('image/jpeg', 0.85)
-}
 
 async function generateCards() {
   if (!selectedPlayerIds.value.length) return
@@ -218,11 +153,8 @@ async function generateCards() {
     const batchFmt = chosen.length > 1 ? 'pdf' : fmt
     const orient = selectedOrientation.value
     const lang = selectedLang.value
-    const { W: CARD_W, H: CARD_H } =
-      (CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1])[orient]
-    const exportWidthPx = Math.round(CARD_W * (300 / 25.4))
-    const gapMm = Math.max(0, Number(selectedGapMm.value) || 0)
-    const gapPx = Math.round(gapMm * (300 / 25.4))
+    const { W: CARD_W, H: CARD_H } = getCardDimensions(CARD_SIZES, selectedSize.value, orient)
+    const { exportWidthPx, gapPx } = calculatePixelDimensions(CARD_W, CARD_H, selectedGapMm.value)
 
     // Load photos
     const photoImgCache = new Map()
@@ -261,13 +193,8 @@ async function generateCards() {
       }),
     )
 
-    console.log('ID card generation:', {
-      players: chosen.length,
-      format: fmt,
-      orientation: orient,
-      size: selectedSize.value,
-    })
-    console.log('Photo cache:', photoDataUrlCache.size, 'QR cache:', qrDataCache.size)
+    logGenerationProgress(chosen, fmt, orient, selectedSize.value)
+    logCacheStatus(photoDataUrlCache, qrDataCache)
   } catch (error) {
     console.error('[ID Card] Generation error:', error)
   } finally {
