@@ -12,6 +12,7 @@ const router = useRouter()
 const CARDS = [
   { key: 'players', icon: 'pi-users', accent: 'card--emerald', route: 'dashboard-sport-admin-attendance-players' },
   { key: 'coaches', icon: 'pi-id-card', accent: 'card--sky', route: 'dashboard-sport-admin-attendance-coaches' },
+  { key: 'idcard', icon: 'pi-credit', accent: 'card--amber', route: 'dashboard-sport-admin-attendance-idcard' },
   { key: 'history', icon: 'pi-history', accent: 'card--slate', route: 'dashboard-sport-admin-attendance-history' },
 ]
 </script>

@@ -41,6 +41,15 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/attendance/idcard',
+    name: 'dashboard-sport-admin-attendance-idcard',
+    component: () => import('@/modules/sport/admin/pages/SportAttendanceIdCard.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/attendance/history',
     name: 'dashboard-sport-admin-attendance-history',
     component: () => import('@/modules/sport/admin/pages/AttendanceHistory.vue'),
