@@ -41,6 +41,10 @@ async function goToAddTeam() {
   await router.push({ name: 'dashboard-sport-admin-teams-add' })
 }
 
+async function goToDivisionManagement() {
+  await router.push({ name: 'dashboard-sport-admin-divisions' })
+}
+
 function onViewTeam(team) {
   const id = String(team?.id || '').trim()
   if (!id) return
@@ -161,6 +165,16 @@ const summaryCards = computed(() => [
     icon:
       'M12 12c2.761 0 5-2.239 5-5S14.761 2 12 2 7 4.239 7 7s2.239 5 5 5zm0 2c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z',
   },
+  {
+    id: 'divisions',
+    title: t('sportTeamsManagement.summary.divisions.title'),
+    value: '',
+    badge: t('sportTeamsManagement.summary.divisions.badge'),
+    caption: t('sportTeamsManagement.summary.divisions.caption'),
+    tone: 'primary',
+    icon: 'M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18h4a2 2 0 012 2v14a2 2 0 01-2 2h-4',
+    action: 'divisions',
+  },
 ])
 
 const highlightItems = computed(() => {
@@ -214,7 +228,7 @@ onMounted(() => {
     <section :class="isKh ? 'teams-management-page teams-management-page--kh' : 'teams-management-page'">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <TeamsSummaryCards :cards="summaryCards" />
+      <TeamsSummaryCards :cards="summaryCards" @card-action="(action) => action === 'divisions' && goToDivisionManagement()" />
 
       <div class="teams-shell">
         <TeamsToolbar

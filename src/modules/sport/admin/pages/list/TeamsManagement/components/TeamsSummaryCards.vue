@@ -5,6 +5,14 @@ defineProps({
     required: true,
   },
 })
+
+const emit = defineEmits(['card-action'])
+
+function handleCardClick(card) {
+  if (card.action) {
+    emit('card-action', card.action)
+  }
+}
 </script>
 
 <template>
@@ -13,7 +21,8 @@ defineProps({
       v-for="card in cards"
       :key="card.id"
       class="teams-summary-card"
-      :class="`teams-summary-card--${card.tone}`"
+      :class="[`teams-summary-card--${card.tone}`, card.action && 'teams-summary-card--clickable']"
+      @click="handleCardClick(card)"
     >
       <div class="teams-summary-header">
         <div>
@@ -81,6 +90,21 @@ defineProps({
 
 .teams-summary-card--danger {
   color: #b42318;
+}
+
+.teams-summary-card--primary {
+  color: #0369a1;
+}
+
+.teams-summary-card--clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.teams-summary-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 32px 64px -40px rgba(15, 23, 42, 0.6);
+  border-color: currentColor;
 }
 
 .teams-summary-header {
