@@ -91,6 +91,7 @@ const emit = defineEmits([
   'update:name',
   'update:division',
   'update:coach',
+  'update:playing-style',
   'update:captain',
   'update:players',
   'update:matches',
@@ -247,6 +248,7 @@ const selectPt = {
         </button>
       </div>
       <Select
+        :model-value="playingStyle"
         :options="playingStyleSelectOptions"
         option-label="label"
         option-value="value"
