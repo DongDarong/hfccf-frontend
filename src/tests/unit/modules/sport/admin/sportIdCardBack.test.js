@@ -6,7 +6,7 @@ import {
   getCoachPhone,
   getInitials,
   getCoachInitials,
-} from '@/modules/sport/admin/pages/sportIdCardBack'
+} from '@/modules/sport/admin/pages/utilities/sportIdCardBack'
 
 // Mock QRCode
 vi.mock('qrcode', () => ({

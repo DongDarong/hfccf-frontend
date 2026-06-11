@@ -4,7 +4,7 @@ import { nextTick, ref } from 'vue'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import TeamPlayers from '@/modules/sport/coach/pages/TeamPlayers.vue'
 import TeamRoster from '@/modules/sport/coach/pages/TeamRoster.vue'
-import PlayerLifecycleManagement from '@/modules/sport/admin/pages/PlayerLifecycleManagement.vue'
+import PlayerLifecycleManagement from '@/modules/sport/admin/pages/approval/PlayerLifecycleManagement.vue'
 
 const loadRoster = vi.fn()
 const loadTeams = vi.fn()

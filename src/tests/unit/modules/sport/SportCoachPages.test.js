@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import MyTeams from '@/modules/sport/coach/pages/MyTeams.vue'
-import CoachTeamAssignments from '@/modules/sport/admin/pages/CoachTeamAssignments.vue'
+import CoachTeamAssignments from '@/modules/sport/admin/pages/approval/CoachTeamAssignments.vue'
 
 const loadTeams = vi.fn()
 const listCoachTeamAssignments = vi.fn()
