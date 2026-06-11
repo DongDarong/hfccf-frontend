@@ -8,6 +8,8 @@ import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 import { fetchPreschoolStudent } from '@/modules/preschool/services/preschoolApi'
+import { STATUS_CLASSES, BACK_ROUTE_NAME } from './constants/studentProfileConstants'
+import { buildInfoCards, getStatusLabel, getStatusClass, getStudentDisplayName } from './utils/studentProfileHelpers'
 
 defineOptions({
   name: 'PreschoolAdminStudentProfilePage',
@@ -23,42 +25,11 @@ const student = ref(null)
 
 const profileClasses = computed(() => student.value?.classes || [])
 const avatarSrc = computed(() => resolveAvatarSource(student.value?.avatarUrl || ''))
-const initials = computed(() => getAvatarInitials(student.value?.fullName || student.value?.name || '', '?'))
+const initials = computed(() => getAvatarInitials(getStudentDisplayName(student.value), '?'))
 
-const statusClasses = {
-  active: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  pending: 'border-amber-200 bg-amber-50 text-amber-700',
-  inactive: 'border-slate-200 bg-slate-100 text-slate-600',
-  graduated: 'border-sky-200 bg-sky-50 text-sky-700',
-}
+const statusLabel = computed(() => getStatusLabel(t, student.value))
 
-const statusLabel = computed(() => {
-  const key = String(student.value?.status || '').toLowerCase()
-  return t(`preschoolStudentInfoPage.options.${key}`) || (student.value?.status || '-')
-})
-
-const infoCards = computed(() => [
-  {
-    key: 'code',
-    label: t('preschoolStudentProfilePage.cards.signature'),
-    value: student.value?.publicId || student.value?.studentCode || '-',
-  },
-  {
-    key: 'gender',
-    label: t('preschoolStudentProfilePage.cards.gender'),
-    value: student.value?.gender ? t(`preschoolStudentInfoPage.options.${student.value.gender}`) : '-',
-  },
-  {
-    key: 'dob',
-    label: t('preschoolStudentProfilePage.cards.dateOfBirth'),
-    value: formatDate(student.value?.dateOfBirth) || student.value?.dateOfBirth || '-',
-  },
-  {
-    key: 'classes',
-    label: t('preschoolStudentProfilePage.cards.classes'),
-    value: String(student.value?.classesCount || profileClasses.value.length || 0),
-  },
-])
+const infoCards = computed(() => buildInfoCards(t, student.value, profileClasses.value))
 
 async function loadStudent() {
   const studentId = String(route.params.id || '').trim()
@@ -89,7 +60,7 @@ async function loadStudent() {
 }
 
 function goBack() {
-  router.push({ name: 'dashboard-preschool-admin-students' })
+  router.push({ name: BACK_ROUTE_NAME })
 }
 
 watch(() => route.params.id, () => {
@@ -140,7 +111,7 @@ onMounted(loadStudent)
                     {{ student.publicId || student.studentCode || '-' }}
                   </p>
                 </div>
-                <span class="student-profile-page__status" :class="statusClasses[String(student.status || '').toLowerCase()] || statusClasses.active">
+                <span class="student-profile-page__status" :class="getStatusClass(student.status)">
                   {{ statusLabel }}
                 </span>
               </div>
