@@ -120,26 +120,35 @@ const placeholders = computed(() => ({
   venue: t('sportAddTeam.venuePlaceholder'),
 }))
 
-const divisionSelectOptions = computed(() =>
-  props.divisionOptions.map((value) => ({
-    label: value,
-    value,
-  })),
-)
+const divisionSelectOptions = computed(() => {
+  if (!Array.isArray(props.divisionOptions)) return []
+  return props.divisionOptions
+    .filter(Boolean)
+    .map((value) => ({
+      label: value || '',
+      value: value || '',
+    }))
+})
 
-const coachSelectOptions = computed(() =>
-  props.coachOptions.map((value) => ({
-    label: value,
-    value,
-  })),
-)
+const coachSelectOptions = computed(() => {
+  if (!Array.isArray(props.coachOptions)) return []
+  return props.coachOptions
+    .filter(Boolean)
+    .map((value) => ({
+      label: value || '',
+      value: value || '',
+    }))
+})
 
-const statusSelectOptions = computed(() =>
-  props.statusOptions.map((value) => ({
-    label: props.statusLabel(value),
-    value,
-  })),
-)
+const statusSelectOptions = computed(() => {
+  if (!Array.isArray(props.statusOptions)) return []
+  return props.statusOptions
+    .filter(Boolean)
+    .map((value) => ({
+      label: props.statusLabel?.(value) || '',
+      value: value || '',
+    }))
+})
 
 function updateNumber(field, event) {
   const rawValue = event?.target?.value ?? 0

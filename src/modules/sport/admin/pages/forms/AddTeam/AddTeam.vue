@@ -54,19 +54,23 @@ const teamRows = ref([])
 const divisions = ref([])
 const coaches = ref([])
 
-const divisionOptions = computed(() =>
-  divisions.value
-    .filter((div) => div.status === 'active')
+const divisionOptions = computed(() => {
+  if (!Array.isArray(divisions.value)) return []
+  return divisions.value
+    .filter((div) => div?.status === 'active' && div?.name)
     .map((div) => div.name)
-    .sort(),
-)
+    .filter(Boolean)
+    .sort()
+})
 
-const coachOptions = computed(() =>
-  coaches.value
-    .filter((coach) => coach.status === 'active')
+const coachOptions = computed(() => {
+  if (!Array.isArray(coaches.value)) return []
+  return coaches.value
+    .filter((coach) => coach?.status === 'active' && coach?.user)
     .map((coach) => coach.user)
-    .sort(),
-)
+    .filter(Boolean)
+    .sort()
+})
 
 const form = reactive({
   name: '',
