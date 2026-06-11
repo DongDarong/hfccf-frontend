@@ -40,9 +40,9 @@ const tableColumns = computed(() => buildTableColumns(t))
 
 const statusOptions = computed(() => STATUS_OPTIONS)
 
-const addTeacherLabel = computed(() => t('preschoolTeachersManagement.addTeacher'))
+const addTeacherLabel = computed(() => t('preschoolTeachersManagement.addButtonLabel'))
 
-const addTeacherCaption = computed(() => t('preschoolTeachersManagement.addTeacherCaption'))
+const addTeacherCaption = computed(() => t('preschoolTeachersManagement.addButtonCaption'))
 
 const mappedTeachers = computed(() =>
   mapUsers(teachers.value).map((teacher) => ({
