@@ -346,6 +346,33 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/forms/manage',
+    name: 'dashboard-preschool-admin-forms-manage',
+    component: () => import('@/modules/preschool/admin/pages/forms/FormManagementManage.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/forms/build',
+    name: 'dashboard-preschool-admin-forms-build',
+    component: () => import('@/modules/preschool/admin/pages/forms/FormManagementBuild.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/forms/review',
+    name: 'dashboard-preschool-admin-forms-review',
+    component: () => import('@/modules/preschool/admin/pages/forms/FormManagementReview.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/classroom-resources',
     name: 'dashboard-preschool-admin-classroom-resources',
     component: () => import('@/modules/preschool/admin/pages/classes/ClassroomResources.vue'),
