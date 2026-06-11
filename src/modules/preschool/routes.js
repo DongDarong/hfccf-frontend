@@ -1,4 +1,4 @@
-﻿import { ACCESS_SCOPES, DOMAINS } from '@/constants/access'
+import { ACCESS_SCOPES, DOMAINS } from '@/constants/access'
 import { defineAppRoute } from '@/router/defineAppRoute'
 
 // Preserve stable Preschool route names while moving legacy filenames toward
