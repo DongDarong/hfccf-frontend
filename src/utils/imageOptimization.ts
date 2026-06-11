@@ -7,15 +7,15 @@ const COMPRESSIBLE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const LOSSLESS_TYPES = new Set(['image/png'])
 const PRESERVE_TYPES = new Set(['image/gif'])
 
-function isBrowserFile(file) {
+function isBrowserFile(file: any): file is File {
   return typeof File !== 'undefined' && file instanceof File
 }
 
-function isCompressibleType(type) {
+function isCompressibleType(type: string): boolean {
   return COMPRESSIBLE_TYPES.has(String(type || '').trim().toLowerCase())
 }
 
-function getMimeTypeForOutput(fileType, hasTransparency) {
+function getMimeTypeForOutput(fileType: string, hasTransparency: boolean): string {
   if (hasTransparency) return 'image/png'
   if (LOSSLESS_TYPES.has(String(fileType || '').trim().toLowerCase())) {
     return 'image/jpeg'
@@ -24,7 +24,7 @@ function getMimeTypeForOutput(fileType, hasTransparency) {
   return 'image/jpeg'
 }
 
-function getOutputExtension(mimeType) {
+function getOutputExtension(mimeType: string): string {
   switch (String(mimeType || '').trim().toLowerCase()) {
     case 'image/png':
       return 'png'
@@ -35,7 +35,7 @@ function getOutputExtension(mimeType) {
   }
 }
 
-function normalizeBaseName(name) {
+function normalizeBaseName(name: string): string {
   const source = String(name || '').trim()
 
   if (!source) return 'image'
@@ -44,14 +44,14 @@ function normalizeBaseName(name) {
   return withoutExtension || 'image'
 }
 
-function buildOutputFileName(file, mimeType) {
+function buildOutputFileName(file: File, mimeType: string): string {
   const baseName = normalizeBaseName(file?.name)
   const extension = getOutputExtension(mimeType)
 
   return `${baseName}.${extension}`
 }
 
-function getTargetDimensions(width, height, maxWidth, maxHeight) {
+function getTargetDimensions(width: number, height: number, maxWidth: number, maxHeight: number) {
   const safeWidth = Math.max(Number(width) || 0, 1)
   const safeHeight = Math.max(Number(height) || 0, 1)
   const scale = Math.min(maxWidth / safeWidth, maxHeight / safeHeight, 1)
@@ -63,7 +63,7 @@ function getTargetDimensions(width, height, maxWidth, maxHeight) {
   }
 }
 
-function waitForFrame() {
+function waitForFrame(): Promise<void> {
   if (typeof window === 'undefined') {
     return Promise.resolve()
   }
@@ -78,7 +78,7 @@ function waitForFrame() {
   })
 }
 
-function loadImageElement(file) {
+function loadImageElement(file: File): Promise<{ image: HTMLImageElement; objectUrl: string }> {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file)
     const image = new Image()
@@ -92,7 +92,7 @@ function loadImageElement(file) {
   })
 }
 
-async function loadImageSource(file) {
+async function loadImageSource(file: File) {
   if (typeof createImageBitmap === 'function') {
     try {
       const bitmap = await createImageBitmap(file)
@@ -117,7 +117,7 @@ async function loadImageSource(file) {
   }
 }
 
-function createCanvasContext(width, height) {
+function createCanvasContext(width: number, height: number) {
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
@@ -131,13 +131,13 @@ function createCanvasContext(width, height) {
   return { canvas, ctx }
 }
 
-function canvasToBlob(canvas, mimeType, quality) {
+function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality: number | undefined): Promise<Blob | null> {
   return new Promise((resolve) => {
     canvas.toBlob((blob) => resolve(blob), mimeType, quality)
   })
 }
 
-function hasTransparency(ctx, width, height) {
+function hasTransparency(ctx: CanvasRenderingContext2D, width: number, height: number): boolean {
   try {
     const sampleWidth = Math.max(1, Math.min(width, 64))
     const sampleHeight = Math.max(1, Math.min(height, 64))
@@ -156,7 +156,7 @@ function hasTransparency(ctx, width, height) {
   }
 }
 
-function shouldSkipOptimization(file, dimensions, { maxWidth, maxHeight, minSizeToCompress }) {
+function shouldSkipOptimization(file: File, dimensions: any, { maxWidth, maxHeight, minSizeToCompress }: any): boolean {
   if (!isBrowserFile(file)) return true
   if (!isCompressibleType(file.type)) return true
 
@@ -171,7 +171,7 @@ function shouldSkipOptimization(file, dimensions, { maxWidth, maxHeight, minSize
  * Compress and resize an image file on the client before upload.
  * Returns the original file when compression is not needed or fails.
  */
-export async function optimizeImageFile(file, options = {}) {
+export async function optimizeImageFile(file: any, options: any = {}): Promise<File | Blob> {
   if (!isBrowserFile(file)) {
     return file
   }
@@ -235,6 +235,6 @@ export async function optimizeImageFile(file, options = {}) {
   }
 }
 
-export function isOptimizableImageFile(file) {
+export function isOptimizableImageFile(file: any): boolean {
   return isBrowserFile(file) && !PRESERVE_TYPES.has(String(file.type || '').trim().toLowerCase()) && isCompressibleType(file.type)
 }
