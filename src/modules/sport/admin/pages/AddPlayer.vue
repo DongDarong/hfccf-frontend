@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -13,10 +13,25 @@ import {
   fetchSportTeams,
   updateSportPlayer,
 } from '@/modules/sport/services/sportApi'
-import { optimizeImageFile } from '@/utils/imageOptimization'
 import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
 import PlayerChecklist from '@/modules/sport/admin/components/add-player/PlayerChecklist.vue'
+import { useProfileImage } from './AddPlayer/composables/useProfileImage'
+import {
+  playerStatusLabel,
+  validate,
+  getFormPayload,
+  initializeFormFromPlayer,
+  getProfileImagePreview,
+} from './AddPlayer/utils/addPlayerHelpers'
+import {
+  PLAYERS_DIRECTORY_PATH,
+  STATUS_OPTIONS,
+  REGISTRATION_STATUS_OPTIONS,
+  POSITION_OPTIONS,
+  PREFERRED_FOOT_OPTIONS,
+  BLOOD_TYPE_OPTIONS,
+} from './AddPlayer/constants/addPlayerConstants'
 
 defineOptions({
   name: 'SportAdminAddPlayerPage',
@@ -26,13 +41,13 @@ const router = useRouter()
 const route = useRoute()
 const { t, language, te } = useLanguage()
 
-const playersDirectoryPath = '/module/sport-admin/players'
-const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-// Keep these aligned with the shared upload field accept types.
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const maxProfileImageSizeBytes = 2 * 1024 * 1024
-// Sports profile/admin status fields (separate from the "record status" used by the table).
-const registrationStatusOptions = ['registered', 'pending', 'unregistered']
+const {
+  profileImagePreview,
+  handleProfileImageChange: handleImageChange,
+  removeProfileImage: removeImage,
+  setImagePreview,
+} = useProfileImage(t)
+
 const teamRows = ref([])
 
 const form = reactive({
@@ -43,11 +58,10 @@ const form = reactive({
   division: '',
   jerseyNumber: null,
   age: null,
-  status: statusOptions[0],
+  status: STATUS_OPTIONS[0],
   matchesPlayed: 0,
   goalsScored: 0,
   profileImage: null,
-  // Personal information (player record data, not tied to system users).
   heightCm: null,
   weightKg: null,
   preferredFoot: '',
@@ -58,10 +72,8 @@ const form = reactive({
   province: '',
   currentSchool: '',
   gradeYear: '',
-
-  // Sports profile & status (domain data, not system user fields).
   primaryPosition: '',
-  registrationStatus: registrationStatusOptions[0],
+  registrationStatus: REGISTRATION_STATUS_OPTIONS[0],
 })
 
 const isSubmitting = ref(false)
@@ -69,8 +81,6 @@ const errorMessage = ref('')
 const showSuccess = ref(false)
 const showError = ref(false)
 const isKh = computed(() => language.value === 'KH')
-const profileImagePreview = ref('')
-const profileImageObjectUrl = ref('')
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -89,19 +99,6 @@ const divisionOptions = computed(() => {
   return [...new Set(teamRows.value.map((item) => String(item?.division || '').trim()).filter(Boolean))].sort()
 })
 
-const positionOptions = computed(() => {
-  return ['Forward', 'Midfielder', 'Defender', 'Goalkeeper']
-})
-
-// Keep these small and stable; can be moved to constants / fetched from API later.
-const preferredFootOptions = ['Right', 'Left', 'Both']
-const bloodTypeOptions = ['A', 'B', 'AB', 'O']
-
-function playerStatusLabel(status) {
-  const key = `sportPlayerInformation.status.${String(status || '').replace(/[\s-]+/g, '_').toLowerCase()}`
-  return te(key) ? t(key) : String(status || '')
-}
-
 const pageTitle = computed(() => {
   if (isViewMode.value) return t('sportAddPlayer.viewTitle')
   if (isEditMode.value) return t('sportAddPlayer.updateTitle')
@@ -116,10 +113,15 @@ const pageSubtitle = computed(() => {
 
 const selectedTeamLabel = computed(() => form.team || t('sportAddPlayer.teamPlaceholder'))
 const selectedDivisionLabel = computed(() => form.division || t('sportAddPlayer.divisionPlaceholder'))
-const selectedStatusLabel = computed(() => playerStatusLabel(form.status))
+const selectedStatusLabel = computed(() => playerStatusLabel(form.status, t, te))
 const selectedRegistrationStatusLabel = computed(() =>
-  playerStatusLabel(form.registrationStatus),
+  playerStatusLabel(form.registrationStatus, t, te),
 )
+
+const positionOptions = POSITION_OPTIONS
+const preferredFootOptions = PREFERRED_FOOT_OPTIONS
+const bloodTypeOptions = BLOOD_TYPE_OPTIONS
+const statusOptions = STATUS_OPTIONS
 
 const checklistItems = computed(() => [
   {
@@ -151,68 +153,29 @@ const checklistHighlightValue = computed(() =>
   isEditMode.value ? t('sportAddPlayer.sidebarHighlightEdit') : t('sportAddPlayer.sidebarHighlightAdd'),
 )
 
+function getPlayerStatusLabel(status) {
+  return playerStatusLabel(status, t, te)
+}
+
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
 }
 
-function cleanupProfileImageObjectUrl() {
-  if (!profileImageObjectUrl.value) return
-  URL.revokeObjectURL(profileImageObjectUrl.value)
-  profileImageObjectUrl.value = ''
-}
-
 async function onProfileImageChange(event) {
-  if (isFormLocked.value) return
-
-  const [file] = event?.target?.files || []
-  if (!file) return
-
-  // Basic client-side guardrails; actual enforcement should be done again on the backend.
-  if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = t('sportAddPlayer.validation.imageType')
+  const error = await handleImageChange(event, form, isFormLocked.value)
+  if (error) {
+    errorMessage.value = error
     showError.value = true
-    return
   }
-
-  if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = t('sportAddPlayer.validation.imageSize')
-    showError.value = true
-    return
-  }
-
-  const optimizedFile = await optimizeImageFile(file, {
-    maxWidth: 512,
-    maxHeight: 512,
-    quality: 0.84,
-  }).catch(() => file)
-
-  cleanupProfileImageObjectUrl()
-  profileImageObjectUrl.value = URL.createObjectURL(optimizedFile)
-  profileImagePreview.value = profileImageObjectUrl.value
-  form.profileImage = optimizedFile
 }
 
 function removeProfileImage() {
-  if (isFormLocked.value) return
-  cleanupProfileImageObjectUrl()
-  profileImagePreview.value = ''
-  form.profileImage = null
-}
-
-function validate() {
-  if (!form.name.trim()) return t('sportAddPlayer.validation.nameRequired')
-  if (!form.team.trim()) return t('sportAddPlayer.validation.teamRequired')
-  if (!form.division.trim()) return t('sportAddPlayer.validation.divisionRequired')
-  if (!form.status) return t('sportAddPlayer.validation.statusRequired')
-  if (Number(form.matchesPlayed) < 0) return t('sportAddPlayer.validation.statsInvalid')
-  if (Number(form.goalsScored) < 0) return t('sportAddPlayer.validation.statsInvalid')
-  if (Number(form.goalsScored) > Number(form.matchesPlayed)) return t('sportAddPlayer.validation.goalsTooHigh')
-  return ''
+  removeImage(form, isFormLocked.value)
 }
 
 async function goBackToPlayers() {
-  await router.push(playersDirectoryPath)
+  await router.push(PLAYERS_DIRECTORY_PATH)
 }
 
 function goToEditMode() {
@@ -223,7 +186,7 @@ function goToEditMode() {
 
 async function onSubmit() {
   resetFeedback()
-  const message = validate()
+  const message = validate(form, t)
   if (message) {
     errorMessage.value = message
     showError.value = true
@@ -232,31 +195,7 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    const payload = {
-      name: form.name,
-      phone: form.phone,
-      gender: form.gender,
-      team: form.team,
-      division: form.division,
-      jerseyNumber: form.jerseyNumber,
-      age: form.age,
-      status: form.status,
-      matchesPlayed: form.matchesPlayed,
-      goalsScored: form.goalsScored,
-      photo: form.profileImage,
-      heightCm: form.heightCm,
-      weightKg: form.weightKg,
-      preferredFoot: form.preferredFoot,
-      bloodType: form.bloodType,
-      village: form.village,
-      commune: form.commune,
-      district: form.district,
-      province: form.province,
-      currentSchool: form.currentSchool,
-      gradeYear: form.gradeYear,
-      primaryPosition: form.primaryPosition,
-      registrationStatus: form.registrationStatus,
-    }
+    const payload = getFormPayload(form)
 
     if (isEditMode.value && route.query.id) {
       await updateSportPlayer(route.query.id, payload)
@@ -292,43 +231,16 @@ onMounted(() => {
       teamRows.value = []
     })
 
-  // Pre-fill from query id when present (supports future view/edit modes).
   const id = String(route.query.id || '').trim()
   if (!id) return
 
   fetchSportPlayer(id)
     .then((found) => {
       if (!found?.id) return
-
-      form.name = String(found.name || '')
-      form.phone = String(found.phone || '')
-      form.gender = String(found.gender || '')
-      profileImagePreview.value = String(found.photo || found.avatar || '').trim()
-      form.team = String(found.team || '')
-      form.division = String(found.division || '')
-      form.jerseyNumber = found.jerseyNumber ?? null
-      form.age = found.age ?? null
-      form.status = String(found.status || statusOptions[0])
-      form.matchesPlayed = Number(found.matchesPlayed ?? 0)
-      form.goalsScored = Number(found.goalsScored ?? 0)
-      form.heightCm = found.heightCm ?? null
-      form.weightKg = found.weightKg ?? null
-      form.preferredFoot = String(found.preferredFoot || '')
-      form.bloodType = String(found.bloodType || '')
-      form.village = String(found.village || '')
-      form.commune = String(found.commune || '')
-      form.district = String(found.district || '')
-      form.province = String(found.province || '')
-      form.currentSchool = String(found.currentSchool || '')
-      form.gradeYear = String(found.gradeYear || '')
-      form.primaryPosition = String(found.primaryPosition || found.position || '')
-      form.registrationStatus = String(found.registrationStatus || registrationStatusOptions[0])
+      initializeFormFromPlayer(found, form)
+      setImagePreview(getProfileImagePreview(found))
     })
     .catch(() => {})
-})
-
-onBeforeUnmount(() => {
-  cleanupProfileImageObjectUrl()
 })
 </script>
 
@@ -381,7 +293,7 @@ onBeforeUnmount(() => {
             :blood-type-options="bloodTypeOptions"
             :registration-status-options="registrationStatusOptions"
             :is-locked="isFormLocked"
-            :status-label="playerStatusLabel"
+            :status-label="getPlayerStatusLabel"
             @profile-image-change="onProfileImageChange"
             @profile-image-remove="removeProfileImage"
             @update:name="form.name = $event"
