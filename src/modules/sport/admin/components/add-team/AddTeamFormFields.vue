@@ -21,10 +21,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  playingStyle: {
-    type: String,
-    default: '',
-  },
   captain: {
     type: String,
     default: '',
@@ -69,10 +65,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  playingStyleOptions: {
-    type: Array,
-    default: () => [],
-  },
   statusOptions: {
     type: Array,
     default: () => [],
@@ -91,7 +83,6 @@ const emit = defineEmits([
   'update:name',
   'update:division',
   'update:coach',
-  'update:playing-style',
   'update:captain',
   'update:players',
   'update:matches',
@@ -100,7 +91,6 @@ const emit = defineEmits([
   'update:wins',
   'update:draws',
   'update:losses',
-  'open-playing-style-modal',
 ])
 
 const { t } = useI18n()
@@ -143,16 +133,6 @@ const coachSelectOptions = computed(() =>
     value,
   })),
 )
-
-const playingStyleSelectOptions = computed(() => {
-  if (!Array.isArray(props.playingStyleOptions)) return []
-  return props.playingStyleOptions
-    .filter(Boolean)
-    .map((value) => ({
-      label: value || '',
-      value: value || '',
-    }))
-})
 
 const statusSelectOptions = computed(() =>
   props.statusOptions.map((value) => ({
@@ -236,33 +216,6 @@ const selectPt = {
         @update:model-value="emit('update:coach', $event)"
       />
     </label>
-
-    <div class="add-team-form-fields__field">
-      <div class="add-team-form-fields__label-with-action">
-        <span class="add-team-form-fields__label">Playing Style</span>
-        <button
-          type="button"
-          class="add-team-form-fields__add-button"
-          :disabled="isLocked"
-          @click="emit('open-playing-style-modal')"
-          title="Create a new playing style"
-        >
-          +
-        </button>
-      </div>
-      <Select
-        :model-value="playingStyle"
-        :options="playingStyleSelectOptions"
-        option-label="label"
-        option-value="value"
-        :disabled="isLocked"
-        placeholder="Select or create a playing style"
-        append-to="self"
-        class="w-full"
-        :pt="selectPt"
-        @update:model-value="emit('update:playing-style', $event)"
-      />
-    </div>
 
     <label class="add-team-form-fields__field">
       <span class="add-team-form-fields__label">{{ labels.captain }}</span>
@@ -398,38 +351,6 @@ const selectPt = {
   color: #334155;
   font-size: 0.86rem;
   font-weight: 700;
-}
-
-.add-team-form-fields__label-with-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.add-team-form-fields__add-button {
-  padding: 0.35rem 0.65rem;
-  border-radius: 0.6rem;
-  border: 1px solid #dbe6f4;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.add-team-form-fields__add-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: scale(1.05);
-}
-
-.add-team-form-fields__add-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .add-team-form-fields__input {

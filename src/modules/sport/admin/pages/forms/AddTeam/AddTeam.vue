@@ -12,7 +12,6 @@ import {
   createSportTeam,
   fetchSportCoaches,
   fetchSportDivisions,
-  fetchSportPlayingStyles,
   fetchSportTeam,
   fetchSportTeams,
   updateSportTeam,
@@ -20,7 +19,6 @@ import {
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
-import AddPlayingStyleModal from '@/modules/sport/admin/components/add-team/AddPlayingStyleModal.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
 import { useTeamLogo } from './composables/useTeamLogo'
@@ -55,8 +53,6 @@ const {
 const teamRows = ref([])
 const divisions = ref([])
 const coaches = ref([])
-const playingStyles = ref([])
-const isPlayingStyleModalOpen = ref(false)
 
 const divisionOptions = computed(() =>
   divisions.value
@@ -72,20 +68,10 @@ const coachOptions = computed(() =>
     .sort(),
 )
 
-const playingStyleOptions = computed(() => {
-  if (!Array.isArray(playingStyles.value)) return []
-  return playingStyles.value
-    .filter((style) => style?.status === 'active' && style?.name)
-    .map((style) => style.name)
-    .filter(Boolean)
-    .sort()
-})
-
 const form = reactive({
   name: '',
   division: '',
   coach: '',
-  playing_style: '',
   captain: '',
   players: 0,
   matches: 0,
@@ -258,26 +244,6 @@ async function onSuccessClose() {
   await goBackToTeams()
 }
 
-async function handlePlayingStyleCreated(newStyle) {
-  isPlayingStyleModalOpen.value = false
-  // Refresh playing styles list
-  await fetchPlayingStyles()
-  // Optionally select the newly created style
-  if (newStyle) {
-    form.playing_style = newStyle.name
-  }
-}
-
-async function fetchPlayingStyles() {
-  try {
-    const response = await fetchSportPlayingStyles({ perPage: 100 })
-    playingStyles.value = response?.items || []
-  } catch (error) {
-    console.warn('Failed to fetch playing styles:', error)
-    playingStyles.value = []
-  }
-}
-
 onMounted(async () => {
   try {
     const [teamsResponse, divisionsResponse, coachesResponse] = await Promise.all([
@@ -288,20 +254,10 @@ onMounted(async () => {
     teamRows.value = teamsResponse.items || []
     divisions.value = divisionsResponse.items || []
     coaches.value = coachesResponse.items || []
-    playingStyles.value = []
-
-    // TODO: Fetch playing styles once backend API is implemented
-    // try {
-    //   const playingStylesResponse = await fetchSportPlayingStyles({ perPage: 100 })
-    //   playingStyles.value = playingStylesResponse.items || []
-    // } catch {
-    //   playingStyles.value = []
-    // }
   } catch {
     teamRows.value = []
     divisions.value = []
     coaches.value = []
-    playingStyles.value = []
   }
 
   if (isAddMode.value) return
@@ -357,7 +313,6 @@ onMounted(async () => {
             :name="form.name"
             :division="form.division"
             :coach="form.coach"
-            :playing-style="form.playing_style"
             :captain="form.captain"
             :players="form.players"
             :matches="form.matches"
@@ -369,14 +324,12 @@ onMounted(async () => {
             :points="points"
             :division-options="divisionOptions"
             :coach-options="coachOptions"
-            :playing-style-options="playingStyleOptions"
             :status-options="statusOptions"
             :is-locked="isFormLocked"
             :status-label="getStatusLabel"
             @update:name="form.name = $event"
             @update:division="form.division = $event"
             @update:coach="form.coach = $event"
-            @update:playing-style="form.playing_style = $event"
             @update:captain="form.captain = $event"
             @update:players="form.players = $event"
             @update:matches="form.matches = $event"
@@ -385,7 +338,6 @@ onMounted(async () => {
             @update:wins="form.wins = $event"
             @update:draws="form.draws = $event"
             @update:losses="form.losses = $event"
-            @open-playing-style-modal="isPlayingStyleModalOpen = true"
           />
 
           <template #actions>
@@ -425,13 +377,6 @@ onMounted(async () => {
       :message="isEditMode ? t('sportAddTeam.updatedMessage') : t('sportAddTeam.createdMessage')"
       :button-text="t('sportAddTeam.backToTeams')"
       @close="onSuccessClose"
-    />
-
-    <!-- Add Playing Style Modal -->
-    <AddPlayingStyleModal
-      :is-open="isPlayingStyleModalOpen"
-      @close="isPlayingStyleModalOpen = false"
-      @created="handlePlayingStyleCreated"
     />
   </MainLayout>
 </template>
