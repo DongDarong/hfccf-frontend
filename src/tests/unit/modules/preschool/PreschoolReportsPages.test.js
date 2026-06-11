@@ -3,9 +3,9 @@ import { ref } from 'vue'
 import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
-import ReportManagement from '@/modules/preschool/admin/pages/ReportManagement.vue'
-import StudentReports from '@/modules/preschool/admin/pages/StudentReports.vue'
-import ClassroomReports from '@/modules/preschool/admin/pages/ClassroomReports.vue'
+import ReportManagement from '@/modules/preschool/admin/pages/reports/ReportManagement.vue'
+import StudentReports from '@/modules/preschool/admin/pages/reports/StudentReports.vue'
+import ClassroomReports from '@/modules/preschool/admin/pages/reports/ClassroomReports.vue'
 
 const mockPush = vi.fn()
 const mockUseRoute = vi.fn()
@@ -134,3 +134,6 @@ describe('Preschool report pages', () => {
     expect(wrapper.text()).toContain('4')
   })
 })
+
+
+
