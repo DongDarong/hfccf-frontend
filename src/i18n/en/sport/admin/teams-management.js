@@ -43,6 +43,11 @@ export default {
         badge: 'Organize teams',
         caption: 'Create and manage divisions to organize teams within the sport program.',
       },
+      playingStyles: {
+        title: 'Manage playing styles',
+        badge: 'Classify tactics',
+        caption: 'Create and manage playing styles to classify team tactics and strategies.',
+      },
     },
     table: {
       team: 'Team',

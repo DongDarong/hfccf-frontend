@@ -9,6 +9,7 @@ export {
 export * from './api/sportDashboardApi'
 export * from './api/sportTeamsApi'
 export * from './api/sportDivisionApi'
+export * from './api/sportPlayingStyleApi'
 export * from './api/sportPlayersApi'
 export * from './api/sportCoachesApi'
 export * from './api/sportMatchesApi'

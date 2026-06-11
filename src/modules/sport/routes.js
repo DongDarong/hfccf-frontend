@@ -113,6 +113,33 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/playing-styles',
+    name: 'dashboard-sport-admin-playing-styles',
+    component: () => import('@/modules/sport/admin/pages/list/PlayingStyleManagement/PlayingStyleManagement.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/playing-styles/add',
+    name: 'dashboard-sport-admin-playing-styles-add',
+    component: () => import('@/modules/sport/admin/pages/forms/AddPlayingStyle/AddPlayingStyle.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/playing-styles/:id/edit',
+    name: 'dashboard-sport-admin-playing-styles-edit',
+    component: () => import('@/modules/sport/admin/pages/forms/AddPlayingStyle/AddPlayingStyle.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/players',
     name: 'dashboard-sport-admin-players',
     component: () => import('@/modules/sport/admin/pages/list/ManagesPlayerInfor/ManagesPlayerInfor.vue'),

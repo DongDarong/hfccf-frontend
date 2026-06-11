@@ -45,6 +45,10 @@ async function goToDivisionManagement() {
   await router.push({ name: 'dashboard-sport-admin-divisions' })
 }
 
+async function goToPlayingStyleManagement() {
+  await router.push({ name: 'dashboard-sport-admin-playing-styles' })
+}
+
 function onViewTeam(team) {
   const id = String(team?.id || '').trim()
   if (!id) return
@@ -175,6 +179,16 @@ const summaryCards = computed(() => [
     icon: 'M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18h4a2 2 0 012 2v14a2 2 0 01-2 2h-4',
     action: 'divisions',
   },
+  {
+    id: 'playingStyles',
+    title: t('sportTeamsManagement.summary.playingStyles.title'),
+    value: '',
+    badge: t('sportTeamsManagement.summary.playingStyles.badge'),
+    caption: t('sportTeamsManagement.summary.playingStyles.caption'),
+    tone: 'info',
+    icon: 'M13 10V3L4 14h7v7l9-11h-7z',
+    action: 'playingStyles',
+  },
 ])
 
 const highlightItems = computed(() => {
@@ -228,7 +242,13 @@ onMounted(() => {
     <section :class="isKh ? 'teams-management-page teams-management-page--kh' : 'teams-management-page'">
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
-      <TeamsSummaryCards :cards="summaryCards" @card-action="(action) => action === 'divisions' && goToDivisionManagement()" />
+      <TeamsSummaryCards
+        :cards="summaryCards"
+        @card-action="(action) => {
+          if (action === 'divisions') goToDivisionManagement()
+          if (action === 'playingStyles') goToPlayingStyleManagement()
+        }"
+      />
 
       <div class="teams-shell">
         <TeamsToolbar
