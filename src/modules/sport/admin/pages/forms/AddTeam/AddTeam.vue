@@ -75,8 +75,9 @@ const coachOptions = computed(() =>
 const playingStyleOptions = computed(() => {
   if (!Array.isArray(playingStyles.value)) return []
   return playingStyles.value
-    .filter((style) => style.status === 'active')
+    .filter((style) => style?.status === 'active' && style?.name)
     .map((style) => style.name)
+    .filter(Boolean)
     .sort()
 })
 
@@ -270,24 +271,32 @@ async function handlePlayingStyleCreated(newStyle) {
 async function fetchPlayingStyles() {
   try {
     const response = await fetchSportPlayingStyles({ perPage: 100 })
-    playingStyles.value = response.items || []
-  } catch {
+    playingStyles.value = response?.items || []
+  } catch (error) {
+    console.warn('Failed to fetch playing styles:', error)
     playingStyles.value = []
   }
 }
 
 onMounted(async () => {
   try {
-    const [teamsResponse, divisionsResponse, coachesResponse, playingStylesResponse] = await Promise.all([
+    const [teamsResponse, divisionsResponse, coachesResponse] = await Promise.all([
       fetchSportTeams({ perPage: 100 }),
       fetchSportDivisions({ perPage: 100 }),
       fetchSportCoaches({ perPage: 100 }),
-      fetchSportPlayingStyles({ perPage: 100 }),
     ])
     teamRows.value = teamsResponse.items || []
     divisions.value = divisionsResponse.items || []
     coaches.value = coachesResponse.items || []
-    playingStyles.value = playingStylesResponse.items || []
+    playingStyles.value = []
+
+    // TODO: Fetch playing styles once backend API is implemented
+    // try {
+    //   const playingStylesResponse = await fetchSportPlayingStyles({ perPage: 100 })
+    //   playingStyles.value = playingStylesResponse.items || []
+    // } catch {
+    //   playingStyles.value = []
+    // }
   } catch {
     teamRows.value = []
     divisions.value = []
