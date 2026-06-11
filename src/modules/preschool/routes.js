@@ -16,7 +16,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/students',
     name: 'dashboard-preschool-admin-students',
-    component: () => import('@/modules/preschool/admin/pages/StudentInfo.vue'),
+    component: () => import('@/modules/preschool/admin/pages/StudentInfo/StudentInfo.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
@@ -88,7 +88,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/classes/add',
     name: 'dashboard-preschool-admin-classes-add',
-    component: () => import('@/modules/preschool/admin/pages/AddClass.vue'),
+    component: () => import('@/modules/preschool/admin/pages/AddClass/AddClass.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
