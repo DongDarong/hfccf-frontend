@@ -33,6 +33,10 @@ export default {
         title: 'Coach Attendance',
         description: 'Record attendance for active coaches each day.',
       },
+      idcard: {
+        title: 'Generate ID Card',
+        description: 'Create and export digital ID cards for players.',
+      },
       history: {
         title: 'Attendance History',
         description: 'Review saved attendance records by type, team, and date.',
