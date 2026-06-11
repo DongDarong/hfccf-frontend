@@ -16,7 +16,7 @@ import {
   PLAYER_ROSTER_STATUSES,
   playerStatusTone,
 } from '@/modules/sport/constants/playerStatus'
-import { usePlayerLifecycle } from '../composables/usePlayerLifecycle'
+import { usePlayerLifecycle } from '@/modules/sport/admin/composables/usePlayerLifecycle'
 
 defineOptions({ name: 'SportAdminPlayerLifecyclePage' })
 
