@@ -42,6 +42,11 @@ const SPORT_CRUMB_MAP = {
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-sport-admin-attendance' } },
     { labelKey: 'breadcrumb.attendanceCoaches' },
   ],
+  'dashboard-sport-admin-attendance-idcard': [
+    { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-sport-admin-attendance' } },
+    { labelKey: 'breadcrumb.attendanceIdCard' },
+  ],
   'dashboard-sport-admin-attendance-history': [
     { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-sport-admin-attendance' } },
