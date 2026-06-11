@@ -7,7 +7,7 @@
  * builds the full trail without needing route meta changes.
  *
  * The final crumb (current page) is rendered as plain text.
- * All preceding crumbs are router-links.
+ * All preceding crumbs are router-links or back-button functionality.
  * Renders nothing when the current route has no entry in the map.
  */
 import { computed } from 'vue'
@@ -17,10 +17,16 @@ import { useLanguage } from '@/composables/useLanguage'
 const route = useRoute()
 const { t } = useLanguage()
 
+function goBack() {
+  window.history.back()
+}
+
 /**
  * Breadcrumb trail definitions keyed by route name.
  * Each value is an ordered array of crumb objects:
- *   { labelKey: string, to?: { name: string } }
+ *   { labelKey: string, to?: { name: string }, useHistory?: boolean }
+ * - to: Named route destination (uses router.push)
+ * - useHistory: Use browser history instead of named route (uses window.history.back)
  * The last item in the array is the current page (no link).
  * The first item is always the module root.
  */
@@ -467,7 +473,7 @@ const CRUMB_MAP = {
  * Resolved breadcrumb trail for the current route.
  * Returns an empty array when the route has no entry in CRUMB_MAP,
  * so the component renders nothing on unknown pages.
- * @returns {Array<{ label: string, to?: Object }>}
+ * @returns {Array<{ label: string, to?: Object, useHistory?: boolean }>}
  */
 const crumbs = computed(() => {
   const trail = {
@@ -477,6 +483,7 @@ const crumbs = computed(() => {
   return trail.map((item) => ({
     label: t(item.labelKey),
     to: item.to ?? null,
+    useHistory: item.useHistory ?? false,
   }))
 })
 </script>
@@ -492,9 +499,20 @@ const crumbs = computed(() => {
         <!-- Separator between crumbs (not before the first) -->
         <span v-if="index > 0" class="breadcrumb__sep" aria-hidden="true">/</span>
 
-        <!-- Link crumbs -->
+        <!-- Back button crumbs (uses browser history) -->
+        <button
+          v-if="crumb.useHistory && !crumb.to"
+          type="button"
+          class="breadcrumb__link breadcrumb__link--button"
+          @click="goBack"
+          :aria-label="`Go back to ${crumb.label}`"
+        >
+          {{ crumb.label }}
+        </button>
+
+        <!-- Router link crumbs (uses named routes) -->
         <RouterLink
-          v-if="crumb.to"
+          v-else-if="crumb.to"
           :to="crumb.to"
           class="breadcrumb__link"
         >
@@ -553,6 +571,14 @@ const crumbs = computed(() => {
   color: #5b21b6;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.breadcrumb__link--button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .breadcrumb__current {
