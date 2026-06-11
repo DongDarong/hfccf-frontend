@@ -215,7 +215,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/reports/audit',
     name: 'dashboard-preschool-admin-lifecycle-audit',
-    component: () => import('@/modules/preschool/admin/pages/LifecycleAudit.vue'),
+    component: () => import('@/modules/preschool/admin/pages/LifecycleAudit/LifecycleAudit.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

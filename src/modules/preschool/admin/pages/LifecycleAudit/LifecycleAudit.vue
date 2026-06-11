@@ -18,6 +18,8 @@ import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
 import { fetchLifecycleAuditAnalytics, fetchLifecycleAuditLogs } from '@/modules/preschool/services/api/preschoolLifecycleAuditApi'
 import { formatDatetimeShort } from '@/utils/date'
+import { DEFAULT_PAGINATION, DEFAULT_FILTERS, DEFAULT_ANALYTICS } from './constants/lifecycleAuditConstants'
+import { buildActionOptions, buildEntityOptions, buildAnalyticsCards } from './utils/lifecycleAuditHelpers'
 
 defineOptions({
   name: 'PreschoolLifecycleAuditPage',
@@ -29,50 +31,15 @@ const { loadReportPeriodOptions, reportPeriods } = usePreschoolReports()
 const loading = ref(false)
 const analyticsLoading = ref(false)
 const auditLogs = ref([])
-const auditAnalytics = ref({
-  overview: {},
-  actionCounts: [],
-  entityCounts: [],
-  actorCounts: [],
-  blockedWriteTrend: [],
-  lifecycleTimeline: [],
-  overrideReasons: [],
-})
-const pagination = ref({ page: 1, perPage: 20, total: 0, totalPages: 1 })
+const auditAnalytics = ref({ ...DEFAULT_ANALYTICS })
+const pagination = ref({ ...DEFAULT_PAGINATION })
 const errorMessage = ref('')
 const analyticsError = ref('')
-const filters = ref({
-  actionType: '',
-  entityType: '',
-  reportPeriodId: '',
-})
+const filters = ref({ ...DEFAULT_FILTERS })
 
-const actionOptions = computed(() => [
-  { label: t('preschoolLifecycleAuditPage.actions.all'), value: '' },
-  { label: t('preschoolLifecycleAuditPage.actions.writeBlocked'), value: 'write.blocked' },
-  { label: t('preschoolLifecycleAuditPage.actions.overrideAttempt'), value: 'override.attempt' },
-  { label: t('preschoolLifecycleAuditPage.actions.overrideApproved'), value: 'override.approved' },
-  { label: t('preschoolLifecycleAuditPage.actions.reportPeriodCreated'), value: 'report_period.created' },
-  { label: t('preschoolLifecycleAuditPage.actions.reportPeriodFinalized'), value: 'report_period.finalized' },
-  { label: t('preschoolLifecycleAuditPage.actions.reportPeriodLocked'), value: 'report_period.locked' },
-  { label: t('preschoolLifecycleAuditPage.actions.reportPeriodArchived'), value: 'report_period.archived' },
-  { label: t('preschoolLifecycleAuditPage.actions.reportPeriodActivated'), value: 'report_period.activated' },
-  { label: t('preschoolLifecycleAuditPage.actions.academicYearClosed'), value: 'academic_year.closed' },
-  { label: t('preschoolLifecycleAuditPage.actions.academicYearOpened'), value: 'academic_year.activated' },
-  { label: t('preschoolLifecycleAuditPage.actions.termClosed'), value: 'academic_term.closed' },
-  { label: t('preschoolLifecycleAuditPage.actions.termOpened'), value: 'academic_term.activated' },
-])
+const actionOptions = computed(() => buildActionOptions(t))
 
-const entityOptions = computed(() => [
-  { label: t('preschoolLifecycleAuditPage.entities.all'), value: '' },
-  { label: t('preschoolLifecycleAuditPage.entities.academicTerm'), value: 'academic_term' },
-  { label: t('preschoolLifecycleAuditPage.entities.reportPeriod'), value: 'report_period' },
-  { label: t('preschoolLifecycleAuditPage.entities.assessment'), value: 'assessment' },
-  { label: t('preschoolLifecycleAuditPage.entities.attendance'), value: 'attendance' },
-  { label: t('preschoolLifecycleAuditPage.entities.schedule'), value: 'schedule' },
-  { label: t('preschoolLifecycleAuditPage.entities.assignment'), value: 'assignment' },
-  { label: t('preschoolLifecycleAuditPage.entities.academicYear'), value: 'academic_year' },
-])
+const entityOptions = computed(() => buildEntityOptions(t))
 
 const reportPeriodOptions = computed(() => [
   { label: t('preschoolLifecycleAuditPage.filters.allReportPeriods'), value: '' },
@@ -83,32 +50,7 @@ const reportPeriodOptions = computed(() => [
   })),
 ])
 
-const analyticsCards = computed(() => {
-  const overview = auditAnalytics.value.overview || {}
-
-  return [
-    {
-      title: t('preschoolLifecycleAnalyticsPage.cards.totalEvents'),
-      value: overview.totalEvents ?? 0,
-      caption: t('preschoolLifecycleAnalyticsPage.cards.totalEventsCaption'),
-    },
-    {
-      title: t('preschoolLifecycleAnalyticsPage.cards.blockedWrites'),
-      value: overview.blockedWrites ?? 0,
-      caption: t('preschoolLifecycleAnalyticsPage.cards.blockedWritesCaption'),
-    },
-    {
-      title: t('preschoolLifecycleAnalyticsPage.cards.overrides'),
-      value: overview.overrideApprovals ?? 0,
-      caption: t('preschoolLifecycleAnalyticsPage.cards.overridesCaption'),
-    },
-    {
-      title: t('preschoolLifecycleAnalyticsPage.cards.snapshots'),
-      value: overview.snapshotCount ?? 0,
-      caption: t('preschoolLifecycleAnalyticsPage.cards.snapshotsCaption'),
-    },
-  ]
-})
+const analyticsCards = computed(() => buildAnalyticsCards(t, auditAnalytics.value))
 
 async function loadAuditLogs(page = 1) {
   loading.value = true
