@@ -21,19 +21,19 @@ vi.mock('@/services/http', () => ({
 }))
 
 vi.mock('@/modules/sport/services/api/matchTimelineMappers', () => ({
-  normalizeMatchTimelineResponse: (response, homeTeamId, awayTeamId) => ({
+  normalizeMatchTimelineResponse: (response, _homeTeamId, _awayTeamId) => ({
     items: response?.data?.items || [],
     pagination: response?.data?.pagination || { page: 1, perPage: 10, total: 0, totalPages: 1 },
     match: response?.data?.match,
     raw: response?.data || null,
   }),
-  normalizeMatchTimelineEvent: (data, homeTeamId, awayTeamId) => ({
+  normalizeMatchTimelineEvent: (data, _homeTeamId, _awayTeamId) => ({
     id: data.id,
     type: data.type,
     minute: data.minute,
     teamId: data.teamId,
   }),
-  buildMatchTimelineEventPayload: (payload, options) => ({
+  buildMatchTimelineEventPayload: (payload, _options) => ({
     type: payload.type,
     minute: payload.minute,
     teamId: payload.teamId,

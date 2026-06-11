@@ -1,4 +1,4 @@
-import { LIST_PAGINATION, DEFAULT_FILTERS } from '../constants/governanceCasesConstants'
+import { LIST_PAGINATION } from '../constants/governanceCasesConstants'
 
 export function normalizeNullableBoolean(value: any): boolean | string {
   if (value === '' || value === null || typeof value === 'undefined') {

@@ -14,7 +14,7 @@ export function inferCompetitionType(match: any): string {
 
 export function initializeMatchForm(
   match: any,
-  setters: {
+  _setters: {
     setCompetitionType: (value: string) => void
     setTournamentId: (value: string) => void
     setTournament: (value: string) => void
@@ -47,7 +47,7 @@ export function initializeMatchForm(
   setAwayTeam(String(match.awayTeam || ''))
 }
 
-export function resetMatchForm(setters: {
+export function resetMatchForm(_setters: {
   setCompetitionType: (value: string) => void
   setTournamentId: (value: string) => void
   setTournament: (value: string) => void

@@ -1,5 +1,3 @@
-import { STATUS_OPTIONS } from '../constants/addTeamConstants'
-
 export function teamStatusLabel(status: string | null | undefined, t: any): string {
   const normalized = String(status || '').trim()
 
