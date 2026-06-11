@@ -16,6 +16,14 @@ import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-man
 import MatchesTable from '@/modules/sport/admin/components/matches-management/MatchesTable.vue'
 import PlayerInfoToolbar from '@/modules/sport/admin/components/player-management/PlayerInfoToolbar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
+import MatchesSummaryCards from './ManageMatches/components/MatchesSummaryCards.vue'
+import {
+  normalize,
+  toTableMatch,
+  matchTournamentLabel,
+  getCompetitionOptions,
+  getTournamentOptions,
+} from './ManageMatches/utils/matchHelpers'
 import { deleteSportMatch, fetchSportMatches } from '@/modules/sport/services/sportApi'
 
 defineOptions({
@@ -31,7 +39,6 @@ const subtitle = computed(() => t('sportMatchesManagement.subtitle'))
 const tableEmptyText = computed(() => t('sportMatchesManagement.table.empty'))
 const addMatchLabel = computed(() => t('sportMatchesManagement.actions.addButton'))
 
-// Filter state (UI-only until the matches table/list is implemented).
 const searchQuery = ref('')
 const competition = ref('')
 const tournament = ref('')
@@ -43,66 +50,22 @@ const showDeleteSuccess = ref(false)
 const deleteSuccessMessage = ref('')
 const selectedMatch = ref(null)
 
-// Keep pagination consistent with other Sport Admin list pages.
 const pageSize = 8
-
-// Placeholder options: these will come from the backend/API later.
 const matches = ref([])
 
-function toScoreNumber(value) {
-  const numericValue = Number(value)
-  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : null
-}
-
-function formatDisplayScore(match = {}) {
-  const homeScore = toScoreNumber(match.homeScore ?? match.home_score)
-  const awayScore = toScoreNumber(match.awayScore ?? match.away_score)
-
-  // Score text is display-only; the database/API contract stores normalized numeric columns.
-  if (homeScore === null || awayScore === null) return '- - -'
-  return `${homeScore} - ${awayScore}`
-}
-
-function toTableMatch(match) {
-  return {
-    ...match,
-    score: String(match.score || formatDisplayScore(match)),
-  }
-}
-
-const competitionOptions = computed(() => {
-  const options = matches.value.map((match) => match.competitionType || match.competition || '').filter(Boolean)
-  return [...new Set(options)].sort()
-})
-
-const tournamentOptions = computed(() => {
-  const options = matches.value
-    .map((match) => match.tournament?.name || match.tournamentName || match.tournament || '')
-    .filter(Boolean)
-  return [...new Set(options)].sort()
-})
-
-function matchTournamentLabel(match = {}) {
-  return String(match?.tournament?.name || match?.tournamentName || match?.tournament || '').trim()
-}
-
-function normalize(value) {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-}
+const competitionOptions = computed(() => getCompetitionOptions(matches.value))
+const tournamentOptions = computed(() => getTournamentOptions(matches.value))
 
 const toolbarEyebrow = computed(() => t('sportMatchesManagement.toolbarEyebrow'))
 
 const filteredMatches = computed(() => {
-  // Filtering lives on the page so it can evolve with API parameters later.
   const query = normalize(searchQuery.value)
 
   return matches.value.filter((match) => {
     let isMatch = true
 
     if (query) {
-        const haystack = normalize(
+      const haystack = normalize(
         `${match.id} ${match.homeTeam} ${match.awayTeam} ${match.venue} ${matchTournamentLabel(match)} ${match.competitionType || match.competition || ''}`,
       )
       isMatch = haystack.includes(query)
@@ -117,7 +80,6 @@ const filteredMatches = computed(() => {
     }
 
     if (isMatch && matchDateInput.value) {
-      // Keep it simple: match schedule starts with YYYY-MM-DD for now.
       isMatch = String(match.schedule || '').startsWith(matchDateInput.value)
     }
 
@@ -131,7 +93,6 @@ const paginatedMatches = computed(() => {
   return filteredMatches.value.slice(start, start + pageSize).map((match) => toTableMatch(match))
 })
 
-// Reset pagination when filters change (avoids landing on an empty page).
 watch(
   () => filteredMatches.value.length,
   () => {
@@ -274,33 +235,9 @@ onMounted(() => {
     <section :class="isKh ? 'manage-matches-page manage-matches-page--kh' : 'manage-matches-page'">
       <HeaderSection :title="title" :subtitle="subtitle" />
 
-      <div class="manage-matches-page__summary-grid">
-        <article
-          v-for="card in summaryCards"
-          :key="card.id"
-          class="manage-matches-page__summary-card"
-          :class="`manage-matches-page__summary-card--${card.tone}`"
-        >
-          <div class="manage-matches-page__summary-header">
-            <div>
-              <p class="manage-matches-page__summary-title">{{ card.title }}</p>
-              <p class="manage-matches-page__summary-value">{{ card.value }}</p>
-            </div>
+      <MatchesSummaryCards :cards="summaryCards" />
 
-            <span class="manage-matches-page__summary-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path :d="card.icon" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
-          </div>
-
-          <p class="manage-matches-page__summary-badge">{{ card.badge }}</p>
-          <p class="manage-matches-page__summary-caption">{{ card.caption }}</p>
-        </article>
-      </div>
-
-      <div class="manage-matches-page__shell">
-        <!-- Toolbar matches the hierarchy used by Teams/Players pages for consistent UX. -->
+      <div class="manage-matches-shell">
         <PlayerInfoToolbar
           :eyebrow="toolbarEyebrow"
           :title="toolbarSummary"
@@ -313,7 +250,7 @@ onMounted(() => {
               type="button"
               :label="addMatchLabel"
               icon="pi pi-plus"
-              class="manage-matches-page__add-button"
+              class="manage-matches-add-button"
               @click="goToAddMatch"
             />
           </template>
@@ -338,7 +275,6 @@ onMounted(() => {
             @delete="onDelete"
           />
 
-          <!-- Pagination stays outside the table so the table component stays presentation-only. -->
           <div v-if="totalPages > 1" class="mt-4 flex justify-end">
             <Pagination v-model="currentPage" :total-pages="totalPages" />
           </div>
@@ -378,120 +314,13 @@ onMounted(() => {
   gap: 1.35rem;
 }
 
-.manage-matches-page__summary-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.manage-matches-page__summary-card {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  min-height: 100%;
-  padding: 1.35rem;
-  border-radius: 1.35rem;
-  border: 1px solid #dbe6f4;
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.92), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 248, 252, 0.98) 100%);
-  box-shadow: 0 24px 48px -38px rgba(15, 23, 42, 0.45);
-}
-
-.manage-matches-page__summary-card::after {
-  content: '';
-  position: absolute;
-  inset: auto 1.35rem 0.9rem 1.35rem;
-  height: 0.25rem;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.16;
-}
-
-.manage-matches-page__summary-card--info {
-  color: #0f6f8f;
-}
-
-.manage-matches-page__summary-card--success {
-  color: #2f7a42;
-}
-
-.manage-matches-page__summary-card--warning {
-  color: #9a5d09;
-}
-
-.manage-matches-page__summary-card--danger {
-  color: #b42318;
-}
-
-.manage-matches-page__summary-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.9rem;
-}
-
-.manage-matches-page__summary-title {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.manage-matches-page__summary-value {
-  margin: 0.65rem 0 0;
-  color: #0f172a;
-  font-size: 2rem;
-  line-height: 1;
-  font-weight: 800;
-}
-
-.manage-matches-page__summary-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.95rem;
-  background: color-mix(in srgb, currentColor 12%, white);
-  border: 1px solid color-mix(in srgb, currentColor 18%, white);
-}
-
-.manage-matches-page__summary-icon svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.manage-matches-page__summary-badge {
-  margin: 0;
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 0.38rem 0.72rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 10%, white);
-  color: color-mix(in srgb, currentColor 85%, black 10%);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.manage-matches-page__summary-caption {
-  margin: 0;
-  color: #475569;
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.manage-matches-page__add-button {
+.manage-matches-add-button {
   min-height: 2.8rem;
   border-radius: 0.9rem;
   font-weight: 800;
 }
 
-.manage-matches-page__shell {
+.manage-matches-shell {
   padding: 1.5rem;
   border-radius: 1.5rem;
   border: 1px solid #dce6f2;
@@ -501,31 +330,13 @@ onMounted(() => {
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
 }
 
-.manage-matches-page__hint {
-  margin: 0;
-  color: #475569;
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
-
-.manage-matches-page--kh .manage-matches-page__shell {
-  font-family:
-    'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
-}
-
-.manage-matches-page--kh .manage-matches-page__summary-title,
-.manage-matches-page--kh .manage-matches-page__summary-badge,
-.manage-matches-page--kh .manage-matches-page__summary-caption,
-.manage-matches-page--kh .manage-matches-page__summary-value,
-.manage-matches-page--kh .manage-matches-page__summary-grid,
-.manage-matches-page--kh .manage-matches-page__summary-icon {
+.manage-matches-page--kh .manage-matches-shell {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 
 @media (max-width: 640px) {
-  .manage-matches-page__summary-card,
-  .manage-matches-page__shell {
+  .manage-matches-shell {
     padding: 1.1rem;
   }
 }
