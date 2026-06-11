@@ -15,6 +15,19 @@ import {
   fetchSportTournaments,
   updateSportMatch,
 } from '@/modules/sport/services/sportApi'
+import {
+  parseSchedule,
+  inferCompetitionType,
+  initializeMatchForm,
+  getFormPayload,
+  validateTeams,
+} from './AddMatch/utils/addMatchHelpers'
+import {
+  COMPETITION_TYPES,
+  MATCH_STATUS,
+  DEFAULT_MATCH_STATUS,
+  DEFAULT_COMPETITION_TYPE,
+} from './AddMatch/constants/addMatchConstants'
 
 defineOptions({
   name: 'SportAdminAddMatchPage',
@@ -51,18 +64,18 @@ const feedbackMessage = ref('')
 const teamRows = ref([])
 const tournamentRows = ref([])
 
-const competitionType = ref('tournament')
+const competitionType = ref(DEFAULT_COMPETITION_TYPE)
 const tournament = ref('')
 const tournamentId = ref('')
 const dateTime = ref('')
 const venue = ref('')
-const status = ref('scheduled')
+const status = ref(DEFAULT_MATCH_STATUS)
 const homeTeam = ref('')
 const awayTeam = ref('')
 
 const competitionTypeOptions = computed(() => [
-  { value: 'tournament', label: t('sportMatchesManagement.competitionTypes.tournament') },
-  { value: 'friendly', label: t('sportMatchesManagement.competitionTypes.friendly') },
+  { value: COMPETITION_TYPES.TOURNAMENT, label: t('sportMatchesManagement.competitionTypes.tournament') },
+  { value: COMPETITION_TYPES.FRIENDLY, label: t('sportMatchesManagement.competitionTypes.friendly') },
 ])
 
 const tournamentOptions = computed(() =>
@@ -73,11 +86,11 @@ const tournamentOptions = computed(() =>
 )
 
 const statusOptions = computed(() => [
-  { value: 'scheduled', label: t('sportMatchesManagement.status.scheduled') },
-  { value: 'live', label: t('sportMatchesManagement.status.live') },
-  { value: 'completed', label: t('sportMatchesManagement.status.completed') },
-  { value: 'postponed', label: t('sportMatchesManagement.status.postponed') },
-  { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
+  { value: MATCH_STATUS.SCHEDULED, label: t('sportMatchesManagement.status.scheduled') },
+  { value: MATCH_STATUS.LIVE, label: t('sportMatchesManagement.status.live') },
+  { value: MATCH_STATUS.COMPLETED, label: t('sportMatchesManagement.status.completed') },
+  { value: MATCH_STATUS.POSTPONED, label: t('sportMatchesManagement.status.postponed') },
+  { value: MATCH_STATUS.CANCELLED, label: t('sportMatchesManagement.status.cancelled') },
 ])
 
 const teamOptions = computed(() => {
@@ -90,7 +103,7 @@ const selectedCompetitionLabel = computed(() => {
 })
 
 const selectedTournamentLabel = computed(() => {
-  if (competitionType.value === 'friendly') {
+  if (competitionType.value === COMPETITION_TYPES.FRIENDLY) {
     return tournament.value || t('sportMatchesManagement.tournamentNamePlaceholder')
   }
 
@@ -125,61 +138,14 @@ const checklistHighlightValue = computed(() =>
   isEditMode.value ? t('sportMatchesManagement.sidebarHighlightEdit') : t('sportMatchesManagement.sidebarHighlightAdd'),
 )
 
-const selectedMatch = ref(null)
-
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
   feedbackMessage.value = ''
 }
 
-function parseSchedule(value) {
-  const raw = String(value || '').trim()
-  if (!raw) return ''
-  const [datePart, timePart = ''] = raw.split(/\s+/)
-  if (!datePart || !timePart) return raw
-  return `${datePart}T${timePart.slice(0, 5)}`
-}
-
-function inferCompetitionType(match) {
-  return match?.tournamentId ? 'tournament' : match?.tournamentName ? 'friendly' : 'tournament'
-}
-
-function applySelectedMatch(match) {
-  if (!match) return
-
-  competitionType.value = inferCompetitionType(match)
-  tournamentId.value = String(match.tournamentId || match.tournament?.id || '')
-  tournament.value = String(match.tournamentName || match.tournament?.name || '')
-  dateTime.value = parseSchedule(match.schedule || match.scheduledAt)
-  venue.value = String(match.venue || '')
-  status.value = String(match.status || 'scheduled')
-  homeTeam.value = String(match.homeTeam || '')
-  awayTeam.value = String(match.awayTeam || '')
-}
-
-watch(
-  selectedMatch,
-  (match) => {
-    if (match) {
-      applySelectedMatch(match)
-      return
-    }
-
-    competitionType.value = 'tournament'
-    tournamentId.value = ''
-    tournament.value = ''
-    dateTime.value = ''
-    venue.value = ''
-    status.value = 'scheduled'
-    homeTeam.value = ''
-    awayTeam.value = ''
-  },
-  { immediate: true },
-)
-
 watch(competitionType, (nextType) => {
-  if (nextType === 'friendly') {
+  if (nextType === COMPETITION_TYPES.FRIENDLY) {
     tournamentId.value = ''
   } else {
     tournament.value = ''
@@ -189,8 +155,9 @@ watch(competitionType, (nextType) => {
 async function onSubmit() {
   resetFeedback()
 
-  if (homeTeam.value && homeTeam.value === awayTeam.value) {
-    errorMessage.value = t('sportMatchesManagement.teamSelectionError')
+  const validationError = validateTeams(homeTeam.value, awayTeam.value, t)
+  if (validationError) {
+    errorMessage.value = validationError
     showError.value = true
     return
   }
@@ -198,16 +165,16 @@ async function onSubmit() {
   isSubmitting.value = true
 
   try {
-    const payload = {
-      competitionType: competitionType.value,
-      tournamentId: competitionType.value === 'tournament' ? tournamentId.value : null,
-      tournamentName: competitionType.value === 'friendly' ? tournament.value : null,
-      scheduledAt: dateTime.value,
-      venue: venue.value,
-      status: status.value,
-      homeTeam: homeTeam.value,
-      awayTeam: awayTeam.value,
-    }
+    const payload = getFormPayload(
+      competitionType.value,
+      tournamentId.value,
+      tournament.value,
+      dateTime.value,
+      venue.value,
+      status.value,
+      homeTeam.value,
+      awayTeam.value,
+    )
 
     if (isEditMode.value && matchId.value) {
       await updateSportMatch(matchId.value, payload)
@@ -261,15 +228,32 @@ onMounted(async () => {
   fetchSportMatch(matchId.value)
     .then((match) => {
       if (!match?.id) return
-      selectedMatch.value = match
-      competitionType.value = match.competitionType || inferCompetitionType(match)
-      tournamentId.value = String(match.tournamentId || match.tournament?.id || '')
-      tournament.value = match.tournamentName || match.tournament?.name || ''
-      dateTime.value = String(match.scheduledAt || '').slice(0, 16)
-      venue.value = match.venue || ''
-      status.value = match.status || 'scheduled'
-      homeTeam.value = match.homeTeam || ''
-      awayTeam.value = match.awayTeam || ''
+      initializeMatchForm(match, {
+        setCompetitionType: (value) => {
+          competitionType.value = value
+        },
+        setTournamentId: (value) => {
+          tournamentId.value = value
+        },
+        setTournament: (value) => {
+          tournament.value = value
+        },
+        setDateTime: (value) => {
+          dateTime.value = value
+        },
+        setVenue: (value) => {
+          venue.value = value
+        },
+        setStatus: (value) => {
+          status.value = value
+        },
+        setHomeTeam: (value) => {
+          homeTeam.value = value
+        },
+        setAwayTeam: (value) => {
+          awayTeam.value = value
+        },
+      })
     })
     .catch(() => {})
 })
