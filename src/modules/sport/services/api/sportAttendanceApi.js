@@ -111,10 +111,6 @@ export async function fetchSportPlayerAttendance(params = {}, options = {}) {
   return fetchSportAttendance({ ...params, attendanceType: 'player' }, options)
 }
 
-export async function fetchSportCoachAttendance(params = {}, options = {}) {
-  return fetchSportAttendance({ ...params, attendanceType: 'coach' }, options)
-}
-
 export async function saveSportAttendance(payload = {}) {
   const attendanceId = resolveId(payload)
   const method = attendanceId ? 'put' : 'post'
@@ -127,8 +123,4 @@ export async function saveSportAttendance(payload = {}) {
 
 export async function saveSportPlayerAttendance(payload = {}) {
   return saveSportAttendance({ ...payload, attendanceType: 'player' })
-}
-
-export async function saveSportCoachAttendance(payload = {}) {
-  return saveSportAttendance({ ...payload, attendanceType: 'coach' })
 }

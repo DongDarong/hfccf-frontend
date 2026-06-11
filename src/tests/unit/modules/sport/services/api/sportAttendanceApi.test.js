@@ -112,19 +112,6 @@ describe('sportAttendanceApi', () => {
     })
   })
 
-  describe('fetchSportCoachAttendance', () => {
-    it('sets attendanceType to coach', async () => {
-      mockHttpGet.mockResolvedValueOnce({})
-      mockUnwrapApiItems.mockReturnValueOnce([])
-
-      await sportAttendanceApi.fetchSportCoachAttendance()
-
-      expect(mockBuildQueryParams).toHaveBeenCalledWith(expect.objectContaining({
-        attendance_type: 'coach',
-      }))
-    })
-  })
-
   describe('saveSportAttendance', () => {
     it('creates new attendance when no id', async () => {
       mockResolveId.mockReturnValueOnce(null)
@@ -175,20 +162,6 @@ describe('sportAttendanceApi', () => {
 
       expect(mockHttpPost).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
         attendance_type: 'player',
-      }))
-    })
-  })
-
-  describe('saveSportCoachAttendance', () => {
-    it('sets attendanceType to coach', async () => {
-      mockResolveId.mockReturnValueOnce(null)
-      mockHttpPost.mockResolvedValueOnce({})
-      mockUnwrapApiData.mockReturnValueOnce({})
-
-      await sportAttendanceApi.saveSportCoachAttendance({ status: 'present' })
-
-      expect(mockHttpPost).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
-        attendance_type: 'coach',
       }))
     })
   })

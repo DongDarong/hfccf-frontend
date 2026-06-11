@@ -34,7 +34,6 @@ import {
   normalizeBooleanLike,
   normalizePerPage,
   saveSportAttendance,
-  saveSportCoachAttendance,
   saveSportPlayerAttendance,
   recalculateTournamentStandings,
   removeTournamentTeam,
@@ -340,18 +339,6 @@ describe('sport attendance APIs', () => {
     ).resolves.toMatchObject({
       id: 6,
       attendanceType: 'player',
-    })
-
-    http.post.mockResolvedValueOnce(stubResponse({ attendance: { id: 7, attendance_type: 'coach' } }))
-    await expect(
-      saveSportCoachAttendance({
-        coachId: 10,
-        attendanceDate: '2026-06-01',
-        status: 'late',
-      }),
-    ).resolves.toMatchObject({
-      id: 7,
-      attendanceType: 'coach',
     })
   })
 })
