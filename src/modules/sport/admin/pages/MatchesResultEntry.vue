@@ -13,8 +13,17 @@ import { useMatchSquad } from '@/modules/sport/match-squads/composables/useMatch
 import { useMatchEvents } from '@/modules/sport/match-events/composables/useMatchEvents'
 import MatchEventForm from '@/modules/sport/match-events/components/MatchEventForm.vue'
 import MatchTimeline from '@/modules/sport/match-events/components/MatchTimeline.vue'
-import { MATCH_EVENT_TYPES } from '@/modules/sport/constants/matchEvent'
 import { useMatchResultEntry } from '@/modules/sport/admin/composables/useMatchResultEntry'
+import {
+  createResultValue,
+  createDraftEvent,
+  isScoringEvent,
+  calculateScore,
+  buildFixtureSummary,
+  validateResult,
+  buildResultSavePayload,
+} from './MatchesResultEntry/utils/resultEntryHelpers'
+import { DEFAULT_EVENT_TYPE } from './MatchesResultEntry/constants/resultEntryConstants'
 
 defineOptions({
   name: 'SportAdminMatchesResultEntryPage',
@@ -63,21 +72,7 @@ const statusOptions = computed(() => [
   { value: 'cancelled', label: t('sportMatchesManagement.status.cancelled') },
 ])
 
-const fixtureSummary = computed(() => {
-  const match = selectedMatch.value || {}
-  const [matchDate = '-', matchTime = '-'] = String(match.schedule || '')
-    .trim()
-    .split(/\s+/)
-
-  return {
-    homeTeam: String(match.homeTeam || '-'),
-    awayTeam: String(match.awayTeam || '-'),
-    matchDate,
-    matchTime,
-    venue: String(match.venue || '-'),
-    competition: String(match.tournament?.name || match.tournamentName || match.competitionType || '-'),
-  }
-})
+const fixtureSummary = computed(() => buildFixtureSummary(selectedMatch.value))
 
 const scoreState = computed(() => calculateScore(matchEvents.value, selectedMatch.value))
 
@@ -107,61 +102,6 @@ watch(
   { immediate: true },
 )
 
-function createResultValue(value = {}) {
-  return {
-    homeTeam: String(value.homeTeam || ''),
-    awayTeam: String(value.awayTeam || ''),
-    homeScore: Number(value.homeScore || 0),
-    awayScore: Number(value.awayScore || 0),
-    status: String(value.status || 'completed'),
-    report: String(value.report || ''),
-    homeEvents: Array.isArray(value.homeEvents) ? value.homeEvents : [],
-    awayEvents: Array.isArray(value.awayEvents) ? value.awayEvents : [],
-  }
-}
-
-function createDraftEvent(value = {}) {
-  return {
-    id: value.id || '',
-    eventType: String(value.eventType || MATCH_EVENT_TYPES.GOAL),
-    teamId: value.teamId || '',
-    squadId: value.squadId || '',
-    squadPlayerId: value.squadPlayerId || '',
-    relatedSquadPlayerId: value.relatedSquadPlayerId || '',
-    minute: Number(value.minute || 0),
-    stoppageMinute: Number(value.stoppageMinute || 0),
-    period: String(value.period || 'first_half'),
-    notes: String(value.notes || value.description || ''),
-  }
-}
-
-function isScoringEvent(event = {}) {
-  const type = String(event.eventType || '').toLowerCase()
-  return ['goal', 'own_goal', 'penalty_goal', 'extra_time_goal'].includes(type)
-}
-
-function calculateScore(events = [], match = {}) {
-  return events.reduce(
-    (carry, event) => {
-      if (!isScoringEvent(event)) return carry
-
-      const teamId = String(event.teamId || event.team_id || '')
-      const awayId = String(match.awayTeamId || match.away_team_id || '')
-      const eventSide = String(event.side || '').toLowerCase()
-      let creditedTeam = teamId === awayId || eventSide === 'away' ? 'away' : 'home'
-
-      if (String(event.eventType || '').toLowerCase() === 'own_goal') {
-        creditedTeam = creditedTeam === 'home' ? 'away' : 'home'
-      }
-
-      if (creditedTeam === 'home') carry.home += 1
-      if (creditedTeam === 'away') carry.away += 1
-
-      return carry
-    },
-    { home: 0, away: 0 },
-  )
-}
 
 function resetFeedback() {
   errorMessage.value = ''
@@ -226,30 +166,16 @@ async function onSubmitEvent(payload) {
 async function onSaveResult(result) {
   resetFeedback()
 
-  if (!selectedMatch.value) {
-    errorMessage.value = t('sportMatchesManagement.resultsEntry.validation.matchRequired')
-    showError.value = true
-    return
-  }
-
-  if (Number(result.homeScore) < 0 || Number(result.awayScore) < 0) {
-    errorMessage.value = t('sportMatchesManagement.resultsEntry.validation.scoreInvalid')
-    showError.value = true
-    return
-  }
-
-  if (!result.status) {
-    errorMessage.value = t('sportMatchesManagement.resultsEntry.validation.statusRequired')
+  const validationError = validateResult(result, selectedMatch.value, t)
+  if (validationError) {
+    errorMessage.value = validationError
     showError.value = true
     return
   }
 
   try {
-    await saveResult(matchId.value, {
-      status: result.status,
-      currentPeriod: 'final',
-      notes: result.report,
-    })
+    const payload = buildResultSavePayload(result)
+    await saveResult(matchId.value, payload)
     showSuccess.value = true
   } catch {
     errorMessage.value = t('sportMatchesManagement.resultsEntry.saveFailed')
