@@ -25,6 +25,16 @@ import {
   resolveLifecycleContextLabel,
   resolveLifecycleEntityLabel,
 } from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
+import { DEFAULT_REVIEW, DEFAULT_ANALYTICS, DEFAULT_REPLAY, DEFAULT_FILTERS } from './constants/governanceReviewConstants'
+import {
+  normalizeClassItem,
+  normalizeStudentItem,
+  normalizeReportPeriodItem,
+  buildQueryPayload,
+  buildOverviewCards,
+  buildReviewSections,
+  resolveAuditEntityContext as resolveAuditEntityContextHelper,
+} from './utils/governanceReviewHelpers'
 
 defineOptions({
   name: 'PreschoolGovernanceReviewPage',
@@ -39,50 +49,14 @@ const analyticsLoading = ref(false)
 const replayLoading = ref(false)
 const errorMessage = ref('')
 const analyticsError = ref('')
-const review = ref({
-  overview: {},
-  overrideReview: [],
-  blockedWriteReview: [],
-  exportReview: [],
-  anomalyReview: {},
-  integrityReview: {},
-  retentionReview: {},
-  timeline: [],
-})
-const analytics = ref({
-  overview: {},
-  overrideActorCounts: [],
-  exportActorCounts: [],
-  blockedWriteTrend: [],
-  replayEventCounts: [],
-  retentionSummary: {},
-})
-const replay = ref({
-  items: [],
-  overview: {},
-  timeline: [],
-  summary: {},
-})
+const review = ref({ ...DEFAULT_REVIEW })
+const analytics = ref({ ...DEFAULT_ANALYTICS })
+const replay = ref({ ...DEFAULT_REPLAY })
 const classOptions = ref([])
 const studentOptions = ref([])
 const reportPeriodOptions = ref([])
 
-const filters = ref({
-  academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  classId: '',
-  studentId: '',
-  actorUserId: '',
-  actionType: '',
-  entityType: '',
-  exportType: '',
-  exportFormat: '',
-  source: '',
-  generatedFrom: '',
-  generatedTo: '',
-  search: '',
-})
+const filters = ref({ ...DEFAULT_FILTERS })
 
 const academicYearOptions = computed(() => [
   { label: t('preschoolGovernanceReviewPage.filters.allAcademicYears'), value: '' },
@@ -124,71 +98,12 @@ const reportPeriodOptionsList = computed(() => [
   })),
 ])
 
-const reviewSections = computed(() => [
-  {
-    title: t('preschoolGovernanceReviewPage.sections.overrideReview'),
-    description: t('preschoolGovernanceReviewPage.sections.overrideReviewCaption'),
-    items: review.value.overrideReview || [],
-    emptyLabel: t('preschoolGovernanceReviewPage.empty.overrideReview'),
-  },
-  {
-    title: t('preschoolGovernanceReviewPage.sections.blockedWrites'),
-    description: t('preschoolGovernanceReviewPage.sections.blockedWritesCaption'),
-    items: review.value.blockedWriteReview || [],
-    emptyLabel: t('preschoolGovernanceReviewPage.empty.blockedWrites'),
-  },
-  {
-    title: t('preschoolGovernanceReviewPage.sections.exportReview'),
-    description: t('preschoolGovernanceReviewPage.sections.exportReviewCaption'),
-    items: review.value.exportReview || [],
-    emptyLabel: t('preschoolGovernanceReviewPage.empty.exportReview'),
-  },
-])
+const reviewSections = computed(() => buildReviewSections(review.value, t))
 
-const overviewCards = computed(() => {
-  const overview = analytics.value.overview || {}
-
-  return [
-    {
-      title: t('preschoolGovernanceReviewPage.cards.totalEvents'),
-      value: overview.totalAudits ?? 0,
-      caption: t('preschoolGovernanceReviewPage.cards.totalEventsCaption'),
-    },
-    {
-      title: t('preschoolGovernanceReviewPage.cards.blockedWrites'),
-      value: overview.blockedWrites ?? 0,
-      caption: t('preschoolGovernanceReviewPage.cards.blockedWritesCaption'),
-    },
-    {
-      title: t('preschoolGovernanceReviewPage.cards.overrides'),
-      value: overview.overrideApprovals ?? 0,
-      caption: t('preschoolGovernanceReviewPage.cards.overridesCaption'),
-    },
-    {
-      title: t('preschoolGovernanceReviewPage.cards.exports'),
-      value: overview.exportEvents ?? 0,
-      caption: t('preschoolGovernanceReviewPage.cards.exportsCaption'),
-    },
-  ]
-})
+const overviewCards = computed(() => buildOverviewCards(analytics.value.overview || {}, t))
 
 function query() {
-  return {
-    academicYearId: filters.value.academicYearId,
-    termId: filters.value.termId,
-    reportPeriodId: filters.value.reportPeriodId,
-    classId: filters.value.classId,
-    studentId: filters.value.studentId,
-    actorUserId: filters.value.actorUserId,
-    actionType: filters.value.actionType,
-    entityType: filters.value.entityType,
-    exportType: filters.value.exportType,
-    exportFormat: filters.value.exportFormat,
-    source: filters.value.source,
-    generatedFrom: filters.value.generatedFrom,
-    generatedTo: filters.value.generatedTo,
-    search: filters.value.search,
-  }
+  return buildQueryPayload(filters.value)
 }
 
 async function loadLookupOptions() {
@@ -199,23 +114,9 @@ async function loadLookupOptions() {
       fetchReportPeriods(),
     ])
 
-    classOptions.value = (classesResponse.items || []).map((item) => ({
-      label: item.name || item.code || `#${item.id}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    studentOptions.value = (studentsResponse.items || []).map((item) => ({
-      label: `${item.fullName || item.name}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    reportPeriodOptions.value = (reportPeriodsResponse || []).map((period) => ({
-      label: `${period.label || period.periodLabel || period.period_label}${period.status ? ` (${period.status})` : ''}`,
-      value: period.id,
-      raw: period,
-    }))
+    classOptions.value = (classesResponse.items || []).map(normalizeClassItem)
+    studentOptions.value = (studentsResponse.items || []).map(normalizeStudentItem)
+    reportPeriodOptions.value = (reportPeriodsResponse || []).map(normalizeReportPeriodItem)
   } catch {
     classOptions.value = []
     studentOptions.value = []
@@ -230,16 +131,7 @@ async function loadReview() {
   try {
     review.value = await fetchGovernanceReview(query())
   } catch (error) {
-    review.value = {
-      overview: {},
-      overrideReview: [],
-      blockedWriteReview: [],
-      exportReview: [],
-      anomalyReview: {},
-      integrityReview: {},
-      retentionReview: {},
-      timeline: [],
-    }
+    review.value = { ...DEFAULT_REVIEW }
     errorMessage.value = error?.message || t('preschoolGovernanceReviewPage.errors.review')
   } finally {
     loading.value = false
@@ -253,14 +145,7 @@ async function loadAnalytics() {
   try {
     analytics.value = await fetchGovernanceReviewAnalytics(query())
   } catch (error) {
-    analytics.value = {
-      overview: {},
-      overrideActorCounts: [],
-      exportActorCounts: [],
-      blockedWriteTrend: [],
-      replayEventCounts: [],
-      retentionSummary: {},
-    }
+    analytics.value = { ...DEFAULT_ANALYTICS }
     analyticsError.value = error?.message || t('preschoolGovernanceReviewPage.errors.analytics')
   } finally {
     analyticsLoading.value = false
@@ -273,12 +158,7 @@ async function loadReplay() {
   try {
     replay.value = await fetchInstitutionalReplay(query())
   } catch {
-    replay.value = {
-      items: [],
-      overview: {},
-      timeline: [],
-      summary: {},
-    }
+    replay.value = { ...DEFAULT_REPLAY }
   } finally {
     replayLoading.value = false
   }
@@ -323,20 +203,7 @@ function resolveAuditContext(item = {}) {
 function resolveAuditEntityContext(item = {}) {
   const entity = resolveAuditEntity(item)
   const context = resolveAuditContext(item)
-
-  if (entity === '-' && context === '-') {
-    return '-'
-  }
-
-  if (entity === '-') {
-    return context
-  }
-
-  if (context === '-') {
-    return entity
-  }
-
-  return `${entity} · ${context}`
+  return resolveAuditEntityContextHelper(entity, context)
 }
 
 onMounted(async () => {

@@ -248,7 +248,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/governance/review',
     name: 'dashboard-preschool-admin-governance-review',
-    component: () => import('@/modules/preschool/admin/pages/GovernanceReview.vue'),
+    component: () => import('@/modules/preschool/admin/pages/GovernanceReview/GovernanceReview.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
