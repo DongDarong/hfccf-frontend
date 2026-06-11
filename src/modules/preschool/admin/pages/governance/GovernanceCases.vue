@@ -43,7 +43,7 @@ import {
   GOVERNANCE_CASE_SEVERITIES,
   GOVERNANCE_CASE_STATUSES,
   GOVERNANCE_CASE_WORKFLOW_STATUSES,
-} from '../GovernanceCases/constants/governanceCasesConstants'
+} from './constants/governanceCasesConstants'
 import {
   buildAssignmentPayload,
   buildCreatePayload,
@@ -61,7 +61,7 @@ import {
   normalizeStudentItem,
   parseMetadataText,
   sourceContextPayload,
-} from '../GovernanceCases/utils/governanceCasesHelpers'
+} from './utils/governanceCasesHelpers'
 
 defineOptions({
   name: 'PreschoolGovernanceCasesPage',

@@ -35,7 +35,7 @@ import {
   DEFAULT_LEFT_CONTEXT,
   DEFAULT_RIGHT_CONTEXT,
   DEFAULT_SUMMARY,
-} from '../GovernanceDiffAnalysis/constants/governanceDiffConstants'
+} from './constants/governanceDiffConstants'
 import {
   buildComparisonModeCatalog,
   buildContextTypeOptions,
@@ -50,7 +50,7 @@ import {
   normalizeReportPeriodItem,
   normalizeStudentItem,
   severityLabel,
-} from '../GovernanceDiffAnalysis/utils/governanceDiffHelpers'
+} from './utils/governanceDiffHelpers'
 
 defineOptions({
   name: 'PreschoolGovernanceDiffAnalysisPage',
