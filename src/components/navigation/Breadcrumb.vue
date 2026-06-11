@@ -90,6 +90,20 @@ const SPORT_CRUMB_MAP = {
     { labelKey: 'breadcrumb.divisions', to: { name: 'dashboard-sport-admin-divisions' } },
     { labelKey: 'breadcrumb.editDivision' },
   ],
+  'dashboard-sport-admin-playing-styles': [
+    { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
+    { labelKey: 'breadcrumb.playingStyles' },
+  ],
+  'dashboard-sport-admin-playing-styles-add': [
+    { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
+    { labelKey: 'breadcrumb.playingStyles', to: { name: 'dashboard-sport-admin-playing-styles' } },
+    { labelKey: 'breadcrumb.addPlayingStyle' },
+  ],
+  'dashboard-sport-admin-playing-styles-edit': [
+    { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
+    { labelKey: 'breadcrumb.playingStyles', to: { name: 'dashboard-sport-admin-playing-styles' } },
+    { labelKey: 'breadcrumb.editPlayingStyle' },
+  ],
   'dashboard-sport-admin-players': [
     { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
     { labelKey: 'breadcrumb.players' },

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import { createSportPlayingStyle, fetchSportPlayingStyle, updateSportPlayingStyle } from '@/modules/sport/services/sportApi'
 
 defineOptions({
@@ -140,6 +141,7 @@ onMounted(async () => {
 <template>
   <MainLayout>
     <section class="add-playing-style-page">
+      <Breadcrumb />
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <!-- Summary Cards -->
