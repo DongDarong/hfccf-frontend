@@ -12,6 +12,21 @@ import { useLanguage } from '@/composables/useLanguage'
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import { fetchPreschoolClasses, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 import { fetchSchedules } from '@/modules/preschool/services/api/preschoolScheduleApi'
+import {
+  normalizeStatus,
+  formatDate,
+  badgeClasses,
+  statusLabel,
+  isTermLocked as checkIsTermLocked,
+  isReportPeriodLocked as checkIsReportPeriodLocked,
+  buildAssignmentLockMessage,
+  buildStudentAssignmentRows,
+  buildTeacherAssignmentRows,
+  buildTeacherAssignmentHistoryRows,
+  buildScheduleAssignmentRows,
+  buildHistoryRows,
+  buildSummaryCards,
+} from './utils/preschoolAssignmentsHelpers'
 
 defineOptions({
   name: 'PreschoolAdminAssignmentWorkflowPage',
@@ -27,55 +42,8 @@ const classRows = ref([])
 const studentRows = ref([])
 const scheduleRows = ref([])
 
-function normalizeStatus(value) {
-  return String(value || 'active').toLowerCase()
-}
-
-function formatDate(value) {
-  if (!value) return '-'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '-'
-
-  return new Intl.DateTimeFormat('en-GB', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(date)
-}
-
 function goTo(routeName) {
   router.push({ name: routeName })
-}
-
-function badgeClasses(status) {
-  switch (normalizeStatus(status)) {
-    case 'active':
-      return 'border-emerald-200 bg-emerald-50 text-emerald-700'
-    case 'inactive':
-      return 'border-slate-200 bg-slate-100 text-slate-600'
-    case 'pending':
-      return 'border-amber-200 bg-amber-50 text-amber-700'
-    case 'archived':
-      return 'border-rose-200 bg-rose-50 text-rose-700'
-    default:
-      return 'border-slate-200 bg-slate-100 text-slate-600'
-  }
-}
-
-function statusLabel(status) {
-  const normalized = normalizeStatus(status)
-  const translated = {
-    active: t('preschoolAssignmentsPage.statusLabels.active'),
-    inactive: t('preschoolAssignmentsPage.statusLabels.inactive'),
-    pending: t('preschoolAssignmentsPage.statusLabels.pending'),
-    archived: t('preschoolAssignmentsPage.statusLabels.archived'),
-  }
-
-  if (translated[normalized]) {
-    return translated[normalized]
-  }
-
-  return normalized.charAt(0).toUpperCase() + normalized.slice(1)
 }
 
 async function loadAssignments() {
@@ -110,143 +78,27 @@ async function loadAssignments() {
   }
 }
 
-const isTermLocked = computed(() => ['closed', 'archived'].includes(String(lifecycleContext.value.term_status || '').toLowerCase()))
+const isTermLocked = computed(() => checkIsTermLocked(lifecycleContext.value.term_status))
 const isReportPeriodLocked = computed(() =>
-  ['closed', 'archived'].includes(
-    String(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '').toLowerCase(),
-  ),
+  checkIsReportPeriodLocked(lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus),
 )
-const assignmentLockMessage = computed(() => {
-  const status = String(lifecycleContext.value.term_status || '').toLowerCase()
-  const reportPeriodStatus = String(
-    lifecycleContext.value.report_period_status || lifecycleContext.value.reportPeriodStatus || '',
-  ).toLowerCase()
+const assignmentLockMessage = computed(() => buildAssignmentLockMessage(lifecycleContext.value, t))
 
-  if (status === 'closed') {
-    return t('preschoolLifecyclePage.messages.termClosed')
-  }
+const studentAssignmentRows = computed(() => buildStudentAssignmentRows(studentRows.value))
 
-  if (status === 'archived') {
-    return t('preschoolLifecyclePage.messages.termArchived')
-  }
+const teacherAssignmentRows = computed(() => buildTeacherAssignmentRows(classRows.value))
 
-  if (['closed', 'archived'].includes(reportPeriodStatus)) {
-    return t('preschoolLifecyclePage.messages.reportPeriodLocked')
-  }
+const teacherAssignmentHistoryRows = computed(() => buildTeacherAssignmentHistoryRows(classRows.value))
 
-  return ''
-})
+const scheduleAssignmentRows = computed(() => buildScheduleAssignmentRows(scheduleRows.value))
 
-const studentAssignmentRows = computed(() =>
-  studentRows.value.flatMap((student) =>
-    (student.classAssignments || student.classes || []).map((assignment) => ({
-      studentId: student.id,
-      studentName: student.fullName || student.name || student.publicId || student.studentCode || '-',
-      studentCode: student.publicId || student.studentCode || '-',
-      classId: assignment.id || '',
-      classCode: assignment.code || '-',
-      className: assignment.name || '-',
-      teacherDisplayName: assignment.teacherDisplayName || '-',
-      status: assignment.status || 'active',
-      enrolledAt: assignment.enrolledAt || '',
-      updatedAt: assignment.updatedAt || '',
-    })),
-  ),
+const historyRows = computed(() =>
+  buildHistoryRows(studentAssignmentRows.value, teacherAssignmentHistoryRows.value, scheduleAssignmentRows.value),
 )
 
-const teacherAssignmentRows = computed(() =>
-  classRows.value
-    .filter((item) => String(item.teacherUserId || '').trim() !== '')
-    .map((item) => ({
-      classId: item.id,
-      classCode: item.code || '-',
-      className: item.name || '-',
-      teacherDisplayName: item.teacherDisplayName || item.teacher || '-',
-      teacherUserId: item.teacherUserId || '',
-      status: item.status || 'active',
-      studentsCount: item.studentsCount || 0,
-    })),
+const summaryCards = computed(() =>
+  buildSummaryCards(studentAssignmentRows.value, teacherAssignmentRows.value, scheduleAssignmentRows.value, historyRows.value, t),
 )
-
-const teacherAssignmentHistoryRows = computed(() =>
-  classRows.value.flatMap((item) =>
-    (item.teacherAssignments || []).map((assignment) => ({
-      classId: item.id,
-      classCode: item.code || '-',
-      className: item.name || '-',
-      teacherDisplayName: assignment.teacherDisplayName || item.teacherDisplayName || '-',
-      status: assignment.status || 'active',
-      assignedAt: assignment.assignedAt || '',
-      endedAt: assignment.endedAt || '',
-      notes: assignment.notes || '',
-      updatedAt: assignment.updatedAt || assignment.endedAt || assignment.assignedAt || '',
-    })),
-  ),
-)
-
-const scheduleAssignmentRows = computed(() =>
-  scheduleRows.value.map((item) => ({
-    id: item.id,
-    className: item.className || '-',
-    teacherName: item.teacherName || '-',
-    dayOfWeek: item.dayOfWeek || '-',
-    status: item.status || (item.isActive ? 'active' : 'inactive'),
-    effectiveFrom: item.effectiveFrom || '',
-    effectiveTo: item.effectiveTo || '',
-    notes: item.notes || '',
-  })),
-)
-
-const historyRows = computed(() => [
-  ...studentAssignmentRows.value.filter((row) => normalizeStatus(row.status) !== 'active').map((row) => ({
-    type: 'student',
-    label: `${row.studentName} → ${row.className}`,
-    status: row.status,
-    updatedAt: row.updatedAt || row.enrolledAt || '',
-    note: row.teacherDisplayName,
-  })),
-  ...teacherAssignmentHistoryRows.value.filter((row) => normalizeStatus(row.status) !== 'active').map((row) => ({
-    type: 'teacher',
-    label: `${row.classCode} - ${row.className}`,
-    status: row.status,
-    updatedAt: row.updatedAt || row.endedAt || row.assignedAt || '',
-    note: row.teacherDisplayName || row.notes,
-  })),
-  ...scheduleAssignmentRows.value.filter((row) => normalizeStatus(row.status) !== 'active').map((row) => ({
-    type: 'schedule',
-    label: `${row.className} / ${row.teacherName}`,
-    status: row.status,
-    updatedAt: row.effectiveTo || row.effectiveFrom || '',
-    note: row.notes,
-  })),
-])
-
-const summaryCards = computed(() => [
-  {
-    id: 'students',
-    title: t('preschoolAssignmentsPage.summary.studentAssignments.title'),
-    caption: t('preschoolAssignmentsPage.summary.studentAssignments.caption'),
-    value: studentAssignmentRows.value.filter((row) => normalizeStatus(row.status) === 'active').length,
-  },
-  {
-    id: 'teachers',
-    title: t('preschoolAssignmentsPage.summary.teacherAssignments.title'),
-    caption: t('preschoolAssignmentsPage.summary.teacherAssignments.caption'),
-    value: teacherAssignmentRows.value.filter((row) => normalizeStatus(row.status) === 'active').length,
-  },
-  {
-    id: 'schedules',
-    title: t('preschoolAssignmentsPage.summary.scheduleAssignments.title'),
-    caption: t('preschoolAssignmentsPage.summary.scheduleAssignments.caption'),
-    value: scheduleAssignmentRows.value.filter((row) => normalizeStatus(row.status) === 'active').length,
-  },
-  {
-    id: 'history',
-    title: t('preschoolAssignmentsPage.summary.history.title'),
-    caption: t('preschoolAssignmentsPage.summary.history.caption'),
-    value: historyRows.value.length,
-  },
-])
 
 onMounted(loadAssignments)
 </script>
@@ -386,7 +238,7 @@ onMounted(loadAssignments)
                       class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
                       :class="badgeClasses(row.status)"
                     >
-                      {{ statusLabel(row.status) }}
+                      {{ statusLabel(row.status, t) }}
                     </span>
                   </td>
                   <td class="px-5 py-4 text-slate-600">{{ formatDate(row.enrolledAt) }}</td>
@@ -446,7 +298,7 @@ onMounted(loadAssignments)
                       class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
                       :class="badgeClasses(row.status)"
                     >
-                      {{ statusLabel(row.status) }}
+                      {{ statusLabel(row.status, t) }}
                     </span>
                   </td>
                   <td class="px-5 py-4 text-slate-600">{{ row.studentsCount }}</td>
@@ -505,7 +357,7 @@ onMounted(loadAssignments)
                       class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
                       :class="badgeClasses(row.status)"
                     >
-                      {{ statusLabel(row.status) }}
+                      {{ statusLabel(row.status, t) }}
                     </span>
                   </td>
                   <td class="px-5 py-4 text-slate-600">{{ row.notes || formatDate(row.effectiveFrom) }}</td>
