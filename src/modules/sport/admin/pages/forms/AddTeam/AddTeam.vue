@@ -252,9 +252,7 @@ onMounted(async () => {
   try {
     // TODO: API endpoints not yet implemented on backend
     // Temporarily using empty data for UI testing
-    const [teamsResponse] = await Promise.all([
-      fetchSportTeams({ perPage: 100 }),
-    ])
+    const teamsResponse = await fetchSportTeams({ perPage: 100 })
     teamRows.value = teamsResponse.items || []
     divisions.value = []
     coaches.value = []

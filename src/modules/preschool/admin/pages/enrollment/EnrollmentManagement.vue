@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
+import Toast from 'primevue/toast'
 
 import EnrollmentSummaryCards from '@/modules/preschool/admin/components/enrollment/EnrollmentSummaryCards.vue'
 import EnrollmentFilterBar from '@/modules/preschool/admin/components/enrollment/EnrollmentFilterBar.vue'
@@ -292,25 +293,82 @@ function clearFilters() {
       </button>
     </header>
 
-    <!-- Summary Cards -->
-    <EnrollmentSummaryCards :summary="summary" :loading="loadingSummary" />
+    <div class="enr-page__layout">
+      <div class="enr-page__main">
+        <!-- Summary Cards -->
+        <EnrollmentSummaryCards :summary="summary" :loading="loadingSummary" />
 
-    <!-- Filters -->
-    <EnrollmentFilterBar
-      v-model="filters"
-      :academic-years="academicYears"
-      @clear="clearFilters"
-    />
+        <!-- Filters -->
+        <EnrollmentFilterBar
+          v-model="filters"
+          :academic-years="academicYears"
+          @clear="clearFilters"
+        />
 
-    <!-- Table -->
-    <EnrollmentApplicationTable
-      :applications="applications"
-      :loading="loadingList"
-      :can-manage="canManage"
-      @view="openView"
-      @edit="openEdit"
-      @action="onTableAction"
-    />
+        <!-- Table -->
+        <EnrollmentApplicationTable
+          :applications="applications"
+          :loading="loadingList"
+          :can-manage="canManage"
+          @view="openView"
+          @edit="openEdit"
+          @action="onTableAction"
+        />
+      </div>
+
+      <!-- Right Sidebar -->
+      <aside class="enr-page__sidebar">
+        <div class="enr-sidebar-card">
+          <h3 class="enr-sidebar-card__title">{{ t('preschoolEnrollmentPage.sidebar.title') || 'Enrollment Status' }}</h3>
+          <div class="enr-sidebar-card__content">
+            <div class="enr-sidebar-stat">
+              <span class="enr-sidebar-stat__label">Total Applications</span>
+              <span class="enr-sidebar-stat__value">{{ summary.total || 0 }}</span>
+            </div>
+            <div class="enr-sidebar-stat">
+              <span class="enr-sidebar-stat__label">Pending Review</span>
+              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--warning">{{ summary.pending || 0 }}</span>
+            </div>
+            <div class="enr-sidebar-stat">
+              <span class="enr-sidebar-stat__label">Approved</span>
+              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--success">{{ summary.approved || 0 }}</span>
+            </div>
+            <div class="enr-sidebar-stat">
+              <span class="enr-sidebar-stat__label">Enrolled</span>
+              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--info">{{ summary.enrolled || 0 }}</span>
+            </div>
+            <div class="enr-sidebar-stat">
+              <span class="enr-sidebar-stat__label">Rejected</span>
+              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--danger">{{ summary.rejected || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="enr-sidebar-card">
+          <h3 class="enr-sidebar-card__title">{{ t('preschoolEnrollmentPage.sidebar.checklist') || 'Quick Actions' }}</h3>
+          <div class="enr-sidebar-card__content">
+            <div class="enr-sidebar-action">
+              <i class="pi pi-plus-circle" />
+              <button @click="openNew" class="enr-sidebar-action__btn">
+                New Application
+              </button>
+            </div>
+            <div class="enr-sidebar-action">
+              <i class="pi pi-filter" />
+              <button @click="clearFilters" class="enr-sidebar-action__btn">
+                Clear Filters
+              </button>
+            </div>
+            <div class="enr-sidebar-action">
+              <i class="pi pi-refresh" />
+              <button @click="() => { loadSummary(); loadList() }" class="enr-sidebar-action__btn">
+                Refresh Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
 
     <!-- Detail side panel -->
     <Teleport to="body">
@@ -592,4 +650,142 @@ function clearFilters() {
 .enr-detail-action--muted:hover { background: #e2e8f0; }
 .enr-detail-action--edit { background: #f1f5f9; color: #475569; border-color: #e2e8f0; font-size: 0.8rem; padding: 0.35rem 0.75rem; }
 .enr-detail-action--edit:hover { background: #e2e8f0; }
+
+/* Sidebar Layout */
+.enr-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.95fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.enr-page__main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.enr-page__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.enr-sidebar-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.enr-sidebar-card__title {
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
+  margin: 0;
+}
+
+.enr-sidebar-card__content {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.enr-sidebar-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border-left: 3px solid #e2e8f0;
+}
+
+.enr-sidebar-stat__label {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.enr-sidebar-stat__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.enr-sidebar-stat__value--success { color: #16a34a; }
+.enr-sidebar-stat__value--warning { color: #f59e0b; }
+.enr-sidebar-stat__value--danger { color: #ef4444; }
+.enr-sidebar-stat__value--info { color: #0284c7; }
+
+.enr-sidebar-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.enr-sidebar-action:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.enr-sidebar-action i {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.enr-sidebar-action__btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.enr-sidebar-action__btn:hover {
+  color: #1e293b;
+}
+
+@media (max-width: 1200px) {
+  .enr-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .enr-page__sidebar {
+    grid-column: 1;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .enr-sidebar-card {
+    flex: 1;
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .enr-page__sidebar {
+    flex-direction: column;
+  }
+
+  .enr-sidebar-card {
+    min-width: auto;
+  }
+}
 </style>

@@ -253,6 +253,11 @@ export default {
       errorDecision: 'Failed to process decision.',
     },
 
+    sidebar: {
+      title: 'Enrollment Status',
+      checklist: 'Quick Actions',
+    },
+
     validation: {
       firstNameRequired: 'First name is required.',
       lastNameRequired: 'Last name is required.',

@@ -10,8 +10,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
 import IdCardBackPreview from '@/modules/preschool/admin/components/IdCardBackPreview.vue'
-<<<<<<<< HEAD:src/modules/preschool/admin/pages/AttendanceIdCard/AttendanceIdCard.vue
-import { buildBackQrDataUrl } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
+import { buildBackQrDataUrl } from './attendanceIdCardBack'
 import {
   LANG_OPTIONS,
   FORMAT_OPTIONS,
@@ -39,9 +38,6 @@ import {
   getClassInfo,
   getCurrentCardSize,
 } from './utils/attendanceIdCardHelpers'
-========
-import { buildBackQrDataUrl } from './attendanceIdCardBack'
->>>>>>>> codex/frontend-preschool-form-management-components-20260605:src/modules/preschool/admin/pages/attendance/AttendanceIdCard.vue
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 

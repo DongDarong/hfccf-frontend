@@ -38,6 +38,12 @@ const successMessage = ref('')
 
 const tableColumns = computed(() => buildTableColumns(t))
 
+const statusOptions = computed(() => STATUS_OPTIONS)
+
+const addTeacherLabel = computed(() => t('preschoolTeachersManagement.addButtonLabel'))
+
+const addTeacherCaption = computed(() => t('preschoolTeachersManagement.addButtonCaption'))
+
 const mappedTeachers = computed(() =>
   mapUsers(teachers.value).map((teacher) => ({
     ...teacher,
@@ -67,7 +73,7 @@ async function loadTeachers() {
     teachers.value = []
     pagination.value = {
       page: 1,
-      perPage: pageSize,
+      perPage: PAGE_SIZE,
       total: 0,
       totalPages: 1,
     }
