@@ -21,6 +21,7 @@ export default {
     sportProgram: 'Sport Program',
     system: 'System',
     assessment: 'Assessment',
+    dsam: 'Student Assessment',
   },
   sectionCaptions: {
     main: 'Staff workspace',
@@ -38,6 +39,7 @@ export default {
     sportProgram: 'EduSportPro',
     system: 'Platform settings',
     assessment: 'Dynamic assessments',
+    dsam: 'Assessment module',
   },
   items: {
     commandCenter: 'Command Center',
@@ -99,6 +101,10 @@ export default {
     assessmentWizard: 'New Assessment',
     assessmentReports: 'Reports',
     assessmentAuditLogs: 'Audit Logs',
+    dsamDashboard: 'Dashboard',
+    dsamForms: 'Form Templates',
+    dsamSubmissions: 'Assessments',
+    dsamWizard: 'New Assessment',
   },
   badges: {
     admin: 'Admin',

@@ -7,11 +7,27 @@ import { useFormBuilderStore } from '../../stores/useFormBuilderStore'
 
 const props = defineProps({
   question: { type: Object, required: true },
-  formId: { type: [String, Number], required: true },
+  formId:   { type: [String, Number], required: true },
 })
 
-const { t } = useLanguage()
-const store = useFormBuilderStore()
+const { t }  = useLanguage()
+const store  = useFormBuilderStore()
+
+// Icon per question type key
+const typeIcon = {
+  short_text:   'pi-align-left',
+  long_text:    'pi-align-justify',
+  number:       'pi-hashtag',
+  date:         'pi-calendar',
+  radio:        'pi-circle',
+  checkbox:     'pi-check-square',
+  dropdown:     'pi-chevron-down',
+  rating:       'pi-star',
+  file:         'pi-upload',
+  signature:    'pi-pen-to-square',
+  matrix:       'pi-table',
+  score_rubric: 'pi-list-check',
+}
 
 async function deleteQuestion() {
   await assessmentFormApi.deleteQuestion(props.formId, props.question.id)
@@ -22,63 +38,34 @@ async function deleteQuestion() {
 </script>
 
 <template>
-  <div class="question-card">
-    <div class="question-card__header">
-      <div class="question-card__meta">
+  <div class="group flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-slate-300 hover:bg-white hover:shadow-sm">
+
+    <!-- Type icon -->
+    <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+      <i :class="['pi text-sm', typeIcon[question.question_type_key] ?? 'pi-question-circle']" />
+    </span>
+
+    <!-- Content -->
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-sm font-medium text-slate-800 leading-snug">
+          {{ question.question_text }}
+        </span>
+        <span v-if="question.is_required" class="text-xs font-semibold text-red-500">*</span>
+      </div>
+      <div class="mt-1 flex items-center gap-2">
         <Tag
           :value="t(`formBuilder.questionTypes.${question.question_type_key}`)"
           severity="secondary"
-          class="question-card__type"
+          class="!text-xs !py-0 !px-1.5"
         />
-        <span v-if="question.is_required" class="question-card__required">*</span>
-      </div>
-      <div class="question-card__actions">
-        <Button icon="pi pi-trash" text size="small" severity="danger" @click="deleteQuestion" />
+        <span v-if="question.help_text" class="text-xs text-slate-400 truncate">{{ question.help_text }}</span>
       </div>
     </div>
-    <div class="question-card__text">{{ question.question_text }}</div>
-    <div v-if="question.help_text" class="question-card__help">{{ question.help_text }}</div>
+
+    <!-- Actions (appear on hover) -->
+    <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <Button icon="pi pi-trash" text size="small" severity="danger" @click="deleteQuestion" />
+    </div>
   </div>
 </template>
-
-<style scoped>
-.question-card {
-  background: var(--surface-ground);
-  border: 1px solid var(--surface-border);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-}
-
-.question-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.question-card__meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.question-card__required {
-  color: var(--red-500);
-  font-weight: 700;
-}
-
-.question-card__text {
-  font-weight: 500;
-}
-
-.question-card__help {
-  font-size: 0.8125rem;
-  color: var(--text-color-secondary);
-  margin-top: 0.25rem;
-}
-
-.question-card__actions {
-  display: flex;
-  gap: 0.25rem;
-}
-</style>

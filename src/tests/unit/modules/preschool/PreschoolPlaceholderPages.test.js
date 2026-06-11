@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
-import FormManagement from '@/modules/preschool/admin/pages/FormManagement.vue'
-import AttendanceManagement from '@/modules/preschool/admin/pages/AttendanceManagement.vue'
+import FormManagement from '@/modules/preschool/admin/pages/forms/FormManagement.vue'
+import AttendanceManagement from '@/modules/preschool/admin/pages/attendance/AttendanceManagement.vue'
 import TeacherClassroomResources from '@/modules/preschool/teacher/pages/TeacherClassroomResources.vue'
 import Healthy from '@/modules/preschool/teacher/pages/Healthy.vue'
 
@@ -57,3 +57,5 @@ describe('Preschool placeholder pages', () => {
     }
   })
 })
+
+

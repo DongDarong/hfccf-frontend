@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
-import PreschoolDashboard from '@/modules/preschool/admin/pages/PreschoolDashboard.vue'
-import ClassesManagement from '@/modules/preschool/admin/pages/ClassesManagement.vue'
-import StudentInfo from '@/modules/preschool/admin/pages/StudentInfo.vue'
-import AddClass from '@/modules/preschool/admin/pages/AddClass.vue'
-import AttendanceHistory from '@/modules/preschool/admin/pages/AttendanceHistory.vue'
+import PreschoolDashboard from '@/modules/preschool/admin/pages/dashboard/PreschoolDashboard.vue'
+import ClassesManagement from '@/modules/preschool/admin/pages/classes/ClassesManagement.vue'
+import StudentInfo from '@/modules/preschool/admin/pages/students/StudentInfo.vue'
+import AddClass from '@/modules/preschool/admin/pages/classes/AddClass.vue'
+import AttendanceHistory from '@/modules/preschool/admin/pages/attendance/AttendanceHistory.vue'
 
 // Keep the stable Preschool pages mount-tested so real backend data, locale
 // wiring, and runtime safety regressions get caught before the UI ships.
@@ -287,3 +287,8 @@ describe('Preschool real pages', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
+
+
+
+
+

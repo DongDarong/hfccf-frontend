@@ -8,9 +8,9 @@ import { ROLES } from '@/constants/roles'
 export const dashboardByRole = Object.freeze({
   [ROLES.SUPER_ADMIN]: defineAsyncComponent(() => import('@/modules/super-admin/pages/Dashboard.vue')),
   [ROLES.ADMIN_ENGLISH]: defineAsyncComponent(() => import('@/modules/english/admin/pages/Dashboard.vue')),
-  [ROLES.ADMIN_PRESCHOOL]: defineAsyncComponent(() => import('@/modules/preschool/admin/pages/PreschoolDashboard.vue')),
+  [ROLES.ADMIN_PRESCHOOL]: defineAsyncComponent(() => import('@/modules/preschool/admin/pages/dashboard/PreschoolDashboard.vue')),
   [ROLES.ADMIN_SCHOLARSHIP]: defineAsyncComponent(() => import('@/modules/scholarship/admin/pages/Dashboard.vue')),
-  [ROLES.ADMIN_SPORT]: defineAsyncComponent(() => import('@/modules/sport/admin/pages/Dashboard.vue')),
+  [ROLES.ADMIN_SPORT]: defineAsyncComponent(() => import('@/modules/sport/admin/pages/dashboard/Dashboard.vue')),
   [ROLES.COACH]: defineAsyncComponent(() => import('@/modules/sport/coach/pages/Dashboard.vue')),
   [ROLES.TEACHER_ENGLISH]: defineAsyncComponent(() => import('@/modules/english/teacher/pages/Dashboard.vue')),
   [ROLES.TEACHER_PRESCHOOL]: defineAsyncComponent(() => import('@/modules/preschool/teacher/pages/Dashboard.vue')),
@@ -46,3 +46,4 @@ export const dashboardSeverities = Object.freeze({
   [ROLES.TEACHER_PRESCHOOL]: 'success',
   [ROLES.TEACHER_SCHOLARSHIP]: 'success',
 })
+

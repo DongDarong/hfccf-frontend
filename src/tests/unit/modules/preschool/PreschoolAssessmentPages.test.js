@@ -4,9 +4,9 @@ import { mountWithPlugins } from '@/tests/helpers/mount'
 import enCommon from '@/i18n/en/common'
 import enPreschool from '@/i18n/en/preschool'
 import khPreschool from '@/i18n/kh/preschool'
-import StudentAssessments from '@/modules/preschool/admin/pages/StudentAssessments.vue'
-import AddAssessment from '@/modules/preschool/admin/pages/AddAssessment.vue'
-import ProgressSummary from '@/modules/preschool/admin/pages/ProgressSummary.vue'
+import StudentAssessments from '@/modules/preschool/admin/pages/assessments/StudentAssessments.vue'
+import AddAssessment from '@/modules/preschool/admin/pages/assessments/AddAssessment.vue'
+import ProgressSummary from '@/modules/preschool/admin/pages/assessments/ProgressSummary.vue'
 
 // Keep the assessment pages mount-tested so the new draft/finalize workflow
 // stays aligned with the backend contract and cannot regress into hidden runtime
@@ -157,3 +157,6 @@ describe('Preschool assessment pages', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
+
+
+

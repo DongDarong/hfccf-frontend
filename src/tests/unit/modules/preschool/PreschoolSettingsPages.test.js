@@ -3,7 +3,7 @@ import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
 import { preschoolRoutes } from '@/modules/preschool/routes'
-import PreschoolSettings from '@/modules/preschool/admin/pages/PreschoolSettings.vue'
+import PreschoolSettings from '@/modules/preschool/admin/pages/settings/PreschoolSettings.vue'
 
 // Keep the Preschool settings page mount-tested so route wiring, summary copy,
 // and the reusable section layout stay stable while the configuration area
@@ -55,3 +55,4 @@ describe('Preschool settings page', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
+

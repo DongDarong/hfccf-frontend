@@ -13,6 +13,8 @@ import adminDashboard from './admin/sport-admin-dashboard'
 import matchesManagement from './admin/sport-matches-management'
 import playerInformation from './admin/sport-player-information'
 import teamsManagement from './admin/sport-teams-management'
+import divisionManagement from './admin/sport-division-management'
+import playingStyleManagement from './admin/sport-playing-style-management'
 import coachTrainingSchedule from './coach-training-schedule'
 import coachDashboard from './coach-dashboard'
 import coachTeamManagement from './coach-team-management'
@@ -35,6 +37,8 @@ export default {
   ...matchesManagement,
   ...playerInformation,
   ...teamsManagement,
+  ...divisionManagement,
+  ...playingStyleManagement,
   ...coachTrainingSchedule,
   ...coachDashboard,
   ...coachTeamManagement,

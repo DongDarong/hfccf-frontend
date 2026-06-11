@@ -3,7 +3,7 @@ import { flushPromises } from '@vue/test-utils'
 import { nextTick, ref } from 'vue'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import MatchSquadSelection from '@/modules/sport/coach/pages/MatchSquadSelection.vue'
-import MatchSquadReview from '@/modules/sport/admin/pages/MatchSquadReview.vue'
+import MatchSquadReview from '@/modules/sport/admin/pages/approval/MatchSquadReview.vue'
 
 const loadTeams = vi.fn().mockResolvedValue({ items: [] })
 const loadMatch = vi.fn().mockResolvedValue({ match: null })
