@@ -1,10 +1,9 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useDsamWizardStore } from '../stores/useDsamWizardStore'
 import QuestionRendererFactory from '../components/wizard/QuestionRendererFactory.vue'
-import ScoreSummary from '../components/shared/ScoreSummary.vue'
 import Button from '@/components/buttons/Button.vue'
 import ProgressBar from 'primevue/progressbar'
 
@@ -48,7 +47,7 @@ function getAnswer(questionId) {
 
 function setAnswer(question, value) {
   const typeName = question.question_type?.name
-  let payload = {}
+  let payload
   if (['checkbox'].includes(typeName)) {
     payload = { json_value: value }
   } else if (['number', 'rating_scale'].includes(typeName)) {

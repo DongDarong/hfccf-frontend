@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 
+/* global process */
+
 // Helper functions extracted from the component for testing
 // (These are the pure logic functions without full component mounting)
 

@@ -20,13 +20,10 @@ import {
   DEFAULT_FORMAT,
   DEFAULT_ORIENTATION,
   DEFAULT_GAP_MM,
-  MM_TO_PX_RATIO,
 } from './constants/attendanceIdCardConstants'
 import {
   getInitials,
   getAcademicYear,
-  resolveBackendUrl,
-  resolveFetchablePhotoUrl,
   loadStudentPhotoAsImg,
   imgToDataUrl,
   waitForFonts,

@@ -36,14 +36,11 @@ import {
   DEFAULT_PAGINATION,
   DEFAULT_FILTERS,
   DEFAULT_SUMMARY,
-  FINAL_STATUSES,
-  DECISION_HANDLERS,
   DECISION_MESSAGE_KEYS,
 } from './constants/enrollmentManagementConstants'
 import {
   formatPaginationFromResponse,
   extractApplicationsFromResponse,
-  isFinalStatus,
   canShowDecisionActions,
   canShowEditButton,
   canShowSubmitButton,

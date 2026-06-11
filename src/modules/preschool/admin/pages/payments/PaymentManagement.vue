@@ -16,7 +16,7 @@ import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolClasses, fetchPreschoolPayments, fetchPreschoolStudents, createPreschoolPayment, updatePreschoolPayment, deletePreschoolPayment } from '@/modules/preschool/services/preschoolApi'
 import { PAGE_SIZE, DEFAULT_PAGINATION, DEFAULT_FORM, MODAL_MODES } from './constants/paymentManagementConstants'
-import { buildStatusOptions, buildMethodOptions, buildTableColumns, formatMoney, normalize, mapPayment, normalizePayload, buildClassOptions, buildStudentOptions } from './utils/paymentManagementHelpers'
+import { buildStatusOptions, buildMethodOptions, buildTableColumns, normalize, mapPayment, normalizePayload, buildClassOptions, buildStudentOptions } from './utils/paymentManagementHelpers'
 
 defineOptions({
   name: 'PreschoolAdminPaymentManagementPage',
@@ -118,7 +118,7 @@ const visibleRangeLabel = computed(() => {
   const total = Number(pagination.value.total || 0)
   if (!total) return t('preschoolPaymentManagementPage.messages.noResults')
 
-  const perPage = Number(pagination.value.perPage || pageSize || 1)
+  const perPage = Number(pagination.value.perPage || PAGE_SIZE || 1)
   const page = Number(pagination.value.page || currentPage.value || 1)
   const start = Math.min((page - 1) * perPage + 1, total)
   const end = Math.min(page * perPage, total)

@@ -21,7 +21,6 @@ import PlayerHighlights from '@/modules/sport/admin/components/player-management
 import PlayerTable from '@/modules/sport/admin/components/player-management/PlayerTable.vue'
 
 import {
-  normalize,
   filterPlayers,
   getPaginatedPlayers,
   calculatePlayerMetrics,

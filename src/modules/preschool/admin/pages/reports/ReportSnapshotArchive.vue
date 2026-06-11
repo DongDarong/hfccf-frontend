@@ -21,7 +21,7 @@ import {
 import SnapshotAnalyticsCards from '@/modules/preschool/shared/components/report/SnapshotAnalyticsCards.vue'
 import SnapshotArchiveTable from '@/modules/preschool/shared/components/report/SnapshotArchiveTable.vue'
 import SnapshotDetailDialog from '@/modules/preschool/shared/components/report/SnapshotDetailDialog.vue'
-import { DEFAULT_PAGINATION, DEFAULT_FILTERS } from './constants/reportSnapshotArchiveConstants'
+import { DEFAULT_PAGINATION } from './constants/reportSnapshotArchiveConstants'
 
 defineOptions({
   name: 'PreschoolReportSnapshotArchivePage',

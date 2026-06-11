@@ -8,7 +8,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 import { fetchPreschoolStudent } from '@/modules/preschool/services/preschoolApi'
-import { STATUS_CLASSES, BACK_ROUTE_NAME } from './constants/studentProfileConstants'
+import { BACK_ROUTE_NAME } from './constants/studentProfileConstants'
 import { buildInfoCards, getStatusLabel, getStatusClass, getStudentDisplayName } from './utils/studentProfileHelpers'
 
 defineOptions({
