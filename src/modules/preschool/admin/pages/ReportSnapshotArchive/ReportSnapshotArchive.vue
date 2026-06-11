@@ -21,6 +21,7 @@ import {
 import SnapshotAnalyticsCards from '@/modules/preschool/shared/components/report/SnapshotAnalyticsCards.vue'
 import SnapshotArchiveTable from '@/modules/preschool/shared/components/report/SnapshotArchiveTable.vue'
 import SnapshotDetailDialog from '@/modules/preschool/shared/components/report/SnapshotDetailDialog.vue'
+import { DEFAULT_PAGINATION, DEFAULT_FILTERS } from './constants/reportSnapshotArchiveConstants'
 
 defineOptions({
   name: 'PreschoolReportSnapshotArchivePage',
@@ -47,7 +48,7 @@ const analytics = ref({
   generatedByCounts: [],
   generatedTrend: [],
 })
-const pagination = ref({ page: 1, perPage: 20, total: 0, totalPages: 1 })
+const pagination = ref({ ...DEFAULT_PAGINATION })
 const detailVisible = ref(false)
 const selectedSnapshot = ref(null)
 const selectedPreviousSnapshot = ref(null)
