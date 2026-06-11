@@ -1,10 +1,10 @@
 <script setup>
 // FormSectionPanel is kept for backwards compatibility.
 // The builder now uses FormSectionCanvas for the 2-panel layout.
-import { defineProps, defineEmits } from 'vue'
+import { defineEmits } from 'vue'
 import FormSectionCanvas from './FormSectionCanvas.vue'
 
-const props = defineProps({
+defineProps({
   section: { type: Object, required: true },
   formId:  { type: [String, Number], default: null },
   index:   { type: Number, default: 0 },

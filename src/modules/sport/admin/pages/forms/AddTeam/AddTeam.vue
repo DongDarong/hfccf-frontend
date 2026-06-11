@@ -10,8 +10,6 @@ import { useLanguage } from '@/composables/useLanguage'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import {
   createSportTeam,
-  fetchSportCoaches,
-  fetchSportDivisions,
   fetchSportTeam,
   fetchSportTeams,
   updateSportTeam,
@@ -47,7 +45,6 @@ const {
   handleLogoChange: handleLogoChangeComposable,
   removeLogo: removeLogoComposable,
   setLogoPreview,
-  cleanup: cleanupLogo,
 } = useTeamLogo(t)
 
 const teamRows = ref([])

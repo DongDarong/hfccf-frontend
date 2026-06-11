@@ -59,8 +59,6 @@ import {
   normalizeClassItem,
   normalizeReportPeriodItem,
   normalizeStudentItem,
-  parseMetadataText,
-  sourceContextPayload,
 } from './utils/governanceCasesHelpers'
 
 defineOptions({

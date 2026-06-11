@@ -10,13 +10,11 @@ import { fetchPreschoolTeacher } from '@/modules/preschool/services/preschoolApi
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 import {
   DEFAULT_AVATAR_INITIALS,
-  DEFAULT_FALLBACK,
   USERS_ROUTE_PATH,
   ADD_USERS_ROUTE_PATH,
   QUERY_KEYS,
 } from './constants/teacherViewConstants'
 import {
-  formatPermissionLabel,
   normalizePermissions,
   buildPermissionChips,
   buildSummaryCards,
@@ -42,9 +40,6 @@ const avatarInitials = computed(() => getAvatarInitials(teacher.value?.name || '
 const showImage = ref(false)
 const teacherName = computed(() => getTeacherDisplayName(teacher.value))
 const permissionCount = computed(() => permissions.value.length)
-const hasEmail = computed(() => Boolean(String(teacher.value?.email || '').trim()))
-const hasPhone = computed(() => Boolean(String(teacher.value?.phone || '').trim()))
-const statusLabel = computed(() => String(teacher.value?.status || DEFAULT_FALLBACK))
 
 const summaryCards = computed(() => buildSummaryCards(teacher.value, permissionCount.value, t))
 

@@ -6,7 +6,7 @@ defineOptions({
   name: 'AddPlayingStyleModal',
 })
 
-const props = defineProps({
+defineProps({
   isOpen: {
     type: Boolean,
     required: true,

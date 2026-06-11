@@ -16,8 +16,6 @@ import {
   updateSportMatch,
 } from '@/modules/sport/services/sportApi'
 import {
-  parseSchedule,
-  inferCompetitionType,
   initializeMatchForm,
   getFormPayload,
   validateTeams,

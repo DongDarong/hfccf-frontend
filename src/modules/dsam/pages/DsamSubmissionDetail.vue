@@ -8,7 +8,6 @@ import Button from '@/components/buttons/Button.vue'
 import Tag from 'primevue/tag'
 import Textarea from 'primevue/textarea'
 import { dsamSubmissionApi } from '../services/dsamSubmissionApi'
-import RiskBadge from '../components/shared/RiskBadge.vue'
 import ScoreSummary from '../components/shared/ScoreSummary.vue'
 
 defineOptions({ name: 'DsamSubmissionDetailPage' })

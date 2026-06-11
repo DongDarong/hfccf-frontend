@@ -17,13 +17,11 @@ import { useMatchResultEntry } from '@/modules/sport/admin/composables/useMatchR
 import {
   createResultValue,
   createDraftEvent,
-  isScoringEvent,
   calculateScore,
   buildFixtureSummary,
   validateResult,
   buildResultSavePayload,
 } from './utils/resultEntryHelpers'
-import { DEFAULT_EVENT_TYPE } from './constants/resultEntryConstants'
 
 defineOptions({
   name: 'SportAdminMatchesResultEntryPage',

@@ -61,7 +61,7 @@ const showAddSection     = ref(false)
 
 async function addSection() {
   const title = addingSectionTitle.value.trim() || t('formBuilder.sections.sectionTitle')
-  const section = await store.addSection({ title, order: store.sections.length + 1 })
+  await store.addSection({ title, order: store.sections.length + 1 })
   showAddSection.value    = false
   addingSectionTitle.value = ''
   // section returned by addSection is pushed into store — activate the new one

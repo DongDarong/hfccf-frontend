@@ -14,9 +14,6 @@ import {
   updatePreschoolStudent,
 } from '@/modules/preschool/services/preschoolApi'
 import {
-  STUDENT_TYPES,
-  GENDERS,
-  STUDENT_STATUSES,
   DEFAULT_FORM,
   AVATAR_ACCEPT_TYPE,
 } from './constants/studentFormConstants'

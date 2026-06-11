@@ -1,24 +1,17 @@
 <script setup>
-import { computed, createApp, h, nextTick, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { toCanvas } from 'html-to-image'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
-import { useLanguage } from '@/composables/useLanguage'
 import { fetchSportTeams } from '@/modules/sport/services/api/sportTeamsApi'
 import { fetchSportPlayers } from '@/modules/sport/services/api/sportPlayersApi'
-import SportIdCardPreview from '@/modules/sport/admin/components/SportIdCardPreview.vue'
-import SportIdCardBackPreview from '@/modules/sport/admin/components/SportIdCardBackPreview.vue'
 import { buildBackQrDataUrl } from '@/modules/sport/admin/pages/utilities/sportIdCardBack'
 import {
   getInitials,
-  getSeasonYear,
   loadStudentPhoto,
   imgToDataUrl,
-  getCardDimensions,
-  calculatePixelDimensions,
   logGenerationProgress,
   logCacheStatus,
 } from './utils/idCardHelpers'
@@ -36,7 +29,6 @@ import {
 
 defineOptions({ name: 'SportAdminAttendanceIdCardPage' })
 
-const { t } = useLanguage()
 const router = useRouter()
 
 const teamOptions = ref([])
@@ -51,11 +43,6 @@ const selectedGapMm = ref(DEFAULT_GAP_MM)
 const loadingTeams = ref(false)
 const loadingPlayers = ref(false)
 const generating = ref(false)
-
-const currentSizeConfig = computed(() => {
-  const s = CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1]
-  return s[selectedOrientation.value]
-})
 
 const allSelected = computed(() =>
   players.value.length > 0 && selectedPlayerIds.value.length === players.value.length,
@@ -105,38 +92,6 @@ async function loadPlayers() {
   }
 }
 
-async function renderCardComponentToCanvas(component, props, widthPx) {
-  const host = document.createElement('div')
-  host.style.position = 'fixed'
-  host.style.left = '-10000px'
-  host.style.top = '0'
-  host.style.width = `${widthPx}px`
-  host.style.pointerEvents = 'none'
-  host.style.opacity = '0'
-  host.style.zIndex = '-1'
-  document.body.appendChild(host)
-
-  const app = createApp({
-    render: () => h(component, props),
-  })
-
-  try {
-    app.mount(host)
-    await nextTick()
-
-    const node = host.firstElementChild || host
-    return await toCanvas(node, {
-      backgroundColor: '#ffffff',
-      cacheBust: true,
-      pixelRatio: 1,
-    })
-  } finally {
-    app.unmount()
-    host.remove()
-  }
-}
-
-
 async function generateCards() {
   if (!selectedPlayerIds.value.length) return
 
@@ -145,16 +100,8 @@ async function generateCards() {
 
   try {
     const chosen = players.value.filter((p) => selectedPlayerIds.value.includes(p.id))
-    const teamObj = teamOptions.value.find((t) => t.value === selectedTeamId.value)
-    const teamName = teamObj?.label || ''
-    const division = teamObj?.division || ''
-    const season = getSeasonYear()
     const fmt = selectedFormat.value
-    const batchFmt = chosen.length > 1 ? 'pdf' : fmt
     const orient = selectedOrientation.value
-    const lang = selectedLang.value
-    const { W: CARD_W, H: CARD_H } = getCardDimensions(CARD_SIZES, selectedSize.value, orient)
-    const { exportWidthPx, gapPx } = calculatePixelDimensions(CARD_W, CARD_H, selectedGapMm.value)
 
     // Load photos
     const photoImgCache = new Map()

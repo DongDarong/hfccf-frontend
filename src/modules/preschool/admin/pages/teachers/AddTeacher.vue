@@ -20,7 +20,7 @@ import {
   fetchPreschoolTeacher,
   updatePreschoolTeacher,
 } from '@/modules/preschool/services/preschoolApi'
-import { TEACHER_DIRECTORY_PATH, EDIT_MODE_PATH, STATUS_OPTIONS, DEFAULT_FORM, IMAGE_MAX_SIZE, IMAGE_ALLOWED_TYPES, IMAGE_OPTIMIZE_OPTIONS, PASSWORD_MIN_LENGTH } from './constants/addTeacherConstants'
+import { TEACHER_DIRECTORY_PATH, EDIT_MODE_PATH, STATUS_OPTIONS, DEFAULT_FORM, IMAGE_MAX_SIZE, IMAGE_ALLOWED_TYPES, IMAGE_OPTIMIZE_OPTIONS } from './constants/addTeacherConstants'
 import { statusLabel, roleLabel, isBlobUrl, validateForm, populateFromTeacher, buildFormPayload, buildFormSummaryCards, buildChecklistItems } from './utils/addTeacherHelpers'
 
 defineOptions({
