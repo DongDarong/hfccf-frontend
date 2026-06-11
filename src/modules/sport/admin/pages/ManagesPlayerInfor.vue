@@ -15,11 +15,25 @@ import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { deleteSportPlayer, fetchSportPlayers } from '@/modules/sport/services/sportApi'
 
-// Sub-components
 import PlayerStatsCards from '../components/player-management/PlayerStatsCards.vue'
 import PlayerInfoToolbar from '../components/player-management/PlayerInfoToolbar.vue'
 import PlayerHighlights from '../components/player-management/PlayerHighlights.vue'
 import PlayerTable from '../components/player-management/PlayerTable.vue'
+
+import {
+  normalize,
+  filterPlayers,
+  getPaginatedPlayers,
+  calculatePlayerMetrics,
+  getHighlightItems,
+  getDivisionOptions,
+  getTeamOptions,
+} from './ManagesPlayerInfor/utils/playerManagementHelpers'
+import {
+  STATUS_OPTIONS,
+  STATUS_KEY_PREFIX,
+  PAGE_SIZE,
+} from './ManagesPlayerInfor/constants/playerManagementConstants'
 
 defineOptions({
   name: 'SportAdminManagesPlayerInforPage',
@@ -32,16 +46,14 @@ const route = useRoute()
 const { t, language } = useLanguage()
 const isKh = computed(() => language.value === 'KH')
 
-// Filter and Pagination state
 const searchQuery = ref('')
 const statusFilter = ref('')
 const divisionFilter = ref('')
 const teamFilter = ref('')
 const currentPage = ref(1)
-const pageSize = 8
-const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-// Player status is localized from the sport module, not `common.status.*` (user/account status).
-const statusKeyPrefix = 'sportPlayerInformation.status'
+const pageSize = PAGE_SIZE
+const statusOptions = STATUS_OPTIONS
+const statusKeyPrefix = STATUS_KEY_PREFIX
 
 const isDeleteOpen = ref(false)
 const selectedPlayer = ref(null)
@@ -113,15 +125,8 @@ async function onConfirmDelete() {
   isDeleting.value = false
 }
 
-const divisionOptions = computed(() => {
-  const divisions = playerRecords.value.map((p) => p.division).filter(Boolean)
-  return [...new Set(divisions)].sort()
-})
-
-const teamOptions = computed(() => {
-  const teams = playerRecords.value.map((p) => p.team).filter(Boolean)
-  return [...new Set(teams)].sort()
-})
+const divisionOptions = computed(() => getDivisionOptions(playerRecords.value))
+const teamOptions = computed(() => getTeamOptions(playerRecords.value))
 
 // Computed labels for i18n
 const pageTitle = computed(() => t('sportPlayerInformation.title'))
@@ -131,78 +136,27 @@ const tableEmptyText = computed(() => t('sportPlayerInformation.tableEmpty'))
 const toolbarEyebrow = computed(() => t('sportPlayerInformation.toolbarEyebrow'))
 const activeRateTitle = computed(() => t('sportPlayerInformation.activeRateLabel'))
 
-/**
- * Helper to normalize strings for searching and comparison
- */
-function normalize(value) {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-}
+const filteredPlayers = computed(() =>
+  filterPlayers(
+    playerRecords.value,
+    searchQuery.value,
+    statusFilter.value,
+    divisionFilter.value,
+    teamFilter.value,
+  ),
+)
 
-/**
- * Filtered players based on search query and status filter
- */
-const filteredPlayers = computed(() => {
-  const query = normalize(searchQuery.value)
-
-  return playerRecords.value.filter((player) => {
-    let isMatch = true
-
-    if (query) {
-      const haystack = normalize(player.name)
-      isMatch = haystack.includes(query)
-    }
-
-    if (isMatch && statusFilter.value) {
-      isMatch = normalize(player.status) === normalize(statusFilter.value)
-    }
-
-    if (isMatch && divisionFilter.value) {
-      isMatch = normalize(player.division) === normalize(divisionFilter.value)
-    }
-
-    if (isMatch && teamFilter.value) {
-      isMatch = normalize(player.team) === normalize(teamFilter.value)
-    }
-
-    return isMatch
-  })
-})
-
-// Pagination logic
 const totalPages = computed(() => Math.max(Math.ceil(filteredPlayers.value.length / pageSize), 1))
-const paginatedPlayers = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredPlayers.value.slice(start, start + pageSize).map((player, index) => ({
-    ...player,
-    // Table identity line expects `position`; UI now uses Primary Position.
-    // Keep a fallback for older records that still use `position`.
-    position: String(player?.primaryPosition || player?.position || '').trim(),
-    rowNumber: start + index + 1,
-  }))
-})
-
-// Summary metrics
-const totalPlayers = computed(() => playerRecords.value.length)
-const activePlayers = computed(
-  () => playerRecords.value.filter((player) => normalize(player.status) === 'active').length,
-)
-const pendingPlayers = computed(
-  () => playerRecords.value.filter((player) => normalize(player.status) === 'pending').length,
-)
-const attentionPlayers = computed(
-  () =>
-    playerRecords.value.filter((player) =>
-      ['inactive', 'suspended'].includes(normalize(player.status)),
-    ).length,
+const paginatedPlayers = computed(() =>
+  getPaginatedPlayers(filteredPlayers.value, currentPage.value, pageSize),
 )
 
-// Formatting metrics
-const activeRateLabel = computed(() => {
-  if (!totalPlayers.value) return '0%'
-  return `${Math.round((activePlayers.value / totalPlayers.value) * 100)}%`
-})
+const playerMetrics = computed(() => calculatePlayerMetrics(playerRecords.value))
+const totalPlayers = computed(() => playerMetrics.value.totalPlayers)
+const activePlayers = computed(() => playerMetrics.value.activePlayers)
+const pendingPlayers = computed(() => playerMetrics.value.pendingPlayers)
+const attentionPlayers = computed(() => playerMetrics.value.attentionPlayers)
+const activeRateLabel = computed(() => playerMetrics.value.activeRate)
 
 const toolbarSummary = computed(() =>
   t('sportPlayerInformation.toolbarSummary', { count: filteredPlayers.value.length }),
@@ -268,25 +222,7 @@ const summaryCards = computed(() => [
   },
 ])
 
-/**
- * Configuration for the highlights section
- */
-const highlightItems = computed(() => [
-  {
-    label: t('sportPlayerInformation.highlights.visiblePlayers'),
-    value: filteredPlayers.value.length,
-  },
-  {
-    label: t('sportPlayerInformation.highlights.divisions'),
-    value: new Set(filteredPlayers.value.map((player) => player.division).filter(Boolean)).size,
-  },
-  {
-    label: t('sportPlayerInformation.highlights.attentionItems'),
-    value: filteredPlayers.value.filter((player) =>
-      ['inactive', 'suspended'].includes(normalize(player.status)),
-    ).length,
-  },
-])
+const highlightItems = computed(() => getHighlightItems(filteredPlayers.value, t))
 
 // Reset pagination when filter changes
 watch(
