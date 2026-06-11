@@ -25,7 +25,7 @@ import {
   resolveLifecycleContextLabel,
   resolveLifecycleEntityLabel,
 } from '@/modules/preschool/shared/utils/lifecycleAuditLabels'
-import { DEFAULT_REVIEW, DEFAULT_ANALYTICS, DEFAULT_REPLAY, DEFAULT_FILTERS } from './constants/governanceReviewConstants'
+import { DEFAULT_REVIEW, DEFAULT_ANALYTICS, DEFAULT_REPLAY, DEFAULT_FILTERS } from '../GovernanceReview/constants/governanceReviewConstants'
 import {
   normalizeClassItem,
   normalizeStudentItem,
@@ -34,7 +34,7 @@ import {
   buildOverviewCards,
   buildReviewSections,
   resolveAuditEntityContext as resolveAuditEntityContextHelper,
-} from './utils/governanceReviewHelpers'
+} from '../GovernanceReview/utils/governanceReviewHelpers'
 
 defineOptions({
   name: 'PreschoolGovernanceReviewPage',
