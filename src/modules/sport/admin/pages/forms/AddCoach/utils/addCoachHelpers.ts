@@ -1,4 +1,5 @@
-import { ROLES, STATUS_OPTIONS } from '../constants/addCoachConstants'
+import { ROLES } from '@/constants/roles'
+import { STATUS_OPTIONS } from '../constants/addCoachConstants'
 
 export function statusLabel(status: string | null | undefined, t: any): string {
   const normalized = String(status || '').trim()

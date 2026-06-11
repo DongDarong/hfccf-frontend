@@ -16,14 +16,14 @@ import {
 import AddPlayerFormFields from '@/modules/sport/admin/components/add-player/AddPlayerFormFields.vue'
 import AddPlayerFormActions from '@/modules/sport/admin/components/add-player/AddPlayerFormActions.vue'
 import PlayerChecklist from '@/modules/sport/admin/components/add-player/PlayerChecklist.vue'
-import { useProfileImage } from './AddPlayer/composables/useProfileImage'
+import { useProfileImage } from './composables/useProfileImage'
 import {
   playerStatusLabel,
   validate,
   getFormPayload,
   initializeFormFromPlayer,
   getProfileImagePreview,
-} from './AddPlayer/utils/addPlayerHelpers'
+} from './utils/addPlayerHelpers'
 import {
   PLAYERS_DIRECTORY_PATH,
   STATUS_OPTIONS,
@@ -31,7 +31,7 @@ import {
   POSITION_OPTIONS,
   PREFERRED_FOOT_OPTIONS,
   BLOOD_TYPE_OPTIONS,
-} from './AddPlayer/constants/addPlayerConstants'
+} from './constants/addPlayerConstants'
 
 defineOptions({
   name: 'SportAdminAddPlayerPage',

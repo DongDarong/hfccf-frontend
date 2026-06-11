@@ -19,18 +19,18 @@ import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeam
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
-import { useTeamLogo } from './AddTeam/composables/useTeamLogo'
+import { useTeamLogo } from './composables/useTeamLogo'
 import {
   teamStatusLabel,
   validateForm,
   getFormPayload,
   initializeFormFromTeam,
   getLogoPreview,
-} from './AddTeam/utils/addTeamHelpers'
+} from './utils/addTeamHelpers'
 import {
   TEAMS_DIRECTORY_PATH,
   STATUS_OPTIONS,
-} from './AddTeam/constants/addTeamConstants'
+} from './constants/addTeamConstants'
 
 defineOptions({
   name: 'SportAdminAddTeamPage',

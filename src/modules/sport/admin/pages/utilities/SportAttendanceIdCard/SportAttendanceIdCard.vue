@@ -11,7 +11,7 @@ import { fetchSportTeams } from '@/modules/sport/services/api/sportTeamsApi'
 import { fetchSportPlayers } from '@/modules/sport/services/api/sportPlayersApi'
 import SportIdCardPreview from '@/modules/sport/admin/components/SportIdCardPreview.vue'
 import SportIdCardBackPreview from '@/modules/sport/admin/components/SportIdCardBackPreview.vue'
-import { buildBackQrDataUrl } from '@/modules/sport/admin/pages/sportIdCardBack'
+import { buildBackQrDataUrl } from '@/modules/sport/admin/pages/utilities/sportIdCardBack'
 import {
   getInitials,
   getSeasonYear,
@@ -21,7 +21,7 @@ import {
   calculatePixelDimensions,
   logGenerationProgress,
   logCacheStatus,
-} from './SportAttendanceIdCard/utils/idCardHelpers'
+} from './utils/idCardHelpers'
 import {
   LANG_OPTIONS,
   FORMAT_OPTIONS,
@@ -32,7 +32,7 @@ import {
   DEFAULT_SIZE,
   DEFAULT_LANG,
   DEFAULT_GAP_MM,
-} from './SportAttendanceIdCard/constants/idCardConstants'
+} from './constants/idCardConstants'
 
 defineOptions({ name: 'SportAdminAttendanceIdCardPage' })
 

@@ -15,10 +15,10 @@ import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { deleteSportPlayer, fetchSportPlayers } from '@/modules/sport/services/sportApi'
 
-import PlayerStatsCards from '../components/player-management/PlayerStatsCards.vue'
-import PlayerInfoToolbar from '../components/player-management/PlayerInfoToolbar.vue'
-import PlayerHighlights from '../components/player-management/PlayerHighlights.vue'
-import PlayerTable from '../components/player-management/PlayerTable.vue'
+import PlayerStatsCards from '@/modules/sport/admin/components/player-management/PlayerStatsCards.vue'
+import PlayerInfoToolbar from '@/modules/sport/admin/components/player-management/PlayerInfoToolbar.vue'
+import PlayerHighlights from '@/modules/sport/admin/components/player-management/PlayerHighlights.vue'
+import PlayerTable from '@/modules/sport/admin/components/player-management/PlayerTable.vue'
 
 import {
   normalize,
@@ -28,12 +28,12 @@ import {
   getHighlightItems,
   getDivisionOptions,
   getTeamOptions,
-} from './ManagesPlayerInfor/utils/playerManagementHelpers'
+} from './utils/playerManagementHelpers'
 import {
   STATUS_OPTIONS,
   STATUS_KEY_PREFIX,
   PAGE_SIZE,
-} from './ManagesPlayerInfor/constants/playerManagementConstants'
+} from './constants/playerManagementConstants'
 
 defineOptions({
   name: 'SportAdminManagesPlayerInforPage',

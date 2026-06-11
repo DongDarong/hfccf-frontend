@@ -6,9 +6,9 @@ import { useToast } from 'primevue/usetoast'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import AttendanceHero from '../components/AttendanceHero.vue'
-import AttendanceDateToolbar from '../components/AttendanceDateToolbar.vue'
-import CoachesAttendanceTable from '../components/CoachesAttendanceTable.vue'
+import AttendanceHero from '@/modules/sport/admin/components/AttendanceHero.vue'
+import AttendanceDateToolbar from '@/modules/sport/admin/components/AttendanceDateToolbar.vue'
+import CoachesAttendanceTable from '@/modules/sport/admin/components/CoachesAttendanceTable.vue'
 import {
   fetchSportAttendance,
   fetchSportCoaches,

@@ -16,12 +16,12 @@ import {
   getPaginatedCoaches,
   calculateCoachMetrics,
   getHighlightItems,
-} from './CoachManagement/utils/coachManagementHelpers'
+} from './utils/coachManagementHelpers'
 import {
   COACH_PAGE_SIZE,
   ROLE_OPTIONS,
   STATUS_OPTIONS,
-} from './CoachManagement/constants/coachManagementConstants'
+} from './constants/coachManagementConstants'
 
 defineOptions({
   name: 'SportCoachManagementPage',

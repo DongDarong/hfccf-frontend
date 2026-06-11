@@ -19,22 +19,22 @@ import AddCoachFormFields from '@/modules/sport/admin/components/add-coach/AddCo
 import AddCoachFormActions from '@/modules/sport/admin/components/add-coach/AddCoachFormActions.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
-import { useCoachProfileImage } from './AddCoach/composables/useCoachProfileImage'
+import { useCoachProfileImage } from './composables/useCoachProfileImage'
 import {
-  statusLabel: getStatusLabel,
-  roleLabel: getRoleLabel,
-  permissionLabel: getPermissionLabel,
+  statusLabel as getStatusLabel,
+  roleLabel as getRoleLabel,
+  permissionLabel as getPermissionLabel,
   validateForm,
   getFormPayload,
   initializeFormFromCoach,
   getProfileImagePreview,
-} from './AddCoach/utils/addCoachHelpers'
+} from './utils/addCoachHelpers'
 import {
   COACHES_DIRECTORY_PATH,
   ROLE_OPTIONS,
   STATUS_OPTIONS,
   DEFAULT_PERMISSIONS,
-} from './AddCoach/constants/addCoachConstants'
+} from './constants/addCoachConstants'
 
 defineOptions({
   name: 'SportAdminAddCoachPage',

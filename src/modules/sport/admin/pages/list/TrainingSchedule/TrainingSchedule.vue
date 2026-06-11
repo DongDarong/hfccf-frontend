@@ -20,8 +20,8 @@ import {
   getPaginatedSessions,
   getFilterOptions,
   calculateLiveSessionsCount,
-} from './TrainingSchedule/utils/trainingScheduleHelpers'
-import { TRAINING_PAGE_SIZE } from './TrainingSchedule/constants/trainingScheduleConstants'
+} from './utils/trainingScheduleHelpers'
+import { TRAINING_PAGE_SIZE } from './constants/trainingScheduleConstants'
 
 defineOptions({
   name: 'SportTrainingSchedulePage',

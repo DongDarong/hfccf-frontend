@@ -21,13 +21,13 @@ import {
   initializeMatchForm,
   getFormPayload,
   validateTeams,
-} from './AddMatch/utils/addMatchHelpers'
+} from './utils/addMatchHelpers'
 import {
   COMPETITION_TYPES,
   MATCH_STATUS,
   DEFAULT_MATCH_STATUS,
   DEFAULT_COMPETITION_TYPE,
-} from './AddMatch/constants/addMatchConstants'
+} from './constants/addMatchConstants'
 
 defineOptions({
   name: 'SportAdminAddMatchPage',

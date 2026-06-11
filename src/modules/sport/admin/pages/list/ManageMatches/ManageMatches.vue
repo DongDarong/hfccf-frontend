@@ -16,14 +16,14 @@ import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-man
 import MatchesTable from '@/modules/sport/admin/components/matches-management/MatchesTable.vue'
 import PlayerInfoToolbar from '@/modules/sport/admin/components/player-management/PlayerInfoToolbar.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import MatchesSummaryCards from './ManageMatches/components/MatchesSummaryCards.vue'
+import MatchesSummaryCards from './components/MatchesSummaryCards.vue'
 import {
   normalize,
   toTableMatch,
   matchTournamentLabel,
   getCompetitionOptions,
   getTournamentOptions,
-} from './ManageMatches/utils/matchHelpers'
+} from './utils/matchHelpers'
 import { deleteSportMatch, fetchSportMatches } from '@/modules/sport/services/sportApi'
 
 defineOptions({

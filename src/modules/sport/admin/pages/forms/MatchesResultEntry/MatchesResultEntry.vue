@@ -22,8 +22,8 @@ import {
   buildFixtureSummary,
   validateResult,
   buildResultSavePayload,
-} from './MatchesResultEntry/utils/resultEntryHelpers'
-import { DEFAULT_EVENT_TYPE } from './MatchesResultEntry/constants/resultEntryConstants'
+} from './utils/resultEntryHelpers'
+import { DEFAULT_EVENT_TYPE } from './constants/resultEntryConstants'
 
 defineOptions({
   name: 'SportAdminMatchesResultEntryPage',
