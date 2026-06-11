@@ -86,6 +86,33 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/divisions',
+    name: 'dashboard-sport-admin-divisions',
+    component: () => import('@/modules/sport/admin/pages/list/DivisionManagement/DivisionManagement.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/divisions/add',
+    name: 'dashboard-sport-admin-divisions-add',
+    component: () => import('@/modules/sport/admin/pages/forms/AddDivision/AddDivision.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-admin/divisions/:id/edit',
+    name: 'dashboard-sport-admin-divisions-edit',
+    component: () => import('@/modules/sport/admin/pages/forms/AddDivision/AddDivision.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/players',
     name: 'dashboard-sport-admin-players',
     component: () => import('@/modules/sport/admin/pages/list/ManagesPlayerInfor/ManagesPlayerInfor.vue'),
