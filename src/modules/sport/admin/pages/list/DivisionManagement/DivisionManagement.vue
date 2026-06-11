@@ -18,8 +18,8 @@ const divisions = ref([
   { id: 3, name: 'Division C', status: 'inactive', teamsCount: 0 },
 ])
 
-const pageTitle = computed(() => t('sportDivisionManagement.title', 'Division Management'))
-const pageSubtitle = computed(() => t('sportDivisionManagement.subtitle', 'Manage sport divisions and organize teams'))
+const pageTitle = computed(() => t('sportDivisionManagement.title'))
+const pageSubtitle = computed(() => t('sportDivisionManagement.subtitle'))
 
 const totalDivisions = computed(() => divisions.value.length)
 const activeDivisions = computed(
