@@ -14,6 +14,8 @@ import {
   deletePreschoolTeacher,
   fetchPreschoolTeachers,
 } from '@/modules/preschool/services/preschoolApi'
+import { PAGE_SIZE, ADD_TEACHER_PATH, STATUS_OPTIONS, DEFAULT_PAGINATION } from './constants/teacherManagementConstants'
+import { buildTableColumns } from './utils/teacherManagementHelpers'
 
 defineOptions({
   name: 'PreschoolAdminTeachersPage',
@@ -25,14 +27,8 @@ const { t } = useLanguage()
 const searchQuery = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
-const pageSize = 8
 const teachers = ref([])
-const pagination = ref({
-  page: 1,
-  perPage: pageSize,
-  total: 0,
-  totalPages: 1,
-})
+const pagination = ref({ ...DEFAULT_PAGINATION })
 const loading = ref(false)
 const errorMessage = ref('')
 const isDeleteOpen = ref(false)
@@ -40,19 +36,7 @@ const selectedTeacher = ref(null)
 const showSuccess = ref(false)
 const successMessage = ref('')
 
-const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const addTeacherLabel = computed(() => t('preschoolTeachersManagement.addButtonLabel'))
-const addTeacherCaption = computed(() => t('preschoolTeachersManagement.addButtonCaption'))
-const tableColumns = computed(() => [
-  { key: 'number', label: t('preschoolTeachersManagement.table.number'), align: 'left' },
-  { key: 'user', label: t('preschoolTeachersManagement.table.user'), align: 'left' },
-  { key: 'email', label: t('preschoolTeachersManagement.table.email'), align: 'left' },
-  { key: 'role', label: t('preschoolTeachersManagement.table.role'), align: 'left' },
-  { key: 'permission', label: t('preschoolTeachersManagement.table.permission'), align: 'left' },
-  { key: 'status', label: t('preschoolTeachersManagement.table.status'), align: 'left' },
-  { key: 'phone', label: t('preschoolTeachersManagement.table.phone'), align: 'left' },
-  { key: 'actions', label: t('preschoolTeachersManagement.table.actions'), align: 'right' },
-])
+const tableColumns = computed(() => buildTableColumns(t))
 
 const mappedTeachers = computed(() =>
   mapUsers(teachers.value).map((teacher) => ({
@@ -62,7 +46,7 @@ const mappedTeachers = computed(() =>
 )
 
 function goToAddTeacher() {
-  router.push({ path: '/module/preschool-admin/users/add' })
+  router.push({ path: ADD_TEACHER_PATH })
 }
 
 async function loadTeachers() {
@@ -72,7 +56,7 @@ async function loadTeachers() {
   try {
     const response = await fetchPreschoolTeachers({
       page: currentPage.value,
-      perPage: pageSize,
+      perPage: PAGE_SIZE,
       search: searchQuery.value,
       status: statusFilter.value,
     })
