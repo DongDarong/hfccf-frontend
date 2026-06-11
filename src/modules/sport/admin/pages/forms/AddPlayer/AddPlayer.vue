@@ -9,6 +9,7 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import {
   createSportPlayer,
+  fetchSportDivisions,
   fetchSportPlayer,
   fetchSportTeams,
   updateSportPlayer,
@@ -49,6 +50,7 @@ const {
 } = useProfileImage(t)
 
 const teamRows = ref([])
+const divisions = ref([])
 
 const form = reactive({
   name: '',
@@ -96,7 +98,10 @@ const teamOptions = computed(() => {
 })
 
 const divisionOptions = computed(() => {
-  return [...new Set(teamRows.value.map((item) => String(item?.division || '').trim()).filter(Boolean))].sort()
+  return divisions.value
+    .filter((div) => div.status === 'active')
+    .map((div) => div.name)
+    .sort()
 })
 
 const pageTitle = computed(() => {
@@ -222,25 +227,30 @@ function onErrorClose() {
   showError.value = false
 }
 
-onMounted(() => {
-  fetchSportTeams({ perPage: 100 })
-    .then((response) => {
-      teamRows.value = response.items || []
-    })
-    .catch(() => {
-      teamRows.value = []
-    })
+onMounted(async () => {
+  try {
+    const [teamsResponse, divisionsResponse] = await Promise.all([
+      fetchSportTeams({ perPage: 100 }),
+      fetchSportDivisions({ perPage: 100 }),
+    ])
+    teamRows.value = teamsResponse.items || []
+    divisions.value = divisionsResponse.items || []
+  } catch {
+    teamRows.value = []
+    divisions.value = []
+  }
 
   const id = String(route.query.id || '').trim()
   if (!id) return
 
-  fetchSportPlayer(id)
-    .then((found) => {
-      if (!found?.id) return
-      initializeFormFromPlayer(found, form)
-      setImagePreview(getProfileImagePreview(found))
-    })
-    .catch(() => {})
+  try {
+    const found = await fetchSportPlayer(id)
+    if (!found?.id) return
+    initializeFormFromPlayer(found, form)
+    setImagePreview(getProfileImagePreview(found))
+  } catch {
+    // Handle error silently
+  }
 })
 </script>
 
