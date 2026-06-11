@@ -348,7 +348,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/classroom-resources',
     name: 'dashboard-preschool-admin-classroom-resources',
-    component: () => import('@/modules/preschool/admin/pages/ClassroomResources.vue'),
+    component: () => import('@/modules/preschool/admin/pages/ClassroomResources/ClassroomResources.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

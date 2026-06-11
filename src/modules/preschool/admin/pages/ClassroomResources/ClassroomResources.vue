@@ -15,6 +15,25 @@ import {
   updateClassroomResource,
   deleteClassroomResource,
 } from '@/modules/preschool/services/preschoolApi'
+import {
+  PAGE_SIZE,
+  DEFAULT_PAGINATION,
+  DEFAULT_FORM,
+  MODAL_MODES,
+} from './constants/classroomResourcesConstants'
+import {
+  buildCategoryOptions,
+  buildConditionOptions,
+  buildTableColumns,
+  mapResources,
+  calculateSummaries,
+  validateForm,
+  buildPayload,
+  loadResourceFormIntoFormObject,
+  resetFormState,
+  extractResourcesFromResponse,
+  extractPaginationFromResponse,
+} from './utils/classroomResourcesHelpers'
 
 defineOptions({
   name: 'PreschoolAdminClassroomResourcesPage',
@@ -26,12 +45,11 @@ const searchQuery = ref('')
 const categoryFilter = ref('')
 const conditionFilter = ref('')
 const currentPage = ref(1)
-const pageSize = 20
 const loading = ref(false)
 const errorMessage = ref('')
 
 const resources = ref([])
-const pagination = ref({ page: 1, perPage: pageSize, total: 0, totalPages: 1 })
+const pagination = ref({ ...DEFAULT_PAGINATION })
 
 const modalOpen = ref(false)
 const modalMode = ref('create')
@@ -43,53 +61,22 @@ const successMessage = ref('')
 const deleteTarget = ref(null)
 const deleteOpen = ref(false)
 
-const form = reactive({
-  name: '',
-  category: 'supplies',
-  quantity: 0,
-  condition: 'good',
-  notes: '',
-})
+const form = reactive({ ...DEFAULT_FORM })
 
 const formError = ref('')
 
-const categoryOptions = computed(() => [
-  { label: t('preschoolClassroomResources.categories.books'), value: 'books' },
-  { label: t('preschoolClassroomResources.categories.toys'), value: 'toys' },
-  { label: t('preschoolClassroomResources.categories.equipment'), value: 'equipment' },
-  { label: t('preschoolClassroomResources.categories.supplies'), value: 'supplies' },
-  { label: t('preschoolClassroomResources.categories.digital'), value: 'digital' },
-])
+const categoryOptions = computed(() => buildCategoryOptions(t))
 
-const conditionOptions = computed(() => [
-  { label: t('preschoolClassroomResources.conditions.good'), value: 'good' },
-  { label: t('preschoolClassroomResources.conditions.fair'), value: 'fair' },
-  { label: t('preschoolClassroomResources.conditions.poor'), value: 'poor' },
-])
+const conditionOptions = computed(() => buildConditionOptions(t))
 
-const tableColumns = computed(() => [
-  { key: 'number', label: t('preschoolClassroomResources.columns.no'), align: 'left' },
-  { key: 'name', label: t('preschoolClassroomResources.columns.name'), align: 'left' },
-  { key: 'categoryLabel', label: t('preschoolClassroomResources.columns.category'), align: 'left' },
-  { key: 'quantity', label: t('preschoolClassroomResources.columns.quantity'), align: 'left' },
-  { key: 'conditionLabel', label: t('preschoolClassroomResources.columns.condition'), align: 'left' },
-  { key: 'notes', label: t('preschoolClassroomResources.columns.notes'), align: 'left' },
-  { key: 'actions', label: t('preschoolClassroomResources.columns.actions'), align: 'right' },
-])
+const tableColumns = computed(() => buildTableColumns(t))
 
-const mappedResources = computed(() =>
-  resources.value.map((r, i) => ({
-    ...r,
-    number: (currentPage.value - 1) * pageSize + i + 1,
-    categoryLabel: t(`preschoolClassroomResources.categories.${r.category}`),
-    conditionLabel: t(`preschoolClassroomResources.conditions.${r.condition}`),
-    notes: r.notes || '—',
-  })),
-)
+const mappedResources = computed(() => mapResources(resources.value, t, currentPage.value))
 
-const summaryTotal = computed(() => pagination.value.total || resources.value.length)
-const summaryGood = computed(() => resources.value.filter((r) => r.condition === 'good').length)
-const summaryAttention = computed(() => resources.value.filter((r) => r.condition !== 'good').length)
+const summaries = computed(() => calculateSummaries(resources.value))
+const summaryTotal = computed(() => pagination.value.total || summaries.value.total)
+const summaryGood = computed(() => summaries.value.good)
+const summaryAttention = computed(() => summaries.value.attention)
 
 async function loadResources() {
   loading.value = true
@@ -98,13 +85,13 @@ async function loadResources() {
   try {
     const response = await fetchClassroomResources({
       page: currentPage.value,
-      perPage: pageSize,
+      perPage: PAGE_SIZE,
       search: searchQuery.value,
       category: categoryFilter.value,
       condition: conditionFilter.value,
     })
-    resources.value = response.items || []
-    pagination.value = response.pagination || pagination.value
+    resources.value = extractResourcesFromResponse(response)
+    pagination.value = extractPaginationFromResponse(response, pagination.value)
   } catch (error) {
     resources.value = []
     errorMessage.value = error?.message || t('preschoolClassroomResources.messages.loadFailed')
@@ -114,42 +101,27 @@ async function loadResources() {
 }
 
 function resetForm() {
-  form.name = ''
-  form.category = 'supplies'
-  form.quantity = 0
-  form.condition = 'good'
-  form.notes = ''
+  resetFormState(form)
   formError.value = ''
 }
 
-function validateForm() {
-  if (!form.name.trim()) {
-    formError.value = t('preschoolClassroomResources.messages.nameMissing')
-    return false
-  }
-  if (form.quantity < 0) {
-    formError.value = t('preschoolClassroomResources.messages.quantityInvalid')
-    return false
-  }
-  formError.value = ''
-  return true
+function checkFormValidity() {
+  const result = validateForm(form, t)
+  formError.value = result.error
+  return result.valid
 }
 
 function openCreateModal() {
-  modalMode.value = 'create'
+  modalMode.value = MODAL_MODES.CREATE
   editingId.value = null
   resetForm()
   modalOpen.value = true
 }
 
 function openEditModal(resource) {
-  modalMode.value = 'edit'
+  modalMode.value = MODAL_MODES.EDIT
   editingId.value = resource.id
-  form.name = resource.name
-  form.category = resource.category
-  form.quantity = resource.quantity
-  form.condition = resource.condition
-  form.notes = resource.notes === '—' ? '' : resource.notes
+  loadResourceFormIntoFormObject(resource, form)
   formError.value = ''
   modalOpen.value = true
 }
@@ -161,21 +133,15 @@ function closeModal() {
 }
 
 async function onSave() {
-  if (!validateForm()) return
+  if (!checkFormValidity()) return
 
   saving.value = true
   errorMessage.value = ''
 
   try {
-    const payload = {
-      name: form.name.trim(),
-      category: form.category,
-      quantity: form.quantity,
-      condition: form.condition,
-      notes: form.notes.trim() || null,
-    }
+    const payload = buildPayload(form)
 
-    if (modalMode.value === 'edit') {
+    if (modalMode.value === MODAL_MODES.EDIT) {
       await updateClassroomResource(editingId.value, payload)
       successMessage.value = t('preschoolClassroomResources.messages.updateSuccess')
     } else {
@@ -315,7 +281,7 @@ onMounted(loadResources)
     <!-- add / edit dialog -->
     <Dialog
       v-model:visible="modalOpen"
-      :header="modalMode === 'edit'
+      :header="modalMode === MODAL_MODES.EDIT
         ? t('preschoolClassroomResources.dialog.editTitle')
         : t('preschoolClassroomResources.dialog.createTitle')"
       modal
