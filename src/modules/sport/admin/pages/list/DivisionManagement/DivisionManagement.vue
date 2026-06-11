@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { deleteSportDivision, fetchSportDivisions } from '@/modules/sport/services/sportApi'
 
@@ -15,11 +16,14 @@ const { t } = useLanguage()
 
 const divisions = ref([])
 const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = 8
+const totalDivisions = ref(0)
 
 const pageTitle = computed(() => t('sportDivisionManagement.title'))
 const pageSubtitle = computed(() => t('sportDivisionManagement.subtitle'))
 
-const totalDivisions = computed(() => divisions.value.length)
+const totalPages = computed(() => Math.max(Math.ceil(totalDivisions.value / pageSize), 1))
 const activeDivisions = computed(
   () => divisions.value.filter((div) => div.status === 'active').length,
 )
@@ -39,7 +43,7 @@ const summaryCards = computed(() => [
     id: 'active',
     title: 'Active Divisions',
     value: activeDivisions.value,
-    badge: `${(activeDivisions.value / totalDivisions.value * 100).toFixed(0)}%`,
+    badge: totalDivisions.value > 0 ? `${(activeDivisions.value / totalDivisions.value * 100).toFixed(0)}%` : '0%',
     icon: 'M5 13l4 4L19 7',
   },
   {
@@ -65,8 +69,9 @@ function onEditDivision(division) {
 async function loadDivisions() {
   loading.value = true
   try {
-    const response = await fetchSportDivisions({ perPage: 100 })
+    const response = await fetchSportDivisions({ page: currentPage.value, perPage: pageSize })
     divisions.value = response.items || []
+    totalDivisions.value = response.pagination?.total || 0
   } catch (error) {
     console.error('Error loading divisions:', error)
   } finally {
@@ -81,7 +86,7 @@ async function onDeleteDivision(division) {
   if (confirmed) {
     try {
       await deleteSportDivision(division.id)
-      divisions.value = divisions.value.filter((d) => d.id !== division.id)
+      await loadDivisions()
     } catch (error) {
       console.error('Error deleting division:', error)
       alert('Failed to delete division')
@@ -159,6 +164,14 @@ onMounted(() => {
             </tr>
           </tbody>
         </table>
+
+        <div v-if="totalPages > 1" class="flex justify-end mt-4">
+          <Pagination
+            v-model="currentPage"
+            :total-pages="totalPages"
+            @change="loadDivisions"
+          />
+        </div>
       </div>
     </section>
   </MainLayout>
