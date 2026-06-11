@@ -10,6 +10,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import {
   createSportTeam,
+  fetchSportDivisions,
   fetchSportTeam,
   fetchSportTeams,
   updateSportTeam,
@@ -49,9 +50,13 @@ const {
 } = useTeamLogo(t)
 
 const teamRows = ref([])
+const divisions = ref([])
 
 const divisionOptions = computed(() =>
-  Array.from(new Set(teamRows.value.map((item) => String(item?.division || '').trim()).filter(Boolean))),
+  divisions.value
+    .filter((div) => div.status === 'active')
+    .map((div) => div.name)
+    .sort(),
 )
 
 const form = reactive({
@@ -230,27 +235,32 @@ async function onSuccessClose() {
   await goBackToTeams()
 }
 
-onMounted(() => {
-  fetchSportTeams({ perPage: 100 })
-    .then((response) => {
-      teamRows.value = response.items || []
-    })
-    .catch(() => {
-      teamRows.value = []
-    })
+onMounted(async () => {
+  try {
+    const [teamsResponse, divisionsResponse] = await Promise.all([
+      fetchSportTeams({ perPage: 100 }),
+      fetchSportDivisions({ perPage: 100 }),
+    ])
+    teamRows.value = teamsResponse.items || []
+    divisions.value = divisionsResponse.items || []
+  } catch {
+    teamRows.value = []
+    divisions.value = []
+  }
 
   if (isAddMode.value) return
 
   const id = String(route.query.id || '').trim()
   if (!id) return
 
-  fetchSportTeam(id)
-    .then((found) => {
-      if (!found?.id) return
-      initializeFormFromTeam(found, form, statusOptions, divisionOptions.value)
-      setLogoPreview(getLogoPreview(found))
-    })
-    .catch(() => {})
+  try {
+    const found = await fetchSportTeam(id)
+    if (!found?.id) return
+    initializeFormFromTeam(found, form, statusOptions, divisionOptions.value)
+    setLogoPreview(getLogoPreview(found))
+  } catch {
+    // Handle error silently
+  }
 })
 </script>
 
