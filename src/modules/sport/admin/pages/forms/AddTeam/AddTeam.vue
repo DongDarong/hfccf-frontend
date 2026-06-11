@@ -10,6 +10,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import {
   createSportTeam,
+  fetchSportCoaches,
   fetchSportDivisions,
   fetchSportTeam,
   fetchSportTeams,
@@ -51,11 +52,19 @@ const {
 
 const teamRows = ref([])
 const divisions = ref([])
+const coaches = ref([])
 
 const divisionOptions = computed(() =>
   divisions.value
     .filter((div) => div.status === 'active')
     .map((div) => div.name)
+    .sort(),
+)
+
+const coachOptions = computed(() =>
+  coaches.value
+    .filter((coach) => coach.status === 'active')
+    .map((coach) => coach.user)
     .sort(),
 )
 
@@ -237,15 +246,18 @@ async function onSuccessClose() {
 
 onMounted(async () => {
   try {
-    const [teamsResponse, divisionsResponse] = await Promise.all([
+    const [teamsResponse, divisionsResponse, coachesResponse] = await Promise.all([
       fetchSportTeams({ perPage: 100 }),
       fetchSportDivisions({ perPage: 100 }),
+      fetchSportCoaches({ perPage: 100 }),
     ])
     teamRows.value = teamsResponse.items || []
     divisions.value = divisionsResponse.items || []
+    coaches.value = coachesResponse.items || []
   } catch {
     teamRows.value = []
     divisions.value = []
+    coaches.value = []
   }
 
   if (isAddMode.value) return
@@ -311,6 +323,7 @@ onMounted(async () => {
             :losses="form.losses"
             :points="points"
             :division-options="divisionOptions"
+            :coach-options="coachOptions"
             :status-options="statusOptions"
             :is-locked="isFormLocked"
             :status-label="getStatusLabel"

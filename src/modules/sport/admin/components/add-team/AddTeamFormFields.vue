@@ -61,6 +61,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  coachOptions: {
+    type: Array,
+    default: () => [],
+  },
   statusOptions: {
     type: Array,
     default: () => [],
@@ -118,6 +122,13 @@ const placeholders = computed(() => ({
 
 const divisionSelectOptions = computed(() =>
   props.divisionOptions.map((value) => ({
+    label: value,
+    value,
+  })),
+)
+
+const coachSelectOptions = computed(() =>
+  props.coachOptions.map((value) => ({
     label: value,
     value,
   })),
@@ -192,11 +203,16 @@ const selectPt = {
 
     <label class="add-team-form-fields__field">
       <span class="add-team-form-fields__label">{{ labels.coach }}</span>
-      <InputText
+      <Select
         :model-value="coach"
+        :options="coachSelectOptions"
+        option-label="label"
+        option-value="value"
         :disabled="isLocked"
         :placeholder="placeholders.coach"
+        append-to="self"
         class="w-full"
+        :pt="selectPt"
         @update:model-value="emit('update:coach', $event)"
       />
     </label>
