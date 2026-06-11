@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 // Helper functions extracted from the component for testing
 // (These are the pure logic functions without full component mounting)
