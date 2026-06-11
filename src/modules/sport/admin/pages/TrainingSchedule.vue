@@ -15,6 +15,13 @@ import { useLanguage } from '@/composables/useLanguage'
 import TrainingSearchFilterBar from '@/modules/sport/coach/components/TrainingSearchFilterBar.vue'
 import TrainingSessionsTable from '@/modules/sport/coach/components/TrainingSessionsTable.vue'
 import trainingSessionsData from '@/mocks/sport/training-sessions.json'
+import {
+  filterSessions,
+  getPaginatedSessions,
+  getFilterOptions,
+  calculateLiveSessionsCount,
+} from './TrainingSchedule/utils/trainingScheduleHelpers'
+import { TRAINING_PAGE_SIZE } from './TrainingSchedule/constants/trainingScheduleConstants'
 
 defineOptions({
   name: 'SportTrainingSchedulePage',
@@ -28,13 +35,12 @@ const title = computed(() => t('coachTrainingSchedule.title'))
 const subtitle = computed(() => t('coachTrainingSchedule.subtitle'))
 const addButtonLabel = computed(() => t('coachTrainingSchedule.actions.addButton'))
 
-// Local filter state keeps this page self-contained and mock-data driven.
 const searchQuery = ref('')
 const intensityFilter = ref('')
 const statusFilter = ref('')
 const teamFilter = ref('')
 const currentPage = ref(1)
-const pageSize = 8
+const pageSize = TRAINING_PAGE_SIZE
 
 // Training sessions remain frontend-mocked until the backend API is connected.
 const sessions = ref([...trainingSessionsData])
@@ -44,59 +50,24 @@ const showAddSuccess = ref(false)
 const showDeleteConfirm = ref(false)
 const selectedSession = ref(null)
 
-const intensityOptions = computed(() => {
-  const options = sessions.value.map((s) => s.intensity).filter(Boolean)
-  return [...new Set(options)].sort()
-})
+const intensityOptions = computed(() => getFilterOptions(sessions.value, 'intensity'))
+const statusOptions = computed(() => getFilterOptions(sessions.value, 'status'))
+const teamOptions = computed(() => getFilterOptions(sessions.value, 'team'))
 
-const statusOptions = computed(() => {
-  const options = sessions.value.map((s) => s.status).filter(Boolean)
-  return [...new Set(options)].sort()
-})
-
-const teamOptions = computed(() => {
-  const options = sessions.value.map((s) => s.team).filter(Boolean)
-  return [...new Set(options)].sort()
-})
-
-function normalize(value) {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-}
-
-const filteredSessions = computed(() => {
-  const query = normalize(searchQuery.value)
-
-  return sessions.value.filter((session) => {
-    let matches = true
-
-    if (query) {
-      const haystack = normalize(`${session.title} ${session.team} ${session.venue} ${session.focus}`)
-      matches = haystack.includes(query)
-    }
-
-    if (matches && intensityFilter.value) {
-      matches = normalize(session.intensity) === normalize(intensityFilter.value)
-    }
-
-    if (matches && statusFilter.value) {
-      matches = normalize(session.status) === normalize(statusFilter.value)
-    }
-
-    if (matches && teamFilter.value) {
-      matches = normalize(session.team) === normalize(teamFilter.value)
-    }
-
-    return matches
-  })
-})
+const filteredSessions = computed(() =>
+  filterSessions(
+    sessions.value,
+    searchQuery.value,
+    intensityFilter.value,
+    statusFilter.value,
+    teamFilter.value,
+  ),
+)
 
 const totalPages = computed(() => Math.max(Math.ceil(filteredSessions.value.length / pageSize), 1))
-const paginatedSessions = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredSessions.value.slice(start, start + pageSize)
-})
+const paginatedSessions = computed(() =>
+  getPaginatedSessions(filteredSessions.value, currentPage.value, pageSize),
+)
 
 watch(
   () => filteredSessions.value.length,
@@ -115,9 +86,7 @@ const toolbarText = computed(() =>
     total: sessions.value.length,
   }),
 )
-const spotlightValue = computed(() =>
-  String(sessions.value.filter((s) => normalize(s.status) === 'live').length),
-)
+const spotlightValue = computed(() => String(calculateLiveSessionsCount(sessions.value)))
 
 function onAddSession() {
   // The add flow stays mocked until the backend form exists.

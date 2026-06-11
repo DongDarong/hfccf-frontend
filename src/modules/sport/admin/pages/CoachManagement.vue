@@ -9,9 +9,19 @@ import Pagination from '@/components/data-display/Pagination.vue'
 import CoachManagementSummaryGrid from '@/modules/sport/admin/components/coach-management/CoachManagementSummaryGrid.vue'
 import CoachManagementToolbar from '@/modules/sport/admin/components/coach-management/CoachManagementToolbar.vue'
 import CoachManagementHighlights from '@/modules/sport/admin/components/coach-management/CoachManagementHighlights.vue'
-import { ROLES } from '@/constants/roles'
 import { useLanguage } from '@/composables/useLanguage'
 import { deleteSportCoach, fetchSportCoaches } from '@/modules/sport/services/sportApi'
+import {
+  filterCoaches,
+  getPaginatedCoaches,
+  calculateCoachMetrics,
+  getHighlightItems,
+} from './CoachManagement/utils/coachManagementHelpers'
+import {
+  COACH_PAGE_SIZE,
+  ROLE_OPTIONS,
+  STATUS_OPTIONS,
+} from './CoachManagement/constants/coachManagementConstants'
 
 defineOptions({
   name: 'SportCoachManagementPage',
@@ -24,10 +34,10 @@ const roleFilter = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 
-const pageSize = 8
+const pageSize = COACH_PAGE_SIZE
 const isKh = computed(() => language.value === 'KH')
-const roleOptions = [ROLES.COACH]
-const statusOptions = ['Active', 'Pending', 'Inactive', 'Suspended']
+const roleOptions = ROLE_OPTIONS
+const statusOptions = STATUS_OPTIONS
 const pageTitle = computed(() => t('sportCoachManagement.title'))
 const pageSubtitle = computed(
   () => t('sportCoachManagement.subtitle'),
@@ -55,58 +65,21 @@ function goToAddCoach() {
 
 const coachUsers = ref([])
 
-const filteredUsers = computed(() => {
-  const query = String(searchQuery.value || '')
-    .trim()
-    .toLowerCase()
-
-  return coachUsers.value.filter((user) => {
-    let isMatch = true
-
-    if (query) {
-      const haystack =
-        `${user.name} ${user.email} ${user.role} ${user.permissions.join(' ')}`.toLowerCase()
-      isMatch = haystack.includes(query)
-    }
-
-    if (isMatch && roleFilter.value) {
-      isMatch = String(user.role).toLowerCase() === roleFilter.value.toLowerCase()
-    }
-
-    if (isMatch && statusFilter.value) {
-      isMatch = String(user.status).toLowerCase() === statusFilter.value.toLowerCase()
-    }
-
-    return isMatch
-  })
-})
+const filteredUsers = computed(() =>
+  filterCoaches(coachUsers.value, searchQuery.value, roleFilter.value, statusFilter.value),
+)
 
 const totalPages = computed(() => Math.max(Math.ceil(filteredUsers.value.length / pageSize), 1))
-const paginatedUsers = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredUsers.value.slice(start, start + pageSize).map((user, index) => ({
-    ...user,
-    rowNumber: start + index + 1,
-  }))
-})
+const paginatedUsers = computed(() =>
+  getPaginatedCoaches(filteredUsers.value, currentPage.value, pageSize),
+)
 
-const totalCoaches = computed(() => coachUsers.value.length)
-const activeCount = computed(
-  () => coachUsers.value.filter((user) => String(user.status).toLowerCase() === 'active').length,
-)
-const pendingCount = computed(
-  () => coachUsers.value.filter((user) => String(user.status).toLowerCase() === 'pending').length,
-)
-const attentionCount = computed(
-  () =>
-    coachUsers.value.filter((user) =>
-      ['inactive', 'suspended'].includes(String(user.status).toLowerCase()),
-    ).length,
-)
-const activeRateLabel = computed(() => {
-  if (!totalCoaches.value) return '0%'
-  return `${Math.round((activeCount.value / totalCoaches.value) * 100)}%`
-})
+const coachMetrics = computed(() => calculateCoachMetrics(coachUsers.value))
+const totalCoaches = computed(() => coachMetrics.value.totalCoaches)
+const activeCount = computed(() => coachMetrics.value.activeCount)
+const pendingCount = computed(() => coachMetrics.value.pendingCount)
+const attentionCount = computed(() => coachMetrics.value.attentionCount)
+const activeRateLabel = computed(() => coachMetrics.value.activeRate)
 const toolbarSummary = computed(() =>
   t('sportCoachManagement.toolbarSummary', { count: filteredUsers.value.length }),
 )
@@ -165,20 +138,9 @@ const summaryCards = computed(() => [
     icon: 'M6 18L18 6M6 6l12 12',
   },
 ])
-const highlightItems = computed(() => [
-  {
-    label: t('sportCoachManagement.highlights.visibleRoster'),
-    value: filteredUsers.value.length,
-  },
-  {
-    label: t('sportCoachManagement.highlights.pendingReview'),
-    value: pendingCount.value,
-  },
-  {
-    label: t('sportCoachManagement.highlights.attentionItems'),
-    value: attentionCount.value,
-  },
-])
+const highlightItems = computed(() =>
+  getHighlightItems(filteredUsers.value, pendingCount.value, attentionCount.value, t),
+)
 
 watch(
   () => filteredUsers.value.length,
