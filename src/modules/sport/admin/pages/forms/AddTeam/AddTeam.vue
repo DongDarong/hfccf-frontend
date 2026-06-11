@@ -72,12 +72,13 @@ const coachOptions = computed(() =>
     .sort(),
 )
 
-const playingStyleOptions = computed(() =>
-  playingStyles.value
+const playingStyleOptions = computed(() => {
+  if (!Array.isArray(playingStyles.value)) return []
+  return playingStyles.value
     .filter((style) => style.status === 'active')
     .map((style) => style.name)
-    .sort(),
-)
+    .sort()
+})
 
 const form = reactive({
   name: '',

@@ -144,12 +144,13 @@ const coachSelectOptions = computed(() =>
   })),
 )
 
-const playingStyleSelectOptions = computed(() =>
-  props.playingStyleOptions.map((value) => ({
+const playingStyleSelectOptions = computed(() => {
+  if (!Array.isArray(props.playingStyleOptions)) return []
+  return props.playingStyleOptions.map((value) => ({
     label: value,
     value,
-  })),
-)
+  }))
+})
 
 const statusSelectOptions = computed(() =>
   props.statusOptions.map((value) => ({
