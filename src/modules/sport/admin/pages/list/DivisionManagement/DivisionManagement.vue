@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { deleteSportDivision, fetchSportDivisions } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportDivisionManagementPage',
@@ -12,11 +13,8 @@ defineOptions({
 const router = useRouter()
 const { t } = useLanguage()
 
-const divisions = ref([
-  { id: 1, name: 'Division A', status: 'active', teamsCount: 5 },
-  { id: 2, name: 'Division B', status: 'active', teamsCount: 4 },
-  { id: 3, name: 'Division C', status: 'inactive', teamsCount: 0 },
-])
+const divisions = ref([])
+const loading = ref(false)
 
 const pageTitle = computed(() => t('sportDivisionManagement.title'))
 const pageSubtitle = computed(() => t('sportDivisionManagement.subtitle'))
@@ -64,14 +62,36 @@ function onEditDivision(division) {
   })
 }
 
+async function loadDivisions() {
+  loading.value = true
+  try {
+    const response = await fetchSportDivisions({ perPage: 100 })
+    divisions.value = response.items || []
+  } catch (error) {
+    console.error('Error loading divisions:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
 async function onDeleteDivision(division) {
   const confirmed = window.confirm(
     `Are you sure you want to delete "${division.name}"?`,
   )
   if (confirmed) {
-    divisions.value = divisions.value.filter((d) => d.id !== division.id)
+    try {
+      await deleteSportDivision(division.id)
+      divisions.value = divisions.value.filter((d) => d.id !== division.id)
+    } catch (error) {
+      console.error('Error deleting division:', error)
+      alert('Failed to delete division')
+    }
   }
 }
+
+onMounted(() => {
+  loadDivisions()
+})
 </script>
 
 <template>

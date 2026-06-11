@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import { createSportDivision, fetchSportDivision, updateSportDivision } from '@/modules/sport/services/sportApi'
 
 defineOptions({
   name: 'SportAddDivisionPage',
@@ -12,6 +13,7 @@ const router = useRouter()
 const route = useRoute()
 
 const isEditMode = computed(() => route.query.mode === 'edit' || !!route.params.id)
+const divisionId = computed(() => route.params.id)
 const pageTitle = computed(() =>
   isEditMode.value ? 'Edit Division' : 'Create New Division',
 )
@@ -52,28 +54,39 @@ async function handleSubmit() {
   isSubmitting.value = true
 
   try {
-    // TODO: Implement API call to save division
-    // await saveSportDivision(form.value)
+    if (isEditMode.value) {
+      await updateSportDivision(divisionId.value, form.value)
+    } else {
+      await createSportDivision(form.value)
+    }
 
-    // For now, just navigate back
     await router.push({ name: 'dashboard-sport-admin-divisions' })
   } catch (error) {
     console.error('Error saving division:', error)
+    alert('Failed to save division')
   } finally {
     isSubmitting.value = false
   }
 }
 
 function handleCancel() {
-  router.push({ name: 'dashboard-sport-admin-divisions' })
+  router.back()
 }
 
-onMounted(() => {
-  // TODO: Load division data if in edit mode
-  // if (isEditMode.value) {
-  //   const divisionId = route.params.id
-  //   // Load division data
-  // }
+onMounted(async () => {
+  if (isEditMode.value && divisionId.value) {
+    try {
+      const division = await fetchSportDivision(divisionId.value)
+      form.value = {
+        name: division.name,
+        description: division.description,
+        status: division.status,
+      }
+    } catch (error) {
+      console.error('Error loading division:', error)
+      alert('Failed to load division')
+    }
+  }
 })
 </script>
 
