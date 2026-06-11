@@ -24,6 +24,28 @@ import PreschoolSettingsSectionCard from '@/modules/preschool/shared/components/
 import PreschoolTermDialog from '@/modules/preschool/shared/components/settings/PreschoolTermDialog.vue'
 import PreschoolTermManager from '@/modules/preschool/shared/components/settings/PreschoolTermManager.vue'
 import { usePreschoolAcademicLifecycle } from '@/modules/preschool/composables/usePreschoolAcademicLifecycle'
+import {
+  toDateOrNull,
+  formatLifecycleDate,
+  formatPreviewDate,
+  formatLastSavedLabel,
+  buildOperationalState,
+  buildStatusOptions,
+  buildClassLevelOptions,
+  buildTeacherOptions,
+  buildAbsenceRuleOptions,
+  buildPaymentCycleOptions,
+  buildLateFeeRuleOptions,
+  buildAssessmentCycleOptions,
+  buildFinalizationModeOptions,
+  buildWeeklyModeOptions,
+  buildPlanningWindowOptions,
+  buildEnrollmentCycleOptions,
+  buildTransferPolicyOptions,
+  buildCapacityReviewOptions,
+  buildAcademicYearOptions,
+  syncBackboneAcademicDraft as performSyncBackboneAcademicDraft,
+} from './utils/preschoolSettingsHelpers'
 
 // Parent owns the full settings snapshot so the reusable section components can
 // stay presentation-focused and preserve a single validation source of truth.
@@ -79,149 +101,33 @@ const termDraft = ref(createEmptyTermDraft())
 const termDraftErrors = ref({})
 const editingTermIndex = ref(-1)
 
-const statusOptions = computed(() => [
-  { label: t('preschoolSettingsPage.statusOptions.active'), value: 'active' },
-  { label: t('preschoolSettingsPage.statusOptions.inactive'), value: 'inactive' },
-])
+const statusOptions = computed(() => buildStatusOptions(t))
+const classLevelOptions = computed(() => buildClassLevelOptions(t))
+const teacherOptions = computed(() => buildTeacherOptions(t))
+const absenceRuleOptions = computed(() => buildAbsenceRuleOptions(t))
+const paymentCycleOptions = computed(() => buildPaymentCycleOptions(t))
+const lateFeeRuleOptions = computed(() => buildLateFeeRuleOptions(t))
+const assessmentCycleOptions = computed(() => buildAssessmentCycleOptions(t))
+const finalizationModeOptions = computed(() => buildFinalizationModeOptions(t))
+const weeklyModeOptions = computed(() => buildWeeklyModeOptions(t))
+const planningWindowOptions = computed(() => buildPlanningWindowOptions(t))
+const enrollmentCycleOptions = computed(() => buildEnrollmentCycleOptions(t))
+const transferPolicyOptions = computed(() => buildTransferPolicyOptions(t))
+const capacityReviewOptions = computed(() => buildCapacityReviewOptions(t))
 
-const classLevelOptions = computed(() => [
-  { label: t('preschoolSettingsPage.classLevels.nursery'), value: 'nursery' },
-  { label: t('preschoolSettingsPage.classLevels.kindergarten1'), value: 'kindergarten-1' },
-  { label: t('preschoolSettingsPage.classLevels.kindergarten2'), value: 'kindergarten-2' },
-  { label: t('preschoolSettingsPage.classLevels.prep'), value: 'prep' },
-])
-
-const teacherOptions = computed(() => [
-  { label: t('preschoolSettingsPage.teacherOptions.leadTeacher'), value: 'lead-teacher' },
-  { label: t('preschoolSettingsPage.teacherOptions.assistantTeacher'), value: 'assistant-teacher' },
-  { label: t('preschoolSettingsPage.teacherOptions.floatingTeacher'), value: 'floating-teacher' },
-])
-
-const absenceRuleOptions = computed(() => [
-  { label: t('preschoolSettingsPage.absenceRules.windowAndThreshold'), value: 'window-and-threshold' },
-  { label: t('preschoolSettingsPage.absenceRules.strict'), value: 'strict' },
-])
-
-const paymentCycleOptions = computed(() => [
-  { label: t('preschoolSettingsPage.paymentCycles.monthly'), value: 'monthly' },
-  { label: t('preschoolSettingsPage.paymentCycles.term'), value: 'term' },
-  { label: t('preschoolSettingsPage.paymentCycles.quarterly'), value: 'quarterly' },
-])
-
-const lateFeeRuleOptions = computed(() => [
-  { label: t('preschoolSettingsPage.lateFeeRules.fixed'), value: 'fixed' },
-  { label: t('preschoolSettingsPage.lateFeeRules.perDay'), value: 'per-day' },
-  { label: t('preschoolSettingsPage.lateFeeRules.percentage'), value: 'percentage' },
-])
-
-const assessmentCycleOptions = computed(() => [
-  { label: t('preschoolSettingsPage.assessmentCycles.term'), value: 'term' },
-  { label: t('preschoolSettingsPage.assessmentCycles.semester'), value: 'semester' },
-  { label: t('preschoolSettingsPage.assessmentCycles.monthly'), value: 'monthly' },
-])
-
-const finalizationModeOptions = computed(() => [
-  { label: t('preschoolSettingsPage.finalizationModes.publishOnly'), value: 'publish-only' },
-  { label: t('preschoolSettingsPage.finalizationModes.manualReview'), value: 'manual-review' },
-  { label: t('preschoolSettingsPage.finalizationModes.draftOnly'), value: 'draft-only' },
-])
-
-const weeklyModeOptions = computed(() => [
-  { label: t('preschoolSettingsPage.weeklyModes.fiveDay'), value: 'five-day' },
-  { label: t('preschoolSettingsPage.weeklyModes.sixDay'), value: 'six-day' },
-])
-
-const planningWindowOptions = computed(() => [
-  { label: t('preschoolSettingsPage.planningWindows.weekly'), value: 'weekly' },
-  { label: t('preschoolSettingsPage.planningWindows.term'), value: 'term' },
-  { label: t('preschoolSettingsPage.planningWindows.monthly'), value: 'monthly' },
-])
-
-const enrollmentCycleOptions = computed(() => [
-  { label: t('preschoolSettingsPage.enrollmentCycles.term'), value: 'term' },
-  { label: t('preschoolSettingsPage.enrollmentCycles.yearly'), value: 'yearly' },
-  { label: t('preschoolSettingsPage.enrollmentCycles.rolling'), value: 'rolling' },
-])
-
-const transferPolicyOptions = computed(() => [
-  { label: t('preschoolSettingsPage.transferPolicies.adminOnly'), value: 'admin-only' },
-  { label: t('preschoolSettingsPage.transferPolicies.adminPlusTeacher'), value: 'admin-plus-teacher' },
-  { label: t('preschoolSettingsPage.transferPolicies.teacherRequest'), value: 'teacher-request' },
-])
-
-const capacityReviewOptions = computed(() => [
-  { label: t('preschoolSettingsPage.capacityReviewModes.manual'), value: 'manual' },
-  { label: t('preschoolSettingsPage.capacityReviewModes.automatic'), value: 'automatic' },
-])
-
-const operationalState = computed(() => {
-  if (hasValidationIssues.value) {
-    return {
-      label: t('preschoolSettingsPage.operationalStates.needsAttention'),
-      tone: 'warning',
-    }
-  }
-
-  if (lastSavedAt.value) {
-    return {
-      label: t('preschoolSettingsPage.operationalStates.saved'),
-      tone: 'success',
-    }
-  }
-
-  return {
-    label: t('preschoolSettingsPage.operationalStates.ready'),
-    tone: 'info',
-  }
-})
-
-const lastSavedLabel = computed(() => {
-  if (!lastSavedAt.value) {
-    return t('preschoolSettingsPage.emptyStates.unsaved')
-  }
-
-  return new Intl.DateTimeFormat(language.value === 'KH' ? 'km-KH' : 'en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(lastSavedAt.value)
-})
+const operationalState = computed(() => buildOperationalState(hasValidationIssues.value, lastSavedAt.value, t))
+const lastSavedLabel = computed(() => formatLastSavedLabel(lastSavedAt.value, language.value, t))
 
 const reportPeriodPreview = computed(() => reportPeriods.value.slice(0, 3))
-const academicYearOptions = computed(() => academicYears.value.map((year) => ({
-  label: year.label || year.code || `Year ${year.id}`,
-  value: year.id,
-})))
+const academicYearOptions = computed(() => buildAcademicYearOptions(academicYears.value))
 const currentAcademicYearRecord = computed(() => academicYears.value.find((year) => year.isCurrent) || academicYears.value[0] || null)
 const currentLifecycleTerms = computed(() => {
   const yearId = currentAcademicYearRecord.value?.id
   return terms.value.filter((term) => String(term.academicYearId || '') === String(yearId || ''))
 })
 
-function toDateOrNull(value) {
-  if (!value) return null
-  const date = value instanceof Date ? value : new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
 function syncBackboneAcademicDraft() {
-  const year = currentAcademicYearRecord.value
-
-  if (year) {
-    settings.value.academicYear = {
-      currentAcademicYear: year.label || year.code || '',
-      startDate: toDateOrNull(year.startDate),
-      endDate: toDateOrNull(year.endDate),
-      status: year.status || 'active',
-    }
-  }
-
-  settings.value.terms = currentLifecycleTerms.value.map((term) => ({
-    id: term.id,
-    name: term.name,
-    startDate: toDateOrNull(term.startDate),
-    endDate: toDateOrNull(term.endDate),
-    status: term.status || 'active',
-  }))
+  performSyncBackboneAcademicDraft(settings.value, currentAcademicYearRecord.value, currentLifecycleTerms.value)
 }
 
 function openCreateYear() {
@@ -332,13 +238,6 @@ function closeTermDialog() {
   termDraftErrors.value = {}
 }
 
-function formatLifecycleDate(value) {
-  if (!value) return ''
-  const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toISOString().slice(0, 10)
-}
-
 async function saveTermDraft() {
   const result = validatePreschoolTermDraft(termDraft.value)
   termDraftErrors.value = result.errors
@@ -383,17 +282,6 @@ async function closeTermRow(index) {
 
   await closeLifecycleTerm(nextTerm.id)
   syncBackboneAcademicDraft()
-}
-
-function formatPreviewDate(value) {
-  if (!value) return '-'
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '-'
-
-  return new Intl.DateTimeFormat(language.value === 'KH' ? 'km-KH' : 'en-GB', {
-    dateStyle: 'medium',
-  }).format(date)
 }
 
 function handleReset() {
