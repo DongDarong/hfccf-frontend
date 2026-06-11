@@ -11,6 +11,33 @@ import { fetchPreschoolStudents, fetchPreschoolClasses } from '@/modules/prescho
 import IdCardPreview from '@/modules/preschool/admin/components/IdCardPreview.vue'
 import IdCardBackPreview from '@/modules/preschool/admin/components/IdCardBackPreview.vue'
 import { buildBackQrDataUrl } from '@/modules/preschool/admin/pages/attendanceIdCardBack'
+import {
+  LANG_OPTIONS,
+  FORMAT_OPTIONS,
+  ORIENT_OPTIONS,
+  CARD_SIZES,
+  DEFAULT_LANG,
+  DEFAULT_FORMAT,
+  DEFAULT_ORIENTATION,
+  DEFAULT_GAP_MM,
+  MM_TO_PX_RATIO,
+} from './constants/attendanceIdCardConstants'
+import {
+  getInitials,
+  getAcademicYear,
+  resolveBackendUrl,
+  resolveFetchablePhotoUrl,
+  loadStudentPhotoAsImg,
+  imgToDataUrl,
+  waitForFonts,
+  calculateExportWidth,
+  calculateGapPixels,
+  sanitizeFileName,
+  normalizeClassOptions,
+  filterSelectedStudents,
+  getClassInfo,
+  getCurrentCardSize,
+} from './utils/attendanceIdCardHelpers'
 
 defineOptions({ name: 'PreschoolAdminAttendanceIdCardPage' })
 
@@ -18,58 +45,20 @@ const { t } = useLanguage()
 const router = useRouter()
 const PUBLIC_IMAGE_ORIGIN = String(import.meta.env.VITE_IMAGE_PUBLIC_ORIGIN || import.meta.env.VITE_IMAGE_PUBLIC_URL || '').trim()
 
-const classOptions        = ref([])
-const students            = ref([])
-const selectedClassId     = ref('')
-const selectedStudentIds  = ref([])
-const selectedFormat      = ref('pdf')
-const selectedOrientation = ref('landscape')
-const selectedSize        = ref('standard')
-const selectedLang        = ref('en')
-const selectedGapMm       = ref(4)
-const loadingClasses      = ref(false)
-const loadingStudents     = ref(false)
-const generating          = ref(false)
+const classOptions = ref([])
+const students = ref([])
+const selectedClassId = ref('')
+const selectedStudentIds = ref([])
+const selectedFormat = ref(DEFAULT_FORMAT)
+const selectedOrientation = ref(DEFAULT_ORIENTATION)
+const selectedSize = ref('standard')
+const selectedLang = ref(DEFAULT_LANG)
+const selectedGapMm = ref(DEFAULT_GAP_MM)
+const loadingClasses = ref(false)
+const loadingStudents = ref(false)
+const generating = ref(false)
 
-const LANG_OPTIONS = [
-  { value: 'en', label: 'EN', desc: 'English' },
-  { value: 'kh', label: 'ខ្មែរ', desc: 'Khmer' },
-]
-
-
-const FORMAT_OPTIONS = [
-  { value: 'pdf', label: 'PDF', icon: 'pi-file-pdf', desc: 'Print-ready A4 sheet' },
-  { value: 'png', label: 'PNG', icon: 'pi-image',    desc: 'Transparent background' },
-  { value: 'jpg', label: 'JPG', icon: 'pi-image',    desc: 'Smaller file size' },
-]
-const ORIENT_OPTIONS = [
-  { value: 'landscape', label: 'Landscape', icon: 'pi-stop',        desc: 'Wider than tall' },
-  { value: 'portrait',  label: 'Portrait',  icon: 'pi-tablet-phone', desc: 'Taller than wide' },
-]
-
-// Card size configs — just the card dimensions (mm), no A4 grid needed
-const CARD_SIZES = [
-  {
-    value: 'small',    label: 'Small',    icon: 'pi-minus-circle',
-    landscape: { W: 70,   H: 44   },
-    portrait:  { W: 44,   H: 70   },
-  },
-  {
-    value: 'standard', label: 'Standard', icon: 'pi-id-card',
-    landscape: { W: 85.6, H: 54   },
-    portrait:  { W: 54,   H: 85.6 },
-  },
-  {
-    value: 'large',    label: 'Large',    icon: 'pi-plus-circle',
-    landscape: { W: 100,  H: 63   },
-    portrait:  { W: 63,   H: 100  },
-  },
-]
-
-const currentSizeConfig = computed(() => {
-  const s = CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1]
-  return s[selectedOrientation.value]
-})
+const currentSizeConfig = computed(() => getCurrentCardSize(CARD_SIZES, selectedSize.value, selectedOrientation.value))
 
 const allSelected = computed(() =>
   students.value.length > 0 && selectedStudentIds.value.length === students.value.length,
@@ -83,91 +72,6 @@ function toggleStudent(id) {
   if (idx === -1) selectedStudentIds.value.push(id)
   else selectedStudentIds.value.splice(idx, 1)
 }
-function getInitials(student) {
-  return (student.fullName || student.name || '')
-    .split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?'
-}
-function getAcademicYear() {
-  const now = new Date(), y = now.getFullYear()
-  return now.getMonth() >= 8 ? `${y}-${y + 1}` : `${y - 1}-${y}`
-}
-
-// ── Image helpers ─────────────────────────────────────────────────────────────
-
-// Load a plain asset (no auth, no CORS issues expected — e.g. bundled logo)
-function resolveBackendUrl(url) {
-  if (!url) return ''
-  if (/^https?:\/\//.test(url) || url.startsWith('//')) return url
-  const base = String(import.meta.env.VITE_API_BASE_URL || window.location.origin)
-  try { return new URL(url, base).href } catch { return url }
-}
-
-function resolveFetchablePhotoUrl(avatarUrl) {
-  const url = resolveBackendUrl(avatarUrl)
-  if (!url) return ''
-
-  try {
-    const parsed = new URL(url, window.location.origin)
-    const imageOrigin = PUBLIC_IMAGE_ORIGIN ? new URL(PUBLIC_IMAGE_ORIGIN, window.location.origin).origin : ''
-
-    if (imageOrigin && parsed.origin === imageOrigin) {
-      return `/__image-proxy${parsed.pathname}${parsed.search}`
-    }
-  } catch {
-    return url
-  }
-
-  return url
-}
-
-// Load a student photo via fetch (sends auth header, returns a same-origin blob
-// URL so the canvas never gets tainted regardless of CORS headers on the server)
-async function loadStudentPhotoAsImg(avatarUrl) {
-  const url = resolveFetchablePhotoUrl(avatarUrl)
-  if (!url) throw new Error('empty url')
-
-  const isProxyRequest = url.startsWith('/__image-proxy')
-  const token =
-    isProxyRequest ? '' : (
-      window.localStorage.getItem('hfccf-auth-token') ||
-      window.sessionStorage.getItem('hfccf-auth-token') || ''
-    )
-
-  const res = await fetch(url, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-  const blob      = await res.blob()
-  const objectUrl = URL.createObjectURL(blob)
-
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload  = () => resolve({ img, objectUrl })
-    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('img load')) }
-    img.src = objectUrl
-  })
-}
-
-// Pre-crop an HTMLImageElement to a circle; returns a JPEG data URL for jsPDF.
-// Safe to call because blob-URL images never taint the canvas.
-function imgToDataUrl(img) {
-  const c = document.createElement('canvas')
-  c.width = img.naturalWidth || 200; c.height = img.naturalHeight || 200
-  c.getContext('2d').drawImage(img, 0, 0)
-  return c.toDataURL('image/jpeg', 0.85)
-}
-
-async function waitForFonts() {
-  if (document.fonts?.ready) {
-    try {
-      await document.fonts.ready
-    } catch {
-      // Ignore font-loading failures and continue with the rendered fallback.
-    }
-  }
-}
-
 async function renderCardComponentToCanvas(component, props, widthPx) {
   const host = document.createElement('div')
   host.style.position = 'fixed'
@@ -200,17 +104,16 @@ async function renderCardComponentToCanvas(component, props, widthPx) {
   }
 }
 
-// ── Shared constants ──────────────────────────────────────────────────────────
-
 async function loadClasses() {
   loadingClasses.value = true
   try {
     const res = await fetchPreschoolClasses({ page: 1, perPage: 100 })
-    classOptions.value = (res.items||[]).map((c) => ({
-      label: c.name||c.code||String(c.id), value: c.id, level: c.level||'',
-    }))
-  } catch { classOptions.value = [] }
-  finally { loadingClasses.value = false }
+    classOptions.value = normalizeClassOptions(res.items || [])
+  } catch {
+    classOptions.value = []
+  } finally {
+    loadingClasses.value = false
+  }
 }
 async function loadStudents() {
   if (!selectedClassId.value) { students.value=[]; return }
@@ -230,27 +133,23 @@ async function generateFilePreview() {
   generating.value = true
   const blobUrls = []
   try {
-    const chosen = students.value.filter((s) => selectedStudentIds.value.includes(s.id))
-    const classObj = classOptions.value.find((c) => c.value === selectedClassId.value)
-    const className = classObj?.label || ''
-    const classLevel = classObj?.level || ''
+    const chosen = filterSelectedStudents(students.value, selectedStudentIds.value)
+    const { name: className, level: classLevel } = getClassInfo(classOptions.value, selectedClassId.value)
     const year = getAcademicYear()
-    const safeName = className.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'students'
+    const safeName = sanitizeFileName(className)
     const fmt = selectedFormat.value
     const batchFmt = chosen.length > 1 ? 'pdf' : fmt
     const orient = selectedOrientation.value
     const lang = selectedLang.value
-    const { W: CARD_W, H: CARD_H } =
-      (CARD_SIZES.find((s) => s.value === selectedSize.value) || CARD_SIZES[1])[orient]
-    const exportWidthPx = Math.round(CARD_W * (300 / 25.4))
-    const gapMm = Math.max(0, Number(selectedGapMm.value) || 0)
-    const gapPx = Math.round(gapMm * (300 / 25.4))
+    const { W: CARD_W, H: CARD_H } = getCurrentCardSize(CARD_SIZES, selectedSize.value, orient)
+    const exportWidthPx = calculateExportWidth(CARD_W)
+    const gapPx = calculateGapPixels(selectedGapMm.value)
 
     const photoImgCache = new Map()
     await Promise.allSettled(chosen.map(async (s) => {
       if (!s.avatarUrl) return
       try {
-        const { img, objectUrl } = await loadStudentPhotoAsImg(s.avatarUrl)
+        const { img, objectUrl } = await loadStudentPhotoAsImg(s.avatarUrl, PUBLIC_IMAGE_ORIGIN)
         photoImgCache.set(s.id, img)
         blobUrls.push(objectUrl)
       } catch (error) {

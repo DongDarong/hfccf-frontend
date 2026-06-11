@@ -148,7 +148,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/attendance/id-card',
     name: 'dashboard-preschool-admin-attendance-id-card',
-    component: () => import('@/modules/preschool/admin/pages/AttendanceIdCard.vue'),
+    component: () => import('@/modules/preschool/admin/pages/AttendanceIdCard/AttendanceIdCard.vue'),
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
   // Settings stays in the admin Preschool route tree so the configuration
