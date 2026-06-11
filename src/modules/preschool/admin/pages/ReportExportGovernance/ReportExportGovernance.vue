@@ -27,6 +27,28 @@ import {
   fetchExportGovernanceRecord,
   fetchExportGovernanceTimeline,
 } from '@/modules/preschool/services/api/preschoolExportGovernanceApi'
+import {
+  ROUTE_NAMES,
+  DEFAULT_FILTERS,
+  DEFAULT_PAGINATION,
+  DEFAULT_ANALYTICS,
+  DEFAULT_COMPARISON_OPTIONS,
+} from './constants/reportExportGovernanceConstants'
+import {
+  buildExportTypeOptions,
+  buildExportFormatOptions,
+  buildSourceOptions,
+  buildAcademicYearOptions,
+  buildTermOptions,
+  buildReportPeriodFilterOptions,
+  buildActorFilterOptions,
+  buildSummaryCards,
+  buildClassOptions,
+  buildStudentOptions,
+  buildReportPeriodOptions,
+  exportQuery,
+  downloadCsvFile,
+} from './utils/reportExportGovernanceHelpers'
 
 defineOptions({
   name: 'PreschoolReportExportGovernancePage',
@@ -43,130 +65,39 @@ const detailLoading = ref(false)
 const errorMessage = ref('')
 const analyticsError = ref('')
 const historyItems = ref([])
-const analytics = ref({
-  overview: {},
-  actorCounts: [],
-  sourceCounts: {},
-  exportTrend: [],
-  recentSnapshotCount: 0,
-})
-const comparisonOptions = ref({
-  comparisonModes: [],
-  metricGroups: [],
-  filters: {},
-})
+const analytics = ref({ ...DEFAULT_ANALYTICS })
+const comparisonOptions = ref({ ...DEFAULT_COMPARISON_OPTIONS })
 const comparisonResult = ref(null)
 const timelineItems = ref([])
 const detailVisible = ref(false)
 const selectedRecord = ref(null)
 const selectedRecordDetail = ref(null)
-const pagination = ref({ page: 1, perPage: 20, total: 0, totalPages: 1 })
+const pagination = ref({ ...DEFAULT_PAGINATION })
 
 const classOptions = ref([])
 const studentOptions = ref([])
 const reportPeriodOptions = ref([])
 
-const filters = ref({
-  exportType: '',
-  exportFormat: '',
-  academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  actorUserId: '',
-  source: '',
-  exportedFrom: '',
-  exportedTo: '',
-  search: '',
-})
+const filters = ref({ ...DEFAULT_FILTERS })
 
-const exportTypeOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.exportTypes.all'), value: '' },
-  { label: t('preschoolExportGovernancePage.exportTypes.snapshotArchive'), value: 'snapshot_archive' },
-  { label: t('preschoolExportGovernancePage.exportTypes.studentReport'), value: 'student_report' },
-  { label: t('preschoolExportGovernancePage.exportTypes.classroomReport'), value: 'classroom_report' },
-  { label: t('preschoolExportGovernancePage.exportTypes.progressSummary'), value: 'progress_summary' },
-  { label: t('preschoolExportGovernancePage.exportTypes.institutionalSummary'), value: 'institutional_summary' },
-])
+const exportTypeOptions = computed(() => buildExportTypeOptions(t))
 
-const exportFormatOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.exportFormats.all'), value: '' },
-  { label: t('preschoolExportGovernancePage.exportFormats.csv'), value: 'csv' },
-])
+const exportFormatOptions = computed(() => buildExportFormatOptions(t))
 
-const sourceOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.exportSources.all'), value: '' },
-  { label: t('preschoolExportGovernancePage.exportSources.snapshot'), value: 'snapshot' },
-  { label: t('preschoolExportGovernancePage.exportSources.live'), value: 'live' },
-])
+const sourceOptions = computed(() => buildSourceOptions(t))
 
-const academicYearOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.filters.allAcademicYears'), value: '' },
-  ...academicYears.value.map((year) => ({
-    label: year.label || year.code || `#${year.id}`,
-    value: String(year.id || ''),
-  })),
-])
+const academicYearOptions = computed(() => buildAcademicYearOptions(t, academicYears.value))
 
-const termOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.filters.allTerms'), value: '' },
-  ...terms.value.map((term) => ({
-    label: term.name || term.code || `#${term.id}`,
-    value: String(term.id || ''),
-  })),
-])
+const termOptions = computed(() => buildTermOptions(t, terms.value))
 
-const reportPeriodFilterOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.filters.allReportPeriods'), value: '' },
-  ...reportPeriodOptions.value.map((item) => ({
-    label: item.label,
-    value: String(item.value),
-  })),
-])
+const reportPeriodFilterOptions = computed(() => buildReportPeriodFilterOptions(t, reportPeriodOptions.value))
 
-const actorFilterOptions = computed(() => [
-  { label: t('preschoolExportGovernancePage.filters.allActors'), value: '' },
-  ...((analytics.value.actorCounts || []).map((item) => ({
-    label: item.actorName ? `${item.actorName}${item.actorRole ? ` (${item.actorRole})` : ''}` : `#${item.actorUserId || '-'}`,
-    value: String(item.actorUserId || ''),
-  }))),
-])
+const actorFilterOptions = computed(() => buildActorFilterOptions(t, analytics.value.actorCounts))
 
-const summaryCards = computed(() => [
-  {
-    title: t('preschoolExportGovernancePage.overview.totalExports'),
-    value: analytics.value.overview?.totalExports ?? 0,
-    caption: t('preschoolExportGovernancePage.overview.totalExportsCaption'),
-  },
-  {
-    title: t('preschoolExportGovernancePage.overview.snapshotExports'),
-    value: analytics.value.overview?.snapshotExports ?? 0,
-    caption: t('preschoolExportGovernancePage.overview.snapshotExportsCaption'),
-  },
-  {
-    title: t('preschoolExportGovernancePage.overview.liveExports'),
-    value: analytics.value.overview?.liveExports ?? 0,
-    caption: t('preschoolExportGovernancePage.overview.liveExportsCaption'),
-  },
-  {
-    title: t('preschoolExportGovernancePage.overview.csvExports'),
-    value: analytics.value.overview?.csvExports ?? 0,
-    caption: t('preschoolExportGovernancePage.overview.csvExportsCaption'),
-  },
-])
+const summaryCards = computed(() => buildSummaryCards(t, analytics.value))
 
-function exportQuery() {
-  return {
-    exportType: filters.value.exportType,
-    exportFormat: filters.value.exportFormat,
-    academicYearId: filters.value.academicYearId,
-    termId: filters.value.termId,
-    reportPeriodId: filters.value.reportPeriodId,
-    actorUserId: filters.value.actorUserId,
-    source: filters.value.source,
-    exportedFrom: filters.value.exportedFrom,
-    exportedTo: filters.value.exportedTo,
-    search: filters.value.search,
-  }
+function getExportQuery() {
+  return exportQuery(filters.value)
 }
 
 async function loadLookupOptions() {
@@ -177,23 +108,9 @@ async function loadLookupOptions() {
       fetchReportPeriods(),
     ])
 
-    classOptions.value = (classesResponse.items || []).map((item) => ({
-      label: item.name || item.code || `#${item.id}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    studentOptions.value = (studentsResponse.items || []).map((item) => ({
-      label: `${item.fullName || item.name}${(item.publicId || item.studentCode) ? ` (${item.publicId || item.studentCode})` : ''}`,
-      value: item.id,
-      raw: item,
-    }))
-
-    reportPeriodOptions.value = (reportPeriodsResponse || []).map((period) => ({
-      label: `${period.label || period.periodLabel || period.period_label}${period.status ? ` (${period.status})` : ''}`,
-      value: period.id,
-      raw: period,
-    }))
+    classOptions.value = buildClassOptions(classesResponse.items || [])
+    studentOptions.value = buildStudentOptions(studentsResponse.items || [])
+    reportPeriodOptions.value = buildReportPeriodOptions(reportPeriodsResponse || [])
   } catch {
     classOptions.value = []
     studentOptions.value = []
@@ -205,28 +122,18 @@ async function loadAnalytics() {
   analyticsError.value = ''
 
   try {
-    analytics.value = await fetchExportGovernanceAnalytics(exportQuery())
+    analytics.value = await fetchExportGovernanceAnalytics(getExportQuery())
   } catch (error) {
-    analytics.value = {
-      overview: {},
-      actorCounts: [],
-      sourceCounts: {},
-      exportTrend: [],
-      recentSnapshotCount: 0,
-    }
+    analytics.value = { ...DEFAULT_ANALYTICS }
     analyticsError.value = error?.message || t('preschoolExportGovernancePage.errors.analytics')
   }
 }
 
 async function loadComparisonOptions() {
   try {
-    comparisonOptions.value = await fetchExportGovernanceComparisonOptions(exportQuery())
+    comparisonOptions.value = await fetchExportGovernanceComparisonOptions(getExportQuery())
   } catch {
-    comparisonOptions.value = {
-      comparisonModes: [],
-      metricGroups: [],
-      filters: {},
-    }
+    comparisonOptions.value = { ...DEFAULT_COMPARISON_OPTIONS }
   }
 }
 
@@ -236,7 +143,7 @@ async function loadHistory(page = 1) {
 
   try {
     const payload = await fetchExportGovernanceHistory({
-      ...exportQuery(),
+      ...getExportQuery(),
       page,
       perPage: pagination.value.perPage,
     })
@@ -261,7 +168,7 @@ async function loadTimeline() {
 
   try {
     timelineItems.value = await fetchExportGovernanceTimeline({
-      ...exportQuery(),
+      ...getExportQuery(),
       limit: 50,
     })
   } catch {
@@ -304,14 +211,7 @@ async function openRecordDetail(record) {
 async function downloadRecord(record) {
   try {
     const blob = await downloadExportGovernanceCsv(record.id)
-    const objectUrl = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv;charset=utf-8;' }))
-    const link = document.createElement('a')
-    link.href = objectUrl
-    link.download = record.fileName || `preschool-export-${record.id}.csv`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(objectUrl)
+    downloadCsvFile({ blob, fileName: record.fileName, id: record.id })
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolExportGovernancePage.errors.history')
   }
@@ -330,11 +230,11 @@ async function runComparison(payload) {
 }
 
 function goToSnapshotArchive() {
-  router.push({ name: 'dashboard-preschool-admin-report-snapshots' })
+  router.push({ name: ROUTE_NAMES.SNAPSHOT_ARCHIVE })
 }
 
 function goToAuditLogs() {
-  router.push({ name: 'dashboard-preschool-admin-lifecycle-audit' })
+  router.push({ name: ROUTE_NAMES.AUDIT_LOGS })
 }
 
 function handlePageChange(nextPage) {

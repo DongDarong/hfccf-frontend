@@ -237,7 +237,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/reports/export-governance',
     name: 'dashboard-preschool-admin-export-governance',
-    component: () => import('@/modules/preschool/admin/pages/ReportExportGovernance.vue'),
+    component: () => import('@/modules/preschool/admin/pages/ReportExportGovernance/ReportExportGovernance.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
