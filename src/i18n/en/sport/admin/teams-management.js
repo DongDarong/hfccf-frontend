@@ -38,6 +38,11 @@ export default {
         badge: 'Across all listed teams',
         caption: 'Total athletes assigned to the current team structure in the sport program.',
       },
+      divisions: {
+        title: 'Manage divisions',
+        badge: 'Organize teams',
+        caption: 'Create and manage divisions to organize teams within the sport program.',
+      },
     },
     table: {
       team: 'Team',
