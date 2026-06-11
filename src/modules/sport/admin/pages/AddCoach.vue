@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -14,12 +14,27 @@ import {
   fetchSportCoach,
   updateSportCoach,
 } from '@/modules/sport/services/sportApi'
-import { optimizeImageFile } from '@/utils/imageOptimization'
 import AddCoachIntro from '@/modules/sport/admin/components/add-coach/AddCoachIntro.vue'
 import AddCoachFormFields from '@/modules/sport/admin/components/add-coach/AddCoachFormFields.vue'
 import AddCoachFormActions from '@/modules/sport/admin/components/add-coach/AddCoachFormActions.vue'
 import AdminSummaryCards from '@/modules/super-admin/components/admin-management/AdminSummaryCards.vue'
 import AdminChecklistPanel from '@/modules/super-admin/components/admin-management/AdminChecklistPanel.vue'
+import { useCoachProfileImage } from './AddCoach/composables/useCoachProfileImage'
+import {
+  statusLabel: getStatusLabel,
+  roleLabel: getRoleLabel,
+  permissionLabel: getPermissionLabel,
+  validateForm,
+  getFormPayload,
+  initializeFormFromCoach,
+  getProfileImagePreview,
+} from './AddCoach/utils/addCoachHelpers'
+import {
+  COACHES_DIRECTORY_PATH,
+  ROLE_OPTIONS,
+  STATUS_OPTIONS,
+  DEFAULT_PERMISSIONS,
+} from './AddCoach/constants/addCoachConstants'
 
 defineOptions({
   name: 'SportAdminAddCoachPage',
@@ -29,11 +44,12 @@ const router = useRouter()
 const route = useRoute()
 const { t, language } = useLanguage()
 
-const coachDirectoryPath = '/module/sport-admin/users'
-const roleOptions = [ROLES.COACH]
-const statusOptions = ['active', 'pending', 'inactive', 'suspended']
-const allowedProfileImageTypes = ['image/jpeg', 'image/png', 'image/webp']
-const maxProfileImageSizeBytes = 2 * 1024 * 1024
+const {
+  profileImagePreview,
+  handleProfileImageChange: handleImageChange,
+  removeProfileImage: removeImage,
+  setImagePreview,
+} = useCoachProfileImage(t)
 
 const form = reactive({
   name: '',
@@ -41,7 +57,7 @@ const form = reactive({
   phone: '',
   role: ROLES.COACH,
   permissions: [],
-  status: statusOptions[0],
+  status: STATUS_OPTIONS[0],
   password: '',
   confirmPassword: '',
   profileImage: null,
@@ -53,8 +69,6 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
-const profileImagePreview = ref('')
-const profileImageObjectUrl = ref('')
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -67,49 +81,24 @@ const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 const isKh = computed(() => language.value === 'KH')
 
-function cleanupProfileImageObjectUrl() {
-  if (!profileImageObjectUrl.value) return
-  URL.revokeObjectURL(profileImageObjectUrl.value)
-  profileImageObjectUrl.value = ''
+const roleOptions = ROLE_OPTIONS
+const statusOptions = STATUS_OPTIONS
+
+function statusLabel(status) {
+  return getStatusLabel(status, t)
+}
+
+function roleLabel(value) {
+  return getRoleLabel(value, t)
+}
+
+function permissionLabel(value) {
+  return getPermissionLabel(value, t)
 }
 
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
-}
-
-function statusLabel(status) {
-  const normalized = String(status || '').trim()
-  if (!normalized) return '-'
-
-  const key = `common.status.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(status || '')
-}
-
-function roleLabel(value) {
-  const normalized = String(value || '').trim()
-  if (!normalized) return '-'
-
-  const key = `common.role.${normalized.replace(/[\s-]+/g, '_').toLowerCase()}`
-  const translated = t(key)
-  return translated !== key ? translated : String(value || '')
-}
-
-function permissionLabel(value) {
-  const normalized = String(value || '').trim()
-  if (!normalized) return '-'
-
-  const key = `common.permission.${normalized.toLowerCase()}`
-  const translated = t(key)
-  if (translated !== key) return translated
-
-  return String(value || '')
-    .replace(/[:_]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
 }
 
 const pageTitle = computed(() => {
@@ -181,7 +170,7 @@ async function loadPermissions() {
   try {
     form.permissions = await fetchRolePermissions(ROLES.COACH)
   } catch {
-    form.permissions = ['dashboard:read', 'matches:read', 'events:write']
+    form.permissions = DEFAULT_PERMISSIONS
   }
 }
 
@@ -194,57 +183,19 @@ function toggleConfirmPasswordVisibility() {
 }
 
 async function onProfileImageChange(event) {
-  if (isFormLocked.value) return
-
-  const [file] = event?.target?.files || []
-  if (!file) return
-
-  if (!allowedProfileImageTypes.includes(file.type)) {
-    errorMessage.value = t('sportAddCoach.validation.imageType')
+  const error = await handleImageChange(event, form, isFormLocked.value)
+  if (error) {
+    errorMessage.value = error
     showError.value = true
-    return
   }
-
-  if (file.size > maxProfileImageSizeBytes) {
-    errorMessage.value = t('sportAddCoach.validation.imageSize')
-    showError.value = true
-    return
-  }
-
-  const optimizedFile = await optimizeImageFile(file, {
-    maxWidth: 512,
-    maxHeight: 512,
-    quality: 0.84,
-  }).catch(() => file)
-
-  cleanupProfileImageObjectUrl()
-  profileImageObjectUrl.value = URL.createObjectURL(optimizedFile)
-  profileImagePreview.value = profileImageObjectUrl.value
-  form.profileImage = optimizedFile
 }
 
 function removeProfileImage() {
-  if (isFormLocked.value) return
-  cleanupProfileImageObjectUrl()
-  profileImagePreview.value = ''
-  form.profileImage = null
-}
-
-function validateForm() {
-  if (!form.name.trim()) return t('sportAddCoach.validation.fullNameRequired')
-  if (!form.email.trim()) return t('sportAddCoach.validation.emailRequired')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return t('sportAddCoach.validation.emailInvalid')
-  if (!form.status) return t('sportAddCoach.validation.statusRequired')
-  if (isAddMode.value && form.password.length < 8) return t('sportAddCoach.validation.passwordLength')
-  if (form.password || form.confirmPassword) {
-    if (form.password.length < 8) return t('sportAddCoach.validation.passwordLength')
-    if (form.password !== form.confirmPassword) return t('sportAddCoach.validation.passwordMismatch')
-  }
-  return ''
+  removeImage(form, isFormLocked.value)
 }
 
 async function goBackToCoaches() {
-  await router.push(coachDirectoryPath)
+  await router.push(COACHES_DIRECTORY_PATH)
 }
 
 async function goToEditMode() {
@@ -257,7 +208,7 @@ async function onSubmit() {
   if (isViewMode.value) return
 
   resetFeedback()
-  const validationError = validateForm()
+  const validationError = validateForm(form, isAddMode.value, t)
   if (validationError) {
     errorMessage.value = validationError
     showError.value = true
@@ -266,16 +217,7 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    const payload = {
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
-      status: form.status,
-      password: form.password,
-      confirmPassword: form.confirmPassword,
-      avatar: form.profileImage,
-      removeAvatar: !form.profileImage && !profileImagePreview.value ? false : false,
-    }
+    const payload = getFormPayload(form)
 
     if (isEditMode.value && route.query.id) {
       await updateSportCoach(route.query.id, payload)
@@ -301,20 +243,6 @@ async function onSuccessClose() {
   await goBackToCoaches()
 }
 
-async function populateFromCoach(coach) {
-  form.name = coach.fullName || coach.name || coach.username || ''
-  form.email = coach.email || ''
-  form.phone = coach.phone || ''
-  form.role = ROLES.COACH
-  form.permissions = Array.isArray(coach.permissions) && coach.permissions.length ? coach.permissions : await fetchRolePermissions(ROLES.COACH)
-  form.status = statusOptions.find((status) => status.toLowerCase() === String(coach.status || '').toLowerCase()) || statusOptions[0]
-  form.password = ''
-  form.confirmPassword = ''
-  form.profileImage = null
-  cleanupProfileImageObjectUrl()
-  profileImagePreview.value = String(coach.avatar || '').trim()
-}
-
 onMounted(async () => {
   await loadPermissions()
 
@@ -326,11 +254,8 @@ onMounted(async () => {
   const coach = await fetchSportCoach(id).catch(() => null)
   if (!coach?.id) return
 
-  await populateFromCoach(coach)
-})
-
-onBeforeUnmount(() => {
-  cleanupProfileImageObjectUrl()
+  await initializeFormFromCoach(coach, form, statusOptions, loadPermissions)
+  setImagePreview(getProfileImagePreview(coach))
 })
 </script>
 
