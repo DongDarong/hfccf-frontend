@@ -339,7 +339,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms',
     name: 'dashboard-preschool-admin-forms',
-    component: () => import('@/modules/preschool/admin/pages/forms/FormManagement.vue'),
+    component: () => import('@/modules/preschool/admin/pages/forms/FormTracker.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
