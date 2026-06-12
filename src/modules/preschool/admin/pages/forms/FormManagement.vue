@@ -26,10 +26,6 @@ const heroSummary = computed(() =>
   ),
 )
 
-const heroActionLabel = computed(() =>
-  safeText('preschoolScaffold.formManagement.hero.openLabel', 'Open'),
-)
-
 const pageCards = computed(() =>
   FORM_MANAGEMENT_PAGE_CARDS.map((card) => ({
     ...card,
@@ -37,6 +33,9 @@ const pageCards = computed(() =>
     description: safeText(card.descriptionKey, card.fallbackDescription),
   })),
 )
+
+const startCard = computed(() => pageCards.value.find(c => c.category === 'start'))
+const workflowCards = computed(() => pageCards.value.filter(c => c.category === 'workflow'))
 
 const quickLinks = computed(() => [
   {
@@ -74,12 +73,23 @@ const quickLinks = computed(() => [
         :quick-links="quickLinks"
       />
 
+      <!-- START HERE Section -->
       <FormManagementSection
-        :eyebrow="safeText('preschoolScaffold.formManagement.pages.sections.title', 'Sections')"
-        :title="safeText('preschoolScaffold.formManagement.pages.sections.title', 'Sections')"
-        :badge="heroActionLabel"
-        grid-class="preschool-form-management-section__grid--two"
-        :cards="pageCards"
+        v-if="startCard"
+        :eyebrow="'GET STARTED'"
+        :title="'Overview & Quick Access'"
+        grid-class="preschool-form-management-section__grid--one"
+        :cards="[startCard]"
+      />
+
+      <!-- WORKFLOW Section -->
+      <FormManagementSection
+        :eyebrow="'WORKFLOW'"
+        :title="'Sequential Process'"
+        :subtitle="'Follow these steps: Create → Manage → Review'"
+        grid-class="preschool-form-management-section__grid--three"
+        :cards="workflowCards"
+        is-workflow
       />
     </section>
   </MainLayout>

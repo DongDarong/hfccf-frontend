@@ -40,10 +40,18 @@ function safeText(key, fallback) {
 
           <div class="preschool-form-management-card__copy">
             <div class="preschool-form-management-card__topline">
-              <h4>{{ safeText(props.card.titleKey, props.card.titleFallback) }}</h4>
+              <div class="preschool-form-management-card__title-section">
+                <span v-if="props.card.step" class="preschool-form-management-card__step">
+                  Step {{ props.card.step }}
+                </span>
+                <h4>{{ safeText(props.card.titleKey, props.card.titleFallback) }}</h4>
+              </div>
               <span>{{ badge }}</span>
             </div>
             <p>{{ props.card.description }}</p>
+            <div v-if="props.card.prerequisite" class="preschool-form-management-card__prerequisite">
+              <small>📋 Requires: {{ props.card.prerequisite }}</small>
+            </div>
           </div>
         </div>
       </template>
@@ -119,6 +127,23 @@ function safeText(key, fallback) {
   margin-bottom: 0.35rem;
 }
 
+.preschool-form-management-card__title-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preschool-form-management-card__step {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .preschool-form-management-card__topline h4 {
   margin: 0;
   color: #0f172a;
@@ -143,5 +168,13 @@ function safeText(key, fallback) {
   color: #475569;
   font-size: 0.92rem;
   line-height: 1.5;
+}
+
+.preschool-form-management-card__prerequisite {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.8rem;
 }
 </style>

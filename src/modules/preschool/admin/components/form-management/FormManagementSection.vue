@@ -32,6 +32,14 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  subtitle: {
+    type: String,
+    default: '',
+  },
+  isWorkflow: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const { t, te } = useLanguage()
@@ -51,6 +59,9 @@ function safeText(key, fallback) {
           {{ eyebrow }}
         </p>
         <h3>{{ title }}</h3>
+        <p v-if="subtitle" class="preschool-form-management-section__subtitle">
+          {{ subtitle }}
+        </p>
       </div>
 
       <span v-if="badgeText" class="preschool-form-management-section__badge">
@@ -101,6 +112,13 @@ function safeText(key, fallback) {
   line-height: 1.2;
 }
 
+.preschool-form-management-section__subtitle {
+  margin: 0.4rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 .preschool-form-management-section__badge {
   display: inline-flex;
   align-items: center;
@@ -120,6 +138,11 @@ function safeText(key, fallback) {
 .preschool-form-management-section__grid {
   display: grid;
   gap: 1rem;
+}
+
+.preschool-form-management-section__grid--one {
+  grid-template-columns: 1fr;
+  max-width: 500px;
 }
 
 .preschool-form-management-section__grid--three {
