@@ -106,5 +106,12 @@ export default {
     assessmentPrintDesigner: 'រចនាការបោះពុម្ព',
     dsamModule: 'ការវាយតម្លៃសិស្ស',
     dsamSubmissions: 'ការវាយតម្លៃ',
+    assessment: 'មជ្ឈមណ្ឌលវាយតម្លៃ',
+    submissions: 'ការដាក់ស្នើ',
+    submissionDetail: 'លម្អិតការដាក់ស្នើ',
+    formBuilder: 'អ្នកបង្កើតទម្រង់',
+    wizard: 'អ្នកជំនួយការវាយតម្លៃ',
+    scoring: 'ម៉ាស៊ីនគ្រប់គ្រងពិន្ទុ',
+    printDesigner: 'អ្នករចនាការបោះពុម្ព',
   },
 }

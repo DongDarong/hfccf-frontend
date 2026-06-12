@@ -69,9 +69,15 @@ export const useWizardStore = defineStore('assessmentWizard', () => {
   }
 
   function buildPayload(status = 'draft') {
+    if (!selectedForm.value?.id) {
+      throw new Error('Form must be selected')
+    }
+    if (!selectedStudent.value?.id) {
+      throw new Error('Student must be selected')
+    }
     return {
-      form_template_id: selectedForm.value?.id,
-      student_id: selectedStudent.value?.id,
+      form_template_id: selectedForm.value.id,
+      student_id: selectedStudent.value.id,
       status,
       answers: Object.values(answers.value),
     }

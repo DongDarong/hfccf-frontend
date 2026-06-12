@@ -3,8 +3,7 @@ import { onMounted, ref } from 'vue'
 import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentWizard } from '../../composables/useAssessmentWizard'
-import http from '@/services/http'
-import { normalizePerPage } from '@/services/api'
+import { fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 
 const { t } = useLanguage()
 const { store, selectStudent } = useAssessmentWizard()
@@ -15,10 +14,8 @@ const isLoading = ref(false)
 async function load() {
   isLoading.value = true
   try {
-    const res = await http.get('/preschool/students', {
-      params: { per_page: normalizePerPage(200, 10, 100) },
-    })
-    students.value = res.data.data
+    const response = await fetchPreschoolStudents({ perPage: 200 })
+    students.value = response.students
   } finally {
     isLoading.value = false
   }
@@ -33,7 +30,7 @@ onMounted(load)
     <Select
       :model-value="store.selectedStudent"
       :options="students"
-          option-label="fullName"
+      option-label="fullName"
       :loading="isLoading"
       :placeholder="t('assessmentWizard.selectStudent')"
       filter
