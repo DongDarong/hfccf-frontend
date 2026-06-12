@@ -54,6 +54,21 @@ const quickLinks = computed(() => [
         :subtitle="safeText('preschoolScaffold.formManagement.pages.manage.subtitle', 'Open the form catalog and related records.')"
       />
 
+      <div class="workflow-guidance">
+        <p class="workflow-guidance__step">
+          <span class="workflow-guidance__icon">📋</span>
+          <strong>Browse catalog:</strong> View all active and archived forms
+        </p>
+        <p class="workflow-guidance__step">
+          <span class="workflow-guidance__icon">🔍</span>
+          <strong>Review details:</strong> Check form properties and audit history
+        </p>
+        <p class="workflow-guidance__step">
+          <span class="workflow-guidance__icon">📊</span>
+          <strong>Organize:</strong> Archive, duplicate, or reorganize forms
+        </p>
+      </div>
+
       <FormManagementHero
         :eyebrow="safeText('preschoolScaffold.formManagement.pages.manage.eyebrow', 'Form management')"
         :title="safeText('preschoolScaffold.formManagement.pages.manage.title', 'Manage Forms')"
@@ -80,5 +95,29 @@ const quickLinks = computed(() => [
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.workflow-guidance {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workflow-guidance__step {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.workflow-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 </style>
