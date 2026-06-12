@@ -61,52 +61,74 @@ const viewModel = computed(() =>
         :subtitle="viewModel.pageSubtitle"
       />
 
+      <!-- Summary Overview -->
       <CommandCenterSummaryCards
         :title="viewModel.sections.summary.title"
         :subtitle="viewModel.sections.summary.subtitle"
         :cards="viewModel.summaryCards"
       />
 
-      <div class="command-center-grid">
-        <ExecutiveStatusPanel
-          class="xl:col-span-2"
-          :title="viewModel.sections.status.title"
-          :status="viewModel.executiveStatus"
-        />
+      <!-- Status & Actions Zone -->
+      <div class="command-center-zone">
+        <div class="command-center-zone__header">
+          <h2 class="command-center-zone__title">📊 Status Overview</h2>
+          <p class="command-center-zone__description">Executive status and immediate action items</p>
+        </div>
+        <div class="command-center-grid">
+          <ExecutiveStatusPanel
+            class="xl:col-span-2"
+            :title="viewModel.sections.status.title"
+            :status="viewModel.executiveStatus"
+          />
 
-        <PriorityActionsPanel
-          class="xl:col-span-2"
-          :title="viewModel.sections.priorityActions.title"
-          :actions="viewModel.priorityActions"
-        />
+          <PriorityActionsPanel
+            class="xl:col-span-2"
+            :title="viewModel.sections.priorityActions.title"
+            :actions="viewModel.priorityActions"
+          />
+        </div>
       </div>
 
-      <div class="command-center-grid">
-        <DepartmentHealthPanel
-          class="xl:col-span-2"
-          :title="viewModel.sections.departmentHealth.title"
-          :departments="viewModel.departmentHealth"
-        />
+      <!-- Health & Governance Zone -->
+      <div class="command-center-zone">
+        <div class="command-center-zone__header">
+          <h2 class="command-center-zone__title">🏥 System Health</h2>
+          <p class="command-center-zone__description">Department health and governance metrics</p>
+        </div>
+        <div class="command-center-grid">
+          <DepartmentHealthPanel
+            class="xl:col-span-2"
+            :title="viewModel.sections.departmentHealth.title"
+            :departments="viewModel.departmentHealth"
+          />
 
-        <GovernanceOverviewPanel
-          class="xl:col-span-2"
-          :title="viewModel.sections.governance.title"
-          :metrics="viewModel.governanceMetrics"
-        />
+          <GovernanceOverviewPanel
+            class="xl:col-span-2"
+            :title="viewModel.sections.governance.title"
+            :metrics="viewModel.governanceMetrics"
+          />
+        </div>
       </div>
 
-      <div class="command-center-grid">
-        <RecentCriticalEventsPanel
-          class="xl:col-span-2"
-          :title="viewModel.sections.events.title"
-          :events="viewModel.recentEvents"
-        />
+      <!-- Events & Next Steps Zone -->
+      <div class="command-center-zone">
+        <div class="command-center-zone__header">
+          <h2 class="command-center-zone__title">⚡ Critical Events & Next Steps</h2>
+          <p class="command-center-zone__description">Recent critical events and recommended actions</p>
+        </div>
+        <div class="command-center-grid">
+          <RecentCriticalEventsPanel
+            class="xl:col-span-2"
+            :title="viewModel.sections.events.title"
+            :events="viewModel.recentEvents"
+          />
 
-        <RecommendedNextStepsPanel
-          class="xl:col-span-2"
-          :title="viewModel.sections.nextSteps.title"
-          :steps="viewModel.nextSteps"
-        />
+          <RecommendedNextStepsPanel
+            class="xl:col-span-2"
+            :title="viewModel.sections.nextSteps.title"
+            :steps="viewModel.nextSteps"
+          />
+        </div>
       </div>
     </section>
   </MainLayout>
@@ -119,7 +141,35 @@ const viewModel = computed(() =>
 .command-center-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
+}
+
+/**
+ * Zone grouping for related panels.
+ */
+.command-center-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.command-center-zone__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.command-center-zone__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.command-center-zone__description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
 }
 
 /**
@@ -133,6 +183,20 @@ const viewModel = computed(() =>
 @media (min-width: 1280px) {
   .command-center-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .command-center-page {
+    gap: 1.25rem;
+  }
+
+  .command-center-zone {
+    gap: 0.5rem;
+  }
+
+  .command-center-zone__title {
+    font-size: 0.95rem;
   }
 }
 </style>
