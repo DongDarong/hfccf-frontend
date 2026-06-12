@@ -33,6 +33,7 @@ const heroActionLabel = computed(() =>
 const pageCards = computed(() =>
   FORM_MANAGEMENT_PAGE_CARDS.map((card) => ({
     ...card,
+    title: safeText(card.titleKey, 'Form'),
     description: safeText(card.descriptionKey, card.fallbackDescription),
   })),
 )

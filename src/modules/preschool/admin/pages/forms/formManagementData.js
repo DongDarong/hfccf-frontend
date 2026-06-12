@@ -92,6 +92,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.scoring.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.scoring.description',
     fallbackDescription: 'Define and manage scoring rules for the active form.',
+    // Routes to form list for selection; requires form ID to access scoring editor
     to: { name: 'assessment-form-list' },
   },
   {
@@ -102,6 +103,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.printDesigner.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.printDesigner.description',
     fallbackDescription: 'Arrange print layouts and present forms cleanly.',
+    // Routes to form list for selection; requires form ID to access print designer
     to: { name: 'assessment-form-list' },
   },
   {
