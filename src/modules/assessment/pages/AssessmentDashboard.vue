@@ -35,7 +35,7 @@ onMounted(load)
 
 <template>
   <MainLayout>
-    <div class="assessment-dashboard">
+    <div class="dashboard">
       <HeaderSection :title="t('assessmentDashboard.title')" :subtitle="t('assessmentDashboard.subtitle')">
         <template #actions>
           <Button
@@ -46,146 +46,187 @@ onMounted(load)
         </template>
       </HeaderSection>
 
-      <div class="workflow-guidance">
-        <p class="workflow-guidance__step">
-          <span class="workflow-guidance__icon">📋</span>
-          <strong>Step 1 — Create:</strong> Build forms using templates or the wizard
-        </p>
-        <p class="workflow-guidance__step">
-          <span class="workflow-guidance__icon">📥</span>
-          <strong>Step 2 — Collect:</strong> Track active submissions and responses
-        </p>
-        <p class="workflow-guidance__step">
-          <span class="workflow-guidance__icon">📊</span>
-          <strong>Step 3 — Analyze:</strong> Review reports and identify insights
-        </p>
-        <p class="workflow-guidance__step">
-          <span class="workflow-guidance__icon">✅</span>
-          <strong>Step 4 — Act:</strong> Make decisions based on assessment data
-        </p>
-      </div>
-
-      <div class="assessment-dashboard__section">
-        <h2 class="assessment-dashboard__section-title">📈 Dashboard Overview</h2>
-        <p class="assessment-dashboard__section-subtitle">Current status and key metrics</p>
-      </div>
-
-      <div class="assessment-dashboard__stats">
-        <div class="assessment-dashboard__stat-card">
-          <div class="assessment-dashboard__stat-icon">📋</div>
-          <div class="assessment-dashboard__stat-value">{{ stats.totalForms }}</div>
-          <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.totalForms') }}</div>
-        </div>
-        <div class="assessment-dashboard__stat-card">
-          <div class="assessment-dashboard__stat-icon">📥</div>
-          <div class="assessment-dashboard__stat-value">{{ stats.activeSubmissions }}</div>
-          <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.activeSubmissions') }}</div>
-        </div>
-        <div class="assessment-dashboard__stat-card assessment-dashboard__stat-card--warning">
-          <div class="assessment-dashboard__stat-icon">⏳</div>
-          <div class="assessment-dashboard__stat-value">{{ stats.pendingReview }}</div>
-          <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.pendingReview') }}</div>
-        </div>
-        <div class="assessment-dashboard__stat-card assessment-dashboard__stat-card--success">
-          <div class="assessment-dashboard__stat-icon">✅</div>
-          <div class="assessment-dashboard__stat-value">{{ stats.completedThisMonth }}</div>
-          <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.completedThisMonth') }}</div>
+      <div class="dashboard__hero">
+        <div class="dashboard__hero-content">
+          <h2 class="dashboard__hero-title">Assessment Hub</h2>
+          <p class="dashboard__hero-subtitle">
+            Create, collect, and analyze assessments to drive student success
+          </p>
+          <div class="dashboard__hero-actions">
+            <Button
+              :label="t('assessmentDashboard.quickActions.newAssessment')"
+              icon="pi pi-plus"
+              @click="router.push({ name: 'assessment-wizard' })"
+            />
+            <Button
+              :label="t('assessmentDashboard.quickActions.viewReports')"
+              icon="pi pi-chart-bar"
+              severity="secondary"
+              @click="router.push({ name: 'assessment-reports' })"
+            />
+          </div>
         </div>
       </div>
 
-      <div class="assessment-dashboard__zone">
-        <div class="assessment-dashboard__zone-header">
-          <h2 class="assessment-dashboard__zone-title">📊 Data & Insights</h2>
-          <p class="assessment-dashboard__zone-subtitle">Recent activity and risk distribution</p>
+      <div class="dashboard__row">
+        <div class="dashboard__stat">
+          <div class="dashboard__stat-background">📋</div>
+          <div class="dashboard__stat-content">
+            <div class="dashboard__stat-value">{{ stats.totalForms }}</div>
+            <div class="dashboard__stat-label">Forms Available</div>
+          </div>
         </div>
 
-        <div class="assessment-dashboard__insights-grid">
-          <div class="assessment-dashboard__insight-card">
-            <h3 class="assessment-dashboard__insight-title">📈 Recent Submissions</h3>
-            <div v-if="recentSubmissions.length === 0" class="assessment-dashboard__empty">
-              No recent submissions yet
+        <div class="dashboard__stat">
+          <div class="dashboard__stat-background">📥</div>
+          <div class="dashboard__stat-content">
+            <div class="dashboard__stat-value">{{ stats.activeSubmissions }}</div>
+            <div class="dashboard__stat-label">Active Submissions</div>
+          </div>
+        </div>
+
+        <div class="dashboard__stat dashboard__stat--warning">
+          <div class="dashboard__stat-background">⏳</div>
+          <div class="dashboard__stat-content">
+            <div class="dashboard__stat-value">{{ stats.pendingReview }}</div>
+            <div class="dashboard__stat-label">Pending Review</div>
+          </div>
+        </div>
+
+        <div class="dashboard__stat dashboard__stat--success">
+          <div class="dashboard__stat-background">✅</div>
+          <div class="dashboard__stat-content">
+            <div class="dashboard__stat-value">{{ stats.completedThisMonth }}</div>
+            <div class="dashboard__stat-label">Completed This Month</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard__row dashboard__row--two-col">
+        <div class="dashboard__card">
+          <div class="dashboard__card-header">
+            <h3 class="dashboard__card-title">📈 Recent Submissions</h3>
+            <Button
+              :label="t('assessmentDashboard.quickActions.viewReports')"
+              icon="pi pi-arrow-right"
+              text
+              severity="info"
+              size="small"
+              @click="router.push({ name: 'assessment-submission-list' })"
+            />
+          </div>
+          <div class="dashboard__card-body">
+            <div v-if="recentSubmissions.length === 0" class="dashboard__empty">
+              No submissions yet. Start by creating a new assessment.
             </div>
-            <div v-else class="assessment-dashboard__submission-list">
+            <div v-else class="dashboard__list">
               <div
-                v-for="(submission, idx) in recentSubmissions.slice(0, 3)"
+                v-for="(submission, idx) in recentSubmissions.slice(0, 4)"
                 :key="idx"
-                class="assessment-dashboard__submission-item"
+                class="dashboard__list-item"
               >
-                <span class="assessment-dashboard__submission-name">
-                  {{ submission.student?.full_name || submission.form_name || '—' }}
-                </span>
-                <span class="assessment-dashboard__submission-date">
-                  {{ submission.submitted_at || '—' }}
-                </span>
+                <div class="dashboard__list-content">
+                  <div class="dashboard__list-title">
+                    {{ submission.student?.full_name || submission.form_name || 'Unknown' }}
+                  </div>
+                  <div class="dashboard__list-meta">
+                    {{ submission.submitted_at || 'No date' }}
+                  </div>
+                </div>
+                <div class="dashboard__list-badge">📋</div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="assessment-dashboard__insight-card">
-            <h3 class="assessment-dashboard__insight-title">⚠️ Risk Distribution</h3>
-            <div v-if="riskDistribution.length === 0" class="assessment-dashboard__empty">
-              No risk data available
+        <div class="dashboard__card">
+          <div class="dashboard__card-header">
+            <h3 class="dashboard__card-title">⚠️ Risk Analysis</h3>
+            <Button
+              :label="t('assessmentDashboard.quickActions.viewReports')"
+              icon="pi pi-arrow-right"
+              text
+              severity="info"
+              size="small"
+              @click="router.push({ name: 'assessment-reports' })"
+            />
+          </div>
+          <div class="dashboard__card-body">
+            <div v-if="riskDistribution.length === 0" class="dashboard__empty">
+              No risk data available yet.
             </div>
-            <div v-else class="assessment-dashboard__risk-list">
+            <div v-else class="dashboard__risk-chart">
               <div
-                v-for="risk in riskDistribution.slice(0, 3)"
+                v-for="risk in riskDistribution.slice(0, 4)"
                 :key="risk.level"
-                class="assessment-dashboard__risk-item"
+                class="dashboard__risk-bar"
               >
-                <span
-                  class="assessment-dashboard__risk-badge"
-                  :style="{ backgroundColor: risk.color }"
-                >
-                  {{ risk.level_name }}
-                </span>
-                <span class="assessment-dashboard__risk-count">{{ risk.count }} students</span>
+                <div class="dashboard__risk-label">{{ risk.level_name }}</div>
+                <div class="dashboard__risk-visual">
+                  <div
+                    class="dashboard__risk-fill"
+                    :style="{
+                      width: (risk.count / Math.max(...riskDistribution.map(r => r.count), 1)) * 100 + '%',
+                      backgroundColor: risk.color
+                    }"
+                  />
+                </div>
+                <div class="dashboard__risk-value">{{ risk.count }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="assessment-dashboard__zone">
-        <div class="assessment-dashboard__zone-header">
-          <h2 class="assessment-dashboard__zone-title">🚀 Quick Actions</h2>
-          <p class="assessment-dashboard__zone-subtitle">Access frequently used tools</p>
-        </div>
-
-        <div class="assessment-dashboard__action-grid">
+      <div class="dashboard__row dashboard__row--full">
+        <h2 class="dashboard__section-title">🎯 Quick Navigation</h2>
+        <div class="dashboard__nav-grid">
           <div
-            class="assessment-dashboard__action-card"
+            class="dashboard__nav-item"
             @click="router.push({ name: 'assessment-form-list' })"
           >
-            <div class="assessment-dashboard__action-icon">📋</div>
-            <div class="assessment-dashboard__action-title">Manage Templates</div>
-            <div class="assessment-dashboard__action-desc">Create, edit, and organize forms</div>
+            <div class="dashboard__nav-icon">📋</div>
+            <div class="dashboard__nav-info">
+              <div class="dashboard__nav-title">Manage Forms</div>
+              <div class="dashboard__nav-desc">Create and edit assessment forms</div>
+            </div>
+            <div class="dashboard__nav-arrow">→</div>
           </div>
 
           <div
-            class="assessment-dashboard__action-card"
+            class="dashboard__nav-item"
             @click="router.push({ name: 'assessment-submission-list' })"
           >
-            <div class="assessment-dashboard__action-icon">📥</div>
-            <div class="assessment-dashboard__action-title">View Submissions</div>
-            <div class="assessment-dashboard__action-desc">Monitor responses and status</div>
+            <div class="dashboard__nav-icon">📥</div>
+            <div class="dashboard__nav-info">
+              <div class="dashboard__nav-title">View Submissions</div>
+              <div class="dashboard__nav-desc">Review and track responses</div>
+            </div>
+            <div class="dashboard__nav-arrow">→</div>
           </div>
 
           <div
-            class="assessment-dashboard__action-card"
+            class="dashboard__nav-item"
             @click="router.push({ name: 'assessment-reports' })"
           >
-            <div class="assessment-dashboard__action-icon">📊</div>
-            <div class="assessment-dashboard__action-title">View Reports</div>
-            <div class="assessment-dashboard__action-desc">Analyze trends and insights</div>
+            <div class="dashboard__nav-icon">📊</div>
+            <div class="dashboard__nav-info">
+              <div class="dashboard__nav-title">View Reports</div>
+              <div class="dashboard__nav-desc">Analyze data and insights</div>
+            </div>
+            <div class="dashboard__nav-arrow">→</div>
           </div>
 
           <div
-            class="assessment-dashboard__action-card"
+            class="dashboard__nav-item"
             @click="router.push({ name: 'assessment-wizard' })"
           >
-            <div class="assessment-dashboard__action-icon">✨</div>
-            <div class="assessment-dashboard__action-title">New Assessment</div>
-            <div class="assessment-dashboard__action-desc">Start a new assessment wizard</div>
+            <div class="dashboard__nav-icon">✨</div>
+            <div class="dashboard__nav-info">
+              <div class="dashboard__nav-title">New Assessment</div>
+              <div class="dashboard__nav-desc">Begin assessment wizard</div>
+            </div>
+            <div class="dashboard__nav-arrow">→</div>
           </div>
         </div>
       </div>
@@ -194,276 +235,338 @@ onMounted(load)
 </template>
 
 <style scoped>
-.assessment-dashboard {
+.dashboard {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
-.workflow-guidance {
+.dashboard__hero {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard__hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.dashboard__hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+}
+
+.dashboard__hero-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+}
+
+.dashboard__hero-subtitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.dashboard__hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dashboard__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.dashboard__row--two-col {
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+.dashboard__row--full {
+  grid-template-columns: 1fr;
+}
+
+.dashboard__stat {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 1rem;
-  border: 1px solid #dbeafe;
-  background: #eff6ff;
-  padding: 1.25rem;
+  padding: 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: all 0.2s ease;
 }
 
-.workflow-guidance__step {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.95rem;
-  color: #1e40af;
+.dashboard__stat:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
 
-.workflow-guidance__icon {
-  font-size: 1.25rem;
+.dashboard__stat-background {
+  font-size: 3rem;
+  opacity: 0.8;
   flex-shrink: 0;
 }
 
-.assessment-dashboard__section {
-  margin-top: 0.5rem;
-  margin-bottom: 0rem;
+.dashboard__stat-content {
+  flex-grow: 1;
 }
 
-.assessment-dashboard__section-title {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.assessment-dashboard__section-subtitle {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.assessment-dashboard__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1rem;
-}
-
-.assessment-dashboard__stat-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  text-align: center;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.assessment-dashboard__stat-card:hover {
-  border-color: #bfdbfe;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-.assessment-dashboard__stat-icon {
+.dashboard__stat-value {
   font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.assessment-dashboard__stat-value {
-  font-size: 2.25rem;
   font-weight: 800;
   color: var(--primary-color);
-  margin: 0.5rem 0;
+  margin: 0;
 }
 
-.assessment-dashboard__stat-label {
+.dashboard__stat-label {
   font-size: 0.85rem;
   color: var(--text-color-secondary);
-  margin: 0;
+  margin: 0.25rem 0 0 0;
   font-weight: 500;
 }
 
-.assessment-dashboard__stat-card--warning {
+.dashboard__stat--warning {
   border-left: 4px solid #f59e0b;
 }
 
-.assessment-dashboard__stat-card--success {
+.dashboard__stat--success {
   border-left: 4px solid #10b981;
 }
 
-.assessment-dashboard__zone {
-  margin-top: 1rem;
-}
-
-.assessment-dashboard__zone-header {
-  margin-bottom: 1rem;
-}
-
-.assessment-dashboard__zone-title {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.assessment-dashboard__zone-subtitle {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.assessment-dashboard__insights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.assessment-dashboard__insight-card {
+.dashboard__card {
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 1rem;
-  padding: 1.25rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.assessment-dashboard__insight-title {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.95rem;
+.dashboard__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.dashboard__card-title {
+  margin: 0;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
 }
 
-.assessment-dashboard__empty {
-  color: var(--text-color-secondary);
-  font-size: 0.85rem;
-  padding: 1rem 0;
-  text-align: center;
+.dashboard__card-body {
+  padding: 1.5rem;
+  flex-grow: 1;
 }
 
-.assessment-dashboard__submission-list {
+.dashboard__empty {
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.dashboard__list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
-.assessment-dashboard__submission-item {
+.dashboard__list-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0.75rem;
   background: #f8fafc;
   border-radius: 0.75rem;
-  font-size: 0.85rem;
-}
-
-.assessment-dashboard__submission-name {
-  font-weight: 500;
-  color: #0f172a;
-}
-
-.assessment-dashboard__submission-date {
-  color: var(--text-color-secondary);
-  font-size: 0.75rem;
-}
-
-.assessment-dashboard__risk-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.assessment-dashboard__risk-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-}
-
-.assessment-dashboard__risk-badge {
-  display: inline-block;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.assessment-dashboard__risk-count {
-  color: var(--text-color-secondary);
-}
-
-.assessment-dashboard__action-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.assessment-dashboard__action-card {
-  background: linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%);
-  border: 1px solid #bfdbfe;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  cursor: pointer;
   transition: all 0.2s ease;
-  text-align: center;
 }
 
-.assessment-dashboard__action-card:hover {
-  border-color: #93c5fd;
-  background: linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-  transform: translateY(-2px);
+.dashboard__list-item:hover {
+  background: #eef2ff;
 }
 
-.assessment-dashboard__action-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-  display: block;
+.dashboard__list-content {
+  flex-grow: 1;
 }
 
-.assessment-dashboard__action-title {
-  font-size: 0.95rem;
-  font-weight: 700;
+.dashboard__list-title {
+  font-size: 0.9rem;
+  font-weight: 600;
   color: #0f172a;
-  margin-bottom: 0.35rem;
-}
-
-.assessment-dashboard__action-desc {
-  font-size: 0.8rem;
-  color: #64748b;
   margin: 0;
 }
 
-@media (max-width: 768px) {
-  .workflow-guidance {
-    gap: 0.5rem;
-    padding: 1rem;
-  }
+.dashboard__list-meta {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  margin: 0.25rem 0 0 0;
+}
 
-  .workflow-guidance__step {
-    font-size: 0.9rem;
-  }
+.dashboard__list-badge {
+  font-size: 1.25rem;
+  margin-left: 0.75rem;
+}
 
-  .assessment-dashboard__insights-grid {
+.dashboard__risk-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dashboard__risk-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard__risk-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  min-width: 80px;
+}
+
+.dashboard__risk-visual {
+  flex-grow: 1;
+  height: 24px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dashboard__risk-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.dashboard__risk-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  min-width: 40px;
+  text-align: right;
+}
+
+.dashboard__section-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dashboard__nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.dashboard__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  border: 1px solid #ddd6fe;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard__nav-item:hover {
+  border-color: #a78bfa;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  transform: translateX(4px);
+}
+
+.dashboard__nav-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.dashboard__nav-info {
+  flex-grow: 1;
+}
+
+.dashboard__nav-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem 0;
+}
+
+.dashboard__nav-desc {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+.dashboard__nav-arrow {
+  font-size: 1.25rem;
+  color: #a78bfa;
+  transition: all 0.2s ease;
+}
+
+.dashboard__nav-item:hover .dashboard__nav-arrow {
+  color: #7c3aed;
+  transform: translateX(4px);
+}
+
+@media (max-width: 1024px) {
+  .dashboard__row--two-col {
     grid-template-columns: 1fr;
   }
+}
 
-  .assessment-dashboard__action-grid {
+@media (max-width: 768px) {
+  .dashboard__hero {
+    padding: 2rem;
+  }
+
+  .dashboard__hero-title {
+    font-size: 1.5rem;
+  }
+
+  .dashboard__hero-actions {
+    flex-direction: column;
+  }
+
+  .dashboard__row {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .assessment-dashboard__stat-card {
-    padding: 1.25rem;
+  .dashboard__nav-grid {
+    grid-template-columns: 1fr;
   }
 
-  .assessment-dashboard__stat-value {
-    font-size: 1.75rem;
+  .dashboard__stat-background {
+    font-size: 2rem;
+  }
+
+  .dashboard__stat-value {
+    font-size: 1.5rem;
   }
 }
 </style>
