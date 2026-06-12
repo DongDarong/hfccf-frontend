@@ -93,73 +93,105 @@ onMounted(() => {
         {{ errorMessage }}
       </div>
 
-      <DashboardOverview
-        :cards="summaryCards"
-        spotlight-title="Scholarship Snapshot"
-        spotlight-text="Track new submissions, decisions, and reviewer assignments from live scholarship data."
-        :actions="[
-          `Under review: ${dashboard.summary.underReviewCount}`,
-          `Pending reviews: ${dashboard.summary.pendingReviews}`,
-          `Approved: ${dashboard.summary.approvedApplications}`,
-        ]"
-      />
+      <!-- Overview Section -->
+      <div class="scholarship-dashboard-page__section">
+        <DashboardOverview
+          :cards="summaryCards"
+          spotlight-title="Scholarship Snapshot"
+          spotlight-text="Track new submissions, decisions, and reviewer assignments from live scholarship data."
+          :actions="[
+            `Under review: ${dashboard.summary.underReviewCount}`,
+            `Pending reviews: ${dashboard.summary.pendingReviews}`,
+            `Approved: ${dashboard.summary.approvedApplications}`,
+          ]"
+        />
+      </div>
 
-      <div class="scholarship-dashboard-page__grid">
-        <Card class="scholarship-dashboard-page__card">
-          <template #title>
-            Reviewer workload
-          </template>
-          <template #content>
-            <Loading v-if="loading" label="Loading reviewer workload" />
-            <div v-else class="scholarship-dashboard-page__list">
-              <div v-for="item in dashboard.reviewerWorkload" :key="item.reviewerUserId || item.count" class="scholarship-dashboard-page__row">
-                <span>Reviewer {{ item.reviewerUserId || '-' }}</span>
-                <strong>{{ item.count }}</strong>
+      <!-- Pipeline & Workload Zone -->
+      <div class="scholarship-dashboard-page__zone">
+        <div class="scholarship-dashboard-page__zone-header">
+          <h2 class="scholarship-dashboard-page__zone-title">📋 Pipeline & Workload</h2>
+          <p class="scholarship-dashboard-page__zone-description">Track submissions and reviewer capacity</p>
+        </div>
+        <div class="scholarship-dashboard-page__grid">
+          <Card class="scholarship-dashboard-page__card">
+            <template #title>
+              <div class="scholarship-dashboard-page__card-title">
+                <span>👥 Reviewer Workload</span>
+                <small>Current assignments</small>
               </div>
-              <p v-if="!dashboard.reviewerWorkload.length" class="scholarship-dashboard-page__empty">
-                No reviewer workload data yet.
-              </p>
-            </div>
-          </template>
-        </Card>
+            </template>
+            <template #content>
+              <Loading v-if="loading" label="Loading reviewer workload" />
+              <div v-else class="scholarship-dashboard-page__list">
+                <div v-for="item in dashboard.reviewerWorkload" :key="item.reviewerUserId || item.count" class="scholarship-dashboard-page__row">
+                  <span>Reviewer {{ item.reviewerUserId || '-' }}</span>
+                  <strong>{{ item.count }}</strong>
+                </div>
+                <p v-if="!dashboard.reviewerWorkload.length" class="scholarship-dashboard-page__empty">
+                  No reviewer workload data yet.
+                </p>
+              </div>
+            </template>
+          </Card>
 
-        <Card class="scholarship-dashboard-page__card">
-          <template #title>
-            Recent submissions
-          </template>
-          <template #content>
-            <Loading v-if="loading" label="Loading recent submissions" />
-            <div v-else class="scholarship-dashboard-page__list">
-              <div v-for="item in dashboard.recentSubmissions" :key="item.id" class="scholarship-dashboard-page__timeline">
-                <strong>{{ item.applicationCode || '-' }}</strong>
-                <span>{{ item.student?.fullName || '-' }}</span>
-                <small>{{ item.scholarshipType || '-' }} · {{ item.submissionDate || '-' }}</small>
+          <Card class="scholarship-dashboard-page__card">
+            <template #title>
+              <div class="scholarship-dashboard-page__card-title">
+                <span>📥 Recent Submissions</span>
+                <small>Latest applications</small>
               </div>
-              <p v-if="!dashboard.recentSubmissions.length" class="scholarship-dashboard-page__empty">
-                No recent submissions.
-              </p>
-            </div>
-          </template>
-        </Card>
+            </template>
+            <template #content>
+              <Loading v-if="loading" label="Loading recent submissions" />
+              <div v-else class="scholarship-dashboard-page__list">
+                <div v-for="item in dashboard.recentSubmissions" :key="item.id" class="scholarship-dashboard-page__timeline">
+                  <strong>{{ item.applicationCode || '-' }}</strong>
+                  <span>{{ item.student?.fullName || '-' }}</span>
+                  <small>{{ item.scholarshipType || '-' }} · {{ item.submissionDate || '-' }}</small>
+                </div>
+                <p v-if="!dashboard.recentSubmissions.length" class="scholarship-dashboard-page__empty">
+                  No recent submissions.
+                </p>
+              </div>
+            </template>
+          </Card>
+        </div>
+      </div>
 
-        <Card class="scholarship-dashboard-page__card">
-          <template #title>
-            Recent decisions
-          </template>
-          <template #content>
-            <Loading v-if="loading" label="Loading recent decisions" />
-            <div v-else class="scholarship-dashboard-page__list">
-              <div v-for="item in dashboard.recentDecisions" :key="item.id" class="scholarship-dashboard-page__timeline">
-                <strong>{{ item.applicationCode || '-' }}</strong>
-                <span>{{ statusLabel(item.applicationStatus) }}</span>
-                <small>Approved: {{ item.approvedAt || '-' }} · Rejected: {{ item.rejectedAt || '-' }}</small>
+      <!-- Decisions Zone -->
+      <div class="scholarship-dashboard-page__zone">
+        <div class="scholarship-dashboard-page__zone-header">
+          <h2 class="scholarship-dashboard-page__zone-title">✅ Recent Decisions</h2>
+          <p class="scholarship-dashboard-page__zone-description">Outcomes and approvals</p>
+        </div>
+        <div class="scholarship-dashboard-page__grid scholarship-dashboard-page__grid--single">
+          <Card class="scholarship-dashboard-page__card">
+            <template #title>
+              <div class="scholarship-dashboard-page__card-title">
+                <span>Decision History</span>
+                <small>Latest outcomes</small>
               </div>
-              <p v-if="!dashboard.recentDecisions.length" class="scholarship-dashboard-page__empty">
-                No recent decisions.
-              </p>
-            </div>
-          </template>
-        </Card>
+            </template>
+            <template #content>
+              <Loading v-if="loading" label="Loading recent decisions" />
+              <div v-else class="scholarship-dashboard-page__list">
+                <div v-for="item in dashboard.recentDecisions" :key="item.id" class="scholarship-dashboard-page__timeline">
+                  <strong>{{ item.applicationCode || '-' }}</strong>
+                  <span class="scholarship-dashboard-page__decision-status">
+                    Status: {{ statusLabel(item.applicationStatus) }}
+                  </span>
+                  <small>
+                    {{ item.approvedAt ? `Approved: ${item.approvedAt}` : item.rejectedAt ? `Rejected: ${item.rejectedAt}` : 'Pending' }}
+                  </small>
+                </div>
+                <p v-if="!dashboard.recentDecisions.length" class="scholarship-dashboard-page__empty">
+                  No recent decisions.
+                </p>
+              </div>
+            </template>
+          </Card>
+        </div>
       </div>
     </section>
   </MainLayout>
@@ -169,13 +201,48 @@ onMounted(() => {
 .scholarship-dashboard-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
+}
+
+.scholarship-dashboard-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scholarship-dashboard-page__zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scholarship-dashboard-page__zone-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.scholarship-dashboard-page__zone-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.scholarship-dashboard-page__zone-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
 }
 
 .scholarship-dashboard-page__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.scholarship-dashboard-page__grid--single {
+  grid-template-columns: 1fr;
 }
 
 .scholarship-dashboard-page__card {
@@ -185,10 +252,27 @@ onMounted(() => {
   box-shadow: 0 18px 34px -34px rgba(15, 23, 42, 0.25);
 }
 
+.scholarship-dashboard-page__card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.scholarship-dashboard-page__card-title small {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
 .scholarship-dashboard-page__list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.scholarship-dashboard-page__decision-status {
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .scholarship-dashboard-page__row,
@@ -215,8 +299,20 @@ onMounted(() => {
 }
 
 @media (max-width: 1100px) {
+  .scholarship-dashboard-page {
+    gap: 1.25rem;
+  }
+
   .scholarship-dashboard-page__grid {
     grid-template-columns: 1fr;
+  }
+
+  .scholarship-dashboard-page__zone {
+    gap: 0.5rem;
+  }
+
+  .scholarship-dashboard-page__zone-title {
+    font-size: 0.95rem;
   }
 }
 </style>
