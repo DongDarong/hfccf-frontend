@@ -56,6 +56,7 @@ const filters = ref({
   source: '',
   search: '',
 })
+const showFilters = ref(false)
 
 const snapshotTypeOptions = computed(() => [
   { label: t('preschoolInstitutionalReconstructionPage.filters.allSnapshotTypes'), value: '' },
@@ -234,69 +235,96 @@ onMounted(async () => {
         :subtitle="t('preschoolInstitutionalReconstructionPage.subtitle')"
       />
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="grid gap-3 lg:grid-cols-4">
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.academicYear') }}</span>
-            <Select v-model="filters.academicYearId" :options="academicYearOptions" option-label="label" option-value="value" class="w-full" />
-          </label>
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.term') }}</span>
-            <Select v-model="filters.termId" :options="termOptions" option-label="label" option-value="value" class="w-full" />
-          </label>
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.reportPeriod') }}</span>
-            <Select v-model="filters.reportPeriodId" :options="reportPeriodOptionsList" option-label="label" option-value="value" class="w-full" />
-          </label>
+      <!-- Guidance Box -->
+      <div class="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3">
+        <p class="text-sm font-medium text-blue-900 mb-2">💡 Workflow: Select academic context → Filter by content → View historical state and timeline</p>
+        <div class="flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" size="md" rounded="xl" :loading="loading" @click="loadReconstruction">
+            Search
+          </Button>
+          <Button type="button" :variant="showFilters ? 'secondary' : 'ghost'" size="sm" rounded="xl" @click="showFilters = !showFilters">
+            <i :class="showFilters ? 'pi pi-filter-slash' : 'pi pi-filter'" /> {{ showFilters ? 'Hide' : 'Show' }} Filters
+          </Button>
+          <span class="flex-1" />
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToSnapshotArchive">
+            Archive
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToExportGovernance">
+            Export
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToGovernanceReview">
+            Review
+          </Button>
+        </div>
+      </div>
+
+      <!-- Filter Panel (Collapsible) -->
+      <div v-if="showFilters" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <!-- Academic Context Filters -->
+        <div class="mb-6">
+          <p class="text-xs font-bold uppercase text-slate-600 tracking-wide mb-3">📅 Academic Context</p>
+          <div class="grid gap-3 lg:grid-cols-3">
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.academicYear') }}</span>
+              <Select v-model="filters.academicYearId" :options="academicYearOptions" option-label="label" option-value="value" class="w-full" />
+            </label>
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.term') }}</span>
+              <Select v-model="filters.termId" :options="termOptions" option-label="label" option-value="value" class="w-full" />
+            </label>
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.reportPeriod') }}</span>
+              <Select v-model="filters.reportPeriodId" :options="reportPeriodOptionsList" option-label="label" option-value="value" class="w-full" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Content Filters -->
+        <div class="mb-6">
+          <p class="text-xs font-bold uppercase text-slate-600 tracking-wide mb-3">📋 Content Filter</p>
+          <div class="grid gap-3 lg:grid-cols-3">
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.class') }}</span>
+              <Select v-model="filters.classId" :options="classOptionsList" option-label="label" option-value="value" class="w-full" />
+            </label>
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.student') }}</span>
+              <Select v-model="filters.studentId" :options="studentOptionsList" option-label="label" option-value="value" class="w-full" />
+            </label>
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.snapshotType') }}</span>
+              <Select v-model="filters.snapshotType" :options="snapshotTypeOptions" option-label="label" option-value="value" class="w-full" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Lifecycle & Search Filters -->
+        <div>
+          <p class="text-xs font-bold uppercase text-slate-600 tracking-wide mb-3">🔍 Lifecycle & Search</p>
+          <div class="grid gap-3 lg:grid-cols-3">
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.lifecycleState') }}</span>
+              <Select v-model="filters.lifecycleState" :options="lifecycleStateOptions" option-label="label" option-value="value" class="w-full" />
+            </label>
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.source') }}</span>
+              <InputText v-model="filters.source" class="w-full" :placeholder="t('preschoolInstitutionalReconstructionPage.filters.sourcePlaceholder')" />
+            </label>
+            <label class="space-y-2 text-sm">
+              <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.search') }}</span>
+              <InputText v-model="filters.search" class="w-full" :placeholder="t('preschoolInstitutionalReconstructionPage.filters.searchPlaceholder')" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Context Input -->
+        <div class="mt-6">
+          <p class="text-xs font-bold uppercase text-slate-600 tracking-wide mb-3">🔎 Context Search</p>
           <label class="space-y-2 text-sm">
             <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.context') }}</span>
             <InputText v-model="contextInput" class="w-full" :placeholder="t('preschoolInstitutionalReconstructionPage.filters.contextPlaceholder')" />
           </label>
-        </div>
-
-        <div class="mt-4 grid gap-3 lg:grid-cols-4">
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.class') }}</span>
-            <Select v-model="filters.classId" :options="classOptionsList" option-label="label" option-value="value" class="w-full" />
-          </label>
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.student') }}</span>
-            <Select v-model="filters.studentId" :options="studentOptionsList" option-label="label" option-value="value" class="w-full" />
-          </label>
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.snapshotType') }}</span>
-            <Select v-model="filters.snapshotType" :options="snapshotTypeOptions" option-label="label" option-value="value" class="w-full" />
-          </label>
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.lifecycleState') }}</span>
-            <Select v-model="filters.lifecycleState" :options="lifecycleStateOptions" option-label="label" option-value="value" class="w-full" />
-          </label>
-        </div>
-
-        <div class="mt-4 grid gap-3 lg:grid-cols-4">
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.source') }}</span>
-            <InputText v-model="filters.source" class="w-full" :placeholder="t('preschoolInstitutionalReconstructionPage.filters.sourcePlaceholder')" />
-          </label>
-          <label class="space-y-2 text-sm">
-            <span class="font-medium text-slate-700">{{ t('preschoolInstitutionalReconstructionPage.filters.search') }}</span>
-            <InputText v-model="filters.search" class="w-full" :placeholder="t('preschoolInstitutionalReconstructionPage.filters.searchPlaceholder')" />
-          </label>
-        </div>
-
-        <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
-          <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToSnapshotArchive">
-            {{ t('preschoolInstitutionalReconstructionPage.actions.openSnapshotArchive') }}
-          </Button>
-          <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToExportGovernance">
-            {{ t('preschoolInstitutionalReconstructionPage.actions.openExportGovernance') }}
-          </Button>
-          <Button type="button" variant="secondary" size="md" rounded="xl" @click="goToGovernanceReview">
-            {{ t('preschoolInstitutionalReconstructionPage.actions.openGovernanceReview') }}
-          </Button>
-          <Button type="button" variant="primary" size="md" rounded="xl" :loading="loading" @click="loadReconstruction">
-            {{ t('preschoolInstitutionalReconstructionPage.actions.refresh') }}
-          </Button>
+          <p class="text-xs text-slate-500 mt-2">Search by context identifier to view how historical state was assembled</p>
         </div>
       </div>
 
