@@ -106,5 +106,12 @@ export default {
     assessmentPrintDesigner: 'Print Designer',
     dsamModule: 'Student Assessment',
     dsamSubmissions: 'Assessments',
+    assessment: 'Assessment Hub',
+    submissions: 'Submissions',
+    submissionDetail: 'Submission Detail',
+    formBuilder: 'Form Builder',
+    wizard: 'Assessment Wizard',
+    scoring: 'Scoring Manager',
+    printDesigner: 'Print Designer',
   },
 }

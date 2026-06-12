@@ -111,7 +111,7 @@ onMounted(load)
               icon="pi pi-arrow-right"
               text
               severity="info"
-              size="small"
+              size="sm"
               @click="router.push({ name: 'assessment-submission-list' })"
             />
           </div>
@@ -147,7 +147,7 @@ onMounted(load)
               icon="pi pi-arrow-right"
               text
               severity="info"
-              size="small"
+              size="sm"
               @click="router.push({ name: 'assessment-reports' })"
             />
           </div>
