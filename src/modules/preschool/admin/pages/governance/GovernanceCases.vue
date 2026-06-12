@@ -617,25 +617,29 @@ onMounted(async () => {
         :subtitle="t('preschoolGovernanceCasesPage.subtitle')"
       />
 
-      <div class="flex flex-wrap gap-2">
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceReview">
-          {{ t('preschoolGovernanceCasesPage.actions.openGovernanceReview') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
-          {{ t('preschoolGovernanceCasesPage.actions.openGovernanceDiff') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToReconstruction">
-          {{ t('preschoolGovernanceCasesPage.actions.openReconstruction') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToExportGovernance">
-          {{ t('preschoolGovernanceCasesPage.actions.openExportGovernance') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToSnapshotArchive">
-          {{ t('preschoolGovernanceCasesPage.actions.openSnapshotArchive') }}
-        </Button>
-        <Button type="button" variant="secondary" size="md" rounded="xl" :loading="loading || detailLoading || assigneeLoading" @click="refreshAll">
-          {{ t('preschoolGovernanceCasesPage.actions.refresh') }}
-        </Button>
+      <!-- Navigation & Guidance -->
+      <div class="rounded-2xl border border-slate-200 bg-blue-50 px-4 py-3">
+        <p class="text-sm font-medium text-blue-900 mb-2">💡 Workflow: Create or find cases → Assign ownership → Gather evidence → Resolve or close</p>
+        <div class="flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" size="md" rounded="xl" :loading="loading || detailLoading || assigneeLoading" @click="refreshAll">
+            {{ t('preschoolGovernanceCasesPage.actions.refresh') }}
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToGovernanceReview">
+            Review
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToGovernanceDiffAnalysis">
+            Diff
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToReconstruction">
+            Reconstruct
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToExportGovernance">
+            Export
+          </Button>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="goToSnapshotArchive">
+            Snapshots
+          </Button>
+        </div>
       </div>
 
       <div v-if="errorMessage" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">

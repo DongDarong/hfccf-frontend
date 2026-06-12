@@ -2,10 +2,8 @@
 // Keep the Preschool report overview explicit so the sidebar routes to a real
 // data-driven landing page instead of a placeholder shell.
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Button from '@/components/buttons/Button.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
@@ -14,6 +12,8 @@ import ReportSummaryCard from '@/modules/preschool/shared/components/report/Repo
 import ReportSnapshotBadge from '@/modules/preschool/shared/components/report/ReportSnapshotBadge.vue'
 import { formatDatetimeShort } from '@/utils/date'
 import ReportPeriodStatusBadge from '@/modules/preschool/shared/components/report/ReportPeriodStatusBadge.vue'
+import FormManagementSection from '@/modules/preschool/admin/components/form-management/FormManagementSection.vue'
+import { REPORT_MANAGEMENT_PAGE_CARDS, REPORT_MANAGEMENT_ACTION_CARDS } from './reportManagementData'
 import {
   formatAuditCodeFallback,
   resolveLifecycleActionLabel as resolveAuditActionLabel,
@@ -24,7 +24,6 @@ defineOptions({
   name: 'PreschoolReportPeriodOverviewPage',
 })
 
-const router = useRouter()
 const { t, te } = useLanguage()
 
 const {
@@ -41,6 +40,28 @@ const {
 const auditLogs = ref([])
 const auditLoading = ref(false)
 const auditError = ref('')
+
+function safeText(key, fallback) {
+  return te(key) ? t(key) : fallback
+}
+
+const pageCards = computed(() =>
+  REPORT_MANAGEMENT_PAGE_CARDS.map((card) => ({
+    ...card,
+    title: safeText(card.titleKey, card.titleFallback),
+    description: safeText(card.descriptionKey, card.fallbackDescription),
+  })),
+)
+
+const workflowCards = computed(() => pageCards.value.filter(c => c.category === 'workflow'))
+
+const actionCards = computed(() =>
+  REPORT_MANAGEMENT_ACTION_CARDS.map((card) => ({
+    ...card,
+    title: safeText(card.titleKey, card.titleFallback),
+    description: safeText(card.descriptionKey, card.fallbackDescription),
+  })),
+)
 
 const overviewCards = computed(() => [
   {
@@ -74,41 +95,6 @@ const periodStatusSummary = computed(() => [
   { label: t('preschoolLifecyclePage.reportPeriodStatuses.archived'), value: reportPeriods.value.filter((period) => period.isArchived).length },
 ])
 
-function goToStudentReports() {
-  router.push({ name: 'dashboard-preschool-admin-student-reports' })
-}
-
-function goToClassroomReports() {
-  router.push({ name: 'dashboard-preschool-admin-classroom-reports' })
-}
-
-function goToAuditLogs() {
-  router.push({ name: 'dashboard-preschool-admin-lifecycle-audit' })
-}
-
-function goToSnapshotArchive() {
-  router.push({ name: 'dashboard-preschool-admin-report-snapshots' })
-}
-
-function goToExportGovernance() {
-  router.push({ name: 'dashboard-preschool-admin-export-governance' })
-}
-
-function goToGovernanceReview() {
-  router.push({ name: 'dashboard-preschool-admin-governance-review' })
-}
-
-function goToInstitutionalReconstruction() {
-  router.push({ name: 'dashboard-preschool-admin-reconstruction' })
-}
-
-function goToGovernanceDiffAnalysis() {
-  router.push({ name: 'dashboard-preschool-admin-governance-diff' })
-}
-
-function goToGovernanceCases() {
-  router.push({ name: 'dashboard-preschool-admin-governance-cases' })
-}
 
 async function loadAuditPreview() {
   auditLoading.value = true
@@ -189,41 +175,22 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!-- WORKFLOW Section -->
+      <FormManagementSection
+        :eyebrow="'WORKFLOW'"
+        :title="'Report Sequence'"
+        :subtitle="'Follow these steps: View Student → Analyze Classroom → Review Governance'"
+        grid-class="preschool-form-management-section__grid--three"
+        :cards="workflowCards"
+        is-workflow
+      />
+
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="space-y-1">
             <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolReportsPage.overview.listTitle') }}</h3>
             <p class="text-sm text-slate-500">{{ t('preschoolReportsPage.overview.listSubtitle') }}</p>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <Button type="button" variant="primary" size="md" rounded="xl" @click="goToStudentReports">
-              {{ t('preschoolReportsPage.actions.openStudentReports') }}
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="xl" @click="goToClassroomReports">
-              {{ t('preschoolReportsPage.actions.openClassroomReports') }}
-            </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToAuditLogs">
-              {{ t('preschoolLifecycleAuditPage.actions.openAuditLogs') }}
-            </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToSnapshotArchive">
-              {{ t('preschoolSnapshotArchivePage.actions.openArchive') }}
-            </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToExportGovernance">
-              {{ t('preschoolExportGovernancePage.actions.openGovernance') }}
-            </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceReview">
-              {{ t('preschoolGovernanceReviewPage.actions.openGovernanceReview') }}
-            </Button>
-            <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToInstitutionalReconstruction">
-              {{ t('preschoolGovernanceReviewPage.actions.openReconstruction') }}
-            </Button>
-              <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceDiffAnalysis">
-                {{ t('preschoolGovernanceDiffPage.actions.openDiffAnalysis') }}
-              </Button>
-              <Button type="button" variant="ghost" size="md" rounded="xl" @click="goToGovernanceCases">
-                {{ t('preschoolGovernanceCasesPage.actions.openGovernanceCases') }}
-              </Button>
-            </div>
         </div>
 
         <div v-if="errorMessage" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -341,6 +308,15 @@ onMounted(async () => {
           </table>
         </div>
       </div>
+
+      <!-- ADVANCED Actions Section -->
+      <FormManagementSection
+        :eyebrow="'ADVANCED'"
+        :title="'Governance & Support Tools'"
+        :subtitle="'For experienced users: advanced analysis, troubleshooting, and compliance tools'"
+        grid-class="preschool-form-management-section__grid--three"
+        :cards="actionCards"
+      />
     </section>
   </MainLayout>
 </template>

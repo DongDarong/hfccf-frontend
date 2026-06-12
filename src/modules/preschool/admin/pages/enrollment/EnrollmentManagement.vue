@@ -292,57 +292,47 @@ function clearFilters() {
 
     <div class="enr-page__layout">
       <div class="enr-page__main">
-        <!-- Summary Cards -->
-        <EnrollmentSummaryCards :summary="summary" :loading="loadingSummary" />
+        <!-- OVERVIEW Section -->
+        <div class="enr-section">
+          <div class="enr-section__header">
+            <div>
+              <p class="enr-section__eyebrow">OVERVIEW</p>
+              <h2 class="enr-section__title">Application Status</h2>
+              <p class="enr-section__subtitle">Track applications at a glance: pending review, approved, enrolled, and rejected.</p>
+            </div>
+          </div>
+          <EnrollmentSummaryCards :summary="summary" :loading="loadingSummary" />
+        </div>
 
-        <!-- Filters -->
-        <EnrollmentFilterBar
-          v-model="filters"
-          :academic-years="academicYears"
-          @clear="clearFilters"
-        />
-
-        <!-- Table -->
-        <EnrollmentApplicationTable
-          :applications="applications"
-          :loading="loadingList"
-          :can-manage="canManage"
-          @view="openView"
-          @edit="openEdit"
-          @action="onTableAction"
-        />
+        <!-- MANAGE Section -->
+        <div class="enr-section">
+          <div class="enr-section__header">
+            <div>
+              <p class="enr-section__eyebrow">MANAGE</p>
+              <h2 class="enr-section__title">Applications</h2>
+              <p class="enr-section__subtitle">Filter, search, and select applications to view details and take action.</p>
+            </div>
+          </div>
+          <EnrollmentFilterBar
+            v-model="filters"
+            :academic-years="academicYears"
+            @clear="clearFilters"
+          />
+          <EnrollmentApplicationTable
+            :applications="applications"
+            :loading="loadingList"
+            :can-manage="canManage"
+            @view="openView"
+            @edit="openEdit"
+            @action="onTableAction"
+          />
+        </div>
       </div>
 
       <!-- Right Sidebar -->
       <aside class="enr-page__sidebar">
         <div class="enr-sidebar-card">
-          <h3 class="enr-sidebar-card__title">{{ t('preschoolEnrollmentPage.sidebar.title') || 'Enrollment Status' }}</h3>
-          <div class="enr-sidebar-card__content">
-            <div class="enr-sidebar-stat">
-              <span class="enr-sidebar-stat__label">Total Applications</span>
-              <span class="enr-sidebar-stat__value">{{ summary.total || 0 }}</span>
-            </div>
-            <div class="enr-sidebar-stat">
-              <span class="enr-sidebar-stat__label">Pending Review</span>
-              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--warning">{{ summary.pending || 0 }}</span>
-            </div>
-            <div class="enr-sidebar-stat">
-              <span class="enr-sidebar-stat__label">Approved</span>
-              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--success">{{ summary.approved || 0 }}</span>
-            </div>
-            <div class="enr-sidebar-stat">
-              <span class="enr-sidebar-stat__label">Enrolled</span>
-              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--info">{{ summary.enrolled || 0 }}</span>
-            </div>
-            <div class="enr-sidebar-stat">
-              <span class="enr-sidebar-stat__label">Rejected</span>
-              <span class="enr-sidebar-stat__value enr-sidebar-stat__value--danger">{{ summary.rejected || 0 }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="enr-sidebar-card">
-          <h3 class="enr-sidebar-card__title">{{ t('preschoolEnrollmentPage.sidebar.checklist') || 'Quick Actions' }}</h3>
+          <h3 class="enr-sidebar-card__title">Quick Actions</h3>
           <div class="enr-sidebar-card__content">
             <div class="enr-sidebar-action">
               <i class="pi pi-plus-circle" />
@@ -351,17 +341,29 @@ function clearFilters() {
               </button>
             </div>
             <div class="enr-sidebar-action">
-              <i class="pi pi-filter" />
-              <button @click="clearFilters" class="enr-sidebar-action__btn">
-                Clear Filters
-              </button>
-            </div>
-            <div class="enr-sidebar-action">
               <i class="pi pi-refresh" />
               <button @click="() => { loadSummary(); loadList() }" class="enr-sidebar-action__btn">
                 Refresh Data
               </button>
             </div>
+          </div>
+        </div>
+
+        <div class="enr-sidebar-card">
+          <h3 class="enr-sidebar-card__title">Workflow</h3>
+          <div class="enr-sidebar-card__content">
+            <p class="enr-sidebar-workflow-text">
+              <strong>1. Search</strong><br/>
+              Find applications using filters
+            </p>
+            <p class="enr-sidebar-workflow-text">
+              <strong>2. Select</strong><br/>
+              Click on an application to view
+            </p>
+            <p class="enr-sidebar-workflow-text">
+              <strong>3. Decide</strong><br/>
+              Approve, reject, or enroll
+            </p>
           </div>
         </div>
       </aside>
@@ -784,5 +786,54 @@ function clearFilters() {
   .enr-sidebar-card {
     min-width: auto;
   }
+}
+
+/* Section Headers */
+.enr-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.enr-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.enr-section__eyebrow {
+  margin: 0 0 0.25rem;
+  color: #2563eb;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.enr-section__title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.enr-section__subtitle {
+  margin: 0.4rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.enr-sidebar-workflow-text {
+  margin: 0 0 1rem;
+  color: #475569;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.enr-sidebar-workflow-text:last-child {
+  margin-bottom: 0;
 }
 </style>
