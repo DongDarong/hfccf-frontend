@@ -79,6 +79,18 @@ export default {
         },
       },
     },
+    attendanceManagement: {
+      title: 'Attendance Management',
+      subtitle: 'Track and manage student attendance records.',
+    },
+    teacherClassroomResources: {
+      title: 'Classroom Resources',
+      subtitle: 'Access and manage classroom learning materials.',
+    },
+    healthy: {
+      title: 'Health & Wellness',
+      subtitle: 'Monitor and support student health and wellness.',
+    },
   },
   preschoolAdminAttendancePage: {
     status: {

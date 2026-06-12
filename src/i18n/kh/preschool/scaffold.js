@@ -79,6 +79,18 @@ export default {
         },
       },
     },
+    attendanceManagement: {
+      title: 'ការគ្រប់គ្រងវត្តមាន',
+      subtitle: 'តាមដាន និងគ្រប់គ្រងកម្មវត្ថុវត្តមាននៃសិស្ស។',
+    },
+    teacherClassroomResources: {
+      title: 'ធនធានក្នុងថ្នាក់រៀន',
+      subtitle: 'ចូលប្រើប្រាស់ និងគ្រប់គ្រងវត្ថុឧបករណ៍ក្នុងថ្នាក់រៀន។',
+    },
+    healthy: {
+      title: 'សុខភាព និងwellness',
+      subtitle: 'ឃ្លាំមើល និងគាំទងសុខភាព របស់សិស្ស។',
+    },
   },
   preschoolAdminAttendancePage: {
     status: {
