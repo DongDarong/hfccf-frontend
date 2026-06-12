@@ -77,25 +77,31 @@ const quickLinks = computed(() => [
         <div class="workflow-overview__item">
           <span class="workflow-overview__icon">📊</span>
           <strong>Overview</strong>
-          <p>Dashboard and key metrics</p>
+          <p>Forms Tracker hub and metrics</p>
         </div>
         <div class="workflow-overview__arrow">→</div>
         <div class="workflow-overview__item">
-          <span class="workflow-overview__icon">🔧</span>
-          <strong>Build</strong>
-          <p>Create and configure forms</p>
+          <span class="workflow-overview__icon">✏️</span>
+          <strong>Create</strong>
+          <p>Design new assessment forms</p>
+        </div>
+        <div class="workflow-overview__arrow">→</div>
+        <div class="workflow-overview__item">
+          <span class="workflow-overview__icon">⚙️</span>
+          <strong>Configure</strong>
+          <p>Set up scoring & printing</p>
         </div>
         <div class="workflow-overview__arrow">→</div>
         <div class="workflow-overview__item">
           <span class="workflow-overview__icon">📋</span>
           <strong>Manage</strong>
-          <p>Organize form catalog</p>
+          <p>Organize form library</p>
         </div>
         <div class="workflow-overview__arrow">→</div>
         <div class="workflow-overview__item">
           <span class="workflow-overview__icon">📈</span>
           <strong>Review</strong>
-          <p>Analyze submissions & reports</p>
+          <p>Track submissions & results</p>
         </div>
       </div>
 
@@ -123,8 +129,8 @@ const quickLinks = computed(() => [
   gap: 1rem;
   flex-wrap: wrap;
   border-radius: 1rem;
-  border: 1px solid #e0e7ff;
-  background: #f0f4ff;
+  border: 1px solid #86efac;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   padding: 1.5rem;
   justify-content: space-between;
 }
@@ -141,7 +147,7 @@ const quickLinks = computed(() => [
 
 .workflow-overview__item strong {
   font-size: 0.9rem;
-  color: #1e40af;
+  color: #059669;
   font-weight: 700;
 }
 

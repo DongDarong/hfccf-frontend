@@ -99,8 +99,8 @@ const quickLinks = computed(() => [
 
 .workflow-guidance {
   border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border: 1px solid #86efac;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   padding: 1rem;
   display: flex;
   flex-direction: column;
