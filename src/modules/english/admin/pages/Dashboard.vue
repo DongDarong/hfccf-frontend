@@ -153,25 +153,35 @@ onMounted(() => {
           {{ errorMessage }}
         </div>
 
-        <div class="english-dashboard-page__cards">
-          <article
-            v-for="card in cards"
-            :key="card.title"
-            class="english-dashboard-page__card"
-          >
-            <p class="english-dashboard-page__card-title">{{ card.title }}</p>
-            <p class="english-dashboard-page__card-value">{{ card.value }}</p>
-            <p class="english-dashboard-page__card-label">{{ card.label }}</p>
-          </article>
+        <!-- Overview Section -->
+        <div class="english-dashboard-page__section">
+          <div class="english-dashboard-page__section-header">
+            <p class="text-xs font-bold uppercase text-blue-600 tracking-wide">OVERVIEW</p>
+            <h2 class="text-sm font-semibold text-slate-900">Key Metrics</h2>
+            <p class="text-xs text-slate-500">Track classes, tasks, submissions, and teacher workload at a glance</p>
+          </div>
+          <div class="english-dashboard-page__cards">
+            <article
+              v-for="card in cards"
+              :key="card.title"
+              class="english-dashboard-page__card"
+            >
+              <p class="english-dashboard-page__card-title">{{ card.title }}</p>
+              <p class="english-dashboard-page__card-value">{{ card.value }}</p>
+              <p class="english-dashboard-page__card-label">{{ card.label }}</p>
+            </article>
+          </div>
         </div>
 
-        <div class="english-dashboard-page__grid">
-          <section class="english-dashboard-page__panel">
-            <div class="english-dashboard-page__panel-header">
-              <h2 class="english-dashboard-page__panel-title">{{ recentAssignmentsTitle }}</h2>
-              <span class="english-dashboard-page__panel-caption">{{ recentAssignmentsCaption }}</span>
-            </div>
+        <!-- Assignment Management Section -->
+        <div class="english-dashboard-page__section">
+          <div class="english-dashboard-page__section-header">
+            <p class="text-xs font-bold uppercase text-blue-600 tracking-wide">ASSIGNMENTS</p>
+            <h2 class="text-sm font-semibold text-slate-900">{{ recentAssignmentsTitle }}</h2>
+            <p class="text-xs text-slate-500">{{ recentAssignmentsCaption }}</p>
+          </div>
 
+          <section class="english-dashboard-page__panel">
             <Table
               :rows="recentAssignments"
               :columns="assignmentColumns"
@@ -182,41 +192,50 @@ onMounted(() => {
               :show-delete-action="false"
             />
           </section>
-
-          <section class="english-dashboard-page__panel">
-            <div class="english-dashboard-page__panel-header">
-              <h2 class="english-dashboard-page__panel-title">{{ recentReviewsTitle }}</h2>
-              <span class="english-dashboard-page__panel-caption">{{ recentReviewsCaption }}</span>
-            </div>
-
-            <Table
-              :rows="recentReviews"
-              :columns="reviewColumns"
-              :loading="loading"
-              :empty-text="emptyReviews"
-              :show-view-action="false"
-              :show-edit-action="false"
-              :show-delete-action="false"
-            />
-          </section>
         </div>
 
-        <section class="english-dashboard-page__panel">
-          <div class="english-dashboard-page__panel-header">
-            <h2 class="english-dashboard-page__panel-title">{{ workloadTitle }}</h2>
-            <span class="english-dashboard-page__panel-caption">{{ workloadCaption }}</span>
+        <!-- Reviews & Workload Section -->
+        <div class="english-dashboard-page__grid">
+          <div class="english-dashboard-page__section">
+            <div class="english-dashboard-page__section-header">
+              <p class="text-xs font-bold uppercase text-blue-600 tracking-wide">REVIEWS</p>
+              <h2 class="text-sm font-semibold text-slate-900">{{ recentReviewsTitle }}</h2>
+              <p class="text-xs text-slate-500">{{ recentReviewsCaption }}</p>
+            </div>
+
+            <section class="english-dashboard-page__panel">
+              <Table
+                :rows="recentReviews"
+                :columns="reviewColumns"
+                :loading="loading"
+                :empty-text="emptyReviews"
+                :show-view-action="false"
+                :show-edit-action="false"
+                :show-delete-action="false"
+              />
+            </section>
           </div>
 
-          <Table
-            :rows="teacherWorkload"
-            :columns="workloadColumns"
-            :loading="loading"
-            :empty-text="emptyWorkload"
-            :show-view-action="false"
-            :show-edit-action="false"
-            :show-delete-action="false"
-          />
-        </section>
+          <div class="english-dashboard-page__section">
+            <div class="english-dashboard-page__section-header">
+              <p class="text-xs font-bold uppercase text-blue-600 tracking-wide">WORKLOAD</p>
+              <h2 class="text-sm font-semibold text-slate-900">{{ workloadTitle }}</h2>
+              <p class="text-xs text-slate-500">{{ workloadCaption }}</p>
+            </div>
+
+            <section class="english-dashboard-page__panel">
+              <Table
+                :rows="teacherWorkload"
+                :columns="workloadColumns"
+                :loading="loading"
+                :empty-text="emptyWorkload"
+                :show-view-action="false"
+                :show-edit-action="false"
+                :show-delete-action="false"
+              />
+            </section>
+          </div>
+        </div>
       </div>
     </section>
   </MainLayout>
@@ -232,12 +251,24 @@ onMounted(() => {
 .english-dashboard-page__shell {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   padding: 1.5rem;
   border-radius: 1.5rem;
   border: 1px solid #dce6f2;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
+}
+
+.english-dashboard-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.english-dashboard-page__section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .english-dashboard-page__cards {
@@ -276,7 +307,23 @@ onMounted(() => {
 .english-dashboard-page__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .english-dashboard-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .english-dashboard-page__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .english-dashboard-page__cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 .english-dashboard-page__panel {
