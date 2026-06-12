@@ -65,6 +65,21 @@ onMounted(load)
         </template>
       </HeaderSection>
 
+      <div class="submission-guidance">
+        <p class="submission-guidance__step">
+          <span class="submission-guidance__icon">📥</span>
+          <strong>Monitor submissions:</strong> Track incoming form responses and status
+        </p>
+        <p class="submission-guidance__step">
+          <span class="submission-guidance__icon">🔍</span>
+          <strong>Review responses:</strong> Click to view detailed submission content
+        </p>
+        <p class="submission-guidance__step">
+          <span class="submission-guidance__icon">✅</span>
+          <strong>Filter by status:</strong> Find drafts, submitted, under review, or approved
+        </p>
+      </div>
+
       <div class="submission-list__filters">
         <Select
           v-model="statusFilter"
@@ -117,8 +132,47 @@ onMounted(load)
   gap: 1.5rem;
 }
 
+.submission-guidance {
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.submission-guidance__step {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #1e40af;
+}
+
+.submission-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
 .submission-list__filters {
   display: flex;
   gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .submission-guidance {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .submission-guidance__step {
+    font-size: 0.9rem;
+  }
+
+  .submission-list__filters {
+    flex-direction: column;
+  }
 }
 </style>

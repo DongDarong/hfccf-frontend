@@ -43,6 +43,25 @@ onMounted(load)
         </template>
       </HeaderSection>
 
+      <div class="reports-guidance">
+        <p class="reports-guidance__insight">
+          <span class="reports-guidance__icon">📊</span>
+          <strong>Overview metrics:</strong> Total assessments, average scores, and completion rates
+        </p>
+        <p class="reports-guidance__insight">
+          <span class="reports-guidance__icon">⚠️</span>
+          <strong>Risk analysis:</strong> Identify students by performance level distribution
+        </p>
+        <p class="reports-guidance__insight">
+          <span class="reports-guidance__icon">📈</span>
+          <strong>Trends:</strong> Track submission patterns and performance over time
+        </p>
+        <p class="reports-guidance__insight">
+          <span class="reports-guidance__icon">💾</span>
+          <strong>Export data:</strong> Download reports for external analysis or records
+        </p>
+      </div>
+
       <div v-if="isLoading" class="assessment-reports__loading">
         <i class="pi pi-spin pi-spinner" style="font-size: 2rem" />
       </div>
@@ -91,6 +110,30 @@ onMounted(load)
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.reports-guidance {
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reports-guidance__insight {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #1e40af;
+}
+
+.reports-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .assessment-reports__loading {
@@ -162,5 +205,16 @@ onMounted(load)
   font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
+}
+
+@media (max-width: 768px) {
+  .reports-guidance {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .reports-guidance__insight {
+    font-size: 0.9rem;
+  }
 }
 </style>
