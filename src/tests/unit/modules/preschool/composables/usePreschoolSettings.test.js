@@ -1,5 +1,5 @@
 import { nextTick } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   createDefaultClassConfiguration,
   createEmptyTermDraft,
@@ -8,6 +8,20 @@ import {
   validatePreschoolSettings,
   validatePreschoolTermDraft,
 } from '@/modules/preschool/composables/usePreschoolSettings'
+
+vi.mock('@/composables/useLanguage', () => ({
+  useLanguage: () => ({
+    t: (key) => key,
+    te: () => true,
+    tm: () => ({}),
+    language: { value: 'en' },
+    setLanguage: () => {},
+  }),
+}))
+
+vi.mock('@/modules/preschool/services/preschoolApi', () => ({
+  updatePreschoolSettingsBackbone: vi.fn().mockResolvedValue({}),
+}))
 
 // Keep the settings composable covered so the validation rules and local draft
 // mutations do not drift away from the page contract.
@@ -85,7 +99,7 @@ describe('usePreschoolSettings', () => {
     removeClassConfiguration(3)
     expect(settings.value.classConfigurations).toHaveLength(3)
 
-    const saveResult = saveSettings()
+    const saveResult = await saveSettings()
     expect(saveResult.ok).toBe(true)
     expect(validationErrors.value.academicYear.currentAcademicYear).toBeUndefined()
 

@@ -16,6 +16,16 @@ const mockFetchMyPreschoolClasses = vi.fn()
 const mockFetchPreschoolStudents = vi.fn()
 const mockFetchPreschoolClasses = vi.fn()
 
+vi.mock('@/composables/useLanguage', () => ({
+  useLanguage: () => ({
+    t: (key) => key,
+    te: () => true,
+    tm: () => ({}),
+    language: { value: 'en' },
+    setLanguage: () => {},
+  }),
+}))
+
 vi.mock('@/services/auth', () => ({
   getCurrentUser: () => mockGetCurrentUser(),
 }))

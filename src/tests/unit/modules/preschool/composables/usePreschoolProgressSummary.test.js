@@ -3,6 +3,16 @@ import { usePreschoolProgressSummary } from '@/modules/preschool/composables/use
 
 const mockFetchProgressSummary = vi.fn()
 
+vi.mock('@/composables/useLanguage', () => ({
+  useLanguage: () => ({
+    t: (key) => key,
+    te: () => true,
+    tm: () => ({}),
+    language: { value: 'en' },
+    setLanguage: () => {},
+  }),
+}))
+
 vi.mock('@/modules/preschool/services/api/preschoolAssessmentApi', () => ({
   fetchProgressSummary: (...args) => mockFetchProgressSummary(...args),
 }))
