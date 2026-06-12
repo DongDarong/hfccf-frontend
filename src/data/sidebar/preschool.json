@@ -57,7 +57,7 @@
         },
         {
           "id": "preschool-assessments",
-          "routeName": "dashboard-preschool-assessments",
+          "routeName": "assessment-tracker",
           "labelKey": "nav.items.preschoolAssessments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
