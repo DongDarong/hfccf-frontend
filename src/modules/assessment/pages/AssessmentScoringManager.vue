@@ -51,6 +51,21 @@ onMounted(load)
         </template>
       </HeaderSection>
 
+      <div class="scoring-guidance">
+        <p class="scoring-guidance__item">
+          <span class="scoring-guidance__icon">📊</span>
+          <strong>Scoring rules:</strong> Define how points are calculated for each question or section
+        </p>
+        <p class="scoring-guidance__item">
+          <span class="scoring-guidance__icon">⚠️</span>
+          <strong>Risk levels:</strong> Categorize performance scores into risk tiers for identification
+        </p>
+        <p class="scoring-guidance__item">
+          <span class="scoring-guidance__icon">💾</span>
+          <strong>Save settings:</strong> Click Save to apply changes to this form's scoring logic
+        </p>
+      </div>
+
       <div class="scoring-manager__section">
         <h3>{{ t('scoring.scoringRules') }}</h3>
         <DataTable :value="scoringRules" :loading="isLoading">
@@ -81,6 +96,30 @@ onMounted(load)
   gap: 1.5rem;
 }
 
+.scoring-guidance {
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scoring-guidance__item {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #1e40af;
+}
+
+.scoring-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
 .scoring-manager__section {
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
@@ -92,5 +131,16 @@ onMounted(load)
   margin: 0 0 1rem;
   font-size: 1rem;
   font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .scoring-guidance {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .scoring-guidance__item {
+    font-size: 0.9rem;
+  }
 }
 </style>

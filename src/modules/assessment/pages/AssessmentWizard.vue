@@ -48,6 +48,25 @@ onUnmounted(() => store.reset())
     <div class="assessment-wizard">
       <HeaderSection :title="t('assessmentWizard.title')" />
 
+      <div class="wizard-guidance">
+        <p class="wizard-guidance__step">
+          <span class="wizard-guidance__icon">📋</span>
+          <strong>Step 1 — Form:</strong> Select or create the assessment form
+        </p>
+        <p class="wizard-guidance__step">
+          <span class="wizard-guidance__icon">👤</span>
+          <strong>Step 2 — Student:</strong> Choose the student taking the assessment
+        </p>
+        <p class="wizard-guidance__step">
+          <span class="wizard-guidance__icon">📝</span>
+          <strong>Step 3 — Assessment:</strong> Complete the form responses
+        </p>
+        <p class="wizard-guidance__step">
+          <span class="wizard-guidance__icon">✅</span>
+          <strong>Step 4 — Review:</strong> Verify all information before submitting
+        </p>
+      </div>
+
       <Steps :model="stepItems" :active-step="store.currentStep" class="assessment-wizard__steps" />
 
       <div class="assessment-wizard__body">
@@ -99,6 +118,30 @@ onUnmounted(() => store.reset())
   gap: 1.5rem;
 }
 
+.wizard-guidance {
+  border-radius: 1rem;
+  border: 1px solid #e0e7ff;
+  background: #f0f4ff;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wizard-guidance__step {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #1e40af;
+}
+
+.wizard-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
 .assessment-wizard__body {
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
@@ -111,5 +154,20 @@ onUnmounted(() => store.reset())
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .wizard-guidance {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .wizard-guidance__step {
+    font-size: 0.9rem;
+  }
+
+  .assessment-wizard__footer {
+    flex-wrap: wrap;
+  }
 }
 </style>
