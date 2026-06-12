@@ -72,41 +72,122 @@ onMounted(load)
 
       <div class="assessment-dashboard__stats">
         <div class="assessment-dashboard__stat-card">
+          <div class="assessment-dashboard__stat-icon">📋</div>
           <div class="assessment-dashboard__stat-value">{{ stats.totalForms }}</div>
           <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.totalForms') }}</div>
         </div>
         <div class="assessment-dashboard__stat-card">
+          <div class="assessment-dashboard__stat-icon">📥</div>
           <div class="assessment-dashboard__stat-value">{{ stats.activeSubmissions }}</div>
           <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.activeSubmissions') }}</div>
         </div>
-        <div class="assessment-dashboard__stat-card">
+        <div class="assessment-dashboard__stat-card assessment-dashboard__stat-card--warning">
+          <div class="assessment-dashboard__stat-icon">⏳</div>
           <div class="assessment-dashboard__stat-value">{{ stats.pendingReview }}</div>
           <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.pendingReview') }}</div>
         </div>
-        <div class="assessment-dashboard__stat-card">
+        <div class="assessment-dashboard__stat-card assessment-dashboard__stat-card--success">
+          <div class="assessment-dashboard__stat-icon">✅</div>
           <div class="assessment-dashboard__stat-value">{{ stats.completedThisMonth }}</div>
           <div class="assessment-dashboard__stat-label">{{ t('assessmentDashboard.stats.completedThisMonth') }}</div>
         </div>
       </div>
 
-      <div class="assessment-dashboard__section">
-        <h2 class="assessment-dashboard__section-title">🚀 Quick Actions</h2>
-        <p class="assessment-dashboard__section-subtitle">Frequently used tools and operations</p>
+      <div class="assessment-dashboard__zone">
+        <div class="assessment-dashboard__zone-header">
+          <h2 class="assessment-dashboard__zone-title">📊 Data & Insights</h2>
+          <p class="assessment-dashboard__zone-subtitle">Recent activity and risk distribution</p>
+        </div>
+
+        <div class="assessment-dashboard__insights-grid">
+          <div class="assessment-dashboard__insight-card">
+            <h3 class="assessment-dashboard__insight-title">📈 Recent Submissions</h3>
+            <div v-if="recentSubmissions.length === 0" class="assessment-dashboard__empty">
+              No recent submissions yet
+            </div>
+            <div v-else class="assessment-dashboard__submission-list">
+              <div
+                v-for="(submission, idx) in recentSubmissions.slice(0, 3)"
+                :key="idx"
+                class="assessment-dashboard__submission-item"
+              >
+                <span class="assessment-dashboard__submission-name">
+                  {{ submission.student?.full_name || submission.form_name || '—' }}
+                </span>
+                <span class="assessment-dashboard__submission-date">
+                  {{ submission.submitted_at || '—' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="assessment-dashboard__insight-card">
+            <h3 class="assessment-dashboard__insight-title">⚠️ Risk Distribution</h3>
+            <div v-if="riskDistribution.length === 0" class="assessment-dashboard__empty">
+              No risk data available
+            </div>
+            <div v-else class="assessment-dashboard__risk-list">
+              <div
+                v-for="risk in riskDistribution.slice(0, 3)"
+                :key="risk.level"
+                class="assessment-dashboard__risk-item"
+              >
+                <span
+                  class="assessment-dashboard__risk-badge"
+                  :style="{ backgroundColor: risk.color }"
+                >
+                  {{ risk.level_name }}
+                </span>
+                <span class="assessment-dashboard__risk-count">{{ risk.count }} students</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="assessment-dashboard__quick-actions">
-        <Button
-          :label="t('assessmentDashboard.quickActions.manageTemplates')"
-          severity="secondary"
-          icon="pi pi-file-edit"
-          @click="router.push({ name: 'assessment-form-list' })"
-        />
-        <Button
-          :label="t('assessmentDashboard.quickActions.viewReports')"
-          severity="secondary"
-          icon="pi pi-chart-bar"
-          @click="router.push({ name: 'assessment-reports' })"
-        />
+      <div class="assessment-dashboard__zone">
+        <div class="assessment-dashboard__zone-header">
+          <h2 class="assessment-dashboard__zone-title">🚀 Quick Actions</h2>
+          <p class="assessment-dashboard__zone-subtitle">Access frequently used tools</p>
+        </div>
+
+        <div class="assessment-dashboard__action-grid">
+          <div
+            class="assessment-dashboard__action-card"
+            @click="router.push({ name: 'assessment-form-list' })"
+          >
+            <div class="assessment-dashboard__action-icon">📋</div>
+            <div class="assessment-dashboard__action-title">Manage Templates</div>
+            <div class="assessment-dashboard__action-desc">Create, edit, and organize forms</div>
+          </div>
+
+          <div
+            class="assessment-dashboard__action-card"
+            @click="router.push({ name: 'assessment-submission-list' })"
+          >
+            <div class="assessment-dashboard__action-icon">📥</div>
+            <div class="assessment-dashboard__action-title">View Submissions</div>
+            <div class="assessment-dashboard__action-desc">Monitor responses and status</div>
+          </div>
+
+          <div
+            class="assessment-dashboard__action-card"
+            @click="router.push({ name: 'assessment-reports' })"
+          >
+            <div class="assessment-dashboard__action-icon">📊</div>
+            <div class="assessment-dashboard__action-title">View Reports</div>
+            <div class="assessment-dashboard__action-desc">Analyze trends and insights</div>
+          </div>
+
+          <div
+            class="assessment-dashboard__action-card"
+            @click="router.push({ name: 'assessment-wizard' })"
+          >
+            <div class="assessment-dashboard__action-icon">✨</div>
+            <div class="assessment-dashboard__action-title">New Assessment</div>
+            <div class="assessment-dashboard__action-desc">Start a new assessment wizard</div>
+          </div>
+        </div>
       </div>
     </div>
   </MainLayout>
@@ -173,27 +254,190 @@ onMounted(load)
 .assessment-dashboard__stat-card {
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 1.25rem;
+  border-radius: 1rem;
+  padding: 1.5rem;
   text-align: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.assessment-dashboard__stat-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.assessment-dashboard__stat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .assessment-dashboard__stat-value {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.25rem;
+  font-weight: 800;
   color: var(--primary-color);
+  margin: 0.5rem 0;
 }
 
 .assessment-dashboard__stat-label {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--text-color-secondary);
-  margin-top: 0.25rem;
+  margin: 0;
+  font-weight: 500;
 }
 
-.assessment-dashboard__quick-actions {
+.assessment-dashboard__stat-card--warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.assessment-dashboard__stat-card--success {
+  border-left: 4px solid #10b981;
+}
+
+.assessment-dashboard__zone {
+  margin-top: 1rem;
+}
+
+.assessment-dashboard__zone-header {
+  margin-bottom: 1rem;
+}
+
+.assessment-dashboard__zone-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
   display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assessment-dashboard__zone-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.assessment-dashboard__insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.assessment-dashboard__insight-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+.assessment-dashboard__insight-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.assessment-dashboard__empty {
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.assessment-dashboard__submission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.assessment-dashboard__submission-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.assessment-dashboard__submission-name {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.assessment-dashboard__submission-date {
+  color: var(--text-color-secondary);
+  font-size: 0.75rem;
+}
+
+.assessment-dashboard__risk-list {
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  flex-wrap: wrap;
+}
+
+.assessment-dashboard__risk-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.assessment-dashboard__risk-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.assessment-dashboard__risk-count {
+  color: var(--text-color-secondary);
+}
+
+.assessment-dashboard__action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.assessment-dashboard__action-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.assessment-dashboard__action-card:hover {
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+.assessment-dashboard__action-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.assessment-dashboard__action-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.assessment-dashboard__action-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
@@ -206,8 +450,20 @@ onMounted(load)
     font-size: 0.9rem;
   }
 
-  .assessment-dashboard__quick-actions {
-    flex-direction: column;
+  .assessment-dashboard__insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .assessment-dashboard__action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .assessment-dashboard__stat-card {
+    padding: 1.25rem;
+  }
+
+  .assessment-dashboard__stat-value {
+    font-size: 1.75rem;
   }
 }
 </style>
