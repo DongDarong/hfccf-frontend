@@ -13,6 +13,7 @@ import {
   deleteStudentHealthIncident,
   deleteStudentHealthMedication,
   deleteStudentHealthVaccination,
+  fetchStudentHealthAuditLogs,
   fetchStudentHealthAllergies,
   fetchStudentHealthContacts,
   fetchStudentHealthIncidents,
@@ -42,10 +43,14 @@ const router = useRouter()
 
 const student = ref(null)
 const healthSummary = ref(null)
+const healthAuditLogs = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
 const savingProfile = ref(false)
 const profileError = ref('')
+const auditLoading = ref(false)
+const auditError = ref('')
+const auditActionFilter = ref('all')
 
 const medicalProfile = reactive({
   blood_type: '',
@@ -459,7 +464,16 @@ const summaryCards = computed(() => [
   { label: t('preschoolHealthPage.summary.incidents'), value: healthSummary.value?.counts?.incidents ?? 0 },
   { label: t('preschoolHealthPage.summary.contacts'), value: healthSummary.value?.counts?.emergencyContacts ?? 0 },
   { label: t('preschoolHealthPage.summary.checks'), value: healthSummary.value?.counts?.healthChecks ?? 0 },
+  { label: t('preschoolHealthPage.summary.auditLogs'), value: healthAuditLogs.value.length },
 ])
+
+const filteredAuditLogs = computed(() => {
+  if (auditActionFilter.value === 'all') {
+    return healthAuditLogs.value
+  }
+
+  return healthAuditLogs.value.filter((entry) => String(entry.action || '').startsWith(auditActionFilter.value))
+})
 
 function getStudentId() {
   return String(route.params.id || '').trim()
@@ -536,10 +550,32 @@ async function loadStudent() {
       loadSection('contacts'),
       loadSection('healthChecks'),
     ])
+    await loadAuditLogs(studentId)
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolHealthPage.messages.loadFailed')
   } finally {
     loading.value = false
+  }
+}
+
+async function loadAuditLogs(studentId = getStudentId()) {
+  const id = String(studentId || '').trim()
+  if (!id) {
+    healthAuditLogs.value = []
+    return
+  }
+
+  auditLoading.value = true
+  auditError.value = ''
+
+  try {
+    const payload = await fetchStudentHealthAuditLogs(id, { per_page: 25 })
+    healthAuditLogs.value = payload.items || []
+  } catch (error) {
+    healthAuditLogs.value = []
+    auditError.value = error?.message || t('preschoolHealthPage.messages.auditLoadFailed')
+  } finally {
+    auditLoading.value = false
   }
 }
 
@@ -588,6 +624,7 @@ async function saveMedicalProfile() {
       status: medicalProfile.status,
     })
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    await loadAuditLogs(studentId)
   } catch (error) {
     profileError.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
   } finally {
@@ -612,6 +649,7 @@ async function saveSection(sectionKey) {
     resetSection(sectionKey)
     await loadSection(sectionKey)
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    await loadAuditLogs(studentId)
   } catch (error) {
     state.error = error?.message || t('preschoolHealthPage.messages.saveFailed')
   } finally {
@@ -640,6 +678,7 @@ async function deleteSectionItem(sectionKey, item) {
     }
     await loadSection(sectionKey)
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    await loadAuditLogs(studentId)
   } catch (error) {
     state.error = error?.message || t('preschoolHealthPage.messages.deleteFailed')
   } finally {
@@ -894,6 +933,54 @@ onMounted(async () => {
               @delete="(item) => deleteSectionItem('healthChecks', item)"
               @reset="resetSection('healthChecks')"
             />
+
+            <section class="health-profile-page__audit">
+              <div class="health-profile-page__audit-header">
+                <div>
+                  <p class="health-profile-page__section-eyebrow">{{ t('preschoolHealthPage.audit.eyebrow') }}</p>
+                  <h3 class="health-profile-page__section-title">{{ t('preschoolHealthPage.audit.title') }}</h3>
+                </div>
+                <label class="health-profile-page__audit-filter">
+                  <span>{{ t('preschoolHealthPage.audit.filterLabel') }}</span>
+                  <select v-model="auditActionFilter" class="health-profile-page__input">
+                    <option value="all">{{ t('preschoolHealthPage.audit.filters.all') }}</option>
+                    <option value="created">{{ t('preschoolHealthPage.audit.filters.created') }}</option>
+                    <option value="updated">{{ t('preschoolHealthPage.audit.filters.updated') }}</option>
+                    <option value="deleted">{{ t('preschoolHealthPage.audit.filters.deleted') }}</option>
+                    <option value="alert">{{ t('preschoolHealthPage.audit.filters.alert') }}</option>
+                  </select>
+                </label>
+              </div>
+
+              <div v-if="auditLoading" class="health-profile-page__state">
+                <i class="pi pi-spin pi-spinner" />
+              </div>
+              <div v-else-if="auditError" class="health-profile-page__inline-error">
+                {{ auditError }}
+              </div>
+              <div v-else-if="!filteredAuditLogs.length" class="health-profile-page__state">
+                {{ t('preschoolHealthPage.messages.noAuditLogs') }}
+              </div>
+              <div v-else class="health-profile-page__audit-list">
+                <article v-for="entry in filteredAuditLogs" :key="entry.id" class="health-profile-page__audit-item">
+                  <div class="health-profile-page__audit-copy">
+                    <p class="health-profile-page__audit-action">{{ t(`preschoolHealthPage.audit.actions.${entry.action}`) }}</p>
+                    <p class="health-profile-page__audit-meta">
+                      {{ entry.entityType }}#{{ entry.entityId || '-' }} - {{ entry.createdAt || entry.created_at || '-' }}
+                    </p>
+                    <p v-if="entry.message" class="health-profile-page__audit-message">{{ entry.message }}</p>
+                  </div>
+                  <div class="health-profile-page__audit-badges">
+                    <span v-if="entry.severity" class="health-profile-page__status-badge" :data-severity="entry.severity">
+                      {{ t(`preschoolHealthPage.severity.${entry.severity}`) }}
+                    </span>
+                    <span class="health-profile-page__status-badge" :data-visibility="entry.visibility">
+                      {{ t(`preschoolHealthPage.audit.visibility.${entry.visibility || 'admin'}`) }}
+                    </span>
+                  </div>
+                </article>
+              </div>
+            </section>
           </div>
         </template>
       </div>
@@ -1105,6 +1192,93 @@ onMounted(async () => {
   gap: 1rem;
 }
 
+.health-profile-page__audit {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid #dbe3ef;
+  background: #fff;
+  box-shadow: 0 16px 32px -26px rgba(15, 23, 42, 0.45);
+}
+
+.health-profile-page__audit-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.9rem;
+}
+
+.health-profile-page__audit-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 12rem;
+}
+
+.health-profile-page__audit-filter span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.health-profile-page__audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.health-profile-page__audit-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.health-profile-page__audit-action {
+  margin: 0;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.health-profile-page__audit-meta,
+.health-profile-page__audit-message {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.health-profile-page__audit-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: flex-start;
+}
+
+.health-profile-page__status-badge[data-severity='critical'] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.health-profile-page__status-badge[data-severity='high'] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.health-profile-page__status-badge[data-severity='medium'] {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.health-profile-page__status-badge[data-visibility='teacher'] {
+  background: #ecfccb;
+  color: #3f6212;
+}
+
 @media (max-width: 1100px) {
   .health-profile-page__cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1130,6 +1304,11 @@ onMounted(async () => {
   }
 
   .health-profile-page__medical-header {
+    flex-direction: column;
+  }
+
+  .health-profile-page__audit-header,
+  .health-profile-page__audit-item {
     flex-direction: column;
   }
 }

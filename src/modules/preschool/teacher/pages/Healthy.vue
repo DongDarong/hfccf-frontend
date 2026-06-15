@@ -9,6 +9,7 @@ import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchMyPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 import {
+  fetchHealthAlerts,
   fetchStudentHealthSummary,
   fetchStudentHealthIncidents,
   fetchStudentHealthContacts,
@@ -26,6 +27,7 @@ const { t } = useLanguage()
 const students = ref([])
 const selectedStudentId = ref('')
 const selectedStudentSummary = ref(null)
+const urgentAlerts = ref([])
 const incidents = ref([])
 const contacts = ref([])
 const loadingStudents = ref(false)
@@ -98,7 +100,13 @@ async function loadStudentHealth() {
   errorMessage.value = ''
 
   try {
-    selectedStudentSummary.value = await fetchStudentHealthSummary(studentId)
+    const [summary, alertsPayload] = await Promise.all([
+      fetchStudentHealthSummary(studentId),
+      fetchHealthAlerts({ student_id: studentId, scope: 'teacher' }),
+    ])
+
+    selectedStudentSummary.value = summary
+    urgentAlerts.value = alertsPayload.items || []
     incidents.value = await fetchStudentHealthIncidents(studentId)
     contacts.value = await fetchStudentHealthContacts(studentId)
   } catch (error) {
@@ -227,23 +235,44 @@ onMounted(async () => {
               </div>
 
               <template v-else>
-                <div class="teacher-health-page__summary-grid">
-                  <article class="teacher-health-page__summary-card">
-                    <p>{{ t('preschoolHealthPage.summary.allergies') }}</p>
-                    <strong>{{ selectedStudentSummary?.counts?.allergies ?? 0 }}</strong>
-                  </article>
+              <div class="teacher-health-page__summary-grid">
+                <article class="teacher-health-page__summary-card">
+                  <p>{{ t('preschoolHealthPage.summary.allergies') }}</p>
+                  <strong>{{ selectedStudentSummary?.counts?.allergies ?? 0 }}</strong>
+                </article>
                   <article class="teacher-health-page__summary-card">
                     <p>{{ t('preschoolHealthPage.summary.contacts') }}</p>
                     <strong>{{ selectedStudentSummary?.counts?.emergencyContacts ?? 0 }}</strong>
                   </article>
                   <article class="teacher-health-page__summary-card">
                     <p>{{ t('preschoolHealthPage.summary.incidents') }}</p>
-                    <strong>{{ selectedStudentSummary?.counts?.incidents ?? 0 }}</strong>
+                  <strong>{{ selectedStudentSummary?.counts?.incidents ?? 0 }}</strong>
+                </article>
+              </div>
+
+              <section class="teacher-health-page__panel teacher-health-page__panel--alerts">
+                <div class="teacher-health-page__panel-header">
+                  <h3>{{ t('preschoolHealthPage.teacher.urgentAlerts') }}</h3>
+                  <span class="teacher-health-page__panel-note">{{ t('preschoolHealthPage.teacher.alertsVisibleToTeachers') }}</span>
+                </div>
+                <div v-if="urgentAlerts.length === 0" class="teacher-health-page__empty">
+                  {{ t('preschoolHealthPage.messages.noUrgentAlerts') }}
+                </div>
+                <div v-else class="teacher-health-page__incident-list">
+                  <article v-for="alert in urgentAlerts.slice(0, 5)" :key="alert.id" class="teacher-health-page__incident">
+                    <div>
+                      <p class="teacher-health-page__incident-title">{{ alert.title || alert.incident_type || alert.allergy_name || t('preschoolHealthPage.summary.alert') }}</p>
+                      <p class="teacher-health-page__incident-meta">{{ alert.message || alert.notes || '-' }}</p>
+                    </div>
+                    <span class="teacher-health-page__incident-badge" :data-severity="alert.severity || 'high'">
+                      {{ t(`preschoolHealthPage.severity.${alert.severity || 'high'}`) }}
+                    </span>
                   </article>
                 </div>
+              </section>
 
-                <div class="teacher-health-page__grid">
-                  <section class="teacher-health-page__panel">
+              <div class="teacher-health-page__grid">
+                <section class="teacher-health-page__panel">
                     <div class="teacher-health-page__panel-header">
                       <h3>{{ t('preschoolHealthPage.teacher.emergencyNotes') }}</h3>
                     </div>
@@ -491,6 +520,10 @@ onMounted(async () => {
   margin-bottom: 1rem;
 }
 
+.teacher-health-page__panel--alerts {
+  margin-bottom: 1rem;
+}
+
 .teacher-health-page__summary-card {
   padding: 0.9rem 1rem;
 }
@@ -580,6 +613,21 @@ onMounted(async () => {
   background: #eef2ff;
   color: #4338ca;
   height: fit-content;
+}
+
+.teacher-health-page__incident-badge[data-severity='critical'] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.teacher-health-page__incident-badge[data-severity='high'] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.teacher-health-page__panel-note {
+  font-size: 0.78rem;
+  color: #64748b;
 }
 
 .teacher-health-page__form {

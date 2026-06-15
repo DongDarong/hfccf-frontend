@@ -6,7 +6,7 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolDashboard, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
-import { fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
+import { fetchHealthDashboardSummary, fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
 import { resolveAvatarSource } from '@/utils/avatar'
 
 defineOptions({
@@ -22,6 +22,18 @@ const dashboard = ref({
     students: 0,
     classes: 0,
   },
+})
+const healthAlerts = ref({
+  summary: {
+    criticalIncidents: 0,
+    severeAllergies: 0,
+    missingEmergencyContacts: 0,
+    overdueVaccinations: 0,
+    medicationReminders: 0,
+    unresolvedItems: 0,
+  },
+  items: [],
+  unresolvedCriticalItems: [],
 })
 const students = ref([])
 const selectedStudentId = ref('')
@@ -51,6 +63,29 @@ const summaryCards = computed(() => [
   },
 ])
 
+const alertCards = computed(() => [
+  {
+    label: t('preschoolHealthPage.dashboard.criticalIncidents'),
+    value: healthAlerts.value.summary?.criticalIncidents ?? 0,
+    note: t('preschoolHealthPage.dashboard.criticalIncidentsNote'),
+  },
+  {
+    label: t('preschoolHealthPage.dashboard.severeAllergies'),
+    value: healthAlerts.value.summary?.severeAllergies ?? 0,
+    note: t('preschoolHealthPage.dashboard.severeAllergiesNote'),
+  },
+  {
+    label: t('preschoolHealthPage.dashboard.missingContacts'),
+    value: healthAlerts.value.summary?.missingEmergencyContacts ?? 0,
+    note: t('preschoolHealthPage.dashboard.missingContactsNote'),
+  },
+  {
+    label: t('preschoolHealthPage.dashboard.overdueVaccinations'),
+    value: healthAlerts.value.summary?.overdueVaccinations ?? 0,
+    note: t('preschoolHealthPage.dashboard.overdueVaccinationsNote'),
+  },
+])
+
 const studentRows = computed(() => students.value.map((student) => ({
   ...student,
   avatarUrl: resolveAvatarSource(student.avatarUrl || ''),
@@ -62,7 +97,13 @@ const studentRows = computed(() => students.value.map((student) => ({
 
 async function loadDashboard() {
   try {
-    dashboard.value = await fetchPreschoolDashboard()
+    const [dashboardPayload, healthPayload] = await Promise.all([
+      fetchPreschoolDashboard(),
+      fetchHealthDashboardSummary(),
+    ])
+
+    dashboard.value = dashboardPayload
+    healthAlerts.value = healthPayload
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolHealthPage.messages.loadFailed')
   }
@@ -167,6 +208,14 @@ onMounted(async () => {
         </article>
       </div>
 
+      <div class="health-dashboard-page__alerts-grid">
+        <article v-for="card in alertCards" :key="card.label" class="health-dashboard-page__alert-card">
+          <p class="health-dashboard-page__alert-card-label">{{ card.label }}</p>
+          <p class="health-dashboard-page__alert-card-value">{{ card.value }}</p>
+          <p class="health-dashboard-page__alert-card-note">{{ card.note }}</p>
+        </article>
+      </div>
+
       <div v-if="errorMessage" class="health-dashboard-page__state health-dashboard-page__state--error">
         {{ errorMessage }}
       </div>
@@ -254,6 +303,26 @@ onMounted(async () => {
             </div>
 
             <div class="health-dashboard-page__section">
+              <h4 class="health-dashboard-page__subheading">{{ t('preschoolHealthPage.dashboard.unresolvedCriticalItems') }}</h4>
+              <div v-if="!healthAlerts.unresolvedCriticalItems.length" class="health-dashboard-page__empty">
+                {{ t('preschoolHealthPage.messages.noCriticalItems') }}
+              </div>
+              <div v-else class="health-dashboard-page__alert-list">
+                <article v-for="item in healthAlerts.unresolvedCriticalItems.slice(0, 5)" :key="item.id" class="health-dashboard-page__alert">
+                  <div>
+                    <p class="health-dashboard-page__alert-title">{{ item.title || item.incident_type || item.allergy_name || t('preschoolHealthPage.summary.alert') }}</p>
+                    <p class="health-dashboard-page__alert-meta">
+                      {{ item.message || item.notes || item.status || '-' }}
+                    </p>
+                  </div>
+                  <span class="health-dashboard-page__alert-badge" :data-severity="item.severity || 'high'">
+                    {{ t(`preschoolHealthPage.severity.${item.severity || 'high'}`) }}
+                  </span>
+                </article>
+              </div>
+            </div>
+
+            <div class="health-dashboard-page__section">
               <h4 class="health-dashboard-page__subheading">{{ t('preschoolHealthPage.dashboard.recentAlerts') }}</h4>
               <div v-if="selectedStudentSummary.incidents.length === 0" class="health-dashboard-page__empty">
                 {{ t('preschoolHealthPage.messages.noAlerts') }}
@@ -337,6 +406,12 @@ onMounted(async () => {
   gap: 0.85rem;
 }
 
+.health-dashboard-page__alerts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
 .health-dashboard-page__stat {
   padding: 1rem 1.05rem;
 }
@@ -358,6 +433,36 @@ onMounted(async () => {
 }
 
 .health-dashboard-page__stat-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.health-dashboard-page__alert-card {
+  padding: 1rem 1.05rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 1.25rem;
+  background: #fff;
+  box-shadow: 0 18px 36px -30px rgba(15, 23, 42, 0.45);
+}
+
+.health-dashboard-page__alert-card-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.health-dashboard-page__alert-card-value {
+  margin: 0.35rem 0 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #b91c1c;
+}
+
+.health-dashboard-page__alert-card-note {
   margin: 0.2rem 0 0;
   font-size: 0.85rem;
   color: #64748b;
@@ -476,6 +581,16 @@ onMounted(async () => {
   font-weight: 800;
 }
 
+.health-dashboard-page__alert-badge[data-severity='critical'] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.health-dashboard-page__alert-badge[data-severity='high'] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .health-dashboard-page__section {
   display: flex;
   flex-direction: column;
@@ -539,7 +654,8 @@ onMounted(async () => {
 
 @media (max-width: 1024px) {
   .health-dashboard-page__workspace,
-  .health-dashboard-page__grid {
+  .health-dashboard-page__grid,
+  .health-dashboard-page__alerts-grid {
     grid-template-columns: 1fr;
   }
 }

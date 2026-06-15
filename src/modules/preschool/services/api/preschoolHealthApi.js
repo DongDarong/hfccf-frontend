@@ -47,6 +47,7 @@ function normalizeSummary(summary = {}) {
       highSeverityIncidents: Number(summary.counts?.highSeverityIncidents ?? 0),
       emergencyContacts: Number(summary.counts?.emergencyContacts ?? 0),
       healthChecks: Number(summary.counts?.healthChecks ?? 0),
+      auditLogs: Number(summary.counts?.auditLogs ?? 0),
     },
     primaryEmergencyContact: summary.primaryEmergencyContact || null,
     allergies: Array.isArray(summary.allergies) ? summary.allergies.map(normalizeHealthRecord) : [],
@@ -55,7 +56,40 @@ function normalizeSummary(summary = {}) {
     incidents: Array.isArray(summary.incidents) ? summary.incidents.map(normalizeHealthRecord) : [],
     emergencyContacts: Array.isArray(summary.emergencyContacts) ? summary.emergencyContacts.map(normalizeHealthRecord) : [],
     healthChecks: Array.isArray(summary.healthChecks) ? summary.healthChecks.map(normalizeHealthRecord) : [],
+    auditLogs: Array.isArray(summary.auditLogs) ? summary.auditLogs.map(normalizeAuditLog) : [],
     raw: summary,
+  }
+}
+
+function normalizeAlertSummary(summary = {}) {
+  return {
+    criticalIncidents: Number(summary.criticalIncidents ?? 0),
+    severeAllergies: Number(summary.severeAllergies ?? 0),
+    missingEmergencyContacts: Number(summary.missingEmergencyContacts ?? 0),
+    overdueVaccinations: Number(summary.overdueVaccinations ?? 0),
+    medicationReminders: Number(summary.medicationReminders ?? 0),
+    unresolvedItems: Number(summary.unresolvedItems ?? 0),
+    recentAuditEvents: Number(summary.recentAuditEvents ?? 0),
+    raw: summary,
+  }
+}
+
+function normalizeAuditLog(log = {}) {
+  return {
+    ...log,
+    id: log.id ?? '',
+    studentId: log.studentId ?? log.student_id ?? '',
+    actorUserId: log.actorUserId ?? log.actor_user_id ?? '',
+    action: String(log.action ?? '').trim(),
+    entityType: String(log.entityType ?? log.entity_type ?? '').trim(),
+    entityId: log.entityId ?? log.entity_id ?? '',
+    severity: String(log.severity ?? '').trim(),
+    visibility: String(log.visibility ?? '').trim(),
+    message: log.message ?? log.notes ?? '',
+    beforeState: log.beforeState ?? log.before_state ?? null,
+    afterState: log.afterState ?? log.after_state ?? null,
+    createdAt: log.createdAt ?? log.created_at ?? null,
+    raw: log,
   }
 }
 
@@ -102,6 +136,21 @@ export async function fetchStudentHealthSummary(studentId) {
 
   const response = await http.get(`/preschool/students/${encodeURIComponent(id)}/health/summary`)
   return normalizeSummary(unwrapApiData(response) || {})
+}
+
+export async function fetchStudentHealthAuditLogs(studentId, filters = {}) {
+  const id = resolveId(studentId)
+  if (!id) return { items: [], pagination: null }
+
+  const response = await http.get(`/preschool/students/${encodeURIComponent(id)}/health/audit-logs`, {
+    params: buildQueryParams(filters),
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return {
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeAuditLog) : [],
+    pagination: payload.pagination || null,
+  }
 }
 
 export async function fetchStudentMedicalProfile(studentId) {
@@ -260,4 +309,36 @@ export async function deleteStudentHealthCheck(studentId, checkId) {
   return deleteRecord(studentId, 'check-logs', checkId)
 }
 
-export { normalizeHealthRecord, normalizeSummary }
+export async function fetchHealthAlerts(filters = {}) {
+  const response = await http.get('/preschool/health/alerts', {
+    params: buildQueryParams(filters),
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return {
+    summary: normalizeAlertSummary(payload.summary || {}),
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeHealthRecord) : [],
+    unresolvedCriticalItems: Array.isArray(payload.unresolvedCriticalItems)
+      ? payload.unresolvedCriticalItems.map(normalizeHealthRecord)
+      : [],
+    raw: payload,
+  }
+}
+
+export async function fetchHealthDashboardSummary(filters = {}) {
+  const response = await http.get('/preschool/health/dashboard-summary', {
+    params: buildQueryParams(filters),
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return {
+    summary: normalizeAlertSummary(payload.summary || {}),
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeHealthRecord) : [],
+    unresolvedCriticalItems: Array.isArray(payload.unresolvedCriticalItems)
+      ? payload.unresolvedCriticalItems.map(normalizeHealthRecord)
+      : [],
+    raw: payload,
+  }
+}
+
+export { normalizeHealthRecord, normalizeSummary, normalizeAuditLog, normalizeAlertSummary }

@@ -5,6 +5,7 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useRouter } from 'vue-router'
 import { fetchPreschoolDashboard } from '@/modules/preschool/services/preschoolApi'
+import { fetchHealthDashboardSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
 
 defineOptions({ name: 'DashboardTrackerPage' })
 
@@ -23,12 +24,31 @@ const dashboard = ref({
   recentAttendance: [],
   upcomingClasses: [],
 })
+const healthSummary = ref({
+  summary: {
+    criticalIncidents: 0,
+    severeAllergies: 0,
+    missingEmergencyContacts: 0,
+    overdueVaccinations: 0,
+    medicationReminders: 0,
+    unresolvedItems: 0,
+  },
+  items: [],
+  unresolvedCriticalItems: [],
+})
 const isLoading = ref(false)
 
 async function load() {
   isLoading.value = true
   try {
-    dashboard.value = await fetchPreschoolDashboard()
+    const [dashboardPayload, healthPayload] = await Promise.all([
+      fetchPreschoolDashboard(),
+      fetchHealthDashboardSummary(),
+    ])
+
+    dashboard.value = dashboardPayload
+    healthSummary.value = healthPayload
+    dashboard.value.summary.healthAlerts = healthPayload.summary.unresolvedItems || healthPayload.summary.criticalIncidents || 0
   } finally {
     isLoading.value = false
   }
@@ -272,6 +292,35 @@ onMounted(load)
                   </div>
                   <div class="dashboard-tracker__class-students">{{ cls.studentCount }} students</div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-tracker__row dashboard-tracker__row--full">
+          <div class="dashboard-tracker__card">
+            <div class="dashboard-tracker__card-header">
+              <h3 class="dashboard-tracker__card-title">🩺 Health Alerts</h3>
+              <span class="dashboard-tracker__card-count">{{ healthSummary.summary.unresolvedItems }} active alerts</span>
+            </div>
+            <div class="dashboard-tracker__card-body">
+              <div class="dashboard-tracker__health-grid">
+                <article class="dashboard-tracker__health-card">
+                  <p>Critical incidents</p>
+                  <strong>{{ healthSummary.summary.criticalIncidents }}</strong>
+                </article>
+                <article class="dashboard-tracker__health-card">
+                  <p>Severe allergies</p>
+                  <strong>{{ healthSummary.summary.severeAllergies }}</strong>
+                </article>
+                <article class="dashboard-tracker__health-card">
+                  <p>Missing contacts</p>
+                  <strong>{{ healthSummary.summary.missingEmergencyContacts }}</strong>
+                </article>
+                <article class="dashboard-tracker__health-card">
+                  <p>Overdue vaccinations</p>
+                  <strong>{{ healthSummary.summary.overdueVaccinations }}</strong>
+                </article>
               </div>
             </div>
           </div>
@@ -705,6 +754,35 @@ onMounted(load)
   line-height: 1.4;
 }
 
+.dashboard-tracker__health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.dashboard-tracker__health-card {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dashboard-tracker__health-card p {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+}
+
+.dashboard-tracker__health-card strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.4rem;
+  color: #b91c1c;
+}
+
 @media (max-width: 1024px) {
   .dashboard-tracker__module-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -740,6 +818,10 @@ onMounted(load)
     grid-template-columns: 1fr;
   }
 
+  .dashboard-tracker__health-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .dashboard-tracker__stat-icon {
     font-size: 2rem;
   }
@@ -751,6 +833,10 @@ onMounted(load)
 
 @media (max-width: 480px) {
   .dashboard-tracker__row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-tracker__health-grid {
     grid-template-columns: 1fr;
   }
 }
