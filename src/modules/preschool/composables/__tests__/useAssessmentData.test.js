@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAssessmentData } from '../useAssessmentData'
-import * as assessmentApi from '../../services/api/preschoolStudentAssessmentApi'
+import * as assessmentApi from '../../services/api/preschoolAssessmentApi'
 import * as preschoolApi from '../../services/preschoolApi'
 
-vi.mock('../../services/api/preschoolStudentAssessmentApi')
+vi.mock('../../services/api/preschoolAssessmentApi')
 vi.mock('../../services/preschoolApi')
 
 describe('useAssessmentData', () => {
@@ -130,7 +130,7 @@ describe('useAssessmentData', () => {
     })
 
     it('should not load assessments without student ID', async () => {
-      const { loadAssessments, assessments } = useAssessmentData()
+      const { loadAssessments } = useAssessmentData()
 
       await loadAssessments(null)
 

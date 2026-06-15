@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useAssessmentMutations } from '../useAssessmentMutations'
-import * as assessmentApi from '../../services/api/preschoolStudentAssessmentApi'
 
-vi.mock('../../services/api/preschoolStudentAssessmentApi')
+vi.mock('../../services/api/preschoolAssessmentApi')
 vi.mock('../../stores/assessmentStore', () => ({
   useAssessmentStore: () => ({
     saveAssessment: vi.fn(),

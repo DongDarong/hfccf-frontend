@@ -5,6 +5,10 @@ import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '../admin/pages/assessments/
 /**
  * useAssessmentMutations - Composable for handling assessment save/update/delete operations
  *
+ * This composable is intentionally paired with the canonical Preschool
+ * assessment store so mutations do not bypass the shared backend contract.
+ * Keep new assessment write paths here instead of adding per-page HTTP calls.
+ *
  * Responsibilities:
  * - Validate assessment data before submission
  * - Save (create/update) assessments
@@ -135,7 +139,7 @@ export function useAssessmentMutations() {
   /**
    * Check if assessment can be archived
    */
-  function canArchive(assessment) {
+  function canArchive(_assessment) {
     return true // Can archive any assessment
   }
 
@@ -160,13 +164,9 @@ export function useAssessmentMutations() {
       throw new Error('Student ID is required')
     }
 
-    try {
-      const result = await store.saveAssessment(studentId, assessmentData)
-      validationErrors.value = {} // Clear on success
-      return result
-    } catch (err) {
-      throw err
-    }
+    const result = await store.saveAssessment(studentId, assessmentData)
+    validationErrors.value = {} // Clear on success
+    return result
   }
 
   /**
@@ -192,13 +192,9 @@ export function useAssessmentMutations() {
       throw new Error('This assessment cannot be edited as it is already finalized')
     }
 
-    try {
-      const result = await store.updateAssessment(assessmentId, assessmentData)
-      validationErrors.value = {} // Clear on success
-      return result
-    } catch (err) {
-      throw err
-    }
+    const result = await store.updateAssessment(assessmentId, assessmentData)
+    validationErrors.value = {} // Clear on success
+    return result
   }
 
   /**
@@ -230,11 +226,7 @@ export function useAssessmentMutations() {
       throw new Error('This assessment cannot be finalized')
     }
 
-    try {
-      return await store.finalize(assessmentId)
-    } catch (err) {
-      throw err
-    }
+    return await store.finalize(assessmentId)
   }
 
   /**
@@ -252,11 +244,7 @@ export function useAssessmentMutations() {
       throw new Error('This assessment cannot be archived')
     }
 
-    try {
-      return await store.archive(assessmentId)
-    } catch (err) {
-      throw err
-    }
+    return await store.archive(assessmentId)
   }
 
   /**

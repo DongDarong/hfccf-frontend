@@ -1,9 +1,13 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useAssessmentStore } from '../stores/assessmentStore'
 import { fetchPreschoolStudents, fetchPreschoolClasses } from '../services/preschoolApi'
 
 /**
  * useAssessmentData - Composable for fetching and managing assessment data
+ *
+ * This is the canonical data-loading companion to the Preschool assessment
+ * store. Pages should read from this stack instead of creating new local
+ * copies of assessment lookup state.
  *
  * Responsibilities:
  * - Load assessments for a student

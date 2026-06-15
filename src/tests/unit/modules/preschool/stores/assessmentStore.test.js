@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAssessmentStore } from '@/modules/preschool/stores/assessmentStore'
-import * as assessmentApi from '@/modules/preschool/services/api/preschoolStudentAssessmentApi'
 
 const mockFetchStudentAssessments = vi.fn()
 const mockFetchAssessmentCategories = vi.fn()
@@ -29,10 +28,13 @@ const mockNormalizeCategory = vi.fn((category) => ({
 }))
 const mockPrepareAssessmentData = vi.fn((data) => data)
 
-vi.mock('@/modules/preschool/services/api/preschoolStudentAssessmentApi', () => ({
+vi.mock('@/modules/preschool/services/api/preschoolAssessmentApi', () => ({
   fetchStudentAssessments: (...args) => mockFetchStudentAssessments(...args),
   fetchAssessmentCategories: (...args) => mockFetchAssessmentCategories(...args),
   createStudentAssessment: (...args) => mockCreateStudentAssessment(...args),
+  updateAssessment: (...args) => mockUpdateStudentAssessment(...args),
+  finalizeAssessment: (...args) => mockFinalizeStudentAssessment(...args),
+  archiveAssessment: (...args) => mockArchiveStudentAssessment(...args),
   updateStudentAssessment: (...args) => mockUpdateStudentAssessment(...args),
   finalizeStudentAssessment: (...args) => mockFinalizeStudentAssessment(...args),
   archiveStudentAssessment: (...args) => mockArchiveStudentAssessment(...args),

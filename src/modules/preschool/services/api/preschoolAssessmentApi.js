@@ -1,5 +1,9 @@
-// Keep Preschool assessment HTTP calls in one module so the pages only deal
-// with normalized data and the backend contract stays easy to change safely.
+// Canonical Preschool assessment API.
+//
+// This module owns the real HTTP contract for Preschool assessments and
+// progress summaries. Legacy student-assessment imports stay available through
+// a compatibility wrapper so older call sites can migrate without changing the
+// visible workflow.
 import http from '@/services/http'
 import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 import { normalizePerPage } from '@/modules/sport/services/api/sportApiUtils'
@@ -8,6 +12,12 @@ import {
   normalizeAssessmentCategory,
   normalizeProgressSummary,
 } from './preschoolAssessmentMappers'
+
+export {
+  normalizeAssessment,
+  normalizeAssessmentCategory,
+  normalizeProgressSummary,
+}
 
 function normalizeAssessmentListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
   const items = unwrapApiItems(response)
@@ -62,25 +72,47 @@ export async function createStudentAssessment(studentId, payload = {}) {
   return normalizeAssessment(data.assessment || data)
 }
 
-export async function updateAssessment(assessmentId, payload = {}) {
+export async function fetchAssessment(assessmentId, options = {}) {
+  const response = await http.get(`/preschool/assessments/${encodeURIComponent(assessmentId)}`, {
+    signal: options.signal,
+  })
+  const data = unwrapApiData(response) || {}
+
+  return normalizeAssessment(data.assessment || data)
+}
+
+export async function updateStudentAssessment(assessmentId, payload = {}) {
   const response = await http.put(`/preschool/assessments/${encodeURIComponent(assessmentId)}`, payload)
   const data = unwrapApiData(response) || {}
 
   return normalizeAssessment(data.assessment || data)
 }
 
-export async function finalizeAssessment(assessmentId) {
+export async function finalizeStudentAssessment(assessmentId) {
   const response = await http.post(`/preschool/assessments/${encodeURIComponent(assessmentId)}/finalize`)
   const data = unwrapApiData(response) || {}
 
   return normalizeAssessment(data.assessment || data)
 }
 
-export async function archiveAssessment(assessmentId) {
+export async function archiveStudentAssessment(assessmentId) {
   const response = await http.post(`/preschool/assessments/${encodeURIComponent(assessmentId)}/archive`)
   const data = unwrapApiData(response) || {}
 
   return normalizeAssessment(data.assessment || data)
+}
+
+export function prepareAssessmentData(data) {
+  return {
+    class_id: data.classId,
+    category_id: data.categoryId,
+    period_label: data.periodLabel,
+    assessment_date: data.assessmentDate,
+    score: data.score,
+    rating: data.rating,
+    observation: data.observation,
+    teacher_comment: data.teacherComment,
+  }
 }
 
 export async function fetchProgressSummary(studentId, options = {}) {
@@ -90,3 +122,15 @@ export async function fetchProgressSummary(studentId, options = {}) {
 
   return normalizeProgressSummary(unwrapApiData(response) || {})
 }
+
+// ---------------------------------------------------------------------------
+// Compatibility aliases
+// ---------------------------------------------------------------------------
+//
+// The older assessment store/composable stack expects the shorter legacy
+// helper names. Keep them here so the canonical module can satisfy both the
+// new code path and compatibility imports during the cleanup phase.
+export const normalizeCategory = normalizeAssessmentCategory
+export const updateAssessment = updateStudentAssessment
+export const finalizeAssessment = finalizeStudentAssessment
+export const archiveAssessment = archiveStudentAssessment

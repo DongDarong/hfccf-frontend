@@ -4,6 +4,9 @@ import { useAssessmentStore } from '../stores/assessmentStore'
 /**
  * useAssessmentReports - Composable for assessment analytics and reporting
  *
+ * Reporting is derived from the canonical Preschool assessment store so the
+ * analytics views stay in sync with the list and builder workflows.
+ *
  * Responsibilities:
  * - Calculate summary statistics
  * - Analyze assessment trends

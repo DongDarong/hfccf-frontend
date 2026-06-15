@@ -1,18 +1,17 @@
-// Keep assessment loading and mutations in one composable so the Preschool
-// pages stay thin and do not drift back into direct HTTP calls.
+// Legacy compatibility wrapper.
+//
+// The canonical Preschool assessment implementation now lives in
+// `assessmentStore.js` plus the newer data/filter/mutation/report composables.
+// Keep this facade around only so older teacher/admin surfaces can migrate
+// without reintroducing a second assessment state layer.
 import { computed, ref } from 'vue'
 import { getCurrentUser } from '@/services/auth'
 import { useLanguage } from '@/composables/useLanguage'
+import { useAssessmentStore } from '@/modules/preschool/stores/assessmentStore'
+import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
+import { useAssessmentReports } from '@/modules/preschool/composables/useAssessmentReports'
 import {
-  fetchAssessmentCategories,
-  fetchStudentAssessments,
-  createStudentAssessment,
-  updateAssessment,
-  finalizeAssessment,
-  archiveAssessment,
-} from '@/modules/preschool/services/api/preschoolAssessmentApi'
-import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
-import {
+  fetchAcademicLifecycle,
   fetchMyPreschoolClasses,
   fetchMyPreschoolStudents,
   fetchPreschoolClasses,
@@ -40,6 +39,10 @@ function buildClassOptions(items = []) {
 }
 
 export function usePreschoolAssessments() {
+  const store = useAssessmentStore()
+  const canonicalData = useAssessmentData()
+  const { summaryStats, riskAnalysis, categoryPerformanceArray, highRiskStudents, periodComparison, exportData, getRiskPercentage, getImprovementTrend } = useAssessmentReports()
+
   const currentUser = computed(() => getCurrentUser() || {})
   const isTeacher = computed(() => String(currentUser.value?.role || '') === 'teacher-preschool')
   const { t } = useLanguage()
@@ -47,11 +50,6 @@ export function usePreschoolAssessments() {
   const loading = ref(false)
   const saving = ref(false)
   const errorMessage = ref('')
-  const assessmentItems = ref([])
-  const pagination = ref({ page: 1, perPage: 10, total: 0, totalPages: 1 })
-  const categoryOptions = ref([])
-  const studentOptions = ref([])
-  const classOptions = ref([])
   const lifecycleContext = ref({})
 
   const selectedStudentId = ref('')
@@ -61,9 +59,14 @@ export function usePreschoolAssessments() {
   const searchQuery = ref('')
   const selectedPeriodLabel = ref('')
 
+  const assessmentItems = computed(() => store.assessments)
+  const categoryOptions = computed(() => store.categories)
+  const pagination = computed(() => store.pagination)
+  const studentOptions = ref([])
+  const classOptions = ref([])
+
   async function loadCategories() {
-    const data = await fetchAssessmentCategories()
-    categoryOptions.value = Array.isArray(data) ? data : data?.items || data?.data || []
+    await canonicalData.loadCategories()
   }
 
   async function loadStudents() {
@@ -108,7 +111,7 @@ export function usePreschoolAssessments() {
     errorMessage.value = ''
 
     try {
-      const response = await fetchStudentAssessments(resolvedStudentId, {
+      await store.loadAssessments(resolvedStudentId, {
         page: params.page ?? pagination.value.page ?? 1,
         perPage: params.perPage ?? pagination.value.perPage ?? 10,
         status: params.status ?? selectedStatus.value,
@@ -120,12 +123,8 @@ export function usePreschoolAssessments() {
         sortDirection: params.sortDirection ?? 'desc',
       })
 
-      assessmentItems.value = response.items || []
-      pagination.value = response.pagination || pagination.value
       selectedStudentId.value = resolvedStudentId
     } catch (error) {
-      assessmentItems.value = []
-      pagination.value = { page: 1, perPage: 10, total: 0, totalPages: 1 }
       errorMessage.value = error?.message || 'Failed to load Preschool assessments.'
     } finally {
       loading.value = false
@@ -143,8 +142,8 @@ export function usePreschoolAssessments() {
 
     try {
       const result = assessmentId
-        ? await updateAssessment(assessmentId, payload)
-        : await createStudentAssessment(resolvedStudentId, payload)
+        ? await store.updateAssessment(assessmentId, payload)
+        : await store.saveAssessment(resolvedStudentId, payload)
 
       await loadAssessments(resolvedStudentId)
       return result
@@ -163,7 +162,7 @@ export function usePreschoolAssessments() {
     errorMessage.value = ''
 
     try {
-      const result = await finalizeAssessment(assessmentId)
+      const result = await store.finalize(assessmentId)
       await loadAssessments(selectedStudentId.value)
       return result
     } catch (error) {
@@ -181,7 +180,7 @@ export function usePreschoolAssessments() {
     errorMessage.value = ''
 
     try {
-      const result = await archiveAssessment(assessmentId)
+      const result = await store.archive(assessmentId)
       await loadAssessments(selectedStudentId.value)
       return result
     } catch (error) {
@@ -258,12 +257,16 @@ export function usePreschoolAssessments() {
     archiveAssessmentById,
     categoryOptions,
     classOptions,
-    lifecycleContext,
-    isTermLocked,
-    isReportPeriodLocked,
+    currentUser,
     errorMessage,
     finalizeAssessmentById,
+    getImprovementTrend,
+    getRiskPercentage,
+    highRiskStudents,
+    isReportPeriodLocked,
     isTeacher,
+    isTermLocked,
+    lifecycleContext,
     loadAssessments,
     loadCategories,
     loadClasses,
@@ -271,6 +274,7 @@ export function usePreschoolAssessments() {
     loadStudents,
     loading,
     pagination,
+    riskAnalysis,
     saveAssessment,
     searchQuery,
     selectedCategoryId,
@@ -286,6 +290,10 @@ export function usePreschoolAssessments() {
     setSearchQuery,
     saving,
     studentOptions,
+    summaryStats,
+    categoryPerformanceArray,
+    periodComparison,
+    exportData,
     lockMessage,
   }
 }

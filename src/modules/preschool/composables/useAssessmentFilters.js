@@ -9,6 +9,9 @@ import {
 /**
  * useAssessmentFilters - Composable for managing assessment filters
  *
+ * Filters stay here instead of inside the pages so every assessment surface
+ * reads from the same shared criteria model.
+ *
  * Responsibilities:
  * - Provide reactive filter state
  * - Expose filter-setting functions

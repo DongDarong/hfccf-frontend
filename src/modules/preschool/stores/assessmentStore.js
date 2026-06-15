@@ -4,15 +4,18 @@ import {
   fetchStudentAssessments,
   fetchAssessmentCategories,
   createStudentAssessment,
-  updateStudentAssessment,
-  finalizeStudentAssessment,
-  archiveStudentAssessment,
+  updateAssessment as updateAssessmentApi,
+  finalizeAssessment as finalizeAssessmentApi,
+  archiveAssessment as archiveAssessmentApi,
   normalizeAssessment,
   normalizeCategory,
   prepareAssessmentData,
-} from '../services/api/preschoolStudentAssessmentApi'
+} from '../services/api/preschoolAssessmentApi'
 import { PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS } from '../admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
+// Canonical Preschool assessment state lives here. The pages, filters,
+// mutations, and reporting composables all read from this store so the module
+// does not drift back into duplicate local state or direct HTTP calls.
 export const useAssessmentStore = defineStore('preschoolAssessment', () => {
   // ============================================================================
   // STATE
@@ -266,7 +269,7 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
 
     try {
       const data = prepareAssessmentData(assessmentData)
-      const result = await updateStudentAssessment(assessmentId, data)
+      const result = await updateAssessmentApi(assessmentId, data)
       const normalized = normalizeAssessment(result)
 
       // Update in list
@@ -295,7 +298,7 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
     error.value = null
 
     try {
-      const result = await finalizeStudentAssessment(assessmentId)
+      const result = await finalizeAssessmentApi(assessmentId)
       const normalized = normalizeAssessment(result)
 
       // Update in list
@@ -324,7 +327,7 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
     error.value = null
 
     try {
-      await archiveStudentAssessment(assessmentId)
+      await archiveAssessmentApi(assessmentId)
 
       // Remove from list
       assessments.value = assessments.value.filter(a => a.id !== assessmentId)
