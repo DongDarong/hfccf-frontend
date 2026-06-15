@@ -207,7 +207,7 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.period') }}</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.periodLabel') }}</label>
           <Select
             :model-value="periodFilter"
             :options="periodOptions"

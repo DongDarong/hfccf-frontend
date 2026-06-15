@@ -1,4 +1,6 @@
 <script setup>
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
+
 defineOptions({
   name: 'AssessmentPageHeader',
 })
@@ -17,6 +19,7 @@ defineProps({
 
 <template>
   <header class="space-y-2">
+    <Breadcrumb />
     <h1 class="text-3xl font-bold text-slate-900">
       {{ title }}
     </h1>
