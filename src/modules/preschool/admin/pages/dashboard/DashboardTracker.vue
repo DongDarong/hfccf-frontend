@@ -16,6 +16,7 @@ const dashboard = ref({
     classes: 0,
     teachers: 0,
     attendanceToday: 0,
+    healthAlerts: 0,
     pendingPayments: 0,
     overduePayments: 0,
   },
@@ -69,6 +70,15 @@ const moduleCards = [
     badge: computed(() => dashboard.value.summary.attendanceToday),
     action: () => router.push({ name: 'dashboard-preschool-admin-attendance' }),
     color: '#10b981',
+  },
+  {
+    id: 'health',
+    title: 'Health',
+    description: 'Manage health and medical records',
+    icon: '🩺',
+    badge: computed(() => dashboard.value.summary.healthAlerts),
+    action: () => router.push({ name: 'dashboard-preschool-admin-health' }),
+    color: '#ef4444',
   },
   {
     id: 'forms',

@@ -344,6 +344,15 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
     { labelKey: 'breadcrumb.attendanceIdCard' },
   ],
+  'dashboard-preschool-admin-health': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.healthRecords' },
+  ],
+  'dashboard-preschool-admin-health-student': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.studentHealthProfile' },
+  ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
   'dashboard-preschool-admin-enrollments': [

@@ -92,6 +92,8 @@ export default {
     myStudents: 'សិស្សរបស់ខ្ញុំ',
     mySchedule: 'កាលវិភាគរបស់ខ្ញុំ',
     health: 'សុខភាព',
+    healthRecords: 'កំណត់ត្រាសុខភាព',
+    studentHealthProfile: 'ប្រវត្តិរូបសុខភាពសិស្ស',
     studentProfile: 'ប្រវត្តិរូបសិស្ស',
     auditLogs: 'កំណត់ត្រាសវនកម្ម',
     newForm: 'ទម្រង់ថ្មី',

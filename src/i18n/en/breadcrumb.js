@@ -93,6 +93,8 @@ export default {
     myStudents: 'My Students',
     mySchedule: 'My Schedule',
     health: 'Health',
+    healthRecords: 'Health Records',
+    studentHealthProfile: 'Student Health Profile',
     auditLogs: 'Audit Logs',
     newForm: 'New Form',
     editForm: 'Edit Form',

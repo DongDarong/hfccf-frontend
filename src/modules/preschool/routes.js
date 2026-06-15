@@ -151,6 +151,27 @@ export const preschoolRoutes = [
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceIdCard.vue'),
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
+  // Health and medical records stay under the preschool admin tree so student
+  // identity, enrollment, and clinical-style follow-up remain anchored to the
+  // same student record instead of branching into a separate module shell.
+  defineAppRoute({
+    path: '/module/preschool-admin/health',
+    name: 'dashboard-preschool-admin-health',
+    component: () => import('@/modules/preschool/admin/pages/health/HealthRecordsDashboard.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/health/students/:id',
+    name: 'dashboard-preschool-admin-health-student',
+    component: () => import('@/modules/preschool/admin/pages/health/StudentHealthProfile.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.
   defineAppRoute({

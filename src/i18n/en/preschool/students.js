@@ -82,6 +82,7 @@ export default {
     subtitle: 'View student identity, guardian contact, and class enrollment details.',
     actions: {
       back: 'Back to Students',
+      health: 'Health Records',
     },
     hero: {
       eyebrow: 'Student Profile',
