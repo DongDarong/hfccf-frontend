@@ -7,7 +7,7 @@ import Button from '@/components/buttons/Button.vue'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import { useAssessmentReports } from '@/modules/preschool/composables/useAssessmentReports'
 import StatCard from '@/modules/preschool/components/assessment-summary/StatCard.vue'
-import AssessmentWorkspaceCard from './components/AssessmentWorkspaceCard.vue'
+import AssessmentWorkspaceCard from '@/modules/preschool/admin/components/assessment/AssessmentWorkspaceCard.vue'
 import {
   PRESCHOOL_ASSESSMENT_NAV_CARDS,
   PRESCHOOL_ASSESSMENT_PAGE_FLOW,
