@@ -56,13 +56,6 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-assessments",
-          "routeName": "assessment-tracker",
-          "labelKey": "nav.items.preschoolAssessments",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
           "id": "preschool-progress-summary",
           "routeName": "dashboard-preschool-progress-summary",
           "labelKey": "nav.items.preschoolProgressSummary",
