@@ -6,7 +6,15 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolDashboard, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
-import { fetchHealthDashboardSummary, fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
+import {
+  acknowledgeHealthAlert,
+  assignHealthAlert,
+  closeHealthAlert,
+  fetchHealthDashboardSummary,
+  fetchStudentHealthSummary,
+  resolveHealthAlert,
+  updateHealthAlertStatus,
+} from '@/modules/preschool/services/api/preschoolHealthApi'
 import { resolveAvatarSource } from '@/utils/avatar'
 
 defineOptions({
@@ -39,9 +47,15 @@ const students = ref([])
 const selectedStudentId = ref('')
 const selectedStudentSummary = ref(null)
 const search = ref('')
+const alertFilters = ref({
+  severity: 'all',
+  status: 'all',
+  assigned_to: 'all',
+})
 const loading = ref(false)
 const summaryLoading = ref(false)
 const errorMessage = ref('')
+const alertActionMessage = ref('')
 
 const selectedStudent = computed(() => students.value.find((student) => String(student.id) === String(selectedStudentId.value)) || null)
 
@@ -86,6 +100,42 @@ const alertCards = computed(() => [
   },
 ])
 
+const alertSummaryCards = computed(() => [
+  {
+    label: t('preschoolHealthPage.alerts.new'),
+    value: healthAlerts.value.summary?.newAlerts ?? 0,
+    note: t('preschoolHealthPage.alerts.newNote'),
+  },
+  {
+    label: t('preschoolHealthPage.alerts.inProgress'),
+    value: healthAlerts.value.summary?.inProgressAlerts ?? 0,
+    note: t('preschoolHealthPage.alerts.inProgressNote'),
+  },
+  {
+    label: t('preschoolHealthPage.alerts.critical'),
+    value: healthAlerts.value.summary?.criticalAlerts ?? 0,
+    note: t('preschoolHealthPage.alerts.criticalNote'),
+  },
+  {
+    label: t('preschoolHealthPage.alerts.resolvedThisWeek'),
+    value: healthAlerts.value.summary?.resolvedThisWeek ?? 0,
+    note: t('preschoolHealthPage.alerts.resolvedThisWeekNote'),
+  },
+])
+
+const alertAssigneeOptions = computed(() => {
+  const options = new Map()
+
+  for (const alert of healthAlerts.value.items || []) {
+    const assigned = alert.assignedTo
+    if (assigned?.id) {
+      options.set(String(assigned.id), assigned.fullName || `${assigned.firstName || ''} ${assigned.lastName || ''}`.trim())
+    }
+  }
+
+  return Array.from(options.entries()).map(([value, label]) => ({ value, label: label || t('common.all') }))
+})
+
 const studentRows = computed(() => students.value.map((student) => ({
   ...student,
   avatarUrl: resolveAvatarSource(student.avatarUrl || ''),
@@ -99,7 +149,7 @@ async function loadDashboard() {
   try {
     const [dashboardPayload, healthPayload] = await Promise.all([
       fetchPreschoolDashboard(),
-      fetchHealthDashboardSummary(),
+      fetchHealthDashboardSummary(alertFilters.value),
     ])
 
     dashboard.value = dashboardPayload
@@ -151,6 +201,74 @@ async function loadSelectedStudentSummary() {
   }
 }
 
+async function refreshHealthAlerts() {
+  await loadDashboard()
+}
+
+async function acknowledgeAlert(alert) {
+  if (!alert?.id) return
+
+  alertActionMessage.value = ''
+  try {
+    await acknowledgeHealthAlert(alert.id)
+    await refreshHealthAlerts()
+  } catch (error) {
+    alertActionMessage.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
+  }
+}
+
+async function assignAlert(alert, assignedToUserId) {
+  if (!alert?.id) return
+
+  alertActionMessage.value = ''
+  try {
+    await assignHealthAlert(alert.id, {
+      assigned_to_user_id: assignedToUserId === 'all' ? null : assignedToUserId,
+    })
+    await refreshHealthAlerts()
+  } catch (error) {
+    alertActionMessage.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
+  }
+}
+
+async function changeAlertStatus(alert, status) {
+  if (!alert?.id) return
+
+  alertActionMessage.value = ''
+  try {
+    await updateHealthAlertStatus(alert.id, { status })
+    await refreshHealthAlerts()
+  } catch (error) {
+    alertActionMessage.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
+  }
+}
+
+async function resolveAlert(alert) {
+  if (!alert?.id) return
+
+  const notes = window.prompt(t('preschoolHealthPage.alerts.resolutionNotesPrompt'), alert.resolutionNotes || '') || ''
+  alertActionMessage.value = ''
+  try {
+    await resolveHealthAlert(alert.id, { resolution_notes: notes })
+    await refreshHealthAlerts()
+  } catch (error) {
+    alertActionMessage.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
+  }
+}
+
+async function closeAlert(alert) {
+  if (!alert?.id) return
+
+  const notes = window.prompt(t('preschoolHealthPage.alerts.closeNotesPrompt'), alert.resolutionNotes || '') || ''
+  alertActionMessage.value = ''
+  try {
+    await closeHealthAlert(alert.id, { resolution_notes: notes })
+    await refreshHealthAlerts()
+  } catch (error) {
+    alertActionMessage.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
+  }
+}
+
 function openStudentProfile(studentId) {
   const id = String(studentId || '').trim()
   if (!id) return
@@ -164,6 +282,10 @@ watch(search, () => {
 watch(selectedStudentId, () => {
   loadSelectedStudentSummary()
 })
+
+watch(alertFilters, () => {
+  loadDashboard()
+}, { deep: true })
 
 onMounted(async () => {
   await Promise.all([
@@ -215,6 +337,95 @@ onMounted(async () => {
           <p class="health-dashboard-page__alert-card-note">{{ card.note }}</p>
         </article>
       </div>
+
+      <section class="health-dashboard-page__workflow">
+        <div class="health-dashboard-page__workflow-header">
+          <div>
+            <p class="health-dashboard-page__section-eyebrow">{{ t('preschoolHealthPage.alerts.eyebrow') }}</p>
+            <h3 class="health-dashboard-page__section-title">{{ t('preschoolHealthPage.alerts.title') }}</h3>
+          </div>
+          <div class="health-dashboard-page__filters">
+            <select v-model="alertFilters.status" class="health-dashboard-page__filter">
+              <option value="all">{{ t('preschoolHealthPage.alerts.filterStatusLabel') }}</option>
+              <option value="new">{{ t('preschoolHealthPage.alertStatuses.new') }}</option>
+              <option value="acknowledged">{{ t('preschoolHealthPage.alertStatuses.acknowledged') }}</option>
+              <option value="in_progress">{{ t('preschoolHealthPage.alertStatuses.inProgress') }}</option>
+              <option value="resolved">{{ t('preschoolHealthPage.alertStatuses.resolved') }}</option>
+              <option value="closed">{{ t('preschoolHealthPage.alertStatuses.closed') }}</option>
+            </select>
+            <select v-model="alertFilters.severity" class="health-dashboard-page__filter">
+              <option value="all">{{ t('preschoolHealthPage.alerts.filterSeverityLabel') }}</option>
+              <option value="critical">{{ t('preschoolHealthPage.severity.critical') }}</option>
+              <option value="high">{{ t('preschoolHealthPage.severity.high') }}</option>
+              <option value="medium">{{ t('preschoolHealthPage.severity.medium') }}</option>
+              <option value="low">{{ t('preschoolHealthPage.severity.low') }}</option>
+            </select>
+            <select v-model="alertFilters.assigned_to" class="health-dashboard-page__filter">
+              <option value="all">{{ t('preschoolHealthPage.alerts.filterAssigneeLabel') }}</option>
+              <option v-for="option in alertAssigneeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div v-if="alertActionMessage" class="health-dashboard-page__state health-dashboard-page__state--error">
+          {{ alertActionMessage }}
+        </div>
+
+        <div class="health-dashboard-page__alerts-grid health-dashboard-page__alerts-grid--workflow">
+          <article v-for="card in alertSummaryCards" :key="card.label" class="health-dashboard-page__alert-card health-dashboard-page__alert-card--summary">
+            <p class="health-dashboard-page__alert-card-label">{{ card.label }}</p>
+            <p class="health-dashboard-page__alert-card-value">{{ card.value }}</p>
+            <p class="health-dashboard-page__alert-card-note">{{ card.note }}</p>
+          </article>
+        </div>
+
+        <div v-if="!healthAlerts.items.length" class="health-dashboard-page__empty">
+          {{ t('preschoolHealthPage.alerts.emptyState') }}
+        </div>
+        <div v-else class="health-dashboard-page__alert-workflow-list">
+          <article v-for="alert in healthAlerts.items" :key="alert.id" class="health-dashboard-page__alert-workflow-card">
+            <div class="health-dashboard-page__alert-workflow-top">
+              <div>
+                <p class="health-dashboard-page__alert-workflow-title">{{ alert.title }}</p>
+                <p class="health-dashboard-page__alert-workflow-meta">
+                  {{ alert.studentName || alert.studentCode || '-' }} · {{ alert.description || t('preschoolHealthPage.alerts.noDescription') }}
+                </p>
+              </div>
+              <div class="health-dashboard-page__alert-workflow-badges">
+                <span class="health-dashboard-page__alert-badge" :data-severity="alert.severity || 'high'">
+                  {{ t(`preschoolHealthPage.severity.${alert.severity || 'high'}`) }}
+                </span>
+                <span class="health-dashboard-page__alert-badge" :data-status="alert.status || 'new'">
+                  {{ t(`preschoolHealthPage.alertStatuses.${alert.status || 'new'}`) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="health-dashboard-page__alert-workflow-meta-row">
+              <span>{{ t('preschoolHealthPage.alerts.assignedTo') }}: {{ alert.assignedTo?.fullName || t('preschoolHealthPage.alerts.unassigned') }}</span>
+              <span>{{ t('preschoolHealthPage.alerts.source') }}: {{ alert.sourceType || '-' }}</span>
+              <span>{{ t('preschoolHealthPage.alerts.updatedAt') }}: {{ alert.updatedAt || alert.createdAt || '-' }}</span>
+            </div>
+
+            <div class="health-dashboard-page__alert-workflow-actions">
+              <select
+                :value="alert.assignedTo?.id || 'all'"
+                class="health-dashboard-page__filter"
+                @change="assignAlert(alert, $event.target.value)"
+              >
+                <option value="all">{{ t('preschoolHealthPage.alerts.unassigned') }}</option>
+                <option v-for="option in alertAssigneeOptions" :key="`assign-${alert.id}-${option.value}`" :value="option.value" :disabled="option.value === 'all'">
+                  {{ option.label }}
+                </option>
+              </select>
+              <Button type="button" variant="secondary" size="sm" rounded="xl" :label="t('preschoolHealthPage.alerts.acknowledge')" @click="acknowledgeAlert(alert)" />
+              <Button type="button" variant="secondary" size="sm" rounded="xl" :label="t('preschoolHealthPage.alerts.inProgress')" @click="changeAlertStatus(alert, 'in_progress')" />
+              <Button type="button" variant="secondary" size="sm" rounded="xl" :label="t('preschoolHealthPage.alerts.resolve')" @click="resolveAlert(alert)" />
+              <Button type="button" variant="secondary" size="sm" rounded="xl" :label="t('preschoolHealthPage.alerts.close')" @click="closeAlert(alert)" />
+            </div>
+          </article>
+        </div>
+      </section>
 
       <div v-if="errorMessage" class="health-dashboard-page__state health-dashboard-page__state--error">
         {{ errorMessage }}
@@ -412,6 +623,10 @@ onMounted(async () => {
   gap: 0.85rem;
 }
 
+.health-dashboard-page__alerts-grid--workflow {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .health-dashboard-page__stat {
   padding: 1rem 1.05rem;
 }
@@ -466,6 +681,89 @@ onMounted(async () => {
   margin: 0.2rem 0 0;
   font-size: 0.85rem;
   color: #64748b;
+}
+
+.health-dashboard-page__workflow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 1.25rem;
+  background: #fff;
+  box-shadow: 0 18px 36px -30px rgba(15, 23, 42, 0.45);
+}
+
+.health-dashboard-page__workflow-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.health-dashboard-page__filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.health-dashboard-page__filter {
+  min-width: 11rem;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.95rem;
+  background: #f8fafc;
+  color: #0f172a;
+  font: inherit;
+}
+
+.health-dashboard-page__alert-workflow-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.health-dashboard-page__alert-workflow-card {
+  padding: 1rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.health-dashboard-page__alert-workflow-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.health-dashboard-page__alert-workflow-title {
+  margin: 0;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.health-dashboard-page__alert-workflow-meta {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+}
+
+.health-dashboard-page__alert-workflow-badges,
+.health-dashboard-page__alert-workflow-actions,
+.health-dashboard-page__alert-workflow-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.health-dashboard-page__alert-workflow-meta-row {
+  margin-top: 0.75rem;
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.health-dashboard-page__alert-workflow-actions {
+  margin-top: 0.85rem;
+  align-items: center;
 }
 
 .health-dashboard-page__workspace {

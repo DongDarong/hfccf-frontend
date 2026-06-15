@@ -74,6 +74,29 @@ function normalizeAlertSummary(summary = {}) {
   }
 }
 
+function normalizeAlertRecord(alert = {}) {
+  return {
+    ...normalizeHealthRecord(alert),
+    studentName: alert.studentName ?? alert.student_name ?? '',
+    studentPublicId: alert.studentPublicId ?? alert.student_public_id ?? '',
+    studentCode: alert.studentCode ?? alert.student_code ?? '',
+    studentType: alert.studentType ?? alert.student_type ?? '',
+    alertType: alert.alertType ?? alert.alert_type ?? '',
+    title: alert.title ?? '',
+    description: alert.description ?? '',
+    sourceType: alert.sourceType ?? alert.source_type ?? '',
+    sourceId: alert.sourceId ?? alert.source_id ?? '',
+    assignedTo: alert.assignedTo ?? alert.assigned_to ?? null,
+    acknowledgedBy: alert.acknowledgedBy ?? alert.acknowledged_by ?? null,
+    resolvedBy: alert.resolvedBy ?? alert.resolved_by ?? null,
+    closedBy: alert.closedBy ?? alert.closed_by ?? null,
+    acknowledgedAt: alert.acknowledgedAt ?? alert.acknowledged_at ?? null,
+    resolvedAt: alert.resolvedAt ?? alert.resolved_at ?? null,
+    closedAt: alert.closedAt ?? alert.closed_at ?? null,
+    resolutionNotes: alert.resolutionNotes ?? alert.resolution_notes ?? '',
+  }
+}
+
 function normalizeAuditLog(log = {}) {
   return {
     ...log,
@@ -150,6 +173,40 @@ export async function fetchStudentHealthAuditLogs(studentId, filters = {}) {
   return {
     items: Array.isArray(payload.items) ? payload.items.map(normalizeAuditLog) : [],
     pagination: payload.pagination || null,
+  }
+}
+
+export async function fetchHealthAlertDetails(alertId) {
+  const id = resolveId(alertId)
+  if (!id) return null
+
+  const response = await http.get(`/preschool/health/alerts/${encodeURIComponent(id)}`)
+  const payload = unwrapApiData(response) || {}
+  return {
+    alert: payload.alert ? normalizeAlertRecord(payload.alert) : null,
+    auditLogs: Array.isArray(payload.auditLogs) ? payload.auditLogs.map(normalizeAuditLog) : [],
+    raw: payload,
+  }
+}
+
+export async function fetchStudentHealthAlerts(studentId, filters = {}) {
+  const id = resolveId(studentId)
+  if (!id) return { summary: normalizeAlertSummary(), items: [], unresolvedCriticalItems: [], raw: {} }
+
+  const response = await http.get(`/preschool/students/${encodeURIComponent(id)}/health/alerts`, {
+    params: buildQueryParams(filters),
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return {
+    summary: normalizeAlertSummary(payload.summary || {}),
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeAlertRecord) : [],
+    unresolvedCriticalItems: Array.isArray(payload.unresolvedCriticalItems)
+      ? payload.unresolvedCriticalItems.map(normalizeAlertRecord)
+      : [],
+    alertDetails: Array.isArray(payload.alertDetails) ? payload.alertDetails.map(normalizeAlertRecord) : [],
+    pagination: payload.pagination || null,
+    raw: payload,
   }
 }
 
@@ -317,10 +374,11 @@ export async function fetchHealthAlerts(filters = {}) {
   const payload = unwrapApiData(response) || {}
   return {
     summary: normalizeAlertSummary(payload.summary || {}),
-    items: Array.isArray(payload.items) ? payload.items.map(normalizeHealthRecord) : [],
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeAlertRecord) : [],
     unresolvedCriticalItems: Array.isArray(payload.unresolvedCriticalItems)
-      ? payload.unresolvedCriticalItems.map(normalizeHealthRecord)
+      ? payload.unresolvedCriticalItems.map(normalizeAlertRecord)
       : [],
+    pagination: payload.pagination || null,
     raw: payload,
   }
 }
@@ -333,12 +391,43 @@ export async function fetchHealthDashboardSummary(filters = {}) {
   const payload = unwrapApiData(response) || {}
   return {
     summary: normalizeAlertSummary(payload.summary || {}),
-    items: Array.isArray(payload.items) ? payload.items.map(normalizeHealthRecord) : [],
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeAlertRecord) : [],
     unresolvedCriticalItems: Array.isArray(payload.unresolvedCriticalItems)
-      ? payload.unresolvedCriticalItems.map(normalizeHealthRecord)
+      ? payload.unresolvedCriticalItems.map(normalizeAlertRecord)
       : [],
     raw: payload,
   }
 }
 
-export { normalizeHealthRecord, normalizeSummary, normalizeAuditLog, normalizeAlertSummary }
+async function mutateHealthAlert(alertId, action, payload = {}) {
+  const id = resolveId(alertId)
+  if (!id) {
+    throw new Error('Alert id is required.')
+  }
+
+  const response = await http.post(`/preschool/health/alerts/${encodeURIComponent(id)}/${action}`, payload)
+  const data = unwrapApiData(response) || {}
+  return data.alert ? normalizeAlertRecord(data.alert) : null
+}
+
+export async function acknowledgeHealthAlert(alertId, payload = {}) {
+  return mutateHealthAlert(alertId, 'acknowledge', payload)
+}
+
+export async function assignHealthAlert(alertId, payload = {}) {
+  return mutateHealthAlert(alertId, 'assign', payload)
+}
+
+export async function updateHealthAlertStatus(alertId, payload = {}) {
+  return mutateHealthAlert(alertId, 'status', payload)
+}
+
+export async function resolveHealthAlert(alertId, payload = {}) {
+  return mutateHealthAlert(alertId, 'resolve', payload)
+}
+
+export async function closeHealthAlert(alertId, payload = {}) {
+  return mutateHealthAlert(alertId, 'close', payload)
+}
+
+export { normalizeHealthRecord, normalizeSummary, normalizeAuditLog, normalizeAlertSummary, normalizeAlertRecord }

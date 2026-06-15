@@ -14,6 +14,7 @@ import {
   deleteStudentHealthMedication,
   deleteStudentHealthVaccination,
   fetchStudentHealthAuditLogs,
+  fetchStudentHealthAlerts,
   fetchStudentHealthAllergies,
   fetchStudentHealthContacts,
   fetchStudentHealthIncidents,
@@ -43,6 +44,20 @@ const router = useRouter()
 
 const student = ref(null)
 const healthSummary = ref(null)
+const healthAlerts = ref({
+  summary: {
+    newAlerts: 0,
+    acknowledgedAlerts: 0,
+    inProgressAlerts: 0,
+    resolvedAlerts: 0,
+    closedAlerts: 0,
+    criticalAlerts: 0,
+    resolvedThisWeek: 0,
+    unresolvedItems: 0,
+  },
+  items: [],
+  unresolvedCriticalItems: [],
+})
 const healthAuditLogs = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
@@ -467,6 +482,24 @@ const summaryCards = computed(() => [
   { label: t('preschoolHealthPage.summary.auditLogs'), value: healthAuditLogs.value.length },
 ])
 
+const alertSummaryCards = computed(() => [
+  { label: t('preschoolHealthPage.alerts.new'), value: healthAlerts.value.summary?.newAlerts ?? 0, note: t('preschoolHealthPage.alerts.newNote') },
+  { label: t('preschoolHealthPage.alerts.inProgress'), value: healthAlerts.value.summary?.inProgressAlerts ?? 0, note: t('preschoolHealthPage.alerts.inProgressNote') },
+  { label: t('preschoolHealthPage.alerts.critical'), value: healthAlerts.value.summary?.criticalAlerts ?? 0, note: t('preschoolHealthPage.alerts.criticalNote') },
+  { label: t('preschoolHealthPage.alerts.resolvedThisWeek'), value: healthAlerts.value.summary?.resolvedThisWeek ?? 0, note: t('preschoolHealthPage.alerts.resolvedThisWeekNote') },
+])
+
+const activeAlerts = computed(() => (healthAlerts.value.items || []).filter((alert) => !['resolved', 'closed'].includes(String(alert.status || '').trim())))
+const resolvedAlerts = computed(() => (healthAlerts.value.items || []).filter((alert) => ['resolved', 'closed'].includes(String(alert.status || '').trim())).slice(0, 6))
+const assignedStaffNames = computed(() => {
+  const names = new Set()
+  activeAlerts.value.forEach((alert) => {
+    const assigned = alert.assignedTo?.fullName || alert.assignedTo?.username || ''
+    if (assigned) names.add(assigned)
+  })
+  return Array.from(names)
+})
+
 const filteredAuditLogs = computed(() => {
   if (auditActionFilter.value === 'all') {
     return healthAuditLogs.value
@@ -538,6 +571,7 @@ async function loadStudent() {
     }
 
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    healthAlerts.value = await fetchStudentHealthAlerts(studentId)
 
     const medicalResponse = await fetchStudentMedicalProfile(studentId)
     setProfileFromHealthPayload(medicalResponse?.medicalProfile || {})
@@ -624,6 +658,7 @@ async function saveMedicalProfile() {
       status: medicalProfile.status,
     })
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    healthAlerts.value = await fetchStudentHealthAlerts(studentId)
     await loadAuditLogs(studentId)
   } catch (error) {
     profileError.value = error?.message || t('preschoolHealthPage.messages.saveFailed')
@@ -649,6 +684,7 @@ async function saveSection(sectionKey) {
     resetSection(sectionKey)
     await loadSection(sectionKey)
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    healthAlerts.value = await fetchStudentHealthAlerts(studentId)
     await loadAuditLogs(studentId)
   } catch (error) {
     state.error = error?.message || t('preschoolHealthPage.messages.saveFailed')
@@ -678,6 +714,7 @@ async function deleteSectionItem(sectionKey, item) {
     }
     await loadSection(sectionKey)
     healthSummary.value = await fetchStudentHealthSummary(studentId)
+    healthAlerts.value = await fetchStudentHealthAlerts(studentId)
     await loadAuditLogs(studentId)
   } catch (error) {
     state.error = error?.message || t('preschoolHealthPage.messages.deleteFailed')
@@ -755,6 +792,91 @@ onMounted(async () => {
               <p class="health-profile-page__card-label">{{ card.label }}</p>
               <p class="health-profile-page__card-value">{{ card.value }}</p>
             </article>
+          </div>
+
+          <div class="health-profile-page__alert-summary">
+            <article v-for="card in alertSummaryCards" :key="card.label" class="health-profile-page__alert-card">
+              <p class="health-profile-page__card-label">{{ card.label }}</p>
+              <p class="health-profile-page__card-value">{{ card.value }}</p>
+              <p class="health-profile-page__card-note">{{ card.note }}</p>
+            </article>
+          </div>
+
+          <div class="health-profile-page__alert-panels">
+            <section class="health-profile-page__panel health-profile-page__panel--alerts">
+              <div class="health-profile-page__medical-header">
+                <div>
+                  <p class="health-profile-page__section-eyebrow">{{ t('preschoolHealthPage.alerts.eyebrow') }}</p>
+                  <h3 class="health-profile-page__section-title">{{ t('preschoolHealthPage.alerts.activeAlerts') }}</h3>
+                </div>
+              </div>
+
+              <div v-if="!activeAlerts.length" class="health-profile-page__state">
+                {{ t('preschoolHealthPage.alerts.noActiveAlerts') }}
+              </div>
+              <div v-else class="health-profile-page__alert-list">
+                <article v-for="alert in activeAlerts" :key="alert.id" class="health-profile-page__alert-item">
+                  <div class="health-profile-page__alert-copy">
+                    <p class="health-profile-page__audit-action">{{ alert.title || t('preschoolHealthPage.summary.alert') }}</p>
+                    <p class="health-profile-page__audit-meta">
+                      {{ alert.description || t('preschoolHealthPage.alerts.noDescription') }}
+                    </p>
+                    <p class="health-profile-page__audit-meta">
+                      {{ t('preschoolHealthPage.alerts.source') }}: {{ alert.sourceType || '-' }}
+                    </p>
+                    <p class="health-profile-page__audit-meta">
+                      {{ t('preschoolHealthPage.alerts.assignedTo') }}:
+                      {{ alert.assignedTo?.fullName || alert.assignedTo?.username || t('preschoolHealthPage.alerts.unassigned') }}
+                    </p>
+                  </div>
+                  <div class="health-profile-page__alert-badges">
+                    <span class="health-profile-page__status-badge" :data-severity="alert.severity || 'medium'">
+                      {{ t(`preschoolHealthPage.severity.${alert.severity || 'medium'}`) }}
+                    </span>
+                    <span class="health-profile-page__status-badge" :data-status="alert.status || 'new'">
+                      {{ t(`preschoolHealthPage.status.${alert.status || 'new'}`) }}
+                    </span>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="health-profile-page__panel health-profile-page__panel--alerts">
+              <div class="health-profile-page__medical-header">
+                <div>
+                  <p class="health-profile-page__section-eyebrow">{{ t('preschoolHealthPage.alerts.resolutionHistory') }}</p>
+                  <h3 class="health-profile-page__section-title">{{ t('preschoolHealthPage.alerts.recentResolutions') }}</h3>
+                </div>
+              </div>
+
+              <div v-if="!resolvedAlerts.length" class="health-profile-page__state">
+                {{ t('preschoolHealthPage.alerts.noRecentResolutions') }}
+              </div>
+              <div v-else class="health-profile-page__alert-list">
+                <article v-for="alert in resolvedAlerts" :key="alert.id" class="health-profile-page__alert-item">
+                  <div class="health-profile-page__alert-copy">
+                    <p class="health-profile-page__audit-action">{{ alert.title || t('preschoolHealthPage.summary.alert') }}</p>
+                    <p class="health-profile-page__audit-meta">
+                      {{ t('preschoolHealthPage.alerts.resolvedBy') }}:
+                      {{ alert.resolvedBy?.fullName || alert.resolvedBy?.username || '-' }}
+                    </p>
+                    <p class="health-profile-page__audit-meta">
+                      {{ alert.resolutionNotes || alert.description || t('preschoolHealthPage.alerts.noDescription') }}
+                    </p>
+                  </div>
+                  <div class="health-profile-page__alert-badges">
+                    <span class="health-profile-page__status-badge" :data-status="alert.status || 'resolved'">
+                      {{ t(`preschoolHealthPage.status.${alert.status || 'resolved'}`) }}
+                    </span>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </div>
+
+          <div v-if="assignedStaffNames.length" class="health-profile-page__assigned-staff">
+            <span class="health-profile-page__assigned-label">{{ t('preschoolHealthPage.alerts.filterAssigneeLabel') }}</span>
+            <span v-for="name in assignedStaffNames" :key="name" class="health-profile-page__assigned-pill">{{ name }}</span>
           </div>
 
           <div class="health-profile-page__medical">
@@ -1098,6 +1220,20 @@ onMounted(async () => {
   gap: 0.75rem;
 }
 
+.health-profile-page__alert-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.health-profile-page__alert-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
 .health-profile-page__card,
 .health-profile-page__medical {
   border-radius: 1.25rem;
@@ -1124,6 +1260,20 @@ onMounted(async () => {
   font-size: 1.6rem;
   font-weight: 800;
   color: #0f172a;
+}
+
+.health-profile-page__alert-card {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid #dbe3ef;
+  background: #fff;
+  box-shadow: 0 16px 32px -26px rgba(15, 23, 42, 0.45);
+}
+
+.health-profile-page__card-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
 }
 
 .health-profile-page__medical {
@@ -1227,6 +1377,60 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.health-profile-page__alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.health-profile-page__alert-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.health-profile-page__alert-copy {
+  min-width: 0;
+}
+
+.health-profile-page__alert-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: flex-start;
+}
+
+.health-profile-page__assigned-staff {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.health-profile-page__assigned-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.health-profile-page__assigned-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .health-profile-page__audit-item {

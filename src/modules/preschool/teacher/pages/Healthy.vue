@@ -68,6 +68,8 @@ const studentRows = computed(() => students.value.map((student) => ({
 })))
 
 const alertCount = computed(() => selectedStudentSummary.value?.counts?.highSeverityIncidents ?? 0)
+const activeAlerts = computed(() => urgentAlerts.value.filter((alert) => !['resolved', 'closed'].includes(String(alert.status || '').trim())))
+const resolvedAlerts = computed(() => urgentAlerts.value.filter((alert) => ['resolved', 'closed'].includes(String(alert.status || '').trim())).slice(0, 5))
 
 async function loadStudents() {
   loadingStudents.value = true
@@ -250,6 +252,17 @@ onMounted(async () => {
                 </article>
               </div>
 
+              <div class="teacher-health-page__alert-summary">
+                <article class="teacher-health-page__summary-card">
+                  <p>{{ t('preschoolHealthPage.alerts.activeAlerts') }}</p>
+                  <strong>{{ activeAlerts.length }}</strong>
+                </article>
+                <article class="teacher-health-page__summary-card">
+                  <p>{{ t('preschoolHealthPage.alerts.critical') }}</p>
+                  <strong>{{ activeAlerts.filter((alert) => ['high', 'critical'].includes(String(alert.severity || '').trim())).length }}</strong>
+                </article>
+              </div>
+
               <section class="teacher-health-page__panel teacher-health-page__panel--alerts">
                 <div class="teacher-health-page__panel-header">
                   <h3>{{ t('preschoolHealthPage.teacher.urgentAlerts') }}</h3>
@@ -262,11 +275,20 @@ onMounted(async () => {
                   <article v-for="alert in urgentAlerts.slice(0, 5)" :key="alert.id" class="teacher-health-page__incident">
                     <div>
                       <p class="teacher-health-page__incident-title">{{ alert.title || alert.incident_type || alert.allergy_name || t('preschoolHealthPage.summary.alert') }}</p>
-                      <p class="teacher-health-page__incident-meta">{{ alert.message || alert.notes || '-' }}</p>
+                      <p class="teacher-health-page__incident-meta">{{ alert.message || alert.notes || alert.description || '-' }}</p>
+                      <p class="teacher-health-page__incident-meta">
+                        {{ t('preschoolHealthPage.alerts.assignedTo') }}:
+                        {{ alert.assignedTo?.fullName || alert.assignedTo?.username || t('preschoolHealthPage.alerts.unassigned') }}
+                      </p>
                     </div>
-                    <span class="teacher-health-page__incident-badge" :data-severity="alert.severity || 'high'">
-                      {{ t(`preschoolHealthPage.severity.${alert.severity || 'high'}`) }}
-                    </span>
+                    <div class="teacher-health-page__incident-badges">
+                      <span class="teacher-health-page__incident-badge" :data-severity="alert.severity || 'high'">
+                        {{ t(`preschoolHealthPage.severity.${alert.severity || 'high'}`) }}
+                      </span>
+                      <span class="teacher-health-page__incident-badge" :data-status="alert.status || 'new'">
+                        {{ t(`preschoolHealthPage.status.${alert.status || 'new'}`) }}
+                      </span>
+                    </div>
                   </article>
                 </div>
               </section>
@@ -296,20 +318,29 @@ onMounted(async () => {
 
                   <section class="teacher-health-page__panel">
                     <div class="teacher-health-page__panel-header">
-                      <h3>{{ t('preschoolHealthPage.teacher.recentAlerts') }}</h3>
+                      <h3>{{ t('preschoolHealthPage.alerts.recentResolutions') }}</h3>
                     </div>
-                    <div v-if="incidents.length === 0" class="teacher-health-page__empty">
-                      {{ t('preschoolHealthPage.messages.noAlerts') }}
+                    <div v-if="resolvedAlerts.length === 0" class="teacher-health-page__empty">
+                      {{ t('preschoolHealthPage.alerts.noRecentResolutions') }}
                     </div>
                     <div v-else class="teacher-health-page__incident-list">
-                      <article v-for="incident in incidents.slice(0, 5)" :key="incident.id" class="teacher-health-page__incident">
+                      <article v-for="incident in resolvedAlerts" :key="incident.id" class="teacher-health-page__incident">
                         <div>
                           <p class="teacher-health-page__incident-title">{{ incident.incident_type || incident.incidentType || incident.name || '-' }}</p>
                           <p class="teacher-health-page__incident-meta">
-                            {{ incident.incident_date || incident.incidentDate || '-' }} - {{ incident.severity || t('preschoolHealthPage.status.unknown') }}
+                            {{ incident.resolutionNotes || incident.description || incident.notes || '-' }}
+                          </p>
+                          <p class="teacher-health-page__incident-meta">
+                            {{ t('preschoolHealthPage.alerts.resolvedBy') }}:
+                            {{ incident.resolvedBy?.fullName || incident.resolvedBy?.username || '-' }}
                           </p>
                         </div>
-                        <span class="teacher-health-page__incident-badge">{{ incident.status || t('preschoolHealthPage.status.recorded') }}</span>
+                        <div class="teacher-health-page__incident-badges">
+                          <span class="teacher-health-page__incident-badge">{{ t(`preschoolHealthPage.status.${incident.status || 'resolved'}`) }}</span>
+                          <span class="teacher-health-page__incident-badge" :data-severity="incident.severity || 'medium'">
+                            {{ t(`preschoolHealthPage.severity.${incident.severity || 'medium'}`) }}
+                          </span>
+                        </div>
                       </article>
                     </div>
                   </section>
@@ -520,6 +551,13 @@ onMounted(async () => {
   margin-bottom: 1rem;
 }
 
+.teacher-health-page__alert-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
 .teacher-health-page__panel--alerts {
   margin-bottom: 1rem;
 }
@@ -613,6 +651,13 @@ onMounted(async () => {
   background: #eef2ff;
   color: #4338ca;
   height: fit-content;
+}
+
+.teacher-health-page__incident-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: flex-start;
 }
 
 .teacher-health-page__incident-badge[data-severity='critical'] {

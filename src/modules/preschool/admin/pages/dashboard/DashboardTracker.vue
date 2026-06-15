@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -26,6 +26,10 @@ const dashboard = ref({
 })
 const healthSummary = ref({
   summary: {
+    newAlerts: 0,
+    inProgressAlerts: 0,
+    criticalAlerts: 0,
+    resolvedThisWeek: 0,
     criticalIncidents: 0,
     severeAllergies: 0,
     missingEmergencyContacts: 0,
@@ -36,14 +40,54 @@ const healthSummary = ref({
   items: [],
   unresolvedCriticalItems: [],
 })
+const healthAlertFilters = ref({
+  severity: 'all',
+  status: 'all',
+  assigned_to: 'all',
+})
 const isLoading = ref(false)
+
+const healthAlertCards = computed(() => [
+  {
+    label: 'New Alerts',
+    value: healthSummary.value.summary?.newAlerts ?? 0,
+    note: 'Alerts waiting for review',
+  },
+  {
+    label: 'In Progress Alerts',
+    value: healthSummary.value.summary?.inProgressAlerts ?? 0,
+    note: 'Alerts currently being handled',
+  },
+  {
+    label: 'Critical Alerts',
+    value: healthSummary.value.summary?.criticalAlerts ?? 0,
+    note: 'Urgent alerts requiring attention',
+  },
+  {
+    label: 'Resolved This Week',
+    value: healthSummary.value.summary?.resolvedThisWeek ?? 0,
+    note: 'Alerts resolved in the last 7 days',
+  },
+])
+
+const healthAlertAssigneeOptions = computed(() => {
+  const options = new Map()
+  for (const alert of healthSummary.value.items || []) {
+    const assigned = alert.assignedTo
+    const assignedId = assigned?.id || alert.assigned_to_user_id || alert.assignedToUserId || ''
+    if (!assignedId) continue
+    const label = assigned?.fullName || assigned?.username || assigned?.firstName || assigned?.lastName || 'Assigned staff'
+    options.set(String(assignedId), { label, value: String(assignedId) })
+  }
+  return [{ label: 'All staff', value: 'all' }, ...options.values()]
+})
 
 async function load() {
   isLoading.value = true
   try {
     const [dashboardPayload, healthPayload] = await Promise.all([
       fetchPreschoolDashboard(),
-      fetchHealthDashboardSummary(),
+      fetchHealthDashboardSummary(healthAlertFilters.value),
     ])
 
     dashboard.value = dashboardPayload
@@ -53,6 +97,10 @@ async function load() {
     isLoading.value = false
   }
 }
+
+watch(healthAlertFilters, () => {
+  load()
+}, { deep: true })
 
 const moduleCards = [
   {
@@ -246,6 +294,44 @@ onMounted(load)
             <div class="dashboard-tracker__card-header">
               <h3 class="dashboard-tracker__card-title">📅 Recent Attendance</h3>
               <span class="dashboard-tracker__card-count">{{ recentActivityCount }} records</span>
+            </div>
+            <div class="dashboard-tracker__health-filters">
+              <label class="dashboard-tracker__health-filter">
+                <span>Severity</span>
+                <select v-model="healthAlertFilters.severity">
+                  <option value="all">All severities</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </label>
+              <label class="dashboard-tracker__health-filter">
+                <span>Status</span>
+                <select v-model="healthAlertFilters.status">
+                  <option value="all">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="acknowledged">Acknowledged</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </label>
+              <label class="dashboard-tracker__health-filter">
+                <span>Assigned staff</span>
+                <select v-model="healthAlertFilters.assigned_to">
+                  <option v-for="option in healthAlertAssigneeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </label>
+            </div>
+            <div class="dashboard-tracker__health-alert-grid">
+              <article v-for="card in healthAlertCards" :key="card.label" class="dashboard-tracker__health-alert-card">
+                <div class="dashboard-tracker__health-alert-label">{{ card.label }}</div>
+                <div class="dashboard-tracker__health-alert-value">{{ card.value }}</div>
+                <div class="dashboard-tracker__health-alert-note">{{ card.note }}</div>
+              </article>
             </div>
             <div class="dashboard-tracker__card-body">
               <div v-if="recentActivityCount === 0" class="dashboard-tracker__empty">
@@ -758,6 +844,74 @@ onMounted(load)
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.85rem;
+}
+
+.dashboard-tracker__health-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 1rem 0 0.75rem;
+}
+
+.dashboard-tracker__health-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dashboard-tracker__health-filter span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.dashboard-tracker__health-filter select {
+  width: 100%;
+  min-height: 2.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.5rem 0.8rem;
+}
+
+.dashboard-tracker__health-alert-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.dashboard-tracker__health-alert-card {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dashboard-tracker__health-alert-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+}
+
+.dashboard-tracker__health-alert-value {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.4rem;
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.dashboard-tracker__health-alert-note {
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .dashboard-tracker__health-card {
