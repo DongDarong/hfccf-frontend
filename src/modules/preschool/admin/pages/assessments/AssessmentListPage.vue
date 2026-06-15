@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -23,6 +24,7 @@ defineOptions({
 const route = useRoute()
 const store = useAssessmentStore()
 const { t } = useLanguage()
+const { isFormOpen, editingAssessment } = storeToRefs(store)
 
 const {
   loadAllLookupData,
@@ -58,9 +60,6 @@ const {
 } = useAssessmentMutations()
 
 const selectedStudentId = ref(route.query.studentId ? Number(route.query.studentId) : null)
-
-const isFormOpen = computed(() => store.isFormOpen)
-const editingAssessment = computed(() => store.editingAssessment)
 const selectedStudent = computed(() => {
   if (!selectedStudentId.value) return null
   return studentOptions.value.find(option => option.value === selectedStudentId.value) || null
