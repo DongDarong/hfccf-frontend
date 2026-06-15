@@ -1,9 +1,13 @@
 <script setup>
+import { computed } from 'vue'
+import StatCard from './StatCard.vue'
+import ProgressIndicator from './ProgressIndicator.vue'
+
 defineOptions({
   name: 'AssessmentSummaryCard',
 })
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -15,12 +19,10 @@ defineProps({
   stats: {
     type: Array,
     required: true,
-    // Expected format: [{ icon, label, value, unit, color }, ...]
   },
   progress: {
     type: Object,
     default: null,
-    // Expected format: { current, total, label, color }
   },
   compact: {
     type: Boolean,
@@ -38,13 +40,11 @@ const gridClass = computed(() => {
 
 <template>
   <div class="rounded-lg border border-gray-200 bg-white p-6">
-    <!-- Header -->
     <div class="mb-6">
       <h3 class="text-lg font-bold text-gray-900">{{ title }}</h3>
       <p v-if="subtitle" class="mt-1 text-sm text-gray-600">{{ subtitle }}</p>
     </div>
 
-    <!-- Progress Bar -->
     <div v-if="progress" class="mb-6">
       <ProgressIndicator
         :current="progress.current"
@@ -54,7 +54,6 @@ const gridClass = computed(() => {
       />
     </div>
 
-    <!-- Stats Grid -->
     <div :class="['grid gap-4', gridClass]">
       <StatCard
         v-for="(stat, index) in stats"
@@ -70,16 +69,3 @@ const gridClass = computed(() => {
     </div>
   </div>
 </template>
-
-<script>
-import StatCard from './StatCard.vue'
-import ProgressIndicator from './ProgressIndicator.vue'
-import { computed } from 'vue'
-
-export default {
-  components: {
-    StatCard,
-    ProgressIndicator,
-  },
-}
-</script>

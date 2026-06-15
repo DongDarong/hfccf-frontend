@@ -3,7 +3,7 @@ defineOptions({
   name: 'AssessmentStatCard',
 })
 
-defineProps({
+const props = defineProps({
   icon: {
     type: String,
     required: true,
@@ -89,21 +89,17 @@ const config = colorConfig[props.color]
     ]"
     @click="clickable && emit('click')"
   >
-    <!-- Icon -->
     <div :class="['mb-3 w-fit rounded-lg p-2', config.iconBg]">
       <span class="text-2xl">{{ icon }}</span>
     </div>
 
-    <!-- Label -->
     <p :class="['text-sm font-medium text-gray-600']">{{ label }}</p>
 
-    <!-- Value -->
     <div class="mt-2 flex items-baseline gap-1">
       <span :class="['text-3xl font-bold', config.textColor]">{{ value }}</span>
       <span v-if="unit" :class="['text-sm text-gray-500']">{{ unit }}</span>
     </div>
 
-    <!-- Trend -->
     <div v-if="trend" :class="['mt-2 flex items-center gap-1 text-xs', trend.positive ? 'text-emerald-600' : 'text-red-600']">
       <span>{{ trend.positive ? '↑' : '↓' }}</span>
       <span>{{ trend.value }} {{ trend.label }}</span>

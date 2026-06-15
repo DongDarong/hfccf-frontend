@@ -5,7 +5,7 @@ defineOptions({
   name: 'AssessmentProgressIndicator',
 })
 
-defineProps({
+const props = defineProps({
   current: {
     type: Number,
     required: true,
@@ -62,7 +62,6 @@ const colors = colorClasses[props.color]
 
 <template>
   <div class="space-y-2">
-    <!-- Header -->
     <div class="flex items-center justify-between">
       <span class="text-sm font-medium text-gray-700">{{ label }}</span>
       <span v-if="showPercentage" :class="['text-sm font-semibold', colors.textColor]">
@@ -73,7 +72,6 @@ const colors = colorClasses[props.color]
       </span>
     </div>
 
-    <!-- Progress Bar -->
     <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200">
       <div
         :class="['h-full transition-all duration-300 ease-out', colors.barColor]"

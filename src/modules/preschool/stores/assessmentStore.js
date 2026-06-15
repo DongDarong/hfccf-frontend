@@ -102,11 +102,11 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
     }
 
     // Date range filter
-    if (filters.value.dateFrom && a.assessmentDate) {
-      result = result.filter(a => new Date(a.assessmentDate) >= new Date(filters.value.dateFrom))
+    if (filters.value.dateFrom) {
+      result = result.filter(a => a.assessmentDate && new Date(a.assessmentDate) >= new Date(filters.value.dateFrom))
     }
-    if (filters.value.dateTo && a.assessmentDate) {
-      result = result.filter(a => new Date(a.assessmentDate) <= new Date(filters.value.dateTo))
+    if (filters.value.dateTo) {
+      result = result.filter(a => a.assessmentDate && new Date(a.assessmentDate) <= new Date(filters.value.dateTo))
     }
 
     return result
