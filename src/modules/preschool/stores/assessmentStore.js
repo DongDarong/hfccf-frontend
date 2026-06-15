@@ -11,7 +11,7 @@ import {
   normalizeCategory,
   prepareAssessmentData,
 } from '../services/api/preschoolStudentAssessmentApi'
-import { PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS } from '../pages/assessments/constants/preschoolAssessmentWorkspace'
+import { PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS } from '../admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 export const useAssessmentStore = defineStore('preschoolAssessment', () => {
   // ============================================================================
@@ -222,7 +222,8 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
 
     try {
       const data = await fetchAssessmentCategories()
-      categories.value = data.map(normalizeCategory).filter(c => c.isActive)
+      const items = Array.isArray(data) ? data : data?.items || data?.data || []
+      categories.value = items.map(normalizeCategory).filter(c => c.isActive)
     } catch (err) {
       error.value = err?.response?.data?.message || err.message || 'Failed to load categories'
       console.error('Load categories error:', err)

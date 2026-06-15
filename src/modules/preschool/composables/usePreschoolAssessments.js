@@ -62,7 +62,8 @@ export function usePreschoolAssessments() {
   const selectedPeriodLabel = ref('')
 
   async function loadCategories() {
-    categoryOptions.value = await fetchAssessmentCategories()
+    const data = await fetchAssessmentCategories()
+    categoryOptions.value = Array.isArray(data) ? data : data?.items || data?.data || []
   }
 
   async function loadStudents() {

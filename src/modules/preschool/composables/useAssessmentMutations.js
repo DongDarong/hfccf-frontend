@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { useAssessmentStore } from '../stores/assessmentStore'
-import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '../pages/assessments/constants/preschoolAssessmentWorkspace'
+import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '../admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 /**
  * useAssessmentMutations - Composable for handling assessment save/update/delete operations

@@ -12,7 +12,7 @@ export const assessmentRoutes = [
   {
     path: 'assessments',
     name: 'preschool-assessment-dashboard',
-    component: () => import('@/modules/preschool/pages/assessments/AssessmentDashboard.vue'),
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentDashboard.vue'),
     meta: {
       requiresAuth: true,
       scopes: ['adminpreschool', 'teacher-preschool'],
@@ -27,7 +27,7 @@ export const assessmentRoutes = [
   {
     path: 'assessments/list',
     name: 'preschool-assessment-list',
-    component: () => import('@/modules/preschool/pages/assessments/AssessmentListPage.vue'),
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentListPage.vue'),
     meta: {
       requiresAuth: true,
       scopes: ['adminpreschool', 'teacher-preschool'],
@@ -43,7 +43,7 @@ export const assessmentRoutes = [
   {
     path: 'assessments/reports',
     name: 'preschool-assessment-reports',
-    component: () => import('@/modules/preschool/pages/assessments/AssessmentReportsPage.vue'),
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentReportsPage.vue'),
     meta: {
       requiresAuth: true,
       scopes: ['adminpreschool', 'teacher-preschool'],
@@ -59,7 +59,7 @@ export const assessmentRoutes = [
   {
     path: 'assessments/settings',
     name: 'preschool-assessment-settings',
-    component: () => import('@/modules/preschool/pages/assessments/AssessmentSettingsPage.vue'),
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentSettingsPage.vue'),
     meta: {
       requiresAuth: true,
       scopes: ['adminpreschool'],

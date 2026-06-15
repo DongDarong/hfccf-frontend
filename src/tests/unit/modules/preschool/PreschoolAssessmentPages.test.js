@@ -1,65 +1,80 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+import { ref } from 'vue'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enCommon from '@/i18n/en/common'
 import enPreschool from '@/i18n/en/preschool'
 import khPreschool from '@/i18n/kh/preschool'
-import StudentAssessments from '@/modules/preschool/admin/pages/assessments/StudentAssessments.vue'
-import AddAssessment from '@/modules/preschool/admin/pages/assessments/AddAssessment.vue'
-import ProgressSummary from '@/modules/preschool/admin/pages/assessments/ProgressSummary.vue'
+import AssessmentDashboard from '@/modules/preschool/admin/pages/assessments/AssessmentDashboard.vue'
+import AssessmentListPage from '@/modules/preschool/admin/pages/assessments/AssessmentListPage.vue'
+import AssessmentReportsPage from '@/modules/preschool/admin/pages/assessments/AssessmentReportsPage.vue'
 
-// Keep the assessment pages mount-tested so the new draft/finalize workflow
-// stays aligned with the backend contract and cannot regress into hidden runtime
-// errors when the page structure changes later.
 const mockLoadLookupData = vi.fn(() => Promise.resolve())
 const mockLoadAssessments = vi.fn(() => Promise.resolve())
 const mockSaveAssessment = vi.fn(() => Promise.resolve({ id: 21 }))
-const mockFinalizeAssessmentById = vi.fn(() => Promise.resolve({ id: 21 }))
-const mockArchiveAssessmentById = vi.fn(() => Promise.resolve({ id: 21 }))
-const mockLoadProgressSummary = vi.fn(() => Promise.resolve())
+const mockUpdateAssessment = vi.fn(() => Promise.resolve({ id: 21 }))
+const mockFinalizeAssessment = vi.fn(() => Promise.resolve({ id: 21 }))
+const mockArchiveAssessment = vi.fn(() => Promise.resolve({ id: 21 }))
 
-vi.mock('@/modules/preschool/composables/usePreschoolAssessments', () => ({
-  usePreschoolAssessments: () => ({
-    assessmentItems: { value: [{ id: 11, periodLabel: 'Term 1', studentName: 'Alice Student', status: 'draft' }] },
-    archiveAssessmentById: mockArchiveAssessmentById,
-    categoryOptions: { value: [{ id: 1, name: 'Learning Progress' }] },
-    classOptions: { value: [{ id: 3, label: 'PS-3 - Morning Class', value: 3 }] },
-    errorMessage: { value: '' },
-    finalizeAssessmentById: mockFinalizeAssessmentById,
-    isTeacher: { value: false },
+vi.mock('@/modules/preschool/composables/useAssessmentData', () => ({
+  useAssessmentData: () => ({
+    loadAllLookupData: mockLoadLookupData,
     loadAssessments: mockLoadAssessments,
-    loadCategories: vi.fn(),
-    loadClasses: vi.fn(),
-    loadLookupData: mockLoadLookupData,
-    loadStudents: vi.fn(),
-    loading: { value: false },
-    pagination: { value: { page: 1, perPage: 10, total: 1, totalPages: 1 } },
-    saveAssessment: mockSaveAssessment,
-    searchQuery: { value: '' },
-    selectedCategoryId: { value: '' },
-    selectedClassId: { value: '' },
-    selectedPeriodLabel: { value: '' },
-    selectedStatus: { value: '' },
-    selectedStudentId: { value: '7' },
-    setSelectedClassId: vi.fn(),
-    setSelectedCategoryId: vi.fn(),
-    setSelectedPeriodLabel: vi.fn(),
-    setSelectedStatus: vi.fn(),
-    setSelectedStudentId: vi.fn(),
-    setSearchQuery: vi.fn(),
-    saving: { value: false },
-    studentOptions: { value: [{ id: 7, label: 'Teacher Student (S-007)', value: 7 }] },
+    loadCategories: vi.fn(() => Promise.resolve()),
+    loadStudents: vi.fn(() => Promise.resolve()),
+    loadClasses: vi.fn(() => Promise.resolve()),
+    assessments: ref([{ id: 11, status: 'draft', score: 78, student: { fullName: 'Alice Student' } }]),
+    categories: ref([{ id: 1, name: 'Learning Progress' }]),
+    studentOptions: ref([{ label: 'Alice Student', value: 7 }]),
+    classOptions: ref([{ label: 'PS-3 - Morning Class', value: 3 }]),
+    loading: ref(false),
   }),
 }))
 
-vi.mock('@/modules/preschool/composables/usePreschoolProgressSummary', () => ({
-  usePreschoolProgressSummary: () => ({
-    categories: { value: [{ category: { id: 1, code: 'learning_progress', name: 'Learning Progress' }, count: 2, averageScore: 90 }] },
-    errorMessage: { value: '' },
-    loadProgressSummary: mockLoadProgressSummary,
-    loading: { value: false },
-    recentAssessments: { value: [{ id: 31, periodLabel: 'Term 1', categoryName: 'Learning Progress', assessmentDate: '2026-05-19', score: 90 }] },
-    summary: { value: { totalAssessments: 4, finalizedAssessments: 2, draftAssessments: 1, averageScore: 86.5 } },
+vi.mock('@/modules/preschool/composables/useAssessmentReports', () => ({
+  useAssessmentReports: () => ({
+    summaryStats: ref({ total: 1, completed: 1, pending: 0, average: 78, median: 78 }),
+    riskAnalysis: ref({ excellent: 0, good: 1, fair: 0, atRisk: 0 }),
+    categoryPerformanceArray: ref([
+      { categoryName: 'Learning Progress', average: 78, count: 1, excellentCount: 0, goodCount: 1, fairCount: 0, needsImprovementCount: 0 },
+    ]),
+    highRiskStudents: ref([]),
+    periodComparison: ref([
+      { period: 'Q1', count: 1, average: 78, excellent: 0, good: 1, fair: 0, needsImprovement: 0 },
+    ]),
+    getRiskPercentage: vi.fn(() => 0),
+    getImprovementTrend: vi.fn(() => null),
+    exportData: ref([{ id: 1 }]),
+  }),
+}))
+
+vi.mock('@/modules/preschool/stores/assessmentStore', () => ({
+  useAssessmentStore: () => ({
+    filters: {
+      studentId: null,
+      classId: null,
+      categoryId: null,
+      periodLabel: null,
+      status: 'all',
+      searchQuery: '',
+      dateFrom: null,
+      dateTo: null,
+    },
+    isFormOpen: ref(false),
+    editingAssessment: ref(null),
+    saving: ref(false),
+    error: ref(null),
+    openCreateForm: vi.fn(),
+    openEditForm: vi.fn(),
+    closeForm: vi.fn(),
+    reset: vi.fn(),
+    setFilter: vi.fn(),
+    resetFilters: vi.fn(),
+    saveAssessment: mockSaveAssessment,
+    updateAssessment: mockUpdateAssessment,
+    finalize: mockFinalizeAssessment,
+    archive: mockArchiveAssessment,
+    assessments: ref([]),
   }),
 }))
 
@@ -68,13 +83,19 @@ function stubs() {
     MainLayout: { template: '<div><slot /></div>' },
     HeaderSection: { props: ['title', 'subtitle'], template: '<header><h1>{{ title }}</h1><p>{{ subtitle }}</p></header>' },
     Button: { template: '<button><slot /></button>' },
-    Dropdown: { template: '<div class="dropdown-stub" />' },
-    InputText: { template: '<div class="input-stub" />' },
+    Select: { template: '<div class="select-stub" />' },
+    DataTable: { template: '<div class="datatable-stub"><slot /></div>' },
+    Column: { template: '<div class="column-stub"><slot /></div>' },
     Dialog: { template: '<div class="dialog-stub"><slot /></div>' },
-    AssessmentList: { template: '<div class="assessment-list-stub" />' },
-    AssessmentForm: { props: ['submitLabel'], template: '<form class="assessment-form-stub">{{ submitLabel }}<slot /></form>' },
-    ProgressSummaryCard: { props: ['title'], template: '<div class="summary-card-stub">{{ title }}</div>' },
-    ProgressTrendList: { template: '<div class="trend-list-stub" />' },
+    InputText: { template: '<div class="input-stub" />' },
+    AssessmentWorkspaceCard: { props: ['title'], template: '<div class="workspace-card-stub">{{ title }}</div>' },
+    StatCard: { props: ['label'], template: '<div class="stat-card-stub">{{ label }}</div>' },
+    ProgressIndicator: { template: '<div class="progress-indicator-stub" />' },
+    FilterBar: { template: '<div class="filter-bar-stub" />' },
+    AssessmentTable: { template: '<div class="assessment-table-stub" />' },
+    AssessmentModal: { template: '<div class="assessment-modal-stub" />' },
+    Checkbox: { template: '<div class="checkbox-stub" />' },
+    Message: { template: '<div class="message-stub"><slot /></div>' },
   }
 }
 
@@ -83,11 +104,34 @@ beforeEach(() => {
 })
 
 describe('Preschool assessment pages', () => {
+  it('mounts the assessment dashboard workspace', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const wrapper = mountWithPlugins(AssessmentDashboard, {
+      messages: {
+        en: { common: enCommon, ...enPreschool },
+        kh: { common: enCommon, ...khPreschool },
+      },
+      global: {
+        stubs: stubs(),
+      },
+    })
+
+    await flushPromises()
+
+    expect(mockLoadLookupData).toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Assessment Dashboard')
+    expect(wrapper.text()).toContain('Workspace Navigation')
+    expect(warnSpy).not.toHaveBeenCalled()
+    expect(errorSpy).not.toHaveBeenCalled()
+  })
+
   it('mounts the assessment list page and keeps the workflow stable', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const wrapper = mountWithPlugins(StudentAssessments, {
+    const wrapper = mountWithPlugins(AssessmentListPage, {
       messages: {
         en: { common: enCommon, ...enPreschool },
         kh: { common: enCommon, ...khPreschool },
@@ -100,19 +144,17 @@ describe('Preschool assessment pages', () => {
     await flushPromises()
 
     expect(mockLoadLookupData).toHaveBeenCalled()
-    expect(mockLoadAssessments).toHaveBeenCalled()
-    expect(wrapper.text()).toContain('Assessment Tracker')
-    expect(wrapper.text()).toContain('Add Assessment')
-    expect(wrapper.text()).toContain('Progress Summary')
+    expect(wrapper.text()).toContain('Assessment List')
+    expect(wrapper.text()).toContain('Choose a student to begin.')
     expect(warnSpy).not.toHaveBeenCalled()
     expect(errorSpy).not.toHaveBeenCalled()
   })
 
-  it('mounts the add assessment page and wires the draft form flow', async () => {
+  it('mounts the assessment reports page with localized summary data', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const wrapper = mountWithPlugins(AddAssessment, {
+    const wrapper = mountWithPlugins(AssessmentReportsPage, {
       messages: {
         en: { common: enCommon, ...enPreschool },
         kh: { common: enCommon, ...khPreschool },
@@ -125,38 +167,11 @@ describe('Preschool assessment pages', () => {
     await flushPromises()
 
     expect(mockLoadLookupData).toHaveBeenCalled()
-    expect(mockLoadAssessments).toHaveBeenCalled()
-    expect(wrapper.text()).toContain('Add Assessment')
-    expect(wrapper.text()).toContain('Save Draft')
-    expect(wrapper.text()).toContain('Back')
-    expect(warnSpy).not.toHaveBeenCalled()
-    expect(errorSpy).not.toHaveBeenCalled()
-  })
-
-  it('mounts the progress summary page with localized summary data', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    const wrapper = mountWithPlugins(ProgressSummary, {
-      messages: {
-        en: { common: enCommon, ...enPreschool },
-        kh: { common: enCommon, ...khPreschool },
-      },
-      global: {
-        stubs: stubs(),
-      },
-    })
-
-    await flushPromises()
-
-    expect(mockLoadLookupData).toHaveBeenCalled()
-    expect(mockLoadProgressSummary).toHaveBeenCalled()
-    expect(wrapper.text()).toContain('Progress Summary')
-    expect(wrapper.text()).toContain('Recent finalized assessments')
+    expect(wrapper.text()).toContain('Assessment Reports')
+    expect(wrapper.text()).toContain('Summary Statistics')
     expect(warnSpy).not.toHaveBeenCalled()
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
-
 
 

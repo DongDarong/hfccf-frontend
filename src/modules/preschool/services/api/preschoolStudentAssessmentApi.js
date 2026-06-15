@@ -81,7 +81,13 @@ export async function archiveStudentAssessment(assessmentId) {
  */
 export async function fetchAssessmentCategories() {
   const response = await http.get(`${BASE}/assessment-categories`)
-  return response.data.data || []
+  const payload = response.data?.data ?? response.data ?? []
+
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  return payload.items || payload.data || []
 }
 
 /**

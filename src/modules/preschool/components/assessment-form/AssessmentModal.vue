@@ -11,7 +11,7 @@ import ObservationPanel from './ObservationPanel.vue'
 import {
   PRESCHOOL_ASSESSMENT_DEFAULT_FORM,
   PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS,
-} from '@/modules/preschool/pages/assessments/constants/preschoolAssessmentWorkspace'
+} from '@/modules/preschool/admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
   name: 'AssessmentModal',

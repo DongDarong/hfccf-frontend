@@ -4,7 +4,7 @@ import {
   PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS,
   PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS,
   PRESCHOOL_ASSESSMENT_STATUS_OPTIONS,
-} from '../pages/assessments/constants/preschoolAssessmentWorkspace'
+} from '../admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 /**
  * useAssessmentFilters - Composable for managing assessment filters

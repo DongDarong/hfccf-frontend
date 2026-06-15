@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
-import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '@/modules/preschool/pages/assessments/constants/preschoolAssessmentWorkspace'
+import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '@/modules/preschool/admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
   name: 'AssessmentScoringSection',

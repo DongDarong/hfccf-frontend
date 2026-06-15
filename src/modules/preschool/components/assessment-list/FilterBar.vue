@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
-import { PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS, PRESCHOOL_ASSESSMENT_STATUS_OPTIONS } from '@/modules/preschool/pages/assessments/constants/preschoolAssessmentWorkspace'
+import { PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS, PRESCHOOL_ASSESSMENT_STATUS_OPTIONS } from '@/modules/preschool/admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
   name: 'AssessmentFilterBar',
