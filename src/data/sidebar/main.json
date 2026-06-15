@@ -135,9 +135,9 @@
           }
         },
         {
-          "id": "preschool-teacher-assessments",
-          "routeName": "dashboard-preschool-assessments",
-          "labelKey": "nav.items.preschoolAssessments",
+          "id": "preschool-teacher-schedule",
+          "routeName": "dashboard-preschool-teacher-schedule",
+          "labelKey": "nav.items.schedules",
           "icon": "reports",
           "badgeKey": "nav.badges.staff",
           "access": {
@@ -150,9 +150,9 @@
           }
         },
         {
-          "id": "preschool-teacher-progress-summary",
-          "routeName": "dashboard-preschool-progress-summary",
-          "labelKey": "nav.items.preschoolProgressSummary",
+          "id": "preschool-teacher-assessments",
+          "routeName": "dashboard-preschool-assessments",
+          "labelKey": "nav.items.preschoolAssessments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff",
           "access": {
@@ -317,7 +317,7 @@
          {
           "id": "preschool-teacher-healthy",
           "routeName": "dashboard-preschool-teacher-healthy",
-          "labelKey": "nav.items.healthy",
+          "labelKey": "nav.items.health",
           "icon": "reports",
           "badgeKey": "nav.badges.staff",
           "access": {

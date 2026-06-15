@@ -21,11 +21,11 @@
           "badgeKey": "nav.badges.admin"
         },
         {
-          "id": "preschool-teachers",
-          "routeName": "dashboard-preschool-admin-users",
-          "labelKey": "nav.items.teachers",
-          "icon": "users",
-          "badgeKey": "nav.badges.staff"
+          "id": "preschool-enrollments",
+          "routeName": "dashboard-preschool-admin-enrollments",
+          "labelKey": "nav.items.preschoolEnrollments",
+          "icon": "reports",
+          "badgeKey": "nav.badges.admin"
         },
         {
           "id": "preschool-students",
@@ -35,9 +35,23 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-teachers",
+          "routeName": "dashboard-preschool-admin-users",
+          "labelKey": "nav.items.teachers",
+          "icon": "users",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-classes",
           "routeName": "dashboard-preschool-admin-classes",
           "labelKey": "nav.items.classes",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-schedules",
+          "routeName": "dashboard-preschool-admin-schedules",
+          "labelKey": "nav.items.schedules",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
         },
@@ -56,25 +70,11 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-progress-summary",
-          "routeName": "dashboard-preschool-progress-summary",
-          "labelKey": "nav.items.preschoolProgressSummary",
+          "id": "preschool-assessments",
+          "routeName": "preschool-assessment-dashboard",
+          "labelKey": "nav.items.preschoolAssessments",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-classroom-resources",
-          "routeName": "dashboard-preschool-admin-classroom-resources",
-          "labelKey": "nav.items.classroomResources",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-enrollments",
-          "routeName": "dashboard-preschool-admin-enrollments",
-          "labelKey": "nav.items.preschoolEnrollments",
-          "icon": "reports",
-          "badgeKey": "nav.badges.admin"
         },
         {
           "id": "preschool-forms",
@@ -84,9 +84,16 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-assessments",
-          "routeName": "preschool-assessment-dashboard",
-          "labelKey": "nav.items.preschoolAssessments",
+          "id": "preschool-health-records",
+          "routeName": "dashboard-preschool-admin-health",
+          "labelKey": "nav.items.healthRecords",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-classroom-resources",
+          "routeName": "dashboard-preschool-admin-classroom-resources",
+          "labelKey": "nav.items.classroomResources",
           "icon": "reports",
           "badgeKey": "nav.badges.staff"
         },
