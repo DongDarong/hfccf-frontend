@@ -5,7 +5,9 @@ export const FORM_MANAGEMENT_PAGE_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.dashboard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.dashboard.description',
     fallbackDescription: 'View the module overview and jump into the most important areas.',
-    to: { name: 'assessment-dashboard' },
+    // Forms is the compatibility launcher; the canonical overview is the
+    // Preschool assessment dashboard.
+    to: { name: 'preschool-assessment-dashboard' },
   },
   {
     key: 'manage',
@@ -21,6 +23,8 @@ export const FORM_MANAGEMENT_PAGE_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.pages.build.title',
     descriptionKey: 'preschoolScaffold.formManagement.pages.build.description',
     fallbackDescription: 'Work on the tools used to create and refine forms.',
+    // Keep the legacy build route as a redirect so older links still reach the
+    // canonical assessment builder workspace.
     to: { name: 'dashboard-preschool-admin-forms-build' },
   },
   {
@@ -42,7 +46,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.dashboard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.dashboard.description',
     fallbackDescription: 'View the module overview and jump into the most important areas.',
-    to: { name: 'assessment-dashboard' },
+    to: { name: 'preschool-assessment-dashboard' },
   },
   {
     key: 'forms',

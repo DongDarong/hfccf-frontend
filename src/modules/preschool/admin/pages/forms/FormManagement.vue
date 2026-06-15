@@ -40,7 +40,7 @@ const pageCards = computed(() =>
 const quickLinks = computed(() => [
   {
     label: safeText('preschoolScaffold.formManagement.cards.dashboard.title', 'Dashboard'),
-    action: () => router.push({ name: 'assessment-dashboard' }),
+    action: () => router.push({ name: 'preschool-assessment-dashboard' }),
     icon: 'pi pi-chart-bar',
   },
   {

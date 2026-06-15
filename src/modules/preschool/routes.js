@@ -176,6 +176,8 @@ export const preschoolRoutes = [
   }),
   // Assessment routes are shared by Preschool admins and teachers so the UI
   // can grow into reporting later without splitting the same workflow twice.
+  // The legacy `/assessments` route name remains a compatibility redirect to
+  // the canonical Preschool assessment dashboard.
   defineAppRoute({
     path: '/module/preschool-admin/assessments',
     name: 'dashboard-preschool-assessments',
@@ -348,6 +350,8 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms',
     name: 'dashboard-preschool-admin-forms',
+    // Forms stays as a compatibility launcher. The canonical authoring and
+    // reporting work happens in the Preschool assessment routes.
     component: () => import('@/modules/preschool/admin/pages/forms/FormTracker.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
@@ -366,6 +370,8 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms/build',
     name: 'dashboard-preschool-admin-forms-build',
+    // Compatibility redirect: older build links now resolve to the canonical
+    // assessment form builder so we keep one real authoring path.
     redirect: () => ({
       name: 'preschool-assessment-form-builder',
     }),

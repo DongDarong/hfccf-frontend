@@ -8,6 +8,8 @@ import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({ name: 'FormTrackerPage' })
 
+// Legacy launcher retained for compatibility while Preschool assessment forms
+// consolidate around the canonical builder and report routes.
 const router = useRouter()
 const { t } = useLanguage()
 
@@ -23,12 +25,14 @@ const isLoading = ref(false)
 async function load() {
   isLoading.value = true
   try {
-    // Load form stats
+    // This page is a launcher, not a separate persisted forms engine.
+    // Keep the numbers deterministic so the compatibility surface does not
+    // look like live production data.
     formStats.value = {
-      totalForms: Math.floor(Math.random() * 20) + 5, // Mock data
-      activeSubmissions: Math.floor(Math.random() * 50) + 10,
-      pendingReview: Math.floor(Math.random() * 15) + 2,
-      completedThisMonth: Math.floor(Math.random() * 30) + 5,
+      totalForms: 4,
+      activeSubmissions: 12,
+      pendingReview: 3,
+      completedThisMonth: 8,
     }
     recentForms.value = [
       { id: 1, name: 'Student Registration', description: 'Basic student info form', status: 'active' },
@@ -256,7 +260,7 @@ onMounted(load)
         <div class="forms-tracker__row forms-tracker__row--full">
           <h2 class="forms-tracker__section-title">🎯 Related Assessment Features</h2>
           <div class="forms-tracker__related-grid">
-            <div class="forms-tracker__related-card" @click="router.push({ name: 'assessment-dashboard' })">
+            <div class="forms-tracker__related-card" @click="router.push({ name: 'preschool-assessment-dashboard' })">
               <div class="forms-tracker__related-icon">📊</div>
               <div class="forms-tracker__related-info">
                 <div class="forms-tracker__related-title">Assessment Dashboard</div>
