@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import Menu from 'primevue/menu'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'AssessmentActionMenu',
@@ -29,11 +30,12 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'finalize', 'archive', 'view'])
 
 const menuRef = ref(null)
+const { t } = useLanguage()
 
 const items = computed(() => {
   const list = [
     {
-      label: 'View details',
+      label: t('assessmentList.table.actionViewDetails'),
       icon: 'pi pi-eye',
       command: () => emit('view', props.assessment),
     },
@@ -41,7 +43,7 @@ const items = computed(() => {
 
   if (props.canEdit) {
     list.push({
-      label: 'Edit',
+      label: t('assessmentList.table.actionEdit'),
       icon: 'pi pi-pencil',
       command: () => emit('edit', props.assessment),
     })
@@ -49,7 +51,7 @@ const items = computed(() => {
 
   if (props.canFinalize) {
     list.push({
-      label: 'Finalize',
+      label: t('assessmentList.table.actionFinalize'),
       icon: 'pi pi-check',
       command: () => emit('finalize', props.assessment),
     })
@@ -59,7 +61,7 @@ const items = computed(() => {
     list.push(
       { separator: true },
       {
-        label: 'Archive',
+        label: t('assessmentList.table.actionArchive'),
         icon: 'pi pi-trash',
         command: () => emit('archive', props.assessment),
       },
@@ -81,7 +83,7 @@ function toggle(event) {
       rounded="full"
       variant="text"
       size="sm"
-      aria-label="Open assessment actions"
+      :aria-label="t('assessmentList.table.openActions')"
       @click="toggle"
     />
 

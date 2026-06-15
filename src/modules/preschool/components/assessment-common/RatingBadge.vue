@@ -1,4 +1,6 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'AssessmentRatingBadge',
 })
@@ -18,24 +20,28 @@ const props = defineProps({
 
 const ratingConfig = {
   Excellent: {
+    labelKey: 'assessmentSettings.ratingScale.excellent',
     icon: '⭐',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
   },
   Good: {
+    labelKey: 'assessmentSettings.ratingScale.good',
     icon: '👍',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
   },
   Fair: {
+    labelKey: 'assessmentSettings.ratingScale.fair',
     icon: '👌',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
   },
   'Needs Improvement': {
+    labelKey: 'assessmentSettings.ratingScale.needsImprovement',
     icon: '⚠️',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
@@ -51,6 +57,7 @@ const sizeClasses = {
 
 const config = ratingConfig[props.rating]
 const sizeClass = sizeClasses[props.size]
+const { t } = useLanguage()
 </script>
 
 <template>
@@ -66,6 +73,6 @@ const sizeClass = sizeClasses[props.size]
     <span :class="['flex-shrink-0', { 'text-xs': props.size === 'sm', 'text-sm': props.size !== 'sm' }]">
       {{ config.icon }}
     </span>
-    <span class="font-medium">{{ props.rating }}</span>
+    <span class="font-medium">{{ t(config.labelKey) }}</span>
   </div>
 </template>

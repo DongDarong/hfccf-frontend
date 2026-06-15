@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
+import { useLanguage } from '@/composables/useLanguage'
 import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '@/modules/preschool/admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
@@ -32,6 +33,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:score', 'update:rating'])
+const { t } = useLanguage()
 
 const scoreValue = computed({
   get: () => props.score,
@@ -44,7 +46,7 @@ const ratingValue = computed({
 })
 
 const ratingOptions = PRESCHOOL_ASSESSMENT_RATING_OPTIONS.map(option => ({
-  label: option.label,
+  label: option.labelKey ? t(option.labelKey) : option.label,
   value: option.value,
 }))
 
@@ -54,6 +56,11 @@ const suggestedRating = computed(() => {
   return match?.value || 'Needs Improvement'
 })
 
+const suggestedRatingLabel = computed(() => {
+  const match = ratingOptions.find(option => option.value === suggestedRating.value)
+  return match?.label || suggestedRating.value
+})
+
 function applySuggestedRating() {
   ratingValue.value = suggestedRating.value
 }
@@ -61,11 +68,11 @@ function applySuggestedRating() {
 
 <template>
   <section class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-    <h4 class="text-sm font-semibold text-slate-900">Scoring</h4>
+    <h4 class="text-sm font-semibold text-slate-900">{{ t('assessmentList.scoring.title') }}</h4>
 
     <div class="space-y-2">
       <label class="block text-sm font-medium text-slate-700">
-        Score (0-100)
+        {{ t('assessmentList.scoring.score') }}
         <span class="text-red-500">*</span>
       </label>
 
@@ -74,7 +81,7 @@ function applySuggestedRating() {
         :min="0"
         :max="100"
         :disabled="disabled"
-        placeholder="Enter score..."
+        :placeholder="t('assessmentList.scoring.placeholderScore')"
         class="w-full"
       />
 
@@ -84,9 +91,9 @@ function applySuggestedRating() {
 
       <div v-if="scoreValue !== null && scoreValue !== ''" class="mt-2 rounded-xl bg-blue-50 p-3">
         <p class="text-xs text-blue-700">
-          <strong>Score interpretation:</strong>
+          <strong>{{ t('assessmentList.scoring.scoreInterpretation') }}</strong>
           <span class="ml-1">
-            {{ suggestedRating === 'Excellent' ? 'Excellent performance' : suggestedRating === 'Good' ? 'Good performance' : suggestedRating === 'Fair' ? 'Fair performance' : 'Needs improvement' }}
+            {{ suggestedRating === 'Excellent' ? t('assessmentList.scoring.excellentPerformance') : suggestedRating === 'Good' ? t('assessmentList.scoring.goodPerformance') : suggestedRating === 'Fair' ? t('assessmentList.scoring.fairPerformance') : t('assessmentList.scoring.needsImprovement') }}
           </span>
         </p>
       </div>
@@ -95,7 +102,7 @@ function applySuggestedRating() {
     <div class="space-y-2">
       <div class="flex items-center justify-between gap-3">
         <label class="block text-sm font-medium text-slate-700">
-          Rating
+          {{ t('assessmentList.scoring.rating') }}
           <span class="text-red-500">*</span>
         </label>
         <button
@@ -104,7 +111,7 @@ function applySuggestedRating() {
           class="text-xs font-medium text-blue-600 transition hover:text-blue-800"
           @click="applySuggestedRating"
         >
-          Use suggested
+          {{ t('assessmentList.scoring.useSuggested') }}
         </button>
       </div>
 
@@ -113,7 +120,7 @@ function applySuggestedRating() {
         :options="ratingOptions"
         option-label="label"
         option-value="value"
-        placeholder="Select a rating..."
+        :placeholder="t('assessmentList.scoring.placeholderRating')"
         :disabled="disabled"
         show-clear
         class="w-full"
@@ -126,8 +133,8 @@ function applySuggestedRating() {
 
     <div v-if="scoreValue !== null && scoreValue !== '' && ratingValue !== suggestedRating" class="rounded-xl bg-amber-50 p-3">
       <p class="text-xs text-amber-700">
-        <strong>Suggestion:</strong>
-        Based on the score, the suggested rating is <strong>{{ suggestedRating }}</strong>.
+        <strong>{{ t('assessmentList.scoring.suggestion') }}</strong>
+        {{ t('assessmentList.scoring.suggestedRatingIs') }} <strong>{{ suggestedRatingLabel }}</strong>.
       </p>
     </div>
   </section>

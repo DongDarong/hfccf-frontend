@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import Select from 'primevue/select'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'AssessmentCategorySelector',
@@ -30,6 +31,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
+const { t } = useLanguage()
 
 const selectedValue = computed({
   get: () => props.modelValue,
@@ -54,7 +56,7 @@ const categoryOptions = computed(() =>
 <template>
   <div class="space-y-2">
     <label class="block text-sm font-medium text-slate-700">
-      Assessment category
+      {{ t('assessmentList.filters.category') }}
       <span class="text-red-500">*</span>
     </label>
 
@@ -63,7 +65,7 @@ const categoryOptions = computed(() =>
       :options="categoryOptions"
       option-label="label"
       option-value="value"
-      placeholder="Choose a category..."
+      :placeholder="t('assessmentList.filters.categoryAll')"
       :loading="loading"
       :disabled="disabled || loading"
       show-clear
@@ -75,7 +77,7 @@ const categoryOptions = computed(() =>
     </p>
 
     <p class="text-xs text-slate-500">
-      Select the assessment category for this record.
+      {{ t('assessmentList.categorySelector.help') }}
     </p>
   </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import Select from 'primevue/select'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'AssessmentStudentSelector',
@@ -34,6 +35,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
+const { t } = useLanguage()
 
 const selectedValue = computed({
   get: () => props.modelValue,
@@ -52,7 +54,7 @@ const sortedOptions = computed(() => [...props.options].sort((a, b) => a.label.l
 <template>
   <div class="space-y-2">
     <label class="block text-sm font-medium text-slate-700">
-      Select student
+      {{ t('assessmentList.filters.student') }}
       <span class="text-red-500">*</span>
     </label>
 
@@ -61,7 +63,7 @@ const sortedOptions = computed(() => [...props.options].sort((a, b) => a.label.l
       :options="sortedOptions"
       option-label="label"
       option-value="value"
-      placeholder="Choose a student..."
+      :placeholder="t('assessmentList.selectedStudentPlaceholder')"
       :loading="loading"
       :disabled="disabled || loading"
       :show-clear="clearable && selectedValue !== null && selectedValue !== undefined && selectedValue !== ''"
@@ -74,7 +76,7 @@ const sortedOptions = computed(() => [...props.options].sort((a, b) => a.label.l
     </p>
 
     <p class="text-xs text-slate-500">
-      Search by student name or identifier.
+      {{ t('assessmentList.studentSelector.help') }}
     </p>
   </div>
 </template>

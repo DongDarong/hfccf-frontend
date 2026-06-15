@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
+import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
 import AssessmentSettingsCard from '@/modules/preschool/admin/components/assessment/AssessmentSettingsCard.vue'
@@ -17,6 +18,7 @@ defineOptions({
 })
 
 const { categories, loadCategories } = useAssessmentData()
+const { t } = useLanguage()
 
 const saving = ref(false)
 const saved = ref(false)
@@ -32,8 +34,18 @@ const settings = ref({
   notifyOnHighRisk: true,
 })
 
-const ratingOptions = PRESCHOOL_ASSESSMENT_RATING_OPTIONS
-const periodOptions = PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS.filter(option => option.value)
+const ratingOptions = computed(() =>
+  PRESCHOOL_ASSESSMENT_RATING_OPTIONS.map(option => ({
+    ...option,
+    label: option.labelKey ? t(option.labelKey) : option.label,
+  })),
+)
+const periodOptions = computed(() =>
+  PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS.filter(option => option.value).map(option => ({
+    ...option,
+    label: option.labelKey ? t(option.labelKey) : option.label,
+  })),
+)
 
 onMounted(async () => {
   await loadCategories()
@@ -73,39 +85,39 @@ function resetSettings() {
   <MainLayout>
     <div class="space-y-8">
       <AssessmentPageHeader
-        title="Assessment Settings"
-        subtitle="Configure risk rules, review defaults, and operational preferences for Preschool assessments."
+        :title="t('assessmentSettings.title')"
+        :subtitle="t('assessmentSettings.subtitle')"
       />
 
       <Message
         v-if="saved"
         severity="success"
-        text="Settings saved successfully."
+        :text="t('assessmentSettings.savedSuccess')"
         class="w-full"
       />
 
       <Message
         v-if="error"
         severity="error"
-        :text="`Error: ${error}`"
+        :text="`${t('assessmentSettings.errorPrefix')} ${error}`"
         class="w-full"
       />
 
       <div class="grid gap-6 xl:grid-cols-2">
-        <AssessmentSettingsCard title="Risk Management">
+        <AssessmentSettingsCard :title="t('assessmentSettings.riskManagement.title')">
 
           <div class="mt-4 space-y-4">
             <div class="flex items-center gap-3">
               <Checkbox v-model="settings.enableRiskTracking" binary input-id="enableRisk" />
               <label for="enableRisk" class="cursor-pointer">
-                <span class="font-medium text-slate-900">Enable Risk Tracking</span>
-                <p class="text-sm text-slate-600">Automatically identify at-risk students.</p>
+                <span class="font-medium text-slate-900">{{ t('assessmentSettings.riskManagement.enableRiskTracking') }}</span>
+                <p class="text-sm text-slate-600">{{ t('assessmentSettings.riskManagement.enableRiskTrackingHelp') }}</p>
               </label>
             </div>
 
             <div class="space-y-2">
               <label class="block text-sm font-medium text-slate-900">
-                Risk Threshold Score
+                {{ t('assessmentSettings.riskManagement.riskThreshold') }}
               </label>
               <div class="flex items-center gap-3">
                 <input
@@ -120,60 +132,60 @@ function resetSettings() {
                 </span>
               </div>
               <p class="text-xs text-slate-600">
-                Students scoring below this threshold are treated as high risk.
+                {{ t('assessmentSettings.riskManagement.riskThresholdHelp') }}
               </p>
             </div>
 
             <div class="flex items-center gap-3">
               <Checkbox v-model="settings.notifyOnHighRisk" binary input-id="notifyRisk" />
               <label for="notifyRisk" class="cursor-pointer">
-                <span class="font-medium text-slate-900">Send Notifications</span>
-                <p class="text-sm text-slate-600">Alert when high-risk students are identified.</p>
+                <span class="font-medium text-slate-900">{{ t('assessmentSettings.riskManagement.sendNotifications') }}</span>
+                <p class="text-sm text-slate-600">{{ t('assessmentSettings.riskManagement.sendNotificationsHelp') }}</p>
               </label>
             </div>
           </div>
         </AssessmentSettingsCard>
 
-        <AssessmentSettingsCard title="Assessment Options">
+        <AssessmentSettingsCard :title="t('assessmentSettings.assessmentOptions.title')">
 
           <div class="mt-4 space-y-4">
             <div class="flex items-center gap-3">
               <Checkbox v-model="settings.enableAutoRating" binary input-id="autoRating" />
               <label for="autoRating" class="cursor-pointer">
-                <span class="font-medium text-slate-900">Enable Auto-Rating</span>
-                <p class="text-sm text-slate-600">Suggest ratings based on assessment scores.</p>
+                <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.enableAutoRating') }}</span>
+                <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.enableAutoRatingHelp') }}</p>
               </label>
             </div>
 
             <div class="flex items-center gap-3">
               <Checkbox v-model="settings.requireObservation" binary input-id="requireObs" />
               <label for="requireObs" class="cursor-pointer">
-                <span class="font-medium text-slate-900">Require Observation Notes</span>
-                <p class="text-sm text-slate-600">Make observation mandatory for each assessment.</p>
+                <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.requireObservation') }}</span>
+                <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.requireObservationHelp') }}</p>
               </label>
             </div>
 
             <div class="flex items-center gap-3">
               <Checkbox v-model="settings.requireTeacherComment" binary input-id="requireComment" />
               <label for="requireComment" class="cursor-pointer">
-                <span class="font-medium text-slate-900">Require Teacher Comment</span>
-                <p class="text-sm text-slate-600">Make teacher comment mandatory when needed.</p>
+                <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.requireTeacherComment') }}</span>
+                <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.requireTeacherCommentHelp') }}</p>
               </label>
             </div>
 
             <div class="flex items-center gap-3">
               <Checkbox v-model="settings.allowArchiving" binary input-id="allowArchive" />
               <label for="allowArchive" class="cursor-pointer">
-                <span class="font-medium text-slate-900">Allow Assessment Archiving</span>
-                <p class="text-sm text-slate-600">Let users archive older assessment records.</p>
+                <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.allowArchiving') }}</span>
+                <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.allowArchivingHelp') }}</p>
               </label>
             </div>
           </div>
         </AssessmentSettingsCard>
 
-        <AssessmentSettingsCard title="Assessment Categories">
+        <AssessmentSettingsCard :title="t('assessmentSettings.assessmentCategories.title')">
           <p class="mt-2 text-sm text-slate-600">
-            {{ categories.length }} assessment category records are currently available.
+            {{ t('assessmentSettings.assessmentCategories.recordsAvailable', { count: categories.length }) }}
           </p>
 
           <div class="mt-4 space-y-2">
@@ -184,22 +196,22 @@ function resetSettings() {
             >
               <div>
                 <p class="font-medium text-slate-900">{{ category.name }}</p>
-                <p v-if="category.code" class="text-xs text-slate-600">Code: {{ category.code }}</p>
+                <p v-if="category.code" class="text-xs text-slate-600">{{ t('assessmentSettings.assessmentCategories.code') }}: {{ category.code }}</p>
               </div>
               <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                Active
+                {{ t('assessmentSettings.assessmentCategories.active') }}
               </span>
             </div>
           </div>
 
           <div class="mt-4 flex gap-3">
-            <Button label="Manage Categories" icon="pi pi-cog" size="sm" variant="secondary" />
+            <Button :label="t('assessmentSettings.assessmentCategories.manageCategories')" icon="pi pi-cog" size="sm" variant="secondary" />
           </div>
         </AssessmentSettingsCard>
 
-        <AssessmentSettingsCard title="Assessment Periods">
+        <AssessmentSettingsCard :title="t('assessmentSettings.assessmentPeriods.title')">
           <p class="mt-2 text-sm text-slate-600">
-            Keep the available periods aligned to the academic cycle.
+            {{ t('assessmentSettings.assessmentPeriods.description') }}
           </p>
 
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
@@ -213,13 +225,13 @@ function resetSettings() {
           </div>
 
           <div class="mt-4 flex gap-3">
-            <Button label="Edit Periods" icon="pi pi-pencil" size="sm" variant="secondary" />
+            <Button :label="t('assessmentSettings.assessmentPeriods.editPeriods')" icon="pi pi-pencil" size="sm" variant="secondary" />
           </div>
         </AssessmentSettingsCard>
       </div>
 
-      <AssessmentSettingsCard title="Rating Scale">
-        <p class="mt-2 text-sm text-slate-600">Current rating configuration used by the Preschool workspace.</p>
+      <AssessmentSettingsCard :title="t('assessmentSettings.ratingScale.title')">
+        <p class="mt-2 text-sm text-slate-600">{{ t('assessmentSettings.ratingScale.description') }}</p>
 
         <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div
@@ -248,7 +260,7 @@ function resetSettings() {
             <div>
               <p class="font-medium text-slate-900">{{ rating.label }}</p>
               <p class="text-xs text-slate-600">
-                {{ rating.scoreMin }}-{{ rating.scoreMax }} points
+                {{ rating.scoreMin }}-{{ rating.scoreMax }} {{ t('assessmentSettings.ratingScale.points') }}
               </p>
             </div>
           </div>
@@ -257,13 +269,13 @@ function resetSettings() {
 
       <section class="flex flex-wrap gap-3">
         <Button
-          label="Save Settings"
+          :label="t('assessmentSettings.saveSettings')"
           icon="pi pi-check"
           :loading="saving"
           @click="saveSettings"
         />
         <Button
-          label="Reset"
+          :label="t('assessmentSettings.reset')"
           icon="pi pi-refresh"
           variant="secondary"
           :disabled="saving"

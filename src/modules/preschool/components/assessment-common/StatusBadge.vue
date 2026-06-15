@@ -1,4 +1,6 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'AssessmentStatusBadge',
 })
@@ -18,14 +20,14 @@ const props = defineProps({
 
 const statusConfig = {
   draft: {
-    label: 'Draft',
+    labelKey: 'assessmentList.table.statusDraft',
     icon: '✏️',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
   },
   finalized: {
-    label: 'Finalized',
+    labelKey: 'assessmentList.table.statusFinalized',
     icon: '✅',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
@@ -41,6 +43,7 @@ const sizeClasses = {
 
 const config = statusConfig[props.status]
 const sizeClass = sizeClasses[props.size]
+const { t } = useLanguage()
 </script>
 
 <template>
@@ -56,6 +59,6 @@ const sizeClass = sizeClasses[props.size]
     <span :class="['flex-shrink-0', { 'text-xs': props.size === 'sm', 'text-sm': props.size !== 'sm' }]">
       {{ config.icon }}
     </span>
-    <span class="font-medium">{{ config.label }}</span>
+    <span class="font-medium">{{ t(config.labelKey) }}</span>
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup>
 import AssessmentWorkspaceCard from './AssessmentWorkspaceCard.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'AssessmentWorkspaceNavigation',
@@ -11,15 +12,19 @@ defineProps({
     required: true,
   },
 })
+
+const { t } = useLanguage()
 </script>
 
 <template>
   <section class="space-y-4">
     <div class="flex items-center justify-between gap-4">
       <div>
-        <h3 class="text-xl font-bold text-slate-900">Workspace Navigation</h3>
+        <h3 class="text-xl font-bold text-slate-900">
+          {{ t('assessmentDashboard.workspaceNavigation.title') }}
+        </h3>
         <p class="text-sm text-slate-600">
-          Centralized entry points for the Preschool assessment module.
+          {{ t('assessmentDashboard.workspaceNavigation.subtitle') }}
         </p>
       </div>
     </div>

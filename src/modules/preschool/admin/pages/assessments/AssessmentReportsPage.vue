@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import { useAssessmentReports } from '@/modules/preschool/composables/useAssessmentReports'
 import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
@@ -12,6 +13,7 @@ defineOptions({
 })
 
 const { loadAllLookupData } = useAssessmentData()
+const { t } = useLanguage()
 const {
   summaryStats,
   riskAnalysis,
@@ -28,17 +30,17 @@ onMounted(async () => {
 })
 
 const summaryCards = computed(() => [
-  { iconClass: 'pi pi-chart-bar', label: 'Total Assessments', value: summaryStats.value.total, color: 'blue' },
-  { iconClass: 'pi pi-check-circle', label: 'Completed', value: summaryStats.value.completed, color: 'emerald' },
-  { iconClass: 'pi pi-star', label: 'Average Score', value: summaryStats.value.average || '-', unit: '/100', color: 'purple' },
-  { iconClass: 'pi pi-chart-line', label: 'Median Score', value: summaryStats.value.median || '-', unit: '/100', color: 'amber' },
+  { iconClass: 'pi pi-chart-bar', label: t('assessmentReports.summaryCards.totalAssessments'), value: summaryStats.value.total, color: 'blue' },
+  { iconClass: 'pi pi-check-circle', label: t('assessmentReports.summaryCards.completed'), value: summaryStats.value.completed, color: 'emerald' },
+  { iconClass: 'pi pi-star', label: t('assessmentReports.summaryCards.averageScore'), value: summaryStats.value.average || '-', unit: '/100', color: 'purple' },
+  { iconClass: 'pi pi-chart-line', label: t('assessmentReports.summaryCards.medianScore'), value: summaryStats.value.median || '-', unit: '/100', color: 'amber' },
 ])
 
 const riskCards = computed(() => [
-  { iconClass: 'pi pi-star', label: 'Excellent (80+)', value: riskAnalysis.value.excellent || 0, percentage: getRiskPercentage('excellent'), color: 'blue' },
-  { iconClass: 'pi pi-thumbs-up', label: 'Good (70-79)', value: riskAnalysis.value.good || 0, percentage: getRiskPercentage('good'), color: 'emerald' },
-  { iconClass: 'pi pi-minus-circle', label: 'Fair (60-69)', value: riskAnalysis.value.fair || 0, percentage: getRiskPercentage('fair'), color: 'amber' },
-  { iconClass: 'pi pi-exclamation-triangle', label: 'At Risk (<60)', value: riskAnalysis.value.atRisk || 0, percentage: getRiskPercentage('at-risk'), color: 'red' },
+  { iconClass: 'pi pi-star', label: t('assessmentReports.riskCards.excellent'), value: riskAnalysis.value.excellent || 0, percentage: getRiskPercentage('excellent'), color: 'blue' },
+  { iconClass: 'pi pi-thumbs-up', label: t('assessmentReports.riskCards.good'), value: riskAnalysis.value.good || 0, percentage: getRiskPercentage('good'), color: 'emerald' },
+  { iconClass: 'pi pi-minus-circle', label: t('assessmentReports.riskCards.fair'), value: riskAnalysis.value.fair || 0, percentage: getRiskPercentage('fair'), color: 'amber' },
+  { iconClass: 'pi pi-exclamation-triangle', label: t('assessmentReports.riskCards.atRisk'), value: riskAnalysis.value.atRisk || 0, percentage: getRiskPercentage('at-risk'), color: 'red' },
 ])
 
 const improvementTrend = computed(() => getImprovementTrend())
@@ -48,8 +50,8 @@ const improvementTrend = computed(() => getImprovementTrend())
   <MainLayout>
     <div class="space-y-8">
       <AssessmentPageHeader
-        title="Assessment Reports"
-        subtitle="Review performance, risk distribution, and trends across the Preschool assessment workspace."
+        :title="t('assessmentReports.title')"
+        :subtitle="t('assessmentReports.subtitle')"
       />
 
       <AssessmentReportSections
@@ -63,10 +65,10 @@ const improvementTrend = computed(() => getImprovementTrend())
         :export-count="exportData.length"
       >
         <template #export-actions>
-          <Button label="Export PDF" icon="pi pi-file-pdf" size="sm" variant="secondary" />
-          <Button label="Export Excel" icon="pi pi-file-excel" size="sm" variant="secondary" />
-          <Button label="Export CSV" icon="pi pi-file-csv" size="sm" variant="secondary" />
-          <Button label="Copy Data" icon="pi pi-copy" size="sm" variant="secondary" />
+          <Button :label="t('assessmentReports.exportActions.pdf')" icon="pi pi-file-pdf" size="sm" variant="secondary" />
+          <Button :label="t('assessmentReports.exportActions.excel')" icon="pi pi-file-excel" size="sm" variant="secondary" />
+          <Button :label="t('assessmentReports.exportActions.csv')" icon="pi pi-file-csv" size="sm" variant="secondary" />
+          <Button :label="t('assessmentReports.exportActions.copy')" icon="pi pi-copy" size="sm" variant="secondary" />
         </template>
       </AssessmentReportSections>
     </div>

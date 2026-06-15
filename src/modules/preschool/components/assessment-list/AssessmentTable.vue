@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { useLanguage } from '@/composables/useLanguage'
 import StatusBadge from '@/modules/preschool/components/assessment-common/StatusBadge.vue'
 import RatingBadge from '@/modules/preschool/components/assessment-common/RatingBadge.vue'
 import ActionMenu from './ActionMenu.vue'
@@ -40,6 +41,7 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'finalize', 'archive', 'view', 'page-change'])
 
 const selectedAssessments = ref([])
+const { t } = useLanguage()
 
 function getCategoryName(categoryId) {
   return props.categories.find(category => category.id === categoryId)?.name || '-'
@@ -67,7 +69,7 @@ function handlePageChange(event) {
     :total-records="totalRecords"
     paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
     :rows-per-page-options="[10, 25, 50, 100]"
-    current-page-report-template="Showing {first} to {last} of {totalRecords} assessments"
+    :current-page-report-template="t('assessmentList.table.currentPageReport')"
     responsive-layout="scroll"
     striped-rows
     show-gridlines
@@ -81,7 +83,7 @@ function handlePageChange(event) {
 
     <Column
       field="student.fullName"
-      header="Student"
+      :header="t('assessmentList.table.student')"
       sortable
     >
       <template #body="{ data }">
@@ -98,7 +100,7 @@ function handlePageChange(event) {
 
     <Column
       field="class.name"
-      header="Class"
+      :header="t('assessmentList.table.class')"
       sortable
     >
       <template #body="{ data }">
@@ -110,7 +112,7 @@ function handlePageChange(event) {
 
     <Column
       field="category.name"
-      header="Category"
+      :header="t('assessmentList.table.category')"
       sortable
     >
       <template #body="{ data }">
@@ -122,7 +124,7 @@ function handlePageChange(event) {
 
     <Column
       field="assessmentDate"
-      header="Date"
+      :header="t('assessmentList.table.date')"
       sortable
       sort-field="assessmentDate"
     >
@@ -135,7 +137,7 @@ function handlePageChange(event) {
 
     <Column
       field="score"
-      header="Score"
+      :header="t('assessmentList.table.score')"
       sortable
       style="width: 10%"
     >
@@ -163,7 +165,7 @@ function handlePageChange(event) {
 
     <Column
       field="rating"
-      header="Rating"
+      :header="t('assessmentList.table.rating')"
     >
       <template #body="{ data }">
         <RatingBadge
@@ -177,7 +179,7 @@ function handlePageChange(event) {
 
     <Column
       field="status"
-      header="Status"
+      :header="t('assessmentList.table.status')"
     >
       <template #body="{ data }">
         <StatusBadge
@@ -189,7 +191,7 @@ function handlePageChange(event) {
 
     <Column
       field="actions"
-      header="Actions"
+      :header="t('assessmentList.table.actions')"
       style="width: 8%"
     >
       <template #body="{ data }">
@@ -208,7 +210,7 @@ function handlePageChange(event) {
 
     <template #empty>
       <div class="py-8 text-center">
-        <p class="text-slate-500">No assessments found.</p>
+        <p class="text-slate-500">{{ t('assessmentList.table.noData') }}</p>
       </div>
     </template>
 

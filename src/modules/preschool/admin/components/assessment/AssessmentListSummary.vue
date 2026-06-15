@@ -1,4 +1,6 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'AssessmentListSummary',
 })
@@ -17,21 +19,25 @@ defineProps({
     required: true,
   },
 })
+
+const { t } = useLanguage()
 </script>
 
 <template>
   <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
     <div class="grid gap-4 lg:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))] lg:items-end">
       <div>
-        <label class="mb-2 block text-sm font-medium text-slate-700">Student</label>
+        <label class="mb-2 block text-sm font-medium text-slate-700">
+          {{ t('assessmentList.selectedStudent') }}
+        </label>
         <slot name="student-selector" />
       </div>
 
       <div
         v-for="item in [
-          { label: 'Student', value: selectedStudentLabel },
-          { label: 'Assessments', value: assessmentCount.toString() },
-          { label: 'Active Filters', value: activeFilterCount.toString() },
+          { label: t('assessmentList.selectedStudent'), value: selectedStudentLabel },
+          { label: t('assessmentList.summary.assessments'), value: assessmentCount.toString() },
+          { label: t('assessmentList.filters.activeFilters'), value: activeFilterCount.toString() },
         ]"
         :key="item.label"
         class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"

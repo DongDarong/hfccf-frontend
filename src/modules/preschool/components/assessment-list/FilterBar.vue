@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
+import { useLanguage } from '@/composables/useLanguage'
 import { PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS, PRESCHOOL_ASSESSMENT_STATUS_OPTIONS } from '@/modules/preschool/admin/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
@@ -73,8 +74,15 @@ const emit = defineEmits([
 
 const showAdvanced = ref(false)
 
-const statusOptions = PRESCHOOL_ASSESSMENT_STATUS_OPTIONS
-const periodOptions = PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS
+const { t } = useLanguage()
+
+const localizedOptions = options => options.map(option => ({
+  ...option,
+  label: option.labelKey ? t(option.labelKey) : option.label,
+}))
+
+const statusOptions = computed(() => localizedOptions(PRESCHOOL_ASSESSMENT_STATUS_OPTIONS))
+const periodOptions = computed(() => localizedOptions(PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS))
 
 const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilterCount > 0)
 </script>
@@ -83,8 +91,8 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
   <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex items-center justify-between gap-3">
       <div>
-        <h3 class="text-sm font-semibold text-slate-900">Filters</h3>
-        <p class="text-xs text-slate-500">Refine the assessment list by student context and review state.</p>
+        <h3 class="text-sm font-semibold text-slate-900">{{ t('assessmentList.filters.title') }}</h3>
+        <p class="text-xs text-slate-500">{{ t('assessmentList.filters.description') }}</p>
       </div>
 
       <div class="flex items-center gap-2">
@@ -93,8 +101,8 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
           class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
         >
           {{ activeFilterCount }}
-          <span v-if="activeFilterCount === 1">filter</span>
-          <span v-else>filters</span>
+          <span v-if="activeFilterCount === 1">{{ t('assessmentList.filters.activeFilter') }}</span>
+          <span v-else>{{ t('assessmentList.filters.activeFilters') }}</span>
         </span>
 
         <button
@@ -102,7 +110,7 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
           class="text-xs font-medium text-slate-600 transition hover:text-slate-900"
           @click="showAdvanced = !showAdvanced"
         >
-          {{ showAdvanced ? 'Hide filters' : 'More filters' }}
+          {{ showAdvanced ? t('assessmentList.filters.hideFilters') : t('assessmentList.filters.moreFilters') }}
         </button>
 
         <button
@@ -111,24 +119,24 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
           class="text-xs font-medium text-slate-600 transition hover:text-slate-900"
           @click="emit('clear-all')"
         >
-          Clear all
+          {{ t('assessmentList.filters.clearAll') }}
         </button>
       </div>
     </div>
 
     <div class="mt-4 grid gap-3 lg:grid-cols-3">
       <div class="space-y-1">
-        <label class="text-xs font-medium text-slate-700">Search</label>
+        <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.search') }}</label>
         <InputText
           :model-value="searchFilter"
-          placeholder="Search student, class, category..."
+          :placeholder="t('assessmentList.filters.searchPlaceholder')"
           class="w-full"
           @update:model-value="emit('update:searchFilter', $event)"
         />
       </div>
 
       <div class="space-y-1">
-        <label class="text-xs font-medium text-slate-700">Status</label>
+        <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.statusLabel') }}</label>
         <Select
           :model-value="statusFilter"
           :options="statusOptions"
@@ -145,7 +153,7 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
           class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
           @click="showAdvanced = !showAdvanced"
         >
-          {{ showAdvanced ? 'Hide advanced filters' : 'Show advanced filters' }}
+          {{ showAdvanced ? t('assessmentList.filters.hideAdvanced') : t('assessmentList.filters.showAdvanced') }}
         </button>
       </div>
     </div>
@@ -156,13 +164,13 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
     >
       <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">Student</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.student') }}</label>
           <Select
             :model-value="studentFilter"
             :options="studentOptions"
             option-label="label"
             option-value="value"
-            placeholder="All students"
+            :placeholder="t('assessmentList.filters.studentAll')"
             show-clear
             filter
             class="w-full"
@@ -171,13 +179,13 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">Class</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.class') }}</label>
           <Select
             :model-value="classFilter"
             :options="classOptions"
             option-label="label"
             option-value="value"
-            placeholder="All classes"
+            :placeholder="t('assessmentList.filters.classAll')"
             show-clear
             class="w-full"
             @update:model-value="emit('update:classFilter', $event)"
@@ -185,13 +193,13 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">Category</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.category') }}</label>
           <Select
             :model-value="categoryFilter"
             :options="categoryOptions"
             option-label="label"
             option-value="value"
-            placeholder="All categories"
+            :placeholder="t('assessmentList.filters.categoryAll')"
             show-clear
             class="w-full"
             @update:model-value="emit('update:categoryFilter', $event)"
@@ -199,13 +207,13 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">Period</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.period') }}</label>
           <Select
             :model-value="periodFilter"
             :options="periodOptions"
             option-label="label"
             option-value="value"
-            placeholder="All periods"
+            :placeholder="t('assessmentList.filters.periodAll')"
             show-clear
             class="w-full"
             @update:model-value="emit('update:periodFilter', $event)"
@@ -215,7 +223,7 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
 
       <div class="mt-3 grid gap-3 md:grid-cols-2">
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">Date from</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.dateFrom') }}</label>
           <InputText
             :model-value="dateFromFilter"
             type="date"
@@ -225,7 +233,7 @@ const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilt
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-medium text-slate-700">Date to</label>
+          <label class="text-xs font-medium text-slate-700">{{ t('assessmentList.filters.dateTo') }}</label>
           <InputText
             :model-value="dateToFilter"
             type="date"

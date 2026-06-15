@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import Textarea from 'primevue/textarea'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'AssessmentObservationPanel',
@@ -22,6 +23,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:observation', 'update:teacherComment'])
+const { t } = useLanguage()
 
 const observationValue = computed({
   get: () => props.observation,
@@ -37,40 +39,40 @@ const teacherCommentValue = computed({
 <template>
   <section class="space-y-4 rounded-2xl border border-slate-200 bg-white p-4">
     <div class="space-y-2">
-      <label class="block text-sm font-medium text-slate-700">Observation</label>
+      <label class="block text-sm font-medium text-slate-700">{{ t('assessmentList.observation.title') }}</label>
 
       <Textarea
         v-model="observationValue"
         :disabled="disabled"
-        placeholder="Document key observations about the student's performance..."
+        :placeholder="t('assessmentList.observation.placeholderObservation')"
         rows="4"
         class="w-full"
       />
 
       <p class="text-xs text-slate-500">
-        Include specific examples of behavior, skills demonstrated, or areas needing support.
+        {{ t('assessmentList.observation.helpObservation') }}
       </p>
     </div>
 
     <div class="space-y-2">
-      <label class="block text-sm font-medium text-slate-700">Teacher comment</label>
+      <label class="block text-sm font-medium text-slate-700">{{ t('assessmentList.observation.teacherComment') }}</label>
 
       <Textarea
         v-model="teacherCommentValue"
         :disabled="disabled"
-        placeholder="Add any additional comments or recommendations..."
+        :placeholder="t('assessmentList.observation.placeholderTeacherComment')"
         rows="3"
         class="w-full"
       />
 
       <p class="text-xs text-slate-500">
-        Optional. Include recommendations for next steps or areas for improvement.
+        {{ t('assessmentList.observation.helpTeacherComment') }}
       </p>
     </div>
 
     <div class="flex justify-between text-xs text-slate-500">
-      <span>Observation: {{ observationValue.length }} characters</span>
-      <span>Comment: {{ teacherCommentValue.length }} characters</span>
+      <span>{{ t('assessmentList.observation.observationCount') }}: {{ observationValue.length }} {{ t('assessmentList.observation.characters') }}</span>
+      <span>{{ t('assessmentList.observation.commentCount') }}: {{ teacherCommentValue.length }} {{ t('assessmentList.observation.characters') }}</span>
     </div>
   </section>
 </template>

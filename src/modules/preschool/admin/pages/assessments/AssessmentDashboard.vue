@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import { useAssessmentReports } from '@/modules/preschool/composables/useAssessmentReports'
 import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
@@ -21,6 +22,7 @@ defineOptions({
 })
 
 const router = useRouter()
+const { t } = useLanguage()
 const { loadAllLookupData, categories } = useAssessmentData()
 const { summaryStats, categoryPerformanceArray, highRiskStudents } = useAssessmentReports()
 
@@ -31,28 +33,28 @@ onMounted(async () => {
 const statCards = computed(() => [
   {
     iconClass: 'pi pi-chart-bar',
-    label: 'Total Assessments',
+    label: t('assessmentDashboard.stats.totalAssessments'),
     value: summaryStats.value.total,
     color: 'blue',
     clickable: true,
   },
   {
     iconClass: 'pi pi-check-circle',
-    label: 'Completed',
+    label: t('assessmentDashboard.stats.completed'),
     value: summaryStats.value.completed,
     color: 'emerald',
     clickable: true,
   },
   {
     iconClass: 'pi pi-hourglass',
-    label: 'Pending',
+    label: t('assessmentDashboard.stats.pending'),
     value: summaryStats.value.pending,
     color: 'amber',
     clickable: true,
   },
   {
     iconClass: 'pi pi-star',
-    label: 'Average Score',
+    label: t('assessmentDashboard.stats.averageScore'),
     value: summaryStats.value.average || '-',
     unit: '/100',
     color: 'purple',
@@ -72,13 +74,13 @@ const topCategories = computed(() =>
 const riskMetrics = computed(() => [
   {
     iconClass: 'pi pi-exclamation-triangle',
-    label: 'High Risk',
+    label: t('assessmentDashboard.riskAnalysis'),
     value: highRiskStudents.value.length,
     color: 'red',
   },
   {
     iconClass: 'pi pi-tags',
-    label: 'Categories',
+    label: t('assessmentDashboard.topAssessmentCategories'),
     value: categories.value.length,
     color: 'emerald',
   },
@@ -88,16 +90,28 @@ const groupedWorkspaceCards = computed(() => {
   const groups = new Map()
 
   PRESCHOOL_ASSESSMENT_NAV_CARDS.forEach((card) => {
-    if (!groups.has(card.group)) {
-      groups.set(card.group, [])
+    const groupLabel = card.groupKey ? t(card.groupKey) : card.group
+    if (!groups.has(groupLabel)) {
+      groups.set(groupLabel, [])
     }
-    groups.get(card.group).push(card)
+    groups.get(groupLabel).push({
+      ...card,
+      group: groupLabel,
+      title: card.titleKey ? t(card.titleKey) : card.title,
+      description: card.descriptionKey ? t(card.descriptionKey) : card.description,
+    })
   })
 
   return Array.from(groups.entries()).map(([group, cards]) => ({ group, cards }))
 })
 
-const quickStartSteps = computed(() => PRESCHOOL_ASSESSMENT_PAGE_FLOW)
+const quickStartSteps = computed(() =>
+  PRESCHOOL_ASSESSMENT_PAGE_FLOW.map(step => ({
+    ...step,
+    title: step.titleKey ? t(step.titleKey) : step.title,
+    description: step.descriptionKey ? t(step.descriptionKey) : step.description,
+  })),
+)
 
 function navigateTo(routeName) {
   router.push({ name: routeName })
@@ -112,8 +126,8 @@ function statClicked() {
   <MainLayout>
     <div class="space-y-8">
       <AssessmentPageHeader
-        title="Assessment Dashboard"
-        subtitle="Track and manage Preschool assessment work from a central workspace."
+        :title="t('assessmentDashboard.title')"
+        :subtitle="t('assessmentDashboard.subtitle')"
       />
 
       <AssessmentDashboardHero
@@ -127,13 +141,13 @@ function statClicked() {
       <AssessmentWorkspaceNavigation :sections="groupedWorkspaceCards" />
 
       <AssessmentMetricGrid
-        title="Key Metrics"
+        :title="t('assessmentDashboard.keyMetrics')"
         :stats="statCards"
         @click="statClicked"
       />
 
       <section v-if="topCategories.length > 0" class="space-y-4">
-        <h3 class="text-xl font-bold text-slate-900">Top Assessment Categories</h3>
+        <h3 class="text-xl font-bold text-slate-900">{{ t('assessmentDashboard.topAssessmentCategories') }}</h3>
         <div class="grid gap-4 md:grid-cols-3">
           <StatCard
             v-for="category in topCategories"
@@ -149,7 +163,7 @@ function statClicked() {
       </section>
 
       <AssessmentRiskSummary
-        title="Risk Analysis"
+        :title="t('assessmentDashboard.riskAnalysis')"
         :metrics="riskMetrics"
         :high-risk-count="highRiskStudents.length"
         show-high-risk-details

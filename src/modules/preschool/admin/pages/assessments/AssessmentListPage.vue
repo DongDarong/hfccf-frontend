@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
+import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentStore } from '@/modules/preschool/stores/assessmentStore'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import { useAssessmentFilters } from '@/modules/preschool/composables/useAssessmentFilters'
@@ -21,6 +22,7 @@ defineOptions({
 
 const route = useRoute()
 const store = useAssessmentStore()
+const { t } = useLanguage()
 
 const {
   loadAllLookupData,
@@ -154,12 +156,12 @@ function handlePageChange(pagination) {
   <MainLayout>
     <div class="space-y-6">
       <AssessmentPageHeader
-        title="Assessment List"
-        subtitle="Select a student, review their assessments, and manage draft or finalized records."
+        :title="t('assessmentList.title')"
+        :subtitle="t('assessmentList.subtitle')"
       />
 
       <AssessmentListSummary
-        :selected-student-label="selectedStudent?.label || 'Choose a student'"
+        :selected-student-label="selectedStudent?.label || t('assessmentList.selectedStudentPlaceholder')"
         :assessment-count="filteredAssessments.length"
         :active-filter-count="activeFilterCount"
       >
@@ -171,20 +173,20 @@ function handlePageChange(pagination) {
             option-value="value"
             filter
             show-clear
-            placeholder="Choose a student to load assessments"
+            :placeholder="t('assessmentList.selectedStudentPlaceholder')"
             class="w-full"
           />
         </template>
 
         <template #actions>
           <Button
-            label="Create Assessment"
+            :label="t('assessmentList.createAssessment')"
             icon="pi pi-plus"
             :disabled="!selectedStudentId"
             @click="handleOpenCreateForm"
           />
           <Button
-            label="Clear Filters"
+            :label="t('assessmentList.clearFilters')"
             icon="pi pi-filter-slash"
             variant="secondary"
             :disabled="!activeFilterCount"
@@ -238,11 +240,11 @@ function handlePageChange(pagination) {
         v-if="!loading && selectedStudentId && filteredAssessments.length === 0"
       >
         <AssessmentStatusEmptyState
-          title="No assessments found for the selected student."
-          message="Create the first assessment or clear filters to review the full student history."
+          :title="t('assessmentList.noAssessmentsTitle')"
+          :message="t('assessmentList.noAssessmentsMessage')"
         >
           <Button
-            label="Create Assessment"
+            :label="t('assessmentList.createAssessment')"
             icon="pi pi-plus"
             size="sm"
             class="mt-4"
@@ -256,8 +258,8 @@ function handlePageChange(pagination) {
       >
         <AssessmentStatusEmptyState
           tone="blue"
-          title="Choose a student to begin."
-          message="The Preschool assessment API is student-based, so the list opens around one student context at a time."
+          :title="t('assessmentList.chooseStudentTitle')"
+          :message="t('assessmentList.chooseStudentMessage')"
         />
       </div>
     </div>

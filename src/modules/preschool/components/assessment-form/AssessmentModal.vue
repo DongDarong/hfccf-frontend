@@ -4,6 +4,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
+import { useLanguage } from '@/composables/useLanguage'
 import StudentSelector from './StudentSelector.vue'
 import CategorySelector from './CategorySelector.vue'
 import ScoringSection from './ScoringSection.vue'
@@ -55,6 +56,14 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'save', 'finalize'])
 
 const isEditMode = computed(() => !!props.assessment?.id)
+const { t } = useLanguage()
+
+const localizedPeriods = computed(() =>
+  props.periods.map(period => ({
+    ...period,
+    label: period.labelKey ? t(period.labelKey) : period.label,
+  })),
+)
 
 function createInitialForm() {
   return {
@@ -105,7 +114,7 @@ function handleFinalize() {
 <template>
   <Dialog
     :visible="visible"
-    :header="`${isEditMode ? 'Edit' : 'Create'} assessment`"
+    :header="isEditMode ? t('assessmentList.modal.editTitle') : t('assessmentList.modal.createTitle')"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '900px' }"
     class="p-dialog-centered"
@@ -113,7 +122,7 @@ function handleFinalize() {
   >
     <form class="space-y-6">
       <section class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <h4 class="text-sm font-semibold text-slate-900">Student information</h4>
+        <h4 class="text-sm font-semibold text-slate-900">{{ t('assessmentList.modal.studentInformation') }}</h4>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <StudentSelector
@@ -125,7 +134,7 @@ function handleFinalize() {
 
           <div class="space-y-2">
             <label class="block text-sm font-medium text-slate-700">
-              Class
+              {{ t('assessmentList.modal.class') }}
               <span class="text-red-500">*</span>
             </label>
 
@@ -134,7 +143,7 @@ function handleFinalize() {
               :options="classOptions"
               option-label="label"
               option-value="value"
-              placeholder="Select a class..."
+              :placeholder="t('assessmentList.modal.selectClass')"
               :disabled="saving"
               show-clear
               class="w-full"
@@ -148,7 +157,7 @@ function handleFinalize() {
       </section>
 
       <section class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <h4 class="text-sm font-semibold text-slate-900">Assessment details</h4>
+        <h4 class="text-sm font-semibold text-slate-900">{{ t('assessmentList.modal.assessmentDetails') }}</h4>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <CategorySelector
@@ -160,16 +169,16 @@ function handleFinalize() {
 
           <div class="space-y-2">
             <label class="block text-sm font-medium text-slate-700">
-              Period
+              {{ t('assessmentList.modal.period') }}
               <span class="text-red-500">*</span>
             </label>
 
             <Select
               v-model="formData.periodLabel"
-              :options="periods"
+              :options="localizedPeriods"
               option-label="label"
               option-value="value"
-              placeholder="Select a period..."
+              :placeholder="t('assessmentList.modal.selectPeriod')"
               :disabled="saving"
               show-clear
               class="w-full"
@@ -183,7 +192,7 @@ function handleFinalize() {
 
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-700">
-            Assessment date
+            {{ t('assessmentList.modal.assessmentDate') }}
             <span class="text-red-500">*</span>
           </label>
 
@@ -219,7 +228,7 @@ function handleFinalize() {
       <div class="flex items-center justify-between gap-2">
         <Button
           v-if="isEditMode && assessment?.status === 'draft'"
-          label="Finalize and close"
+          :label="t('assessmentList.modal.finalizeAndClose')"
           icon="pi pi-check"
           severity="success"
           :loading="saving"
@@ -228,7 +237,7 @@ function handleFinalize() {
 
         <div class="flex gap-2">
           <Button
-            label="Cancel"
+            :label="t('common.cancel')"
             icon="pi pi-times"
             variant="secondary"
             :disabled="saving"
@@ -236,7 +245,7 @@ function handleFinalize() {
           />
 
           <Button
-            :label="`${isEditMode ? 'Update' : 'Create'} & save`"
+            :label="isEditMode ? t('assessmentList.modal.saveAndUpdate') : t('assessmentList.modal.saveAndCreate')"
             icon="pi pi-check"
             :loading="saving"
             @click="handleSave"

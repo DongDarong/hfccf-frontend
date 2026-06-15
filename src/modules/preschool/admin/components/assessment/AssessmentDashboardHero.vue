@@ -1,5 +1,7 @@
 <script setup>
+import { computed } from 'vue'
 import Button from '@/components/buttons/Button.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
   name: 'AssessmentDashboardHero',
@@ -13,6 +15,14 @@ defineProps({
 })
 
 const emit = defineEmits(['create', 'reports', 'settings', 'navigate'])
+
+const { t } = useLanguage()
+
+const actionLabels = computed(() => ({
+  createAssessment: t('assessmentDashboard.buttons.createAssessment'),
+  openReports: t('assessmentDashboard.buttons.openReports'),
+  workspaceSettings: t('assessmentDashboard.buttons.workspaceSettings'),
+}))
 </script>
 
 <template>
@@ -20,30 +30,29 @@ const emit = defineEmits(['create', 'reports', 'settings', 'navigate'])
     <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
       <div class="space-y-4">
         <p class="text-sm font-semibold uppercase tracking-[0.22em] text-sky-600">
-          Preschool Assessment Workspace
+          {{ t('assessmentDashboard.workspaceLabel') }}
         </p>
         <h2 class="text-3xl font-bold text-slate-900">
-          Organize assessment capture, review, reports, and settings in one place.
+          {{ t('assessmentDashboard.title') }}
         </h2>
         <p class="max-w-2xl text-base leading-7 text-slate-600">
-          Start from the dashboard, move into student assessments, then review performance
-          trends and configure the module without jumping across unrelated screens.
+          {{ t('assessmentDashboard.heroDescription') }}
         </p>
 
         <div class="flex flex-wrap gap-3">
           <Button
-            label="Create Assessment"
+            :label="actionLabels.createAssessment"
             icon="pi pi-plus"
             @click="emit('create')"
           />
           <Button
-            label="Open Reports"
+            :label="actionLabels.openReports"
             icon="pi pi-chart-bar"
             variant="secondary"
             @click="emit('reports')"
           />
           <Button
-            label="Workspace Settings"
+            :label="actionLabels.workspaceSettings"
             icon="pi pi-cog"
             variant="secondary"
             @click="emit('settings')"
@@ -53,7 +62,7 @@ const emit = defineEmits(['create', 'reports', 'settings', 'navigate'])
 
       <div class="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
         <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Workflow
+          {{ t('assessmentDashboard.workflowLabel') }}
         </p>
         <div class="mt-4 space-y-3">
           <button
