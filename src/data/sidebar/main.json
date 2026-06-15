@@ -7,7 +7,6 @@
       "className": "sidebar-section--default",
       "access": {
         "scopes": [
-          "admin",
           "staff"
         ],
         "allowSuperAdmin": false
