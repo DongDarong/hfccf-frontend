@@ -48,7 +48,7 @@ const workflowSteps = [
     description: 'Design and build new assessment forms',
     icon: '✏️',
     color: '#10b981',
-    action: () => router.push({ name: 'assessment-form-create' }),
+    action: () => router.push({ name: 'preschool-assessment-form-builder' }),
     badge: formStats.value.totalForms,
   },
   {
@@ -93,7 +93,7 @@ onMounted(load)
           <Button
             label="New Form"
             icon="pi pi-plus"
-            @click="router.push({ name: 'assessment-form-create' })"
+            @click="router.push({ name: 'preschool-assessment-form-builder' })"
           />
         </template>
       </HeaderSection>
@@ -108,7 +108,7 @@ onMounted(load)
             <Button
               label="New Form"
               icon="pi pi-plus"
-              @click="router.push({ name: 'assessment-form-create' })"
+              @click="router.push({ name: 'preschool-assessment-form-builder' })"
             />
             <Button
               label="Manage Forms"
@@ -265,7 +265,7 @@ onMounted(load)
               <div class="forms-tracker__related-arrow">→</div>
             </div>
 
-            <div class="forms-tracker__related-card" @click="router.push({ name: 'assessment-submission-list' })">
+            <div class="forms-tracker__related-card" @click="router.push({ name: 'dashboard-preschool-admin-forms-review' })">
               <div class="forms-tracker__related-icon">📥</div>
               <div class="forms-tracker__related-info">
                 <div class="forms-tracker__related-title">Submissions</div>
@@ -274,7 +274,7 @@ onMounted(load)
               <div class="forms-tracker__related-arrow">→</div>
             </div>
 
-            <div class="forms-tracker__related-card" @click="router.push({ name: 'assessment-wizard' })">
+            <div class="forms-tracker__related-card" @click="router.push({ name: 'preschool-assessment-form-builder' })">
               <div class="forms-tracker__related-icon">✨</div>
               <div class="forms-tracker__related-info">
                 <div class="forms-tracker__related-title">Assessment Wizard</div>
@@ -283,7 +283,7 @@ onMounted(load)
               <div class="forms-tracker__related-arrow">→</div>
             </div>
 
-            <div class="forms-tracker__related-card" @click="router.push({ name: 'assessment-reports' })">
+            <div class="forms-tracker__related-card" @click="router.push({ name: 'preschool-assessment-reports' })">
               <div class="forms-tracker__related-icon">📈</div>
               <div class="forms-tracker__related-info">
                 <div class="forms-tracker__related-title">Reports</div>

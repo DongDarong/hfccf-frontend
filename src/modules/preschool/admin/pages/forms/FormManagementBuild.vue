@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import Button from '@/components/buttons/Button.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import FormManagementHero from '@/modules/preschool/admin/components/form-management/FormManagementHero.vue'
@@ -22,8 +23,8 @@ function safeText(key, fallback) {
 
 const heroSummary = computed(() =>
   safeText(
-    'preschoolScaffold.formManagement.pages.build.description',
-    'Create and refine forms with the guided tools.',
+    'assessmentFormBuilder.subtitle',
+    'Design assessment forms, scoring rubrics, and reusable question layouts.',
   ),
 )
 
@@ -34,14 +35,14 @@ const quickLinks = computed(() => [
     icon: 'pi pi-arrow-left',
   },
   {
-    label: safeText('preschoolScaffold.formManagement.cards.newForm.title', 'New Form'),
-    action: () => router.push({ name: 'assessment-form-create' }),
-    icon: 'pi pi-plus',
+    label: safeText('assessmentFormBuilder.actions.saveDraft', 'Save Draft'),
+    action: () => {},
+    icon: 'pi pi-save',
   },
   {
-    label: safeText('preschoolScaffold.formManagement.cards.wizard.title', 'Wizard'),
-    action: () => router.push({ name: 'assessment-wizard' }),
-    icon: 'pi pi-sparkles',
+    label: safeText('assessmentFormBuilder.actions.preview', 'Preview'),
+    action: () => {},
+    icon: 'pi pi-eye',
   },
 ])
 </script>
@@ -50,38 +51,49 @@ const quickLinks = computed(() => [
   <MainLayout>
     <section class="preschool-form-management-page">
       <HeaderSection
-        :title="safeText('preschoolScaffold.formManagement.pages.build.title', 'Build Forms')"
-        :subtitle="safeText('preschoolScaffold.formManagement.pages.build.subtitle', 'Create and refine forms with the guided tools.')"
+        :title="safeText('assessmentFormBuilder.title', 'Form Builder')"
+        :subtitle="safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.')"
       />
 
       <div class="workflow-guidance">
         <p class="workflow-guidance__step">
-          <span class="workflow-guidance__icon">🔧</span>
-          <strong>Start here:</strong> Create a new form or edit an existing one
+          <span class="workflow-guidance__icon">🧩</span>
+          <strong>{{ safeText('assessmentFormBuilder.guidance.start', 'Start here:') }}</strong>
+          <span>{{ safeText('assessmentFormBuilder.guidance.startDescription', 'Create a new form or edit an existing one') }}</span>
         </p>
         <p class="workflow-guidance__step">
           <span class="workflow-guidance__icon">⚙️</span>
-          <strong>Then configure:</strong> Set up fields, scoring, and printing options
+          <strong>{{ safeText('assessmentFormBuilder.guidance.configure', 'Then configure:') }}</strong>
+          <span>{{ safeText('assessmentFormBuilder.guidance.configureDescription', 'Set up fields, scoring, and printing options') }}</span>
         </p>
         <p class="workflow-guidance__step">
           <span class="workflow-guidance__icon">✅</span>
-          <strong>Finally publish:</strong> Deploy and activate forms for use
+          <strong>{{ safeText('assessmentFormBuilder.guidance.publish', 'Finally publish:') }}</strong>
+          <span>{{ safeText('assessmentFormBuilder.guidance.publishDescription', 'Deploy and activate forms for use') }}</span>
         </p>
       </div>
 
       <FormManagementHero
-        :eyebrow="safeText('preschoolScaffold.formManagement.pages.build.eyebrow', 'Form builder')"
-        :title="safeText('preschoolScaffold.formManagement.pages.build.title', 'Build Forms')"
-        :description="safeText('preschoolScaffold.formManagement.pages.build.description', 'Create and refine forms with the guided tools.')"
-        :meta-label="safeText('preschoolScaffold.formManagement.hero.metricForms', 'Workspace')"
+        :eyebrow="safeText('assessmentFormBuilder.badge', 'Preschool Assessment')"
+        :title="safeText('assessmentFormBuilder.title', 'Form Builder')"
+        :description="safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.')"
+        :meta-label="safeText('assessmentFormBuilder.metaLabel', 'Workspace')"
         :meta-note="heroSummary"
         :quick-links="quickLinks"
       />
 
+      <div class="builder-launch">
+        <Button
+          :label="safeText('assessmentFormBuilder.actions.launch', 'Open Form Builder')"
+          icon="pi pi-arrow-right"
+          @click="router.push({ name: 'preschool-assessment-form-builder' })"
+        />
+      </div>
+
       <FormManagementSection
-        :eyebrow="safeText('preschoolScaffold.formManagement.pages.build.eyebrow', 'Form builder')"
-        :title="safeText('preschoolScaffold.formManagement.pages.build.title', 'Build Forms')"
-        :badge="safeText('preschoolScaffold.formManagement.hero.openLabel', 'Open')"
+        :eyebrow="safeText('assessmentFormBuilder.sections.title', 'Build Workspace')"
+        :title="safeText('assessmentFormBuilder.sections.title', 'Build Workspace')"
+        :badge="safeText('assessmentFormBuilder.actions.open', 'Open')"
         grid-class="preschool-form-management-section__grid--two"
         card-class="preschool-form-management-card__surface--build"
         :cards="build"
@@ -99,8 +111,8 @@ const quickLinks = computed(() => [
 
 .workflow-guidance {
   border-radius: 1rem;
-  border: 1px solid #86efac;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -114,10 +126,20 @@ const quickLinks = computed(() => [
   gap: 0.75rem;
   font-size: 0.95rem;
   color: #475569;
+  flex-wrap: wrap;
+}
+
+.workflow-guidance__step strong {
+  color: #1e3a8a;
 }
 
 .workflow-guidance__icon {
   font-size: 1.25rem;
   flex-shrink: 0;
+}
+
+.builder-launch {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

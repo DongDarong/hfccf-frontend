@@ -35,12 +35,12 @@ const quickLinks = computed(() => [
   },
   {
     label: safeText('preschoolScaffold.formManagement.cards.forms.title', 'Forms'),
-    action: () => router.push({ name: 'assessment-form-list' }),
+    action: () => router.push({ name: 'dashboard-preschool-admin-forms-manage' }),
     icon: 'pi pi-folder-open',
   },
   {
     label: safeText('preschoolScaffold.formManagement.cards.auditLogs.title', 'Audit Logs'),
-    action: () => router.push({ name: 'assessment-audit-logs' }),
+    action: () => router.push({ name: 'dashboard-preschool-admin-lifecycle-audit' }),
     icon: 'pi pi-history',
   },
 ])

@@ -41,6 +41,22 @@ export const assessmentRoutes = [
   },
 
   {
+    path: 'assessments/form-builder',
+    name: 'preschool-assessment-form-builder',
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentFormBuilderPage.vue'),
+    meta: {
+      requiresAuth: true,
+      scopes: ['adminpreschool'],
+      title: 'Assessment Form Builder',
+      breadcrumbs: [
+        { label: 'Preschool', name: 'dashboard-preschool-admin' },
+        { label: 'Assessments', name: 'preschool-assessment-dashboard' },
+        { label: 'Form Builder', active: true },
+      ],
+    },
+  },
+
+  {
     path: 'assessments/reports',
     name: 'preschool-assessment-reports',
     component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentReportsPage.vue'),
