@@ -25,6 +25,51 @@ export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_SECTIONS = [
   },
 ]
 
+export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_PALETTE = [
+  {
+    key: 'shortText',
+    group: 'core',
+    icon: 'pi pi-pencil',
+    titleFallback: 'Short Text',
+    descriptionFallback: 'Single line text input for names and brief answers.',
+  },
+  {
+    key: 'longText',
+    group: 'core',
+    icon: 'pi pi-align-left',
+    titleFallback: 'Long Text',
+    descriptionFallback: 'Multi-line response field for narratives and notes.',
+  },
+  {
+    key: 'dropdown',
+    group: 'choices',
+    icon: 'pi pi-chevron-down',
+    titleFallback: 'Dropdown',
+    descriptionFallback: 'Pick one option from a structured list.',
+  },
+  {
+    key: 'rating',
+    group: 'choices',
+    icon: 'pi pi-star',
+    titleFallback: 'Rating Scale',
+    descriptionFallback: 'Score an answer with a consistent rating scale.',
+  },
+  {
+    key: 'table',
+    group: 'structured',
+    icon: 'pi pi-table',
+    titleFallback: 'Table / Grid',
+    descriptionFallback: 'Capture repeated answers in a matrix layout.',
+  },
+  {
+    key: 'signature',
+    group: 'structured',
+    icon: 'pi pi-sign-in',
+    titleFallback: 'Signature',
+    descriptionFallback: 'Collect guardian, teacher, or reviewer approval.',
+  },
+]
+
 export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_CANVAS = [
   {
     key: 'studentProfile',
@@ -48,6 +93,94 @@ export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_CANVAS = [
     descriptionFallback: 'Weights, thresholds, and risk rules.',
   },
 ]
+
+export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_DEFAULT_SECTIONS = [
+  {
+    key: 'studentProfile',
+    titleFallback: 'Student Profile',
+    descriptionFallback: 'Identity, class, and academic information.',
+    questionCount: 4,
+    hintFallback: 'Place core identification and academic questions here.',
+  },
+  {
+    key: 'family',
+    titleFallback: 'Family Information',
+    descriptionFallback: 'Guardian contacts, household composition, and support data.',
+    questionCount: 5,
+    hintFallback: 'Add household and guardian questions to this section.',
+  },
+  {
+    key: 'scoring',
+    titleFallback: 'Scoring Rubric',
+    descriptionFallback: 'Weights, thresholds, and risk rules.',
+    questionCount: 3,
+    hintFallback: 'Map question scores to risk categories and thresholds.',
+  },
+]
+
+export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_SECTION_QUESTION_SEEDS = {
+  studentProfile: [
+    {
+      key: 'shortText',
+      titleFallback: 'Student name',
+      descriptionFallback: 'Capture the full legal name.',
+    },
+    {
+      key: 'shortText',
+      titleFallback: 'Student ID',
+      descriptionFallback: 'Record the public student identifier.',
+    },
+    {
+      key: 'dropdown',
+      titleFallback: 'Gender',
+      descriptionFallback: 'Select the student gender.',
+    },
+    {
+      key: 'date',
+      titleFallback: 'Date of birth',
+      descriptionFallback: 'Use the calendar date of birth.',
+    },
+  ],
+  family: [
+    {
+      key: 'shortText',
+      titleFallback: 'Guardian name',
+      descriptionFallback: 'Primary guardian or caregiver name.',
+    },
+    {
+      key: 'shortText',
+      titleFallback: 'Phone number',
+      descriptionFallback: 'Primary contact phone number.',
+    },
+    {
+      key: 'dropdown',
+      titleFallback: 'Household status',
+      descriptionFallback: 'Choose the household category.',
+    },
+    {
+      key: 'longText',
+      titleFallback: 'Home situation',
+      descriptionFallback: 'Describe the family living context.',
+    },
+  ],
+  scoring: [
+    {
+      key: 'rating',
+      titleFallback: 'Risk rating',
+      descriptionFallback: 'Assign the assessment risk level.',
+    },
+    {
+      key: 'table',
+      titleFallback: 'Scoring table',
+      descriptionFallback: 'Group scores by category and band.',
+    },
+    {
+      key: 'signature',
+      titleFallback: 'Reviewer signature',
+      descriptionFallback: 'Capture the final approval signature.',
+    },
+  ],
+}
 
 export const PRESCHOOL_ASSESSMENT_FORM_BUILDER_SETTINGS = [
   {
