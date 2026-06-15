@@ -14,7 +14,6 @@ const props = defineProps({
   options: {
     type: Array,
     required: true,
-    // Expected: [{ label, value, raw }, ...]
   },
   loading: {
     type: Boolean,
@@ -40,27 +39,23 @@ const selectedValue = computed({
   get: () => props.modelValue,
   set: (value) => {
     emit('update:modelValue', value)
-    const selected = props.options.find(opt => opt.value === value)
+    const selected = props.options.find(option => option.value === value)
     if (selected) {
       emit('change', selected)
     }
   },
 })
 
-const sortedOptions = computed(() => {
-  return [...props.options].sort((a, b) => a.label.localeCompare(b.label))
-})
+const sortedOptions = computed(() => [...props.options].sort((a, b) => a.label.localeCompare(b.label)))
 </script>
 
 <template>
   <div class="space-y-2">
-    <!-- Label -->
-    <label class="block text-sm font-medium text-gray-700">
-      👥 Select Student
+    <label class="block text-sm font-medium text-slate-700">
+      Select student
       <span class="text-red-500">*</span>
     </label>
 
-    <!-- Select -->
     <Select
       v-model="selectedValue"
       :options="sortedOptions"
@@ -69,19 +64,17 @@ const sortedOptions = computed(() => {
       placeholder="Choose a student..."
       :loading="loading"
       :disabled="disabled || loading"
-      :show-clear="clearable && selectedValue"
+      :show-clear="clearable && selectedValue !== null && selectedValue !== undefined && selectedValue !== ''"
       filter
       class="w-full"
     />
 
-    <!-- Error Message -->
     <p v-if="error" class="text-sm text-red-600">
-      ❌ {{ error }}
+      {{ error }}
     </p>
 
-    <!-- Help Text -->
-    <p class="text-xs text-gray-500">
-      Search by student name or code
+    <p class="text-xs text-slate-500">
+      Search by student name or identifier.
     </p>
   </div>
 </template>

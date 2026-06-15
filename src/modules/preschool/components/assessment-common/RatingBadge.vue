@@ -3,16 +3,16 @@ defineOptions({
   name: 'AssessmentRatingBadge',
 })
 
-defineProps({
+const props = defineProps({
   rating: {
     type: String,
     required: true,
-    validator: (value) => ['Excellent', 'Good', 'Fair', 'Needs Improvement'].includes(value),
+    validator: value => ['Excellent', 'Good', 'Fair', 'Needs Improvement'].includes(value),
   },
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    validator: value => ['sm', 'md', 'lg'].includes(value),
   },
 })
 
@@ -22,28 +22,24 @@ const ratingConfig = {
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
-    dotColor: 'bg-blue-400',
   },
   Good: {
     icon: '👍',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
-    dotColor: 'bg-emerald-400',
   },
   Fair: {
     icon: '👌',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
-    dotColor: 'bg-amber-400',
   },
   'Needs Improvement': {
     icon: '⚠️',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
     textColor: 'text-red-700',
-    dotColor: 'bg-red-400',
   },
 }
 
@@ -67,9 +63,9 @@ const sizeClass = sizeClasses[props.size]
       sizeClass,
     ]"
   >
-    <span :class="['flex-shrink-0', { 'text-xs': size === 'sm', 'text-sm': size !== 'sm' }]">
+    <span :class="['flex-shrink-0', { 'text-xs': props.size === 'sm', 'text-sm': props.size !== 'sm' }]">
       {{ config.icon }}
     </span>
-    <span class="font-medium">{{ rating }}</span>
+    <span class="font-medium">{{ props.rating }}</span>
   </div>
 </template>

@@ -1,8 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
-import Button from '@/components/buttons/Button.vue'
+import { PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS, PRESCHOOL_ASSESSMENT_STATUS_OPTIONS } from '@/modules/preschool/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
   name: 'AssessmentFilterBar',
@@ -33,6 +33,14 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  dateFromFilter: {
+    type: String,
+    default: null,
+  },
+  dateToFilter: {
+    type: String,
+    default: null,
+  },
   studentOptions: {
     type: Array,
     required: true,
@@ -58,47 +66,49 @@ const emit = defineEmits([
   'update:periodFilter',
   'update:statusFilter',
   'update:searchFilter',
+  'update:dateFromFilter',
+  'update:dateToFilter',
   'clear-all',
 ])
 
-const statusOptions = [
-  { label: 'All Statuses', value: 'all' },
-  { label: '✏️ Draft', value: 'draft' },
-  { label: '✅ Finalized', value: 'finalized' },
-]
-
-const periodOptions = [
-  { label: 'All Periods', value: null },
-  { label: 'Q1', value: 'Q1' },
-  { label: 'Q2', value: 'Q2' },
-  { label: 'Q3', value: 'Q3' },
-  { label: 'Q4', value: 'Q4' },
-  { label: 'Midterm', value: 'Midterm' },
-  { label: 'Final', value: 'Final' },
-]
-
 const showAdvanced = ref(false)
 
-// Compact view - show only main filters, advanced filters below
-const mainFilters = computed(() => ['search', 'status'])
-const advancedFilters = computed(() => ['student', 'class', 'category', 'period'])
+const statusOptions = PRESCHOOL_ASSESSMENT_STATUS_OPTIONS
+const periodOptions = PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS
+
+const hasAdvancedFilters = computed(() => showAdvanced.value || props.activeFilterCount > 0)
 </script>
 
 <template>
-  <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-gray-900">🔍 Filters</h3>
+  <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h3 class="text-sm font-semibold text-slate-900">Filters</h3>
+        <p class="text-xs text-slate-500">Refine the assessment list by student context and review state.</p>
+      </div>
+
       <div class="flex items-center gap-2">
-        <span v-if="activeFilterCount > 0" class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+        <span
+          v-if="activeFilterCount > 0"
+          class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
+        >
           {{ activeFilterCount }}
           <span v-if="activeFilterCount === 1">filter</span>
           <span v-else>filters</span>
         </span>
+
+        <button
+          type="button"
+          class="text-xs font-medium text-slate-600 transition hover:text-slate-900"
+          @click="showAdvanced = !showAdvanced"
+        >
+          {{ showAdvanced ? 'Hide filters' : 'More filters' }}
+        </button>
+
         <button
           v-if="activeFilterCount > 0"
           type="button"
-          class="text-xs text-gray-600 hover:text-gray-900"
+          class="text-xs font-medium text-slate-600 transition hover:text-slate-900"
           @click="emit('clear-all')"
         >
           Clear all
@@ -106,22 +116,19 @@ const advancedFilters = computed(() => ['student', 'class', 'category', 'period'
       </div>
     </div>
 
-    <!-- Main Filters Row -->
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <!-- Search Filter -->
+    <div class="mt-4 grid gap-3 lg:grid-cols-3">
       <div class="space-y-1">
-        <label class="text-xs font-medium text-gray-700">Search</label>
+        <label class="text-xs font-medium text-slate-700">Search</label>
         <InputText
           :model-value="searchFilter"
-          placeholder="Student name, class..."
+          placeholder="Search student, class, category..."
           class="w-full"
           @update:model-value="emit('update:searchFilter', $event)"
         />
       </div>
 
-      <!-- Status Filter -->
       <div class="space-y-1">
-        <label class="text-xs font-medium text-gray-700">Status</label>
+        <label class="text-xs font-medium text-slate-700">Status</label>
         <Select
           :model-value="statusFilter"
           :options="statusOptions"
@@ -132,24 +139,24 @@ const advancedFilters = computed(() => ['student', 'class', 'category', 'period'
         />
       </div>
 
-      <!-- Toggle Advanced -->
       <div class="flex items-end">
         <button
           type="button"
-          class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
           @click="showAdvanced = !showAdvanced"
         >
-          {{ showAdvanced ? '⬆️ Hide Filters' : '⬇️ More Filters' }}
+          {{ showAdvanced ? 'Hide advanced filters' : 'Show advanced filters' }}
         </button>
       </div>
     </div>
 
-    <!-- Advanced Filters -->
-    <div v-if="showAdvanced" class="border-t border-gray-200 pt-4">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Student Filter -->
+    <div
+      v-if="hasAdvancedFilters"
+      class="mt-4 border-t border-slate-200 pt-4"
+    >
+      <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div class="space-y-1">
-          <label class="text-xs font-medium text-gray-700">Student</label>
+          <label class="text-xs font-medium text-slate-700">Student</label>
           <Select
             :model-value="studentFilter"
             :options="studentOptions"
@@ -163,9 +170,8 @@ const advancedFilters = computed(() => ['student', 'class', 'category', 'period'
           />
         </div>
 
-        <!-- Class Filter -->
         <div class="space-y-1">
-          <label class="text-xs font-medium text-gray-700">Class</label>
+          <label class="text-xs font-medium text-slate-700">Class</label>
           <Select
             :model-value="classFilter"
             :options="classOptions"
@@ -178,9 +184,8 @@ const advancedFilters = computed(() => ['student', 'class', 'category', 'period'
           />
         </div>
 
-        <!-- Category Filter -->
         <div class="space-y-1">
-          <label class="text-xs font-medium text-gray-700">Category</label>
+          <label class="text-xs font-medium text-slate-700">Category</label>
           <Select
             :model-value="categoryFilter"
             :options="categoryOptions"
@@ -193,9 +198,8 @@ const advancedFilters = computed(() => ['student', 'class', 'category', 'period'
           />
         </div>
 
-        <!-- Period Filter -->
         <div class="space-y-1">
-          <label class="text-xs font-medium text-gray-700">Period</label>
+          <label class="text-xs font-medium text-slate-700">Period</label>
           <Select
             :model-value="periodFilter"
             :options="periodOptions"
@@ -208,17 +212,28 @@ const advancedFilters = computed(() => ['student', 'class', 'category', 'period'
           />
         </div>
       </div>
+
+      <div class="mt-3 grid gap-3 md:grid-cols-2">
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700">Date from</label>
+          <InputText
+            :model-value="dateFromFilter"
+            type="date"
+            class="w-full"
+            @update:model-value="emit('update:dateFromFilter', $event)"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700">Date to</label>
+          <InputText
+            :model-value="dateToFilter"
+            type="date"
+            class="w-full"
+            @update:model-value="emit('update:dateToFilter', $event)"
+          />
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
-
-<script>
-import { ref } from 'vue'
-
-export default {
-  setup() {
-    const showAdvanced = ref(false)
-    return { showAdvanced }
-  },
-}
-</script>

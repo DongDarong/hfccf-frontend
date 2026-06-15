@@ -8,6 +8,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  iconClass: {
+    type: String,
+    default: '',
+  },
   label: {
     type: String,
     required: true,
@@ -23,7 +27,7 @@ const props = defineProps({
   color: {
     type: String,
     default: 'blue',
-    validator: (value) => ['blue', 'emerald', 'amber', 'red', 'purple', 'pink'].includes(value),
+    validator: value => ['blue', 'emerald', 'amber', 'red', 'purple', 'pink'].includes(value),
   },
   trend: {
     type: Object,
@@ -85,22 +89,26 @@ const config = colorConfig[props.color]
       'rounded-lg border p-4 transition-all duration-200',
       config.bgColor,
       config.borderColor,
-      clickable ? 'cursor-pointer hover:shadow-md hover:border-current' : '',
+      props.clickable ? 'cursor-pointer hover:shadow-md hover:border-current' : '',
     ]"
-    @click="clickable && emit('click')"
+    @click="props.clickable && emit('click')"
   >
     <div :class="['mb-3 w-fit rounded-lg p-2', config.iconBg]">
-      <span class="text-2xl">{{ icon }}</span>
+      <i v-if="iconClass" :class="[iconClass, 'text-2xl']" />
+      <span v-else class="text-2xl">{{ icon }}</span>
     </div>
 
-    <p :class="['text-sm font-medium text-gray-600']">{{ label }}</p>
+    <p class="text-sm font-medium text-gray-600">{{ label }}</p>
 
     <div class="mt-2 flex items-baseline gap-1">
       <span :class="['text-3xl font-bold', config.textColor]">{{ value }}</span>
-      <span v-if="unit" :class="['text-sm text-gray-500']">{{ unit }}</span>
+      <span v-if="unit" class="text-sm text-gray-500">{{ unit }}</span>
     </div>
 
-    <div v-if="trend" :class="['mt-2 flex items-center gap-1 text-xs', trend.positive ? 'text-emerald-600' : 'text-red-600']">
+    <div
+      v-if="trend"
+      :class="['mt-2 flex items-center gap-1 text-xs', trend.positive ? 'text-emerald-600' : 'text-red-600']"
+    >
       <span>{{ trend.positive ? '↑' : '↓' }}</span>
       <span>{{ trend.value }} {{ trend.label }}</span>
     </div>

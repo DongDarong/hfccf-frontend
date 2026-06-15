@@ -14,7 +14,6 @@ const props = defineProps({
   categories: {
     type: Array,
     required: true,
-    // Expected: [{ id, name, code }, ...]
   },
   loading: {
     type: Boolean,
@@ -36,7 +35,7 @@ const selectedValue = computed({
   get: () => props.modelValue,
   set: (value) => {
     emit('update:modelValue', value)
-    const selected = props.categories.find(cat => cat.id === value)
+    const selected = props.categories.find(category => category.id === value)
     if (selected) {
       emit('change', selected)
     }
@@ -44,23 +43,21 @@ const selectedValue = computed({
 })
 
 const categoryOptions = computed(() =>
-  props.categories.map(cat => ({
-    label: cat.name,
-    value: cat.id,
-    code: cat.code,
-  }))
+  props.categories.map(category => ({
+    label: category.name,
+    value: category.id,
+    code: category.code,
+  })),
 )
 </script>
 
 <template>
   <div class="space-y-2">
-    <!-- Label -->
-    <label class="block text-sm font-medium text-gray-700">
-      🎯 Assessment Category
+    <label class="block text-sm font-medium text-slate-700">
+      Assessment category
       <span class="text-red-500">*</span>
     </label>
 
-    <!-- Select -->
     <Select
       v-model="selectedValue"
       :options="categoryOptions"
@@ -73,14 +70,12 @@ const categoryOptions = computed(() =>
       class="w-full"
     />
 
-    <!-- Error Message -->
     <p v-if="error" class="text-sm text-red-600">
-      ❌ {{ error }}
+      {{ error }}
     </p>
 
-    <!-- Help Text -->
-    <p class="text-xs text-gray-500">
-      Select the assessment category (e.g., Language, Math, Social-Emotional)
+    <p class="text-xs text-slate-500">
+      Select the assessment category for this record.
     </p>
   </div>
 </template>

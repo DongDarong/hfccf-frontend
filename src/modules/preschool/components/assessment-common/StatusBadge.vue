@@ -3,16 +3,16 @@ defineOptions({
   name: 'AssessmentStatusBadge',
 })
 
-defineProps({
+const props = defineProps({
   status: {
     type: String,
     required: true,
-    validator: (value) => ['draft', 'finalized'].includes(value),
+    validator: value => ['draft', 'finalized'].includes(value),
   },
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    validator: value => ['sm', 'md', 'lg'].includes(value),
   },
 })
 
@@ -23,7 +23,6 @@ const statusConfig = {
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
-    dotColor: 'bg-amber-400',
   },
   finalized: {
     label: 'Finalized',
@@ -31,7 +30,6 @@ const statusConfig = {
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
-    dotColor: 'bg-emerald-400',
   },
 }
 
@@ -55,7 +53,7 @@ const sizeClass = sizeClasses[props.size]
       sizeClass,
     ]"
   >
-    <span :class="['flex-shrink-0', { 'text-xs': size === 'sm', 'text-sm': size !== 'sm' }]">
+    <span :class="['flex-shrink-0', { 'text-xs': props.size === 'sm', 'text-sm': props.size !== 'sm' }]">
       {{ config.icon }}
     </span>
     <span class="font-medium">{{ config.label }}</span>

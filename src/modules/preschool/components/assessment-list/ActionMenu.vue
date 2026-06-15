@@ -1,7 +1,7 @@
 <script setup>
+import { computed, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import Menu from 'primevue/menu'
-import { ref } from 'vue'
 
 defineOptions({
   name: 'AssessmentActionMenu',
@@ -30,37 +30,44 @@ const emit = defineEmits(['edit', 'finalize', 'archive', 'view'])
 
 const menuRef = ref(null)
 
-const items = ref([
-  {
-    label: '👁️ View Details',
-    icon: 'pi pi-eye',
-    command: () => emit('view'),
-  },
-  {
-    label: '✏️ Edit',
-    icon: 'pi pi-pencil',
-    command: () => emit('edit'),
-    visible: props.canEdit,
-  },
-  {
-    label: '✅ Finalize',
-    icon: 'pi pi-check',
-    command: () => emit('finalize'),
-    visible: props.canFinalize,
-  },
-  {
-    separator: true,
-    visible: props.canArchive,
-  },
-  {
-    label: '🗑️ Archive',
-    icon: 'pi pi-trash',
-    command: () => emit('archive'),
-    visible: props.canArchive,
-  },
-])
+const items = computed(() => {
+  const list = [
+    {
+      label: 'View details',
+      icon: 'pi pi-eye',
+      command: () => emit('view', props.assessment),
+    },
+  ]
 
-const visibleItems = computed(() => items.value.filter(item => item.visible !== false))
+  if (props.canEdit) {
+    list.push({
+      label: 'Edit',
+      icon: 'pi pi-pencil',
+      command: () => emit('edit', props.assessment),
+    })
+  }
+
+  if (props.canFinalize) {
+    list.push({
+      label: 'Finalize',
+      icon: 'pi pi-check',
+      command: () => emit('finalize', props.assessment),
+    })
+  }
+
+  if (props.canArchive) {
+    list.push(
+      { separator: true },
+      {
+        label: 'Archive',
+        icon: 'pi pi-trash',
+        command: () => emit('archive', props.assessment),
+      },
+    )
+  }
+
+  return list
+})
 
 function toggle(event) {
   menuRef.value?.toggle(event)
@@ -74,17 +81,14 @@ function toggle(event) {
       rounded="full"
       variant="text"
       size="sm"
+      aria-label="Open assessment actions"
       @click="toggle"
     />
 
     <Menu
       ref="menuRef"
-      :model="visibleItems"
+      :model="items"
       :popup="true"
     />
   </div>
 </template>
-
-<script>
-import { computed } from 'vue'
-</script>

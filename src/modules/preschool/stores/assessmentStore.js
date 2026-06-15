@@ -11,6 +11,7 @@ import {
   normalizeCategory,
   prepareAssessmentData,
 } from '../services/api/preschoolStudentAssessmentApi'
+import { PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS } from '../pages/assessments/constants/preschoolAssessmentWorkspace'
 
 export const useAssessmentStore = defineStore('preschoolAssessment', () => {
   // ============================================================================
@@ -37,14 +38,7 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
 
   // Filters
   const filters = ref({
-    studentId: null,
-    classId: null,
-    categoryId: null,
-    periodLabel: null,
-    status: 'all', // 'all', 'draft', 'finalized'
-    searchQuery: '',
-    dateFrom: null,
-    dateTo: null,
+    ...PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS,
   })
 
   // UI State
@@ -360,16 +354,7 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
    * Reset all filters
    */
   function resetFilters() {
-    filters.value = {
-      studentId: null,
-      classId: null,
-      categoryId: null,
-      periodLabel: null,
-      status: 'all',
-      searchQuery: '',
-      dateFrom: null,
-      dateTo: null,
-    }
+    filters.value = { ...PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS }
     pagination.value.page = 1
   }
 
@@ -420,16 +405,7 @@ export const useAssessmentStore = defineStore('preschoolAssessment', () => {
       total: 0,
       totalPages: 0,
     }
-    filters.value = {
-      studentId: null,
-      classId: null,
-      categoryId: null,
-      periodLabel: null,
-      status: 'all',
-      searchQuery: '',
-      dateFrom: null,
-      dateTo: null,
-    }
+    filters.value = { ...PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS }
     isFormOpen.value = false
     editingAssessment.value = null
   }

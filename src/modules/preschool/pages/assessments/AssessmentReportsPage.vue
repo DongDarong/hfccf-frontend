@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -17,16 +17,13 @@ defineOptions({
 const { loadAllLookupData, categories } = useAssessmentData()
 const {
   summaryStats,
-  statusDistribution,
-  ratingDistribution,
+  riskAnalysis,
   categoryPerformanceArray,
-  studentPerformanceArray,
-  topPerformers,
   highRiskStudents,
-  assessmentTimeline,
   periodComparison,
   getRiskPercentage,
   getImprovementTrend,
+  exportData,
 } = useAssessmentReports()
 
 onMounted(async () => {
@@ -35,26 +32,26 @@ onMounted(async () => {
 
 const summaryCards = computed(() => [
   {
-    icon: '📊',
+    iconClass: 'pi pi-chart-bar',
     label: 'Total Assessments',
     value: summaryStats.value.total,
     color: 'blue',
   },
   {
-    icon: '✅',
+    iconClass: 'pi pi-check-circle',
     label: 'Completed',
     value: summaryStats.value.completed,
     color: 'emerald',
   },
   {
-    icon: '⭐',
+    iconClass: 'pi pi-star',
     label: 'Average Score',
     value: summaryStats.value.average || '-',
     unit: '/100',
     color: 'purple',
   },
   {
-    icon: '📈',
+    iconClass: 'pi pi-chart-line',
     label: 'Median Score',
     value: summaryStats.value.median || '-',
     unit: '/100',
@@ -64,33 +61,41 @@ const summaryCards = computed(() => [
 
 const riskCards = computed(() => [
   {
-    icon: '⭐',
+    iconClass: 'pi pi-star',
     label: 'Excellent (80+)',
-    value: summaryStats.value.riskAnalysis?.excellent || 0,
+    value: riskAnalysis.value.excellent || 0,
     percentage: getRiskPercentage('excellent'),
     color: 'blue',
   },
   {
-    icon: '👍',
+    iconClass: 'pi pi-thumbs-up',
     label: 'Good (70-79)',
-    value: summaryStats.value.riskAnalysis?.good || 0,
+    value: riskAnalysis.value.good || 0,
     percentage: getRiskPercentage('good'),
     color: 'emerald',
   },
   {
-    icon: '👌',
+    iconClass: 'pi pi-minus-circle',
     label: 'Fair (60-69)',
-    value: summaryStats.value.riskAnalysis?.fair || 0,
+    value: riskAnalysis.value.fair || 0,
     percentage: getRiskPercentage('fair'),
     color: 'amber',
   },
   {
-    icon: '⚠️',
+    iconClass: 'pi pi-exclamation-triangle',
     label: 'At Risk (<60)',
-    value: summaryStats.value.riskAnalysis?.atRisk || 0,
+    value: riskAnalysis.value.atRisk || 0,
     percentage: getRiskPercentage('at-risk'),
     color: 'red',
   },
+])
+
+const categoryColumns = computed(() => [
+  { field: 'categoryName', header: 'Category' },
+  { field: 'count', header: 'Assessments' },
+  { field: 'average', header: 'Average Score' },
+  { field: 'highest', header: 'Highest' },
+  { field: 'lowest', header: 'Lowest' },
 ])
 
 const improvementTrend = computed(() => getImprovementTrend())
@@ -99,56 +104,50 @@ const improvementTrend = computed(() => getImprovementTrend())
 <template>
   <MainLayout>
     <div class="space-y-8">
-      <!-- Header -->
       <HeaderSection
-        title="📈 Assessment Reports"
-        subtitle="Comprehensive analytics and performance insights"
+        title="Assessment Reports"
+        subtitle="Review performance, risk distribution, and trends across the Preschool assessment workspace."
       />
 
-      <!-- Summary Statistics -->
-      <div class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-900">📊 Summary Statistics</h3>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section class="space-y-4">
+        <h3 class="text-xl font-bold text-slate-900">Summary Statistics</h3>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             v-for="card in summaryCards"
             :key="card.label"
-            :icon="card.icon"
+            :icon="card.label"
+            :icon-class="card.iconClass"
             :label="card.label"
             :value="card.value"
             :unit="card.unit"
             :color="card.color"
           />
         </div>
-      </div>
+      </section>
 
-      <!-- Risk Analysis -->
-      <div class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-900">⚠️ Risk Level Distribution</h3>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div
+      <section class="space-y-4">
+        <h3 class="text-xl font-bold text-slate-900">Risk Level Distribution</h3>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <article
             v-for="card in riskCards"
             :key="card.label"
             :class="[
-              'rounded-lg border p-4',
+              'rounded-2xl border p-4 shadow-sm',
               card.color === 'blue' ? 'border-blue-200 bg-blue-50' :
               card.color === 'emerald' ? 'border-emerald-200 bg-emerald-50' :
               card.color === 'amber' ? 'border-amber-200 bg-amber-50' :
-              'border-red-200 bg-red-50'
+              'border-red-200 bg-red-50',
             ]"
           >
             <div class="space-y-2">
               <div class="flex items-center gap-2">
-                <span class="text-2xl">{{ card.icon }}</span>
-                <span class="text-xs font-semibold text-gray-600">{{ card.label }}</span>
+                <i :class="[card.iconClass, 'text-lg text-slate-700']" />
+                <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  {{ card.label }}
+                </span>
               </div>
-
-              <div class="text-3xl font-bold text-gray-900">{{ card.value }}</div>
-
-              <div class="text-xs text-gray-600">
-                {{ card.percentage }}% of total
-              </div>
-
-              <!-- Progress Bar -->
+              <div class="text-3xl font-bold text-slate-900">{{ card.value }}</div>
+              <div class="text-xs text-slate-600">{{ card.percentage }}% of total</div>
               <ProgressIndicator
                 :current="card.value"
                 :total="summaryStats.total"
@@ -156,13 +155,12 @@ const improvementTrend = computed(() => getImprovementTrend())
                 :color="card.color"
               />
             </div>
-          </div>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <!-- Category Performance -->
-      <div class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-900">🎯 Category Performance</h3>
+      <section class="space-y-4">
+        <h3 class="text-xl font-bold text-slate-900">Category Performance</h3>
         <DataTable
           :value="categoryPerformanceArray"
           striped-rows
@@ -170,69 +168,46 @@ const improvementTrend = computed(() => getImprovementTrend())
           responsive-layout="scroll"
           class="w-full"
         >
-          <Column field="categoryName" header="Category" />
-          <Column field="count" header="Assessments" />
-          <Column field="average" header="Average Score">
+          <Column
+            v-for="column in categoryColumns"
+            :key="column.field"
+            :field="column.field"
+            :header="column.header"
+          />
+          <Column header="Score Range">
             <template #body="{ data }">
-              <span class="font-bold text-blue-700">{{ data.average }}/100</span>
+              <span class="font-bold text-blue-700">
+                {{ data.average }}/100
+              </span>
             </template>
           </Column>
-          <Column field="highest" header="Highest" />
-          <Column field="lowest" header="Lowest" />
-          <Column header="Quality Distribution">
+          <Column header="Quality Mix">
             <template #body="{ data }">
               <div class="space-y-1 text-xs">
                 <div class="flex justify-between">
-                  <span>⭐ Excellent:</span>
+                  <span>Excellent</span>
                   <span class="font-semibold">{{ data.excellentCount }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>👍 Good:</span>
+                  <span>Good</span>
                   <span class="font-semibold">{{ data.goodCount }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>👌 Fair:</span>
+                  <span>Fair</span>
                   <span class="font-semibold">{{ data.fairCount }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>⚠️ Needs Improvement:</span>
+                  <span>Needs Improvement</span>
                   <span class="font-semibold">{{ data.needsImprovementCount }}</span>
                 </div>
               </div>
             </template>
           </Column>
         </DataTable>
-      </div>
+      </section>
 
-      <!-- Top Performers -->
-      <div class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-900">🏆 Top Performers</h3>
-        <DataTable
-          :value="topPerformers(5)"
-          striped-rows
-          show-gridlines
-          responsive-layout="scroll"
-          class="w-full"
-        >
-          <Column header="Rank">
-            <template #body="{ index }">
-              <span class="font-bold text-amber-600">{{ index + 1 }}</span>
-            </template>
-          </Column>
-          <Column field="studentName" header="Student" />
-          <Column field="average" header="Average Score">
-            <template #body="{ data }">
-              <span class="inline-block rounded-lg bg-blue-100 px-3 py-1 font-bold text-blue-700">
-                {{ data.average }}/100
-              </span>
-            </template>
-          </Column>
-        </DataTable>
-      </div>
-
-      <!-- At Risk Students -->
-      <div v-if="highRiskStudents.length > 0" class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-900">🚨 High Risk Students</h3>
+      <section class="space-y-4">
+        <h3 class="text-xl font-bold text-slate-900">Top Risk Students</h3>
         <DataTable
           :value="highRiskStudents"
           striped-rows
@@ -247,27 +222,20 @@ const improvementTrend = computed(() => getImprovementTrend())
               {{ data.assessmentDate ? new Date(data.assessmentDate).toLocaleDateString() : '-' }}
             </template>
           </Column>
-          <Column field="score" header="Score">
-            <template #body="{ data }">
-              <span class="inline-block rounded-lg bg-red-100 px-3 py-1 font-bold text-red-700">
-                {{ data.score }}
-              </span>
-            </template>
-          </Column>
+          <Column field="score" header="Score" />
           <Column field="rating" header="Rating" />
           <Column field="observation" header="Observation">
             <template #body="{ data }">
-              <span class="max-w-sm text-sm text-gray-600">
-                {{ data.observation?.substring(0, 50) }}{{ data.observation?.length > 50 ? '...' : '' }}
+              <span class="max-w-sm text-sm text-slate-600">
+                {{ data.observation?.substring(0, 60) }}{{ data.observation?.length > 60 ? '...' : '' }}
               </span>
             </template>
           </Column>
         </DataTable>
-      </div>
+      </section>
 
-      <!-- Period Comparison -->
-      <div class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-900">📅 Period Comparison</h3>
+      <section class="space-y-4">
+        <h3 class="text-xl font-bold text-slate-900">Period Comparison</h3>
         <DataTable
           :value="periodComparison"
           striped-rows
@@ -278,22 +246,21 @@ const improvementTrend = computed(() => getImprovementTrend())
           <Column field="period" header="Period" />
           <Column field="count" header="Assessments" />
           <Column field="average" header="Average Score" />
-          <Column header="Rating Distribution">
+          <Column header="Rating Mix">
             <template #body="{ data }">
-              <div class="flex gap-1 text-xs">
-                <span class="rounded bg-blue-100 px-2 py-1 text-blue-700">⭐ {{ data.excellent }}</span>
-                <span class="rounded bg-emerald-100 px-2 py-1 text-emerald-700">👍 {{ data.good }}</span>
-                <span class="rounded bg-amber-100 px-2 py-1 text-amber-700">👌 {{ data.fair }}</span>
-                <span class="rounded bg-red-100 px-2 py-1 text-red-700">⚠️ {{ data.needsImprovement }}</span>
+              <div class="flex flex-wrap gap-2 text-xs">
+                <span class="rounded bg-blue-100 px-2 py-1 text-blue-700">Excellent {{ data.excellent }}</span>
+                <span class="rounded bg-emerald-100 px-2 py-1 text-emerald-700">Good {{ data.good }}</span>
+                <span class="rounded bg-amber-100 px-2 py-1 text-amber-700">Fair {{ data.fair }}</span>
+                <span class="rounded bg-red-100 px-2 py-1 text-red-700">Needs Improvement {{ data.needsImprovement }}</span>
               </div>
             </template>
           </Column>
         </DataTable>
-      </div>
+      </section>
 
-      <!-- Improvement Trend -->
-      <div v-if="improvementTrend" class="rounded-lg border border-emerald-200 bg-emerald-50 p-6">
-        <h3 class="font-bold text-emerald-900">📈 Improvement Trend</h3>
+      <section v-if="improvementTrend" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+        <h3 class="font-bold text-emerald-900">Improvement Trend</h3>
         <div class="mt-4 text-center">
           <div class="text-4xl font-bold text-emerald-700">
             {{ improvementTrend.improved ? '↑' : '↓' }} {{ improvementTrend.change }}
@@ -304,32 +271,40 @@ const improvementTrend = computed(() => getImprovementTrend())
             {{ improvementTrend.percentage }}% change over assessment periods
           </p>
         </div>
-      </div>
+      </section>
 
-      <!-- Export Options -->
-      <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h3 class="font-semibold text-gray-900">💾 Export Reports</h3>
+      <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <h3 class="font-semibold text-slate-900">Export Reports</h3>
         <div class="mt-3 flex flex-wrap gap-2">
           <Button
-            label="📊 Export PDF"
+            label="Export PDF"
             icon="pi pi-file-pdf"
             size="sm"
             variant="secondary"
           />
           <Button
-            label="📈 Export Excel"
+            label="Export Excel"
             icon="pi pi-file-excel"
             size="sm"
             variant="secondary"
           />
           <Button
-            label="📋 Export CSV"
+            label="Export CSV"
             icon="pi pi-file-csv"
             size="sm"
             variant="secondary"
           />
+          <Button
+            label="Copy Data"
+            icon="pi pi-copy"
+            size="sm"
+            variant="secondary"
+          />
         </div>
-      </div>
+        <p class="mt-3 text-sm text-slate-600">
+          {{ exportData.length }} finalized assessment row(s) are ready for export.
+        </p>
+      </section>
     </div>
   </MainLayout>
 </template>

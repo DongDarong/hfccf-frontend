@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { useAssessmentStore } from '../stores/assessmentStore'
+import { PRESCHOOL_ASSESSMENT_RATING_OPTIONS } from '../pages/assessments/constants/preschoolAssessmentWorkspace'
 
 /**
  * useAssessmentMutations - Composable for handling assessment save/update/delete operations
@@ -80,7 +81,7 @@ export function useAssessmentMutations() {
 
     // Rating enum validation
     if (fieldName === 'rating' && value) {
-      const validRatings = ['Excellent', 'Good', 'Fair', 'Needs Improvement']
+      const validRatings = PRESCHOOL_ASSESSMENT_RATING_OPTIONS.map(option => option.value)
       if (!validRatings.includes(value)) {
         return rules.enum
       }

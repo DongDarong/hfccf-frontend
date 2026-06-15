@@ -1,5 +1,10 @@
 import { computed } from 'vue'
 import { useAssessmentStore } from '../stores/assessmentStore'
+import {
+  PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS,
+  PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS,
+  PRESCHOOL_ASSESSMENT_STATUS_OPTIONS,
+} from '../pages/assessments/constants/preschoolAssessmentWorkspace'
 
 /**
  * useAssessmentFilters - Composable for managing assessment filters
@@ -96,24 +101,12 @@ export function useAssessmentFilters() {
   /**
    * Status filter options
    */
-  const statusOptions = [
-    { label: 'All Statuses', value: 'all' },
-    { label: 'Draft', value: 'draft' },
-    { label: 'Finalized', value: 'finalized' },
-  ]
+  const statusOptions = PRESCHOOL_ASSESSMENT_STATUS_OPTIONS
 
   /**
    * Period options (can be extended based on academic calendar)
    */
-  const periodOptions = computed(() => [
-    { label: 'All Periods', value: null },
-    { label: 'Q1', value: 'Q1' },
-    { label: 'Q2', value: 'Q2' },
-    { label: 'Q3', value: 'Q3' },
-    { label: 'Q4', value: 'Q4' },
-    { label: 'Midterm', value: 'Midterm' },
-    { label: 'Final', value: 'Final' },
-  ])
+  const periodOptions = computed(() => PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS)
 
   // ============================================================================
   // METHODS - Filter Operations
@@ -123,19 +116,8 @@ export function useAssessmentFilters() {
    * Clear a specific filter
    */
   function clearFilter(filterName) {
-    const defaultValues = {
-      studentId: null,
-      classId: null,
-      categoryId: null,
-      periodLabel: null,
-      status: 'all',
-      searchQuery: '',
-      dateFrom: null,
-      dateTo: null,
-    }
-
-    if (filterName in defaultValues) {
-      store.setFilter(filterName, defaultValues[filterName])
+    if (filterName in PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS) {
+      store.setFilter(filterName, PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS[filterName])
     }
   }
 
@@ -180,17 +162,7 @@ export function useAssessmentFilters() {
    */
   function isFilterActive(filterName) {
     const value = store.filters[filterName]
-    const defaultValues = {
-      studentId: null,
-      classId: null,
-      categoryId: null,
-      periodLabel: null,
-      status: 'all',
-      searchQuery: '',
-      dateFrom: null,
-      dateTo: null,
-    }
-    return value !== defaultValues[filterName]
+    return value !== PRESCHOOL_ASSESSMENT_DEFAULT_FILTERS[filterName]
   }
 
   /**

@@ -1,15 +1,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
-import InputGroup from 'primevue/inputgroup'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Button from '@/components/buttons/Button.vue'
 import StudentSelector from './StudentSelector.vue'
 import CategorySelector from './CategorySelector.vue'
 import ScoringSection from './ScoringSection.vue'
 import ObservationPanel from './ObservationPanel.vue'
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-import Select from 'primevue/select'
+import {
+  PRESCHOOL_ASSESSMENT_DEFAULT_FORM,
+  PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS,
+} from '@/modules/preschool/pages/assessments/constants/preschoolAssessmentWorkspace'
 
 defineOptions({
   name: 'AssessmentModal',
@@ -46,14 +48,7 @@ const props = defineProps({
   },
   periods: {
     type: Array,
-    default: () => [
-      { label: 'Q1', value: 'Q1' },
-      { label: 'Q2', value: 'Q2' },
-      { label: 'Q3', value: 'Q3' },
-      { label: 'Q4', value: 'Q4' },
-      { label: 'Midterm', value: 'Midterm' },
-      { label: 'Final', value: 'Final' },
-    ],
+    default: () => PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS,
   },
 })
 
@@ -61,58 +56,41 @@ const emit = defineEmits(['update:visible', 'save', 'finalize'])
 
 const isEditMode = computed(() => !!props.assessment?.id)
 
-const formData = ref({
-  studentId: null,
-  classId: null,
-  categoryId: null,
-  periodLabel: null,
-  assessmentDate: new Date().toISOString().split('T')[0],
-  score: null,
-  rating: '',
-  observation: '',
-  teacherComment: '',
-})
+function createInitialForm() {
+  return {
+    ...PRESCHOOL_ASSESSMENT_DEFAULT_FORM,
+    assessmentDate: new Date().toISOString().split('T')[0],
+  }
+}
 
-// Initialize form with assessment data when editing
+const formData = ref(createInitialForm())
+
 watch(
   () => props.assessment,
   (assessment) => {
     if (assessment) {
       formData.value = {
-        studentId: assessment.studentId,
-        classId: assessment.classId,
-        categoryId: assessment.categoryId,
-        periodLabel: assessment.periodLabel,
-        assessmentDate: assessment.assessmentDate,
-        score: assessment.score,
-        rating: assessment.rating,
-        observation: assessment.observation,
-        teacherComment: assessment.teacherComment,
+        studentId: assessment.studentId ?? null,
+        classId: assessment.classId ?? null,
+        categoryId: assessment.categoryId ?? null,
+        periodLabel: assessment.periodLabel ?? null,
+        assessmentDate: assessment.assessmentDate ?? new Date().toISOString().split('T')[0],
+        score: assessment.score ?? null,
+        rating: assessment.rating ?? '',
+        observation: assessment.observation ?? '',
+        teacherComment: assessment.teacherComment ?? '',
       }
-    } else {
-      resetForm()
+      return
     }
-  },
-  { deep: true }
-)
 
-function resetForm() {
-  formData.value = {
-    studentId: null,
-    classId: null,
-    categoryId: null,
-    periodLabel: null,
-    assessmentDate: new Date().toISOString().split('T')[0],
-    score: null,
-    rating: '',
-    observation: '',
-    teacherComment: '',
-  }
-}
+    formData.value = createInitialForm()
+  },
+  { immediate: true },
+)
 
 function handleClose() {
   emit('update:visible', false)
-  resetForm()
+  formData.value = createInitialForm()
 }
 
 function handleSave() {
@@ -122,32 +100,22 @@ function handleSave() {
 function handleFinalize() {
   emit('finalize', props.assessment?.id)
 }
-
-const categoryOptions = computed(() =>
-  props.categories.map(cat => ({
-    label: cat.name,
-    value: cat.id,
-  }))
-)
 </script>
 
 <template>
   <Dialog
     :visible="visible"
-    :header="`${isEditMode ? '✏️ Edit' : '➕ Create'} Assessment`"
+    :header="`${isEditMode ? 'Edit' : 'Create'} assessment`"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '900px' }"
     class="p-dialog-centered"
     @update:visible="handleClose"
   >
-    <!-- Form Content -->
     <form class="space-y-6">
-      <!-- Student & Class Section -->
-      <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h4 class="font-semibold text-gray-900">👥 Student Information</h4>
+      <section class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <h4 class="text-sm font-semibold text-slate-900">Student information</h4>
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <!-- Student Selector -->
           <StudentSelector
             v-model="formData.studentId"
             :options="studentOptions"
@@ -155,10 +123,9 @@ const categoryOptions = computed(() =>
             :disabled="saving"
           />
 
-          <!-- Class (Auto-filled) -->
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">
-              🏫 Class
+            <label class="block text-sm font-medium text-slate-700">
+              Class
               <span class="text-red-500">*</span>
             </label>
 
@@ -174,53 +141,49 @@ const categoryOptions = computed(() =>
             />
 
             <p v-if="validationErrors.classId" class="text-sm text-red-600">
-              ❌ {{ validationErrors.classId }}
+              {{ validationErrors.classId }}
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Assessment Details Section -->
-      <div class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h4 class="font-semibold text-gray-900">📋 Assessment Details</h4>
+      <section class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <h4 class="text-sm font-semibold text-slate-900">Assessment details</h4>
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <!-- Category -->
           <CategorySelector
             v-model="formData.categoryId"
-            :categories="props.categories"
+            :categories="categories"
             :error="validationErrors.categoryId"
             :disabled="saving"
           />
 
-          <!-- Period -->
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">
-              📅 Period
+            <label class="block text-sm font-medium text-slate-700">
+              Period
               <span class="text-red-500">*</span>
             </label>
 
             <Select
               v-model="formData.periodLabel"
-              :options="props.periods"
+              :options="periods"
               option-label="label"
               option-value="value"
-              placeholder="Select period..."
+              placeholder="Select a period..."
               :disabled="saving"
               show-clear
               class="w-full"
             />
 
             <p v-if="validationErrors.periodLabel" class="text-sm text-red-600">
-              ❌ {{ validationErrors.periodLabel }}
+              {{ validationErrors.periodLabel }}
             </p>
           </div>
         </div>
 
-        <!-- Assessment Date -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            📆 Assessment Date
+          <label class="block text-sm font-medium text-slate-700">
+            Assessment date
             <span class="text-red-500">*</span>
           </label>
 
@@ -232,12 +195,11 @@ const categoryOptions = computed(() =>
           />
 
           <p v-if="validationErrors.assessmentDate" class="text-sm text-red-600">
-            ❌ {{ validationErrors.assessmentDate }}
+            {{ validationErrors.assessmentDate }}
           </p>
         </div>
-      </div>
+      </section>
 
-      <!-- Scoring Section -->
       <ScoringSection
         v-model:score="formData.score"
         v-model:rating="formData.rating"
@@ -246,7 +208,6 @@ const categoryOptions = computed(() =>
         :disabled="saving"
       />
 
-      <!-- Observation Section -->
       <ObservationPanel
         v-model:observation="formData.observation"
         v-model:teacher-comment="formData.teacherComment"
@@ -254,20 +215,17 @@ const categoryOptions = computed(() =>
       />
     </form>
 
-    <!-- Modal Footer -->
     <template #footer>
-      <div class="flex justify-between gap-2">
-        <!-- Left Side Actions -->
+      <div class="flex items-center justify-between gap-2">
         <Button
           v-if="isEditMode && assessment?.status === 'draft'"
-          label="Finalize & Close"
+          label="Finalize and close"
           icon="pi pi-check"
           severity="success"
           :loading="saving"
           @click="handleFinalize"
         />
 
-        <!-- Right Side Actions -->
         <div class="flex gap-2">
           <Button
             label="Cancel"
@@ -278,7 +236,7 @@ const categoryOptions = computed(() =>
           />
 
           <Button
-            :label="`${isEditMode ? 'Update' : 'Create'} & Save`"
+            :label="`${isEditMode ? 'Update' : 'Create'} & save`"
             icon="pi pi-check"
             :loading="saving"
             @click="handleSave"
