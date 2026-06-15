@@ -179,7 +179,10 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/assessments',
     name: 'dashboard-preschool-assessments',
-    component: () => import('@/modules/preschool/admin/pages/assessments/StudentAssessments.vue'),
+    redirect: to => ({
+      name: 'preschool-assessment-dashboard',
+      query: to.query,
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
@@ -188,7 +191,10 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/assessments/add',
     name: 'dashboard-preschool-assessments-add',
-    component: () => import('@/modules/preschool/admin/pages/assessments/AddAssessment.vue'),
+    redirect: to => ({
+      name: 'preschool-assessment-list',
+      query: to.query,
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
@@ -197,7 +203,10 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/assessments/summary',
     name: 'dashboard-preschool-progress-summary',
-    component: () => import('@/modules/preschool/admin/pages/assessments/ProgressSummary.vue'),
+    redirect: to => ({
+      name: 'preschool-assessment-reports',
+      query: to.query,
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
@@ -486,4 +495,3 @@ export const preschoolRoutes = [
     },
   }),
 ]
-
