@@ -2,13 +2,15 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import { useAssessmentStore } from '@/modules/preschool/stores/assessmentStore'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import { useAssessmentFilters } from '@/modules/preschool/composables/useAssessmentFilters'
 import { useAssessmentMutations } from '@/modules/preschool/composables/useAssessmentMutations'
+import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
+import AssessmentListSummary from '@/modules/preschool/admin/components/assessment/AssessmentListSummary.vue'
+import AssessmentStatusEmptyState from '@/modules/preschool/admin/components/assessment/AssessmentStatusEmptyState.vue'
 import FilterBar from '@/modules/preschool/components/assessment-list/FilterBar.vue'
 import AssessmentTable from '@/modules/preschool/components/assessment-list/AssessmentTable.vue'
 import AssessmentModal from '@/modules/preschool/components/assessment-form/AssessmentModal.vue'
@@ -68,12 +70,6 @@ const categoryOptions = computed(() =>
     value: category.id,
   }))
 )
-
-const filterSummary = computed(() => [
-  { label: 'Student', value: selectedStudent.value?.label || 'Choose a student' },
-  { label: 'Assessments', value: filteredAssessments.value.length.toString() },
-  { label: 'Active Filters', value: activeFilterCount.value.toString() },
-])
 
 onMounted(async () => {
   await loadAllLookupData()
@@ -157,40 +153,30 @@ function handlePageChange(pagination) {
 <template>
   <MainLayout>
     <div class="space-y-6">
-      <HeaderSection
+      <AssessmentPageHeader
         title="Assessment List"
         subtitle="Select a student, review their assessments, and manage draft or finalized records."
       />
 
-      <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="grid gap-4 lg:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))] lg:items-end">
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">Student</label>
-            <Select
-              v-model="selectedStudentId"
-              :options="studentOptions"
-              option-label="label"
-              option-value="value"
-              filter
-              show-clear
-              placeholder="Choose a student to load assessments"
-              class="w-full"
-            />
-          </div>
+      <AssessmentListSummary
+        :selected-student-label="selectedStudent?.label || 'Choose a student'"
+        :assessment-count="filteredAssessments.length"
+        :active-filter-count="activeFilterCount"
+      >
+        <template #student-selector>
+          <Select
+            v-model="selectedStudentId"
+            :options="studentOptions"
+            option-label="label"
+            option-value="value"
+            filter
+            show-clear
+            placeholder="Choose a student to load assessments"
+            class="w-full"
+          />
+        </template>
 
-          <div
-            v-for="item in filterSummary"
-            :key="item.label"
-            class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-          >
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              {{ item.label }}
-            </p>
-            <p class="mt-1 text-sm font-semibold text-slate-900">{{ item.value }}</p>
-          </div>
-        </div>
-
-        <div class="mt-4 flex flex-wrap gap-3">
+        <template #actions>
           <Button
             label="Create Assessment"
             icon="pi pi-plus"
@@ -204,8 +190,8 @@ function handlePageChange(pagination) {
             :disabled="!activeFilterCount"
             @click="clearAllFilters"
           />
-        </div>
-      </section>
+        </template>
+      </AssessmentListSummary>
 
       <FilterBar
         v-model:student-filter="studentFilter"
@@ -250,29 +236,29 @@ function handlePageChange(pagination) {
 
       <div
         v-if="!loading && selectedStudentId && filteredAssessments.length === 0"
-        class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center"
       >
-        <p class="text-lg text-slate-600">No assessments found for the selected student.</p>
-        <p class="mt-2 text-sm text-slate-500">
-          Create the first assessment or clear filters to review the full student history.
-        </p>
-        <Button
-          label="Create Assessment"
-          icon="pi pi-plus"
-          size="sm"
-          class="mt-4"
-          @click="handleOpenCreateForm"
-        />
+        <AssessmentStatusEmptyState
+          title="No assessments found for the selected student."
+          message="Create the first assessment or clear filters to review the full student history."
+        >
+          <Button
+            label="Create Assessment"
+            icon="pi pi-plus"
+            size="sm"
+            class="mt-4"
+            @click="handleOpenCreateForm"
+          />
+        </AssessmentStatusEmptyState>
       </div>
 
       <div
         v-if="!selectedStudentId"
-        class="rounded-2xl border border-dashed border-blue-200 bg-blue-50 p-12 text-center"
       >
-        <p class="text-lg font-semibold text-blue-900">Choose a student to begin.</p>
-        <p class="mt-2 text-sm text-blue-700">
-          The Preschool assessment API is student-based, so the list opens around one student context at a time.
-        </p>
+        <AssessmentStatusEmptyState
+          tone="blue"
+          title="Choose a student to begin."
+          message="The Preschool assessment API is student-based, so the list opens around one student context at a time."
+        />
       </div>
     </div>
   </MainLayout>

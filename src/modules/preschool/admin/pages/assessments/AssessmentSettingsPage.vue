@@ -1,11 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
+import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
+import AssessmentSettingsCard from '@/modules/preschool/admin/components/assessment/AssessmentSettingsCard.vue'
 import {
   PRESCHOOL_ASSESSMENT_PERIOD_OPTIONS,
   PRESCHOOL_ASSESSMENT_RATING_OPTIONS,
@@ -71,7 +72,7 @@ function resetSettings() {
 <template>
   <MainLayout>
     <div class="space-y-8">
-      <HeaderSection
+      <AssessmentPageHeader
         title="Assessment Settings"
         subtitle="Configure risk rules, review defaults, and operational preferences for Preschool assessments."
       />
@@ -91,8 +92,7 @@ function resetSettings() {
       />
 
       <div class="grid gap-6 xl:grid-cols-2">
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="text-lg font-bold text-slate-900">Risk Management</h3>
+        <AssessmentSettingsCard title="Risk Management">
 
           <div class="mt-4 space-y-4">
             <div class="flex items-center gap-3">
@@ -132,10 +132,9 @@ function resetSettings() {
               </label>
             </div>
           </div>
-        </section>
+        </AssessmentSettingsCard>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="text-lg font-bold text-slate-900">Assessment Options</h3>
+        <AssessmentSettingsCard title="Assessment Options">
 
           <div class="mt-4 space-y-4">
             <div class="flex items-center gap-3">
@@ -170,10 +169,9 @@ function resetSettings() {
               </label>
             </div>
           </div>
-        </section>
+        </AssessmentSettingsCard>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="text-lg font-bold text-slate-900">Assessment Categories</h3>
+        <AssessmentSettingsCard title="Assessment Categories">
           <p class="mt-2 text-sm text-slate-600">
             {{ categories.length }} assessment category records are currently available.
           </p>
@@ -197,10 +195,9 @@ function resetSettings() {
           <div class="mt-4 flex gap-3">
             <Button label="Manage Categories" icon="pi pi-cog" size="sm" variant="secondary" />
           </div>
-        </section>
+        </AssessmentSettingsCard>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="text-lg font-bold text-slate-900">Assessment Periods</h3>
+        <AssessmentSettingsCard title="Assessment Periods">
           <p class="mt-2 text-sm text-slate-600">
             Keep the available periods aligned to the academic cycle.
           </p>
@@ -218,11 +215,10 @@ function resetSettings() {
           <div class="mt-4 flex gap-3">
             <Button label="Edit Periods" icon="pi pi-pencil" size="sm" variant="secondary" />
           </div>
-        </section>
+        </AssessmentSettingsCard>
       </div>
 
-      <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-bold text-slate-900">Rating Scale</h3>
+      <AssessmentSettingsCard title="Rating Scale">
         <p class="mt-2 text-sm text-slate-600">Current rating configuration used by the Preschool workspace.</p>
 
         <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -257,7 +253,7 @@ function resetSettings() {
             </div>
           </div>
         </div>
-      </section>
+      </AssessmentSettingsCard>
 
       <section class="flex flex-wrap gap-3">
         <Button
