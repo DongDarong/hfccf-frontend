@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Khmer translations for Preschool Assessment module
  */
 
@@ -38,7 +38,7 @@ export default {
   excellent: 'ល្អក្នុងកំរិតខ្ពស់',
   good: 'ល្អ',
   fair: 'មិនអាក្រក់',
-  needsImprovement: 'ត្រូវការលម្អិតលម្អ够',
+  needsImprovement: 'ត្រូវការលម្អិតលម្កូ',
 
   // Form labels
   student: 'សិស្ស',
@@ -47,7 +47,7 @@ export default {
   period: 'រយៈពេល',
   assessmentDate: 'កាលបរិច្ឆេទវាយតម្លៃ',
   score: 'ពិន្ទុ',
-  rating: '등级',
+  rating: '등급',
   observation: 'ការសង្កេត',
   teacherComment: 'ប្រឹក្សាយោបល់របស់គ្រូ',
 

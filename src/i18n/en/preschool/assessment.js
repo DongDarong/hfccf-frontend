@@ -1,4 +1,4 @@
-﻿/**
+/**
  * English translations for Preschool Assessment module
  */
 

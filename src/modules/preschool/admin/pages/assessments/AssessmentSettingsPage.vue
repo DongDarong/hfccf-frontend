@@ -6,6 +6,7 @@ import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
+import { usePreschoolSettings } from '@/modules/preschool/composables/usePreschoolSettings'
 import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
 import AssessmentSettingsCard from '@/modules/preschool/admin/components/assessment/AssessmentSettingsCard.vue'
 import {
@@ -18,21 +19,17 @@ defineOptions({
 })
 
 const { categories, loadCategories } = useAssessmentData()
+const {
+  settings,
+  loadSettings: loadAssessmentSettings,
+  saveSettings: saveAssessmentSettings,
+  resetSettings: resetAssessmentSettings,
+} = usePreschoolSettings()
 const { t } = useLanguage()
 
 const saving = ref(false)
 const saved = ref(false)
 const error = ref(null)
-
-const settings = ref({
-  enableRiskTracking: true,
-  riskThreshold: 60,
-  enableAutoRating: true,
-  requireObservation: true,
-  requireTeacherComment: false,
-  allowArchiving: true,
-  notifyOnHighRisk: true,
-})
 
 const ratingOptions = computed(() =>
   PRESCHOOL_ASSESSMENT_RATING_OPTIONS.map(option => ({
@@ -48,20 +45,22 @@ const periodOptions = computed(() =>
 )
 
 onMounted(async () => {
-  await loadCategories()
-
-  const savedSettings = localStorage.getItem('assessmentSettings')
-  if (savedSettings) {
-    settings.value = { ...settings.value, ...JSON.parse(savedSettings) }
-  }
+  // Assessment preferences live in the shared Preschool settings backbone so
+  // this page can stay in sync with the general academic configuration
+  // instead of inventing a second local-only settings store.
+  await Promise.all([loadCategories(), loadAssessmentSettings()])
 })
 
-async function saveSettings() {
+async function persistSettings() {
   saving.value = true
   error.value = null
 
   try {
-    localStorage.setItem('assessmentSettings', JSON.stringify(settings.value))
+    const result = await saveAssessmentSettings()
+    if (result && result.ok === false) {
+      error.value = 'Please correct the invalid assessment settings before saving.'
+      return
+    }
     saved.value = true
     setTimeout(() => {
       saved.value = false
@@ -73,11 +72,8 @@ async function saveSettings() {
   }
 }
 
-function resetSettings() {
-  const savedSettings = localStorage.getItem('assessmentSettings')
-  if (savedSettings) {
-    settings.value = { ...settings.value, ...JSON.parse(savedSettings) }
-  }
+function restoreSettings() {
+  resetAssessmentSettings()
 }
 </script>
 
@@ -108,7 +104,7 @@ function resetSettings() {
 
           <div class="mt-4 space-y-4">
             <div class="flex items-center gap-3">
-              <Checkbox v-model="settings.enableRiskTracking" binary input-id="enableRisk" />
+              <Checkbox v-model="settings.assessment.enableRiskTracking" binary input-id="enableRisk" />
               <label for="enableRisk" class="cursor-pointer">
                 <span class="font-medium text-slate-900">{{ t('assessmentSettings.riskManagement.enableRiskTracking') }}</span>
                 <p class="text-sm text-slate-600">{{ t('assessmentSettings.riskManagement.enableRiskTrackingHelp') }}</p>
@@ -121,14 +117,14 @@ function resetSettings() {
               </label>
               <div class="flex items-center gap-3">
                 <input
-                  v-model.number="settings.riskThreshold"
+                  v-model.number="settings.assessment.riskThreshold"
                   type="range"
                   min="0"
                   max="100"
                   class="flex-1"
                 />
                 <span class="w-16 rounded-xl border border-slate-200 bg-slate-50 p-2 text-center font-bold text-slate-900">
-                  {{ settings.riskThreshold }}
+                  {{ settings.assessment.riskThreshold }}
                 </span>
               </div>
               <p class="text-xs text-slate-600">
@@ -137,7 +133,7 @@ function resetSettings() {
             </div>
 
             <div class="flex items-center gap-3">
-              <Checkbox v-model="settings.notifyOnHighRisk" binary input-id="notifyRisk" />
+              <Checkbox v-model="settings.assessment.notifyOnHighRisk" binary input-id="notifyRisk" />
               <label for="notifyRisk" class="cursor-pointer">
                 <span class="font-medium text-slate-900">{{ t('assessmentSettings.riskManagement.sendNotifications') }}</span>
                 <p class="text-sm text-slate-600">{{ t('assessmentSettings.riskManagement.sendNotificationsHelp') }}</p>
@@ -150,7 +146,7 @@ function resetSettings() {
 
           <div class="mt-4 space-y-4">
             <div class="flex items-center gap-3">
-              <Checkbox v-model="settings.enableAutoRating" binary input-id="autoRating" />
+              <Checkbox v-model="settings.assessment.enableAutoRating" binary input-id="autoRating" />
               <label for="autoRating" class="cursor-pointer">
                 <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.enableAutoRating') }}</span>
                 <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.enableAutoRatingHelp') }}</p>
@@ -158,7 +154,7 @@ function resetSettings() {
             </div>
 
             <div class="flex items-center gap-3">
-              <Checkbox v-model="settings.requireObservation" binary input-id="requireObs" />
+              <Checkbox v-model="settings.assessment.requireObservation" binary input-id="requireObs" />
               <label for="requireObs" class="cursor-pointer">
                 <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.requireObservation') }}</span>
                 <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.requireObservationHelp') }}</p>
@@ -166,7 +162,7 @@ function resetSettings() {
             </div>
 
             <div class="flex items-center gap-3">
-              <Checkbox v-model="settings.requireTeacherComment" binary input-id="requireComment" />
+              <Checkbox v-model="settings.assessment.requireTeacherComment" binary input-id="requireComment" />
               <label for="requireComment" class="cursor-pointer">
                 <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.requireTeacherComment') }}</span>
                 <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.requireTeacherCommentHelp') }}</p>
@@ -174,7 +170,7 @@ function resetSettings() {
             </div>
 
             <div class="flex items-center gap-3">
-              <Checkbox v-model="settings.allowArchiving" binary input-id="allowArchive" />
+              <Checkbox v-model="settings.assessment.allowArchiving" binary input-id="allowArchive" />
               <label for="allowArchive" class="cursor-pointer">
                 <span class="font-medium text-slate-900">{{ t('assessmentSettings.assessmentOptions.allowArchiving') }}</span>
                 <p class="text-sm text-slate-600">{{ t('assessmentSettings.assessmentOptions.allowArchivingHelp') }}</p>
@@ -272,14 +268,14 @@ function resetSettings() {
           :label="t('assessmentSettings.saveSettings')"
           icon="pi pi-check"
           :loading="saving"
-          @click="saveSettings"
+          @click="persistSettings"
         />
         <Button
           :label="t('assessmentSettings.reset')"
           icon="pi pi-refresh"
           variant="secondary"
           :disabled="saving"
-          @click="resetSettings"
+          @click="restoreSettings"
         />
       </section>
     </div>
