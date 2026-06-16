@@ -226,6 +226,9 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/assessments/summary',
     name: 'dashboard-preschool-progress-summary',
+    // Compatibility redirect: older "progress summary" entry points now land on
+    // the canonical Preschool assessment reports screen instead of a separate
+    // summary shell.
     redirect: to => ({
       name: 'preschool-assessment-reports',
       query: to.query,

@@ -63,7 +63,7 @@ const workflowSteps = computed(() => [
     description: 'Set up scoring and print layouts',
     icon: '⚙️',
     color: '#06b6d4',
-    action: () => router.push({ name: 'dashboard-preschool-admin-forms-build' }),
+    action: () => router.push({ name: 'preschool-assessment-form-builder' }),
     badge: null,
   },
   {

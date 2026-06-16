@@ -23,9 +23,9 @@ export const FORM_MANAGEMENT_PAGE_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.pages.build.title',
     descriptionKey: 'preschoolScaffold.formManagement.pages.build.description',
     fallbackDescription: 'Work on the tools used to create and refine forms.',
-    // Keep the legacy build route as a redirect so older links still reach the
-    // canonical assessment builder workspace.
-    to: { name: 'dashboard-preschool-admin-forms-build' },
+    // Forms should jump straight to the canonical assessment builder. The
+    // legacy build route stays available only as a backward-compatible alias.
+    to: { name: 'preschool-assessment-form-builder' },
   },
   {
     key: 'review',
