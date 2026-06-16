@@ -4,9 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
-import { createPreschoolReceiptFromPayment, fetchPreschoolInvoice, issuePreschoolInvoice, cancelPreschoolInvoice, printPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
+import { createPreschoolReceiptFromPayment, fetchPreschoolInvoice, issuePreschoolInvoice, deletePreschoolInvoice, cancelPreschoolInvoice, printPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
 
 defineOptions({
   name: 'PreschoolAdminInvoiceDetailPage',
@@ -20,6 +21,8 @@ const loading = ref(false)
 const errorMessage = ref('')
 const invoice = ref(null)
 const actionLoading = ref(false)
+const showSuccess = ref(false)
+const successMessage = ref('')
 
 const itemRows = computed(() => invoice.value?.items || [])
 const paymentRows = computed(() => invoice.value?.payments || [])
@@ -72,6 +75,20 @@ async function onIssueInvoice() {
   await reloadAfterAction(() => issuePreschoolInvoice(invoice.value.id))
 }
 
+async function onDeleteInvoice() {
+  if (!invoice.value?.id) return
+  actionLoading.value = true
+  try {
+    await deletePreschoolInvoice(invoice.value.id)
+    successMessage.value = t('preschoolPaymentManagementPage.messages.deleteInvoiceSuccess')
+    showSuccess.value = true
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.saveInvoiceFailed')
+  } finally {
+    actionLoading.value = false
+  }
+}
+
 async function onCancelInvoice() {
   if (!invoice.value?.id) return
   await reloadAfterAction(() => cancelPreschoolInvoice(invoice.value.id))
@@ -98,6 +115,11 @@ async function onGenerateReceipt(payment) {
   }
 }
 
+function onCloseSuccess() {
+  showSuccess.value = false
+  goBack()
+}
+
 watch(() => route.params.id, loadInvoice)
 onMounted(loadInvoice)
 </script>
@@ -113,7 +135,7 @@ onMounted(loadInvoice)
       <div class="invoice-detail-page__shell">
         <div class="invoice-detail-page__toolbar">
           <Button type="button" variant="ghost" rounded="xl" @click="goBack">
-            {{ t('common.back') }}
+            {{ t('preschoolPaymentManagementPage.actions.back') }}
           </Button>
           <Button
             type="button"
@@ -129,9 +151,9 @@ onMounted(loadInvoice)
             variant="danger"
             rounded="xl"
             :disabled="actionLoading || !invoice || invoice.status === 'cancelled'"
-            @click="onCancelInvoice"
+            @click="invoice?.status === 'draft' ? onDeleteInvoice() : onCancelInvoice()"
           >
-            {{ t('preschoolPaymentManagementPage.actions.cancelInvoice') }}
+            {{ invoice?.status === 'draft' ? t('common.delete') : t('preschoolPaymentManagementPage.actions.cancelInvoice') }}
           </Button>
           <Button type="button" variant="primary" rounded="xl" @click="onPrintInvoice">
             {{ t('preschoolPaymentManagementPage.actions.printInvoice') }}
@@ -258,6 +280,14 @@ onMounted(loadInvoice)
         </template>
       </div>
     </section>
+
+    <AlertSuccess
+      :show="showSuccess"
+      :title="t('preschoolPaymentManagementPage.alerts.successTitle')"
+      :message="successMessage"
+      :button-text="t('preschoolPaymentManagementPage.alerts.close')"
+      @close="onCloseSuccess"
+    />
   </MainLayout>
 </template>
 

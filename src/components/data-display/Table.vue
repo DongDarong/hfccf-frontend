@@ -16,6 +16,7 @@
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { useSlots } from 'vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
 import RolesBadge from '@/components/badges/RolesBadge.vue'
 import PermissionBadge from '@/components/badges/PermissionBadge.vue'
@@ -94,6 +95,7 @@ const props = defineProps({
 const emit = defineEmits(['view', 'edit', 'delete', 'sort'])
 
 const { t } = useLanguage()
+const slots = useSlots()
 
 const {
   resolvedRows,
@@ -326,7 +328,14 @@ function paymentTone(value) {
 
         <!-- Row actions -->
         <template v-else-if="column.key === 'actions'">
+          <slot
+            v-if="slots.actions"
+            name="actions"
+            :data="data"
+            :index="index"
+          />
           <TableActions
+            v-else
             :item="data"
             :show-view-action="showViewAction"
             :show-edit-action="showEditAction"

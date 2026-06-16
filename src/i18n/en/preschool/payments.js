@@ -55,6 +55,7 @@ export default {
       overdue: 'Overdue',
     },
     actions: {
+      back: 'Back',
       invoice: 'Invoice',
       receipt: 'Receipt',
       createInvoice: 'Create Invoice',
@@ -108,6 +109,7 @@ export default {
       deleteTitle: 'Delete payment?',
       deleteMessage: 'Delete {name} record? This action cannot be undone.',
       deleteFallback: 'this payment',
+      cancelInvoiceMessage: 'Cancel {name} invoice? This keeps the record and marks it cancelled.',
       successTitle: 'Success',
       close: 'Close',
     },
@@ -127,6 +129,7 @@ export default {
       updateInvoiceSuccess: 'Invoice updated successfully.',
       issueInvoiceSuccess: 'Invoice issued successfully.',
       cancelInvoiceSuccess: 'Invoice cancelled successfully.',
+      deleteInvoiceSuccess: 'Invoice deleted successfully.',
       receiptSuccess: 'Receipt generated successfully.',
     },
   },

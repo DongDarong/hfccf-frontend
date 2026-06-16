@@ -171,6 +171,15 @@ export async function cancelPreschoolInvoice(id) {
   return normalizeInvoiceRow(data.invoice || data)
 }
 
+export async function deletePreschoolInvoice(id) {
+  const invoiceId = String(id ?? '').trim()
+  if (!invoiceId) return null
+
+  const response = await http.delete(`/preschool/invoices/${encodeURIComponent(invoiceId)}`)
+  const data = unwrapApiData(response) || {}
+  return normalizeInvoiceRow(data.invoice || data)
+}
+
 export async function markPreschoolInvoiceOverdue(id) {
   const invoiceId = String(id ?? '').trim()
   if (!invoiceId) return null

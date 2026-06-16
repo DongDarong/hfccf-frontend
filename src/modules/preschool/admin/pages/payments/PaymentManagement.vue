@@ -17,7 +17,7 @@ import PaymentToolbar from '@/modules/preschool/admin/components/payment-managem
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolClasses, fetchPreschoolPayments, fetchPreschoolStudents, createPreschoolPayment, updatePreschoolPayment, deletePreschoolPayment } from '@/modules/preschool/services/preschoolApi'
-import { fetchPreschoolInvoices, createPreschoolInvoice, updatePreschoolInvoice, cancelPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
+import { fetchPreschoolInvoices, createPreschoolInvoice, updatePreschoolInvoice, deletePreschoolInvoice, cancelPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
 import { PAGE_SIZE, DEFAULT_PAGINATION, DEFAULT_FORM, MODAL_MODES } from './constants/paymentManagementConstants'
 import { buildStatusOptions, buildMethodOptions, buildTableColumns, normalize, mapPayment, normalizePayload, buildClassOptions, buildStudentOptions } from './utils/paymentManagementHelpers'
 import { DEFAULT_INVOICE_FORM, DEFAULT_INVOICE_ITEM, buildInvoiceColumns, mapInvoice, normalizeInvoicePayload } from './utils/invoiceManagementHelpers'
@@ -40,6 +40,7 @@ const invoicePage = ref(1)
 const selectedPayment = ref(null)
 const selectedInvoice = ref(null)
 const isDeleteOpen = ref(false)
+const isInvoiceDeleteOpen = ref(false)
 const isInvoiceCancelOpen = ref(false)
 const showSuccess = ref(false)
 const successMessage = ref('')
@@ -382,14 +383,36 @@ function onEditInvoice(row) {
   openEditInvoiceModal(row)
 }
 
+async function onDeleteInvoice(row) {
+  selectedInvoice.value = row
+  isInvoiceDeleteOpen.value = true
+}
+
 async function onCancelInvoice(row) {
   selectedInvoice.value = row
   isInvoiceCancelOpen.value = true
 }
 
+function onCloseInvoiceDelete() {
+  isInvoiceDeleteOpen.value = false
+  selectedInvoice.value = null
+}
+
 function onCloseInvoiceCancel() {
   isInvoiceCancelOpen.value = false
   selectedInvoice.value = null
+}
+
+async function onConfirmDeleteInvoice() {
+  try {
+    await deletePreschoolInvoice(selectedInvoice.value?.id)
+    successMessage.value = t('preschoolPaymentManagementPage.messages.deleteInvoiceSuccess')
+    showSuccess.value = true
+    onCloseInvoiceDelete()
+    await loadInvoices()
+  } catch (error) {
+    invoiceErrorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.saveInvoiceFailed')
+  }
 }
 
 async function onConfirmCancelInvoice() {
@@ -611,7 +634,8 @@ onMounted(async () => {
           :empty-text="t('preschoolPaymentManagementPage.messages.noInvoiceHistory')"
           @view="onViewInvoice"
           @edit="onEditInvoice"
-          @delete="onCancelInvoice"
+          @delete="onDeleteInvoice"
+          @cancel="onCancelInvoice"
         />
 
         <div v-if="invoicePagination.totalPages > 1" class="flex justify-end">
@@ -745,10 +769,21 @@ onMounted(async () => {
     />
 
     <AlertQuestion
-      :show="isInvoiceCancelOpen"
-      :title="t('preschoolPaymentManagementPage.actions.cancelInvoice')"
+      :show="isInvoiceDeleteOpen"
+      :title="t('common.delete')"
       :message="t('preschoolPaymentManagementPage.alerts.deleteMessage', { name: selectedInvoice?.invoiceNumber || t('preschoolPaymentManagementPage.alerts.deleteFallback') })"
       :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      type="danger"
+      @confirm="onConfirmDeleteInvoice"
+      @cancel="onCloseInvoiceDelete"
+    />
+
+    <AlertQuestion
+      :show="isInvoiceCancelOpen"
+      :title="t('preschoolPaymentManagementPage.actions.cancelInvoice')"
+      :message="t('preschoolPaymentManagementPage.alerts.cancelInvoiceMessage', { name: selectedInvoice?.invoiceNumber || t('preschoolPaymentManagementPage.alerts.deleteFallback') })"
+      :confirm-text="t('preschoolPaymentManagementPage.actions.cancelInvoice')"
       :cancel-text="t('common.cancel')"
       type="danger"
       @confirm="onConfirmCancelInvoice"
