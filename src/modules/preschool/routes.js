@@ -172,6 +172,15 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  defineAppRoute({
+    path: '/module/preschool-admin/guardians/communications',
+    name: 'dashboard-preschool-admin-guardian-communications',
+    component: () => import('@/modules/preschool/admin/pages/guardian/GuardianCommunicationDashboard.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.
   defineAppRoute({

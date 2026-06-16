@@ -9,8 +9,10 @@ import { formatDate } from '@/utils/date'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 import { fetchPreschoolStudent } from '@/modules/preschool/services/preschoolApi'
 import { fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
+import { fetchStudentGuardianCommunications } from '@/modules/preschool/services/api/preschoolGuardianCommunicationApi'
 import { BACK_ROUTE_NAME } from './constants/studentProfileConstants'
 import { buildInfoCards, getStatusLabel, getStatusClass, getStudentDisplayName } from './utils/studentProfileHelpers'
+import GuardianCommunicationTimeline from '@/modules/preschool/admin/components/guardian/GuardianCommunicationTimeline.vue'
 
 defineOptions({
   name: 'PreschoolAdminStudentProfilePage',
@@ -24,6 +26,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const student = ref(null)
 const healthSummary = ref(null)
+const communicationTimeline = ref(null)
 
 const profileClasses = computed(() => student.value?.classes || [])
 const avatarSrc = computed(() => resolveAvatarSource(student.value?.avatarUrl || ''))
@@ -38,6 +41,7 @@ async function loadStudent() {
   if (!studentId) {
     errorMessage.value = t('preschoolStudentProfilePage.messages.notFound')
     student.value = null
+    communicationTimeline.value = null
     return
   }
 
@@ -45,20 +49,24 @@ async function loadStudent() {
   errorMessage.value = ''
 
   try {
-    const [response, summary] = await Promise.all([
+    const [response, summary, communications] = await Promise.all([
       fetchPreschoolStudent(studentId),
       fetchStudentHealthSummary(studentId).catch(() => null),
+      fetchStudentGuardianCommunications(studentId, { perPage: 5 }).catch(() => null),
     ])
     if (!response) {
       student.value = null
+      communicationTimeline.value = null
       errorMessage.value = t('preschoolStudentProfilePage.messages.notFound')
       return
     }
 
     student.value = response
     healthSummary.value = summary
+    communicationTimeline.value = communications
   } catch (error) {
     student.value = null
+    communicationTimeline.value = null
     errorMessage.value = error?.message || t('preschoolStudentProfilePage.messages.loadFailed')
   } finally {
     loading.value = false
@@ -73,6 +81,12 @@ function goToHealthRecords() {
   const studentId = String(route.params.id || '').trim()
   if (!studentId) return
   router.push({ name: 'dashboard-preschool-admin-health-student', params: { id: studentId } })
+}
+
+function goToCommunications() {
+  const studentId = String(route.params.id || '').trim()
+  if (!studentId) return
+  router.push({ name: 'dashboard-preschool-admin-guardian-communications', query: { studentId } })
 }
 
 watch(() => route.params.id, () => {
@@ -97,6 +111,9 @@ onMounted(loadStudent)
           </Button>
           <Button type="button" variant="secondary" rounded="xl" @click="goToHealthRecords">
             {{ t('preschoolStudentProfilePage.actions.health') }}
+          </Button>
+          <Button type="button" variant="secondary" rounded="xl" @click="goToCommunications">
+            {{ t('preschoolGuardianCommunicationPage.title') }}
           </Button>
         </div>
 
@@ -162,6 +179,17 @@ onMounted(loadStudent)
               <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.contacts') }}: {{ healthSummary.counts.emergencyContacts }}</div>
               <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.checks') }}: {{ healthSummary.counts.healthChecks }}</div>
             </div>
+          </div>
+
+          <div v-if="communicationTimeline" class="student-profile-page__communications">
+            <GuardianCommunicationTimeline
+              compact
+              :title="t('preschoolGuardianCommunicationPage.timelineTitle')"
+              :subtitle="t('preschoolGuardianCommunicationPage.timelineSubtitle')"
+              :communications="communicationTimeline.items || []"
+              :summary="communicationTimeline.summary || {}"
+              :empty-text="t('preschoolGuardianCommunicationPage.messages.noCommunicationYet')"
+            />
           </div>
 
           <div class="student-profile-page__content-grid">
@@ -390,6 +418,14 @@ onMounted(loadStudent)
 }
 
 .student-profile-page__health {
+  border-radius: 1.25rem;
+  border: 1px solid #dbe3ef;
+  background: #fff;
+  box-shadow: 0 16px 32px -26px rgba(15, 23, 42, 0.45);
+  padding: 1rem 1.05rem 1.1rem;
+}
+
+.student-profile-page__communications {
   border-radius: 1.25rem;
   border: 1px solid #dbe3ef;
   background: #fff;

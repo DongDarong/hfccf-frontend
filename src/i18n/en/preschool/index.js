@@ -3,6 +3,7 @@ import classes from './classes'
 import students from './students'
 import payments from './payments'
 import health from './health'
+import communications from './communications'
 import scaffold from './scaffold'
 import attendance from './attendance'
 import adminDashboard from './admin-dashboard'
@@ -32,6 +33,7 @@ export default {
   ...students,
   ...payments,
   ...health,
+  ...communications,
   ...scaffold,
   ...attendance,
   ...adminDashboard,

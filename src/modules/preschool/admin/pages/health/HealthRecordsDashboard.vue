@@ -275,6 +275,12 @@ function openStudentProfile(studentId) {
   router.push({ name: 'dashboard-preschool-admin-health-student', params: { id } })
 }
 
+function openStudentCommunications(studentId) {
+  const id = String(studentId || '').trim()
+  if (!id) return
+  router.push({ name: 'dashboard-preschool-admin-guardian-communications', query: { studentId: id } })
+}
+
 watch(search, () => {
   loadStudents()
 })
@@ -319,6 +325,15 @@ onMounted(async () => {
           :label="t('preschoolHealthPage.dashboard.openProfile')"
           :disabled="!selectedStudentId"
           @click="openStudentProfile(selectedStudentId)"
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="md"
+          rounded="xl"
+          :label="t('preschoolGuardianCommunicationPage.title')"
+          :disabled="!selectedStudentId"
+          @click="openStudentCommunications(selectedStudentId)"
         />
       </div>
 
@@ -489,15 +504,26 @@ onMounted(async () => {
                 {{ selectedStudent?.fullName || t('preschoolHealthPage.dashboard.noStudentSelected') }}
               </h3>
             </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              rounded="xl"
-              :label="t('preschoolHealthPage.dashboard.viewProfile')"
-              :disabled="!selectedStudentId"
-              @click="openStudentProfile(selectedStudentId)"
-            />
+            <div class="health-dashboard-page__summary-actions">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                rounded="xl"
+                :label="t('preschoolHealthPage.dashboard.viewProfile')"
+                :disabled="!selectedStudentId"
+                @click="openStudentProfile(selectedStudentId)"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                rounded="xl"
+                :label="t('preschoolGuardianCommunicationPage.title')"
+                :disabled="!selectedStudentId"
+                @click="openStudentCommunications(selectedStudentId)"
+              />
+            </div>
           </div>
 
           <div v-if="summaryLoading" class="health-dashboard-page__state">
@@ -785,6 +811,13 @@ onMounted(async () => {
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 0.9rem;
+}
+
+.health-dashboard-page__summary-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .health-dashboard-page__search {
