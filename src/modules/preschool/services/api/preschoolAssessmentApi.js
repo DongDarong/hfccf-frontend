@@ -117,6 +117,9 @@ function normalizeFormVersion(version = {}) {
     versionNumber: Number(version.version_number ?? version.versionNumber ?? 0),
     label: String(version.label ?? '').trim(),
     changeSummary: String(version.change_summary ?? version.changeSummary ?? '').trim(),
+    publishNotes: String(version.publish_notes ?? version.publishNotes ?? version.change_summary ?? '').trim(),
+    versionNotes: String(version.version_notes ?? version.versionNotes ?? '').trim(),
+    reviewNotes: String(version.review_notes ?? version.reviewNotes ?? '').trim(),
     status: String(version.status ?? '').trim(),
     createdBy: normalizeUser(version.created_by ?? version.createdBy ?? null),
     updatedBy: normalizeUser(version.updated_by ?? version.updatedBy ?? null),
@@ -124,6 +127,12 @@ function normalizeFormVersion(version = {}) {
     publishedAt: version.published_at || version.publishedAt || '',
     archivedBy: normalizeUser(version.archived_by ?? version.archivedBy ?? null),
     archivedAt: version.archived_at || version.archivedAt || '',
+    reviewedBy: normalizeUser(version.reviewed_by ?? version.reviewedBy ?? null),
+    reviewedAt: version.reviewed_at || version.reviewedAt || '',
+    duplicatedFromTemplateId: version.duplicated_from_template_id ?? version.duplicatedFromTemplateId ?? null,
+    duplicatedFromVersion: version.duplicated_from_version ?? version.duplicatedFromVersion ?? null,
+    restoredFromTemplateId: version.restored_from_template_id ?? version.restoredFromTemplateId ?? null,
+    restoredFromVersion: version.restored_from_version ?? version.restoredFromVersion ?? null,
     sectionsCount: Number(version.sections_count ?? version.sectionsCount ?? 0),
     questionsCount: Number(version.questions_count ?? version.questionsCount ?? 0),
     isCurrent: Boolean(version.is_current ?? version.isCurrent ?? false),
@@ -154,6 +163,15 @@ function normalizeFormTemplate(row = {}) {
     isPublished: Boolean(row.is_published ?? row.isPublished ?? row.status === 'published'),
     isArchived: Boolean(row.is_archived ?? row.isArchived ?? row.status === 'archived'),
     currentVersion: Number(row.current_version ?? row.currentVersion ?? versions.find(version => version.isCurrent)?.versionNumber ?? 0),
+    publishNotes: String(row.publish_notes ?? row.publishNotes ?? row.version_notes ?? '').trim(),
+    versionNotes: String(row.version_notes ?? row.versionNotes ?? '').trim(),
+    reviewNotes: String(row.review_notes ?? row.reviewNotes ?? '').trim(),
+    reviewedBy: row.reviewed_by ?? row.reviewedBy ?? null,
+    reviewedAt: row.reviewed_at || row.reviewedAt || '',
+    duplicatedFromTemplateId: row.duplicated_from_template_id ?? row.duplicatedFromTemplateId ?? null,
+    duplicatedFromVersion: row.duplicated_from_version ?? row.duplicatedFromVersion ?? null,
+    restoredFromTemplateId: row.restored_from_template_id ?? row.restoredFromTemplateId ?? null,
+    restoredFromVersion: row.restored_from_version ?? row.restoredFromVersion ?? null,
     publishedAt: row.published_at || row.publishedAt || '',
     publishedBy: row.published_by ?? row.publishedBy ?? null,
     archivedAt: row.archived_at || row.archivedAt || '',
@@ -195,6 +213,13 @@ function buildFormTemplatePayload(template = {}, sections = []) {
     description_kh: template.descriptionKh ?? template.description_kh ?? null,
     category: template.category ?? 'preschool_assessment',
     settings: template.settings ?? {},
+    publish_notes: template.publishNotes ?? template.publish_notes ?? '',
+    version_notes: template.versionNotes ?? template.version_notes ?? '',
+    review_notes: template.reviewNotes ?? template.review_notes ?? '',
+    duplicated_from_template_id: template.duplicatedFromTemplateId ?? template.duplicated_from_template_id ?? null,
+    duplicated_from_version: template.duplicatedFromVersion ?? template.duplicated_from_version ?? null,
+    restored_from_template_id: template.restoredFromTemplateId ?? template.restored_from_template_id ?? null,
+    restored_from_version: template.restoredFromVersion ?? template.restored_from_version ?? null,
     sections: sections.map((section, sectionIndex) => ({
       id: section.id || undefined,
       code: section.code || undefined,
@@ -401,14 +426,21 @@ export async function updateAssessmentForm(formId, payload = {}) {
   return normalizeFormTemplate(unwrapApiData(response) || {})
 }
 
-export async function duplicateAssessmentForm(formId) {
-  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/duplicate`)
+export async function duplicateAssessmentForm(formId, payload = {}) {
+  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/duplicate`, {
+    duplicate_notes: payload.duplicateNotes || payload.duplicate_notes || '',
+    version_notes: payload.versionNotes || payload.version_notes || '',
+    review_notes: payload.reviewNotes || payload.review_notes || '',
+  })
   return normalizeFormTemplate(unwrapApiData(response) || {})
 }
 
 export async function publishAssessmentForm(formId, payload = {}) {
   const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/publish`, {
     change_summary: payload.changeSummary || payload.change_summary || '',
+    publish_notes: payload.publishNotes || payload.publish_notes || '',
+    version_notes: payload.versionNotes || payload.version_notes || '',
+    review_notes: payload.reviewNotes || payload.review_notes || '',
   })
 
   return normalizeFormTemplate(unwrapApiData(response) || {})
@@ -419,8 +451,12 @@ export async function archiveAssessmentForm(formId) {
   return normalizeFormTemplate(unwrapApiData(response) || {})
 }
 
-export async function restoreAssessmentForm(formId) {
-  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/restore`)
+export async function restoreAssessmentForm(formId, payload = {}) {
+  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/restore`, {
+    restore_notes: payload.restoreNotes || payload.restore_notes || '',
+    version_notes: payload.versionNotes || payload.version_notes || '',
+    review_notes: payload.reviewNotes || payload.review_notes || '',
+  })
   return normalizeFormTemplate(unwrapApiData(response) || {})
 }
 

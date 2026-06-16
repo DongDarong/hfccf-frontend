@@ -38,6 +38,7 @@ async function load() {
       id: form.id,
       name: form.name,
       description: form.description || 'Preschool assessment template',
+      versionNotes: form.versionNotes || form.publishNotes || '',
       status: form.status,
       templateId: form.id,
     }))
@@ -202,6 +203,9 @@ onMounted(load)
                 <div class="forms-tracker__form-info">
                   <div class="forms-tracker__form-name">{{ form.name }}</div>
                   <div class="forms-tracker__form-desc">{{ form.description }}</div>
+                  <div v-if="form.versionNotes" class="forms-tracker__form-note">
+                    {{ form.versionNotes }}
+                  </div>
                 </div>
                 <div class="forms-tracker__form-status">
                   <span class="forms-tracker__status-badge" :data-status="form.status">
@@ -544,6 +548,13 @@ onMounted(load)
   font-size: 0.8rem;
   color: #64748b;
   margin-top: 0.25rem;
+}
+
+.forms-tracker__form-note {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #475569;
+  font-style: italic;
 }
 
 .forms-tracker__form-status {

@@ -51,6 +51,11 @@ const templateStatus = ref('draft')
 const templateVersion = ref(1)
 const templateName = ref('')
 const templateDescription = ref('')
+const publishNote = ref('')
+const versionNote = ref('')
+const reviewNote = ref('')
+const duplicateNote = ref('')
+const restoreNote = ref('')
 const templateSnapshot = ref('')
 const isTemplateLoading = ref(false)
 const isTemplateSaving = ref(false)
@@ -372,6 +377,10 @@ function createQuestionState(question, section) {
   }
 }
 
+function normalizeNoteValue(value) {
+  return String(value ?? '').trim()
+}
+
 function resetQuestionState() {
   questionState.value = createQuestionState(selectedQuestion.value, selectedSection.value)
 }
@@ -417,6 +426,9 @@ function buildCurrentTemplateSnapshot() {
     description: templateDescription.value,
     status: templateStatus.value,
     version: templateVersion.value,
+    publishNote: publishNote.value,
+    versionNote: versionNote.value,
+    reviewNote: reviewNote.value,
     sections: builderSections.value.map(section => ({
       id: section.id || null,
       code: section.code || section.key,
@@ -723,6 +735,9 @@ function serializeTemplatePayload() {
     name: templateName.value || safeText('assessmentFormBuilder.title', 'Form Builder'),
     description: templateDescription.value || safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.'),
     category: 'preschool_assessment',
+    publishNotes: publishNote.value,
+    versionNotes: versionNote.value,
+    reviewNotes: reviewNote.value,
     settings: {
       builder: true,
       module: 'preschool',
@@ -741,6 +756,11 @@ function hydrateBuilderTemplate(template) {
     'assessmentFormBuilder.subtitle',
     'Design assessment forms, scoring rubrics, and reusable question layouts.',
   )
+  publishNote.value = normalizeNoteValue(template?.publishNotes ?? template?.changeSummary ?? template?.versionNotes ?? template?.version_notes)
+  versionNote.value = normalizeNoteValue(template?.versionNotes ?? template?.version_notes)
+  reviewNote.value = normalizeNoteValue(template?.reviewNotes ?? template?.review_notes)
+  duplicateNote.value = ''
+  restoreNote.value = ''
 
   const sections = Array.isArray(template?.sections) && template.sections.length > 0
     ? template.sections.map((section, index) => ({
@@ -872,6 +892,8 @@ function hydrateBuilderTemplateFromVersionSnapshot(snapshot) {
   templateVersion.value = selectedVersion.value?.versionNumber || templateVersion.value || 1
   templateName.value = normalized.title || templateName.value
   templateDescription.value = normalized.description || templateDescription.value
+  versionNote.value = normalizeNoteValue(selectedVersion.value?.versionNotes || selectedVersion.value?.publishNotes)
+  reviewNote.value = normalizeNoteValue(selectedVersion.value?.reviewNotes)
   builderSections.value = sections.map((section, index) => ({
     ...section,
     order: section.order || index + 1,
@@ -926,6 +948,9 @@ async function duplicateVersionAsDraft(version) {
 
   try {
     const payload = buildCurrentTemplatePayloadFromSnapshot(version.snapshot)
+    payload.publishNotes = version.publishNotes || version.changeSummary || ''
+    payload.versionNotes = normalizeNoteValue(duplicateNote.value || version.versionNotes || version.publishNotes)
+    payload.reviewNotes = normalizeNoteValue(reviewNote.value || version.reviewNotes)
     const template = await createAssessmentForm(payload)
     hydrateBuilderTemplate(template)
     await loadVersionHistory(currentTemplateId.value)
@@ -960,7 +985,9 @@ async function restoreVersion(version) {
   }
 
   selectedVersionId.value = String(version.id || selectedVersionId.value)
+  restoreNote.value = normalizeNoteValue(restoreNote.value || version.versionNotes || version.publishNotes)
   hydrateBuilderTemplateFromVersionSnapshot(version.snapshot)
+  versionNote.value = normalizeNoteValue(restoreNote.value || version.versionNotes || version.publishNotes)
   templateNotice.value = safeText(
     'assessmentFormBuilder.versionHistory.versionLoaded',
     'Version loaded into the current draft.',
@@ -1004,7 +1031,11 @@ async function duplicateTemplate() {
   templateError.value = ''
 
   try {
-    const template = await duplicateAssessmentForm(currentTemplateId.value)
+    const template = await duplicateAssessmentForm(currentTemplateId.value, {
+      duplicateNotes: duplicateNote.value,
+      versionNotes: versionNote.value,
+      reviewNotes: reviewNote.value,
+    })
     hydrateBuilderTemplate(template)
     await loadVersionHistory(currentTemplateId.value)
     await router.replace({
@@ -1032,7 +1063,10 @@ async function publishTemplate() {
 
   try {
     const template = await publishAssessmentForm(currentTemplateId.value, {
-      changeSummary: 'Publish from Preschool form builder',
+      publishNotes: publishNote.value,
+      versionNotes: versionNote.value || publishNote.value,
+      reviewNotes: reviewNote.value,
+      changeSummary: publishNote.value || 'Publish from Preschool form builder',
     })
     hydrateBuilderTemplate(template)
     await loadVersionHistory(currentTemplateId.value)
@@ -1071,7 +1105,11 @@ async function restoreTemplate() {
   templateError.value = ''
 
   try {
-    const template = await restoreAssessmentForm(currentTemplateId.value)
+    const template = await restoreAssessmentForm(currentTemplateId.value, {
+      restoreNotes: restoreNote.value,
+      versionNotes: versionNote.value || restoreNote.value,
+      reviewNotes: reviewNote.value,
+    })
     hydrateBuilderTemplate(template)
     await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.restored', 'Template restored.')
@@ -1169,6 +1207,65 @@ onMounted(() => {
             @click="archiveTemplate"
           />
         </div>
+      </div>
+
+      <div class="assessment-form-builder-notes">
+        <section class="assessment-form-builder-notes__card">
+          <div class="assessment-form-builder-notes__header">
+            <h3>{{ safeText('assessmentFormBuilder.notes.publishTitle', 'Publish note') }}</h3>
+            <p>{{ safeText('assessmentFormBuilder.notes.publishHint', 'Optional reason that will be saved with the published version.') }}</p>
+          </div>
+          <textarea
+            v-model="publishNote"
+            rows="2"
+            class="assessment-form-builder-notes__textarea"
+            :placeholder="safeText('assessmentFormBuilder.notes.publishPlaceholder', 'Add a note before publishing...')"
+          />
+        </section>
+
+        <section class="assessment-form-builder-notes__card">
+          <div class="assessment-form-builder-notes__header">
+            <h3>{{ safeText('assessmentFormBuilder.notes.versionTitle', 'Version note') }}</h3>
+            <p>{{ safeText('assessmentFormBuilder.notes.versionHint', 'Stored with the template and version snapshot for traceability.') }}</p>
+          </div>
+          <textarea
+            v-model="versionNote"
+            rows="2"
+            class="assessment-form-builder-notes__textarea"
+            :placeholder="safeText('assessmentFormBuilder.notes.versionPlaceholder', 'Add a version note...')"
+          />
+          <label class="assessment-form-builder-notes__inline-label">
+            <span>{{ safeText('assessmentFormBuilder.notes.reviewTitle', 'Review note') }}</span>
+            <textarea
+              v-model="reviewNote"
+              rows="2"
+              class="assessment-form-builder-notes__textarea"
+              :placeholder="safeText('assessmentFormBuilder.notes.reviewPlaceholder', 'Add a review note...')"
+            />
+          </label>
+        </section>
+
+        <section class="assessment-form-builder-notes__card">
+          <div class="assessment-form-builder-notes__header">
+            <h3>{{ safeText('assessmentFormBuilder.notes.duplicateTitle', 'Duplicate reason') }}</h3>
+            <p>{{ safeText('assessmentFormBuilder.notes.duplicateHint', 'Optional note saved when creating a draft copy from a version.') }}</p>
+          </div>
+          <textarea
+            v-model="duplicateNote"
+            rows="2"
+            class="assessment-form-builder-notes__textarea"
+            :placeholder="safeText('assessmentFormBuilder.notes.duplicatePlaceholder', 'Add a duplication note...')"
+          />
+          <label class="assessment-form-builder-notes__inline-label">
+            <span>{{ safeText('assessmentFormBuilder.notes.restoreTitle', 'Restore reason') }}</span>
+            <textarea
+              v-model="restoreNote"
+              rows="2"
+              class="assessment-form-builder-notes__textarea"
+              :placeholder="safeText('assessmentFormBuilder.notes.restorePlaceholder', 'Add a restore note...')"
+            />
+          </label>
+        </section>
       </div>
 
       <div class="assessment-form-builder-grid">
@@ -1354,6 +1451,63 @@ onMounted(() => {
   gap: 0.75rem;
 }
 
+.assessment-form-builder-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.assessment-form-builder-notes__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.assessment-form-builder-notes__header h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.assessment-form-builder-notes__header p {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.assessment-form-builder-notes__inline-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.assessment-form-builder-notes__textarea {
+  width: 100%;
+  min-height: 3.25rem;
+  border-radius: 0.85rem;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  resize: vertical;
+}
+
+.assessment-form-builder-notes__textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
 .assessment-form-builder-grid {
   display: grid;
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(240px, 280px);
@@ -1395,6 +1549,10 @@ onMounted(() => {
 }
 
 @media (max-width: 1200px) {
+  .assessment-form-builder-notes {
+    grid-template-columns: 1fr;
+  }
+
   .assessment-form-builder-grid {
     grid-template-columns: 1fr;
   }

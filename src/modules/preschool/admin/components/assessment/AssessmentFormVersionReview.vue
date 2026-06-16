@@ -49,6 +49,18 @@ const selectedVersion = computed(() =>
   props.versions.find(version => String(version.id) === String(props.selectedVersionId)) || props.versions[0] || null,
 )
 
+function userLabel(user) {
+  if (!user) {
+    return safeText('assessmentFormBuilder.versionHistory.system', 'System')
+  }
+
+  if (typeof user === 'object') {
+    return user.name || user.id || safeText('assessmentFormBuilder.versionHistory.system', 'System')
+  }
+
+  return String(user)
+}
+
 function versionTone(version) {
   if (version?.isCurrent) return 'success'
   if (version?.status === 'published') return 'info'
@@ -129,7 +141,31 @@ function formatDate(value) {
             <span>{{ safeText('assessmentFormBuilder.versionHistory.publishedAt', 'Published') }}: {{ formatDate(version.publishedAt) }}</span>
           </div>
           <div class="assessment-form-version-review__item-subtitle">
-            <span>{{ safeText('assessmentFormBuilder.versionHistory.updatedBy', 'Updated by') }}: {{ version.updatedBy?.name || version.updatedBy?.id || version.publishedBy?.name || version.publishedBy?.id || safeText('assessmentFormBuilder.versionHistory.system', 'System') }}</span>
+            <span>{{ safeText('assessmentFormBuilder.versionHistory.updatedBy', 'Updated by') }}: {{ userLabel(version.updatedBy || version.publishedBy) }}</span>
+            <span>{{ safeText('assessmentFormBuilder.versionHistory.reviewedBy', 'Reviewed by') }}: {{ userLabel(version.reviewedBy) }}</span>
+            <span>{{ safeText('assessmentFormBuilder.versionHistory.reviewedAt', 'Reviewed at') }}: {{ formatDate(version.reviewedAt) }}</span>
+          </div>
+          <div class="assessment-form-version-review__item-notes">
+            <p>
+              <strong>{{ safeText('assessmentFormBuilder.versionHistory.publishReason', 'Publish reason') }}:</strong>
+              {{ version.publishNotes || version.changeSummary || safeText('assessmentFormBuilder.versionHistory.noNotesProvided', 'No notes provided') }}
+            </p>
+            <p>
+              <strong>{{ safeText('assessmentFormBuilder.versionHistory.versionNote', 'Version note') }}:</strong>
+              {{ version.versionNotes || safeText('assessmentFormBuilder.versionHistory.noNotesProvided', 'No notes provided') }}
+            </p>
+            <p>
+              <strong>{{ safeText('assessmentFormBuilder.versionHistory.reviewNote', 'Review note') }}:</strong>
+              {{ version.reviewNotes || safeText('assessmentFormBuilder.versionHistory.noNotesProvided', 'No notes provided') }}
+            </p>
+            <p v-if="version.duplicatedFromVersion || version.duplicatedFromTemplateId">
+              <strong>{{ safeText('assessmentFormBuilder.versionHistory.duplicatedFrom', 'Duplicated from') }}:</strong>
+              {{ version.duplicatedFromVersion || version.duplicatedFromTemplateId }}
+            </p>
+            <p v-if="version.restoredFromVersion || version.restoredFromTemplateId">
+              <strong>{{ safeText('assessmentFormBuilder.versionHistory.restoredFrom', 'Restored from') }}:</strong>
+              {{ version.restoredFromVersion || version.restoredFromTemplateId }}
+            </p>
           </div>
         </div>
 
@@ -181,6 +217,18 @@ function formatDate(value) {
             <div>
               <dt>{{ safeText('assessmentFormBuilder.versionHistory.versionTitle', 'Selected title') }}</dt>
               <dd>{{ comparison.selected?.title || safeText('assessmentFormBuilder.versionHistory.notAvailable', 'N/A') }}</dd>
+            </div>
+            <div>
+              <dt>{{ safeText('assessmentFormBuilder.versionHistory.publishReason', 'Publish reason') }}</dt>
+              <dd>{{ selectedVersion.publishNotes || selectedVersion.changeSummary || safeText('assessmentFormBuilder.versionHistory.noNotesProvided', 'No notes provided') }}</dd>
+            </div>
+            <div>
+              <dt>{{ safeText('assessmentFormBuilder.versionHistory.versionNote', 'Version note') }}</dt>
+              <dd>{{ selectedVersion.versionNotes || safeText('assessmentFormBuilder.versionHistory.noNotesProvided', 'No notes provided') }}</dd>
+            </div>
+            <div>
+              <dt>{{ safeText('assessmentFormBuilder.versionHistory.reviewNote', 'Review note') }}</dt>
+              <dd>{{ selectedVersion.reviewNotes || safeText('assessmentFormBuilder.versionHistory.noNotesProvided', 'No notes provided') }}</dd>
             </div>
             <div>
               <dt>{{ safeText('assessmentFormBuilder.versionHistory.templateStatus', 'Status') }}</dt>
@@ -393,6 +441,27 @@ function formatDate(value) {
 .assessment-form-version-review__item-subtitle {
   flex-wrap: wrap;
   justify-content: flex-start;
+}
+
+.assessment-form-version-review__item-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.assessment-form-version-review__item-notes p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.assessment-form-version-review__item-notes strong {
+  color: #0f172a;
 }
 
 .assessment-form-version-review__item-actions {
