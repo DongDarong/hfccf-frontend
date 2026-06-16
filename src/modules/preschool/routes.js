@@ -104,6 +104,24 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/payment/invoices/:id',
+    name: 'dashboard-preschool-admin-invoice-detail',
+    component: () => import('@/modules/preschool/admin/pages/payments/InvoiceDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/payment/receipts/:id',
+    name: 'dashboard-preschool-admin-receipt-view',
+    component: () => import('@/modules/preschool/admin/pages/payments/ReceiptView.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/attendance',
     name: 'dashboard-preschool-admin-attendance',
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceManagement.vue'),
