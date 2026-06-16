@@ -84,7 +84,7 @@ onMounted(loadReceipt)
       <div class="receipt-view-page__shell">
         <div class="receipt-view-page__toolbar">
           <Button type="button" variant="ghost" rounded="xl" @click="goBack">
-            {{ t('common.back') }}
+            {{ t('preschoolPaymentManagementPage.actions.back') }}
           </Button>
           <Button type="button" variant="primary" rounded="xl" @click="onPrintReceipt">
             {{ t('preschoolPaymentManagementPage.actions.printReceipt') }}
