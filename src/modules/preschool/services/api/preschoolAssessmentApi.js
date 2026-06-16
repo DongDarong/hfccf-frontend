@@ -100,16 +100,36 @@ function normalizeFormSection(section = {}) {
 }
 
 function normalizeFormVersion(version = {}) {
+  const normalizeUser = (value) => {
+    if (value && typeof value === 'object') {
+      return {
+        id: value.id ?? '',
+        name: String(value.name ?? '').trim(),
+      }
+    }
+
+    return value ? { id: value, name: '' } : null
+  }
+
   return {
     id: version.id ?? '',
     templateId: version.template_id ?? version.templateId ?? '',
     versionNumber: Number(version.version_number ?? version.versionNumber ?? 0),
     label: String(version.label ?? '').trim(),
     changeSummary: String(version.change_summary ?? version.changeSummary ?? '').trim(),
+    status: String(version.status ?? '').trim(),
+    createdBy: normalizeUser(version.created_by ?? version.createdBy ?? null),
+    updatedBy: normalizeUser(version.updated_by ?? version.updatedBy ?? null),
+    publishedBy: normalizeUser(version.published_by ?? version.publishedBy ?? null),
     publishedAt: version.published_at || version.publishedAt || '',
-    publishedBy: version.published_by ?? version.publishedBy ?? '',
+    archivedBy: normalizeUser(version.archived_by ?? version.archivedBy ?? null),
+    archivedAt: version.archived_at || version.archivedAt || '',
+    sectionsCount: Number(version.sections_count ?? version.sectionsCount ?? 0),
+    questionsCount: Number(version.questions_count ?? version.questionsCount ?? 0),
     isCurrent: Boolean(version.is_current ?? version.isCurrent ?? false),
     createdAt: version.created_at || version.createdAt || '',
+    updatedAt: version.updated_at || version.updatedAt || version.published_at || version.publishedAt || '',
+    snapshot: version.snapshot ?? null,
     raw: version,
   }
 }

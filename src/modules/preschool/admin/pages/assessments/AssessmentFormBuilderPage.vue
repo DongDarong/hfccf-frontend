@@ -9,12 +9,15 @@ import AssessmentPageHeader from '@/modules/preschool/admin/components/assessmen
 import FormBuilderQuestionPalette from '@/modules/preschool/admin/components/assessment/FormBuilderQuestionPalette.vue'
 import FormBuilderCanvas from '@/modules/preschool/admin/components/assessment/FormBuilderCanvas.vue'
 import FormBuilderQuestionSettings from '@/modules/preschool/admin/components/assessment/FormBuilderQuestionSettings.vue'
+import AssessmentFormVersionReview from '@/modules/preschool/admin/components/assessment/AssessmentFormVersionReview.vue'
 import {
   archiveAssessmentForm,
   buildFormTemplatePayload,
   createAssessmentForm,
   duplicateAssessmentForm,
   fetchAssessmentForm,
+  fetchAssessmentFormVersions,
+  fetchAssessmentQuestionTypes,
   publishAssessmentForm,
   restoreAssessmentForm,
   updateAssessmentForm,
@@ -53,6 +56,11 @@ const isTemplateLoading = ref(false)
 const isTemplateSaving = ref(false)
 const templateError = ref('')
 const templateNotice = ref('')
+const assessmentVersions = ref([])
+const selectedVersionId = ref('')
+const isVersionHistoryLoading = ref(false)
+const versionHistoryError = ref('')
+const questionTypeLookup = ref({})
 const dragState = ref({
   type: null,
   questionKey: null,
@@ -183,6 +191,20 @@ const selectedSection = computed(() =>
 
 const totalQuestionCount = computed(() =>
   Object.values(builderSectionQuestionMap.value).reduce((count, sectionQuestions) => count + sectionQuestions.length, 0)
+)
+
+const selectedVersion = computed(() =>
+  assessmentVersions.value.find(version => String(version.id) === String(selectedVersionId.value))
+    || assessmentVersions.value.find(version => version.isCurrent)
+    || assessmentVersions.value[0]
+    || null,
+)
+
+const versionComparison = computed(() =>
+  compareTemplateSnapshots(
+    buildCurrentTemplateSnapshot(),
+    selectedVersion.value?.snapshot || null,
+  ),
 )
 
 function createInitialSectionQuestionMap() {
@@ -385,7 +407,11 @@ watch(
 )
 
 function serializeTemplateSnapshot() {
-  return JSON.stringify({
+  return JSON.stringify(buildCurrentTemplateSnapshot())
+}
+
+function buildCurrentTemplateSnapshot() {
+  return {
     id: currentTemplateId.value,
     name: templateName.value,
     description: templateDescription.value,
@@ -412,7 +438,259 @@ function serializeTemplateSnapshot() {
         options: question.options || '',
       })),
     })),
+  }
+}
+
+function normalizeVersionSnapshot(snapshot) {
+  if (!snapshot) {
+    return null
+  }
+
+  const raw = typeof snapshot === 'string'
+    ? (() => {
+        try {
+          return JSON.parse(snapshot)
+        } catch {
+          return null
+        }
+      })()
+    : snapshot
+
+  if (!raw) {
+    return null
+  }
+
+  const template = raw.template || raw
+  const sections = Array.isArray(raw.sections) ? raw.sections : []
+
+  return {
+    title: String(template.name ?? template.title ?? '').trim(),
+    description: String(template.description ?? '').trim(),
+    status: String(template.status ?? 'draft').trim(),
+    sectionsCount: Number(raw.sections_count ?? sections.length ?? 0),
+    questionsCount: Number(raw.questions_count ?? sections.reduce((count, section) => count + (Array.isArray(section.questions) ? section.questions.length : 0), 0)),
+    sections: sections.map((section) => ({
+      code: String(section.code ?? section.key ?? section.title ?? '').trim(),
+      title: String(section.title ?? '').trim(),
+      description: String(section.description ?? '').trim(),
+      sortOrder: Number(section.sort_order ?? section.sortOrder ?? 0),
+      questions: (section.questions || []).map((question) => ({
+        code: String(question.code ?? '').trim(),
+        label: String(question.label ?? '').trim(),
+        questionTypeKey: String(question.question_type_key ?? question.questionTypeKey ?? question.answerType ?? question.questionType?.key ?? '').trim(),
+        questionTypeLabel: String(question.question_type_label ?? question.questionTypeLabel ?? question.questionType?.label ?? '').trim(),
+        isRequired: Boolean(question.is_required ?? question.isRequired ?? question.required ?? false),
+        isScored: Boolean(question.is_scored ?? question.isScored ?? question.scored ?? false),
+        score: Number(question.max_score ?? question.score ?? 0),
+        validationRules: question.validation_rules ?? question.validationRules ?? (question.validationMode ? { mode: question.validationMode } : {}),
+        options: (question.options || []).map(option => String(option.label ?? '').trim()).filter(Boolean),
+      })),
+    })),
+    raw,
+  }
+}
+
+function createQuestionTypeMap(questionTypes = []) {
+  return Object.fromEntries(
+    questionTypes.map(type => [String(type.id), String(type.key ?? '').trim()]),
+  )
+}
+
+function resolveQuestionTypeKey(question = {}, typeMap = {}) {
+  return String(
+    question.questionTypeKey
+    || question.question_type_key
+    || question.answerType
+    || question.answer_type
+    || typeMap[String(question.question_type_id ?? question.questionTypeId ?? '')]
+    || question.key
+    || 'shortText',
+  ).trim()
+}
+
+function normalizeSectionForBuilder(section = {}, index = 0, typeMap = {}) {
+  const questions = Array.isArray(section.questions) ? section.questions : []
+
+  return {
+    id: section.id || null,
+    key: section.code || section.key || `section-${index + 1}`,
+    code: section.code || section.key || `section-${index + 1}`,
+    title: section.title || section.code || `Section ${index + 1}`,
+    description: section.description || '',
+    hint: section.description || '',
+    order: section.sort_order ?? section.sortOrder ?? index + 1,
+    questionCount: questions.length,
+    questions: questions.map((question, questionIndex) => ({
+      id: question.id || `${section.code || section.key || index + 1}-question-${questionIndex + 1}`,
+      key: resolveQuestionTypeKey(question, typeMap) || 'shortText',
+      title: question.label || question.question_text || `Question ${questionIndex + 1}`,
+      description: question.help_text || '',
+      group: 'review',
+      answerType: resolveQuestionTypeKey(question, typeMap) || 'shortText',
+      required: Boolean(question.is_required ?? false),
+      score: Number(question.max_score ?? question.score ?? 0),
+      validationMode: String(question.validation_rules?.mode ?? question.validationMode ?? 'basic'),
+      options: Array.isArray(question.options) ? question.options.map(option => option.label).filter(Boolean).join(', ') : '',
+    })),
+  }
+}
+
+function buildCurrentTemplatePayloadFromSnapshot(snapshot = null) {
+  const normalized = normalizeVersionSnapshot(snapshot)
+
+  if (!normalized) {
+    return serializeTemplatePayload()
+  }
+
+  const sections = normalized.sections.map((section, sectionIndex) => ({
+    id: null,
+    code: section.code || `section-${sectionIndex + 1}`,
+    title: section.title,
+    description: section.description,
+    sortOrder: section.sortOrder || sectionIndex + 1,
+    settings: {
+      hint: section.description,
+    },
+    questions: section.questions.map((question, questionIndex) => ({
+      id: null,
+      code: question.code || `question-${questionIndex + 1}`,
+      label: question.label,
+      helpText: question.description,
+      answerType: question.questionTypeKey || 'shortText',
+      questionTypeKey: question.questionTypeKey || 'shortText',
+      required: question.isRequired,
+      score: question.score,
+      validationMode: question.validationRules?.mode || 'basic',
+      options: question.options.join(', '),
+      sortOrder: questionIndex + 1,
+    })),
+  }))
+
+  return buildFormTemplatePayload({
+    id: '',
+    name: normalized.title || safeText('assessmentFormBuilder.title', 'Form Builder'),
+    description: normalized.description || safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.'),
+    category: 'preschool_assessment',
+    settings: {
+      builder: true,
+      module: 'preschool',
+      status: normalized.status || 'draft',
+    },
+  }, sections)
+}
+
+function compareTemplateSnapshots(currentSnapshot, selectedSnapshot) {
+  const current = normalizeVersionSnapshot(currentSnapshot)
+  const selected = normalizeVersionSnapshot(selectedSnapshot)
+
+  if (!selected) {
+    return {
+      current: current ? {
+        title: current.title,
+        description: current.description,
+        status: current.status,
+        sectionsCount: current.sectionsCount,
+        questionsCount: current.questionsCount,
+      } : null,
+      selected: null,
+      sectionsChanged: [],
+      questionsChanged: [],
+      scoringChanges: [],
+      validationChanges: [],
+    }
+  }
+
+  const currentSections = current?.sections || []
+  const selectedSections = selected.sections || []
+
+  const currentSectionMap = new Map(currentSections.map(section => [section.code || section.title, section]))
+  const currentQuestionMap = new Map()
+
+  currentSections.forEach(section => {
+    section.questions.forEach(question => {
+      currentQuestionMap.set(question.code || question.label, question)
+    })
   })
+
+  const sectionsChanged = []
+  const questionsChanged = []
+  const scoringChanges = []
+  const validationChanges = []
+
+  selectedSections.forEach(section => {
+    const key = section.code || section.title
+    const currentSection = currentSectionMap.get(key)
+
+    if (!currentSection) {
+      sectionsChanged.push({
+        key,
+        label: `${section.title} (${safeText('assessmentFormBuilder.versionHistory.added', 'added')})`,
+      })
+      return
+    }
+
+    if (currentSection.title !== section.title || currentSection.description !== section.description) {
+      sectionsChanged.push({
+        key,
+        label: `${section.title} (${safeText('assessmentFormBuilder.versionHistory.changed', 'changed')})`,
+      })
+    }
+
+    section.questions.forEach(question => {
+      const questionKey = question.code || question.label
+      const currentQuestion = currentQuestionMap.get(questionKey)
+
+      if (!currentQuestion) {
+        questionsChanged.push({
+          key: questionKey,
+          label: `${question.label} (${safeText('assessmentFormBuilder.versionHistory.added', 'added')})`,
+        })
+        return
+      }
+
+      if (currentQuestion.label !== question.label || currentQuestion.questionTypeKey !== question.questionTypeKey) {
+        questionsChanged.push({
+          key: questionKey,
+          label: `${question.label} (${safeText('assessmentFormBuilder.versionHistory.changed', 'changed')})`,
+        })
+      }
+
+      if (currentQuestion.score !== question.score) {
+        scoringChanges.push({
+          key: `${questionKey}-score`,
+          label: `${question.label}: ${currentQuestion.score || 0} → ${question.score || 0}`,
+        })
+      }
+
+      if (JSON.stringify(currentQuestion.validationRules || {}) !== JSON.stringify(question.validationRules || {})) {
+        validationChanges.push({
+          key: `${questionKey}-validation`,
+          label: `${question.label}: ${safeText('assessmentFormBuilder.versionHistory.validationChanged', 'validation changed')}`,
+        })
+      }
+    })
+  })
+
+  return {
+    current: current ? {
+      title: current.title,
+      description: current.description,
+      status: current.status,
+      sectionsCount: current.sectionsCount,
+      questionsCount: current.questionsCount,
+    } : null,
+    selected: {
+      title: selected.title,
+      description: selected.description,
+      status: selected.status,
+      sectionsCount: selected.sectionsCount,
+      questionsCount: selected.questionsCount,
+    },
+    sectionsChanged,
+    questionsChanged,
+    scoringChanges,
+    validationChanges,
+  }
 }
 
 function serializeTemplatePayload() {
@@ -520,6 +798,8 @@ function hydrateBuilderTemplate(template) {
 async function loadTemplate(templateId) {
   if (!templateId) {
     hydrateBuilderTemplate(null)
+    assessmentVersions.value = []
+    selectedVersionId.value = ''
     return
   }
 
@@ -529,11 +809,162 @@ async function loadTemplate(templateId) {
   try {
     const template = await fetchAssessmentForm(templateId)
     hydrateBuilderTemplate(template)
+    await loadVersionHistory(templateId)
   } catch (error) {
     templateError.value = error?.message || 'Unable to load the form template.'
   } finally {
     isTemplateLoading.value = false
   }
+}
+
+async function loadQuestionTypes() {
+  try {
+    const types = await fetchAssessmentQuestionTypes()
+    questionTypeLookup.value = createQuestionTypeMap(types)
+  } catch {
+    questionTypeLookup.value = {}
+  }
+}
+
+async function loadVersionHistory(templateId = currentTemplateId.value) {
+  if (!templateId) {
+    assessmentVersions.value = []
+    selectedVersionId.value = ''
+    return
+  }
+
+  isVersionHistoryLoading.value = true
+  versionHistoryError.value = ''
+
+  try {
+    const versions = await fetchAssessmentFormVersions(templateId)
+    assessmentVersions.value = versions
+    selectedVersionId.value = versions.find(version => version.isCurrent)?.id || versions[0]?.id || ''
+  } catch (error) {
+    versionHistoryError.value = error?.message || 'Unable to load version history.'
+    assessmentVersions.value = []
+    selectedVersionId.value = ''
+  } finally {
+    isVersionHistoryLoading.value = false
+  }
+}
+
+function hydrateBuilderTemplateFromVersionSnapshot(snapshot) {
+  const normalized = normalizeVersionSnapshot(snapshot)
+
+  if (!normalized) {
+    return
+  }
+
+  const sections = normalized.sections.length > 0
+    ? normalized.sections.map((section, index) => normalizeSectionForBuilder(section, index, questionTypeLookup.value))
+    : PRESCHOOL_ASSESSMENT_FORM_BUILDER_DEFAULT_SECTIONS.map((section, index) => ({
+        ...section,
+        id: null,
+        key: section.key,
+        code: section.code || section.key,
+        order: index + 1,
+        questionCount: 0,
+        questions: [],
+      }))
+
+  templateStatus.value = normalized.status || 'draft'
+  templateVersion.value = selectedVersion.value?.versionNumber || templateVersion.value || 1
+  templateName.value = normalized.title || templateName.value
+  templateDescription.value = normalized.description || templateDescription.value
+  builderSections.value = sections.map((section, index) => ({
+    ...section,
+    order: section.order || index + 1,
+  }))
+  builderSectionQuestionMap.value = Object.fromEntries(
+    builderSections.value.map((section) => [
+      section.key,
+      section.questions || [],
+    ]),
+  )
+  selectedSectionKey.value = builderSections.value[0]?.key || selectedSectionKey.value
+  selectedQuestionKey.value = builderSections.value[0]?.questions?.[0]?.key || selectedQuestionKey.value
+  templateSnapshot.value = serializeTemplateSnapshot()
+}
+
+function requireVersionChangeConfirmation() {
+  if (!hasUnsavedChanges.value) {
+    return true
+  }
+
+  return window.confirm(
+    safeText(
+      'assessmentFormBuilder.versionHistory.unsavedChangesPrompt',
+      'You have unsaved changes. Continue and leave the current draft?',
+    ),
+  )
+}
+
+function selectVersion(version) {
+  if (String(version?.id) === String(selectedVersionId.value)) {
+    return
+  }
+
+  selectedVersionId.value = String(version?.id || '')
+}
+
+async function duplicateVersionAsDraft(version) {
+  if (!version?.snapshot) {
+    templateError.value = safeText(
+      'assessmentFormBuilder.versionHistory.missingSnapshot',
+      'This version cannot be duplicated because the snapshot is unavailable.',
+    )
+    return
+  }
+
+  if (!requireVersionChangeConfirmation()) {
+    return
+  }
+
+  isTemplateSaving.value = true
+  templateError.value = ''
+
+  try {
+    const payload = buildCurrentTemplatePayloadFromSnapshot(version.snapshot)
+    const template = await createAssessmentForm(payload)
+    hydrateBuilderTemplate(template)
+    await loadVersionHistory(currentTemplateId.value)
+    await router.replace({
+      query: {
+        ...route.query,
+        templateId: currentTemplateId.value,
+      },
+    })
+    templateNotice.value = safeText(
+      'assessmentFormBuilder.versionHistory.versionDuplicated',
+      'Version duplicated as a draft.',
+    )
+  } catch (error) {
+    templateError.value = error?.message || 'Unable to duplicate the selected version.'
+  } finally {
+    isTemplateSaving.value = false
+  }
+}
+
+async function restoreVersion(version) {
+  if (!version?.snapshot) {
+    templateError.value = safeText(
+      'assessmentFormBuilder.versionHistory.missingSnapshot',
+      'This version cannot be restored because the snapshot is unavailable.',
+    )
+    return
+  }
+
+  if (!requireVersionChangeConfirmation()) {
+    return
+  }
+
+  selectedVersionId.value = String(version.id || selectedVersionId.value)
+  hydrateBuilderTemplateFromVersionSnapshot(version.snapshot)
+  templateNotice.value = safeText(
+    'assessmentFormBuilder.versionHistory.versionLoaded',
+    'Version loaded into the current draft.',
+  )
 }
 
 async function saveDraft() {
@@ -548,6 +979,7 @@ async function saveDraft() {
       : await createAssessmentForm(payload)
 
     hydrateBuilderTemplate(template)
+    await loadVersionHistory(currentTemplateId.value)
     await router.replace({
       query: {
         ...route.query,
@@ -574,6 +1006,7 @@ async function duplicateTemplate() {
   try {
     const template = await duplicateAssessmentForm(currentTemplateId.value)
     hydrateBuilderTemplate(template)
+    await loadVersionHistory(currentTemplateId.value)
     await router.replace({
       query: {
         ...route.query,
@@ -602,6 +1035,7 @@ async function publishTemplate() {
       changeSummary: 'Publish from Preschool form builder',
     })
     hydrateBuilderTemplate(template)
+    await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.published', 'Template published.')
   } catch (error) {
     templateError.value = error?.message || 'Unable to publish the template.'
@@ -620,6 +1054,7 @@ async function archiveTemplate() {
   try {
     const template = await archiveAssessmentForm(currentTemplateId.value)
     hydrateBuilderTemplate(template)
+    await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.archived', 'Template archived.')
   } catch (error) {
     templateError.value = error?.message || 'Unable to archive the template.'
@@ -638,6 +1073,7 @@ async function restoreTemplate() {
   try {
     const template = await restoreAssessmentForm(currentTemplateId.value)
     hydrateBuilderTemplate(template)
+    await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.restored', 'Template restored.')
   } catch (error) {
     templateError.value = error?.message || 'Unable to restore the template.'
@@ -648,6 +1084,7 @@ async function restoreTemplate() {
 }
 
 onMounted(() => {
+  loadQuestionTypes()
   loadTemplate(currentTemplateId.value)
 })
 </script>
@@ -787,6 +1224,21 @@ onMounted(() => {
             @update:state="handleQuestionStateUpdate"
             @reset="resetQuestionState"
             @apply="handleSettingsApply"
+          />
+          <div v-if="versionHistoryError" class="assessment-form-builder-state assessment-form-builder-state--error">
+            <i class="pi pi-exclamation-triangle" />
+            <span>{{ versionHistoryError }}</span>
+          </div>
+          <AssessmentFormVersionReview
+            :versions="assessmentVersions"
+            :selected-version-id="selectedVersionId"
+            :comparison="versionComparison"
+            :current-template-status="templateStatus"
+            :has-unsaved-changes="hasUnsavedChanges"
+            :loading="isVersionHistoryLoading"
+            @select-version="selectVersion"
+            @duplicate-version="duplicateVersionAsDraft"
+            @restore-version="restoreVersion"
           />
         </aside>
       </div>

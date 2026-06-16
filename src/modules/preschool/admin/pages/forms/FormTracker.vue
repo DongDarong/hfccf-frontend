@@ -211,6 +211,13 @@ onMounted(load)
               </div>
               <div class="forms-tracker__forms-footer">
                 <Button
+                  :label="t('assessmentFormBuilder.versionHistory.viewVersion', 'View version')"
+                  icon="pi pi-history"
+                  text
+                  severity="secondary"
+                  @click="router.push({ name: 'preschool-assessment-form-builder', query: { templateId: recentForms[0]?.templateId } })"
+                />
+                <Button
                   label="View All Forms"
                   icon="pi pi-arrow-right"
                   text
