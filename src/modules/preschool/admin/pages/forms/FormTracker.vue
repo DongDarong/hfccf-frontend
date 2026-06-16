@@ -5,6 +5,7 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
+import { fetchAssessmentForms } from '@/modules/preschool/services/api/preschoolAssessmentApi'
 
 defineOptions({ name: 'FormTrackerPage' })
 
@@ -25,27 +26,27 @@ const isLoading = ref(false)
 async function load() {
   isLoading.value = true
   try {
-    // This page is a launcher, not a separate persisted forms engine.
-    // Keep the numbers deterministic so the compatibility surface does not
-    // look like live production data.
+    const response = await fetchAssessmentForms({ module: 'preschool', perPage: 8 })
+    const items = response.items || []
     formStats.value = {
-      totalForms: 4,
-      activeSubmissions: 12,
-      pendingReview: 3,
-      completedThisMonth: 8,
+      totalForms: response.pagination?.total ?? items.length,
+      activeSubmissions: items.filter(form => form.status === 'published').length,
+      pendingReview: items.filter(form => form.status === 'draft').length,
+      completedThisMonth: items.filter(form => form.status === 'archived').length,
     }
-    recentForms.value = [
-      { id: 1, name: 'Student Registration', description: 'Basic student info form', status: 'active' },
-      { id: 2, name: 'Health Assessment', description: 'Health and medical information', status: 'active' },
-      { id: 3, name: 'Parent Consent', description: 'Parent/guardian consent forms', status: 'review' },
-      { id: 4, name: 'Learning Goals', description: 'Student learning objectives', status: 'active' },
-    ]
+    recentForms.value = items.slice(0, 5).map(form => ({
+      id: form.id,
+      name: form.name,
+      description: form.description || 'Preschool assessment template',
+      status: form.status,
+      templateId: form.id,
+    }))
   } finally {
     isLoading.value = false
   }
 }
 
-const workflowSteps = [
+const workflowSteps = computed(() => [
   {
     id: 'create',
     title: 'Create Form',
@@ -53,7 +54,7 @@ const workflowSteps = [
     icon: '✏️',
     color: '#10b981',
     action: () => router.push({ name: 'preschool-assessment-form-builder' }),
-    badge: formStats.value.totalForms,
+    badge: null,
   },
   {
     id: 'configure',
@@ -82,7 +83,7 @@ const workflowSteps = [
     action: () => router.push({ name: 'dashboard-preschool-admin-forms-review' }),
     badge: formStats.value.pendingReview,
   },
-]
+])
 
 const recentFormCount = computed(() => recentForms.value.length)
 
@@ -102,7 +103,7 @@ onMounted(load)
         </template>
       </HeaderSection>
 
-      <div class="forms-tracker__hero">
+    <div class="forms-tracker__hero">
         <div class="forms-tracker__hero-content">
           <h2 class="forms-tracker__hero-title">📝 Forms Tracker</h2>
           <p class="forms-tracker__hero-subtitle">
@@ -196,6 +197,7 @@ onMounted(load)
                 v-for="(form, idx) in recentForms"
                 :key="idx"
                 class="forms-tracker__form-item"
+                @click="router.push({ name: 'preschool-assessment-form-builder', query: { templateId: form.templateId } })"
               >
                 <div class="forms-tracker__form-info">
                   <div class="forms-tracker__form-name">{{ form.name }}</div>

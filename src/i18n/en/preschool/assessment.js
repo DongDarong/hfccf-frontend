@@ -154,4 +154,29 @@ export default {
   edit: 'Edit',
   finalize: 'Finalize',
   archive: 'Archive',
+
+  assessmentFormBuilder: {
+    actions: {
+      saveDraft: 'Save Draft',
+      duplicate: 'Duplicate',
+      publish: 'Publish',
+      archive: 'Archive',
+      restore: 'Restore',
+    },
+    status: {
+      draft: 'Draft',
+      published: 'Published',
+      archived: 'Archived',
+    },
+    messages: {
+      loading: 'Loading template...',
+      unsavedChanges: 'Unsaved changes',
+      savedState: 'Draft saved',
+      saved: 'Draft saved.',
+      duplicated: 'Template duplicated.',
+      published: 'Template published.',
+      archived: 'Template archived.',
+      restored: 'Template restored.',
+    },
+  },
 }
