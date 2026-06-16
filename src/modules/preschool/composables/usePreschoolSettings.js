@@ -128,6 +128,13 @@ export function createDefaultAssessmentConfiguration() {
     finalizationMode: 'publish-only',
     defaultTemplate: 'PRESCHOOL-DEVELOPMENT-CORE',
     requireTeacherNotes: true,
+    enableRiskTracking: true,
+    riskThreshold: 60,
+    enableAutoRating: true,
+    requireObservation: true,
+    requireTeacherComment: false,
+    allowArchiving: true,
+    notifyOnHighRisk: true,
   }
 }
 
@@ -317,6 +324,13 @@ function normalizeSettingsForForm(settings = {}) {
       finalizationMode: normalizeText(settings.assessment?.finalizationMode || settings.assessment?.finalization_mode || defaults.assessment.finalizationMode),
       defaultTemplate: normalizeText(settings.assessment?.defaultTemplate || settings.assessment?.default_template || defaults.assessment.defaultTemplate),
       requireTeacherNotes: Boolean(settings.assessment?.requireTeacherNotes ?? settings.assessment?.require_teacher_notes ?? defaults.assessment.requireTeacherNotes),
+      enableRiskTracking: Boolean(settings.assessment?.enableRiskTracking ?? settings.assessment?.enable_risk_tracking ?? defaults.assessment.enableRiskTracking),
+      riskThreshold: Number(settings.assessment?.riskThreshold ?? settings.assessment?.risk_threshold ?? defaults.assessment.riskThreshold),
+      enableAutoRating: Boolean(settings.assessment?.enableAutoRating ?? settings.assessment?.enable_auto_rating ?? defaults.assessment.enableAutoRating),
+      requireObservation: Boolean(settings.assessment?.requireObservation ?? settings.assessment?.require_observation ?? defaults.assessment.requireObservation),
+      requireTeacherComment: Boolean(settings.assessment?.requireTeacherComment ?? settings.assessment?.require_teacher_comment ?? defaults.assessment.requireTeacherComment),
+      allowArchiving: Boolean(settings.assessment?.allowArchiving ?? settings.assessment?.allow_archiving ?? defaults.assessment.allowArchiving),
+      notifyOnHighRisk: Boolean(settings.assessment?.notifyOnHighRisk ?? settings.assessment?.notify_on_high_risk ?? defaults.assessment.notifyOnHighRisk),
     },
     schedule: {
       ...defaults.schedule,
@@ -380,6 +394,13 @@ function serializeSettingsForSave(settings = {}) {
       finalizationMode: normalizeText(settings.assessment?.finalizationMode),
       defaultTemplate: normalizeText(settings.assessment?.defaultTemplate),
       requireTeacherNotes: Boolean(settings.assessment?.requireTeacherNotes),
+      enableRiskTracking: Boolean(settings.assessment?.enableRiskTracking),
+      riskThreshold: Number(settings.assessment?.riskThreshold ?? 0),
+      enableAutoRating: Boolean(settings.assessment?.enableAutoRating),
+      requireObservation: Boolean(settings.assessment?.requireObservation),
+      requireTeacherComment: Boolean(settings.assessment?.requireTeacherComment),
+      allowArchiving: Boolean(settings.assessment?.allowArchiving),
+      notifyOnHighRisk: Boolean(settings.assessment?.notifyOnHighRisk),
     },
     schedule: {
       weeklyMode: normalizeText(settings.schedule?.weeklyMode),
@@ -471,6 +492,13 @@ function validatePreschoolSettings(settings = {}) {
   if (!validateRequiredText(assessment.finalizationMode)) errors.assessment.finalizationMode = 'required'
   if (!validateRequiredText(assessment.defaultTemplate)) errors.assessment.defaultTemplate = 'required'
   if (typeof assessment.requireTeacherNotes !== 'boolean') errors.assessment.requireTeacherNotes = 'required'
+  if (typeof assessment.enableRiskTracking !== 'boolean') errors.assessment.enableRiskTracking = 'required'
+  if (!(Number(assessment.riskThreshold) >= 0 && Number(assessment.riskThreshold) <= 100)) errors.assessment.riskThreshold = 'range'
+  if (typeof assessment.enableAutoRating !== 'boolean') errors.assessment.enableAutoRating = 'required'
+  if (typeof assessment.requireObservation !== 'boolean') errors.assessment.requireObservation = 'required'
+  if (typeof assessment.requireTeacherComment !== 'boolean') errors.assessment.requireTeacherComment = 'required'
+  if (typeof assessment.allowArchiving !== 'boolean') errors.assessment.allowArchiving = 'required'
+  if (typeof assessment.notifyOnHighRisk !== 'boolean') errors.assessment.notifyOnHighRisk = 'required'
 
   const schedule = settings.schedule || {}
   if (!validateRequiredText(schedule.weeklyMode)) errors.schedule.weeklyMode = 'required'

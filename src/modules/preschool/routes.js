@@ -7,7 +7,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/dashboard',
     name: 'dashboard-preschool-admin',
-    component: () => import('@/modules/preschool/admin/pages/dashboard/PreschoolDashboard.vue'),
+    component: () => import('@/modules/preschool/admin/pages/dashboard/DashboardTracker.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
@@ -151,6 +151,27 @@ export const preschoolRoutes = [
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceIdCard.vue'),
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
+  // Health and medical records stay under the preschool admin tree so student
+  // identity, enrollment, and clinical-style follow-up remain anchored to the
+  // same student record instead of branching into a separate module shell.
+  defineAppRoute({
+    path: '/module/preschool-admin/health',
+    name: 'dashboard-preschool-admin-health',
+    component: () => import('@/modules/preschool/admin/pages/health/HealthRecordsDashboard.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/health/students/:id',
+    name: 'dashboard-preschool-admin-health-student',
+    component: () => import('@/modules/preschool/admin/pages/health/StudentHealthProfile.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.
   defineAppRoute({
@@ -176,10 +197,15 @@ export const preschoolRoutes = [
   }),
   // Assessment routes are shared by Preschool admins and teachers so the UI
   // can grow into reporting later without splitting the same workflow twice.
+  // The legacy `/assessments` route name remains a compatibility redirect to
+  // the canonical Preschool assessment dashboard.
   defineAppRoute({
     path: '/module/preschool-admin/assessments',
     name: 'dashboard-preschool-assessments',
-    component: () => import('@/modules/preschool/admin/pages/assessments/StudentAssessments.vue'),
+    redirect: to => ({
+      name: 'preschool-assessment-dashboard',
+      query: to.query,
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
@@ -188,7 +214,10 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/assessments/add',
     name: 'dashboard-preschool-assessments-add',
-    component: () => import('@/modules/preschool/admin/pages/assessments/AddAssessment.vue'),
+    redirect: to => ({
+      name: 'preschool-assessment-list',
+      query: to.query,
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
@@ -197,7 +226,13 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/assessments/summary',
     name: 'dashboard-preschool-progress-summary',
-    component: () => import('@/modules/preschool/admin/pages/assessments/ProgressSummary.vue'),
+    // Compatibility redirect: older "progress summary" entry points now land on
+    // the canonical Preschool assessment reports screen instead of a separate
+    // summary shell.
+    redirect: to => ({
+      name: 'preschool-assessment-reports',
+      query: to.query,
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
@@ -339,7 +374,9 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms',
     name: 'dashboard-preschool-admin-forms',
-    component: () => import('@/modules/preschool/admin/pages/forms/FormManagement.vue'),
+    // Forms stays as a compatibility launcher. The canonical authoring and
+    // reporting work happens in the Preschool assessment routes.
+    component: () => import('@/modules/preschool/admin/pages/forms/FormTracker.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
@@ -357,7 +394,11 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms/build',
     name: 'dashboard-preschool-admin-forms-build',
-    component: () => import('@/modules/preschool/admin/pages/forms/FormManagementBuild.vue'),
+    // Compatibility redirect: older build links now resolve to the canonical
+    // assessment form builder so we keep one real authoring path.
+    redirect: () => ({
+      name: 'preschool-assessment-form-builder',
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
@@ -444,5 +485,45 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
-]
 
+  // Assessment Module Routes
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments',
+    name: 'preschool-assessment-dashboard',
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentDashboard.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments/list',
+    name: 'preschool-assessment-list',
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentListPage.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments/reports',
+    name: 'preschool-assessment-reports',
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentReportsPage.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+
+  defineAppRoute({
+    path: '/module/preschool-admin/assessments/settings',
+    name: 'preschool-assessment-settings',
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentSettingsPage.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+]

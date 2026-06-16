@@ -2,6 +2,7 @@ import dashboard from './dashboard'
 import classes from './classes'
 import students from './students'
 import payments from './payments'
+import health from './health'
 import scaffold from './scaffold'
 import attendance from './attendance'
 import adminDashboard from './admin-dashboard'
@@ -30,6 +31,7 @@ export default {
   ...classes,
   ...students,
   ...payments,
+  ...health,
   ...scaffold,
   ...attendance,
   ...adminDashboard,

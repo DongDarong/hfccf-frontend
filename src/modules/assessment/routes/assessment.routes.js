@@ -3,6 +3,15 @@ import { defineAppRoute } from '@/router/defineAppRoute'
 
 export const assessmentRoutes = [
   defineAppRoute({
+    path: '/module/assessment',
+    name: 'assessment-tracker',
+    component: () => import('../pages/AssessmentTracker.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/assessment/dashboard',
     name: 'assessment-dashboard',
     component: () => import('../pages/AssessmentDashboard.vue'),

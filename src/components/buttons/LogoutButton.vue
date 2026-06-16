@@ -82,7 +82,7 @@ const props = defineProps({
 
 const emit = defineEmits(['logout', 'cancel', 'click'])
 
-const { t } = useLanguage()
+const { t, te } = useLanguage()
 
 const isConfirmOpen = ref(false)
 
@@ -90,7 +90,7 @@ const isConfirmOpen = ref(false)
  * Resolve i18n text safely.
  */
 function translate(key, fallback) {
-  const value = t(key)
+  const value = te(key) ? t(key) : ''
 
   return value && value !== key
     ? value

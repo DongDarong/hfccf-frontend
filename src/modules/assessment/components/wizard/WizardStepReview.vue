@@ -18,7 +18,7 @@ const { store, answeredCount } = useAssessmentWizard()
       </div>
       <div class="wizard-step-review__meta-item">
         <span class="wizard-step-review__label">{{ t('assessmentWizard.steps.student') }}</span>
-        <span>{{ store.selectedStudent?.full_name ?? '—' }}</span>
+        <span>{{ store.selectedStudent?.fullName ?? '—' }}</span>
       </div>
       <div class="wizard-step-review__meta-item">
         <span class="wizard-step-review__label">{{ t('submissions.answers') }}</span>

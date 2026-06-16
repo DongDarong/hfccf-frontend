@@ -8,6 +8,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
 import { getAvatarInitials, resolveAvatarSource } from '@/utils/avatar'
 import { fetchPreschoolStudent } from '@/modules/preschool/services/preschoolApi'
+import { fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
 import { BACK_ROUTE_NAME } from './constants/studentProfileConstants'
 import { buildInfoCards, getStatusLabel, getStatusClass, getStudentDisplayName } from './utils/studentProfileHelpers'
 
@@ -22,6 +23,7 @@ const router = useRouter()
 const loading = ref(false)
 const errorMessage = ref('')
 const student = ref(null)
+const healthSummary = ref(null)
 
 const profileClasses = computed(() => student.value?.classes || [])
 const avatarSrc = computed(() => resolveAvatarSource(student.value?.avatarUrl || ''))
@@ -43,7 +45,10 @@ async function loadStudent() {
   errorMessage.value = ''
 
   try {
-    const response = await fetchPreschoolStudent(studentId)
+    const [response, summary] = await Promise.all([
+      fetchPreschoolStudent(studentId),
+      fetchStudentHealthSummary(studentId).catch(() => null),
+    ])
     if (!response) {
       student.value = null
       errorMessage.value = t('preschoolStudentProfilePage.messages.notFound')
@@ -51,6 +56,7 @@ async function loadStudent() {
     }
 
     student.value = response
+    healthSummary.value = summary
   } catch (error) {
     student.value = null
     errorMessage.value = error?.message || t('preschoolStudentProfilePage.messages.loadFailed')
@@ -61,6 +67,12 @@ async function loadStudent() {
 
 function goBack() {
   router.push({ name: BACK_ROUTE_NAME })
+}
+
+function goToHealthRecords() {
+  const studentId = String(route.params.id || '').trim()
+  if (!studentId) return
+  router.push({ name: 'dashboard-preschool-admin-health-student', params: { id: studentId } })
 }
 
 watch(() => route.params.id, () => {
@@ -82,6 +94,9 @@ onMounted(loadStudent)
         <div class="student-profile-page__toolbar">
           <Button type="button" variant="ghost" rounded="xl" @click="goBack">
             {{ t('preschoolStudentProfilePage.actions.back') }}
+          </Button>
+          <Button type="button" variant="secondary" rounded="xl" @click="goToHealthRecords">
+            {{ t('preschoolStudentProfilePage.actions.health') }}
           </Button>
         </div>
 
@@ -127,6 +142,26 @@ onMounted(loadStudent)
               <p class="student-profile-page__card-label">{{ card.label }}</p>
               <p class="student-profile-page__card-value">{{ card.value }}</p>
             </article>
+          </div>
+
+          <div v-if="healthSummary" class="student-profile-page__health">
+            <div class="student-profile-page__health-header">
+              <div>
+                <p class="student-profile-page__panel-eyebrow">{{ t('preschoolHealthPage.profile.medicalProfile') }}</p>
+                <h3 class="student-profile-page__panel-title">{{ t('preschoolHealthPage.dashboard.summaryTitle') }}</h3>
+              </div>
+              <Button type="button" variant="secondary" size="sm" rounded="xl" @click="goToHealthRecords">
+                {{ t('preschoolStudentProfilePage.actions.health') }}
+              </Button>
+            </div>
+            <div class="student-profile-page__health-grid">
+              <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.allergies') }}: {{ healthSummary.counts.allergies }}</div>
+              <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.vaccinations') }}: {{ healthSummary.counts.vaccinations }}</div>
+              <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.medications') }}: {{ healthSummary.counts.medications }}</div>
+              <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.incidents') }}: {{ healthSummary.counts.incidents }}</div>
+              <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.contacts') }}: {{ healthSummary.counts.emergencyContacts }}</div>
+              <div class="student-profile-page__health-chip">{{ t('preschoolHealthPage.summary.checks') }}: {{ healthSummary.counts.healthChecks }}</div>
+            </div>
           </div>
 
           <div class="student-profile-page__content-grid">
@@ -354,6 +389,47 @@ onMounted(loadStudent)
   gap: 0.85rem;
 }
 
+.student-profile-page__health {
+  border-radius: 1.25rem;
+  border: 1px solid #dbe3ef;
+  background: #fff;
+  box-shadow: 0 16px 32px -26px rgba(15, 23, 42, 0.45);
+  padding: 1rem 1.05rem 1.1rem;
+}
+
+.student-profile-page__health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.student-profile-page__panel-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.student-profile-page__health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.student-profile-page__health-chip {
+  padding: 0.75rem 0.9rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
 .student-profile-page__card,
 .student-profile-page__panel {
   border-radius: 1.25rem;
@@ -469,7 +545,8 @@ onMounted(loadStudent)
   .student-profile-page__cards,
   .student-profile-page__content-grid,
   .student-profile-page__details--four,
-  .student-profile-page__class-list {
+  .student-profile-page__class-list,
+  .student-profile-page__health-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -488,7 +565,8 @@ onMounted(loadStudent)
   .student-profile-page__content-grid,
   .student-profile-page__details,
   .student-profile-page__details--four,
-  .student-profile-page__class-list {
+  .student-profile-page__class-list,
+  .student-profile-page__health-grid {
     grid-template-columns: 1fr;
   }
 }

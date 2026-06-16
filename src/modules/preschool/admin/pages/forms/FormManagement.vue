@@ -40,12 +40,12 @@ const pageCards = computed(() =>
 const quickLinks = computed(() => [
   {
     label: safeText('preschoolScaffold.formManagement.cards.dashboard.title', 'Dashboard'),
-    action: () => router.push({ name: 'assessment-dashboard' }),
+    action: () => router.push({ name: 'preschool-assessment-dashboard' }),
     icon: 'pi pi-chart-bar',
   },
   {
     label: safeText('preschoolScaffold.formManagement.cards.forms.title', 'Forms'),
-    action: () => router.push({ name: 'assessment-form-list' }),
+    action: () => router.push({ name: 'dashboard-preschool-admin-forms-manage' }),
     icon: 'pi pi-folder-open',
   },
   {
@@ -73,6 +73,38 @@ const quickLinks = computed(() => [
         :quick-links="quickLinks"
       />
 
+      <div class="workflow-overview">
+        <div class="workflow-overview__item">
+          <span class="workflow-overview__icon">📊</span>
+          <strong>Overview</strong>
+          <p>Forms Tracker hub and metrics</p>
+        </div>
+        <div class="workflow-overview__arrow">→</div>
+        <div class="workflow-overview__item">
+          <span class="workflow-overview__icon">✏️</span>
+          <strong>Create</strong>
+          <p>Design new assessment forms</p>
+        </div>
+        <div class="workflow-overview__arrow">→</div>
+        <div class="workflow-overview__item">
+          <span class="workflow-overview__icon">⚙️</span>
+          <strong>Configure</strong>
+          <p>Set up scoring & printing</p>
+        </div>
+        <div class="workflow-overview__arrow">→</div>
+        <div class="workflow-overview__item">
+          <span class="workflow-overview__icon">📋</span>
+          <strong>Manage</strong>
+          <p>Organize form library</p>
+        </div>
+        <div class="workflow-overview__arrow">→</div>
+        <div class="workflow-overview__item">
+          <span class="workflow-overview__icon">📈</span>
+          <strong>Review</strong>
+          <p>Track submissions & results</p>
+        </div>
+      </div>
+
       <FormManagementSection
         :eyebrow="safeText('preschoolScaffold.formManagement.pages.sections.title', 'Sections')"
         :title="safeText('preschoolScaffold.formManagement.pages.sections.title', 'Sections')"
@@ -89,5 +121,62 @@ const quickLinks = computed(() => [
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.workflow-overview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-radius: 1rem;
+  border: 1px solid #86efac;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 1.5rem;
+  justify-content: space-between;
+}
+
+.workflow-overview__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  flex: 0 1 auto;
+  min-width: 100px;
+}
+
+.workflow-overview__item strong {
+  font-size: 0.9rem;
+  color: #059669;
+  font-weight: 700;
+}
+
+.workflow-overview__item p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #475569;
+  line-height: 1.3;
+}
+
+.workflow-overview__icon {
+  font-size: 1.5rem;
+  display: block;
+}
+
+.workflow-overview__arrow {
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  font-weight: 300;
+}
+
+@media (max-width: 768px) {
+  .workflow-overview {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .workflow-overview__arrow {
+    transform: rotate(90deg);
+  }
 }
 </style>

@@ -344,6 +344,15 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-admin-attendance' } },
     { labelKey: 'breadcrumb.attendanceIdCard' },
   ],
+  'dashboard-preschool-admin-health': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.healthRecords' },
+  ],
+  'dashboard-preschool-admin-health-student': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.studentHealthProfile' },
+  ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
   'dashboard-preschool-admin-enrollments': [
@@ -480,6 +489,119 @@ const CRUMB_MAP = {
   'dashboard-preschool-teacher-healthy': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
     { labelKey: 'breadcrumb.health' },
+  ],
+
+  // ── Assessment Module ────────────────────────────────────────────────────────
+  'assessment-dashboard': [
+    { labelKey: 'breadcrumb.assessment' },
+  ],
+  'assessment-form-list': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.forms' },
+  ],
+  'assessment-form-create': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.forms', to: { name: 'assessment-form-list' } },
+    { labelKey: 'breadcrumb.newForm' },
+  ],
+  'assessment-form-edit': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.forms', to: { name: 'assessment-form-list' } },
+    { labelKey: 'breadcrumb.editForm' },
+  ],
+  'assessment-form-builder': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.forms', to: { name: 'assessment-form-list' } },
+    { labelKey: 'breadcrumb.formBuilder' },
+  ],
+  'assessment-submission-list': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.submissions' },
+  ],
+  'assessment-submission-detail': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.submissions', to: { name: 'assessment-submission-list' } },
+    { labelKey: 'breadcrumb.submissionDetail' },
+  ],
+  'assessment-reports': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.reports' },
+  ],
+  'assessment-wizard': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.wizard' },
+  ],
+  'assessment-scoring-manager': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.scoring' },
+  ],
+  'assessment-print-designer': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.printDesigner' },
+  ],
+  'assessment-audit-logs': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
+    { labelKey: 'breadcrumb.auditLogs' },
+  ],
+
+  'preschool-assessment-dashboard': [
+    { labelKey: 'breadcrumb.assessment' },
+  ],
+  'preschool-assessment-list': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessments' },
+  ],
+  'preschool-assessment-reports': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.reports' },
+  ],
+  'preschool-assessment-settings': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.settings' },
+  ],
+  'preschool-assessment-form-list': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessmentForms' },
+  ],
+  'preschool-assessment-form-create': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessmentForms', to: { name: 'preschool-assessment-form-list' } },
+    { labelKey: 'breadcrumb.newForm' },
+  ],
+  'preschool-assessment-form-edit': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessmentForms', to: { name: 'preschool-assessment-form-list' } },
+    { labelKey: 'breadcrumb.editForm' },
+  ],
+  'preschool-assessment-form-builder': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessmentForms', to: { name: 'preschool-assessment-form-list' } },
+    { labelKey: 'breadcrumb.formBuilder' },
+  ],
+  'preschool-assessment-submission-list': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessmentSubmissions' },
+  ],
+  'preschool-assessment-submission-detail': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.assessmentSubmissions', to: { name: 'preschool-assessment-submission-list' } },
+    { labelKey: 'breadcrumb.assessmentSubmissionDetail' },
+  ],
+  'preschool-assessment-wizard': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.wizard' },
+  ],
+  'preschool-assessment-scoring': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.scoring' },
+  ],
+  'preschool-assessment-print-designer': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.printDesigner' },
+  ],
+  'preschool-assessment-audit-logs': [
+    { labelKey: 'breadcrumb.assessment', to: { name: 'preschool-assessment-dashboard' } },
+    { labelKey: 'breadcrumb.auditLogs' },
   ],
 }
 

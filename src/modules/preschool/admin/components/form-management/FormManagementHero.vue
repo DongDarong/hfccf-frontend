@@ -77,17 +77,17 @@ defineProps({
   gap: 1rem;
   grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
   padding: 1.35rem;
-  border: 1px solid #dbeafe;
+  border: 1px solid #86efac;
   border-radius: 1.5rem;
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 22%),
-    linear-gradient(180deg, rgba(239, 246, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), transparent 22%),
+    linear-gradient(180deg, rgba(240, 253, 244, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
   box-shadow: 0 25px 55px -38px rgba(15, 23, 42, 0.45);
 }
 
 .preschool-form-management-hero__eyebrow {
   margin: 0 0 0.25rem;
-  color: #2563eb;
+  color: #059669;
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -116,8 +116,8 @@ defineProps({
   margin-top: 1.05rem;
   padding: 0.95rem 1rem;
   border-radius: 1.15rem;
-  border: 1px solid rgba(191, 219, 254, 0.9);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(134, 239, 172, 0.9);
+  background: rgba(240, 253, 244, 0.9);
 }
 
 .preschool-form-management-hero__meta-label {
@@ -129,7 +129,7 @@ defineProps({
 }
 
 .preschool-form-management-hero__meta-note {
-  color: #1d4ed8;
+  color: #059669;
   font-size: 0.92rem;
   font-weight: 600;
 }
@@ -141,8 +141,8 @@ defineProps({
   gap: 0.75rem;
   padding: 1rem;
   border-radius: 1.25rem;
-  border: 1px solid #dbeafe;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(239, 246, 255, 0.85) 100%);
+  border: 1px solid #86efac;
+  background: linear-gradient(180deg, rgba(240, 253, 244, 0.9) 0%, rgba(220, 252, 231, 0.85) 100%);
 }
 
 @media (max-width: 900px) {

@@ -5,7 +5,9 @@ export const FORM_MANAGEMENT_PAGE_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.dashboard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.dashboard.description',
     fallbackDescription: 'View the module overview and jump into the most important areas.',
-    to: { name: 'assessment-dashboard' },
+    // Forms is the compatibility launcher; the canonical overview is the
+    // Preschool assessment dashboard.
+    to: { name: 'preschool-assessment-dashboard' },
   },
   {
     key: 'manage',
@@ -21,7 +23,9 @@ export const FORM_MANAGEMENT_PAGE_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.pages.build.title',
     descriptionKey: 'preschoolScaffold.formManagement.pages.build.description',
     fallbackDescription: 'Work on the tools used to create and refine forms.',
-    to: { name: 'dashboard-preschool-admin-forms-build' },
+    // Forms should jump straight to the canonical assessment builder. The
+    // legacy build route stays available only as a backward-compatible alias.
+    to: { name: 'preschool-assessment-form-builder' },
   },
   {
     key: 'review',
@@ -42,7 +46,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.dashboard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.dashboard.description',
     fallbackDescription: 'View the module overview and jump into the most important areas.',
-    to: { name: 'assessment-dashboard' },
+    to: { name: 'preschool-assessment-dashboard' },
   },
   {
     key: 'forms',
@@ -52,7 +56,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.forms.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.forms.description',
     fallbackDescription: 'Review and organize the current assessment form catalog.',
-    to: { name: 'assessment-form-list' },
+    to: { name: 'dashboard-preschool-admin-forms-manage' },
   },
   {
     key: 'new-form',
@@ -62,7 +66,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.newForm.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.newForm.description',
     fallbackDescription: 'Create a new form for a workflow or data collection flow.',
-    to: { name: 'assessment-form-create' },
+    to: { name: 'preschool-assessment-form-builder' },
   },
   {
     key: 'submissions',
@@ -72,7 +76,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.submissions.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.submissions.description',
     fallbackDescription: 'Track submissions and monitor their processing status.',
-    to: { name: 'assessment-submission-list' },
+    to: { name: 'dashboard-preschool-admin-forms-review' },
   },
   {
     key: 'wizard',
@@ -82,7 +86,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.wizard.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.wizard.description',
     fallbackDescription: 'Build forms step by step with guided assistance.',
-    to: { name: 'assessment-wizard' },
+    to: { name: 'preschool-assessment-form-builder' },
   },
   {
     key: 'scoring',
@@ -92,7 +96,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.scoring.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.scoring.description',
     fallbackDescription: 'Define and manage scoring rules for the active form.',
-    to: { name: 'assessment-form-list' },
+    to: { name: 'preschool-assessment-form-builder' },
   },
   {
     key: 'print-designer',
@@ -102,7 +106,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.printDesigner.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.printDesigner.description',
     fallbackDescription: 'Arrange print layouts and present forms cleanly.',
-    to: { name: 'assessment-form-list' },
+    to: { name: 'preschool-assessment-form-builder' },
   },
   {
     key: 'reports',
@@ -112,7 +116,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.reports.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.reports.description',
     fallbackDescription: 'View summary data and reports for forms.',
-    to: { name: 'assessment-reports' },
+    to: { name: 'preschool-assessment-reports' },
   },
   {
     key: 'audit-logs',
@@ -122,7 +126,7 @@ export const FORM_MANAGEMENT_ACTION_CARDS = [
     titleKey: 'preschoolScaffold.formManagement.cards.auditLogs.title',
     descriptionKey: 'preschoolScaffold.formManagement.cards.auditLogs.description',
     fallbackDescription: 'Review activity and the history of changes.',
-    to: { name: 'assessment-audit-logs' },
+    to: { name: 'dashboard-preschool-admin-lifecycle-audit' },
   },
 ]
 

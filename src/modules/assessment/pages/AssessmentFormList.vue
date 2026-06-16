@@ -91,6 +91,21 @@ onMounted(load)
         </template>
       </HeaderSection>
 
+      <div class="form-guidance">
+        <p class="form-guidance__action">
+          <span class="form-guidance__icon">📝</span>
+          <strong>Create new:</strong> Build forms from scratch or use templates
+        </p>
+        <p class="form-guidance__action">
+          <span class="form-guidance__icon">✏️</span>
+          <strong>Edit existing:</strong> Update form structure and settings
+        </p>
+        <p class="form-guidance__action">
+          <span class="form-guidance__icon">📋</span>
+          <strong>Manage versions:</strong> Duplicate forms to preserve history
+        </p>
+      </div>
+
       <DataTable :value="forms" :loading="isLoading" class="assessment-form-list__table">
         <Column field="name" :header="t('formBuilder.formName')" />
         <Column field="module" :header="t('formBuilder.module')" />
@@ -136,8 +151,43 @@ onMounted(load)
   gap: 1.5rem;
 }
 
+.form-guidance {
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-guidance__action {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #1e40af;
+}
+
+.form-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
 .assessment-form-list__actions {
   display: flex;
   gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .form-guidance {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .form-guidance__action {
+    font-size: 0.9rem;
+  }
 }
 </style>

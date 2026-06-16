@@ -35,12 +35,12 @@ const quickLinks = computed(() => [
   },
   {
     label: safeText('preschoolScaffold.formManagement.cards.submissions.title', 'Submissions'),
-    action: () => router.push({ name: 'assessment-submission-list' }),
+    action: () => router.push({ name: 'dashboard-preschool-admin-forms-review' }),
     icon: 'pi pi-inbox',
   },
   {
     label: safeText('preschoolScaffold.formManagement.cards.reports.title', 'Reports'),
-    action: () => router.push({ name: 'assessment-reports' }),
+    action: () => router.push({ name: 'preschool-assessment-reports' }),
     icon: 'pi pi-chart-pie',
   },
 ])
@@ -53,6 +53,21 @@ const quickLinks = computed(() => [
         :title="safeText('preschoolScaffold.formManagement.pages.review.title', 'Review Forms')"
         :subtitle="safeText('preschoolScaffold.formManagement.pages.review.subtitle', 'Review submission and reporting outputs.')"
       />
+
+      <div class="workflow-guidance">
+        <p class="workflow-guidance__step">
+          <span class="workflow-guidance__icon">📥</span>
+          <strong>Track submissions:</strong> Monitor incoming form responses and status
+        </p>
+        <p class="workflow-guidance__step">
+          <span class="workflow-guidance__icon">📈</span>
+          <strong>Analyze results:</strong> View reports and summary statistics
+        </p>
+        <p class="workflow-guidance__step">
+          <span class="workflow-guidance__icon">📤</span>
+          <strong>Export data:</strong> Download reports and integrate with other tools
+        </p>
+      </div>
 
       <FormManagementHero
         :eyebrow="safeText('preschoolScaffold.formManagement.pages.review.eyebrow', 'Form review')"
@@ -80,5 +95,29 @@ const quickLinks = computed(() => [
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.workflow-guidance {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workflow-guidance__step {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.workflow-guidance__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 </style>
