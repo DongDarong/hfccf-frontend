@@ -5,12 +5,18 @@ import http from '@/services/http'
 import {
   archiveAssessment,
   buildFormTemplatePayload,
+  approveAssessmentFormReview,
   createStudentAssessment,
   fetchAssessmentCategories,
+  fetchAssessmentFormReviewHistory,
+  fetchAssessmentFormReviewQueue,
   fetchProgressSummary,
   fetchStudentAssessments,
   finalizeAssessment,
   isPersistedId,
+  rejectAssessmentFormReview,
+  startAssessmentFormReview,
+  submitAssessmentFormForReview,
   stripTemporaryIdsForPayload,
   updateAssessment,
 } from '@/modules/preschool/services/api/preschoolAssessmentApi'
@@ -308,6 +314,253 @@ describe('preschool assessment api', () => {
           studentId: 6,
         },
       ],
+    })
+  })
+
+  it('loads and normalizes the preschool review queue response', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        items: [
+          {
+            id: 91,
+            name: 'Preschool Development Checklist',
+            code: 'PDC-2026',
+            module: 'preschool',
+            status: 'draft',
+            review_status: 'submitted',
+            submitted_by: { id: 7, name: 'Admin Preschool' },
+            submitted_at: '2026-06-17T01:02:03Z',
+            review_started_by: 8,
+            review_started_at: '2026-06-17T04:05:06Z',
+            reviewed_by: null,
+            reviewed_at: null,
+            created_by: 6,
+            updated_by: 7,
+            created_at: '2026-06-16T08:00:00Z',
+            updated_at: '2026-06-17T05:00:00Z',
+            sections: [
+              {
+                id: 11,
+                title: 'Student Profile',
+                questions: [{ id: 101 }, { id: 102 }],
+              },
+            ],
+            versions: [
+              {
+                version_number: 1,
+                is_current: true,
+                snapshot: {
+                  template: {
+                    review_status: 'submitted',
+                    submitted_by: 7,
+                    submitted_by_name: 'Admin Preschool',
+                    submitted_at: '2026-06-17T01:02:03Z',
+                    review_started_by: 8,
+                    review_started_by_name: 'Reviewer One',
+                    review_started_at: '2026-06-17T04:05:06Z',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+        summary: {
+          pending_review: 1,
+          in_review: 0,
+          approved: 0,
+          rejected: 0,
+        },
+      }),
+    )
+
+    await expect(
+      fetchAssessmentFormReviewQueue({
+        page: 2,
+        perPage: 25,
+        search: 'Preschool',
+        status: 'draft',
+        reviewStatus: 'submitted',
+        sortBy: 'name',
+        sortDirection: 'asc',
+      }),
+    ).resolves.toMatchObject({
+      items: [
+        {
+          id: 91,
+          reviewStatus: 'submitted',
+          submittedBy: {
+            id: 7,
+            name: 'Admin Preschool',
+          },
+          reviewStartedBy: {
+            id: 8,
+            name: '',
+          },
+          createdBy: {
+            id: 6,
+            name: '',
+          },
+          updatedBy: {
+            id: 7,
+            name: '',
+          },
+          isUnderReview: true,
+          sections: [
+            {
+              id: 11,
+            },
+          ],
+        },
+      ],
+      summary: {
+        pendingReview: 1,
+        inReview: 0,
+        approved: 0,
+        rejected: 0,
+      },
+      pagination: {
+        page: 2,
+        perPage: 25,
+      },
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/assessment/forms/review-queue', {
+      params: {
+        page: 2,
+        per_page: 25,
+        search: 'Preschool',
+        status: 'draft',
+        review_status: 'submitted',
+        sort_by: 'name',
+        sort_direction: 'asc',
+      },
+      signal: undefined,
+    })
+  })
+
+  it('sends review workflow actions to the expected endpoints', async () => {
+    http.post.mockResolvedValueOnce(
+      stubResponse({
+        id: 101,
+        name: 'Queue Form',
+        module: 'preschool',
+        status: 'draft',
+        review_status: 'submitted',
+        submitted_by: { id: 11, name: 'Admin One' },
+      }),
+    )
+    await expect(
+      submitAssessmentFormForReview(101, { reviewNotes: 'Ready for review' }),
+    ).resolves.toMatchObject({
+      id: 101,
+      reviewStatus: 'submitted',
+      submittedBy: {
+        id: 11,
+        name: 'Admin One',
+      },
+    })
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/101/submit-review', {
+      review_notes: 'Ready for review',
+    })
+
+    http.post.mockResolvedValueOnce(
+      stubResponse({
+        id: 101,
+        name: 'Queue Form',
+        module: 'preschool',
+        status: 'draft',
+        review_status: 'in_review',
+        review_started_by: { id: 12, name: 'Reviewer One' },
+      }),
+    )
+    await expect(startAssessmentFormReview(101)).resolves.toMatchObject({
+      reviewStatus: 'in_review',
+      reviewStartedBy: {
+        id: 12,
+        name: 'Reviewer One',
+      },
+    })
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/101/start-review')
+
+    http.post.mockResolvedValueOnce(
+      stubResponse({
+        id: 101,
+        name: 'Queue Form',
+        module: 'preschool',
+        status: 'draft',
+        review_status: 'approved',
+        reviewed_by: { id: 13, name: 'Approver One' },
+        review_notes: 'Approved with comments',
+      }),
+    )
+    await expect(
+      approveAssessmentFormReview(101, { reviewNotes: 'Approved with comments' }),
+    ).resolves.toMatchObject({
+      reviewStatus: 'approved',
+      reviewedBy: {
+        id: 13,
+        name: 'Approver One',
+      },
+    })
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/101/approve', {
+      review_notes: 'Approved with comments',
+    })
+
+    http.post.mockResolvedValueOnce(
+      stubResponse({
+        id: 101,
+        name: 'Queue Form',
+        module: 'preschool',
+        status: 'draft',
+        review_status: 'rejected',
+        reviewed_by: { id: 14, name: 'Reviewer Two' },
+        review_notes: 'Needs corrections',
+      }),
+    )
+    await expect(
+      rejectAssessmentFormReview(101, {
+        rejectionReason: 'Please fix the scoring.',
+        reviewNotes: 'Needs corrections',
+      }),
+    ).resolves.toMatchObject({
+      reviewStatus: 'rejected',
+      reviewedBy: {
+        id: 14,
+        name: 'Reviewer Two',
+      },
+    })
+    expect(http.post).toHaveBeenCalledWith('/assessment/forms/101/reject', {
+      rejection_reason: 'Please fix the scoring.',
+      review_notes: 'Needs corrections',
+    })
+
+    http.get.mockResolvedValueOnce(
+      stubResponse([
+        {
+          id: 9001,
+          action: 'form.review.approved',
+          entity_label: 'Queue Form',
+          actor: { id: 13, name: 'Approver One' },
+          created_at: '2026-06-17T05:06:07Z',
+          meta: {
+            review_notes: 'Approved with comments',
+          },
+        },
+      ]),
+    )
+
+    await expect(fetchAssessmentFormReviewHistory(101)).resolves.toMatchObject([
+      {
+        action: 'form.review.approved',
+        actor: {
+          id: 13,
+          name: 'Approver One',
+        },
+        createdAt: '2026-06-17T05:06:07Z',
+      },
+    ])
+    expect(http.get).toHaveBeenCalledWith('/assessment/forms/101/review-history', {
+      signal: undefined,
     })
   })
 })

@@ -163,6 +163,17 @@ function normalizeFormVersion(version = {}) {
   }
 }
 
+function normalizeUserReference(value) {
+  if (value && typeof value === 'object') {
+    return {
+      id: value.id ?? '',
+      name: String(value.name ?? '').trim(),
+    }
+  }
+
+  return value ? { id: value, name: '' } : null
+}
+
 function normalizeFormTemplate(row = {}) {
   const versions = Array.isArray(row.versions) ? row.versions.map(normalizeFormVersion) : []
   const sections = Array.isArray(row.sections) ? row.sections.map(normalizeFormSection) : []
@@ -178,15 +189,23 @@ function normalizeFormTemplate(row = {}) {
     category: String(row.category ?? '').trim(),
     module: String(row.module ?? 'preschool').trim(),
     status: String(row.status ?? 'draft').trim(),
+    reviewStatus: String(row.review_status ?? row.reviewStatus ?? 'draft').trim(),
     isLocked: Boolean(row.is_locked ?? row.isLocked ?? false),
     isDraft: Boolean(row.is_draft ?? row.isDraft ?? row.status === 'draft'),
     isPublished: Boolean(row.is_published ?? row.isPublished ?? row.status === 'published'),
     isArchived: Boolean(row.is_archived ?? row.isArchived ?? row.status === 'archived'),
+    isUnderReview: Boolean(row.is_under_review ?? row.isUnderReview ?? ['submitted', 'in_review'].includes(String(row.review_status ?? row.reviewStatus ?? ''))),
+    isReviewApproved: Boolean(row.is_review_approved ?? row.isReviewApproved ?? row.review_status === 'approved'),
+    isReviewRejected: Boolean(row.is_review_rejected ?? row.isReviewRejected ?? row.review_status === 'rejected'),
     currentVersion: Number(row.current_version ?? row.currentVersion ?? versions.find(version => version.isCurrent)?.versionNumber ?? 0),
     publishNotes: String(row.publish_notes ?? row.publishNotes ?? row.version_notes ?? '').trim(),
     versionNotes: String(row.version_notes ?? row.versionNotes ?? '').trim(),
     reviewNotes: String(row.review_notes ?? row.reviewNotes ?? '').trim(),
-    reviewedBy: row.reviewed_by ?? row.reviewedBy ?? null,
+    submittedBy: normalizeUserReference(row.submitted_by ?? row.submittedBy ?? null),
+    submittedAt: row.submitted_at || row.submittedAt || '',
+    reviewStartedBy: normalizeUserReference(row.review_started_by ?? row.reviewStartedBy ?? null),
+    reviewStartedAt: row.review_started_at || row.reviewStartedAt || '',
+    reviewedBy: normalizeUserReference(row.reviewed_by ?? row.reviewedBy ?? null),
     reviewedAt: row.reviewed_at || row.reviewedAt || '',
     duplicatedFromTemplateId: row.duplicated_from_template_id ?? row.duplicatedFromTemplateId ?? null,
     duplicatedFromVersion: row.duplicated_from_version ?? row.duplicatedFromVersion ?? null,
@@ -196,6 +215,10 @@ function normalizeFormTemplate(row = {}) {
     publishedBy: row.published_by ?? row.publishedBy ?? null,
     archivedAt: row.archived_at || row.archivedAt || '',
     archivedBy: row.archived_by ?? row.archivedBy ?? null,
+    createdBy: normalizeUserReference(row.created_by ?? row.createdBy ?? null),
+    updatedBy: normalizeUserReference(row.updated_by ?? row.updatedBy ?? null),
+    createdAt: row.created_at || row.createdAt || '',
+    updatedAt: row.updated_at || row.updatedAt || '',
     settings: row.settings ?? {},
     sections,
     versions,
@@ -209,6 +232,41 @@ function normalizeFormTemplateListResponse(response, fallbackPage = 1, fallbackP
   return {
     items: items.map(normalizeFormTemplate),
     pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+function normalizeReviewQueueResponse(response, fallbackPage = 1, fallbackPerPage = 20) {
+  const data = unwrapApiData(response) || {}
+  const items = Array.isArray(data.items) ? data.items.map(normalizeFormTemplate) : []
+  const summary = data.summary || {}
+
+  return {
+    items,
+    summary: {
+      pendingReview: Number(summary.pending_review ?? summary.pendingReview ?? 0),
+      inReview: Number(summary.in_review ?? summary.inReview ?? 0),
+      approved: Number(summary.approved ?? 0),
+      rejected: Number(summary.rejected ?? 0),
+    },
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+function normalizeReviewHistoryEntry(entry = {}) {
+  return {
+    id: entry.id ?? '',
+    event: String(entry.event ?? entry.action ?? '').trim(),
+    action: String(entry.action ?? entry.event ?? '').trim(),
+    actor: normalizeUserReference(entry.actor ?? null),
+    description: String(entry.description ?? entry.entity_label ?? '').trim(),
+    entityType: String(entry.entity_type ?? entry.entityType ?? '').trim(),
+    entityId: entry.entity_id ?? entry.entityId ?? '',
+    entityLabel: String(entry.entity_label ?? entry.entityLabel ?? '').trim(),
+    oldValue: entry.old_value ?? entry.oldValue ?? null,
+    newValue: entry.new_value ?? entry.newValue ?? null,
+    meta: entry.meta ?? {},
+    createdAt: entry.created_at || entry.createdAt || '',
+    raw: entry,
   }
 }
 
@@ -540,6 +598,24 @@ export async function fetchAssessmentForms(params = {}, options = {}) {
   return normalizeFormTemplateListResponse(response, params.page ?? 1, perPage)
 }
 
+export async function fetchAssessmentFormReviewQueue(params = {}, options = {}) {
+  const perPage = normalizePerPage(params.perPage ?? params.per_page, 10, 100)
+  const response = await http.get('/assessment/forms/review-queue', {
+    params: buildQueryParams({
+      page: params.page ?? 1,
+      per_page: perPage,
+      search: params.search || '',
+      status: params.status || '',
+      review_status: params.reviewStatus || params.review_status || '',
+      sort_by: params.sortBy || 'updated_at',
+      sort_direction: params.sortDirection || 'desc',
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeReviewQueueResponse(response, params.page ?? 1, perPage)
+}
+
 export async function fetchAssessmentForm(formId, options = {}) {
   const response = await http.get(`/assessment/forms/${encodeURIComponent(formId)}`, {
     signal: options.signal,
@@ -591,6 +667,45 @@ export async function restoreAssessmentForm(formId, payload = {}) {
     review_notes: payload.reviewNotes || payload.review_notes || '',
   })
   return normalizeFormTemplate(unwrapApiData(response) || {})
+}
+
+export async function submitAssessmentFormForReview(formId, payload = {}) {
+  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/submit-review`, {
+    review_notes: payload.reviewNotes || payload.review_notes || '',
+  })
+
+  return normalizeFormTemplate(unwrapApiData(response) || {})
+}
+
+export async function startAssessmentFormReview(formId) {
+  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/start-review`)
+
+  return normalizeFormTemplate(unwrapApiData(response) || {})
+}
+
+export async function approveAssessmentFormReview(formId, payload = {}) {
+  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/approve`, {
+    review_notes: payload.reviewNotes || payload.review_notes || '',
+  })
+
+  return normalizeFormTemplate(unwrapApiData(response) || {})
+}
+
+export async function rejectAssessmentFormReview(formId, payload = {}) {
+  const response = await http.post(`/assessment/forms/${encodeURIComponent(formId)}/reject`, {
+    rejection_reason: payload.rejectionReason || payload.rejection_reason || '',
+    review_notes: payload.reviewNotes || payload.review_notes || '',
+  })
+
+  return normalizeFormTemplate(unwrapApiData(response) || {})
+}
+
+export async function fetchAssessmentFormReviewHistory(formId, options = {}) {
+  const response = await http.get(`/assessment/forms/${encodeURIComponent(formId)}/review-history`, {
+    signal: options.signal,
+  })
+
+  return (unwrapApiItems(response) || []).map(normalizeReviewHistoryEntry)
 }
 
 export async function fetchAssessmentFormVersions(formId, options = {}) {
