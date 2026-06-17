@@ -421,11 +421,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms/build',
     name: 'dashboard-preschool-admin-forms-build',
-    // Compatibility redirect: older build links now resolve to the canonical
-    // assessment form builder so we keep one real authoring path.
-    redirect: () => ({
-      name: 'preschool-assessment-form-builder',
-    }),
+    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentFormBuilderPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
