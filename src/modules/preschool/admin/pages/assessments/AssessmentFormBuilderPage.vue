@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
@@ -1143,6 +1144,8 @@ onMounted(() => {
 <template>
   <MainLayout>
     <section class="assessment-form-builder-page">
+      <Breadcrumb />
+
       <AssessmentPageHeader
         :title="safeText('assessmentFormBuilder.title', 'Form Builder')"
         :subtitle="safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.')"
