@@ -647,34 +647,64 @@ onMounted(async () => {
 
     <Dialog v-model:visible="modalOpen" :header="modalMode === MODAL_MODES.EDIT ? t('preschoolPaymentManagementPage.dialog.editTitle') : t('preschoolPaymentManagementPage.dialog.createTitle')" modal class="payment-management-page__dialog">
       <div class="payment-management-page__dialog-grid">
-        <select v-model="form.student_id" class="payment-management-page__input" @change="syncClassFromStudent($event.target.value)">
-          <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
-          <option v-for="option in studentOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <select v-model="form.class_id" class="payment-management-page__input">
-          <option value="">{{ t('preschoolPaymentManagementPage.dialog.class') }}</option>
-          <option v-for="option in classOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <input v-model="form.payment_reference" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.dialog.reference')" />
-        <input v-model="form.amount" class="payment-management-page__input" type="number" step="0.01" min="0" :placeholder="t('preschoolPaymentManagementPage.dialog.amount')" />
-        <input v-model="form.currency" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.dialog.currency')" />
-        <select v-model="form.payment_method" class="payment-management-page__input">
-          <option v-for="method in methodOptions" :key="method.value" :value="method.value">
-            {{ method.label }}
-          </option>
-        </select>
-        <select v-model="form.payment_status" class="payment-management-page__input">
-          <option v-for="status in statusOptions" :key="status.value" :value="status.value">
-            {{ status.label }}
-          </option>
-        </select>
-        <input v-model="form.paid_at" class="payment-management-page__input" type="date" />
-        <input v-model="form.due_date" class="payment-management-page__input" type="date" />
-        <textarea v-model="form.note" class="payment-management-page__input payment-management-page__dialog-full" rows="3" :placeholder="t('preschoolPaymentManagementPage.dialog.note')"></textarea>
+        <div class="payment-management-page__field">
+          <label for="payment-student-id" class="form-label">Student</label>
+          <select id="payment-student-id" v-model="form.student_id" class="payment-management-page__input" @change="syncClassFromStudent($event.target.value)">
+            <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
+            <option v-for="option in studentOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-class-id" class="form-label">Class</label>
+          <select id="payment-class-id" v-model="form.class_id" class="payment-management-page__input">
+            <option value="">{{ t('preschoolPaymentManagementPage.dialog.class') }}</option>
+            <option v-for="option in classOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-reference" class="form-label">Receipt Number</label>
+          <input id="payment-reference" v-model="form.payment_reference" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.dialog.reference')" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-amount" class="form-label">Amount</label>
+          <input id="payment-amount" v-model="form.amount" class="payment-management-page__input" type="number" step="0.01" min="0" :placeholder="t('preschoolPaymentManagementPage.dialog.amount')" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-currency" class="form-label">Currency</label>
+          <input id="payment-currency" v-model="form.currency" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.dialog.currency')" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-method" class="form-label">Payment Method</label>
+          <select id="payment-method" v-model="form.payment_method" class="payment-management-page__input">
+            <option v-for="method in methodOptions" :key="method.value" :value="method.value">
+              {{ method.label }}
+            </option>
+          </select>
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-status" class="form-label">Status</label>
+          <select id="payment-status" v-model="form.payment_status" class="payment-management-page__input">
+            <option v-for="status in statusOptions" :key="status.value" :value="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-paid-at" class="form-label">Payment Date</label>
+          <input id="payment-paid-at" v-model="form.paid_at" class="payment-management-page__input" type="date" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="payment-due-date" class="form-label">Due Date</label>
+          <input id="payment-due-date" v-model="form.due_date" class="payment-management-page__input" type="date" />
+        </div>
+        <div class="payment-management-page__field payment-management-page__dialog-full">
+          <label for="payment-note" class="form-label">Notes</label>
+          <textarea id="payment-note" v-model="form.note" class="payment-management-page__input" rows="3" :placeholder="t('preschoolPaymentManagementPage.dialog.note')"></textarea>
+        </div>
       </div>
 
       <template #footer>
@@ -692,22 +722,40 @@ onMounted(async () => {
       class="payment-management-page__dialog payment-management-page__dialog--wide"
     >
       <div class="payment-management-page__dialog-grid">
-        <select v-model="invoiceForm.student_id" class="payment-management-page__input">
-          <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
-          <option v-for="option in studentOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <select v-model="invoiceForm.class_id" class="payment-management-page__input">
-          <option value="">{{ t('preschoolPaymentManagementPage.dialog.class') }}</option>
-          <option v-for="option in classOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <input v-model="invoiceForm.invoice_number" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.number')" />
-        <input v-model="invoiceForm.issue_date" class="payment-management-page__input" type="date" />
-        <input v-model="invoiceForm.due_date" class="payment-management-page__input" type="date" />
-        <input v-model="invoiceForm.discount_amount" class="payment-management-page__input" type="number" step="0.01" min="0" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.balance')" />
+        <div class="payment-management-page__field">
+          <label for="invoice-student-id" class="form-label">Student</label>
+          <select id="invoice-student-id" v-model="invoiceForm.student_id" class="payment-management-page__input">
+            <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
+            <option v-for="option in studentOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        <div class="payment-management-page__field">
+          <label for="invoice-class-id" class="form-label">Class</label>
+          <select id="invoice-class-id" v-model="invoiceForm.class_id" class="payment-management-page__input">
+            <option value="">{{ t('preschoolPaymentManagementPage.dialog.class') }}</option>
+            <option v-for="option in classOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        <div class="payment-management-page__field">
+          <label for="invoice-number" class="form-label">Invoice Number</label>
+          <input id="invoice-number" v-model="invoiceForm.invoice_number" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.number')" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="invoice-issue-date" class="form-label">Issue Date</label>
+          <input id="invoice-issue-date" v-model="invoiceForm.issue_date" class="payment-management-page__input" type="date" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="invoice-due-date" class="form-label">Due Date</label>
+          <input id="invoice-due-date" v-model="invoiceForm.due_date" class="payment-management-page__input" type="date" />
+        </div>
+        <div class="payment-management-page__field">
+          <label for="invoice-total-amount" class="form-label">Total Amount</label>
+          <input id="invoice-total-amount" v-model="invoiceForm.discount_amount" class="payment-management-page__input" type="number" step="0.01" min="0" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.balance')" />
+        </div>
       </div>
 
       <div class="payment-management-page__invoice-items">
@@ -719,9 +767,18 @@ onMounted(async () => {
         </div>
 
         <div v-for="(item, index) in invoiceItems" :key="`${item.sort_order}-${index}`" class="payment-management-page__invoice-item">
-          <input v-model="item.description" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.description')" />
-          <input v-model="item.quantity" class="payment-management-page__input" type="number" min="0" step="0.01" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.quantity')" />
-          <input v-model="item.unit_price" class="payment-management-page__input" type="number" min="0" step="0.01" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.unitPrice')" />
+          <div class="payment-management-page__field">
+            <label :for="`invoice-item-${index}-description`" class="form-label">Description</label>
+            <input :id="`invoice-item-${index}-description`" v-model="item.description" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.description')" />
+          </div>
+          <div class="payment-management-page__field">
+            <label :for="`invoice-item-${index}-quantity`" class="form-label">Quantity</label>
+            <input :id="`invoice-item-${index}-quantity`" v-model="item.quantity" class="payment-management-page__input" type="number" min="0" step="0.01" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.quantity')" />
+          </div>
+          <div class="payment-management-page__field">
+            <label :for="`invoice-item-${index}-unit-price`" class="form-label">Unit Price</label>
+            <input :id="`invoice-item-${index}-unit-price`" v-model="item.unit_price" class="payment-management-page__input" type="number" min="0" step="0.01" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.unitPrice')" />
+          </div>
           <Button
             type="button"
             variant="ghost"
@@ -826,6 +883,20 @@ onMounted(async () => {
 
 .payment-management-page__dialog-full {
   grid-column: 1 / -1;
+}
+
+.payment-management-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.payment-management-page__field .form-label {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: block;
 }
 
 .payment-management-page__input {
