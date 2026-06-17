@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
-import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import AssessmentPageHeader from '@/modules/preschool/admin/components/assessment/AssessmentPageHeader.vue'
@@ -1166,18 +1165,33 @@ onMounted(() => {
 <template>
   <MainLayout>
     <section class="assessment-form-builder-page">
-      <Breadcrumb />
-
       <AssessmentPageHeader
         :title="safeText('assessmentFormBuilder.title', 'Form Builder')"
         :subtitle="safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.')"
       />
 
-      <div class="assessment-form-builder-toolbar">
-        <div class="assessment-form-builder-toolbar__meta">
-          <span class="assessment-form-builder-toolbar__badge">
+      <section class="assessment-form-builder-hero">
+        <div class="assessment-form-builder-hero__copy">
+          <span class="assessment-form-builder-hero__eyebrow">
             {{ safeText('assessmentFormBuilder.badge', 'Preschool Assessment') }}
           </span>
+          <h2>{{ safeText('assessmentFormBuilder.title', 'Form Builder') }}</h2>
+          <p>{{ safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.') }}</p>
+        </div>
+        <div class="assessment-form-builder-hero__metrics">
+          <div
+            v-for="stat in workspaceStats"
+            :key="stat.label"
+            class="assessment-form-builder-hero__metric"
+          >
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="assessment-form-builder-toolbar assessment-form-builder-panel">
+        <div class="assessment-form-builder-toolbar__meta">
           <div class="assessment-form-builder-toolbar__status">
             <span class="assessment-form-builder-toolbar__status-badge" :data-tone="templateStatusTone">
               {{ templateStatusLabel }}
@@ -1189,16 +1203,9 @@ onMounted(() => {
               {{ safeText('assessmentFormBuilder.messages.savedState', 'Draft saved') }}
             </span>
           </div>
-          <div class="assessment-form-builder-toolbar__stats">
-            <div
-              v-for="stat in workspaceStats"
-              :key="stat.label"
-              class="assessment-form-builder-toolbar__stat"
-            >
-              <strong>{{ stat.value }}</strong>
-              <span>{{ stat.label }}</span>
-            </div>
-          </div>
+          <p class="assessment-form-builder-toolbar__hint">
+            {{ safeText('assessmentFormBuilder.messages.toolbarHint', 'Manage the draft, version history, and publishing workflow from this panel.') }}
+          </p>
         </div>
 
         <div class="assessment-form-builder-toolbar__actions">
@@ -1245,13 +1252,15 @@ onMounted(() => {
             @click="archiveTemplate"
           />
         </div>
-      </div>
+      </section>
 
-      <div class="assessment-form-builder-notes">
-        <section class="assessment-form-builder-notes__card">
+      <section class="assessment-form-builder-notes">
+        <div class="assessment-form-builder-panel assessment-form-builder-notes__card">
           <div class="assessment-form-builder-notes__header">
-            <h3>{{ safeText('assessmentFormBuilder.notes.publishTitle', 'Publish note') }}</h3>
-            <p>{{ safeText('assessmentFormBuilder.notes.publishHint', 'Optional reason that will be saved with the published version.') }}</p>
+            <div>
+              <h3>{{ safeText('assessmentFormBuilder.notes.publishTitle', 'Publish note') }}</h3>
+              <p>{{ safeText('assessmentFormBuilder.notes.publishHint', 'Optional reason that will be saved with the published version.') }}</p>
+            </div>
           </div>
           <textarea
             v-model="publishNote"
@@ -1259,12 +1268,14 @@ onMounted(() => {
             class="assessment-form-builder-notes__textarea"
             :placeholder="safeText('assessmentFormBuilder.notes.publishPlaceholder', 'Add a note before publishing...')"
           />
-        </section>
+        </div>
 
-        <section class="assessment-form-builder-notes__card">
+        <div class="assessment-form-builder-panel assessment-form-builder-notes__card">
           <div class="assessment-form-builder-notes__header">
-            <h3>{{ safeText('assessmentFormBuilder.notes.versionTitle', 'Version note') }}</h3>
-            <p>{{ safeText('assessmentFormBuilder.notes.versionHint', 'Stored with the template and version snapshot for traceability.') }}</p>
+            <div>
+              <h3>{{ safeText('assessmentFormBuilder.notes.versionTitle', 'Version note') }}</h3>
+              <p>{{ safeText('assessmentFormBuilder.notes.versionHint', 'Stored with the template and version snapshot for traceability.') }}</p>
+            </div>
           </div>
           <textarea
             v-model="versionNote"
@@ -1281,12 +1292,14 @@ onMounted(() => {
               :placeholder="safeText('assessmentFormBuilder.notes.reviewPlaceholder', 'Add a review note...')"
             />
           </label>
-        </section>
+        </div>
 
-        <section class="assessment-form-builder-notes__card">
+        <div class="assessment-form-builder-panel assessment-form-builder-notes__card">
           <div class="assessment-form-builder-notes__header">
-            <h3>{{ safeText('assessmentFormBuilder.notes.duplicateTitle', 'Duplicate reason') }}</h3>
-            <p>{{ safeText('assessmentFormBuilder.notes.duplicateHint', 'Optional note saved when creating a draft copy from a version.') }}</p>
+            <div>
+              <h3>{{ safeText('assessmentFormBuilder.notes.duplicateTitle', 'Duplicate reason') }}</h3>
+              <p>{{ safeText('assessmentFormBuilder.notes.duplicateHint', 'Optional note saved when creating a draft copy from a version.') }}</p>
+            </div>
           </div>
           <textarea
             v-model="duplicateNote"
@@ -1303,78 +1316,111 @@ onMounted(() => {
               :placeholder="safeText('assessmentFormBuilder.notes.restorePlaceholder', 'Add a restore note...')"
             />
           </label>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <div class="assessment-form-builder-grid">
         <aside class="assessment-form-builder-panel assessment-form-builder-panel--sidebar">
-          <HeaderSection
-            :title="safeText('assessmentFormBuilder.sidebar.title', 'Build Workspace')"
-            :subtitle="safeText('assessmentFormBuilder.sidebar.subtitle', 'Start with sections, question libraries, and logic rules.')"
-          />
-
-          <FormBuilderQuestionPalette
-            :sections="builderPaletteSections"
-            :palette="paletteGroups"
-            :selected-question-key="selectedQuestionKey"
-            @select-question="handleQuestionSelect"
-            @drag-question-start="handlePaletteDragStart"
-            @drag-question-end="handleDragEnd"
-          />
+          <div class="assessment-form-builder-panel__section-header">
+            <HeaderSection
+              :title="safeText('assessmentFormBuilder.sidebar.title', 'Build Workspace')"
+              :subtitle="safeText('assessmentFormBuilder.sidebar.subtitle', 'Start with sections, question libraries, and logic rules.')"
+            />
+          </div>
+          <div class="assessment-form-builder-panel__section-body">
+            <FormBuilderQuestionPalette
+              :sections="builderPaletteSections"
+              :palette="paletteGroups"
+              :selected-question-key="selectedQuestionKey"
+              @select-question="handleQuestionSelect"
+              @drag-question-start="handlePaletteDragStart"
+              @drag-question-end="handleDragEnd"
+            />
+          </div>
         </aside>
 
         <main class="assessment-form-builder-panel assessment-form-builder-panel--canvas">
-          <div v-if="isTemplateLoading" class="assessment-form-builder-state">
-            <i class="pi pi-spin pi-spinner" />
-            <span>{{ safeText('assessmentFormBuilder.messages.loading', 'Loading template...') }}</span>
+          <div class="assessment-form-builder-panel__section-header">
+            <div>
+              <h3 class="assessment-form-builder-panel__title">
+                {{ safeText('assessmentFormBuilder.canvas.title', 'Sections and Questions') }}
+              </h3>
+              <p class="assessment-form-builder-panel__subtitle">
+                {{ safeText('assessmentFormBuilder.canvas.subtitle', 'Organize the draft by dragging sections, adding questions, and reviewing structure.') }}
+              </p>
+            </div>
           </div>
-          <div v-else-if="templateError" class="assessment-form-builder-state assessment-form-builder-state--error">
-            <i class="pi pi-exclamation-triangle" />
-            <span>{{ templateError }}</span>
+          <div class="assessment-form-builder-panel__section-body">
+            <div v-if="isTemplateLoading" class="assessment-form-builder-state">
+              <i class="pi pi-spin pi-spinner" />
+              <span>{{ safeText('assessmentFormBuilder.messages.loading', 'Loading template...') }}</span>
+            </div>
+            <div v-else-if="templateError" class="assessment-form-builder-state assessment-form-builder-state--error">
+              <i class="pi pi-exclamation-triangle" />
+              <span>{{ templateError }}</span>
+            </div>
+            <div v-else-if="templateNotice" class="assessment-form-builder-state assessment-form-builder-state--success">
+              <i class="pi pi-check-circle" />
+              <span>{{ templateNotice }}</span>
+            </div>
+            <FormBuilderCanvas
+              :sections="builderCanvasSections"
+              :section-questions="builderSectionQuestionMap"
+              :selected-section-key="selectedSectionKey"
+              @select-section="handleSectionSelect"
+              @add-section="handleSectionSelect(builderCanvasSections[builderCanvasSections.length - 1])"
+              @drag-section-start="handleSectionDragStart"
+              @drag-question-start="handleQuestionDragStart"
+              @drag-end="handleDragEnd"
+              @drop-section="handleSectionDrop"
+              @drop-question="handleQuestionDrop"
+            />
           </div>
-          <div v-else-if="templateNotice" class="assessment-form-builder-state assessment-form-builder-state--success">
-            <i class="pi pi-check-circle" />
-            <span>{{ templateNotice }}</span>
-          </div>
-          <FormBuilderCanvas
-            :sections="builderCanvasSections"
-            :section-questions="builderSectionQuestionMap"
-            :selected-section-key="selectedSectionKey"
-            @select-section="handleSectionSelect"
-            @add-section="handleSectionSelect(builderCanvasSections[builderCanvasSections.length - 1])"
-            @drag-section-start="handleSectionDragStart"
-            @drag-question-start="handleQuestionDragStart"
-            @drag-end="handleDragEnd"
-            @drop-section="handleSectionDrop"
-            @drop-question="handleQuestionDrop"
-          />
         </main>
 
         <aside class="assessment-form-builder-panel assessment-form-builder-panel--settings">
-          <FormBuilderQuestionSettings
-            :question="selectedQuestion"
-            :section="selectedSection"
-            :state="questionState"
-            :section-options="builderCanvasSections"
-            @update:state="handleQuestionStateUpdate"
-            @reset="resetQuestionState"
-            @apply="handleSettingsApply"
-          />
-          <div v-if="versionHistoryError" class="assessment-form-builder-state assessment-form-builder-state--error">
-            <i class="pi pi-exclamation-triangle" />
-            <span>{{ versionHistoryError }}</span>
+          <div class="assessment-form-builder-panel__section-header">
+            <div>
+              <h3 class="assessment-form-builder-panel__title">
+                {{ safeText('assessmentFormBuilder.settings.title', 'Question Settings') }}
+              </h3>
+              <p class="assessment-form-builder-panel__subtitle">
+                {{ safeText('assessmentFormBuilder.settings.subtitle', 'Adjust the selected question, then compare versions below.') }}
+              </p>
+            </div>
           </div>
-          <AssessmentFormVersionReview
-            :versions="assessmentVersions"
-            :selected-version-id="selectedVersionId"
-            :comparison="versionComparison"
-            :current-template-status="templateStatus"
-            :has-unsaved-changes="hasUnsavedChanges"
-            :loading="isVersionHistoryLoading"
-            @select-version="selectVersion"
-            @duplicate-version="duplicateVersionAsDraft"
-            @restore-version="restoreVersion"
-          />
+          <div class="assessment-form-builder-panel__section-body assessment-form-builder-panel__section-body--stacked">
+            <FormBuilderQuestionSettings
+              :question="selectedQuestion"
+              :section="selectedSection"
+              :state="questionState"
+              :section-options="builderCanvasSections"
+              @update:state="handleQuestionStateUpdate"
+              @reset="resetQuestionState"
+              @apply="handleSettingsApply"
+            />
+            <div v-if="versionHistoryError" class="assessment-form-builder-state assessment-form-builder-state--error">
+              <i class="pi pi-exclamation-triangle" />
+              <span>{{ versionHistoryError }}</span>
+            </div>
+            <div class="assessment-form-builder-version-card">
+              <div class="assessment-form-builder-version-card__header">
+                <h3>{{ safeText('assessmentFormBuilder.versionHistory.title', 'Version History') }}</h3>
+                <p>{{ safeText('assessmentFormBuilder.versionHistory.subtitle', 'Review past snapshots, duplicate a version, or restore a draft.') }}</p>
+              </div>
+              <AssessmentFormVersionReview
+                :versions="assessmentVersions"
+                :selected-version-id="selectedVersionId"
+                :comparison="versionComparison"
+                :current-template-status="templateStatus"
+                :has-unsaved-changes="hasUnsavedChanges"
+                :loading="isVersionHistoryLoading"
+                @select-version="selectVersion"
+                @duplicate-version="duplicateVersionAsDraft"
+                @restore-version="restoreVersion"
+              />
+            </div>
+          </div>
         </aside>
       </div>
     </section>
@@ -1385,42 +1431,96 @@ onMounted(() => {
 .assessment-form-builder-page {
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
+}
+
+.assessment-form-builder-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
   gap: 1rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: 1.5rem;
+  border: 1px solid #dbeafe;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 28%),
+    linear-gradient(135deg, #f8fbff 0%, #ffffff 55%, #eef6ff 100%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.assessment-form-builder-hero__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.assessment-form-builder-hero__eyebrow {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.33rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.assessment-form-builder-hero__copy h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.assessment-form-builder-hero__copy p {
+  margin: 0;
+  max-width: 62ch;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.assessment-form-builder-hero__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.assessment-form-builder-hero__metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 1rem 1.05rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(191, 219, 254, 0.85);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.assessment-form-builder-hero__metric strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.assessment-form-builder-hero__metric span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .assessment-form-builder-toolbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 1.25rem;
-  border: 1px solid #dbeafe;
-  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  padding: 1rem 1.15rem;
+  border-radius: 1.35rem;
 }
 
 .assessment-form-builder-toolbar__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.assessment-form-builder-toolbar__badge {
-  display: inline-flex;
-  align-self: flex-start;
-  border-radius: 999px;
-  padding: 0.35rem 0.75rem;
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.assessment-form-builder-toolbar__stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .assessment-form-builder-toolbar__status {
@@ -1461,32 +1561,18 @@ onMounted(() => {
   color: #64748b;
 }
 
-.assessment-form-builder-toolbar__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 0.9rem;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  min-width: 110px;
-}
-
-.assessment-form-builder-toolbar__stat strong {
-  font-size: 1.05rem;
-  color: #0f172a;
-}
-
-.assessment-form-builder-toolbar__stat span {
-  font-size: 0.78rem;
+.assessment-form-builder-toolbar__hint {
+  margin: 0;
   color: #64748b;
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 
 .assessment-form-builder-toolbar__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .assessment-form-builder-notes {
@@ -1498,25 +1584,32 @@ onMounted(() => {
 .assessment-form-builder-notes__card {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  border-radius: 1rem;
-  border: 1px solid #dbeafe;
-  background: #f8fafc;
-  padding: 1rem;
+  gap: 0.85rem;
+  border-radius: 1.25rem;
+  padding: 1rem 1.05rem;
 }
 
-.assessment-form-builder-notes__header h3 {
+.assessment-form-builder-notes__header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.assessment-form-builder-notes__header h3,
+.assessment-form-builder-version-card__header h3,
+.assessment-form-builder-panel__title {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
 }
 
-.assessment-form-builder-notes__header p {
-  margin: 0.2rem 0 0;
-  font-size: 0.78rem;
+.assessment-form-builder-notes__header p,
+.assessment-form-builder-version-card__header p,
+.assessment-form-builder-panel__subtitle {
+  margin: 0;
   color: #64748b;
-  line-height: 1.45;
+  font-size: 0.86rem;
+  line-height: 1.5;
 }
 
 .assessment-form-builder-notes__inline-label {
@@ -1548,19 +1641,51 @@ onMounted(() => {
 
 .assessment-form-builder-grid {
   display: grid;
-  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(240px, 280px);
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.45fr) minmax(300px, 0.92fr);
   gap: 1rem;
+  align-items: start;
 }
 
 .assessment-form-builder-panel {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  border-radius: 1.25rem;
+  gap: 0;
+  border-radius: 1.4rem;
   border: 1px solid #dbeafe;
   background: #ffffff;
-  padding: 1rem;
+  overflow: hidden;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+}
+
+.assessment-form-builder-panel__section-header {
+  padding: 1rem 1.1rem 0.8rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0));
+}
+
+.assessment-form-builder-panel__section-body {
+  padding: 1rem 1.1rem 1.1rem;
+}
+
+.assessment-form-builder-panel__section-body--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.assessment-form-builder-version-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.assessment-form-builder-version-card__header {
+  display: grid;
+  gap: 0.3rem;
 }
 
 .assessment-form-builder-state {
@@ -1587,6 +1712,14 @@ onMounted(() => {
 }
 
 @media (max-width: 1200px) {
+  .assessment-form-builder-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .assessment-form-builder-hero__metrics {
+    grid-template-columns: 1fr;
+  }
+
   .assessment-form-builder-notes {
     grid-template-columns: 1fr;
   }
@@ -1598,12 +1731,19 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .assessment-form-builder-toolbar {
-    align-items: stretch;
     flex-direction: column;
   }
 
   .assessment-form-builder-toolbar__actions {
     justify-content: stretch;
+  }
+
+  .assessment-form-builder-toolbar__actions :deep(.p-button) {
+    flex: 1 1 100%;
+  }
+
+  .assessment-form-builder-toolbar__actions :deep(.p-button .p-button-label) {
+    white-space: normal;
   }
 }
 </style>
