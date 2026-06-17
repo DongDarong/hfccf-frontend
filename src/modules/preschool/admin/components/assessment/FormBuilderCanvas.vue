@@ -1,4 +1,5 @@
 <script setup>
+import { nextTick } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -36,6 +37,22 @@ function safeText(key, fallback) {
   return te(key) ? t(key) : fallback
 }
 
+function sectionQuestionCount(sectionKey) {
+  return Array.isArray(props.sectionQuestions?.[sectionKey]) ? props.sectionQuestions[sectionKey].length : 0
+}
+
+function sectionAnchorId(section) {
+  return `assessment-section-${String(section?.key || '').replace(/[^a-zA-Z0-9_-]/g, '-')}`
+}
+
+async function scrollToSection(section) {
+  if (!section) return
+
+  await nextTick()
+  const target = document.getElementById(sectionAnchorId(section))
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 function handleSelect(section) {
   emit('select-section', section)
 }
@@ -46,6 +63,11 @@ function handleAdd(section) {
 
 function handleAddClick() {
   emit('add-section')
+}
+
+async function handleJumpToSection(section) {
+  handleSelect(section)
+  await scrollToSection(section)
 }
 
 function handleSectionDragStart(section, event) {
@@ -84,6 +106,47 @@ function handleDragEnd() {
       </button>
     </div>
 
+    <nav v-if="props.sections.length" class="builder-canvas__navigator" :aria-label="safeText('assessmentFormBuilder.canvas.navigatorAriaLabel', 'Section navigator')">
+      <div class="builder-canvas__navigator-header">
+        <div>
+          <p class="builder-canvas__navigator-eyebrow">
+            {{ safeText('assessmentFormBuilder.canvas.navigatorTitle', 'Sections') }}
+          </p>
+          <h4>{{ safeText('assessmentFormBuilder.canvas.navigatorHint', 'Jump to section') }}</h4>
+        </div>
+        <span class="builder-canvas__navigator-count">{{ props.sections.length }}</span>
+      </div>
+
+      <div class="builder-canvas__navigator-list">
+        <button
+          v-for="section in props.sections"
+          :key="section.key"
+          type="button"
+          class="builder-canvas__navigator-item"
+          :class="{
+            'builder-canvas__navigator-item--active': section.key === props.selectedSectionKey,
+            'builder-canvas__navigator-item--empty': sectionQuestionCount(section.key) === 0,
+          }"
+          :aria-current="section.key === props.selectedSectionKey ? 'true' : undefined"
+          :aria-label="`${safeText('assessmentFormBuilder.canvas.navigatorJump', 'Jump to section')}: ${section.title}`"
+          @click="handleJumpToSection(section)"
+        >
+          <span class="builder-canvas__navigator-title">{{ section.title }}</span>
+          <span class="builder-canvas__navigator-meta">
+            <span class="builder-canvas__navigator-count-label">
+              {{ sectionQuestionCount(section.key) }} {{ safeText('assessmentFormBuilder.canvas.questionsLabel', 'questions') }}
+            </span>
+            <span v-if="sectionQuestionCount(section.key) === 0" class="builder-canvas__navigator-empty">
+              {{ safeText('assessmentFormBuilder.canvas.navigatorEmpty', 'Empty') }}
+            </span>
+            <span v-if="section.key === props.selectedSectionKey" class="builder-canvas__navigator-current">
+              {{ safeText('assessmentFormBuilder.canvas.navigatorCurrent', 'Current') }}
+            </span>
+          </span>
+        </button>
+      </div>
+    </nav>
+
     <div v-if="!props.sections.length" class="builder-canvas__empty-state">
       <div class="builder-canvas__empty-state-card">
         <span class="builder-canvas__empty-state-icon">
@@ -104,6 +167,7 @@ function handleDragEnd() {
       <article
         v-for="section in props.sections"
         :key="section.key"
+        :id="sectionAnchorId(section)"
         class="builder-canvas__section"
         :class="{ 'builder-canvas__section--active': section.key === props.selectedSectionKey }"
         draggable="true"
@@ -119,7 +183,12 @@ function handleDragEnd() {
           </div>
           <div class="builder-canvas__meta">
             <span class="builder-canvas__badge">{{ section.questionCount }} {{ safeText('assessmentFormBuilder.canvas.questionsLabel', 'questions') }}</span>
-            <button type="button" class="builder-canvas__link" @click="handleSelect(section)">
+            <button
+              type="button"
+              class="builder-canvas__link"
+              :aria-label="`${safeText('assessmentFormBuilder.canvas.navigatorJump', 'Jump to section')}: ${section.title}`"
+              @click="handleJumpToSection(section)"
+            >
               {{ safeText('assessmentFormBuilder.canvas.focusAction', 'Focus') }}
             </button>
           </div>
@@ -183,6 +252,119 @@ function handleDragEnd() {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.builder-canvas__navigator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(180deg, #fbfdff 0%, #f8fbff 100%);
+}
+
+.builder-canvas__navigator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.builder-canvas__navigator-eyebrow {
+  margin: 0 0 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563eb;
+}
+
+.builder-canvas__navigator-header h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.builder-canvas__navigator-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.builder-canvas__navigator-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.builder-canvas__navigator-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 170px;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.9rem;
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+  color: #0f172a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.builder-canvas__navigator-item--active {
+  border-color: #60a5fa;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.1);
+}
+
+.builder-canvas__navigator-item--empty {
+  border-style: dashed;
+}
+
+.builder-canvas__navigator-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.builder-canvas__navigator-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.builder-canvas__navigator-count-label,
+.builder-canvas__navigator-empty,
+.builder-canvas__navigator-current {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.builder-canvas__navigator-count-label {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.builder-canvas__navigator-empty {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.builder-canvas__navigator-current {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .builder-canvas__eyebrow {
@@ -434,6 +616,23 @@ function handleDragEnd() {
   .builder-canvas__header,
   .builder-canvas__section-header {
     flex-direction: column;
+  }
+
+  .builder-canvas__navigator {
+    padding: 0.85rem;
+  }
+
+  .builder-canvas__navigator-list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+  }
+
+  .builder-canvas__navigator-item {
+    min-width: 180px;
+    flex: 0 0 auto;
   }
 
   .builder-canvas__meta {

@@ -158,6 +158,12 @@ export default {
     canvas: {
       eyebrow: 'ផ្ទាំង',
       title: 'មើលមុនបន្តផ្ទាល់',
+      navigatorAriaLabel: 'ផ្នែករុករក',
+      navigatorTitle: 'ផ្នែក',
+      navigatorHint: 'ទៅកាន់ផ្នែក',
+      navigatorJump: 'ទៅកាន់ផ្នែក',
+      navigatorEmpty: 'ទទេ',
+      navigatorCurrent: 'បច្ចុប្បន្ន',
       questionsLabel: 'សំណួរ',
       focusAction: 'ផ្តោត',
     },

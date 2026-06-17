@@ -168,6 +168,12 @@ export default {
     canvas: {
       eyebrow: 'Canvas',
       title: 'Live preview',
+      navigatorAriaLabel: 'Section navigator',
+      navigatorTitle: 'Sections',
+      navigatorHint: 'Jump to section',
+      navigatorJump: 'Jump to section',
+      navigatorEmpty: 'Empty',
+      navigatorCurrent: 'Current',
       questionsLabel: 'questions',
       focusAction: 'Focus',
     },
