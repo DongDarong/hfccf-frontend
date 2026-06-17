@@ -1515,6 +1515,12 @@ onMounted(() => {
   gap: 1rem;
   padding: 1rem 1.15rem;
   border-radius: 1.35rem;
+  position: sticky;
+  top: 0.75rem;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .assessment-form-builder-toolbar__meta {
@@ -1732,10 +1738,11 @@ onMounted(() => {
 @media (max-width: 768px) {
   .assessment-form-builder-toolbar {
     flex-direction: column;
+    top: 0.5rem;
   }
 
   .assessment-form-builder-toolbar__actions {
-    justify-content: stretch;
+    justify-content: flex-start;
   }
 
   .assessment-form-builder-toolbar__actions :deep(.p-button) {
