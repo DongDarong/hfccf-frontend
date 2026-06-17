@@ -240,6 +240,8 @@ export default {
       noQuestionsAction: 'បន្ថែមសំណួរ',
     },
     actions: {
+      addSection: 'បន្ថែមផ្នែក',
+      addQuestion: 'បន្ថែមសំណួរ',
       saveDraft: 'រក្សាទុកជាសេចក្តីព្រាង',
       duplicate: 'ចម្លង',
       publish: 'បោះពុម្ពផ្សាយ',
