@@ -16,6 +16,7 @@ import InvoiceTable from '@/modules/preschool/admin/components/payment-managemen
 import PaymentToolbar from '@/modules/preschool/admin/components/payment-management/PaymentToolbar.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { normalizeDateForInput } from '@/utils/date'
 import { fetchPreschoolClasses, fetchPreschoolPayments, fetchPreschoolStudents, createPreschoolPayment, updatePreschoolPayment, deletePreschoolPayment } from '@/modules/preschool/services/preschoolApi'
 import { fetchPreschoolInvoices, createPreschoolInvoice, updatePreschoolInvoice, deletePreschoolInvoice, cancelPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
 import { PAGE_SIZE, DEFAULT_PAGINATION, DEFAULT_FORM, MODAL_MODES } from './constants/paymentManagementConstants'
@@ -309,8 +310,8 @@ function openEditInvoiceModal(row) {
     academic_year_id: row.academicYearId || '',
     term_id: row.termId || '',
     invoice_number: row.invoiceNumber || '',
-    issue_date: row.issueDate || '',
-    due_date: row.dueDate || '',
+    issue_date: normalizeDateForInput(row.issueDate || row.issue_date || ''),
+    due_date: normalizeDateForInput(row.dueDate || row.due_date || ''),
     discount_amount: row.discountAmount || 0,
   })
   invoiceItems.value = Array.isArray(row.items) && row.items.length
@@ -455,8 +456,8 @@ function openEditModal(row) {
   form.currency = row.currency || 'USD'
   form.payment_method = row.paymentMethod || 'cash'
   form.payment_status = row.paymentStatus || 'pending'
-  form.paid_at = row.paidAt || ''
-  form.due_date = row.dueDate || ''
+  form.paid_at = normalizeDateForInput(row.paidAt || row.paid_at || '')
+  form.due_date = normalizeDateForInput(row.dueDate || row.due_date || '')
   form.note = row.note || ''
   modalOpen.value = true
 }
