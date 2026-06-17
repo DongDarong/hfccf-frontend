@@ -36,6 +36,7 @@ defineOptions({
 const { t, te } = useLanguage()
 const route = useRoute()
 const router = useRouter()
+let questionSequence = 0
 const selectedQuestionKey = ref(PRESCHOOL_ASSESSMENT_FORM_BUILDER_PALETTE[0]?.key || null)
 const selectedSectionKey = ref(PRESCHOOL_ASSESSMENT_FORM_BUILDER_DEFAULT_SECTIONS[0]?.key || null)
 const builderSections = ref(
@@ -74,7 +75,6 @@ const dragState = ref({
   fromSectionKey: null,
 })
 const questionState = ref({})
-let questionSequence = 0
 
 function safeText(key, fallback) {
   return te(key) ? t(key) : fallback
@@ -381,6 +381,19 @@ function normalizeNoteValue(value) {
   return String(value ?? '').trim()
 }
 
+function normalizeQuestionOptions(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map(option => String(option?.label ?? option?.value ?? option ?? '').trim())
+      .filter(Boolean)
+  }
+
+  return String(value ?? '')
+    .split(',')
+    .map(option => option.trim())
+    .filter(Boolean)
+}
+
 function resetQuestionState() {
   questionState.value = createQuestionState(selectedQuestion.value, selectedSection.value)
 }
@@ -495,7 +508,7 @@ function normalizeVersionSnapshot(snapshot) {
         isScored: Boolean(question.is_scored ?? question.isScored ?? question.scored ?? false),
         score: Number(question.max_score ?? question.score ?? 0),
         validationRules: question.validation_rules ?? question.validationRules ?? (question.validationMode ? { mode: question.validationMode } : {}),
-        options: (question.options || []).map(option => String(option.label ?? '').trim()).filter(Boolean),
+        options: normalizeQuestionOptions(question.options),
       })),
     })),
     raw,
