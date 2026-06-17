@@ -157,11 +157,27 @@ export default {
 
   assessmentFormBuilder: {
     actions: {
+      addSection: 'Add Section',
+      addQuestion: 'Add Question',
       saveDraft: 'Save Draft',
       duplicate: 'Duplicate',
       publish: 'Publish',
       archive: 'Archive',
       restore: 'Restore',
+    },
+    canvas: {
+      eyebrow: 'Canvas',
+      title: 'Live preview',
+      questionsLabel: 'questions',
+      focusAction: 'Focus',
+    },
+    emptyStates: {
+      noSectionsTitle: 'No sections yet',
+      noSectionsDescription: 'Create your first section to start building this assessment form.',
+      noSectionsAction: 'Add Section',
+      noQuestionsTitle: 'No questions yet',
+      noQuestionsDescription: 'Add your first question to this section.',
+      noQuestionsAction: 'Add Question',
     },
     status: {
       draft: 'Draft',

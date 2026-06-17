@@ -1,4 +1,6 @@
 <script setup>
+import { useLanguage } from '@/composables/useLanguage'
+
 defineOptions({
   name: 'PreschoolAssessmentFormBuilderCanvas',
 })
@@ -27,6 +29,12 @@ const emit = defineEmits([
   'drop-section',
   'drop-question',
 ])
+
+const { t, te } = useLanguage()
+
+function safeText(key, fallback) {
+  return te(key) ? t(key) : fallback
+}
 
 function handleSelect(section) {
   emit('select-section', section)
@@ -65,16 +73,34 @@ function handleDragEnd() {
   <section class="builder-canvas">
     <div class="builder-canvas__header">
       <div>
-        <p class="builder-canvas__eyebrow">Canvas</p>
-        <h3>Live preview</h3>
+        <p class="builder-canvas__eyebrow">
+          {{ safeText('assessmentFormBuilder.canvas.eyebrow', 'Canvas') }}
+        </p>
+        <h3>{{ safeText('assessmentFormBuilder.canvas.title', 'Live preview') }}</h3>
       </div>
       <button type="button" class="builder-canvas__action" @click="handleAddClick">
         <i class="pi pi-plus" />
-        Add section
+        {{ safeText('assessmentFormBuilder.actions.addSection', 'Add section') }}
       </button>
     </div>
 
-    <div class="builder-canvas__sections">
+    <div v-if="!props.sections.length" class="builder-canvas__empty-state">
+      <div class="builder-canvas__empty-state-card">
+        <span class="builder-canvas__empty-state-icon">
+          <i class="pi pi-sitemap" />
+        </span>
+        <div class="builder-canvas__empty-state-copy">
+          <h4>{{ safeText('assessmentFormBuilder.emptyStates.noSectionsTitle', 'No sections yet') }}</h4>
+          <p>{{ safeText('assessmentFormBuilder.emptyStates.noSectionsDescription', 'Create your first section to start building this assessment form.') }}</p>
+        </div>
+        <button type="button" class="builder-canvas__action builder-canvas__action--full" @click="handleAddClick">
+          <i class="pi pi-plus" />
+          {{ safeText('assessmentFormBuilder.emptyStates.noSectionsAction', 'Add Section') }}
+        </button>
+      </div>
+    </div>
+
+    <div v-else class="builder-canvas__sections">
       <article
         v-for="section in props.sections"
         :key="section.key"
@@ -92,14 +118,14 @@ function handleDragEnd() {
             <p>{{ section.description }}</p>
           </div>
           <div class="builder-canvas__meta">
-            <span class="builder-canvas__badge">{{ section.questionCount }} questions</span>
+            <span class="builder-canvas__badge">{{ section.questionCount }} {{ safeText('assessmentFormBuilder.canvas.questionsLabel', 'questions') }}</span>
             <button type="button" class="builder-canvas__link" @click="handleSelect(section)">
-              Focus
+              {{ safeText('assessmentFormBuilder.canvas.focusAction', 'Focus') }}
             </button>
           </div>
         </div>
 
-        <div class="builder-canvas__questions">
+        <div v-if="(props.sectionQuestions?.[section.key] || []).length" class="builder-canvas__questions">
           <button
             v-for="question in props.sectionQuestions?.[section.key] || []"
             :key="question.id"
@@ -117,14 +143,27 @@ function handleDragEnd() {
           </button>
         </div>
 
-        <div class="builder-canvas__dropzone">
+        <div v-else class="builder-canvas__empty-question-state">
+          <span class="builder-canvas__empty-question-state-icon">
+            <i class="pi pi-question-circle" />
+          </span>
+          <div class="builder-canvas__empty-question-state-copy">
+            <h4>{{ safeText('assessmentFormBuilder.emptyStates.noQuestionsTitle', 'No questions yet') }}</h4>
+            <p>{{ safeText('assessmentFormBuilder.emptyStates.noQuestionsDescription', 'Add your first question to this section.') }}</p>
+          </div>
+          <button type="button" class="builder-canvas__footer-action builder-canvas__footer-action--primary" @click="handleAdd(section)">
+            {{ safeText('assessmentFormBuilder.emptyStates.noQuestionsAction', 'Add Question') }}
+          </button>
+        </div>
+
+        <div v-if="(props.sectionQuestions?.[section.key] || []).length" class="builder-canvas__dropzone">
           <i class="pi pi-plus-circle" />
           <p>{{ section.hint }}</p>
         </div>
 
         <div class="builder-canvas__footer">
           <button type="button" class="builder-canvas__footer-action" @click="handleAdd(section)">
-            Add question
+            {{ safeText('assessmentFormBuilder.actions.addQuestion', 'Add question') }}
           </button>
         </div>
       </article>
@@ -174,9 +213,69 @@ function handleDragEnd() {
   cursor: pointer;
 }
 
+.builder-canvas__action--full,
+.builder-canvas__footer-action--primary {
+  justify-content: center;
+  width: 100%;
+}
+
 .builder-canvas__sections {
   display: grid;
   gap: 0.85rem;
+}
+
+.builder-canvas__empty-state {
+  display: flex;
+  justify-content: center;
+}
+
+.builder-canvas__empty-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1.25rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px dashed #bfdbfe;
+  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+  text-align: center;
+}
+
+.builder-canvas__empty-state-icon,
+.builder-canvas__empty-question-state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-size: 1.15rem;
+}
+
+.builder-canvas__empty-state-copy,
+.builder-canvas__empty-question-state-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.builder-canvas__empty-state-copy h4,
+.builder-canvas__empty-question-state-copy h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.builder-canvas__empty-state-copy p,
+.builder-canvas__empty-question-state-copy p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
 }
 
 .builder-canvas__section {
@@ -256,6 +355,19 @@ function handleDragEnd() {
   padding: 1rem;
 }
 
+.builder-canvas__empty-question-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  border-radius: 0.95rem;
+  border: 1px dashed #bfdbfe;
+  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+  color: #94a3b8;
+  text-align: center;
+  padding: 1rem;
+}
+
 .builder-canvas__questions {
   display: grid;
   gap: 0.5rem;
@@ -326,6 +438,11 @@ function handleDragEnd() {
 
   .builder-canvas__meta {
     align-items: flex-start;
+  }
+
+  .builder-canvas__empty-state-card,
+  .builder-canvas__empty-question-state {
+    padding-inline: 0.9rem;
   }
 }
 </style>

@@ -155,6 +155,20 @@ export default {
   finalize: 'បិទ',
   archive: 'រក្សាទុក',
   assessmentFormBuilder: {
+    canvas: {
+      eyebrow: 'ផ្ទាំង',
+      title: 'មើលមុនបន្តផ្ទាល់',
+      questionsLabel: 'សំណួរ',
+      focusAction: 'ផ្តោត',
+    },
+    emptyStates: {
+      noSectionsTitle: 'មិនទាន់មានផ្នែកនៅឡើយ',
+      noSectionsDescription: 'បង្កើតផ្នែកដំបូង ដើម្បីចាប់ផ្តើមបង្កើតទម្រង់វាយតម្លៃនេះ។',
+      noSectionsAction: 'បន្ថែមផ្នែក',
+      noQuestionsTitle: 'មិនទាន់មានសំណួរនៅឡើយ',
+      noQuestionsDescription: 'បន្ថែមសំណួរដំបូងទៅក្នុងផ្នែកនេះ។',
+      noQuestionsAction: 'បន្ថែមសំណួរ',
+    },
     actions: {
       saveDraft: 'រក្សាទុកជាសេចក្តីព្រាង',
       duplicate: 'ចម្លង',
