@@ -40,6 +40,7 @@ const router = useRouter()
 const toast = useToast()
 let questionSequence = 0
 const selectedQuestionKey = ref(PRESCHOOL_ASSESSMENT_FORM_BUILDER_PALETTE[0]?.key || null)
+const selectedQuestionId = ref('')
 const selectedSectionKey = ref(PRESCHOOL_ASSESSMENT_FORM_BUILDER_DEFAULT_SECTIONS[0]?.key || null)
 const builderSections = ref(
   PRESCHOOL_ASSESSMENT_FORM_BUILDER_DEFAULT_SECTIONS.map((section, index) => ({
@@ -147,8 +148,22 @@ const paletteGroups = computed(() => {
   }))
 })
 
-function handleQuestionSelect(question) {
+function handleQuestionSelect(payload) {
+  const question = payload?.question || payload
+  const section = payload?.section || null
+
+  if (!question) {
+    return
+  }
+
   selectedQuestionKey.value = question.key
+  selectedQuestionId.value = section?.key ? String(question.id || '') : ''
+
+  if (section?.key) {
+    selectedSectionKey.value = section.key
+    return
+  }
+
   if (question.group === 'core') {
     selectedSectionKey.value = 'studentProfile'
     return
@@ -162,6 +177,14 @@ function handleQuestionSelect(question) {
 
 function handleSectionSelect(section) {
   selectedSectionKey.value = section.key
+}
+
+function handleAddQuestion(payload) {
+  const section = payload?.section || payload
+
+  if (!section?.key) return
+
+  addQuestionToSection(section.key, selectedQuestionKey.value || selectedQuestion.value?.key || 'shortText')
 }
 
 function handlePaletteDragStart(payload) {
@@ -198,13 +221,43 @@ function handleQuestionDragStart(payload) {
   }
 }
 
-const selectedQuestion = computed(() =>
+const selectedPaletteQuestion = computed(() =>
   paletteGroups.value.find(question => question.key === selectedQuestionKey.value) || paletteGroups.value[0] || null
 )
 
 const selectedSection = computed(() =>
   builderCanvasSections.value.find(section => section.key === selectedSectionKey.value) || builderCanvasSections.value[0] || null
 )
+
+function findQuestionInSection(sectionKey, questionKey = null, questionId = null) {
+  const questions = builderSectionQuestionMap.value?.[sectionKey] || []
+
+  if (questionId) {
+    return questions.find(question => String(question.id) === String(questionId)) || null
+  }
+
+  if (questionKey) {
+    return questions.find(question => question.key === questionKey || question.answerType === questionKey) || null
+  }
+
+  return questions[0] || null
+}
+
+const selectedQuestion = computed(() => {
+  if (selectedSection.value) {
+    const question = findQuestionInSection(
+      selectedSection.value.key,
+      selectedQuestionKey.value,
+      selectedQuestionId.value,
+    )
+
+    if (question) {
+      return question
+    }
+  }
+
+  return selectedPaletteQuestion.value
+})
 
 const totalQuestionCount = computed(() =>
   Object.values(builderSectionQuestionMap.value).reduce((count, sectionQuestions) => count + sectionQuestions.length, 0)
@@ -239,28 +292,35 @@ function createSectionQuestions(sectionKey) {
   return seeds.map((seed, index) => createQuestionInstance(seed.key, sectionKey, index, seed))
 }
 
-function createQuestionInstance(questionKey, sectionKey, index = 0, seed = null) {
+function createQuestionInstance(questionKey, sectionKey, index = 0, seed = null, state = null) {
   const paletteQuestion = PRESCHOOL_ASSESSMENT_FORM_BUILDER_PALETTE.find(question => question.key === questionKey)
-  const title = seed?.titleFallback
+  const normalizedState = state || {}
+  const title = normalizedState.label
+    || seed?.titleFallback
     || paletteQuestion?.title
     || safeText(`assessmentFormBuilder.palette.${questionKey}.title`, questionKey)
-  const description = seed?.descriptionFallback
+  const description = normalizedState.helpText
+    || seed?.descriptionFallback
     || paletteQuestion?.description
     || safeText(`assessmentFormBuilder.palette.${questionKey}.description`, '')
+  const answerType = normalizedState.answerType || questionKey
+  const questionGroup = paletteQuestion?.group || 'core'
 
   return {
     id: `${sectionKey}-${questionKey}-${index + 1}-${questionSequence += 1}`,
     key: questionKey,
     title,
     description,
-    group: paletteQuestion?.group || 'core',
-    answerType: questionKey,
-    required: false,
-    score: questionKey === 'rating' || questionKey === 'table' ? 10 : 5,
-    validationMode: questionKey === 'table' ? 'strict' : 'basic',
-    options: questionKey === 'dropdown' || questionKey === 'rating'
-      ? 'Option 1, Option 2'
-      : '',
+    group: questionGroup,
+    answerType,
+    required: Boolean(normalizedState.required ?? false),
+    score: normalizedState.score ?? (questionKey === 'rating' || questionKey === 'table' ? 10 : 5),
+    validationMode: normalizedState.validationMode
+      || (questionKey === 'table' ? 'strict' : 'basic'),
+    options: normalizedState.options
+      ?? (questionKey === 'dropdown' || questionKey === 'rating'
+        ? 'Option 1, Option 2'
+        : ''),
   }
 }
 
@@ -292,7 +352,14 @@ function reorderSections(fromKey, toKey) {
 
 function addQuestionToSection(sectionKey, questionKey, beforeQuestionId = null) {
   const targetQuestions = [...(builderSectionQuestionMap.value[sectionKey] || [])]
-  const nextQuestion = createQuestionInstance(questionKey, sectionKey, targetQuestions.length)
+  const isSelectedQuestionType = questionKey === selectedQuestionKey.value
+  const nextQuestion = createQuestionInstance(
+    questionKey,
+    sectionKey,
+    targetQuestions.length,
+    null,
+    isSelectedQuestionType ? questionState.value : null,
+  )
   const insertIndex = beforeQuestionId
     ? targetQuestions.findIndex(question => question.id === beforeQuestionId)
     : targetQuestions.length
@@ -302,6 +369,57 @@ function addQuestionToSection(sectionKey, questionKey, beforeQuestionId = null) 
     ...builderSectionQuestionMap.value,
     [sectionKey]: targetQuestions,
   }
+}
+
+function updateQuestionInSection(sectionKey, questionId, nextState = {}) {
+  if (!sectionKey || !questionId) return false
+
+  const targetQuestions = [...(builderSectionQuestionMap.value[sectionKey] || [])]
+  const questionIndex = targetQuestions.findIndex(question => String(question.id) === String(questionId))
+
+  if (questionIndex < 0) return false
+
+  const currentQuestion = targetQuestions[questionIndex]
+  const nextAnswerType = nextState.answerType || currentQuestion.answerType || currentQuestion.key
+  const paletteQuestion = PRESCHOOL_ASSESSMENT_FORM_BUILDER_PALETTE.find(question => question.key === nextAnswerType)
+
+  targetQuestions[questionIndex] = {
+    ...currentQuestion,
+    key: nextAnswerType,
+    title: nextState.label ?? currentQuestion.title,
+    description: nextState.helpText ?? currentQuestion.description,
+    group: paletteQuestion?.group || currentQuestion.group || 'core',
+    answerType: nextAnswerType,
+    required: Boolean(nextState.required ?? currentQuestion.required ?? false),
+    score: Number(nextState.score ?? currentQuestion.score ?? 0),
+    validationMode: nextState.validationMode || currentQuestion.validationMode || 'basic',
+    options: nextState.options ?? currentQuestion.options ?? '',
+  }
+
+  builderSectionQuestionMap.value = {
+    ...builderSectionQuestionMap.value,
+    [sectionKey]: targetQuestions,
+  }
+
+  return true
+}
+
+function moveSelectedQuestionToSection(nextSectionKey, questionId) {
+  const currentQuestionId = questionId || selectedQuestionId.value
+  if (!currentQuestionId || !nextSectionKey) return false
+
+  const currentLocation = Object.entries(builderSectionQuestionMap.value).find(([, questions]) =>
+    questions.some(question => String(question.id) === String(currentQuestionId)),
+  )
+
+  if (!currentLocation) return false
+
+  const [fromSectionKey] = currentLocation
+  if (fromSectionKey === nextSectionKey) return true
+
+  moveQuestionToSection(currentQuestionId, fromSectionKey, nextSectionKey)
+  selectedSectionKey.value = nextSectionKey
+  return true
 }
 
 function moveQuestionToSection(questionId, fromSectionKey, toSectionKey, beforeQuestionId = null) {
@@ -380,12 +498,12 @@ function createQuestionState(question, section) {
   return {
     label: question?.title || '',
     helpText: question?.description || '',
-    required: false,
-    score: question?.group === 'structured' ? 10 : 5,
-    answerType: question?.key || 'shortText',
+    required: Boolean(question?.required ?? false),
+    score: Number(question?.score ?? (question?.group === 'structured' ? 10 : 5)),
+    answerType: question?.answerType || question?.key || 'shortText',
     sectionKey: section?.key || '',
-    validationMode: question?.group === 'structured' ? 'strict' : 'basic',
-    options: question?.group === 'choices' ? 'Option 1, Option 2' : '',
+    validationMode: question?.validationMode || (question?.group === 'structured' ? 'strict' : 'basic'),
+    options: question?.options || '',
   }
 }
 
@@ -411,20 +529,49 @@ function resetQuestionState() {
 }
 
 function handleQuestionStateUpdate(nextState) {
-  questionState.value = nextState
+  const normalizedState = {
+    label: String(nextState?.label ?? '').trim(),
+    helpText: String(nextState?.helpText ?? '').trim(),
+    required: Boolean(nextState?.required ?? false),
+    score: Number(nextState?.score ?? 0),
+    answerType: String(nextState?.answerType ?? selectedQuestion.value?.key ?? 'shortText').trim(),
+    sectionKey: String(nextState?.sectionKey || selectedSection.value?.key || '').trim(),
+    validationMode: String(nextState?.validationMode ?? 'basic').trim(),
+    options: nextState?.options ?? '',
+  }
+
+  questionState.value = normalizedState
+
+  if (!selectedSection.value || !selectedQuestion.value) {
+    return
+  }
+
+  const targetSectionKey = normalizedState.sectionKey || selectedSection.value.key
+  const targetQuestionId = selectedQuestionId.value || selectedQuestion.value.id
+
+  if (targetSectionKey && targetSectionKey !== selectedSection.value.key) {
+    moveSelectedQuestionToSection(targetSectionKey, targetQuestionId)
+  }
+
+  const currentSectionKey = targetSectionKey || selectedSection.value.key
+  updateQuestionInSection(currentSectionKey, targetQuestionId, normalizedState)
+
+  if (normalizedState.answerType && normalizedState.answerType !== selectedQuestionKey.value) {
+    selectedQuestionKey.value = normalizedState.answerType
+  }
 }
 
 function handleSettingsApply() {
-  questionState.value = {
+  handleQuestionStateUpdate({
     ...questionState.value,
     sectionKey: selectedSection.value?.key || questionState.value.sectionKey,
-  }
+  })
 }
 
 resetQuestionState()
 
 watch(
-  [selectedQuestionKey, selectedSectionKey],
+  [selectedQuestionKey, selectedSectionKey, selectedQuestionId],
   () => {
     resetQuestionState()
   },
@@ -833,6 +980,7 @@ function hydrateBuilderTemplate(template) {
       ]
     }),
   )
+  selectedQuestionId.value = builderSectionQuestionMap.value[selectedSectionKey.value]?.[0]?.id || ''
 
   resetQuestionState()
   templateSnapshot.value = serializeTemplateSnapshot()
@@ -930,7 +1078,8 @@ function hydrateBuilderTemplateFromVersionSnapshot(snapshot) {
     ]),
   )
   selectedSectionKey.value = builderSections.value[0]?.key || selectedSectionKey.value
-  selectedQuestionKey.value = builderSections.value[0]?.questions?.[0]?.key || selectedQuestionKey.value
+  selectedQuestionId.value = builderSectionQuestionMap.value[selectedSectionKey.value]?.[0]?.id || ''
+  selectedQuestionKey.value = builderSectionQuestionMap.value[selectedSectionKey.value]?.[0]?.key || selectedQuestionKey.value
   templateSnapshot.value = serializeTemplateSnapshot()
 }
 
@@ -945,6 +1094,69 @@ function requireVersionChangeConfirmation() {
       'You have unsaved changes. Continue and leave the current draft?',
     ),
   )
+}
+
+function collectValidationMessages(payload) {
+  const errors = payload?.errors
+
+  if (!errors) return []
+
+  if (Array.isArray(errors)) {
+    return errors.map(item => String(item ?? '').trim()).filter(Boolean)
+  }
+
+  if (typeof errors !== 'object') {
+    return []
+  }
+
+  return Object.values(errors)
+    .flatMap(value => (Array.isArray(value) ? value : [value]))
+    .map(message => String(message ?? '').trim())
+    .filter(Boolean)
+}
+
+function isTemporaryIdValidationError(error) {
+  const payload = error?.response?.data || error?.details || {}
+  const message = String(payload?.message || error?.message || '').toLowerCase()
+  const validationText = collectValidationMessages(payload).join(' ').toLowerCase()
+  const combined = `${message} ${validationText}`
+
+  return /temporary ids?/.test(combined) || /temp(?:orary)?[-_\s]?id/.test(combined) || /client[-_\s]?generated/.test(combined)
+}
+
+function resolveTemplateErrorMessage(error, fallbackMessage) {
+  const payload = error?.response?.data || error?.details || {}
+  const backendMessage = String(payload?.message || payload?.error || '').trim()
+  const validationMessages = collectValidationMessages(payload)
+
+  if (backendMessage && !/^(the submitted data has validation errors\.?|validation failed\.?)$/i.test(backendMessage)) {
+    return backendMessage
+  }
+
+  if (validationMessages.length > 0) {
+    return validationMessages[0]
+  }
+
+  if (backendMessage) {
+    return backendMessage
+  }
+
+  if (error?.message) {
+    return String(error.message)
+  }
+
+  return fallbackMessage
+}
+
+function reportTemplateActionError(detail) {
+  templateError.value = detail
+  toast.add({
+    severity: 'error',
+    summary: safeText('common.error', 'Error'),
+    detail,
+    life: 5000,
+  })
+  return false
 }
 
 function selectVersion(version) {
@@ -1041,20 +1253,15 @@ async function saveDraft() {
     templateNotice.value = safeText('assessmentFormBuilder.messages.saved', 'Draft saved.')
     return true
   } catch (error) {
-    const detail = error?.response?.status === 422
+    const fallback = safeText('assessmentFormBuilder.messages.saveFailed', 'Unable to save the draft.')
+    const detail = error?.response?.status === 422 && isTemporaryIdValidationError(error)
       ? safeText(
           'assessmentFormBuilder.messages.saveValidationFailed',
           'The draft could not be saved because it contains temporary IDs.',
         )
-      : error?.message || 'Unable to save the draft.'
+      : resolveTemplateErrorMessage(error, fallback)
 
-    templateError.value = detail
-    toast.add({
-      severity: 'error',
-      summary: safeText('common.error', 'Error'),
-      detail,
-      life: 5000,
-    })
+    reportTemplateActionError(detail)
     return false
   } finally {
     isTemplateSaving.value = false
@@ -1088,8 +1295,7 @@ async function duplicateTemplate() {
     })
     templateNotice.value = safeText('assessmentFormBuilder.messages.duplicated', 'Template duplicated.')
   } catch (error) {
-    templateError.value = error?.message || 'Unable to duplicate the template.'
-    throw error
+    return reportTemplateActionError(resolveTemplateErrorMessage(error, safeText('assessmentFormBuilder.messages.duplicateFailed', 'Unable to duplicate the template.')))
   } finally {
     isTemplateSaving.value = false
   }
@@ -1117,8 +1323,7 @@ async function publishTemplate() {
     await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.published', 'Template published.')
   } catch (error) {
-    templateError.value = error?.message || 'Unable to publish the template.'
-    throw error
+    return reportTemplateActionError(resolveTemplateErrorMessage(error, safeText('assessmentFormBuilder.messages.publishFailed', 'Unable to publish the template.')))
   } finally {
     isTemplateSaving.value = false
   }
@@ -1136,8 +1341,7 @@ async function archiveTemplate() {
     await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.archived', 'Template archived.')
   } catch (error) {
-    templateError.value = error?.message || 'Unable to archive the template.'
-    throw error
+    return reportTemplateActionError(resolveTemplateErrorMessage(error, safeText('assessmentFormBuilder.messages.archiveFailed', 'Unable to archive the template.')))
   } finally {
     isTemplateSaving.value = false
   }
@@ -1159,8 +1363,7 @@ async function restoreTemplate() {
     await loadVersionHistory(currentTemplateId.value)
     templateNotice.value = safeText('assessmentFormBuilder.messages.restored', 'Template restored.')
   } catch (error) {
-    templateError.value = error?.message || 'Unable to restore the template.'
-    throw error
+    return reportTemplateActionError(resolveTemplateErrorMessage(error, safeText('assessmentFormBuilder.messages.restoreFailed', 'Unable to restore the template.')))
   } finally {
     isTemplateSaving.value = false
   }
@@ -1378,6 +1581,8 @@ onMounted(() => {
               :section-questions="builderSectionQuestionMap"
               :selected-section-key="selectedSectionKey"
               @select-section="handleSectionSelect"
+              @select-question="handleQuestionSelect"
+              @add-question="handleAddQuestion"
               @add-section="handleSectionSelect(builderCanvasSections[builderCanvasSections.length - 1])"
               @drag-section-start="handleSectionDragStart"
               @drag-question-start="handleQuestionDragStart"

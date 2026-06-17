@@ -23,7 +23,9 @@ const props = defineProps({
 
 const emit = defineEmits([
   'select-section',
+  'select-question',
   'add-section',
+  'add-question',
   'drag-section-start',
   'drag-question-start',
   'drag-end',
@@ -57,8 +59,12 @@ function handleSelect(section) {
   emit('select-section', section)
 }
 
+function handleSelectQuestion(question, section) {
+  emit('select-question', { question, section })
+}
+
 function handleAdd(section) {
-  emit('add-section', section)
+  emit('add-question', { section })
 }
 
 function handleAddClick() {
@@ -205,7 +211,7 @@ function handleDragEnd() {
             @dragend="handleDragEnd"
             @dragover.prevent
             @drop.prevent="handleQuestionDrop(section, question, $event)"
-            @click="handleSelect(section)"
+            @click="handleSelectQuestion(question, section)"
           >
             <span class="builder-canvas__question-title">{{ question.title }}</span>
             <span class="builder-canvas__question-meta">{{ question.group || question.key }}</span>
