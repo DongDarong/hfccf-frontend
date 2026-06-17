@@ -156,6 +156,18 @@ export default {
   archive: 'Archive',
 
   assessmentFormBuilder: {
+    summary: {
+      eyebrow: 'Form Summary',
+      title: 'Builder Summary',
+      subtitle: 'Live template status and progress at a glance.',
+      status: 'Status',
+      sections: 'Sections',
+      questions: 'Questions',
+      version: 'Version',
+      changeState: 'Changes',
+      saved: 'Saved',
+      unsaved: 'Unsaved changes',
+    },
     actions: {
       addSection: 'Add Section',
       addQuestion: 'Add Question',

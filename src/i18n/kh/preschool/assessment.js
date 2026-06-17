@@ -155,6 +155,18 @@ export default {
   finalize: 'បិទ',
   archive: 'រក្សាទុក',
   assessmentFormBuilder: {
+    summary: {
+      eyebrow: 'សេចក្តីសង្ខេបទម្រង់',
+      title: 'សេចក្តីសង្ខេប Builder',
+      subtitle: 'មើលស្ថានភាព និងវឌ្ឍនភាពនៃទម្រង់បច្ចុប្បន្នបានភ្លាមៗ។',
+      status: 'ស្ថានភាព',
+      sections: 'ផ្នែក',
+      questions: 'សំណួរ',
+      version: 'កំណែ',
+      changeState: 'ការផ្លាស់ប្តូរ',
+      saved: 'បានរក្សាទុក',
+      unsaved: 'មានការផ្លាស់ប្តូរមិនទាន់រក្សាទុក',
+    },
     canvas: {
       eyebrow: 'ផ្ទាំង',
       title: 'មើលមុនបន្តផ្ទាល់',

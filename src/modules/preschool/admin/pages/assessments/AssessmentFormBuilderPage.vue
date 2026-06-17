@@ -84,16 +84,26 @@ function safeText(key, fallback) {
 
 const workspaceStats = computed(() => [
   {
-    label: safeText('assessmentFormBuilder.stats.sections', 'Sections'),
+    label: safeText('assessmentFormBuilder.summary.sections', 'Sections'),
     value: String(builderSections.value.length),
   },
   {
-    label: safeText('assessmentFormBuilder.stats.questions', 'Questions'),
+    label: safeText('assessmentFormBuilder.summary.questions', 'Questions'),
     value: String(totalQuestionCount.value),
   },
   {
-    label: safeText('assessmentFormBuilder.stats.version', 'Version'),
+    label: safeText('assessmentFormBuilder.summary.version', 'Version'),
     value: String(templateVersion.value || '1'),
+  },
+  {
+    label: safeText('assessmentFormBuilder.summary.status', 'Status'),
+    value: templateStatusLabel.value,
+  },
+  {
+    label: safeText('assessmentFormBuilder.summary.changeState', 'Changes'),
+    value: hasUnsavedChanges.value
+      ? safeText('assessmentFormBuilder.summary.unsaved', 'Unsaved changes')
+      : safeText('assessmentFormBuilder.summary.saved', 'Saved'),
   },
 ])
 
@@ -1173,10 +1183,10 @@ onMounted(() => {
       <section class="assessment-form-builder-hero">
         <div class="assessment-form-builder-hero__copy">
           <span class="assessment-form-builder-hero__eyebrow">
-            {{ safeText('assessmentFormBuilder.badge', 'Preschool Assessment') }}
+            {{ safeText('assessmentFormBuilder.summary.eyebrow', 'Form Summary') }}
           </span>
-          <h2>{{ safeText('assessmentFormBuilder.title', 'Form Builder') }}</h2>
-          <p>{{ safeText('assessmentFormBuilder.subtitle', 'Design assessment forms, scoring rubrics, and reusable question layouts.') }}</p>
+          <h2>{{ safeText('assessmentFormBuilder.summary.title', 'Builder Summary') }}</h2>
+          <p>{{ safeText('assessmentFormBuilder.summary.subtitle', 'Live template status and progress at a glance.') }}</p>
         </div>
         <div class="assessment-form-builder-hero__metrics">
           <div
