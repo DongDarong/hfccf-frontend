@@ -22,6 +22,26 @@ const FORM_QUESTION_TYPE_MAP = {
   signature: 'signature',
 }
 
+function isPersistedId(value) {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) && value > 0
+  }
+
+  if (typeof value === 'string') {
+    return /^\d+$/.test(value.trim())
+  }
+
+  return false
+}
+
+function normalizePersistedId(value) {
+  if (!isPersistedId(value)) {
+    return undefined
+  }
+
+  return typeof value === 'string' ? Number(value.trim()) : value
+}
+
 function normalizeFormOption(option = {}) {
   return {
     id: option.id ?? '',
@@ -192,21 +212,131 @@ function normalizeFormTemplateListResponse(response, fallbackPage = 1, fallbackP
   }
 }
 
-function buildFormQuestionOptionsPayload(options = '') {
-  return String(options || '')
-    .split(',')
-    .map(option => option.trim())
-    .filter(Boolean)
-    .map((label, index) => ({
+function buildFormQuestionOptionPayload(option, index = 0) {
+  if (typeof option === 'string') {
+    const label = option.trim()
+
+    return label ? {
       label,
       value: label.toLowerCase().replace(/\s+/g, '_'),
       sort_order: index + 1,
       score_value: index + 1,
-    }))
+    } : null
+  }
+
+  const label = String(option?.label ?? option?.option_text ?? option?.value ?? '').trim()
+
+  if (!label) {
+    return null
+  }
+
+  const value = String(option?.value ?? label.toLowerCase().replace(/\s+/g, '_')).trim()
+  const payload = {
+    label,
+    value,
+    sort_order: Number(option?.sort_order ?? option?.sortOrder ?? index + 1),
+    score_value: Number(option?.score_value ?? option?.scoreValue ?? index + 1),
+  }
+
+  const persistedId = normalizePersistedId(option?.id)
+  if (persistedId !== undefined) {
+    payload.id = persistedId
+  }
+
+  return payload
+}
+
+function normalizeFormQuestionOptionsText(options = '') {
+  if (Array.isArray(options)) {
+    return options
+      .map(option => String(option?.label ?? option?.option_text ?? option?.value ?? option ?? '').trim())
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  return String(options || '')
+}
+
+function buildFormQuestionOptionsPayload(options = '') {
+  const source = Array.isArray(options)
+    ? options
+    : String(options || '')
+        .split(',')
+        .map(option => option.trim())
+        .filter(Boolean)
+
+  return source
+    .map((option, index) => buildFormQuestionOptionPayload(option, index))
+    .filter(Boolean)
+}
+
+function stripTemporaryIdsForPayload(payload = {}) {
+  const normalized = { ...payload }
+  const persistedId = normalizePersistedId(normalized.id)
+
+  if (persistedId !== undefined) {
+    normalized.id = persistedId
+  } else {
+    delete normalized.id
+  }
+
+  if (!Array.isArray(normalized.sections)) {
+    return normalized
+  }
+
+  normalized.sections = normalized.sections.map((section) => {
+    const nextSection = { ...section }
+    const sectionId = normalizePersistedId(nextSection.id)
+
+    if (sectionId !== undefined) {
+      nextSection.id = sectionId
+    } else {
+      delete nextSection.id
+    }
+
+    if (!Array.isArray(nextSection.questions)) {
+      return nextSection
+    }
+
+    nextSection.questions = nextSection.questions.map((question) => {
+      const nextQuestion = { ...question }
+      const questionId = normalizePersistedId(nextQuestion.id)
+
+      if (questionId !== undefined) {
+        nextQuestion.id = questionId
+      } else {
+        delete nextQuestion.id
+      }
+
+      if (!Array.isArray(nextQuestion.options)) {
+        return nextQuestion
+      }
+
+      nextQuestion.options = nextQuestion.options.map((option) => {
+        const nextOption = { ...option }
+        const optionId = normalizePersistedId(nextOption.id)
+
+        if (optionId !== undefined) {
+          nextOption.id = optionId
+        } else {
+          delete nextOption.id
+        }
+
+        return nextOption
+      })
+
+      return nextQuestion
+    })
+
+    return nextSection
+  })
+
+  return normalized
 }
 
 function buildFormTemplatePayload(template = {}, sections = []) {
-  return {
+  return stripTemporaryIdsForPayload({
+    id: template.id,
     name: template.name,
     name_kh: template.nameKh ?? template.name_kh ?? null,
     description: template.description ?? null,
@@ -263,13 +393,13 @@ function buildFormTemplatePayload(template = {}, sections = []) {
             answerType: question.answerType || mappedType,
             validationMode: question.validationMode || 'basic',
             score: question.score ?? question.maxScore ?? null,
-            options: question.options || '',
+            options: normalizeFormQuestionOptionsText(question.options),
           },
           options: buildFormQuestionOptionsPayload(question.options),
         }
       }),
     })),
-  }
+  })
 }
 
 export {
@@ -281,6 +411,9 @@ export {
   normalizeFormQuestion,
   normalizeFormOption,
   normalizeFormVersion,
+  isPersistedId,
+  normalizePersistedId,
+  stripTemporaryIdsForPayload,
   buildFormTemplatePayload,
 }
 

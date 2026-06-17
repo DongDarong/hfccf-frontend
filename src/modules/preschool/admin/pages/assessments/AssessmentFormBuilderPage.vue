@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/buttons/Button.vue'
 import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
@@ -37,6 +38,7 @@ defineOptions({
 const { t, te } = useLanguage()
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 let questionSequence = 0
 const selectedQuestionKey = ref(PRESCHOOL_ASSESSMENT_FORM_BUILDER_PALETTE[0]?.key || null)
 const selectedSectionKey = ref(PRESCHOOL_ASSESSMENT_FORM_BUILDER_DEFAULT_SECTIONS[0]?.key || null)
@@ -1028,9 +1030,23 @@ async function saveDraft() {
       },
     })
     templateNotice.value = safeText('assessmentFormBuilder.messages.saved', 'Draft saved.')
+    return true
   } catch (error) {
-    templateError.value = error?.message || 'Unable to save the draft.'
-    throw error
+    const detail = error?.response?.status === 422
+      ? safeText(
+          'assessmentFormBuilder.messages.saveValidationFailed',
+          'The draft could not be saved because it contains temporary IDs.',
+        )
+      : error?.message || 'Unable to save the draft.'
+
+    templateError.value = detail
+    toast.add({
+      severity: 'error',
+      summary: safeText('common.error', 'Error'),
+      detail,
+      life: 5000,
+    })
+    return false
   } finally {
     isTemplateSaving.value = false
   }
@@ -1038,7 +1054,10 @@ async function saveDraft() {
 
 async function duplicateTemplate() {
   if (!currentTemplateId.value) {
-    await saveDraft()
+    const saved = await saveDraft()
+    if (!saved) {
+      return
+    }
   }
 
   isTemplateSaving.value = true
@@ -1069,7 +1088,10 @@ async function duplicateTemplate() {
 
 async function publishTemplate() {
   if (hasUnsavedChanges.value) {
-    await saveDraft()
+    const saved = await saveDraft()
+    if (!saved) {
+      return
+    }
   }
 
   isTemplateSaving.value = true

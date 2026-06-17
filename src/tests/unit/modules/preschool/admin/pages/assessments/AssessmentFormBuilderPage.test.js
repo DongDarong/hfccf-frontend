@@ -9,18 +9,27 @@ import { PRESCHOOL_ASSESSMENT_FORM_BUILDER_SECTION_QUESTION_SEEDS } from '@/modu
 const mockFetchAssessmentForm = vi.fn(() => Promise.resolve(null))
 const mockFetchAssessmentFormVersions = vi.fn(() => Promise.resolve([]))
 const mockFetchAssessmentQuestionTypes = vi.fn(() => Promise.resolve([]))
+const mockCreateAssessmentForm = vi.fn(() => Promise.resolve({ id: 1 }))
+const mockUpdateAssessmentForm = vi.fn(() => Promise.resolve({ id: 1 }))
+const mockToastAdd = vi.fn()
 
 vi.mock('@/modules/preschool/services/api/preschoolAssessmentApi', () => ({
   archiveAssessmentForm: vi.fn(() => Promise.resolve({})),
   buildFormTemplatePayload: vi.fn(() => ({})),
-  createAssessmentForm: vi.fn(() => Promise.resolve({ id: 1 })),
+  createAssessmentForm: (...args) => mockCreateAssessmentForm(...args),
   duplicateAssessmentForm: vi.fn(() => Promise.resolve({ id: 1 })),
   fetchAssessmentForm: (...args) => mockFetchAssessmentForm(...args),
   fetchAssessmentFormVersions: (...args) => mockFetchAssessmentFormVersions(...args),
   fetchAssessmentQuestionTypes: (...args) => mockFetchAssessmentQuestionTypes(...args),
   publishAssessmentForm: vi.fn(() => Promise.resolve({})),
   restoreAssessmentForm: vi.fn(() => Promise.resolve({})),
-  updateAssessmentForm: vi.fn(() => Promise.resolve({ id: 1 })),
+  updateAssessmentForm: (...args) => mockUpdateAssessmentForm(...args),
+}))
+
+vi.mock('primevue/usetoast', () => ({
+  useToast: () => ({
+    add: mockToastAdd,
+  }),
 }))
 
 beforeEach(() => {
@@ -31,7 +40,7 @@ function stubs() {
   return {
     MainLayout: { template: '<div><slot /></div>' },
     HeaderSection: { props: ['title', 'subtitle'], template: '<header><h1>{{ title }}</h1><p>{{ subtitle }}</p></header>' },
-    Button: { template: '<button><slot /></button>' },
+    Button: { props: ['label'], emits: ['click'], template: '<button @click="$emit(\'click\')">{{ label }}</button>' },
     FormBuilderQuestionPalette: { template: '<div class="palette-stub" />' },
     FormBuilderCanvas: {
       props: ['sections', 'sectionQuestions', 'selectedSectionKey'],
@@ -69,5 +78,37 @@ describe('AssessmentFormBuilderPage', () => {
     expect(wrapper.find('.canvas-stub').text()).toContain(String(expectedQuestionCount))
     expect(warnSpy).not.toHaveBeenCalled()
     expect(errorSpy).not.toHaveBeenCalled()
+  })
+
+  it('shows a friendly toast when save draft validation fails', async () => {
+    const validationError = new Error('Validation failed')
+    validationError.response = { status: 422 }
+    mockCreateAssessmentForm.mockRejectedValueOnce(validationError)
+
+    const wrapper = mountWithPlugins(AssessmentFormBuilderPage, {
+      messages: {
+        en: { common: enCommon, ...enPreschool },
+      },
+      global: {
+        stubs: stubs(),
+      },
+    })
+
+    await flushPromises()
+
+    const buttons = wrapper.findAll('button')
+    const saveDraftButton = buttons.find(button => button.text().includes('Save Draft'))
+
+    expect(saveDraftButton).toBeTruthy()
+
+    await saveDraftButton.trigger('click')
+    await flushPromises()
+
+    expect(mockCreateAssessmentForm).toHaveBeenCalled()
+    expect(mockToastAdd).toHaveBeenCalledWith(expect.objectContaining({
+      severity: 'error',
+      detail: expect.stringContaining('temporary IDs'),
+    }))
+    expect(wrapper.text()).toContain('temporary IDs')
   })
 })
