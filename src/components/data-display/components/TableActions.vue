@@ -10,6 +10,10 @@ defineProps({
     type: Object,
     default: () => ({}),
   },
+  resetLabel: {
+    type: String,
+    default: '',
+  },
   showViewAction: {
     type: Boolean,
     default: true,
@@ -38,6 +42,7 @@ const emit = defineEmits(['view', 'edit', 'delete', 'reset'])
     :show-edit="showEditAction"
     :show-delete="showDeleteAction"
     :show-reset="showResetAction"
+    :reset-label="resetLabel"
     @view="emit('view', item)"
     @edit="emit('edit', item)"
     @delete="emit('delete', item)"
