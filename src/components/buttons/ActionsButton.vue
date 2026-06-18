@@ -153,19 +153,19 @@ const menuItems = computed(() => {
 
   if (props.showDelete) {
     items.push({
-      label: labels.value.delete,
-      icon: 'pi pi-trash',
-      class: 'actions-button-menu__danger',
-      command: () => onAction('delete'),
-    })
-  }
-
-  if (props.showReset) {
-    items.push({
       label: labels.value.reset,
       icon: 'pi pi-refresh',
       class: 'actions-button-menu__reset',
       command: () => onAction('reset'),
+    })
+  }
+
+  if (props.showDelete) {
+    items.push({
+      label: labels.value.delete,
+      icon: 'pi pi-trash',
+      class: 'actions-button-menu__danger',
+      command: () => onAction('delete'),
     })
   }
 
