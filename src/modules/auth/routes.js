@@ -11,5 +11,10 @@ export const authRoutes = [
     component: () => import('@/modules/auth/pages/ForgotPassword.vue'),
     meta: { guestOnly: true },
   },
+  {
+    path: '/change-password',
+    name: 'force-password-change',
+    component: () => import('@/modules/auth/pages/ForcePasswordChange.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
-

@@ -323,14 +323,14 @@ onMounted(() => {
           <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
         <input
-          v-if="modalMode !== 'view'"
+          v-if="modalMode === 'create'"
           v-model="form.password"
           class="english-teachers-page__input english-teachers-page__dialog-full"
           type="password"
           :placeholder="passwordPlaceholder"
         />
         <input
-          v-if="modalMode !== 'view'"
+          v-if="modalMode === 'create'"
           v-model="form.password_confirmation"
           class="english-teachers-page__input english-teachers-page__dialog-full"
           type="password"

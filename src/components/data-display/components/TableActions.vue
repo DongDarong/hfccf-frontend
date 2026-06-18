@@ -22,9 +22,13 @@ defineProps({
     type: Boolean,
     default: true,
   },
+  showResetAction: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['view', 'edit', 'delete'])
+const emit = defineEmits(['view', 'edit', 'delete', 'reset'])
 </script>
 
 <template>
@@ -33,8 +37,10 @@ const emit = defineEmits(['view', 'edit', 'delete'])
     :show-view="showViewAction"
     :show-edit="showEditAction"
     :show-delete="showDeleteAction"
+    :show-reset="showResetAction"
     @view="emit('view', item)"
     @edit="emit('edit', item)"
     @delete="emit('delete', item)"
+    @reset="emit('reset', item)"
   />
 </template>

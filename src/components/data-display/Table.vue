@@ -78,6 +78,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showResetAction: {
+    type: Boolean,
+    default: false,
+  },
   sortField: {
     type: String,
     default: '',
@@ -92,7 +96,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['view', 'edit', 'delete', 'sort'])
+const emit = defineEmits(['view', 'edit', 'delete', 'reset', 'sort'])
 
 const { t } = useLanguage()
 const slots = useSlots()
@@ -340,9 +344,11 @@ function paymentTone(value) {
             :show-view-action="showViewAction"
             :show-edit-action="showEditAction"
             :show-delete-action="showDeleteAction"
+            :show-reset-action="showResetAction"
             @view="emit('view', $event)"
             @edit="emit('edit', $event)"
             @delete="emit('delete', $event)"
+            @reset="emit('reset', $event)"
           />
         </template>
 

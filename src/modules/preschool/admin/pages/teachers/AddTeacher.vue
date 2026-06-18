@@ -267,6 +267,7 @@ onBeforeUnmount(() => {
             :status-options="statusOptions"
             :role-permissions="rolePermissions"
             :role-permissions-loading="rolePermissionsLoading"
+            :show-password-fields="isAddMode"
             :name="form.name"
             :email="form.email"
             :phone="form.phone"
