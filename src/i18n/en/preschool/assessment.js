@@ -155,6 +155,52 @@ export default {
   finalize: 'Finalize',
   archive: 'Archive',
 
+  preschoolAssessmentPage: {
+    title: 'Assessment Management',
+    loading: 'Loading assessments...',
+    empty: 'No assessments found',
+    emptyDescription: 'Create your first assessment or adjust your filters.',
+    columns: {
+      period: 'Period',
+      date: 'Date',
+      category: 'Category',
+      rating: 'Rating',
+      score: 'Score',
+      status: 'Status',
+      actions: 'Actions',
+    },
+    actions: {
+      finalize: 'Finalize',
+      archive: 'Archive',
+    },
+  },
+
+  preschoolAssessmentFormPage: {
+    title: 'Assessment Form',
+    fields: {
+      class: 'Class',
+      category: 'Category',
+      periodLabel: 'Period Label',
+      assessmentDate: 'Assessment Date',
+      score: 'Score',
+      rating: 'Rating',
+      observation: 'Observation',
+      teacherComment: 'Teacher Comment',
+    },
+    placeholders: {
+      class: 'Select a class',
+      category: 'Select a category',
+      periodLabel: 'Enter period label',
+      score: 'Enter score',
+      rating: 'Select a rating',
+      observation: 'Add observations',
+      teacherComment: 'Add a teacher comment',
+    },
+    actions: {
+      save: 'Save Assessment',
+    },
+  },
+
   assessmentFormBuilder: {
     summary: {
       eyebrow: 'Form Summary',

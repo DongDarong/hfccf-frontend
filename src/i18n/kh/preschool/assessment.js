@@ -154,6 +154,51 @@ export default {
   edit: 'កែប្រែ',
   finalize: 'បិទ',
   archive: 'រក្សាទុក',
+  preschoolAssessmentPage: {
+    title: 'ការគ្រប់គ្រងការវាយតម្លៃ',
+    loading: 'កំពុងផ្ទុកការវាយតម្លៃ...',
+    empty: 'មិនទាន់មានការវាយតម្លៃ',
+    emptyDescription: 'បង្កើតការវាយតម្លៃដំបូងរបស់អ្នក ឬកែប្រែតម្រង។',
+    columns: {
+      period: 'រយៈពេល',
+      date: 'កាលបរិច្ឆេទ',
+      category: 'ប្រភេទ',
+      rating: 'ការវាយតម្លៃ',
+      score: 'ពិន្ទុ',
+      status: 'ស្ថានភាព',
+      actions: 'សកម្មភាព',
+    },
+    actions: {
+      finalize: 'បញ្ចប់',
+      archive: 'ទុកក្នុងបណ្ណសារ',
+    },
+  },
+
+  preschoolAssessmentFormPage: {
+    title: 'ទម្រង់វាយតម្លៃ',
+    fields: {
+      class: 'ថ្នាក់',
+      category: 'ប្រភេទ',
+      periodLabel: 'ស្លាករយៈពេល',
+      assessmentDate: 'កាលបរិច្ឆេទវាយតម្លៃ',
+      score: 'ពិន្ទុ',
+      rating: 'ការវាយតម្លៃ',
+      observation: 'កំណត់សង្កេត',
+      teacherComment: 'មតិគ្រូ',
+    },
+    placeholders: {
+      class: 'ជ្រើសរើសថ្នាក់',
+      category: 'ជ្រើសរើសប្រភេទ',
+      periodLabel: 'បញ្ចូលស្លាករយៈពេល',
+      score: 'បញ្ចូលពិន្ទុ',
+      rating: 'ជ្រើសរើសការវាយតម្លៃ',
+      observation: 'បន្ថែមការសង្កេត',
+      teacherComment: 'បន្ថែមមតិគ្រូ',
+    },
+    actions: {
+      save: 'រក្សាទុកការវាយតម្លៃ',
+    },
+  },
   assessmentFormBuilder: {
     summary: {
       eyebrow: 'សេចក្តីសង្ខេបទម្រង់',
