@@ -33,6 +33,7 @@ const { t } = useLanguage()
 
 const teacherRole = ROLES.TEACHER_PRESCHOOL
 const roleOptions = [teacherRole]
+const statusOptions = STATUS_OPTIONS
 
 const form = reactive({ ...DEFAULT_FORM, role: teacherRole, status: STATUS_OPTIONS[0] })
 
