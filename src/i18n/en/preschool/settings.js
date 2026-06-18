@@ -21,7 +21,9 @@ export default {
       },
       fields: {
         activeAcademicYear: 'Active Academic Year',
+        activeAcademicYearDateRange: 'Academic Year Date Range',
         activeTerm: 'Active Term',
+        activeTermDateRange: 'Term Date Range',
         academicStatus: 'Academic Status',
         currentAttendanceRules: 'Current Attendance Rules',
         lastUpdated: 'Last Updated',
@@ -40,6 +42,7 @@ export default {
         academicYear: 'No Academic Year Configured',
         term: 'No Term Configured',
         academicStatus: 'No Academic Status Available',
+        dateRange: 'No Date Range Available',
         attendanceRules: 'No Attendance Rules Configured',
         lastUpdated: 'Not updated yet',
         currency: 'No Currency Configured',
@@ -96,6 +99,88 @@ export default {
           action: 'Open Preferences',
           description: 'Preference persistence will be added in a later phase.',
         },
+      },
+    },
+    preschoolAcademicSettingsPage: {
+      pageTitle: 'Academic Settings',
+      pageSubtitle: 'Manage academic years and terms that drive the Preschool calendar.',
+      activeCards: {
+        academicYear: {
+          eyebrow: 'Active academic year',
+          title: 'Active Academic Year',
+          subtitle: 'The year currently driving Preschool workflows.',
+        },
+        term: {
+          eyebrow: 'Active term',
+          title: 'Active Term',
+          subtitle: 'The term currently aligned with the active academic year.',
+        },
+      },
+      statuses: {
+        current: 'Current',
+        active: 'Active',
+        draft: 'Draft',
+        closed: 'Closed',
+        archived: 'Archived',
+      },
+      fields: {
+        code: 'Code',
+        name: 'Name',
+        description: 'Description',
+        academicYear: 'Academic Year',
+        startDate: 'Start Date',
+        endDate: 'End Date',
+        status: 'Status',
+        isCurrent: 'Mark as Current',
+      },
+      placeholders: {
+        code: 'Optional code',
+        name: 'Enter a name',
+        description: 'Optional description',
+        academicYear: 'Select an academic year',
+        startDate: 'Choose a start date',
+        endDate: 'Choose an end date',
+        status: 'Select a status',
+      },
+      actions: {
+        addAcademicYear: 'Add Academic Year',
+        saveAcademicYear: 'Save Academic Year',
+        addTerm: 'Add Term',
+        saveTerm: 'Save Term',
+        activate: 'Activate',
+        close: 'Close',
+        archive: 'Archive',
+        edit: 'Edit',
+        cancel: 'Cancel',
+      },
+      dialogs: {
+        academicYear: {
+          subtitle: 'Keep the academic year aligned with Preschool operations.',
+          createTitle: 'Create Academic Year',
+          editTitle: 'Edit Academic Year',
+        },
+        term: {
+          subtitle: 'Keep terms inside the selected academic year range.',
+          createTitle: 'Create Term',
+          editTitle: 'Edit Term',
+        },
+      },
+      help: {
+        isCurrent: 'Only one record should be marked as current at a time.',
+      },
+      emptyStates: {
+        noAcademicYears: 'No Academic Years',
+        noTerms: 'No Terms',
+        dashboard: 'No academic years or terms have been configured yet.',
+        yearFallback: 'Unnamed academic year',
+      },
+      messages: {
+        loadFailed: 'Unable to load academic settings right now.',
+      },
+      validation: {
+        required: 'This field is required.',
+        range: 'The end date must be after the start date.',
+        outsideYear: 'The term dates must stay inside the selected academic year.',
       },
     },
     sections: {
@@ -333,8 +418,90 @@ export default {
       saved: 'Saved locally',
       needsAttention: 'Validation needed',
     },
-    reporting: {
+  reporting: {
       assessments: 'assessments',
+    },
+  },
+  preschoolAcademicSettingsPage: {
+    pageTitle: 'Academic Settings',
+    pageSubtitle: 'Manage academic years and terms that drive the Preschool calendar.',
+    activeCards: {
+      academicYear: {
+        eyebrow: 'Active academic year',
+        title: 'Active Academic Year',
+        subtitle: 'The year currently driving Preschool workflows.',
+      },
+      term: {
+        eyebrow: 'Active term',
+        title: 'Active Term',
+        subtitle: 'The term currently aligned with the active academic year.',
+      },
+    },
+    statuses: {
+      current: 'Current',
+      active: 'Active',
+      draft: 'Draft',
+      closed: 'Closed',
+      archived: 'Archived',
+    },
+    fields: {
+      code: 'Code',
+      name: 'Name',
+      description: 'Description',
+      academicYear: 'Academic Year',
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      status: 'Status',
+      isCurrent: 'Mark as Current',
+    },
+    placeholders: {
+      code: 'Optional code',
+      name: 'Enter a name',
+      description: 'Optional description',
+      academicYear: 'Select an academic year',
+      startDate: 'Choose a start date',
+      endDate: 'Choose an end date',
+      status: 'Select a status',
+    },
+    actions: {
+      addAcademicYear: 'Add Academic Year',
+      saveAcademicYear: 'Save Academic Year',
+      addTerm: 'Add Term',
+      saveTerm: 'Save Term',
+      activate: 'Activate',
+      close: 'Close',
+      archive: 'Archive',
+      edit: 'Edit',
+      cancel: 'Cancel',
+    },
+    dialogs: {
+      academicYear: {
+        subtitle: 'Keep the academic year aligned with Preschool operations.',
+        createTitle: 'Create Academic Year',
+        editTitle: 'Edit Academic Year',
+      },
+      term: {
+        subtitle: 'Keep terms inside the selected academic year range.',
+        createTitle: 'Create Term',
+        editTitle: 'Edit Term',
+      },
+    },
+    help: {
+      isCurrent: 'Only one record should be marked as current at a time.',
+    },
+    emptyStates: {
+      noAcademicYears: 'No Academic Years',
+      noTerms: 'No Terms',
+      dashboard: 'No academic years or terms have been configured yet.',
+      yearFallback: 'Unnamed academic year',
+    },
+    messages: {
+      loadFailed: 'Unable to load academic settings right now.',
+    },
+    validation: {
+      required: 'This field is required.',
+      range: 'The end date must be after the start date.',
+      outsideYear: 'The term dates must stay inside the selected academic year.',
     },
   },
 }

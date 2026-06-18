@@ -33,8 +33,16 @@ const sectionDefinitions = computed(() => [
         value: formatValue(dashboard.value.academic?.activeAcademicYear, t('preschoolSettingsPage.dashboard.emptyStates.academicYear')),
       },
       {
+        label: t('preschoolSettingsPage.dashboard.fields.activeAcademicYearDateRange'),
+        value: formatValue(dashboard.value.academic?.activeAcademicYearDateRange, t('preschoolSettingsPage.dashboard.emptyStates.dateRange')),
+      },
+      {
         label: t('preschoolSettingsPage.dashboard.fields.activeTerm'),
         value: formatValue(dashboard.value.academic?.activeTerm, t('preschoolSettingsPage.dashboard.emptyStates.term')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.activeTermDateRange'),
+        value: formatValue(dashboard.value.academic?.activeTermDateRange, t('preschoolSettingsPage.dashboard.emptyStates.dateRange')),
       },
       {
         label: t('preschoolSettingsPage.dashboard.fields.academicStatus'),

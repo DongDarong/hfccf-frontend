@@ -52,7 +52,9 @@ describe('Preschool settings page', () => {
     fetchPreschoolSettingsDashboard.mockResolvedValue({
       academic: {
         activeAcademicYear: '2025 - 2026',
+        activeAcademicYearDateRange: '2025-06-01 - 2026-05-31',
         activeTerm: 'Term 1',
+        activeTermDateRange: '2025-06-01 - 2025-08-31',
         academicStatus: 'Active',
         isConfigured: true,
       },
@@ -99,6 +101,8 @@ describe('Preschool settings page', () => {
     expect(wrapper.text()).toContain('Preschool Settings')
     expect(wrapper.text()).toContain('Preschool Settings Center')
     expect(wrapper.text()).toContain('2025 - 2026')
+    expect(wrapper.text()).toContain('2025-06-01 - 2026-05-31')
+    expect(wrapper.text()).toContain('2025-06-01 - 2025-08-31')
     expect(wrapper.text()).toContain('Open Academic Settings')
     expect(wrapper.text()).toContain('Configured')
     expect(warnSpy).not.toHaveBeenCalled()

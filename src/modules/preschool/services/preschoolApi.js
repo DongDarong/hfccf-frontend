@@ -3,6 +3,8 @@ import { buildQueryParams, normalizePerPage, unwrapApiData, unwrapApiItems, unwr
 import { mapUser, mapUsers } from '@/services/mappers/userMapper'
 import { fetchReportPeriods as fetchPreschoolReportPeriods } from '@/modules/preschool/services/api/preschoolReportsApi'
 import {
+  archiveAcademicTerm,
+  archiveAcademicYear,
   activateAcademicTerm,
   activateAcademicYear,
   closeAcademicTerm,
@@ -340,10 +342,12 @@ export function normalizePreschoolSettingsDashboard(payload = {}) {
 
   const normalizedAcademic = normalizePreschoolSettingsDashboardSection(academic, {
     activeAcademicYear: ['activeAcademicYear', 'active_academic_year'],
+    activeAcademicYearDateRange: ['activeAcademicYearDateRange', 'active_academic_year_date_range'],
     activeTerm: ['activeTerm', 'active_term'],
+    activeTermDateRange: ['activeTermDateRange', 'active_term_date_range'],
     academicStatus: ['academicStatus', 'academic_status'],
   })
-  normalizedAcademic.isConfigured = normalizeDashboardSectionFlags(academic, ['activeAcademicYear', 'activeTerm', 'academicStatus'])
+  normalizedAcademic.isConfigured = normalizeDashboardSectionFlags(academic, ['activeAcademicYear', 'activeAcademicYearDateRange', 'activeTerm', 'activeTermDateRange', 'academicStatus'])
 
   const normalizedAttendance = normalizePreschoolSettingsDashboardSection(attendance, {
     currentAttendanceRules: ['currentAttendanceRules', 'current_attendance_rules'],
@@ -486,6 +490,8 @@ export async function fetchPreschoolSettingsDashboard(options = {}) {
 }
 
 export {
+  archiveAcademicTerm,
+  archiveAcademicYear,
   activateAcademicTerm,
   activateAcademicYear,
   closeAcademicTerm,

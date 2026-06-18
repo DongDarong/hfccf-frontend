@@ -215,8 +215,7 @@ export const preschoolRoutes = [
     path: '/preschool/settings/academic',
     alias: '/module/preschool-admin/settings/academic',
     name: 'dashboard-preschool-admin-settings-academic',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
-    props: { sectionKey: 'academic' },
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolAcademicSettingsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

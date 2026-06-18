@@ -51,7 +51,7 @@ describe('Preschool settings dashboard', () => {
     expect(wrapper.find('[data-testid="settings-dashboard-loading"]').exists()).toBe(true)
 
     resolveDashboard({
-      academic: { activeAcademicYear: '', activeTerm: '', academicStatus: '', isConfigured: false },
+      academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
       attendance: { currentAttendanceRules: '', lastUpdated: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
       assessments: { activeGradingScale: '', assessmentCategories: [], isConfigured: false },
@@ -65,7 +65,7 @@ describe('Preschool settings dashboard', () => {
 
   it('renders empty state copy when the dashboard payload is blank', async () => {
     fetchPreschoolSettingsDashboard.mockResolvedValueOnce({
-      academic: { activeAcademicYear: '', activeTerm: '', academicStatus: '', isConfigured: false },
+      academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
       attendance: { currentAttendanceRules: '', lastUpdated: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
       assessments: { activeGradingScale: '', assessmentCategories: [], isConfigured: false },
