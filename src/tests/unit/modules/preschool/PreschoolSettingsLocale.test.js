@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import enPreschool from '@/i18n/en/preschool'
-import khPreschool from '@/i18n/kh/preschool'
+import enPreschool from '@/i18n/en/preschool/settings.js'
+import khPreschool from '@/i18n/kh/preschool/settings.js'
 
 // Keep Preschool settings locale parity covered so the new configuration page
 // does not drift into missing keys or mixed EN/KH nesting.
@@ -16,6 +16,23 @@ describe('preschool settings locale parity', () => {
     const keys = [
       'preschoolSettingsPage.pageTitle',
       'preschoolSettingsPage.pageSubtitle',
+      'preschoolSettingsPage.dashboard.pageTitle',
+      'preschoolSettingsPage.dashboard.pageSubtitle',
+      'preschoolSettingsPage.dashboard.emptyDashboard',
+      'preschoolSettingsPage.dashboard.actions.backToDashboard',
+      'preschoolSettingsPage.dashboard.messages.loadFailed',
+      'preschoolSettingsPage.dashboard.statuses.configured',
+      'preschoolSettingsPage.dashboard.fields.activeAcademicYear',
+      'preschoolSettingsPage.dashboard.fields.currentAttendanceRules',
+      'preschoolSettingsPage.dashboard.fields.organizationName',
+      'preschoolSettingsPage.dashboard.emptyStates.academicYear',
+      'preschoolSettingsPage.dashboard.emptyStates.currency',
+      'preschoolSettingsPage.dashboard.sections.academic.title',
+      'preschoolSettingsPage.dashboard.sections.attendance.title',
+      'preschoolSettingsPage.dashboard.sections.payments.title',
+      'preschoolSettingsPage.dashboard.sections.assessments.title',
+      'preschoolSettingsPage.dashboard.sections.health.title',
+      'preschoolSettingsPage.dashboard.sections.preferences.title',
       'preschoolSettingsPage.sections.summary.title',
       'preschoolSettingsPage.sections.academicYear.title',
       'preschoolSettingsPage.sections.terms.title',

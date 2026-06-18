@@ -290,6 +290,113 @@ function resolveId(payloadOrId) {
   return String(payloadOrId?.id || '').trim()
 }
 
+function normalizeTextList(values = []) {
+  if (!Array.isArray(values)) return []
+
+  return values
+    .map((value) => normalizeText(value))
+    .filter(Boolean)
+}
+
+function normalizeDashboardSectionFlags(section = {}, keys = []) {
+  return Boolean(
+    section.isConfigured
+    ?? section.is_configured
+    ?? keys.some((key) => normalizeText(section[key]).length > 0),
+  )
+}
+
+function normalizePreschoolSettingsDashboardSection(section = {}, fieldMap = {}) {
+  const normalized = {}
+
+  Object.entries(fieldMap).forEach(([targetKey, sourceKeys]) => {
+    const candidates = Array.isArray(sourceKeys) ? sourceKeys : [sourceKeys]
+    const rawValue = candidates.reduce((carry, key) => (
+      carry !== undefined && carry !== null && carry !== ''
+        ? carry
+        : section?.[key]
+    ), '')
+
+    if (Array.isArray(rawValue)) {
+      normalized[targetKey] = normalizeTextList(rawValue)
+      return
+    }
+
+    normalized[targetKey] = typeof rawValue === 'number'
+      ? rawValue
+      : normalizeText(rawValue)
+  })
+
+  return normalized
+}
+
+export function normalizePreschoolSettingsDashboard(payload = {}) {
+  const academic = payload.academic || {}
+  const attendance = payload.attendance || {}
+  const payments = payload.payments || {}
+  const assessments = payload.assessments || {}
+  const health = payload.health || {}
+  const preferences = payload.preferences || {}
+
+  const normalizedAcademic = normalizePreschoolSettingsDashboardSection(academic, {
+    activeAcademicYear: ['activeAcademicYear', 'active_academic_year'],
+    activeTerm: ['activeTerm', 'active_term'],
+    academicStatus: ['academicStatus', 'academic_status'],
+  })
+  normalizedAcademic.isConfigured = normalizeDashboardSectionFlags(academic, ['activeAcademicYear', 'activeTerm', 'academicStatus'])
+
+  const normalizedAttendance = normalizePreschoolSettingsDashboardSection(attendance, {
+    currentAttendanceRules: ['currentAttendanceRules', 'current_attendance_rules'],
+    lastUpdated: ['lastUpdated', 'last_updated'],
+  })
+  normalizedAttendance.isConfigured = normalizeDashboardSectionFlags(attendance, ['currentAttendanceRules', 'lastUpdated'])
+
+  const normalizedPayments = normalizePreschoolSettingsDashboardSection(payments, {
+    currency: ['currency'],
+    invoicePrefix: ['invoicePrefix', 'invoice_prefix'],
+    receiptPrefix: ['receiptPrefix', 'receipt_prefix'],
+  })
+  normalizedPayments.isConfigured = normalizeDashboardSectionFlags(payments, ['currency', 'invoicePrefix', 'receiptPrefix'])
+
+  const normalizedAssessments = normalizePreschoolSettingsDashboardSection(assessments, {
+    activeGradingScale: ['activeGradingScale', 'active_grading_scale'],
+    assessmentCategories: ['assessmentCategories', 'assessment_categories'],
+    assessmentCategoriesCount: ['assessmentCategoriesCount', 'assessment_categories_count'],
+  })
+  normalizedAssessments.assessmentCategories = normalizeTextList(assessments.assessmentCategories || assessments.assessment_categories || [])
+  normalizedAssessments.assessmentCategoriesCount = Number(
+    assessments.assessmentCategoriesCount
+    ?? assessments.assessment_categories_count
+    ?? normalizedAssessments.assessmentCategories.length
+    ?? 0,
+  )
+  normalizedAssessments.isConfigured = normalizeDashboardSectionFlags(assessments, ['activeGradingScale', 'assessmentCategories', 'assessmentCategoriesCount'])
+
+  const normalizedHealth = normalizePreschoolSettingsDashboardSection(health, {
+    alertSeverityLevels: ['alertSeverityLevels', 'alert_severity_levels'],
+    healthCategories: ['healthCategories', 'health_categories'],
+  })
+  normalizedHealth.alertSeverityLevels = normalizeTextList(health.alertSeverityLevels || health.alert_severity_levels || [])
+  normalizedHealth.healthCategories = normalizeTextList(health.healthCategories || health.health_categories || [])
+  normalizedHealth.isConfigured = normalizeDashboardSectionFlags(health, ['alertSeverityLevels', 'healthCategories'])
+
+  const normalizedPreferences = normalizePreschoolSettingsDashboardSection(preferences, {
+    organizationName: ['organizationName', 'organization_name'],
+    language: ['language'],
+    brandingStatus: ['brandingStatus', 'branding_status'],
+  })
+  normalizedPreferences.isConfigured = normalizeDashboardSectionFlags(preferences, ['organizationName', 'language', 'brandingStatus'])
+
+  return {
+    academic: normalizedAcademic,
+    attendance: normalizedAttendance,
+    payments: normalizedPayments,
+    assessments: normalizedAssessments,
+    health: normalizedHealth,
+    preferences: normalizedPreferences,
+  }
+}
+
 export async function fetchPreschoolDashboard(options = {}) {
   const response = await http.get('/preschool/dashboard', {
     signal: options.signal,
@@ -367,6 +474,15 @@ export async function fetchPreschoolSettingsBackbone(options = {}) {
     settings: normalizePreschoolSettingsSnapshot(payload.settings || {}),
     academicContext: payload.academicContext || {},
   }
+}
+
+export async function fetchPreschoolSettingsDashboard(options = {}) {
+  const response = await http.get('/preschool/settings/dashboard', {
+    signal: options.signal,
+  })
+
+  const payload = unwrapApiData(response) || {}
+  return normalizePreschoolSettingsDashboard(payload.dashboard || payload)
 }
 
 export {

@@ -202,9 +202,76 @@ export const preschoolRoutes = [
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.
   defineAppRoute({
-    path: '/module/preschool-admin/settings',
+    path: '/preschool/settings',
+    alias: '/module/preschool-admin/settings',
     name: 'dashboard-preschool-admin-settings',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettings.vue'),
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsDashboard.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/settings/academic',
+    alias: '/module/preschool-admin/settings/academic',
+    name: 'dashboard-preschool-admin-settings-academic',
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
+    props: { sectionKey: 'academic' },
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/settings/attendance',
+    alias: '/module/preschool-admin/settings/attendance',
+    name: 'dashboard-preschool-admin-settings-attendance',
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
+    props: { sectionKey: 'attendance' },
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/settings/payments',
+    alias: '/module/preschool-admin/settings/payments',
+    name: 'dashboard-preschool-admin-settings-payments',
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
+    props: { sectionKey: 'payments' },
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/settings/assessments',
+    alias: '/module/preschool-admin/settings/assessments',
+    name: 'dashboard-preschool-admin-settings-assessments',
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
+    props: { sectionKey: 'assessments' },
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/settings/health',
+    alias: '/module/preschool-admin/settings/health',
+    name: 'dashboard-preschool-admin-settings-health',
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
+    props: { sectionKey: 'health' },
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/settings/preferences',
+    alias: '/module/preschool-admin/settings/preferences',
+    name: 'dashboard-preschool-admin-settings-preferences',
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
+    props: { sectionKey: 'preferences' },
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
