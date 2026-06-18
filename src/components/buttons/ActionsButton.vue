@@ -151,7 +151,7 @@ const menuItems = computed(() => {
     })
   }
 
-  if (props.showDelete) {
+  if (props.showReset) {
     items.push({
       label: labels.value.reset,
       icon: 'pi pi-refresh',
