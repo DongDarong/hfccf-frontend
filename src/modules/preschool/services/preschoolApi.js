@@ -15,6 +15,15 @@ import {
   updateAcademicTerm,
   updateAcademicYear,
 } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
+import {
+  archiveCalendarEvent,
+  buildSchoolWeekLabel,
+  createCalendarEvent,
+  fetchAttendanceSettings,
+  fetchCalendarEvents,
+  updateAttendanceSettings,
+  updateCalendarEvent,
+} from '@/modules/preschool/services/api/preschoolAttendanceConfigurationApi'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -350,10 +359,15 @@ export function normalizePreschoolSettingsDashboard(payload = {}) {
   normalizedAcademic.isConfigured = normalizeDashboardSectionFlags(academic, ['activeAcademicYear', 'activeAcademicYearDateRange', 'activeTerm', 'activeTermDateRange', 'academicStatus'])
 
   const normalizedAttendance = normalizePreschoolSettingsDashboardSection(attendance, {
-    currentAttendanceRules: ['currentAttendanceRules', 'current_attendance_rules'],
-    lastUpdated: ['lastUpdated', 'last_updated'],
+    lateThresholdMinutes: ['lateThresholdMinutes', 'late_threshold_minutes'],
+    halfDayThresholdMinutes: ['halfDayThresholdMinutes', 'half_day_threshold_minutes'],
+    absenceAlertDays: ['absenceAlertDays', 'absence_alert_days'],
+    schoolDaysPerWeek: ['schoolDaysPerWeek', 'school_days_per_week'],
+    schoolWeekLabel: ['schoolWeekLabel', 'school_week_label'],
+    calendarEventsCount: ['calendarEventsCount', 'calendar_events_count'],
   })
-  normalizedAttendance.isConfigured = normalizeDashboardSectionFlags(attendance, ['currentAttendanceRules', 'lastUpdated'])
+  normalizedAttendance.schoolWeekLabel = normalizeText(normalizedAttendance.schoolWeekLabel) || buildSchoolWeekLabel(normalizedAttendance.schoolDaysPerWeek)
+  normalizedAttendance.isConfigured = normalizeDashboardSectionFlags(attendance, ['lateThresholdMinutes', 'absenceAlertDays', 'schoolDaysPerWeek', 'schoolWeekLabel', 'calendarEventsCount'])
 
   const normalizedPayments = normalizePreschoolSettingsDashboardSection(payments, {
     currency: ['currency'],
@@ -492,13 +506,19 @@ export async function fetchPreschoolSettingsDashboard(options = {}) {
 export {
   archiveAcademicTerm,
   archiveAcademicYear,
+  archiveCalendarEvent,
   activateAcademicTerm,
   activateAcademicYear,
   closeAcademicTerm,
   closeAcademicYear,
   createAcademicTerm,
   createAcademicYear,
+  createCalendarEvent,
+  fetchAttendanceSettings,
+  fetchCalendarEvents,
   fetchAcademicLifecycle,
+  updateAttendanceSettings,
+  updateCalendarEvent,
   updateAcademicTerm,
   updateAcademicYear,
 }

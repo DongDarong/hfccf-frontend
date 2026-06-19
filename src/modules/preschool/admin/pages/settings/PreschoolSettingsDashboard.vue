@@ -63,12 +63,20 @@ const sectionDefinitions = computed(() => [
     actionLabel: t('preschoolSettingsPage.dashboard.sections.attendance.action'),
     fields: [
       {
-        label: t('preschoolSettingsPage.dashboard.fields.currentAttendanceRules'),
-        value: formatValue(dashboard.value.attendance?.currentAttendanceRules, t('preschoolSettingsPage.dashboard.emptyStates.attendanceRules')),
+        label: t('preschoolSettingsPage.dashboard.fields.lateThresholdMinutes'),
+        value: formatValue(dashboard.value.attendance?.lateThresholdMinutes, t('preschoolSettingsPage.dashboard.emptyStates.lateThresholdMinutes')),
       },
       {
-        label: t('preschoolSettingsPage.dashboard.fields.lastUpdated'),
-        value: formatValue(dashboard.value.attendance?.lastUpdated, t('preschoolSettingsPage.dashboard.emptyStates.lastUpdated')),
+        label: t('preschoolSettingsPage.dashboard.fields.absenceAlertDays'),
+        value: formatValue(dashboard.value.attendance?.absenceAlertDays, t('preschoolSettingsPage.dashboard.emptyStates.absenceAlertDays')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.schoolWeek'),
+        value: formatValue(dashboard.value.attendance?.schoolWeekLabel, t('preschoolSettingsPage.dashboard.emptyStates.schoolWeek')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.calendarEventsCount'),
+        value: formatValue(dashboard.value.attendance?.calendarEventsCount, t('preschoolSettingsPage.dashboard.emptyStates.calendarEventsCount')),
       },
     ],
     status: dashboard.value.attendance?.isConfigured
@@ -189,8 +197,12 @@ function createEmptyDashboard() {
       isConfigured: false,
     },
     attendance: {
-      currentAttendanceRules: '',
-      lastUpdated: '',
+      lateThresholdMinutes: '',
+      halfDayThresholdMinutes: '',
+      absenceAlertDays: '',
+      schoolDaysPerWeek: '',
+      schoolWeekLabel: '',
+      calendarEventsCount: '',
       isConfigured: false,
     },
     payments: {

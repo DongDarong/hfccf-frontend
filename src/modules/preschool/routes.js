@@ -225,8 +225,7 @@ export const preschoolRoutes = [
     path: '/preschool/settings/attendance',
     alias: '/module/preschool-admin/settings/attendance',
     name: 'dashboard-preschool-admin-settings-attendance',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
-    props: { sectionKey: 'attendance' },
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolAttendanceSettingsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

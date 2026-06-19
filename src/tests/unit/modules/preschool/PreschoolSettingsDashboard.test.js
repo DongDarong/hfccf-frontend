@@ -52,7 +52,7 @@ describe('Preschool settings dashboard', () => {
 
     resolveDashboard({
       academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
-      attendance: { currentAttendanceRules: '', lastUpdated: '', isConfigured: false },
+      attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
       assessments: { activeGradingScale: '', assessmentCategories: [], isConfigured: false },
       health: { alertSeverityLevels: [], healthCategories: [], isConfigured: false },
@@ -66,7 +66,7 @@ describe('Preschool settings dashboard', () => {
   it('renders empty state copy when the dashboard payload is blank', async () => {
     fetchPreschoolSettingsDashboard.mockResolvedValueOnce({
       academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
-      attendance: { currentAttendanceRules: '', lastUpdated: '', isConfigured: false },
+      attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
       assessments: { activeGradingScale: '', assessmentCategories: [], isConfigured: false },
       health: { alertSeverityLevels: [], healthCategories: [], isConfigured: false },

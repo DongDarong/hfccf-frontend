@@ -59,8 +59,10 @@ describe('Preschool settings page', () => {
         isConfigured: true,
       },
       attendance: {
-        currentAttendanceRules: 'Window + threshold',
-        lastUpdated: '2026-06-10',
+        lateThresholdMinutes: 15,
+        absenceAlertDays: 3,
+        schoolWeekLabel: 'Mon–Fri',
+        calendarEventsCount: 12,
         isConfigured: true,
       },
       payments: {
@@ -100,9 +102,10 @@ describe('Preschool settings page', () => {
 
     expect(wrapper.text()).toContain('Preschool Settings')
     expect(wrapper.text()).toContain('Preschool Settings Center')
-    expect(wrapper.text()).toContain('2025 - 2026')
-    expect(wrapper.text()).toContain('2025-06-01 - 2026-05-31')
-    expect(wrapper.text()).toContain('2025-06-01 - 2025-08-31')
+    expect(wrapper.text()).toContain('15')
+    expect(wrapper.text()).toContain('3')
+    expect(wrapper.text()).toContain('Mon–Fri')
+    expect(wrapper.text()).toContain('12')
     expect(wrapper.text()).toContain('Open Academic Settings')
     expect(wrapper.text()).toContain('Configured')
     expect(warnSpy).not.toHaveBeenCalled()
