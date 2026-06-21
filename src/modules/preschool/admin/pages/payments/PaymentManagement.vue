@@ -19,6 +19,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { normalizeDateForInput } from '@/utils/date'
 import { fetchPreschoolClasses, fetchPreschoolPayments, fetchPreschoolStudents, createPreschoolPayment, updatePreschoolPayment, deletePreschoolPayment } from '@/modules/preschool/services/preschoolApi'
 import { fetchPreschoolInvoices, createPreschoolInvoice, updatePreschoolInvoice, deletePreschoolInvoice, cancelPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
+import { fetchFeeTypes as fetchConfiguredFeeTypes, fetchPaymentMethods as fetchConfiguredPaymentMethods, fetchPaymentSettings as fetchConfiguredPaymentSettings } from '@/modules/preschool/services/api/preschoolPaymentConfigurationApi'
 import { PAGE_SIZE, DEFAULT_PAGINATION, DEFAULT_FORM, MODAL_MODES } from './constants/paymentManagementConstants'
 import { buildStatusOptions, buildMethodOptions, buildTableColumns, normalize, mapPayment, normalizePayload, buildClassOptions, buildStudentOptions } from './utils/paymentManagementHelpers'
 import { DEFAULT_INVOICE_FORM, DEFAULT_INVOICE_ITEM, buildInvoiceColumns, mapInvoice, normalizeInvoicePayload } from './utils/invoiceManagementHelpers'
@@ -60,12 +61,15 @@ const invoiceModalOpen = ref(false)
 const invoiceModalMode = ref('create')
 const invoiceSaving = ref(false)
 const invoiceItems = ref([DEFAULT_INVOICE_ITEM()])
+const configuredFeeTypes = ref([])
+const configuredPaymentMethods = ref([])
+const configuredPaymentSettings = ref({ invoicePrefix: 'INV', nextInvoiceNumber: 1 })
 
 const form = reactive({ ...DEFAULT_FORM })
 const invoiceForm = reactive({ ...DEFAULT_INVOICE_FORM() })
 
 const statusOptions = computed(() => buildStatusOptions(t))
-const methodOptions = computed(() => buildMethodOptions(t))
+const methodOptions = computed(() => buildMethodOptions(t, configuredPaymentMethods.value))
 const tableColumns = computed(() => buildTableColumns(t))
 const invoiceColumns = computed(() => buildInvoiceColumns(t))
 
@@ -231,6 +235,24 @@ async function loadClasses() {
   }
 }
 
+async function loadPaymentConfiguration() {
+  try {
+    const [settings, feeTypesResponse, paymentMethodsResponse] = await Promise.all([
+      fetchConfiguredPaymentSettings(),
+      fetchConfiguredFeeTypes(),
+      fetchConfiguredPaymentMethods(),
+    ])
+
+    configuredPaymentSettings.value = settings || { invoicePrefix: 'INV', nextInvoiceNumber: 1 }
+    configuredFeeTypes.value = Array.isArray(feeTypesResponse?.items) ? feeTypesResponse.items : []
+    configuredPaymentMethods.value = Array.isArray(paymentMethodsResponse?.items) ? paymentMethodsResponse.items : []
+  } catch {
+    configuredPaymentSettings.value = { invoicePrefix: 'INV', nextInvoiceNumber: 1 }
+    configuredFeeTypes.value = []
+    configuredPaymentMethods.value = []
+  }
+}
+
 async function loadStudents() {
   try {
     const response = await fetchPreschoolStudents({ perPage: 100 })
@@ -296,8 +318,25 @@ function clearFilters() {
 function openCreateInvoiceModal() {
   invoiceModalMode.value = 'create'
   selectedInvoice.value = null
-  Object.assign(invoiceForm, { ...DEFAULT_INVOICE_FORM() })
-  invoiceItems.value = [DEFAULT_INVOICE_ITEM()]
+  const prefix = String(configuredPaymentSettings.value.invoicePrefix || 'INV').trim() || 'INV'
+  const nextNumber = Number(configuredPaymentSettings.value.nextInvoiceNumber || 1)
+  const invoiceNumber = `${prefix}-${new Date().getFullYear()}-${String(nextNumber).padStart(5, '0')}`
+  const defaultFeeType = configuredFeeTypes.value[0]
+
+  Object.assign(invoiceForm, {
+    ...DEFAULT_INVOICE_FORM(),
+    invoice_number: invoiceNumber,
+  })
+  invoiceItems.value = [
+    defaultFeeType
+      ? {
+        description: defaultFeeType.name || '',
+        quantity: 1,
+        unit_price: Number(defaultFeeType.defaultAmount || 0),
+        sort_order: 1,
+      }
+      : DEFAULT_INVOICE_ITEM(),
+  ]
   invoiceModalOpen.value = true
 }
 
@@ -454,7 +493,7 @@ function openEditModal(row) {
   form.payment_reference = row.paymentReference || row.payment_reference || ''
   form.amount = row.amount || ''
   form.currency = row.currency || 'USD'
-  form.payment_method = row.paymentMethod || 'cash'
+  form.payment_method = row.paymentMethod || configuredPaymentMethods.value[0]?.code || 'cash'
   form.payment_status = row.paymentStatus || 'pending'
   form.paid_at = normalizeDateForInput(row.paidAt || row.paid_at || '')
   form.due_date = normalizeDateForInput(row.dueDate || row.due_date || '')
@@ -543,7 +582,7 @@ watch(invoicePage, () => {
 })
 
 onMounted(async () => {
-  await Promise.all([loadClasses(), loadStudents(), loadPayments(), loadInvoices()])
+  await Promise.all([loadClasses(), loadStudents(), loadPaymentConfiguration(), loadPayments(), loadInvoices()])
 })
 </script>
 

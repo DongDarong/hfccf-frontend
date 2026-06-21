@@ -23,6 +23,108 @@ function mergeDeep(base, overrides) {
 }
 
 const overrides = {
+  preschoolPaymentSettingsPage: {
+    pageTitle: 'Payment Configuration',
+    pageSubtitle: 'Configure invoice numbering, fee types, payment methods, late fees, and billing rules for Preschool billing.',
+    sections: {
+      settings: {
+        eyebrow: 'Payment settings',
+        title: 'Payment Settings',
+        subtitle: 'Set numbering prefixes, late fee behavior, grace periods, and proration.',
+      },
+      feeTypes: {
+        eyebrow: 'Fee types',
+        title: 'Fee Types',
+        subtitle: 'Manage the fee catalog used by invoice creation.',
+      },
+      paymentMethods: {
+        eyebrow: 'Payment methods',
+        title: 'Payment Methods',
+        subtitle: 'Manage the payment channels available in receipts and payments.',
+      },
+      billingRules: {
+        eyebrow: 'Billing rules',
+        title: 'Billing Rules',
+        subtitle: 'Edit billing rule values without changing historical invoices.',
+      },
+    },
+    fields: {
+      invoicePrefix: 'Invoice Prefix',
+      receiptPrefix: 'Receipt Prefix',
+      nextInvoiceNumber: 'Next Invoice Number',
+      nextReceiptNumber: 'Next Receipt Number',
+      lateFeeEnabled: 'Late Fee Enabled',
+      lateFeeType: 'Late Fee Type',
+      lateFeeAmount: 'Late Fee Amount',
+      gracePeriodDays: 'Grace Period Days',
+      prorationEnabled: 'Proration Enabled',
+      name: 'Name',
+      code: 'Code',
+      description: 'Description',
+      defaultAmount: 'Default Amount',
+      required: 'Required',
+      active: 'Active',
+      sortOrder: 'Sort Order',
+      ruleName: 'Rule Name',
+      ruleValue: 'Rule Value',
+    },
+    lateFeeTypes: {
+      fixed: 'Fixed Amount',
+      percentage: 'Percentage',
+    },
+    table: {
+      name: 'Name',
+      code: 'Code',
+      defaultAmount: 'Default Amount',
+      required: 'Required',
+      status: 'Status',
+      actions: 'Actions',
+      ruleName: 'Rule Name',
+      ruleValue: 'Value',
+    },
+    emptyStates: {
+      feeTypes: 'No fee types configured yet.',
+      paymentMethods: 'No payment methods configured yet.',
+      billingRules: 'No billing rules configured yet.',
+    },
+    actions: {
+      saveSettings: 'Save Settings',
+      createFeeType: 'Create Fee Type',
+      createPaymentMethod: 'Create Payment Method',
+      edit: 'Edit',
+      archive: 'Archive',
+      saveRules: 'Save Rules',
+      save: 'Save',
+      update: 'Update',
+      cancel: 'Cancel',
+    },
+    dialogs: {
+      feeType: {
+        createTitle: 'Create Fee Type',
+        editTitle: 'Edit Fee Type',
+      },
+      paymentMethod: {
+        createTitle: 'Create Payment Method',
+        editTitle: 'Edit Payment Method',
+      },
+    },
+    messages: {
+      loadFailed: 'Unable to load payment configuration right now.',
+      saveFailed: 'Unable to save payment configuration.',
+      settingsSaved: 'Payment settings saved successfully.',
+      feeTypeCreated: 'Fee type created successfully.',
+      feeTypeUpdated: 'Fee type updated successfully.',
+      feeTypeArchived: 'Fee type archived successfully.',
+      paymentMethodCreated: 'Payment method created successfully.',
+      paymentMethodUpdated: 'Payment method updated successfully.',
+      paymentMethodArchived: 'Payment method archived successfully.',
+      billingRulesSaved: 'Billing rules saved successfully.',
+      validationFailed: 'Resolve the highlighted fields before saving.',
+    },
+    validation: {
+      required: 'This field is required.',
+    },
+  },
   preschoolSettingsPageHealth: {
     pageTitle: 'ការកំណត់ Preschool',
     pageSubtitle: 'គ្រប់គ្រងក្របខណ្ឌកំណត់សម្រាប់ផ្នែកសិក្សា វត្តមាន ទូទាត់ វាយតម្លៃ សុខភាព និងចំណូលចិត្ត។',

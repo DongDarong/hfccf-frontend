@@ -370,11 +370,24 @@ export function normalizePreschoolSettingsDashboard(payload = {}) {
   normalizedAttendance.isConfigured = normalizeDashboardSectionFlags(attendance, ['lateThresholdMinutes', 'absenceAlertDays', 'schoolDaysPerWeek', 'schoolWeekLabel', 'calendarEventsCount'])
 
   const normalizedPayments = normalizePreschoolSettingsDashboardSection(payments, {
-    currency: ['currency'],
+    feeTypesCount: ['feeTypesCount', 'fee_types_count'],
+    paymentMethodsCount: ['paymentMethodsCount', 'payment_methods_count'],
+    lateFeeEnabled: ['lateFeeEnabled', 'late_fee_enabled'],
+    gracePeriodDays: ['gracePeriodDays', 'grace_period_days'],
     invoicePrefix: ['invoicePrefix', 'invoice_prefix'],
     receiptPrefix: ['receiptPrefix', 'receipt_prefix'],
+    lateFeeType: ['lateFeeType', 'late_fee_type'],
+    lateFeeAmount: ['lateFeeAmount', 'late_fee_amount'],
+    prorationEnabled: ['prorationEnabled', 'proration_enabled'],
   })
-  normalizedPayments.isConfigured = normalizeDashboardSectionFlags(payments, ['currency', 'invoicePrefix', 'receiptPrefix'])
+  normalizedPayments.feeTypesCount = Number(payments.feeTypesCount ?? payments.fee_types_count ?? 0)
+  normalizedPayments.paymentMethodsCount = Number(payments.paymentMethodsCount ?? payments.payment_methods_count ?? 0)
+  normalizedPayments.lateFeeEnabled = Boolean(payments.lateFeeEnabled ?? payments.late_fee_enabled ?? false)
+  normalizedPayments.gracePeriodDays = Number(payments.gracePeriodDays ?? payments.grace_period_days ?? 0)
+  normalizedPayments.lateFeeType = normalizeText(payments.lateFeeType ?? payments.late_fee_type ?? '')
+  normalizedPayments.lateFeeAmount = Number(payments.lateFeeAmount ?? payments.late_fee_amount ?? 0)
+  normalizedPayments.prorationEnabled = Boolean(payments.prorationEnabled ?? payments.proration_enabled ?? false)
+  normalizedPayments.isConfigured = normalizeDashboardSectionFlags(payments, ['feeTypesCount', 'paymentMethodsCount', 'lateFeeEnabled', 'gracePeriodDays', 'invoicePrefix', 'receiptPrefix'])
 
   const normalizedAssessments = normalizePreschoolSettingsDashboardSection(assessments, {
     passingScore: ['passingScore', 'passing_score'],

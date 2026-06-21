@@ -53,7 +53,7 @@ describe('Preschool settings dashboard', () => {
     resolveDashboard({
       academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
       attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
-      payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
+      payments: { feeTypesCount: '', paymentMethodsCount: '', lateFeeEnabled: false, gracePeriodDays: '', invoicePrefix: '', receiptPrefix: '', lateFeeType: '', lateFeeAmount: '', prorationEnabled: false, isConfigured: false },
       assessments: { passingScore: '', weightingEnabled: false, gradeBandsCount: '', assessmentCategoriesCount: '', reportPeriodsCount: '', isConfigured: false },
       health: {
         criticalAlertEnabled: false,
@@ -76,7 +76,7 @@ describe('Preschool settings dashboard', () => {
     fetchPreschoolSettingsDashboard.mockResolvedValueOnce({
       academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
       attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
-      payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
+      payments: { feeTypesCount: '', paymentMethodsCount: '', lateFeeEnabled: false, gracePeriodDays: '', invoicePrefix: '', receiptPrefix: '', lateFeeType: '', lateFeeAmount: '', prorationEnabled: false, isConfigured: false },
       assessments: { passingScore: '', weightingEnabled: false, gradeBandsCount: '', assessmentCategoriesCount: '', reportPeriodsCount: '', isConfigured: false },
       health: {
         criticalAlertEnabled: false,
@@ -100,7 +100,11 @@ describe('Preschool settings dashboard', () => {
 
     expect(wrapper.find('[data-testid="settings-dashboard-empty"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('No Academic Year Configured')
-    expect(wrapper.text()).toContain('No Currency Configured')
+    expect(wrapper.text()).toContain('No Fee Types Configured')
+    expect(wrapper.text()).toContain('No Payment Methods Configured')
+    expect(wrapper.text()).toContain('No Grace Period Configured')
+    expect(wrapper.text()).toContain('No Invoice Prefix Configured')
+    expect(wrapper.text()).toContain('No Receipt Prefix Configured')
     expect(wrapper.text()).toContain('No Preschool settings have been configured yet.')
   })
 
@@ -108,7 +112,7 @@ describe('Preschool settings dashboard', () => {
     fetchPreschoolSettingsDashboard.mockResolvedValueOnce({
       academic: { activeAcademicYear: '2026 - 2027', activeAcademicYearDateRange: '2026-07-01 - 2027-06-30', activeTerm: 'Term 1', activeTermDateRange: '2026-07-01 - 2026-09-30', academicStatus: 'Active', isConfigured: true },
       attendance: { lateThresholdMinutes: 15, absenceAlertDays: 3, schoolWeekLabel: 'Mon-Fri', calendarEventsCount: 12, isConfigured: true },
-      payments: { currency: 'USD', invoicePrefix: 'INV', receiptPrefix: 'RCPT', isConfigured: true },
+      payments: { feeTypesCount: 6, paymentMethodsCount: 5, lateFeeEnabled: true, gracePeriodDays: 5, invoicePrefix: 'INV', receiptPrefix: 'RCT', lateFeeType: 'fixed', lateFeeAmount: 5, prorationEnabled: false, isConfigured: true },
       assessments: { passingScore: 60, weightingEnabled: true, gradeBandsCount: 5, assessmentCategoriesCount: 6, reportPeriodsCount: 4, isConfigured: true },
       health: {
         criticalAlertEnabled: true,
@@ -137,6 +141,12 @@ describe('Preschool settings dashboard', () => {
     expect(wrapper.text()).toContain('6')
     expect(wrapper.text()).toContain('4')
     expect(wrapper.text()).toContain('3')
+    expect(wrapper.text()).toContain('Fee Types')
+    expect(wrapper.text()).toContain('Payment Methods')
+    expect(wrapper.text()).toContain('Grace Period')
+    expect(wrapper.text()).toContain('Late Fee')
+    expect(wrapper.text()).toContain('INV')
+    expect(wrapper.text()).toContain('RCT')
     expect(wrapper.text()).toContain('Mon-Fri')
     expect(wrapper.text()).toContain('12')
     expect(wrapper.text()).toContain('Critical Alerts')

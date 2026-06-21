@@ -235,8 +235,7 @@ export const preschoolRoutes = [
     path: '/preschool/settings/payments',
     alias: '/module/preschool-admin/settings/payments',
     name: 'dashboard-preschool-admin-settings-payments',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
-    props: { sectionKey: 'payments' },
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolPaymentSettingsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

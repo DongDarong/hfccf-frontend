@@ -93,8 +93,20 @@ const sectionDefinitions = computed(() => [
     actionLabel: t('preschoolSettingsPage.dashboard.sections.payments.action'),
     fields: [
       {
-        label: t('preschoolSettingsPage.dashboard.fields.currency'),
-        value: formatValue(dashboard.value.payments?.currency, t('preschoolSettingsPage.dashboard.emptyStates.currency')),
+        label: t('preschoolSettingsPage.dashboard.fields.feeTypesCount'),
+        value: formatValue(dashboard.value.payments?.feeTypesCount, t('preschoolSettingsPage.dashboard.emptyStates.feeTypesCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.paymentMethodsCount'),
+        value: formatValue(dashboard.value.payments?.paymentMethodsCount, t('preschoolSettingsPage.dashboard.emptyStates.paymentMethodsCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.gracePeriodDays'),
+        value: formatValue(dashboard.value.payments?.gracePeriodDays, t('preschoolSettingsPage.dashboard.emptyStates.gracePeriodDays')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.lateFeeStatus'),
+        value: dashboard.value.payments?.lateFeeEnabled ? t('common.enabled') : t('common.disabled'),
       },
       {
         label: t('preschoolSettingsPage.dashboard.fields.invoicePrefix'),
@@ -234,9 +246,15 @@ function createEmptyDashboard() {
       isConfigured: false,
     },
     payments: {
-      currency: '',
+      feeTypesCount: '',
+      paymentMethodsCount: '',
+      lateFeeEnabled: false,
+      gracePeriodDays: '',
       invoicePrefix: '',
       receiptPrefix: '',
+      lateFeeType: '',
+      lateFeeAmount: '',
+      prorationEnabled: false,
       isConfigured: false,
     },
     assessments: {
