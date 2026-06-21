@@ -86,6 +86,29 @@ describe('Preschool settings dashboard', () => {
     expect(wrapper.text()).toContain('No Preschool settings have been configured yet.')
   })
 
+  it('renders the live attendance summary fields from the dashboard payload', async () => {
+    fetchPreschoolSettingsDashboard.mockResolvedValueOnce({
+      academic: { activeAcademicYear: '2026 - 2027', activeAcademicYearDateRange: '2026-07-01 - 2027-06-30', activeTerm: 'Term 1', activeTermDateRange: '2026-07-01 - 2026-09-30', academicStatus: 'Active', isConfigured: true },
+      attendance: { lateThresholdMinutes: 15, absenceAlertDays: 3, schoolWeekLabel: 'Mon-Fri', calendarEventsCount: 12, isConfigured: true },
+      payments: { currency: 'USD', invoicePrefix: 'INV', receiptPrefix: 'RCPT', isConfigured: true },
+      assessments: { activeGradingScale: 'A-E', assessmentCategories: ['social'], isConfigured: true },
+      health: { alertSeverityLevels: ['low'], healthCategories: ['routine'], isConfigured: true },
+      preferences: { organizationName: 'HFCCF', language: 'English', brandingStatus: 'Ready', isConfigured: true },
+    })
+
+    const wrapper = mountWithPlugins(PreschoolSettingsDashboard, {
+      messages: { en: enPreschool },
+      global: { stubs: stubs() },
+    })
+
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('15')
+    expect(wrapper.text()).toContain('3')
+    expect(wrapper.text()).toContain('Mon-Fri')
+    expect(wrapper.text()).toContain('12')
+  })
+
   it('keeps the settings dashboard route admin-only', () => {
     const dashboardRoute = preschoolRoutes.find((route) => route.name === 'dashboard-preschool-admin-settings')
 

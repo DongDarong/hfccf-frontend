@@ -516,5 +516,4 @@ export default {
       range: 'The end date must be after the start date.',
       outsideYear: 'The term dates must stay inside the selected academic year.',
     },
-  },
-}
+  }

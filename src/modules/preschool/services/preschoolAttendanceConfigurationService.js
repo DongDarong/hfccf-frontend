@@ -6,6 +6,7 @@ import {
   fetchAttendanceSettings,
   fetchCalendarEvents,
   normalizeAttendanceSettings,
+  normalizeAttendanceSummary,
   normalizeCalendarEvent,
   updateAttendanceSettings,
   updateCalendarEvent,
@@ -113,6 +114,7 @@ export function getAbsenceAlertDays() {
 
 export function getSchoolWeekConfiguration() {
   const settings = attendanceSettingsSnapshot.value
+  const schoolDaysPerWeek = countEnabledDays(settings)
   return {
     mondayEnabled: Boolean(settings.mondayEnabled),
     tuesdayEnabled: Boolean(settings.tuesdayEnabled),
@@ -121,9 +123,25 @@ export function getSchoolWeekConfiguration() {
     fridayEnabled: Boolean(settings.fridayEnabled),
     saturdayEnabled: Boolean(settings.saturdayEnabled),
     sundayEnabled: Boolean(settings.sundayEnabled),
-    schoolDaysPerWeek: countEnabledDays(settings),
-    label: buildSchoolWeekLabel(countEnabledDays(settings)),
+    schoolDaysPerWeek,
+    label: buildSchoolWeekLabel(schoolDaysPerWeek),
   }
+}
+
+export function getAttendanceSummary() {
+  const settings = attendanceSettingsSnapshot.value
+  const schoolWeek = getSchoolWeekConfiguration()
+
+  return normalizeAttendanceSummary({
+    attendance: {
+      lateThresholdMinutes: settings.lateThresholdMinutes,
+      halfDayThresholdMinutes: settings.halfDayThresholdMinutes,
+      absenceAlertDays: settings.absenceAlertDays,
+      schoolDaysPerWeek: schoolWeek.schoolDaysPerWeek,
+      schoolWeekLabel: schoolWeek.label,
+      calendarEventsCount: getCalendarEventsCount(),
+    },
+  })
 }
 
 export function isHoliday(date) {
@@ -216,4 +234,3 @@ export async function archiveCalendarEventDraft(eventOrId) {
 export function serializeAttendanceSettings(settings = attendanceSettingsSnapshot.value) {
   return buildAttendanceSettingsPayload(settings)
 }
-

@@ -28,12 +28,12 @@ function resolveId(input) {
 export function buildSchoolWeekLabel(schoolDaysPerWeek) {
   const count = normalizeNumber(schoolDaysPerWeek, 0)
 
-  if (count >= 7) return 'Mon–Sun'
-  if (count === 6) return 'Mon–Sat'
-  if (count === 5) return 'Mon–Fri'
-  if (count === 4) return 'Mon–Thu'
-  if (count === 3) return 'Mon–Wed'
-  if (count === 2) return 'Mon–Tue'
+  if (count >= 7) return 'Mon-Sun'
+  if (count === 6) return 'Mon-Sat'
+  if (count === 5) return 'Mon-Fri'
+  if (count === 4) return 'Mon-Thu'
+  if (count === 3) return 'Mon-Wed'
+  if (count === 2) return 'Mon-Tue'
   if (count === 1) return 'Mon'
 
   return ''
@@ -83,6 +83,19 @@ export function normalizeAttendanceSettings(record = {}) {
   return normalized
 }
 
+export function normalizeAttendanceSummary(record = {}) {
+  const source = record.attendance || record.summary || record
+
+  return {
+    lateThresholdMinutes: normalizeNumber(source.lateThresholdMinutes ?? source.late_threshold_minutes, 15),
+    halfDayThresholdMinutes: normalizeNumber(source.halfDayThresholdMinutes ?? source.half_day_threshold_minutes, 180),
+    absenceAlertDays: normalizeNumber(source.absenceAlertDays ?? source.absence_alert_days, 3),
+    schoolDaysPerWeek: normalizeNumber(source.schoolDaysPerWeek ?? source.school_days_per_week, 5),
+    calendarEventsCount: normalizeNumber(source.calendarEventsCount ?? source.calendar_events_count, 0),
+    schoolWeekLabel: normalizeText(source.schoolWeekLabel ?? source.school_week_label) || buildSchoolWeekLabel(source.schoolDaysPerWeek ?? source.school_days_per_week),
+  }
+}
+
 export function normalizeCalendarEvent(record = {}) {
   return {
     id: record.id ?? '',
@@ -122,7 +135,7 @@ export function normalizeAttendanceConfigurationResponse(payload = {}) {
   return {
     settings,
     calendarEvents: events,
-    summary: payload.summary || {},
+    summary: normalizeAttendanceSummary(payload.summary || payload),
   }
 }
 

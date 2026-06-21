@@ -302,8 +302,8 @@ onMounted(loadPage)
           <div class="grid gap-4 md:grid-cols-3">
             <label class="field">
               <span>{{ t('preschoolAttendanceSettingsPage.fields.lateThresholdMinutes') }}</span>
-              <input
-                v-model="settingsDraft.lateThresholdMinutes"
+                <input
+                v-model.number="settingsDraft.lateThresholdMinutes"
                 type="number"
                 min="0"
               >
@@ -314,8 +314,8 @@ onMounted(loadPage)
 
             <label class="field">
               <span>{{ t('preschoolAttendanceSettingsPage.fields.halfDayThresholdMinutes') }}</span>
-              <input
-                v-model="settingsDraft.halfDayThresholdMinutes"
+                <input
+                v-model.number="settingsDraft.halfDayThresholdMinutes"
                 type="number"
                 min="0"
               >
@@ -326,8 +326,8 @@ onMounted(loadPage)
 
             <label class="field">
               <span>{{ t('preschoolAttendanceSettingsPage.fields.absenceAlertDays') }}</span>
-              <input
-                v-model="settingsDraft.absenceAlertDays"
+                <input
+                v-model.number="settingsDraft.absenceAlertDays"
                 type="number"
                 min="1"
               >

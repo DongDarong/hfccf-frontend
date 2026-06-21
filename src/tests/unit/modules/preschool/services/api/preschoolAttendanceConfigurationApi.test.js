@@ -7,6 +7,7 @@ import {
   fetchAttendanceSettings,
   fetchCalendarEvents,
   normalizeAttendanceSettings,
+  normalizeAttendanceSummary,
   updateAttendanceSettings,
   updateCalendarEvent,
 } from '@/modules/preschool/services/api/preschoolAttendanceConfigurationApi'
@@ -46,7 +47,11 @@ describe('preschool attendance configuration api', () => {
     expect(settings.halfDayThresholdMinutes).toBe(180)
     expect(settings.absenceAlertDays).toBe(3)
     expect(settings.schoolDaysPerWeek).toBe(5)
-    expect(buildSchoolWeekLabel(settings.schoolDaysPerWeek)).toBe('Mon–Fri')
+    expect(buildSchoolWeekLabel(settings.schoolDaysPerWeek)).toBe('Mon-Fri')
+    expect(normalizeAttendanceSummary({ attendance: { calendar_events_count: 12, school_days_per_week: 5 } })).toMatchObject({
+      calendarEventsCount: 12,
+      schoolWeekLabel: 'Mon-Fri',
+    })
   })
 
   it('fetches and updates attendance settings with normalized payloads', async () => {

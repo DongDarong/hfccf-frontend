@@ -1,5 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
 import PreschoolAttendanceSettingsPage from '@/modules/preschool/admin/pages/settings/PreschoolAttendanceSettingsPage.vue'
@@ -8,11 +8,11 @@ import {
   createDefaultAttendanceSettings,
   createEmptyCalendarEventDraft,
   getCalendarEventsCount,
+  getAttendanceConfigurationSnapshot,
   getSchoolWeekConfiguration,
   loadAttendanceConfiguration,
   saveAttendanceSettings,
   saveCalendarEventDraft,
-  setAttendanceConfigurationSnapshot,
 } from '@/modules/preschool/services/preschoolAttendanceConfigurationService'
 
 vi.mock('@/modules/preschool/services/preschoolAttendanceConfigurationService', () => ({
@@ -25,14 +25,13 @@ vi.mock('@/modules/preschool/services/preschoolAttendanceConfigurationService', 
   loadAttendanceConfiguration: vi.fn(),
   saveAttendanceSettings: vi.fn(),
   saveCalendarEventDraft: vi.fn(),
-  setAttendanceConfigurationSnapshot: vi.fn(),
 }))
 
 function stubs() {
   return {
     MainLayout: { template: '<div><slot /></div>' },
     HeaderSection: { props: ['title', 'subtitle'], template: '<header><h1>{{ title }}</h1><p>{{ subtitle }}</p></header>' },
-    PreschoolSettingsSectionCard: { template: '<section><slot /></section>' },
+    PreschoolSettingsSectionCard: { props: ['eyebrow', 'title', 'subtitle'], template: '<section><h2>{{ title }}</h2><p>{{ subtitle }}</p><slot /></section>' },
     Button: { props: ['label'], emits: ['click'], template: '<button @click="$emit(\'click\')">{{ label }}<slot /></button>' },
   }
 }
@@ -77,10 +76,25 @@ beforeEach(() => {
     saturdayEnabled: false,
     sundayEnabled: false,
     schoolDaysPerWeek: 5,
-    label: 'Mon–Fri',
+    label: 'Mon-Fri',
   })
 
   getCalendarEventsCount.mockReturnValue(1)
+  getAttendanceConfigurationSnapshot.mockReturnValue({
+    settings: createDefaultAttendanceSettings(),
+    calendarEvents: [
+      {
+        id: 1,
+        academicYearId: 5,
+        title: 'National Holiday',
+        description: 'School closed',
+        type: 'holiday',
+        startDate: '2026-01-01',
+        endDate: '2026-01-01',
+        status: 'active',
+      },
+    ],
+  })
 
   loadAttendanceConfiguration.mockResolvedValue({
     settings: createDefaultAttendanceSettings(),
@@ -132,9 +146,7 @@ describe('PreschoolAttendanceSettingsPage', () => {
 
     expect(wrapper.text()).toContain('Attendance Configuration')
     expect(wrapper.text()).toContain('Attendance Threshold Rules')
-    expect(wrapper.text()).toContain('15')
-    expect(wrapper.text()).toContain('3')
-    expect(wrapper.text()).toContain('Mon–Fri')
+    expect(wrapper.text()).toContain('Mon-Fri')
     expect(wrapper.text()).toContain('National Holiday')
   })
 
@@ -146,16 +158,18 @@ describe('PreschoolAttendanceSettingsPage', () => {
 
     await flushPromises()
 
-    await wrapper.find('input[type="number"]').setValue('20')
     const numberInputs = wrapper.findAll('input[type="number"]')
+    await numberInputs[0].setValue('20')
+    await numberInputs[1].setValue('200')
     await numberInputs[2].setValue('4')
 
     const saveButton = wrapper.findAll('button').find((button) => button.text().includes('Save Settings'))
     await saveButton.trigger('click')
 
     expect(saveAttendanceSettings).toHaveBeenCalledWith(expect.objectContaining({
-      lateThresholdMinutes: '20',
-      absenceAlertDays: '4',
+      lateThresholdMinutes: 20,
+      halfDayThresholdMinutes: 200,
+      absenceAlertDays: 4,
     }))
   })
 
