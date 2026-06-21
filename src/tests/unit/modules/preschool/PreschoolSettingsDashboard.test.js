@@ -55,7 +55,16 @@ describe('Preschool settings dashboard', () => {
       attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
       assessments: { passingScore: '', weightingEnabled: false, gradeBandsCount: '', assessmentCategoriesCount: '', reportPeriodsCount: '', isConfigured: false },
-      health: { alertSeverityLevels: [], healthCategories: [], isConfigured: false },
+      health: {
+        criticalAlertEnabled: false,
+        severityLevelsCount: '',
+        incidentCategoriesCount: '',
+        vaccinationCategoriesCount: '',
+        healthCheckCategoriesCount: '',
+        medicationReminderEnabled: false,
+        vaccinationReminderEnabled: false,
+        isConfigured: false,
+      },
       preferences: { organizationName: '', language: '', brandingStatus: '', isConfigured: false },
     })
 
@@ -69,7 +78,16 @@ describe('Preschool settings dashboard', () => {
       attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
       assessments: { passingScore: '', weightingEnabled: false, gradeBandsCount: '', assessmentCategoriesCount: '', reportPeriodsCount: '', isConfigured: false },
-      health: { alertSeverityLevels: [], healthCategories: [], isConfigured: false },
+      health: {
+        criticalAlertEnabled: false,
+        severityLevelsCount: '',
+        incidentCategoriesCount: '',
+        vaccinationCategoriesCount: '',
+        healthCheckCategoriesCount: '',
+        medicationReminderEnabled: false,
+        vaccinationReminderEnabled: false,
+        isConfigured: false,
+      },
       preferences: { organizationName: '', language: '', brandingStatus: '', isConfigured: false },
     })
 
@@ -92,7 +110,16 @@ describe('Preschool settings dashboard', () => {
       attendance: { lateThresholdMinutes: 15, absenceAlertDays: 3, schoolWeekLabel: 'Mon-Fri', calendarEventsCount: 12, isConfigured: true },
       payments: { currency: 'USD', invoicePrefix: 'INV', receiptPrefix: 'RCPT', isConfigured: true },
       assessments: { passingScore: 60, weightingEnabled: true, gradeBandsCount: 5, assessmentCategoriesCount: 6, reportPeriodsCount: 4, isConfigured: true },
-      health: { alertSeverityLevels: ['low'], healthCategories: ['routine'], isConfigured: true },
+      health: {
+        criticalAlertEnabled: true,
+        severityLevelsCount: 4,
+        incidentCategoriesCount: 6,
+        vaccinationCategoriesCount: 5,
+        healthCheckCategoriesCount: 2,
+        medicationReminderEnabled: true,
+        vaccinationReminderEnabled: false,
+        isConfigured: true,
+      },
       preferences: { organizationName: 'HFCCF', language: 'English', brandingStatus: 'Ready', isConfigured: true },
     })
 
@@ -112,6 +139,12 @@ describe('Preschool settings dashboard', () => {
     expect(wrapper.text()).toContain('3')
     expect(wrapper.text()).toContain('Mon-Fri')
     expect(wrapper.text()).toContain('12')
+    expect(wrapper.text()).toContain('Critical Alerts')
+    expect(wrapper.text()).toContain('Severity Levels')
+    expect(wrapper.text()).toContain('Incident Categories')
+    expect(wrapper.text()).toContain('Vaccination Categories')
+    expect(wrapper.text()).toContain('Health Check Categories')
+    expect(wrapper.text()).toContain('Reminder Status')
   })
 
   it('keeps the settings dashboard route admin-only', () => {

@@ -413,12 +413,68 @@ export function normalizePreschoolSettingsDashboard(payload = {}) {
   normalizedAssessments.isConfigured = normalizeDashboardSectionFlags(assessments, ['passingScore', 'weightingEnabled', 'gradeBandsCount', 'assessmentCategoriesCount', 'reportPeriodsCount'])
 
   const normalizedHealth = normalizePreschoolSettingsDashboardSection(health, {
-    alertSeverityLevels: ['alertSeverityLevels', 'alert_severity_levels'],
-    healthCategories: ['healthCategories', 'health_categories'],
+    criticalAlertEnabled: ['criticalAlertEnabled', 'critical_alert_enabled'],
+    severityLevelsCount: ['severityLevelsCount', 'severity_levels_count'],
+    incidentCategoriesCount: ['incidentCategoriesCount', 'incident_categories_count'],
+    vaccinationCategoriesCount: ['vaccinationCategoriesCount', 'vaccination_categories_count'],
+    healthCheckCategoriesCount: ['healthCheckCategoriesCount', 'health_check_categories_count'],
+    medicationReminderEnabled: ['medicationReminderEnabled', 'medication_reminder_enabled'],
+    vaccinationReminderEnabled: ['vaccinationReminderEnabled', 'vaccination_reminder_enabled'],
   })
-  normalizedHealth.alertSeverityLevels = normalizeTextList(health.alertSeverityLevels || health.alert_severity_levels || [])
+  normalizedHealth.criticalAlertEnabled = Boolean(
+    health.criticalAlertEnabled
+    ?? health.critical_alert_enabled
+    ?? false,
+  )
+  normalizedHealth.severityLevelsCount = Number(
+    health.severityLevelsCount
+    ?? health.severity_levels_count
+    ?? (Array.isArray(health.severityLevels) ? health.severityLevels.length : 0)
+    ?? (Array.isArray(health.severity_levels) ? health.severity_levels.length : 0)
+    ?? 0,
+  )
+  normalizedHealth.incidentCategoriesCount = Number(
+    health.incidentCategoriesCount
+    ?? health.incident_categories_count
+    ?? (Array.isArray(health.incidentCategories) ? health.incidentCategories.length : 0)
+    ?? (Array.isArray(health.incident_categories) ? health.incident_categories.length : 0)
+    ?? 0,
+  )
+  normalizedHealth.vaccinationCategoriesCount = Number(
+    health.vaccinationCategoriesCount
+    ?? health.vaccination_categories_count
+    ?? (Array.isArray(health.vaccinationCategories) ? health.vaccinationCategories.length : 0)
+    ?? (Array.isArray(health.vaccination_categories) ? health.vaccination_categories.length : 0)
+    ?? 0,
+  )
+  normalizedHealth.healthCheckCategoriesCount = Number(
+    health.healthCheckCategoriesCount
+    ?? health.health_check_categories_count
+    ?? (Array.isArray(health.healthCheckCategories) ? health.healthCheckCategories.length : 0)
+    ?? (Array.isArray(health.health_check_categories) ? health.health_check_categories.length : 0)
+    ?? 0,
+  )
+  normalizedHealth.medicationReminderEnabled = Boolean(
+    health.medicationReminderEnabled
+    ?? health.medication_reminder_enabled
+    ?? false,
+  )
+  normalizedHealth.vaccinationReminderEnabled = Boolean(
+    health.vaccinationReminderEnabled
+    ?? health.vaccination_reminder_enabled
+    ?? false,
+  )
+  normalizedHealth.alertSeverityLevels = normalizeTextList(health.alertSeverityLevels || health.alert_severity_levels || health.severityLevels || health.severity_levels || [])
   normalizedHealth.healthCategories = normalizeTextList(health.healthCategories || health.health_categories || [])
-  normalizedHealth.isConfigured = normalizeDashboardSectionFlags(health, ['alertSeverityLevels', 'healthCategories'])
+  normalizedHealth.isConfigured = normalizeDashboardSectionFlags(health, [
+    'criticalAlertEnabled',
+    'severityLevelsCount',
+    'incidentCategoriesCount',
+    'vaccinationCategoriesCount',
+    'healthCheckCategoriesCount',
+    'medicationReminderEnabled',
+    'vaccinationReminderEnabled',
+  ])
 
   const normalizedPreferences = normalizePreschoolSettingsDashboardSection(preferences, {
     organizationName: ['organizationName', 'organization_name'],

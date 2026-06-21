@@ -256,8 +256,7 @@ export const preschoolRoutes = [
     path: '/preschool/settings/health',
     alias: '/module/preschool-admin/settings/health',
     name: 'dashboard-preschool-admin-settings-health',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
-    props: { sectionKey: 'health' },
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolHealthSettingsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

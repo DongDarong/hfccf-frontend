@@ -153,12 +153,28 @@ const sectionDefinitions = computed(() => [
     actionLabel: t('preschoolSettingsPage.dashboard.sections.health.action'),
     fields: [
       {
-        label: t('preschoolSettingsPage.dashboard.fields.alertSeverityLevels'),
-        value: formatValue(dashboard.value.health?.alertSeverityLevels, t('preschoolSettingsPage.dashboard.emptyStates.alertSeverityLevels')),
+        label: t('preschoolSettingsPage.dashboard.fields.criticalAlertsEnabled'),
+        value: dashboard.value.health?.criticalAlertEnabled ? t('common.enabled') : t('common.disabled'),
       },
       {
-        label: t('preschoolSettingsPage.dashboard.fields.healthCategories'),
-        value: formatValue(dashboard.value.health?.healthCategories, t('preschoolSettingsPage.dashboard.emptyStates.healthCategories')),
+        label: t('preschoolSettingsPage.dashboard.fields.severityLevelsCount'),
+        value: formatValue(dashboard.value.health?.severityLevelsCount, t('preschoolSettingsPage.dashboard.emptyStates.severityLevelsCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.incidentCategoriesCount'),
+        value: formatValue(dashboard.value.health?.incidentCategoriesCount, t('preschoolSettingsPage.dashboard.emptyStates.incidentCategoriesCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.vaccinationCategoriesCount'),
+        value: formatValue(dashboard.value.health?.vaccinationCategoriesCount, t('preschoolSettingsPage.dashboard.emptyStates.vaccinationCategoriesCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.healthCheckCategoriesCount'),
+        value: formatValue(dashboard.value.health?.healthCheckCategoriesCount, t('preschoolSettingsPage.dashboard.emptyStates.healthCheckCategoriesCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.reminderStatus'),
+        value: formatReminderStatus(dashboard.value.health),
       },
     ],
     status: dashboard.value.health?.isConfigured
@@ -232,8 +248,13 @@ function createEmptyDashboard() {
       isConfigured: false,
     },
     health: {
-      alertSeverityLevels: [],
-      healthCategories: [],
+      criticalAlertEnabled: false,
+      severityLevelsCount: '',
+      incidentCategoriesCount: '',
+      vaccinationCategoriesCount: '',
+      healthCheckCategoriesCount: '',
+      medicationReminderEnabled: false,
+      vaccinationReminderEnabled: false,
       isConfigured: false,
     },
     preferences: {
@@ -260,6 +281,12 @@ function formatValue(value, emptyLabel) {
 
   const text = String(value).trim()
   return text !== '' ? text : emptyLabel
+}
+
+function formatReminderStatus(health = {}) {
+  const medication = health.medicationReminderEnabled ? t('common.enabled') : t('common.disabled')
+  const vaccination = health.vaccinationReminderEnabled ? t('common.enabled') : t('common.disabled')
+  return `${t('preschoolSettingsPage.dashboard.fields.medicationReminders')}: ${medication} · ${t('preschoolSettingsPage.dashboard.fields.vaccinationReminders')}: ${vaccination}`
 }
 
 async function loadDashboard() {
