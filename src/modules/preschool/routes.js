@@ -265,8 +265,7 @@ export const preschoolRoutes = [
     path: '/preschool/settings/preferences',
     alias: '/module/preschool-admin/settings/preferences',
     name: 'dashboard-preschool-admin-settings-preferences',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
-    props: { sectionKey: 'preferences' },
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolPreferencesSettingsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

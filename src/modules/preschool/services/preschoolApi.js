@@ -341,6 +341,10 @@ function normalizePreschoolSettingsDashboardSection(section = {}, fieldMap = {})
   return normalized
 }
 
+function formatBooleanStatus(value) {
+  return value ? 'On' : 'Off'
+}
+
 export function normalizePreschoolSettingsDashboard(payload = {}) {
   const academic = payload.academic || {}
   const attendance = payload.attendance || {}
@@ -490,11 +494,58 @@ export function normalizePreschoolSettingsDashboard(payload = {}) {
   ])
 
   const normalizedPreferences = normalizePreschoolSettingsDashboardSection(preferences, {
-    organizationName: ['organizationName', 'organization_name'],
-    language: ['language'],
-    brandingStatus: ['brandingStatus', 'branding_status'],
+    timezone: ['timezone'],
+    defaultLanguage: ['defaultLanguage', 'default_language'],
+    dateFormat: ['dateFormat', 'date_format'],
+    timeFormat: ['timeFormat', 'time_format'],
+    minimumEnrollmentAgeMonths: ['minimumEnrollmentAgeMonths', 'minimum_enrollment_age_months'],
+    maximumEnrollmentAgeMonths: ['maximumEnrollmentAgeMonths', 'maximum_enrollment_age_months'],
+    autoApproveEnrollment: ['autoApproveEnrollment', 'auto_approve_enrollment'],
+    studentCodePrefix: ['studentCodePrefix', 'student_code_prefix'],
+    studentCodeYearFormat: ['studentCodeYearFormat', 'student_code_year_format'],
+    studentCodeSequenceLength: ['studentCodeSequenceLength', 'student_code_sequence_length'],
+    studentCodePreview: ['studentCodePreview', 'student_code_preview'],
+    defaultClassCapacity: ['defaultClassCapacity', 'default_class_capacity'],
+    teacherStudentRatio: ['teacherStudentRatio', 'teacher_student_ratio'],
+    waitlistEnabled: ['waitlistEnabled', 'waitlist_enabled'],
+    minimumGuardians: ['minimumGuardians', 'minimum_guardians'],
+    maximumGuardians: ['maximumGuardians', 'maximum_guardians'],
+    primaryGuardianRequired: ['primaryGuardianRequired', 'primary_guardian_required'],
+    pickupAuthorizationRequired: ['pickupAuthorizationRequired', 'pickup_authorization_required'],
+    attendanceAlertEnabled: ['attendanceAlertEnabled', 'attendance_alert_enabled'],
+    assessmentAlertEnabled: ['assessmentAlertEnabled', 'assessment_alert_enabled'],
+    healthAlertEnabled: ['healthAlertEnabled', 'health_alert_enabled'],
+    enrollmentNotificationEnabled: ['enrollmentNotificationEnabled', 'enrollment_notification_enabled'],
+    enrollmentRulesLabel: ['enrollmentRulesLabel', 'enrollment_rules_label'],
+    studentCodeFormatLabel: ['studentCodeFormatLabel', 'student_code_format_label'],
+    classCapacityLabel: ['classCapacityLabel', 'class_capacity_label'],
+    guardianRulesLabel: ['guardianRulesLabel', 'guardian_rules_label'],
+    communicationRulesLabel: ['communicationRulesLabel', 'communication_rules_label'],
   })
-  normalizedPreferences.isConfigured = normalizeDashboardSectionFlags(preferences, ['organizationName', 'language', 'brandingStatus'])
+  normalizedPreferences.minimumEnrollmentAgeMonths = Number(preferences.minimumEnrollmentAgeMonths ?? preferences.minimum_enrollment_age_months ?? 24)
+  normalizedPreferences.maximumEnrollmentAgeMonths = Number(preferences.maximumEnrollmentAgeMonths ?? preferences.maximum_enrollment_age_months ?? 60)
+  normalizedPreferences.autoApproveEnrollment = Boolean(preferences.autoApproveEnrollment ?? preferences.auto_approve_enrollment ?? false)
+  normalizedPreferences.studentCodePrefix = normalizeText(preferences.studentCodePrefix ?? preferences.student_code_prefix ?? 'PS')
+  normalizedPreferences.studentCodeYearFormat = normalizeText(preferences.studentCodeYearFormat ?? preferences.student_code_year_format ?? 'YYYY')
+  normalizedPreferences.studentCodeSequenceLength = Number(preferences.studentCodeSequenceLength ?? preferences.student_code_sequence_length ?? 4)
+  normalizedPreferences.studentCodePreview = normalizeText(preferences.studentCodePreview ?? preferences.student_code_preview ?? '')
+  normalizedPreferences.defaultClassCapacity = Number(preferences.defaultClassCapacity ?? preferences.default_class_capacity ?? 18)
+  normalizedPreferences.teacherStudentRatio = Number(preferences.teacherStudentRatio ?? preferences.teacher_student_ratio ?? 10)
+  normalizedPreferences.waitlistEnabled = Boolean(preferences.waitlistEnabled ?? preferences.waitlist_enabled ?? true)
+  normalizedPreferences.minimumGuardians = Number(preferences.minimumGuardians ?? preferences.minimum_guardians ?? 1)
+  normalizedPreferences.maximumGuardians = Number(preferences.maximumGuardians ?? preferences.maximum_guardians ?? 2)
+  normalizedPreferences.primaryGuardianRequired = Boolean(preferences.primaryGuardianRequired ?? preferences.primary_guardian_required ?? true)
+  normalizedPreferences.pickupAuthorizationRequired = Boolean(preferences.pickupAuthorizationRequired ?? preferences.pickup_authorization_required ?? true)
+  normalizedPreferences.attendanceAlertEnabled = Boolean(preferences.attendanceAlertEnabled ?? preferences.attendance_alert_enabled ?? true)
+  normalizedPreferences.assessmentAlertEnabled = Boolean(preferences.assessmentAlertEnabled ?? preferences.assessment_alert_enabled ?? true)
+  normalizedPreferences.healthAlertEnabled = Boolean(preferences.healthAlertEnabled ?? preferences.health_alert_enabled ?? true)
+  normalizedPreferences.enrollmentNotificationEnabled = Boolean(preferences.enrollmentNotificationEnabled ?? preferences.enrollment_notification_enabled ?? true)
+  normalizedPreferences.enrollmentRulesLabel = normalizeText(preferences.enrollmentRulesLabel ?? preferences.enrollment_rules_label ?? `${normalizedPreferences.minimumEnrollmentAgeMonths}-${normalizedPreferences.maximumEnrollmentAgeMonths} months • Auto-approve: ${formatBooleanStatus(normalizedPreferences.autoApproveEnrollment)}`)
+  normalizedPreferences.studentCodeFormatLabel = normalizeText(preferences.studentCodeFormatLabel ?? preferences.student_code_format_label ?? `${normalizedPreferences.studentCodePrefix}-${normalizedPreferences.studentCodeYearFormat}-${String(1).padStart(normalizedPreferences.studentCodeSequenceLength || 4, '0')}`)
+  normalizedPreferences.classCapacityLabel = normalizeText(preferences.classCapacityLabel ?? preferences.class_capacity_label ?? `${normalizedPreferences.defaultClassCapacity} students • 1:${normalizedPreferences.teacherStudentRatio} ratio • ${normalizedPreferences.waitlistEnabled ? 'Waitlist enabled' : 'Waitlist disabled'}`)
+  normalizedPreferences.guardianRulesLabel = normalizeText(preferences.guardianRulesLabel ?? preferences.guardian_rules_label ?? `Min ${normalizedPreferences.minimumGuardians} • Max ${normalizedPreferences.maximumGuardians}`)
+  normalizedPreferences.communicationRulesLabel = normalizeText(preferences.communicationRulesLabel ?? preferences.communication_rules_label ?? `Attendance: ${formatBooleanStatus(normalizedPreferences.attendanceAlertEnabled)} • Assessment: ${formatBooleanStatus(normalizedPreferences.assessmentAlertEnabled)} • Health: ${formatBooleanStatus(normalizedPreferences.healthAlertEnabled)} • Enrollment: ${formatBooleanStatus(normalizedPreferences.enrollmentNotificationEnabled)}`)
+  normalizedPreferences.isConfigured = normalizeDashboardSectionFlags(preferences, ['timezone', 'defaultLanguage', 'minimumEnrollmentAgeMonths', 'studentCodePrefix', 'defaultClassCapacity', 'minimumGuardians', 'attendanceAlertEnabled'])
 
   return {
     academic: normalizedAcademic,

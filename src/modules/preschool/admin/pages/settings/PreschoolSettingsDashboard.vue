@@ -203,16 +203,24 @@ const sectionDefinitions = computed(() => [
     actionLabel: t('preschoolSettingsPage.dashboard.sections.preferences.action'),
     fields: [
       {
-        label: t('preschoolSettingsPage.dashboard.fields.organizationName'),
-        value: formatValue(dashboard.value.preferences?.organizationName, t('preschoolSettingsPage.dashboard.emptyStates.organizationName')),
+        label: t('preschoolSettingsPage.dashboard.fields.enrollmentRules'),
+        value: formatValue(dashboard.value.preferences?.enrollmentRulesLabel, t('preschoolSettingsPage.dashboard.emptyStates.enrollmentRules')),
       },
       {
-        label: t('preschoolSettingsPage.dashboard.fields.language'),
-        value: formatValue(dashboard.value.preferences?.language, t('preschoolSettingsPage.dashboard.emptyStates.language')),
+        label: t('preschoolSettingsPage.dashboard.fields.studentCodeFormat'),
+        value: formatValue(dashboard.value.preferences?.studentCodeFormatLabel, t('preschoolSettingsPage.dashboard.emptyStates.studentCodeFormat')),
       },
       {
-        label: t('preschoolSettingsPage.dashboard.fields.brandingStatus'),
-        value: formatValue(dashboard.value.preferences?.brandingStatus, t('preschoolSettingsPage.dashboard.emptyStates.brandingStatus')),
+        label: t('preschoolSettingsPage.dashboard.fields.classCapacity'),
+        value: formatValue(dashboard.value.preferences?.classCapacityLabel, t('preschoolSettingsPage.dashboard.emptyStates.classCapacity')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.guardianRules'),
+        value: formatValue(dashboard.value.preferences?.guardianRulesLabel, t('preschoolSettingsPage.dashboard.emptyStates.guardianRules')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.communicationRules'),
+        value: formatValue(dashboard.value.preferences?.communicationRulesLabel, t('preschoolSettingsPage.dashboard.emptyStates.communicationRules')),
       },
     ],
     status: dashboard.value.preferences?.isConfigured
@@ -276,9 +284,11 @@ function createEmptyDashboard() {
       isConfigured: false,
     },
     preferences: {
-      organizationName: '',
-      language: '',
-      brandingStatus: '',
+      enrollmentRulesLabel: '',
+      studentCodeFormatLabel: '',
+      classCapacityLabel: '',
+      guardianRulesLabel: '',
+      communicationRulesLabel: '',
       isConfigured: false,
     },
   }

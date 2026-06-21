@@ -65,7 +65,14 @@ describe('Preschool settings dashboard', () => {
         vaccinationReminderEnabled: false,
         isConfigured: false,
       },
-      preferences: { organizationName: '', language: '', brandingStatus: '', isConfigured: false },
+      preferences: {
+        enrollmentRulesLabel: '',
+        studentCodeFormatLabel: '',
+        classCapacityLabel: '',
+        guardianRulesLabel: '',
+        communicationRulesLabel: '',
+        isConfigured: false,
+      },
     })
 
     await flushPromises()
@@ -88,7 +95,14 @@ describe('Preschool settings dashboard', () => {
         vaccinationReminderEnabled: false,
         isConfigured: false,
       },
-      preferences: { organizationName: '', language: '', brandingStatus: '', isConfigured: false },
+      preferences: {
+        enrollmentRulesLabel: '',
+        studentCodeFormatLabel: '',
+        classCapacityLabel: '',
+        guardianRulesLabel: '',
+        communicationRulesLabel: '',
+        isConfigured: false,
+      },
     })
 
     const wrapper = mountWithPlugins(PreschoolSettingsDashboard, {
@@ -124,7 +138,14 @@ describe('Preschool settings dashboard', () => {
         vaccinationReminderEnabled: false,
         isConfigured: true,
       },
-      preferences: { organizationName: 'HFCCF', language: 'English', brandingStatus: 'Ready', isConfigured: true },
+      preferences: {
+        enrollmentRulesLabel: '24-60 months',
+        studentCodeFormatLabel: 'PS-2026-0001',
+        classCapacityLabel: '18 students - 1:10 ratio - Waitlist enabled',
+        guardianRulesLabel: 'Min 1 - Max 2 - Primary guardian required - Pickup authorization required',
+        communicationRulesLabel: 'Attendance: On - Assessment: On - Health: On - Enrollment: On',
+        isConfigured: true,
+      },
     })
 
     const wrapper = mountWithPlugins(PreschoolSettingsDashboard, {
@@ -149,6 +170,11 @@ describe('Preschool settings dashboard', () => {
     expect(wrapper.text()).toContain('RCT')
     expect(wrapper.text()).toContain('Mon-Fri')
     expect(wrapper.text()).toContain('12')
+    expect(wrapper.text()).toContain('Enrollment Rules')
+    expect(wrapper.text()).toContain('Student Code Format')
+    expect(wrapper.text()).toContain('Class Capacity')
+    expect(wrapper.text()).toContain('Guardian Rules')
+    expect(wrapper.text()).toContain('Communication Rules')
     expect(wrapper.text()).toContain('Critical Alerts')
     expect(wrapper.text()).toContain('Severity Levels')
     expect(wrapper.text()).toContain('Incident Categories')
