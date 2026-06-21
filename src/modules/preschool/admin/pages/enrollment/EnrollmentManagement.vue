@@ -308,6 +308,7 @@ function refreshData() {
           variant="primary"
           size="lg"
           rounded="xl"
+          class="preschool-enrollment-page__toolbar-action"
           @click="openNew"
         >
           <template #iconLeft>
@@ -600,23 +601,21 @@ function refreshData() {
   color: #64748b;
 }
 
-.enr-page__new-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  background: #6366f1;
-  color: #fff;
-  border: none;
-  border-radius: 0.65rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
+.preschool-enrollment-page__toolbar-action {
+  min-width: 15rem;
+  justify-content: space-between;
+  padding-inline: 0.95rem 1rem;
+  box-shadow: 0 20px 36px -24px rgba(99, 102, 241, 0.58);
 }
 
-.enr-page__new-btn:hover { background: #4f46e5; }
+.preschool-enrollment-page__toolbar-action :deep(.p-button-label) {
+  width: 100%;
+}
+
+.preschool-enrollment-page__toolbar-action :deep(.p-button-icon) {
+  margin-right: 0.75rem;
+  font-size: 0.95rem;
+}
 
 /* Detail side panel */
 .enr-detail-overlay {
@@ -861,6 +860,11 @@ function refreshData() {
 }
 
 @media (max-width: 768px) {
+  .preschool-enrollment-page__toolbar-action {
+    width: 100%;
+    min-width: 0;
+  }
+
   .preschool-enrollment-page__sidebar,
   .enr-page__sidebar {
     flex-direction: column;
