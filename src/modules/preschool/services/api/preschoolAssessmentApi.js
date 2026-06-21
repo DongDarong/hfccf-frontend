@@ -8,6 +8,9 @@ import http from '@/services/http'
 import { buildQueryParams, unwrapApiData, unwrapApiItems, unwrapApiPagination } from '@/services/api'
 import { normalizePerPage } from '@/modules/sport/services/api/sportApiUtils'
 import {
+  fetchAssessmentCategories as fetchAssessmentConfigurationCategories,
+} from '@/modules/preschool/services/api/preschoolAssessmentConfigurationApi'
+import {
   normalizeAssessment,
   normalizeAssessmentCategory,
   normalizeProgressSummary,
@@ -484,18 +487,8 @@ function normalizeAssessmentListResponse(response, fallbackPage = 1, fallbackPer
   }
 }
 
-function normalizeCategoryListResponse(response) {
-  const items = unwrapApiItems(response)
-
-  return items.map(normalizeAssessmentCategory)
-}
-
 export async function fetchAssessmentCategories(options = {}) {
-  const response = await http.get('/preschool/assessment-categories', {
-    signal: options.signal,
-  })
-
-  return normalizeCategoryListResponse(response)
+  return fetchAssessmentConfigurationCategories(options)
 }
 
 export async function fetchStudentAssessments(studentId, params = {}, options = {}) {

@@ -54,7 +54,7 @@ describe('Preschool settings dashboard', () => {
       academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
       attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
-      assessments: { activeGradingScale: '', assessmentCategories: [], isConfigured: false },
+      assessments: { passingScore: '', weightingEnabled: false, gradeBandsCount: '', assessmentCategoriesCount: '', reportPeriodsCount: '', isConfigured: false },
       health: { alertSeverityLevels: [], healthCategories: [], isConfigured: false },
       preferences: { organizationName: '', language: '', brandingStatus: '', isConfigured: false },
     })
@@ -68,7 +68,7 @@ describe('Preschool settings dashboard', () => {
       academic: { activeAcademicYear: '', activeAcademicYearDateRange: '', activeTerm: '', activeTermDateRange: '', academicStatus: '', isConfigured: false },
       attendance: { lateThresholdMinutes: '', absenceAlertDays: '', schoolWeekLabel: '', calendarEventsCount: '', isConfigured: false },
       payments: { currency: '', invoicePrefix: '', receiptPrefix: '', isConfigured: false },
-      assessments: { activeGradingScale: '', assessmentCategories: [], isConfigured: false },
+      assessments: { passingScore: '', weightingEnabled: false, gradeBandsCount: '', assessmentCategoriesCount: '', reportPeriodsCount: '', isConfigured: false },
       health: { alertSeverityLevels: [], healthCategories: [], isConfigured: false },
       preferences: { organizationName: '', language: '', brandingStatus: '', isConfigured: false },
     })
@@ -91,7 +91,7 @@ describe('Preschool settings dashboard', () => {
       academic: { activeAcademicYear: '2026 - 2027', activeAcademicYearDateRange: '2026-07-01 - 2027-06-30', activeTerm: 'Term 1', activeTermDateRange: '2026-07-01 - 2026-09-30', academicStatus: 'Active', isConfigured: true },
       attendance: { lateThresholdMinutes: 15, absenceAlertDays: 3, schoolWeekLabel: 'Mon-Fri', calendarEventsCount: 12, isConfigured: true },
       payments: { currency: 'USD', invoicePrefix: 'INV', receiptPrefix: 'RCPT', isConfigured: true },
-      assessments: { activeGradingScale: 'A-E', assessmentCategories: ['social'], isConfigured: true },
+      assessments: { passingScore: 60, weightingEnabled: true, gradeBandsCount: 5, assessmentCategoriesCount: 6, reportPeriodsCount: 4, isConfigured: true },
       health: { alertSeverityLevels: ['low'], healthCategories: ['routine'], isConfigured: true },
       preferences: { organizationName: 'HFCCF', language: 'English', brandingStatus: 'Ready', isConfigured: true },
     })
@@ -104,6 +104,11 @@ describe('Preschool settings dashboard', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('15')
+    expect(wrapper.text()).toContain('Enabled')
+    expect(wrapper.text()).toContain('60')
+    expect(wrapper.text()).toContain('5')
+    expect(wrapper.text()).toContain('6')
+    expect(wrapper.text()).toContain('4')
     expect(wrapper.text()).toContain('3')
     expect(wrapper.text()).toContain('Mon-Fri')
     expect(wrapper.text()).toContain('12')

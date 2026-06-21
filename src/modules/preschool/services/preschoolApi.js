@@ -377,18 +377,40 @@ export function normalizePreschoolSettingsDashboard(payload = {}) {
   normalizedPayments.isConfigured = normalizeDashboardSectionFlags(payments, ['currency', 'invoicePrefix', 'receiptPrefix'])
 
   const normalizedAssessments = normalizePreschoolSettingsDashboardSection(assessments, {
-    activeGradingScale: ['activeGradingScale', 'active_grading_scale'],
-    assessmentCategories: ['assessmentCategories', 'assessment_categories'],
+    passingScore: ['passingScore', 'passing_score'],
+    weightingEnabled: ['weightingEnabled', 'weighting_enabled'],
+    gradeBandsCount: ['gradeBandsCount', 'grade_bands_count'],
     assessmentCategoriesCount: ['assessmentCategoriesCount', 'assessment_categories_count'],
+    reportPeriodsCount: ['reportPeriodsCount', 'report_periods_count'],
+    schoolWeek: ['schoolWeek', 'school_week'],
   })
-  normalizedAssessments.assessmentCategories = normalizeTextList(assessments.assessmentCategories || assessments.assessment_categories || [])
+  normalizedAssessments.passingScore = Number(
+    assessments.passingScore
+    ?? assessments.passing_score
+    ?? 0,
+  )
+  normalizedAssessments.weightingEnabled = Boolean(
+    assessments.weightingEnabled
+    ?? assessments.weighting_enabled
+    ?? false,
+  )
+  normalizedAssessments.gradeBandsCount = Number(
+    assessments.gradeBandsCount
+    ?? assessments.grade_bands_count
+    ?? 0,
+  )
   normalizedAssessments.assessmentCategoriesCount = Number(
     assessments.assessmentCategoriesCount
     ?? assessments.assessment_categories_count
-    ?? normalizedAssessments.assessmentCategories.length
     ?? 0,
   )
-  normalizedAssessments.isConfigured = normalizeDashboardSectionFlags(assessments, ['activeGradingScale', 'assessmentCategories', 'assessmentCategoriesCount'])
+  normalizedAssessments.reportPeriodsCount = Number(
+    assessments.reportPeriodsCount
+    ?? assessments.report_periods_count
+    ?? 0,
+  )
+  normalizedAssessments.schoolWeek = normalizeTextList(assessments.schoolWeek || assessments.school_week || [])
+  normalizedAssessments.isConfigured = normalizeDashboardSectionFlags(assessments, ['passingScore', 'weightingEnabled', 'gradeBandsCount', 'assessmentCategoriesCount', 'reportPeriodsCount'])
 
   const normalizedHealth = normalizePreschoolSettingsDashboardSection(health, {
     alertSeverityLevels: ['alertSeverityLevels', 'alert_severity_levels'],

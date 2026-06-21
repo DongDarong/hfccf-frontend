@@ -246,8 +246,7 @@ export const preschoolRoutes = [
     path: '/preschool/settings/assessments',
     alias: '/module/preschool-admin/settings/assessments',
     name: 'dashboard-preschool-admin-settings-assessments',
-    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolSettingsPlaceholderPage.vue'),
-    props: { sectionKey: 'assessments' },
+    component: () => import('@/modules/preschool/admin/pages/settings/PreschoolAssessmentSettingsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

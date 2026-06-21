@@ -119,12 +119,24 @@ const sectionDefinitions = computed(() => [
     actionLabel: t('preschoolSettingsPage.dashboard.sections.assessments.action'),
     fields: [
       {
-        label: t('preschoolSettingsPage.dashboard.fields.activeGradingScale'),
-        value: formatValue(dashboard.value.assessments?.activeGradingScale, t('preschoolSettingsPage.dashboard.emptyStates.activeGradingScale')),
+        label: t('preschoolSettingsPage.dashboard.fields.assessmentPassingScore'),
+        value: formatValue(dashboard.value.assessments?.passingScore, t('preschoolSettingsPage.dashboard.emptyStates.assessmentPassingScore')),
       },
       {
-        label: t('preschoolSettingsPage.dashboard.fields.assessmentCategories'),
-        value: formatValue(dashboard.value.assessments?.assessmentCategories, t('preschoolSettingsPage.dashboard.emptyStates.assessmentCategories')),
+        label: t('preschoolSettingsPage.dashboard.fields.assessmentWeightingEnabled'),
+        value: dashboard.value.assessments?.weightingEnabled ? t('common.enabled') : t('common.disabled'),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.gradeBandsCount'),
+        value: formatValue(dashboard.value.assessments?.gradeBandsCount, t('preschoolSettingsPage.dashboard.emptyStates.gradeBandsCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.assessmentCategoriesCount'),
+        value: formatValue(dashboard.value.assessments?.assessmentCategoriesCount, t('preschoolSettingsPage.dashboard.emptyStates.assessmentCategoriesCount')),
+      },
+      {
+        label: t('preschoolSettingsPage.dashboard.fields.reportPeriodsCount'),
+        value: formatValue(dashboard.value.assessments?.reportPeriodsCount, t('preschoolSettingsPage.dashboard.emptyStates.reportPeriodsCount')),
       },
     ],
     status: dashboard.value.assessments?.isConfigured
@@ -212,8 +224,11 @@ function createEmptyDashboard() {
       isConfigured: false,
     },
     assessments: {
-      activeGradingScale: '',
-      assessmentCategories: [],
+      passingScore: '',
+      weightingEnabled: false,
+      gradeBandsCount: '',
+      assessmentCategoriesCount: '',
+      reportPeriodsCount: '',
       isConfigured: false,
     },
     health: {
