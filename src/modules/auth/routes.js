@@ -15,6 +15,12 @@ export const authRoutes = [
     path: '/change-password',
     name: 'force-password-change',
     component: () => import('@/modules/auth/pages/ForcePasswordChange.vue'),
-    meta: { requiresAuth: true },
+    meta: {
+      requiresAuth: true,
+      access: {
+        requiresAuth: true,
+        allowSuperAdmin: true,
+      },
+    },
   },
 ]
