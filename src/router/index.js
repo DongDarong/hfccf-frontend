@@ -5,6 +5,7 @@ import { authRoutes } from '@/modules/auth/routes'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
 import { notificationsRoutes } from '@/modules/notifications/routes'
 import { reportsRoutes } from '@/modules/reports/routes'
+import { governanceRoutes } from '@/modules/governance/routes'
 import { superAdminRoutes } from '@/modules/super-admin/routes'
 import { englishRoutes } from '@/modules/english/routes'
 import { preschoolRoutes } from '@/modules/preschool/routes'
@@ -20,6 +21,7 @@ const routes = [
   ...dashboardRoutes,
   ...notificationsRoutes,
   ...reportsRoutes,
+  ...governanceRoutes,
   ...superAdminRoutes,
   ...englishRoutes,
   ...preschoolRoutes,
