@@ -29,6 +29,44 @@ function normalizeText(value) {
   return String(value ?? '').trim()
 }
 
+function firstNonEmpty(...values) {
+  const value = values.find((item) => {
+    if (item === null || item === undefined) return false
+    return String(item).trim() !== ''
+  })
+
+  return value === undefined ? '' : value
+}
+
+function resolveStudentAvatarUrl(row = {}) {
+  const media = row.media || {}
+  const nestedMediaUrl = Array.isArray(media)
+    ? firstNonEmpty(media[0]?.url, media[0]?.path)
+    : firstNonEmpty(media.url, media.path)
+
+  return normalizeText(firstNonEmpty(
+    row.avatarUrl,
+    row.avatar_url,
+    row.profilePhotoUrl,
+    row.profile_photo_url,
+    row.profileImageUrl,
+    row.profile_image_url,
+    row.profilePhoto,
+    row.profile_photo,
+    row.photoUrl,
+    row.photo_url,
+    row.imageUrl,
+    row.image_url,
+    row.avatar,
+    row.profileImage,
+    row.profile_image,
+    row.photo,
+    row.image,
+    row.thumbnail,
+    nestedMediaUrl,
+  ))
+}
+
 function normalizeClassAssignmentRow(row = {}) {
   return {
     id: row.id ?? '',
@@ -114,6 +152,7 @@ function normalizeStudentRow(row = {}) {
   const fullName = normalizeText(row.fullName || row.full_name || `${firstName} ${lastName}`)
   const classAssignments = Array.isArray(row.classAssignments) ? row.classAssignments.map(normalizeClassAssignmentRow) : []
   const activeClasses = Array.isArray(row.classes) ? row.classes.map(normalizeClassAssignmentRow) : classAssignments.filter((item) => item.status === 'active')
+  const avatarUrl = resolveStudentAvatarUrl(row)
 
   return {
     id: row.id ?? '',
@@ -130,14 +169,9 @@ function normalizeStudentRow(row = {}) {
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
     studentType: normalizeText(row.studentType || row.student_type || 'paying'),
-    avatarUrl: normalizeText(
-      row.avatarUrl || row.avatar_url ||
-      row.profile_photo_url || row.profilePhotoUrl ||
-      row.profile_photo_path || row.profilePhotoPath ||
-      row.photo_url || row.photoUrl ||
-      row.image_url || row.imageUrl ||
-      row.avatar || row.photo || row.image || row.thumbnail || '',
-    ),
+    avatarUrl,
+    avatar: avatarUrl,
+    profilePhotoUrl: avatarUrl,
     classesCount: Number(row.classesCount ?? row.classes_count ?? activeClasses.length ?? 0),
     classes: activeClasses,
     classAssignments,

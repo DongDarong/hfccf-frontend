@@ -1,7 +1,7 @@
 <script setup>
 // Keep student management text locale-driven so EN/KH parity is testable and
 // hardcoded English labels do not reappear in a production page.
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveAvatarSource } from '@/utils/avatar'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -41,6 +41,7 @@ const showSuccess = ref(false)
 const successMessage = ref('')
 const deleteTarget = ref(null)
 const deleteOpen = ref(false)
+const isResettingFilters = ref(false)
 
 const genderOptions = computed(() => [
   { label: t('preschoolStudentInfoPage.options.male'), value: 'male' },
@@ -54,6 +55,15 @@ const statusOptions = computed(() => [
   { label: t('preschoolStudentInfoPage.options.inactive'), value: 'inactive' },
   { label: t('preschoolStudentInfoPage.options.graduated'), value: 'graduated' },
 ])
+
+const hasActiveFilters = computed(() =>
+  Boolean(
+    searchQuery.value.trim()
+    || statusFilter.value
+    || genderFilter.value
+    || classFilter.value,
+  ),
+)
 
 const tableColumns = computed(() => [
   { key: 'number', label: t('preschoolStudentInfoPage.columns.no'), align: 'left' },
@@ -147,6 +157,22 @@ function onDeleteStudent(student) {
   deleteOpen.value = true
 }
 
+async function clearFilters() {
+  if (!hasActiveFilters.value) return
+
+  isResettingFilters.value = true
+  searchQuery.value = ''
+  statusFilter.value = ''
+  genderFilter.value = ''
+  classFilter.value = ''
+  currentPage.value = 1
+
+  await nextTick()
+
+  isResettingFilters.value = false
+  await loadStudents()
+}
+
 async function confirmDelete() {
   const id = String(deleteTarget.value?.id || '').trim()
   if (!id) return
@@ -164,11 +190,13 @@ async function confirmDelete() {
 }
 
 watch([searchQuery, statusFilter, genderFilter, classFilter], () => {
+  if (isResettingFilters.value) return
   currentPage.value = 1
   loadStudents()
 })
 
 watch(currentPage, () => {
+  if (isResettingFilters.value) return
   loadStudents()
 })
 
@@ -246,6 +274,19 @@ onMounted(async () => {
               {{ opt.label }}
             </option>
           </select>
+
+          <div class="student-info-page__filters-action">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              rounded="xl"
+              :disabled="!hasActiveFilters"
+              @click="clearFilters"
+            >
+              {{ t('preschoolStudentInfoPage.filters.clear') }}
+            </Button>
+          </div>
         </div>
 
         <div v-if="errorMessage" class="student-info-page__state student-info-page__state--error">
@@ -335,8 +376,9 @@ onMounted(async () => {
 
 .student-info-page__filters {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)) auto;
   gap: 0.85rem;
+  align-items: end;
 }
 
 .student-info-page__search-wrap {
@@ -377,6 +419,11 @@ onMounted(async () => {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
+.student-info-page__filters-action {
+  display: flex;
+  align-items: stretch;
+}
+
 .student-info-page__state {
   padding: 1rem 1.1rem;
   border-radius: 1rem;
@@ -406,6 +453,10 @@ onMounted(async () => {
 
   .student-info-page__filters {
     grid-template-columns: 1fr;
+  }
+
+  .student-info-page__filters-action {
+    width: 100%;
   }
 }
 </style>

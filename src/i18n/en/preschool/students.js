@@ -10,6 +10,7 @@ export default {
       allStatus: 'All status',
       allGenders: 'All genders',
       allClasses: 'All classes',
+      clear: 'Clear Filters',
     },
     columns: {
       no: 'No.',
