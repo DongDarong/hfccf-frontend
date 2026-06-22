@@ -8,6 +8,10 @@ const mockFetchPreschoolClasses = vi.fn()
 const mockFetchPreschoolStudent = vi.fn()
 const mockCreatePreschoolStudent = vi.fn()
 const mockUpdatePreschoolStudent = vi.fn()
+const mockFetchProvinces = vi.fn()
+const mockFetchDistricts = vi.fn()
+const mockFetchCommunes = vi.fn()
+const mockFetchVillages = vi.fn()
 
 vi.mock('@/modules/preschool/services/preschoolApi', () => ({
   fetchPreschoolClasses: (...args) => mockFetchPreschoolClasses(...args),
@@ -17,47 +21,10 @@ vi.mock('@/modules/preschool/services/preschoolApi', () => ({
 }))
 
 vi.mock('@/modules/preschool/services/cambodiaLocationService', () => ({
-  getProvinceOptions: () => [
-    { label: 'Phnom Penh', value: 'Phnom Penh' },
-    { label: 'Kandal', value: 'Kandal' },
-  ],
-  getDistrictOptions: (province) =>
-    province === 'Phnom Penh'
-      ? [
-          { label: 'Dangkao', value: 'Dangkao' },
-          { label: 'Sen Sok', value: 'Sen Sok' },
-        ]
-      : province === 'Kandal'
-        ? [{ label: 'Khsach Kandal', value: 'Khsach Kandal' }]
-        : [],
-  getCommuneOptions: (province, district) => {
-    if (province === 'Phnom Penh' && district === 'Dangkao') {
-      return [
-        { label: 'Prek Pra', value: 'Prek Pra' },
-        { label: 'Prek Kampeus', value: 'Prek Kampeus' },
-      ]
-    }
-
-    if (province === 'Kandal' && district === 'Khsach Kandal') {
-      return [{ label: 'Akreiy Ksatr', value: 'Akreiy Ksatr' }]
-    }
-
-    return []
-  },
-  getVillageOptions: (province, district, commune) => {
-    if (province === 'Phnom Penh' && district === 'Dangkao' && commune === 'Prek Pra') {
-      return [
-        { label: 'Village 1', value: 'Village 1' },
-        { label: 'Village 2', value: 'Village 2' },
-      ]
-    }
-
-    if (province === 'Kandal' && district === 'Khsach Kandal' && commune === 'Akreiy Ksatr') {
-      return [{ label: 'Village A', value: 'Village A' }]
-    }
-
-    return []
-  },
+  fetchProvinces: (...args) => mockFetchProvinces(...args),
+  fetchDistricts: (...args) => mockFetchDistricts(...args),
+  fetchCommunes: (...args) => mockFetchCommunes(...args),
+  fetchVillages: (...args) => mockFetchVillages(...args),
   buildLocationAddress: (source = {}) => {
     const parts = [source.village, source.commune, source.district, source.province].filter(Boolean)
     return parts.length ? parts.join(', ') : String(source.address || '').trim()
@@ -112,6 +79,62 @@ beforeEach(() => {
     pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
   })
 
+  mockFetchProvinces.mockResolvedValue([
+    { code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
+    { code: '08', nameEn: 'Kandal', nameKh: 'កណ្ដាល' },
+  ])
+
+  mockFetchDistricts.mockImplementation((provinceCode) => {
+    if (String(provinceCode) === '01') {
+      return Promise.resolve([
+        { code: '0102', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
+        { code: '0103', nameEn: 'Sen Sok', nameKh: 'សែនសុខ' },
+      ])
+    }
+
+    if (String(provinceCode) === '08') {
+      return Promise.resolve([
+        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្តាល' },
+      ])
+    }
+
+    return Promise.resolve([])
+  })
+
+  mockFetchCommunes.mockImplementation((districtCode) => {
+    if (String(districtCode) === '0102') {
+      return Promise.resolve([
+        { code: '010201', nameEn: 'Prek Pra', nameKh: 'ព្រែកប្រា' },
+        { code: '010202', nameEn: 'Prek Kampeus', nameKh: 'ព្រែកកំពឹស' },
+      ])
+    }
+
+    if (String(districtCode) === '0801') {
+      return Promise.resolve([
+        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អក្រីយក្សត្រ' },
+      ])
+    }
+
+    return Promise.resolve([])
+  })
+
+  mockFetchVillages.mockImplementation((communeCode) => {
+    if (String(communeCode) === '010201') {
+      return Promise.resolve([
+        { code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ១' },
+        { code: '01020102', nameEn: 'Village 2', nameKh: 'ភូមិ២' },
+      ])
+    }
+
+    if (String(communeCode) === '080101') {
+      return Promise.resolve([
+        { code: '08010101', nameEn: 'Village A', nameKh: 'ភូមិអា' },
+      ])
+    }
+
+    return Promise.resolve([])
+  })
+
   mockFetchPreschoolStudent.mockResolvedValue(null)
   mockCreatePreschoolStudent.mockResolvedValue({
     id: 'student-1',
@@ -142,18 +165,21 @@ describe('StudentForm', () => {
     await selectProvince.setValue('Phnom Penh')
     await flushPromises()
 
+    expect(mockFetchDistricts).toHaveBeenCalledWith('01')
     expect(selectDistrict.attributes('disabled')).toBeUndefined()
     expect(selectDistrict.findAll('option').map((option) => option.text())).toContain('Dangkao')
 
     await selectDistrict.setValue('Dangkao')
     await flushPromises()
 
+    expect(mockFetchCommunes).toHaveBeenCalledWith('0102')
     expect(selectCommune.attributes('disabled')).toBeUndefined()
     expect(selectCommune.findAll('option').map((option) => option.text())).toContain('Prek Pra')
 
     await selectCommune.setValue('Prek Pra')
     await flushPromises()
 
+    expect(mockFetchVillages).toHaveBeenCalledWith('010201')
     expect(selectVillage.attributes('disabled')).toBeUndefined()
     expect(selectVillage.findAll('option').map((option) => option.text())).toContain('Village 1')
   })
@@ -194,9 +220,9 @@ describe('StudentForm', () => {
 
     await flushPromises()
 
-    const phoneInputs = wrapper.findAll('input[type="text"]')
-    await phoneInputs.at(2).setValue('Sokha')
-    await phoneInputs.at(3).setValue('012345678')
+    const textInputs = wrapper.findAll('input[type="text"]')
+    await textInputs.at(2).setValue('Sokha')
+    await textInputs.at(3).setValue('012345678')
 
     const selectGuardianType = getSelect(wrapper, 3)
     const selectProvince = getSelect(wrapper, 4)
@@ -236,5 +262,88 @@ describe('StudentForm', () => {
 
     expect(mockCreatePreschoolStudent).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('Guardian type is required when guardian contact is provided.')
+  })
+
+  it('shows a location error when the location API fails', async () => {
+    mockFetchProvinces.mockRejectedValue(new Error('boom'))
+
+    const wrapper = mountPage()
+
+    await flushPromises()
+    await flushPromises()
+
+    expect(mockFetchProvinces).toHaveBeenCalled()
+    expect(wrapper.vm.locationErrorMessage).toBe('boom')
+    expect(wrapper.findAll('.student-form-page__state--error').length).toBeGreaterThan(0)
+  })
+
+  it('loads existing guardian and location values safely in edit mode', async () => {
+    mockFetchPreschoolStudent.mockResolvedValueOnce({
+      id: 'student-1',
+      studentCode: 'ST-1',
+      guardianName: 'Sokha',
+      guardianPhone: '012345678',
+      guardianType: 'mother',
+      province: 'Phnom Penh',
+      district: 'Dangkao',
+      commune: 'Prek Pra',
+      village: 'Village 1',
+      address: 'Village 1, Prek Pra, Dangkao, Phnom Penh',
+      avatarUrl: 'https://example.test/avatar.jpg',
+      classes: [{ id: 'class-1' }],
+    })
+
+    const wrapper = mountWithPlugins(StudentForm, {
+      messages: {
+        en: enPreschool,
+      },
+      routes: [
+        {
+          path: '/students/:id/edit',
+          name: 'dashboard-preschool-admin-students-edit',
+          component: { template: '<div />' },
+        },
+      ],
+      global: {
+        stubs: {
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: {
+            props: ['title', 'subtitle'],
+            template: '<header><h1>{{ title }}</h1><p>{{ subtitle }}</p></header>',
+          },
+          AlertSuccess: {
+            props: ['show'],
+            template: '<div v-if="show" data-testid="alert-success-stub" />',
+          },
+          Button: {
+            props: ['disabled', 'loading'],
+            emits: ['click'],
+            template: '<button :disabled="disabled || loading" @click="$emit(\'click\')"><slot /></button>',
+          },
+          MultiSelect: {
+            props: ['modelValue', 'options'],
+            template: '<div data-testid="multi-select-stub" />',
+          },
+        },
+      },
+    })
+
+    await wrapper.vm.$router.push({ name: 'dashboard-preschool-admin-students-edit', params: { id: 'student-1' } })
+
+    await flushPromises()
+    await flushPromises()
+
+    const selectGuardianType = getSelect(wrapper, 3)
+    const selectProvince = getSelect(wrapper, 4)
+    const selectDistrict = getSelect(wrapper, 5)
+    const selectCommune = getSelect(wrapper, 6)
+    const selectVillage = getSelect(wrapper, 7)
+
+    expect(selectGuardianType.element.value).toBe('mother')
+    expect(selectProvince.element.value).toBe('Phnom Penh')
+    expect(selectDistrict.element.value).toBe('Dangkao')
+    expect(selectCommune.element.value).toBe('Prek Pra')
+    expect(selectVillage.element.value).toBe('Village 1')
+    expect(wrapper.text()).not.toContain('Failed to load location data.')
   })
 })

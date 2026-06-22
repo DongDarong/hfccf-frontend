@@ -1,109 +1,107 @@
-const PROVINCE_NAMES = [
-  'Banteay Meanchey',
-  'Battambang',
-  'Kampong Cham',
-  'Kampong Chhnang',
-  'Kampong Speu',
-  'Kampong Thom',
-  'Kampot',
-  'Kandal',
-  'Kep',
-  'Koh Kong',
-  'Kratie',
-  'Mondulkiri',
-  'Oddar Meanchey',
-  'Pailin',
-  'Phnom Penh',
-  'Preah Sihanouk',
-  'Preah Vihear',
-  'Pursat',
-  'Ratanakiri',
-  'Siem Reap',
-  'Stung Treng',
-  'Svay Rieng',
-  'Takeo',
-  'Tboung Khmum',
-  'Prey Veng',
-]
+import http from '@/services/http'
+import { unwrapApiData } from '@/services/api'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
 }
 
-function buildVillageName(province, districtIndex, communeIndex, villageIndex) {
-  return `${province} Village ${districtIndex + 1}-${communeIndex + 1}-${villageIndex + 1}`
+function normalizeLocationRow(row = {}) {
+  return {
+    code: normalizeText(row.code || row.location_code),
+    nameKh: normalizeText(row.nameKh || row.name_kh),
+    nameEn: normalizeText(row.nameEn || row.name_en),
+  }
 }
 
-function buildCommuneName(province, districtIndex, communeIndex) {
-  return `${province} Commune ${districtIndex + 1}-${communeIndex + 1}`
+function normalizeLocationList(response) {
+  const payload = unwrapApiData(response) || {}
+  const items = Array.isArray(payload.data) ? payload.data : Array.isArray(payload) ? payload : []
+
+  return items.map(normalizeLocationRow)
 }
 
-function buildDistrictName(province, districtIndex) {
-  return `${province} District ${districtIndex + 1}`
+function buildCacheLoader() {
+  let cachedItems = null
+  let cachedPromise = null
+
+  return async (factory) => {
+    if (cachedItems) return cachedItems
+    if (!cachedPromise) {
+      cachedPromise = factory()
+        .then((items) => {
+          cachedItems = items
+          return items
+        })
+        .catch((error) => {
+          cachedPromise = null
+          throw error
+        })
+    }
+
+    return cachedPromise
+  }
 }
 
-function createLocationTree() {
-  return PROVINCE_NAMES.map((province) => ({
-    name: province,
-    districts: Array.from({ length: 3 }, (_, districtIndex) => ({
-      name: buildDistrictName(province, districtIndex),
-      communes: Array.from({ length: 3 }, (_, communeIndex) => ({
-        name: buildCommuneName(province, districtIndex, communeIndex),
-        villages: Array.from({ length: 3 }, (_, villageIndex) => ({
-          name: buildVillageName(province, districtIndex, communeIndex, villageIndex),
-        })),
-      })),
-    })),
-  }))
+const loadProvincesFromApi = buildCacheLoader()
+const districtLoaders = new Map()
+const communeLoaders = new Map()
+const villageLoaders = new Map()
+
+function loaderFor(cache, key) {
+  if (!cache.has(key)) {
+    cache.set(key, buildCacheLoader())
+  }
+
+  return cache.get(key)
 }
 
-export const CAMBODIA_LOCATION_TREE = createLocationTree()
-
-function buildOptions(items = []) {
-  return items.map((item) => ({
-    label: item.name,
-    value: item.name,
-  }))
+export async function fetchProvinces() {
+  return loadProvincesFromApi(async () => {
+    const response = await http.get('/locations/provinces')
+    return normalizeLocationList(response)
+  })
 }
 
-function findProvince(provinceName) {
-  const normalized = normalizeText(provinceName)
-  return CAMBODIA_LOCATION_TREE.find((province) => province.name === normalized) || null
+export async function fetchDistricts(provinceCode) {
+  const code = normalizeText(provinceCode)
+  if (!code) return []
+
+  const loadDistricts = loaderFor(districtLoaders, code)
+
+  return loadDistricts(async () => {
+    const response = await http.get('/locations/districts', {
+      params: { province_code: code },
+    })
+    return normalizeLocationList(response)
+  })
 }
 
-function findDistrict(provinceName, districtName) {
-  const province = findProvince(provinceName)
-  if (!province) return null
+export async function fetchCommunes(districtCode) {
+  const code = normalizeText(districtCode)
+  if (!code) return []
 
-  const normalized = normalizeText(districtName)
-  return province.districts.find((district) => district.name === normalized) || null
+  const loadCommunes = loaderFor(communeLoaders, code)
+
+  return loadCommunes(async () => {
+    const response = await http.get('/locations/communes', {
+      params: { district_code: code },
+    })
+    return normalizeLocationList(response)
+  })
 }
 
-function findCommune(provinceName, districtName, communeName) {
-  const district = findDistrict(provinceName, districtName)
-  if (!district) return null
+export async function fetchVillages(communeCode) {
+  const code = normalizeText(communeCode)
+  if (!code) return []
 
-  const normalized = normalizeText(communeName)
-  return district.communes.find((commune) => commune.name === normalized) || null
-}
+  const loadVillages = loaderFor(villageLoaders, code)
 
-export function getProvinceOptions() {
-  return buildOptions(CAMBODIA_LOCATION_TREE)
-}
-
-export function getDistrictOptions(provinceName) {
-  const province = findProvince(provinceName)
-  return province ? buildOptions(province.districts) : []
-}
-
-export function getCommuneOptions(provinceName, districtName) {
-  const district = findDistrict(provinceName, districtName)
-  return district ? buildOptions(district.communes) : []
-}
-
-export function getVillageOptions(provinceName, districtName, communeName) {
-  const commune = findCommune(provinceName, districtName, communeName)
-  return commune ? buildOptions(commune.villages) : []
+  return loadVillages(async () => {
+    const response = await http.get('/locations/villages', {
+      params: { commune_code: code },
+    })
+    return normalizeLocationList(response)
+  })
 }
 
 export function buildLocationAddress(source = {}) {

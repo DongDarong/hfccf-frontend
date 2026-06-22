@@ -89,6 +89,7 @@ export default {
     },
     messages: {
       loadFailed: 'មិនអាចផ្ទុកសិស្សបាន។',
+      locationLoadFailed: 'មិនអាចផ្ទុកទិន្នន័យទីតាំងបាន។',
       saveFailed: 'មិនអាចរក្សាទុកសិស្សបាន។',
       createSuccess: 'បានបង្កើតសិស្សដោយជោគជ័យ។',
       updateSuccess: 'បានកែប្រែសិស្សដោយជោគជ័យ។',

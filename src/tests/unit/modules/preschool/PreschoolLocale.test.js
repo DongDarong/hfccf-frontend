@@ -33,6 +33,7 @@ describe('preschool locale parity', () => {
       'preschoolStudentInfoPage.dialog.addressPreview',
       'preschoolStudentInfoPage.dialog.fullAddress',
       'preschoolStudentInfoPage.validation.guardianTypeRequired',
+      'preschoolStudentInfoPage.messages.locationLoadFailed',
       'preschoolStudentInfoPage.options.father',
       'preschoolStudentInfoPage.options.mother',
       'preschoolStudentInfoPage.options.grandfather',

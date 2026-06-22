@@ -89,6 +89,7 @@ export default {
     },
     messages: {
       loadFailed: 'Failed to load students.',
+      locationLoadFailed: 'Failed to load location data.',
       saveFailed: 'Failed to save student.',
       createSuccess: 'Student created successfully.',
       updateSuccess: 'Student updated successfully.',
