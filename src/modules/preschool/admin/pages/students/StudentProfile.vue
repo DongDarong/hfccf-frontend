@@ -11,6 +11,7 @@ import { fetchPreschoolStudent } from '@/modules/preschool/services/preschoolApi
 import { fetchPreschoolStudentPaymentSummary } from '@/modules/preschool/services/api/preschoolPaymentApi'
 import { fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
 import { fetchStudentGuardianCommunications } from '@/modules/preschool/services/api/preschoolGuardianCommunicationApi'
+import { buildLocationAddress } from '@/modules/preschool/services/cambodiaLocationService'
 import { BACK_ROUTE_NAME } from './constants/studentProfileConstants'
 import { buildInfoCards, getStatusLabel, getStatusClass, getStudentDisplayName } from './utils/studentProfileHelpers'
 import GuardianCommunicationTimeline from '@/modules/preschool/admin/components/guardian/GuardianCommunicationTimeline.vue'
@@ -37,6 +38,7 @@ const initials = computed(() => getAvatarInitials(getStudentDisplayName(student.
 const statusLabel = computed(() => getStatusLabel(t, student.value))
 
 const infoCards = computed(() => buildInfoCards(t, student.value, profileClasses.value))
+const addressDisplay = computed(() => buildLocationAddress(student.value?.raw || student.value || {}, 'kh'))
 
 async function loadStudent() {
   const studentId = String(route.params.id || '').trim()
@@ -284,7 +286,7 @@ onMounted(loadStudent)
                 </div>
                 <div>
                   <dt>{{ t('preschoolStudentProfilePage.fields.address') }}</dt>
-                  <dd>{{ student.address || '-' }}</dd>
+                  <dd>{{ addressDisplay || student.address || '-' }}</dd>
                 </div>
               </dl>
             </section>

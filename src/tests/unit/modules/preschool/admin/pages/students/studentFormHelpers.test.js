@@ -19,11 +19,11 @@ describe('studentFormHelpers', () => {
         guardianName: 'Sokha',
         guardianPhone: '012345678',
         guardianType: 'mother',
-        province: 'Phnom Penh',
-        district: 'Dangkao',
-        commune: 'Sangkat Prek Pra',
-        village: 'Village 1',
-        address: 'Village 1, Sangkat Prek Pra, Dangkao, Phnom Penh',
+        province: 'ខេត្តភ្នំពេញ',
+        district: 'ខណ្ឌដង្កោ',
+        commune: 'សង្កាត់ព្រែកប្រា',
+        village: 'ភូមិ១',
+        address: 'ភូមិ១, សង្កាត់ព្រែកប្រា, ខណ្ឌដង្កោ, ខេត្តភ្នំពេញ',
         classes: [{ id: 'class-1' }],
       },
       form,
@@ -32,11 +32,11 @@ describe('studentFormHelpers', () => {
     expect(form.guardian_name).toBe('Sokha')
     expect(form.guardian_phone).toBe('012345678')
     expect(form.guardian_type).toBe('mother')
-    expect(form.province).toBe('Phnom Penh')
-    expect(form.district).toBe('Dangkao')
-    expect(form.commune).toBe('Sangkat Prek Pra')
-    expect(form.village).toBe('Village 1')
-    expect(form.address).toBe('Village 1, Sangkat Prek Pra, Dangkao, Phnom Penh')
+    expect(form.province).toBe('ខេត្តភ្នំពេញ')
+    expect(form.district).toBe('ខណ្ឌដង្កោ')
+    expect(form.commune).toBe('សង្កាត់ព្រែកប្រា')
+    expect(form.village).toBe('ភូមិ១')
+    expect(form.address).toBe('ភូមិ១, សង្កាត់ព្រែកប្រា, ខណ្ឌដង្កោ, ខេត្តភ្នំពេញ')
     expect(form.class_ids).toEqual(['class-1'])
   })
 
@@ -52,10 +52,10 @@ describe('studentFormHelpers', () => {
         guardian_name: 'Sokha',
         guardian_phone: '012345678',
         guardian_type: 'mother',
-        province: 'Phnom Penh',
-        district: 'Dangkao',
-        commune: 'Sangkat Prek Pra',
-        village: 'Village 1',
+        province: 'ខេត្តភ្នំពេញ',
+        district: 'ខណ្ឌដង្កោ',
+        commune: 'សង្កាត់ព្រែកប្រា',
+        village: 'ភូមិ១',
         address: '',
         status: 'active',
         class_ids: ['class-1'],
@@ -66,7 +66,7 @@ describe('studentFormHelpers', () => {
     )
 
     expect(payload.guardian_type).toBe('mother')
-    expect(payload.address).toBe('Village 1, Sangkat Prek Pra, Dangkao, Phnom Penh')
+    expect(payload.address).toBe('ភូមិ១, សង្កាត់ព្រែកប្រា, ខណ្ឌដង្កោ, ខេត្តភ្នំពេញ')
   })
 
   it('falls back to the raw address when no structured location is selected', () => {

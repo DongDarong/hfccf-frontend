@@ -66,7 +66,7 @@ export function loadStudentIntoForm(student: any, form: any) {
   form.district = student.district || ''
   form.commune = student.commune || ''
   form.village = student.village || ''
-  form.address = student.address || buildLocationAddress(student)
+  form.address = student.address || buildLocationAddress(student, 'kh')
   form.status = student.status || 'active'
   form.class_ids = Array.isArray(student.classes)
     ? student.classes.map((item: any) => item.id).filter(Boolean)
@@ -80,7 +80,7 @@ export function getStudentDisplayName(firstName: string, lastName: string): stri
 }
 
 export function normalizeStudentPayload(form: any, isEditMode: boolean) {
-  const address = buildLocationAddress(form)
+  const address = buildLocationAddress(form, 'kh')
 
   return {
     student_code: isEditMode ? form.student_code.trim() : undefined,

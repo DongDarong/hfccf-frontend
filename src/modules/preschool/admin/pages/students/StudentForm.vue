@@ -32,6 +32,7 @@ import {
 } from './utils/studentFormHelpers'
 import {
   buildLocationAddress,
+  getLocationDisplayName,
   fetchProvinces,
   fetchDistricts,
   fetchCommunes,
@@ -42,7 +43,7 @@ defineOptions({
   name: 'PreschoolAdminStudentFormPage',
 })
 
-const { t, language } = useLanguage()
+const { t } = useLanguage()
 const route = useRoute()
 const router = useRouter()
 
@@ -88,9 +89,7 @@ function normalizeText(value) {
 }
 
 function displayLocationName(item = {}) {
-  return language.value === 'kh'
-    ? normalizeText(item.nameKh || item.nameEn || item.code)
-    : normalizeText(item.nameEn || item.nameKh || item.code)
+  return getLocationDisplayName(item, 'kh')
 }
 
 function buildLocationOptions(items = []) {
@@ -121,7 +120,7 @@ const guardianContactProvided = computed(() =>
   Boolean(form.guardian_name.trim() || form.guardian_phone.trim()),
 )
 const guardianTypeRequired = computed(() => guardianContactProvided.value)
-const addressPreview = computed(() => buildLocationAddress(form))
+const addressPreview = computed(() => buildLocationAddress(form, 'kh'))
 
 const avatarSrc = computed(() => avatarPreview.value)
 
@@ -192,17 +191,19 @@ async function loadDistrictOptionsForProvince(provinceValue) {
     districtItems.value = []
     communeItems.value = []
     villageItems.value = []
-    return
+    return null
   }
 
   try {
     districtItems.value = await fetchDistricts(province.code)
     setLocationError('')
+    return province
   } catch (error) {
     districtItems.value = []
     communeItems.value = []
     villageItems.value = []
     setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    return null
   }
 }
 
@@ -211,16 +212,18 @@ async function loadCommuneOptionsForDistrict(districtValue) {
   if (!district) {
     communeItems.value = []
     villageItems.value = []
-    return
+    return null
   }
 
   try {
     communeItems.value = await fetchCommunes(district.code)
     setLocationError('')
+    return district
   } catch (error) {
     communeItems.value = []
     villageItems.value = []
     setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    return null
   }
 }
 
@@ -228,26 +231,51 @@ async function loadVillageOptionsForCommune(communeValue) {
   const commune = findLocationItem(communeItems.value, communeValue)
   if (!commune) {
     villageItems.value = []
-    return
+    return null
   }
 
   try {
     villageItems.value = await fetchVillages(commune.code)
     setLocationError('')
+    return commune
   } catch (error) {
     villageItems.value = []
     setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    return null
   }
 }
 
 async function hydrateLocationHierarchy() {
-  await loadDistrictOptionsForProvince(form.province)
-  if (!form.province || !form.district) return
+  isSyncingLocation.value = true
+  try {
+    const province = await loadDistrictOptionsForProvince(form.province)
+    if (province) {
+      form.province = displayLocationName(province)
+    }
 
-  await loadCommuneOptionsForDistrict(form.district)
-  if (!form.district || !form.commune) return
+    if (!form.province || !form.district) return
 
-  await loadVillageOptionsForCommune(form.commune)
+    const district = await loadCommuneOptionsForDistrict(form.district)
+    if (district) {
+      form.district = displayLocationName(district)
+    }
+
+    if (!form.district || !form.commune) return
+
+    const commune = await loadVillageOptionsForCommune(form.commune)
+    if (commune) {
+      form.commune = displayLocationName(commune)
+    }
+
+    const village = findLocationItem(villageItems.value, form.village)
+    if (village) {
+      form.village = displayLocationName(village)
+    }
+  } finally {
+    queueMicrotask(() => {
+      isSyncingLocation.value = false
+    })
+  }
 }
 
 watch(

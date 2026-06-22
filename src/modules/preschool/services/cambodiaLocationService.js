@@ -13,6 +13,16 @@ function normalizeLocationRow(row = {}) {
   }
 }
 
+export function getLocationDisplayName(item = {}, locale = 'kh') {
+  const nextLocale = String(locale || '').toLowerCase() === 'en' ? 'en' : 'kh'
+
+  if (nextLocale === 'en') {
+    return normalizeText(item.nameEn || item.name_en || item.nameKh || item.name_kh || item.code)
+  }
+
+  return normalizeText(item.nameKh || item.name_kh || item.nameEn || item.name_en || item.code)
+}
+
 function normalizeLocationList(response) {
   const payload = unwrapApiData(response) || {}
   const items = Array.isArray(payload.data) ? payload.data : Array.isArray(payload) ? payload : []
@@ -104,11 +114,19 @@ export async function fetchVillages(communeCode) {
   })
 }
 
-export function buildLocationAddress(source = {}) {
-  const village = normalizeText(source.village)
-  const commune = normalizeText(source.commune)
-  const district = normalizeText(source.district)
-  const province = normalizeText(source.province)
+function resolveAddressPart(value, locale = 'kh') {
+  if (value && typeof value === 'object') {
+    return getLocationDisplayName(value, locale)
+  }
+
+  return normalizeText(value)
+}
+
+export function buildLocationAddress(source = {}, locale = 'kh') {
+  const village = resolveAddressPart(source.village, locale)
+  const commune = resolveAddressPart(source.commune, locale)
+  const district = resolveAddressPart(source.district, locale)
+  const province = resolveAddressPart(source.province, locale)
   const structuredParts = [village, commune, district, province].filter(Boolean)
 
   if (structuredParts.length) {

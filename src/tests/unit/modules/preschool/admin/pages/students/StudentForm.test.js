@@ -25,6 +25,13 @@ vi.mock('@/modules/preschool/services/cambodiaLocationService', () => ({
   fetchDistricts: (...args) => mockFetchDistricts(...args),
   fetchCommunes: (...args) => mockFetchCommunes(...args),
   fetchVillages: (...args) => mockFetchVillages(...args),
+  getLocationDisplayName: (item = {}, locale = 'kh') => {
+    if (String(locale).toLowerCase() === 'en') {
+      return String(item.nameEn || item.name_en || item.nameKh || item.name_kh || item.code || '').trim()
+    }
+
+    return String(item.nameKh || item.name_kh || item.nameEn || item.name_en || item.code || '').trim()
+  },
   buildLocationAddress: (source = {}) => {
     const parts = [source.village, source.commune, source.district, source.province].filter(Boolean)
     return parts.length ? parts.join(', ') : String(source.address || '').trim()
@@ -94,7 +101,7 @@ beforeEach(() => {
 
     if (String(provinceCode) === '08') {
       return Promise.resolve([
-        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្តាល' },
+        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្ដាល' },
       ])
     }
 
@@ -111,7 +118,7 @@ beforeEach(() => {
 
     if (String(districtCode) === '0801') {
       return Promise.resolve([
-        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អក្រីយក្សត្រ' },
+        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អរិយក្សត្រ' },
       ])
     }
 
@@ -136,16 +143,12 @@ beforeEach(() => {
   })
 
   mockFetchPreschoolStudent.mockResolvedValue(null)
-  mockCreatePreschoolStudent.mockResolvedValue({
-    id: 'student-1',
-  })
-  mockUpdatePreschoolStudent.mockResolvedValue({
-    id: 'student-1',
-  })
+  mockCreatePreschoolStudent.mockResolvedValue({ id: 'student-1' })
+  mockUpdatePreschoolStudent.mockResolvedValue({ id: 'student-1' })
 })
 
 describe('StudentForm', () => {
-  it('renders guardian type and cascading location selects', async () => {
+  it('renders Khmer location labels and cascading selects', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
@@ -156,32 +159,32 @@ describe('StudentForm', () => {
     const selectCommune = getSelect(wrapper, 6)
     const selectVillage = getSelect(wrapper, 7)
 
-    expect(selectGuardianType.findAll('option').map((option) => option.text())).toContain('Father')
-    expect(selectProvince.findAll('option').map((option) => option.text())).toContain('Phnom Penh')
+    expect(selectProvince.findAll('option').map((option) => option.text())).toContain('ភ្នំពេញ')
     expect(selectDistrict.attributes('disabled')).toBeDefined()
     expect(selectCommune.attributes('disabled')).toBeDefined()
     expect(selectVillage.attributes('disabled')).toBeDefined()
 
-    await selectProvince.setValue('Phnom Penh')
+    await selectProvince.setValue('ភ្នំពេញ')
     await flushPromises()
 
     expect(mockFetchDistricts).toHaveBeenCalledWith('01')
     expect(selectDistrict.attributes('disabled')).toBeUndefined()
-    expect(selectDistrict.findAll('option').map((option) => option.text())).toContain('Dangkao')
+    expect(selectDistrict.findAll('option').map((option) => option.text())).toContain('ដង្កោ')
 
-    await selectDistrict.setValue('Dangkao')
+    await selectDistrict.setValue('ដង្កោ')
     await flushPromises()
 
     expect(mockFetchCommunes).toHaveBeenCalledWith('0102')
     expect(selectCommune.attributes('disabled')).toBeUndefined()
-    expect(selectCommune.findAll('option').map((option) => option.text())).toContain('Prek Pra')
+    expect(selectCommune.findAll('option').map((option) => option.text())).toContain('ព្រែកប្រា')
 
-    await selectCommune.setValue('Prek Pra')
+    await selectCommune.setValue('ព្រែកប្រា')
     await flushPromises()
 
     expect(mockFetchVillages).toHaveBeenCalledWith('010201')
     expect(selectVillage.attributes('disabled')).toBeUndefined()
-    expect(selectVillage.findAll('option').map((option) => option.text())).toContain('Village 1')
+    expect(selectVillage.findAll('option').map((option) => option.text())).toContain('ភូមិ១')
+    expect(selectGuardianType.findAll('option').map((option) => option.text())).toContain('Father')
   })
 
   it('clears child location selections when a parent selection changes', async () => {
@@ -194,20 +197,20 @@ describe('StudentForm', () => {
     const selectCommune = getSelect(wrapper, 6)
     const selectVillage = getSelect(wrapper, 7)
 
-    await selectProvince.setValue('Phnom Penh')
+    await selectProvince.setValue('ភ្នំពេញ')
     await flushPromises()
-    await selectDistrict.setValue('Dangkao')
+    await selectDistrict.setValue('ដង្កោ')
     await flushPromises()
-    await selectCommune.setValue('Prek Pra')
+    await selectCommune.setValue('ព្រែកប្រា')
     await flushPromises()
-    await selectVillage.setValue('Village 1')
+    await selectVillage.setValue('ភូមិ១')
     await flushPromises()
 
-    expect(selectDistrict.element.value).toBe('Dangkao')
-    expect(selectCommune.element.value).toBe('Prek Pra')
-    expect(selectVillage.element.value).toBe('Village 1')
+    expect(selectDistrict.element.value).toBe('ដង្កោ')
+    expect(selectCommune.element.value).toBe('ព្រែកប្រា')
+    expect(selectVillage.element.value).toBe('ភូមិ១')
 
-    await selectProvince.setValue('Kandal')
+    await selectProvince.setValue('កណ្ដាល')
     await flushPromises()
 
     expect(selectDistrict.element.value).toBe('')
@@ -215,7 +218,7 @@ describe('StudentForm', () => {
     expect(selectVillage.element.value).toBe('')
   })
 
-  it('submits guardian type and a formatted address', async () => {
+  it('submits guardian type and Khmer formatted address', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
@@ -231,13 +234,13 @@ describe('StudentForm', () => {
     const selectVillage = getSelect(wrapper, 7)
 
     await selectGuardianType.setValue('mother')
-    await selectProvince.setValue('Phnom Penh')
+    await selectProvince.setValue('ភ្នំពេញ')
     await flushPromises()
-    await selectDistrict.setValue('Dangkao')
+    await selectDistrict.setValue('ដង្កោ')
     await flushPromises()
-    await selectCommune.setValue('Prek Pra')
+    await selectCommune.setValue('ព្រែកប្រា')
     await flushPromises()
-    await selectVillage.setValue('Village 1')
+    await selectVillage.setValue('ភូមិ១')
     await flushPromises()
 
     await wrapper.find('form').trigger('submit.prevent')
@@ -247,7 +250,7 @@ describe('StudentForm', () => {
       guardian_name: 'Sokha',
       guardian_phone: '012345678',
       guardian_type: 'mother',
-      address: 'Village 1, Prek Pra, Dangkao, Phnom Penh',
+      address: 'ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
     }))
   })
 
@@ -277,18 +280,18 @@ describe('StudentForm', () => {
     expect(wrapper.findAll('.student-form-page__state--error').length).toBeGreaterThan(0)
   })
 
-  it('loads existing guardian and location values safely in edit mode', async () => {
+  it('loads existing guardian and Khmer location values safely in edit mode', async () => {
     mockFetchPreschoolStudent.mockResolvedValueOnce({
       id: 'student-1',
       studentCode: 'ST-1',
       guardianName: 'Sokha',
       guardianPhone: '012345678',
       guardianType: 'mother',
-      province: 'Phnom Penh',
-      district: 'Dangkao',
-      commune: 'Prek Pra',
-      village: 'Village 1',
-      address: 'Village 1, Prek Pra, Dangkao, Phnom Penh',
+      province: 'ភ្នំពេញ',
+      district: 'ដង្កោ',
+      commune: 'ព្រែកប្រា',
+      village: 'ភូមិ១',
+      address: 'ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
       avatarUrl: 'https://example.test/avatar.jpg',
       classes: [{ id: 'class-1' }],
     })
@@ -340,10 +343,10 @@ describe('StudentForm', () => {
     const selectVillage = getSelect(wrapper, 7)
 
     expect(selectGuardianType.element.value).toBe('mother')
-    expect(selectProvince.element.value).toBe('Phnom Penh')
-    expect(selectDistrict.element.value).toBe('Dangkao')
-    expect(selectCommune.element.value).toBe('Prek Pra')
-    expect(selectVillage.element.value).toBe('Village 1')
+    expect(selectProvince.element.value).toBe('ភ្នំពេញ')
+    expect(selectDistrict.element.value).toBe('ដង្កោ')
+    expect(selectCommune.element.value).toBe('ព្រែកប្រា')
+    expect(selectVillage.element.value).toBe('ភូមិ១')
     expect(wrapper.text()).not.toContain('Failed to load location data.')
   })
 })
