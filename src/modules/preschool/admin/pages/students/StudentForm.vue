@@ -19,6 +19,7 @@ import {
 } from './constants/studentFormConstants'
 import {
   buildStudentTypeOptions,
+  buildGuardianTypeOptions,
   buildGenderOptions,
   buildStatusOptions,
   buildClassOptions,
@@ -29,6 +30,13 @@ import {
   normalizeStudentPayload as performNormalizeStudentPayload,
   buildSuccessQuery,
 } from './utils/studentFormHelpers'
+import {
+  buildLocationAddress,
+  getProvinceOptions,
+  getDistrictOptions,
+  getCommuneOptions,
+  getVillageOptions,
+} from '@/modules/preschool/services/cambodiaLocationService'
 
 defineOptions({
   name: 'PreschoolAdminStudentFormPage',
@@ -47,6 +55,7 @@ const classOptions = ref([])
 const avatarFileInput = ref(null)
 const avatarPreview = ref('')
 const loadedStudent = ref(null)
+const isSyncingLocation = ref(false)
 
 const form = reactive({ ...DEFAULT_FORM })
 
@@ -65,11 +74,59 @@ const studentCodeDisplay = computed(() =>
     : t('preschoolStudentInfoPage.dialog.studentSignatureAuto'),
 )
 const studentTypeOptions = computed(() => buildStudentTypeOptions(t))
+const guardianTypeOptions = computed(() => buildGuardianTypeOptions(t))
 const genderOptions = computed(() => buildGenderOptions(t))
 const statusOptions = computed(() => buildStatusOptions(t))
+const provinceOptions = computed(() => getProvinceOptions())
+const districtOptions = computed(() => getDistrictOptions(form.province))
+const communeOptions = computed(() => getCommuneOptions(form.province, form.district))
+const villageOptions = computed(() => getVillageOptions(form.province, form.district, form.commune))
+const guardianContactProvided = computed(() =>
+  Boolean(form.guardian_name.trim() || form.guardian_phone.trim()),
+)
+const guardianTypeRequired = computed(() => guardianContactProvided.value)
+const addressPreview = computed(() => buildLocationAddress(form))
 
 const avatarSrc = computed(() =>
   avatarPreview.value,
+)
+
+function syncLocationFields(apply) {
+  isSyncingLocation.value = true
+  try {
+    apply()
+  } finally {
+    queueMicrotask(() => {
+      isSyncingLocation.value = false
+    })
+  }
+}
+
+watch(
+  () => form.province,
+  () => {
+    if (isSyncingLocation.value) return
+    form.district = ''
+    form.commune = ''
+    form.village = ''
+  },
+)
+
+watch(
+  () => form.district,
+  () => {
+    if (isSyncingLocation.value) return
+    form.commune = ''
+    form.village = ''
+  },
+)
+
+watch(
+  () => form.commune,
+  () => {
+    if (isSyncingLocation.value) return
+    form.village = ''
+  },
 )
 
 function clearAvatarPreview() {
@@ -79,7 +136,9 @@ function clearAvatarPreview() {
 
 function resetForm() {
   const resetData = createResetForm(DEFAULT_FORM)
-  Object.assign(form, resetData)
+  syncLocationFields(() => {
+    Object.assign(form, resetData)
+  })
   clearAvatarPreview()
   if (avatarFileInput.value) avatarFileInput.value.value = ''
   loadedStudent.value = null
@@ -112,7 +171,9 @@ async function loadStudent() {
     }
 
     loadedStudent.value = student
-    loadStudentIntoForm(student, form)
+    syncLocationFields(() => {
+      loadStudentIntoForm(student, form)
+    })
     clearAvatarPreview()
     avatarPreview.value = student.avatarUrl ? String(student.avatarUrl) : ''
   } catch (error) {
@@ -146,8 +207,23 @@ function normalizeStudentPayload() {
   return performNormalizeStudentPayload(form, isEditMode.value)
 }
 
+function validateForm() {
+  if (guardianTypeRequired.value && !form.guardian_type) {
+    return t('preschoolStudentInfoPage.validation.guardianTypeRequired')
+  }
+
+  return ''
+}
+
 async function onSubmit() {
   errorMessage.value = ''
+
+  const validationError = validateForm()
+  if (validationError) {
+    errorMessage.value = validationError
+    return
+  }
+
   saving.value = true
 
   try {
@@ -352,15 +428,71 @@ onUnmounted(clearAvatarPreview)
                     <input v-model="form.guardian_phone" class="student-form-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" />
                   </label>
 
-                  <label class="student-form-page__field student-form-page__field--full">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.address') }}</span>
-                    <textarea
-                      v-model="form.address"
-                      class="student-form-page__input student-form-page__textarea"
-                      rows="3"
-                      :placeholder="t('preschoolStudentInfoPage.dialog.address')"
-                    />
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">
+                      {{ t('preschoolStudentInfoPage.dialog.guardianType') }}
+                    </span>
+                    <select
+                      v-model="form.guardian_type"
+                      class="student-form-page__input"
+                      :required="guardianTypeRequired"
+                    >
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.guardianType') }}</option>
+                      <option v-for="opt in guardianTypeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
                   </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.province') }}</span>
+                    <select v-model="form.province" class="student-form-page__input">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectProvince') }}</option>
+                      <option v-for="opt in provinceOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.district') }}</span>
+                    <select v-model="form.district" class="student-form-page__input" :disabled="!form.province">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectDistrict') }}</option>
+                      <option v-for="opt in districtOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.commune') }}</span>
+                    <select v-model="form.commune" class="student-form-page__input" :disabled="!form.district">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectCommune') }}</option>
+                      <option v-for="opt in communeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.village') }}</span>
+                    <select v-model="form.village" class="student-form-page__input" :disabled="!form.commune">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectVillage') }}</option>
+                      <option v-for="opt in villageOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <div class="student-form-page__field student-form-page__field--full">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.addressPreview') }}</span>
+                    <div class="student-form-page__readonly student-form-page__readonly--address">
+                      <span class="student-form-page__readonly-label">
+                        {{ t('preschoolStudentInfoPage.dialog.fullAddress') }}
+                      </span>
+                      <span class="student-form-page__readonly-value">{{ addressPreview || '-' }}</span>
+                    </div>
+                  </div>
                 </div>
               </section>
 
@@ -664,6 +796,26 @@ onUnmounted(clearAvatarPreview)
   border-radius: 0.9rem;
   background: #faf5ff;
   color: #6d28d9;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.student-form-page__readonly--address {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.student-form-page__readonly-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.student-form-page__readonly-value {
+  color: #0f172a;
   font-size: 0.92rem;
   font-weight: 700;
 }

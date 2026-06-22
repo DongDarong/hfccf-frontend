@@ -1,7 +1,20 @@
+import { GUARDIAN_TYPES } from '../constants/studentFormConstants'
+import { buildLocationAddress } from '@/modules/preschool/services/cambodiaLocationService'
+
 export function buildStudentTypeOptions(t: any) {
   return [
     { label: t('preschoolStudentInfoPage.options.paying'), value: 'paying' },
     { label: t('preschoolStudentInfoPage.options.nonPaying'), value: 'non_paying' },
+  ]
+}
+
+export function buildGuardianTypeOptions(t: any) {
+  return [
+    { label: t('preschoolStudentInfoPage.options.father'), value: GUARDIAN_TYPES.FATHER },
+    { label: t('preschoolStudentInfoPage.options.mother'), value: GUARDIAN_TYPES.MOTHER },
+    { label: t('preschoolStudentInfoPage.options.grandfather'), value: GUARDIAN_TYPES.GRANDFATHER },
+    { label: t('preschoolStudentInfoPage.options.grandmother'), value: GUARDIAN_TYPES.GRANDMOTHER },
+    { label: t('preschoolStudentInfoPage.options.other'), value: GUARDIAN_TYPES.OTHER },
   ]
 }
 
@@ -48,7 +61,12 @@ export function loadStudentIntoForm(student: any, form: any) {
   form.date_of_birth = student.dateOfBirth || ''
   form.guardian_name = student.guardianName || ''
   form.guardian_phone = student.guardianPhone || ''
-  form.address = student.address || ''
+  form.guardian_type = student.guardianType || student.guardian_type || ''
+  form.province = student.province || ''
+  form.district = student.district || ''
+  form.commune = student.commune || ''
+  form.village = student.village || ''
+  form.address = student.address || buildLocationAddress(student)
   form.status = student.status || 'active'
   form.class_ids = Array.isArray(student.classes)
     ? student.classes.map((item: any) => item.id).filter(Boolean)
@@ -62,6 +80,8 @@ export function getStudentDisplayName(firstName: string, lastName: string): stri
 }
 
 export function normalizeStudentPayload(form: any, isEditMode: boolean) {
+  const address = buildLocationAddress(form)
+
   return {
     student_code: isEditMode ? form.student_code.trim() : undefined,
     student_type: form.student_type || 'paying',
@@ -71,7 +91,8 @@ export function normalizeStudentPayload(form: any, isEditMode: boolean) {
     date_of_birth: form.date_of_birth || null,
     guardian_name: form.guardian_name.trim() || null,
     guardian_phone: form.guardian_phone.trim() || null,
-    address: form.address.trim() || null,
+    guardian_type: form.guardian_type || null,
+    address: address || null,
     status: form.status,
     class_ids: form.class_ids,
     avatar: form.avatar instanceof File ? form.avatar : undefined,
