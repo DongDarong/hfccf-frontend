@@ -80,6 +80,28 @@ export default {
       back: 'Back',
     },
 
+    createPage: {
+      title: 'New Enrollment Application',
+      subtitle: 'Create a new preschool enrollment application.',
+      breadcrumb: {
+        preschool: 'Preschool',
+        enrollments: 'Enrollments',
+        newApplication: 'New Application',
+      },
+      sections: {
+        student: 'Student Information',
+        enrollment: 'Enrollment Request',
+        guardian: 'Guardian Information',
+        location: 'Guardian Location',
+        authorization: 'Authorization',
+      },
+      actions: {
+        saveApplication: 'Save Application',
+        cancel: 'Cancel',
+        backToEnrollments: 'Back to Enrollments',
+      },
+    },
+
     applicationDialog: {
       titleNew: 'New Enrollment Application',
       titleEdit: 'Edit Application',
@@ -88,6 +110,8 @@ export default {
         student: 'Student Information',
         guardian: 'Guardian Information',
         enrollment: 'Enrollment Request',
+        location: 'Guardian Location',
+        authorization: 'Authorization',
       },
       fields: {
         firstName: 'First Name',

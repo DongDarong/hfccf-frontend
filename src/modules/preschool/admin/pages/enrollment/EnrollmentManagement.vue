@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import Toast from 'primevue/toast'
@@ -60,6 +61,7 @@ import {
 } from './utils/enrollmentManagementHelpers'
 
 const { t } = useI18n()
+const router = useRouter()
 const toast = useToast()
 // Route access is restricted to ADMIN scope; all users who reach this page are admins.
 const canManage = true
@@ -158,9 +160,7 @@ async function openDetail(app) {
 
 // ─── Application form ─────────────────────────────────────────────────────
 function openNew() {
-  editingApp.value = null
-  appDialogReadonly.value = false
-  showAppDialog.value = true
+  router.push({ name: 'dashboard-preschool-admin-enrollments-create' })
 }
 
 function openEdit(app) {

@@ -197,7 +197,7 @@ describe('EnrollmentApplicationDialog', () => {
 
     expect(wrapper.text()).toContain('ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ')
 
-    await wrapper.find('button.enr-app-btn--save').trigger('click')
+    await wrapper.find('form').trigger('submit.prevent')
     await flushAll()
 
     const emitted = wrapper.emitted('save')
@@ -221,10 +221,12 @@ describe('EnrollmentApplicationDialog', () => {
     await flushAll()
     await fillGuardianFields(wrapper)
 
-    await wrapper.find('button.enr-app-btn--save').trigger('click')
+    await wrapper.find('form').trigger('submit.prevent')
     await flushAll()
+    await wrapper.vm.$nextTick()
+    await flushPromises()
 
-    expect(wrapper.text()).toContain('Guardian location is required.')
+    expect(wrapper.text()).toContain('Province is required.')
     expect(wrapper.emitted('save')).toBeFalsy()
   })
 

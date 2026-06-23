@@ -568,6 +568,15 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/enrollments/create',
+    name: 'dashboard-preschool-admin-enrollments-create',
+    component: () => import('@/modules/preschool/admin/pages/enrollment/CreateEnrollmentApplication.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/enrollments',
     name: 'dashboard-preschool-admin-enrollments',
     component: () => import('@/modules/preschool/admin/pages/enrollment/EnrollmentManagement.vue'),
