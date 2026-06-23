@@ -64,13 +64,36 @@ const districtOptions = computed(() => buildLocationOptions(districtItems.value)
 const communeOptions = computed(() => buildLocationOptions(communeItems.value))
 const villageOptions = computed(() => buildLocationOptions(villageItems.value))
 
-const addressPreview = computed(() => buildLocationAddress({
-  province: form.value.guardian_province,
-  district: form.value.guardian_district,
-  commune: form.value.guardian_commune,
-  village: form.value.guardian_village,
-  address: form.value.guardian_address,
-}, 'kh'))
+const addressPreviewRows = computed(() => {
+  if (!hasStructuredLocation.value && normalizeText(form.value.guardian_address)) {
+    return [{
+      label: t('preschoolEnrollmentPage.applicationDialog.fields.guardianAddress'),
+      value: form.value.guardian_address,
+    }]
+  }
+
+  return [
+    {
+      label: t('preschoolEnrollmentPage.applicationDialog.addressLabels.village'),
+      value: form.value.guardian_village,
+    },
+    {
+      label: t('preschoolEnrollmentPage.applicationDialog.addressLabels.communeWard'),
+      value: form.value.guardian_commune,
+    },
+    {
+      label: t('preschoolEnrollmentPage.applicationDialog.addressLabels.districtKhan'),
+      value: form.value.guardian_district,
+    },
+    {
+      label: t('preschoolEnrollmentPage.applicationDialog.addressLabels.provinceCapital'),
+      value: form.value.guardian_province,
+    },
+  ].map((row) => ({
+    ...row,
+    value: normalizeText(row.value) || '-',
+  }))
+})
 
 const hasStructuredLocation = computed(() => Boolean(
   form.value.guardian_province ||
@@ -567,7 +590,12 @@ function save() {
             <span class="enr-app-readonly__label">
               {{ t('preschoolEnrollmentPage.applicationDialog.fields.fullAddress') }}
             </span>
-            <span class="enr-app-readonly__value">{{ addressPreview || '-' }}</span>
+            <div class="enr-app-readonly__lines">
+              <div v-for="row in addressPreviewRows" :key="row.label" class="enr-app-readonly__line">
+                <span class="enr-app-readonly__line-label">{{ row.label }}:</span>
+                <span class="enr-app-readonly__line-value">{{ row.value }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -718,6 +746,31 @@ function save() {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25rem;
+}
+
+.enr-app-readonly__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.enr-app-readonly__line {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.enr-app-readonly__line-label {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.enr-app-readonly__line-value {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .enr-app-readonly__label {

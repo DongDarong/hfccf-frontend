@@ -149,6 +149,10 @@ describe('CreateEnrollmentApplication', () => {
     expect(wrapper.text()).toContain('Enrollment Request')
     expect(wrapper.text()).toContain('Guardian Information')
     expect(wrapper.text()).toContain('Guardian Location')
+    expect(wrapper.text()).toContain('Village:')
+    expect(wrapper.text()).toContain('Commune/Ward:')
+    expect(wrapper.text()).toContain('District/Khan:')
+    expect(wrapper.text()).toContain('Province/Capital:')
     expect(wrapper.text()).toContain('Authorization')
     expect(wrapper.text()).toContain('Back to Enrollments')
 

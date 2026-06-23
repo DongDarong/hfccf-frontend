@@ -138,6 +138,12 @@ export default {
         guardianCanPickup: 'មានការអនុញ្ញាតដើម្បីទទួលយកសិស្ស',
         guardianIsEmergency: 'ទំនាក់ទំនងបន្ទាន់',
       },
+      addressLabels: {
+        village: 'ភូមិ',
+        communeWard: 'ឃុំ/សង្កាត់',
+        districtKhan: 'ស្រុក/ខណ្ឌ',
+        provinceCapital: 'ខេត្ត/រាជធានី',
+      },
       genders: {
         male: 'ប្រុស',
         female: 'ស្រី',

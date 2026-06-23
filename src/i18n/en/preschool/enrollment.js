@@ -140,6 +140,12 @@ export default {
         guardianCanPickup: 'Authorized to Pick Up',
         guardianIsEmergency: 'Emergency Contact',
       },
+      addressLabels: {
+        village: 'Village',
+        communeWard: 'Commune/Ward',
+        districtKhan: 'District/Khan',
+        provinceCapital: 'Province/Capital',
+      },
       genders: {
         male: 'Male',
         female: 'Female',

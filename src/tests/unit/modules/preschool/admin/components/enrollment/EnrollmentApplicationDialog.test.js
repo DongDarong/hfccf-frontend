@@ -195,7 +195,10 @@ describe('EnrollmentApplicationDialog', () => {
     await getSelect(wrapper, 7).setValue('ភូមិ១')
     await flushAll()
 
-    expect(wrapper.text()).toContain('ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ')
+    expect(wrapper.text()).toContain('Village:')
+    expect(wrapper.text()).toContain('Commune/Ward:')
+    expect(wrapper.text()).toContain('District/Khan:')
+    expect(wrapper.text()).toContain('Province/Capital:')
 
     await wrapper.find('form').trigger('submit.prevent')
     await flushAll()
@@ -254,7 +257,10 @@ describe('EnrollmentApplicationDialog', () => {
     expect(districtSelect.element.value).toBe('ដង្កោ')
     expect(communeSelect.element.value).toBe('ព្រែកប្រា')
     expect(villageSelect.element.value).toBe('ភូមិ១')
-    expect(wrapper.text()).toContain('ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ')
+    expect(wrapper.text()).toContain('Village:')
+    expect(wrapper.text()).toContain('Commune/Ward:')
+    expect(wrapper.text()).toContain('District/Khan:')
+    expect(wrapper.text()).toContain('Province/Capital:')
 
     const legacyWrapper = mountDialog({
       application: {
