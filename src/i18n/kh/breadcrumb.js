@@ -48,6 +48,7 @@ export default {
     teachers: 'គ្រូ',
     addTeacher: 'បន្ថែមគ្រូ',
     teacherDetail: 'ព័ត៌មានគ្រូ',
+    newApplication: 'ពាក្យស្នើថ្មី',
     classes: 'ថ្នាក់',
     addClass: 'បន្ថែមថ្នាក់',
     payment: 'ការទូទាត់',

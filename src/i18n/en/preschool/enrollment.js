@@ -116,7 +116,7 @@ export default {
       fields: {
         firstName: 'First Name',
         lastName: 'Last Name',
-        khmerName: 'Khmer Name',
+        khmerName: 'Latin Name',
         gender: 'Gender',
         dateOfBirth: 'Date of Birth',
         placeOfBirth: 'Place of Birth',

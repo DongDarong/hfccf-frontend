@@ -84,16 +84,6 @@ onMounted(async () => {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <div class="enr-create-page__shell">
-        <nav class="enr-create-page__breadcrumb" aria-label="Breadcrumb">
-          <span>{{ t('preschoolEnrollmentPage.createPage.breadcrumb.preschool') }}</span>
-          <span class="enr-create-page__breadcrumb-separator">/</span>
-          <span>{{ t('preschoolEnrollmentPage.createPage.breadcrumb.enrollments') }}</span>
-          <span class="enr-create-page__breadcrumb-separator">/</span>
-          <span class="enr-create-page__breadcrumb-current">
-            {{ t('preschoolEnrollmentPage.createPage.breadcrumb.newApplication') }}
-          </span>
-        </nav>
-
         <div class="enr-create-page__toolbar">
           <div>
             <p class="enr-create-page__eyebrow">{{ t('preschoolEnrollmentPage.createPage.title') }}</p>
@@ -142,25 +132,6 @@ onMounted(async () => {
     radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
     linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.99) 100%);
   box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
-}
-
-.enr-create-page__breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-  color: #64748b;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-.enr-create-page__breadcrumb-current {
-  color: #0f172a;
-}
-
-.enr-create-page__breadcrumb-separator {
-  color: #cbd5e1;
 }
 
 .enr-create-page__toolbar {

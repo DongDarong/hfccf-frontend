@@ -48,6 +48,7 @@ export default {
     teachers: 'Teachers',
     addTeacher: 'Add Teacher',
     teacherDetail: 'Teacher Detail',
+    newApplication: 'New Application',
     classes: 'Classes',
     addClass: 'Add Class',
     payment: 'Payment',

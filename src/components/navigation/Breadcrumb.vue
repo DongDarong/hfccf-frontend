@@ -364,6 +364,11 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.enrollment' },
   ],
+  'dashboard-preschool-admin-enrollments-create': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.enrollment', to: { name: 'dashboard-preschool-admin-enrollments' } },
+    { labelKey: 'breadcrumb.newApplication' },
+  ],
 
   // ── Assignments ────────────────────────────────────────────────────��──────
   'dashboard-preschool-admin-assignments': [
