@@ -149,6 +149,7 @@ describe('CreateEnrollmentApplication', () => {
     expect(wrapper.text()).toContain('Enrollment Request')
     expect(wrapper.text()).toContain('Guardian Information')
     expect(wrapper.text()).toContain('Guardian Type')
+    expect(wrapper.text()).not.toContain('Other Guardian Type')
     expect(wrapper.text()).toContain('Guardian Location')
     expect(wrapper.text()).toContain('Village:')
     expect(wrapper.text()).toContain('Commune/Ward:')
@@ -196,6 +197,49 @@ describe('CreateEnrollmentApplication', () => {
     expect(mockCreateEnrollment.mock.calls[0][0].commune_code).toBeUndefined()
     expect(mockCreateEnrollment.mock.calls[0][0].village_code).toBeUndefined()
     expect(wrapper.vm.$router.currentRoute.value.name).toBe('dashboard-preschool-admin-enrollments')
+  })
+
+  it('submits a custom relationship when other guardian type is selected', async () => {
+    const wrapper = mountPage()
+
+    await flushAll()
+
+    const textInputs = wrapper.findAll('input[type="text"]')
+    await textInputs.at(6).setValue('Sokha')
+    await wrapper.findAll('select').at(4).setValue('other')
+    await flushAll()
+
+    await wrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]').setValue('Uncle')
+    await textInputs.at(7).setValue('012345678')
+    await wrapper.find('input[type="email"]').setValue('sokha@example.test')
+
+    await getSelect(wrapper, 5).setValue('ភ្នំពេញ')
+    await flushAll()
+    await getSelect(wrapper, 6).setValue('ចំការមន')
+    await flushAll()
+    await getSelect(wrapper, 7).setValue('ទន្លេបាសាក់')
+    await flushAll()
+    await getSelect(wrapper, 8).setValue('ភូមិ១')
+    await flushAll()
+
+    await wrapper.find('form').trigger('submit.prevent')
+    await flushAll()
+
+    expect(mockCreateEnrollment).toHaveBeenCalledWith(expect.objectContaining({
+      guardian_relationship: 'Uncle',
+    }))
+  })
+
+  it('shows the other guardian type detail field when selected', async () => {
+    const wrapper = mountPage()
+
+    await flushAll()
+
+    await wrapper.findAll('select').at(4).setValue('other')
+    await flushAll()
+
+    expect(wrapper.text()).toContain('Other Guardian Type')
+    expect(wrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]').exists()).toBe(true)
   })
 
   it('navigates back when cancel is clicked', async () => {

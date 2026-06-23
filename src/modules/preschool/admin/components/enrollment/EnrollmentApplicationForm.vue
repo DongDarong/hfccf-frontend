@@ -59,11 +59,21 @@ function findLocationItem(items = [], selectedValue = '') {
   )) || null
 }
 
-function normalizeGuardianType(value) {
-  const normalized = normalizeText(value).toLowerCase()
-  return ['father', 'mother', 'grandfather', 'grandmother', 'other'].includes(normalized)
-    ? normalized
-    : ''
+function isKnownGuardianType(value) {
+  return ['father', 'mother', 'grandfather', 'grandmother', 'other'].includes(normalizeText(value).toLowerCase())
+}
+
+function resolveGuardianRelationship(rawValue) {
+  const normalized = normalizeText(rawValue)
+  if (!normalized) {
+    return { type: '', detail: '' }
+  }
+
+  if (isKnownGuardianType(normalized)) {
+    return { type: normalized.toLowerCase(), detail: '' }
+  }
+
+  return { type: 'other', detail: normalized }
 }
 
 const provinceOptions = computed(() => buildLocationOptions(provinceItems.value))
@@ -108,6 +118,8 @@ const addressPreviewRows = computed(() => {
     value: normalizeText(row.value) || '-',
   }))
 })
+
+const isOtherGuardianType = computed(() => normalizeText(form.value.guardian_relationship) === 'other')
 
 const hasStructuredLocation = computed(() => Boolean(
   form.value.guardian_province ||
@@ -174,6 +186,14 @@ function clearLocationChildren(level = 'province') {
 }
 
 function createEmptyForm(application = null) {
+  const relationship = resolveGuardianRelationship(
+    application?.guardianRelationship
+    ?? application?.guardian_relationship
+    ?? application?.relationship
+    ?? application?.guardianType
+    ?? application?.guardian_type,
+  )
+
   return {
     first_name: application?.firstName ?? '',
     last_name: application?.lastName ?? '',
@@ -188,13 +208,8 @@ function createEmptyForm(application = null) {
     preferred_class_id: application?.preferredClassId ?? '',
     requested_start_date: application?.requestedStartDate ?? '',
     guardian_name: application?.guardianName ?? '',
-    guardian_relationship: normalizeGuardianType(
-      application?.guardianRelationship
-      ?? application?.guardian_relationship
-      ?? application?.relationship
-      ?? application?.guardianType
-      ?? application?.guardian_type,
-    ),
+    guardian_relationship: relationship.type,
+    guardian_relationship_detail: relationship.detail,
     guardian_phone: application?.guardianPhone ?? '',
     guardian_email: application?.guardianEmail ?? '',
     guardian_address: application?.guardianAddress ?? application?.guardian_address ?? '',
@@ -215,6 +230,9 @@ function buildSubmitPayload() {
     village: form.value.guardian_village,
     address: form.value.guardian_address,
   }, 'kh')
+  const guardianRelationship = isOtherGuardianType.value
+    ? normalizeText(form.value.guardian_relationship_detail)
+    : normalizeText(form.value.guardian_relationship)
 
   return {
     first_name: normalizeText(form.value.first_name),
@@ -230,7 +248,7 @@ function buildSubmitPayload() {
     preferred_class_id: form.value.preferred_class_id || null,
     requested_start_date: form.value.requested_start_date || null,
     guardian_name: normalizeText(form.value.guardian_name) || null,
-    guardian_relationship: normalizeText(form.value.guardian_relationship) || null,
+    guardian_relationship: guardianRelationship || null,
     guardian_phone: normalizeText(form.value.guardian_phone) || null,
     guardian_email: normalizeText(form.value.guardian_email) || null,
     guardian_address: guardianAddress || null,
@@ -250,6 +268,10 @@ function validateForm() {
 
   if (!normalizeText(form.value.guardian_relationship)) {
     return t('preschoolEnrollmentPage.validation.guardianTypeRequired')
+  }
+
+  if (isOtherGuardianType.value && !normalizeText(form.value.guardian_relationship_detail)) {
+    return t('preschoolEnrollmentPage.validation.guardianTypeOtherRequired')
   }
 
   if (canUseLegacyAddress.value) {
@@ -414,6 +436,15 @@ watch(
 )
 
 watch(
+  () => form.value.guardian_relationship,
+  (value, previousValue) => {
+    if (normalizeText(previousValue) === 'other' && normalizeText(value) !== 'other') {
+      form.value.guardian_relationship_detail = ''
+    }
+  },
+)
+
+watch(
   () => form.value.guardian_district,
   async (value) => {
     if (isSyncingLocation.value) return
@@ -551,6 +582,16 @@ function save() {
               {{ opt.label }}
             </option>
           </select>
+        </div>
+        <div v-if="isOtherGuardianType" class="enr-app-field">
+          <label class="enr-app-label">{{ f('guardianTypeOther') }} *</label>
+          <input
+            v-model="form.guardian_relationship_detail"
+            type="text"
+            class="enr-app-input"
+            :disabled="readonly"
+            :placeholder="p('guardianTypeOther')"
+          />
         </div>
         <div class="enr-app-field">
           <label class="enr-app-label">{{ f('guardianPhone') }} *</label>
