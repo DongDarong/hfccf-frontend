@@ -148,6 +148,7 @@ describe('CreateEnrollmentApplication', () => {
     expect(wrapper.text()).toContain('Student Information')
     expect(wrapper.text()).toContain('Enrollment Request')
     expect(wrapper.text()).toContain('Guardian Information')
+    expect(wrapper.text()).toContain('Guardian Type')
     expect(wrapper.text()).toContain('Guardian Location')
     expect(wrapper.text()).toContain('Village:')
     expect(wrapper.text()).toContain('Commune/Ward:')
@@ -156,7 +157,7 @@ describe('CreateEnrollmentApplication', () => {
     expect(wrapper.text()).toContain('Authorization')
     expect(wrapper.text()).toContain('Back to Enrollments')
 
-    const provinceSelect = getSelect(wrapper, 4)
+    const provinceSelect = getSelect(wrapper, 5)
     expect(provinceSelect.findAll('option').map((option) => option.text())).toContain('ភ្នំពេញ')
   })
 
@@ -167,17 +168,17 @@ describe('CreateEnrollmentApplication', () => {
 
     const textInputs = wrapper.findAll('input[type="text"]')
     await textInputs.at(6).setValue('Sokha')
-    await textInputs.at(7).setValue('Brother')
-    await textInputs.at(8).setValue('012345678')
+    await wrapper.findAll('select').at(4).setValue('father')
+    await textInputs.at(7).setValue('012345678')
     await wrapper.find('input[type="email"]').setValue('sokha@example.test')
 
-    await getSelect(wrapper, 4).setValue('ភ្នំពេញ')
+    await getSelect(wrapper, 5).setValue('ភ្នំពេញ')
     await flushAll()
-    await getSelect(wrapper, 5).setValue('ចំការមន')
+    await getSelect(wrapper, 6).setValue('ចំការមន')
     await flushAll()
-    await getSelect(wrapper, 6).setValue('ទន្លេបាសាក់')
+    await getSelect(wrapper, 7).setValue('ទន្លេបាសាក់')
     await flushAll()
-    await getSelect(wrapper, 7).setValue('ភូមិ១')
+    await getSelect(wrapper, 8).setValue('ភូមិ១')
     await flushAll()
 
     await wrapper.find('form').trigger('submit.prevent')
@@ -185,7 +186,7 @@ describe('CreateEnrollmentApplication', () => {
 
     expect(mockCreateEnrollment).toHaveBeenCalledWith(expect.objectContaining({
       guardian_name: 'Sokha',
-      guardian_relationship: 'Brother',
+      guardian_relationship: 'father',
       guardian_phone: '012345678',
       guardian_email: 'sokha@example.test',
       guardian_address: 'ភូមិ១, ទន្លេបាសាក់, ចំការមន, ភ្នំពេញ',

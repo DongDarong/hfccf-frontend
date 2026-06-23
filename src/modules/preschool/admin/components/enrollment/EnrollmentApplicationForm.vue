@@ -59,10 +59,24 @@ function findLocationItem(items = [], selectedValue = '') {
   )) || null
 }
 
+function normalizeGuardianType(value) {
+  const normalized = normalizeText(value).toLowerCase()
+  return ['father', 'mother', 'grandfather', 'grandmother', 'other'].includes(normalized)
+    ? normalized
+    : ''
+}
+
 const provinceOptions = computed(() => buildLocationOptions(provinceItems.value))
 const districtOptions = computed(() => buildLocationOptions(districtItems.value))
 const communeOptions = computed(() => buildLocationOptions(communeItems.value))
 const villageOptions = computed(() => buildLocationOptions(villageItems.value))
+const guardianTypeOptions = computed(() => [
+  { label: t('preschoolEnrollmentPage.applicationDialog.guardianTypes.father'), value: 'father' },
+  { label: t('preschoolEnrollmentPage.applicationDialog.guardianTypes.mother'), value: 'mother' },
+  { label: t('preschoolEnrollmentPage.applicationDialog.guardianTypes.grandfather'), value: 'grandfather' },
+  { label: t('preschoolEnrollmentPage.applicationDialog.guardianTypes.grandmother'), value: 'grandmother' },
+  { label: t('preschoolEnrollmentPage.applicationDialog.guardianTypes.other'), value: 'other' },
+])
 
 const addressPreviewRows = computed(() => {
   if (!hasStructuredLocation.value && normalizeText(form.value.guardian_address)) {
@@ -174,7 +188,13 @@ function createEmptyForm(application = null) {
     preferred_class_id: application?.preferredClassId ?? '',
     requested_start_date: application?.requestedStartDate ?? '',
     guardian_name: application?.guardianName ?? '',
-    guardian_relationship: application?.guardianRelationship ?? '',
+    guardian_relationship: normalizeGuardianType(
+      application?.guardianRelationship
+      ?? application?.guardian_relationship
+      ?? application?.relationship
+      ?? application?.guardianType
+      ?? application?.guardian_type,
+    ),
     guardian_phone: application?.guardianPhone ?? '',
     guardian_email: application?.guardianEmail ?? '',
     guardian_address: application?.guardianAddress ?? application?.guardian_address ?? '',
@@ -226,6 +246,10 @@ function validateForm() {
 
   if (!normalizeText(form.value.guardian_phone)) {
     return t('preschoolEnrollmentPage.validation.guardianPhoneRequired')
+  }
+
+  if (!normalizeText(form.value.guardian_relationship)) {
+    return t('preschoolEnrollmentPage.validation.guardianTypeRequired')
   }
 
   if (canUseLegacyAddress.value) {
@@ -520,8 +544,13 @@ function save() {
           <input v-model="form.guardian_name" type="text" class="enr-app-input" :disabled="readonly" :placeholder="p('guardianName')" />
         </div>
         <div class="enr-app-field">
-          <label class="enr-app-label">{{ f('guardianRelationship') }}</label>
-          <input v-model="form.guardian_relationship" type="text" class="enr-app-input" :disabled="readonly" />
+          <label class="enr-app-label">{{ f('guardianType') }} *</label>
+          <select v-model="form.guardian_relationship" class="enr-app-select" :disabled="readonly" :required="!readonly">
+            <option value="">{{ t('preschoolEnrollmentPage.applicationDialog.placeholders.selectGuardianType') }}</option>
+            <option v-for="opt in guardianTypeOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
         </div>
         <div class="enr-app-field">
           <label class="enr-app-label">{{ f('guardianPhone') }} *</label>

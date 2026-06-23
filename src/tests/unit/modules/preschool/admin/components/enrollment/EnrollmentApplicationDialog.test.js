@@ -62,8 +62,8 @@ async function flushAll() {
 async function fillGuardianFields(wrapper) {
   const textInputs = wrapper.findAll('input[type="text"]')
   await textInputs.at(6).setValue('Sokha')
-  await textInputs.at(7).setValue('Brother')
-  await textInputs.at(8).setValue('012345678')
+  await wrapper.findAll('select').at(4).setValue('father')
+  await textInputs.at(7).setValue('012345678')
   await wrapper.find('input[type="email"]').setValue('sokha@example.test')
 }
 
@@ -130,26 +130,26 @@ describe('EnrollmentApplicationDialog', () => {
 
     await flushAll()
 
-    const provinceSelect = getSelect(wrapper, 4)
+    const provinceSelect = getSelect(wrapper, 5)
     expect(provinceSelect.findAll('option').map((option) => option.text())).toContain('ភ្នំពេញ')
 
     await provinceSelect.setValue('ភ្នំពេញ')
     await flushAll()
 
     expect(mockFetchDistricts).toHaveBeenCalledWith('01')
-    expect(getSelect(wrapper, 5).findAll('option').map((option) => option.text())).toContain('ដង្កោ')
+    expect(getSelect(wrapper, 6).findAll('option').map((option) => option.text())).toContain('ដង្កោ')
 
-    await getSelect(wrapper, 5).setValue('ដង្កោ')
+    await getSelect(wrapper, 6).setValue('ដង្កោ')
     await flushAll()
 
     expect(mockFetchCommunes).toHaveBeenCalledWith('0102')
-    expect(getSelect(wrapper, 6).findAll('option').map((option) => option.text())).toContain('ព្រែកប្រា')
+    expect(getSelect(wrapper, 7).findAll('option').map((option) => option.text())).toContain('ព្រែកប្រា')
 
-    await getSelect(wrapper, 6).setValue('ព្រែកប្រា')
+    await getSelect(wrapper, 7).setValue('ព្រែកប្រា')
     await flushAll()
 
     expect(mockFetchVillages).toHaveBeenCalledWith('010201')
-    expect(getSelect(wrapper, 7).findAll('option').map((option) => option.text())).toContain('ភូមិ១')
+    expect(getSelect(wrapper, 8).findAll('option').map((option) => option.text())).toContain('ភូមិ១')
   })
 
   it('clears child selections when a parent selection changes', async () => {
@@ -157,18 +157,18 @@ describe('EnrollmentApplicationDialog', () => {
 
     await flushAll()
 
-    const provinceSelect = getSelect(wrapper, 4)
-    const districtSelect = getSelect(wrapper, 5)
-    const communeSelect = getSelect(wrapper, 6)
-    const villageSelect = getSelect(wrapper, 7)
+    const provinceSelect = getSelect(wrapper, 5)
+    const districtSelect = getSelect(wrapper, 6)
+    const communeSelect = getSelect(wrapper, 7)
+    const villageSelect = getSelect(wrapper, 8)
 
     await provinceSelect.setValue('ភ្នំពេញ')
     await flushAll()
-    await getSelect(wrapper, 5).setValue('ដង្កោ')
+    await getSelect(wrapper, 6).setValue('ដង្កោ')
     await flushAll()
-    await getSelect(wrapper, 6).setValue('ព្រែកប្រា')
+    await getSelect(wrapper, 7).setValue('ព្រែកប្រា')
     await flushAll()
-    await getSelect(wrapper, 7).setValue('ភូមិ១')
+    await getSelect(wrapper, 8).setValue('ភូមិ១')
     await flushAll()
 
     await provinceSelect.setValue('កណ្តាល')
@@ -185,16 +185,17 @@ describe('EnrollmentApplicationDialog', () => {
     await flushAll()
     await fillGuardianFields(wrapper)
 
-    const provinceSelect = getSelect(wrapper, 4)
+    const provinceSelect = getSelect(wrapper, 5)
     await provinceSelect.setValue('ភ្នំពេញ')
     await flushAll()
-    await getSelect(wrapper, 5).setValue('ដង្កោ')
+    await getSelect(wrapper, 6).setValue('ដង្កោ')
     await flushAll()
-    await getSelect(wrapper, 6).setValue('ព្រែកប្រា')
+    await getSelect(wrapper, 7).setValue('ព្រែកប្រា')
     await flushAll()
-    await getSelect(wrapper, 7).setValue('ភូមិ១')
+    await getSelect(wrapper, 8).setValue('ភូមិ១')
     await flushAll()
 
+    expect(wrapper.text()).toContain('Guardian Type')
     expect(wrapper.text()).toContain('Village:')
     expect(wrapper.text()).toContain('Commune/Ward:')
     expect(wrapper.text()).toContain('District/Khan:')
@@ -207,7 +208,7 @@ describe('EnrollmentApplicationDialog', () => {
     expect(emitted).toHaveLength(1)
     expect(emitted[0][0]).toMatchObject({
       guardian_name: 'Sokha',
-      guardian_relationship: 'Brother',
+      guardian_relationship: 'father',
       guardian_phone: '012345678',
       guardian_email: 'sokha@example.test',
       guardian_address: 'ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
@@ -243,15 +244,16 @@ describe('EnrollmentApplicationDialog', () => {
         guardianDistrict: '0102',
         guardianCommune: '010201',
         guardianVillage: '01020101',
+        guardianRelationship: 'father',
       },
     })
 
     await flushAll()
 
-    const provinceSelect = getSelect(wrapper, 4)
-    const districtSelect = getSelect(wrapper, 5)
-    const communeSelect = getSelect(wrapper, 6)
-    const villageSelect = getSelect(wrapper, 7)
+    const provinceSelect = getSelect(wrapper, 5)
+    const districtSelect = getSelect(wrapper, 6)
+    const communeSelect = getSelect(wrapper, 7)
+    const villageSelect = getSelect(wrapper, 8)
 
     expect(provinceSelect.element.value).toBe('ភ្នំពេញ')
     expect(districtSelect.element.value).toBe('ដង្កោ')
