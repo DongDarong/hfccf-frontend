@@ -114,7 +114,7 @@ export default {
       fields: {
         firstName: 'បញ្ចូលនាមខ្លួន',
         lastName: 'បញ្ចូលនាមត្រកូល',
-        khmerName: 'បញ្ចូលឈ្មោះជាឡាតាំង (ស្រេចចិត្ត)',
+        khmerName: 'បញ្ចូលឈ្មោះជាឡាតាំង',
         gender: 'ភេទ',
         dateOfBirth: 'ថ្ងៃខែឆ្នាំកំណើត',
         placeOfBirth: 'បញ្ចូលទីកន្លែងកំណើត',
@@ -160,7 +160,7 @@ export default {
       placeholders: {
         firstName: 'បញ្ចូលនាមខ្លួន',
         lastName: 'បញ្ចូលនាមត្រកូល',
-        khmerName: 'បញ្ចូលឈ្មោះជាឡាតាំង (ស្រេចចិត្ត)',
+        khmerName: 'បញ្ចូលឈ្មោះជាឡាតាំង',
         placeOfBirth: 'បញ្ចូលទីកន្លែងកំណើត',
         nationality: 'បញ្ចូលសញ្ជាតិ',
         guardianName: 'ឈ្មោះអាណាព្យាបាល',
