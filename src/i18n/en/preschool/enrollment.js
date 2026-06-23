@@ -162,7 +162,7 @@ export default {
       placeholders: {
         firstName: 'Enter first name',
         lastName: 'Enter last name',
-        khmerName: 'Enter Khmer name (optional)',
+        khmerName: 'Enter Latin name (optional)',
         placeOfBirth: 'Enter place of birth',
         nationality: 'Enter nationality',
         guardianName: 'Enter guardian full name',
