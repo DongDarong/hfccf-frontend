@@ -211,7 +211,7 @@ function buildCategoryPayload(category = {}) {
 function buildReportPeriodPayload(period = {}) {
   return {
     academic_year_id: period.academicYearId ?? period.academic_year_id ?? '',
-    term_id: period.termId ?? period.term_id ?? '',
+    term_id: normalizeText(period.termId ?? period.term_id ?? '') || null,
     name: normalizeText(period.name),
     start_date: period.startDate || period.start_date || '',
     end_date: period.endDate || period.end_date || '',
