@@ -134,6 +134,8 @@ describe('preschool reporting api', () => {
       format: 'csv',
       filename: 'preschool-attendance.csv',
       content: 'label,value\nA,1',
+      mimeType: '',
+      encoding: 'utf-8',
     })
 
     expect(http.get).toHaveBeenNthCalledWith(3, '/preschool/reports/export', expect.objectContaining({

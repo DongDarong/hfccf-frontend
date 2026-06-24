@@ -19,12 +19,15 @@ const router = useRouter()
 
 const loading = ref(false)
 const errorMessage = ref('')
+const filterOptions = ref({})
 const filters = ref({
   academicYearId: '',
   termId: '',
+  reportPeriodId: '',
   dateFrom: '',
   dateTo: '',
   classId: '',
+  studentId: '',
   teacherId: '',
   status: '',
 })
@@ -42,11 +45,28 @@ async function loadDashboard() {
   try {
     const payload = await fetchReportsDashboard(filters.value)
     dashboard.value = payload.dashboard || dashboard.value
+    filterOptions.value = payload.filters || {}
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolReportsCenterPage.messages.loadFailed')
   } finally {
     loading.value = false
   }
+}
+
+async function resetDashboardFilters() {
+  filters.value = {
+    academicYearId: '',
+    termId: '',
+    reportPeriodId: '',
+    dateFrom: '',
+    dateTo: '',
+    classId: '',
+    studentId: '',
+    teacherId: '',
+    status: '',
+  }
+
+  await loadDashboard()
 }
 
 const kpiCards = computed(() => [
@@ -109,19 +129,23 @@ onMounted(() => {
       <ReportFilterBar
         v-model="filters"
         :loading="loading"
+        :visible-filters="['academicYear', 'term', 'reportPeriod', 'dateRange', 'class', 'student', 'teacher', 'status']"
         :labels="{
           academicYear: t('preschoolReportsCenterPage.filters.academicYear'),
           term: t('preschoolReportsCenterPage.filters.term'),
+          reportPeriod: t('preschoolReportsCenterPage.filters.reportPeriod'),
           dateFrom: t('preschoolReportsCenterPage.filters.dateFrom'),
           dateTo: t('preschoolReportsCenterPage.filters.dateTo'),
           class: t('preschoolReportsCenterPage.filters.class'),
+          student: t('preschoolReportsCenterPage.filters.student'),
           teacher: t('preschoolReportsCenterPage.filters.teacher'),
           status: t('preschoolReportsCenterPage.filters.status'),
           apply: t('preschoolReportsCenterPage.filters.apply'),
           reset: t('preschoolReportsCenterPage.filters.reset'),
         }"
+        :options="filterOptions"
         @apply="loadDashboard"
-        @reset="loadDashboard"
+        @reset="resetDashboardFilters"
       />
 
       <ReportSummaryCards :cards="kpiCards" />

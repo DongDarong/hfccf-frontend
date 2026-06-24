@@ -17,6 +17,7 @@ const { t } = useLanguage()
     :fetcher="fetchAttendanceReports"
     rows-key="classBreakdown"
     chart-key="trend"
+    :visible-filters="['academicYear', 'term', 'dateRange', 'class', 'student', 'status']"
     :chart-title="t('preschoolReportsCenterPage.charts.attendanceTrend')"
     :chart-subtitle="t('preschoolReportsCenterPage.sections.attendance.subtitle')"
     :table-columns="[
