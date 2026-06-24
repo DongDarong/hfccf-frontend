@@ -220,6 +220,7 @@ function openCreateReportPeriod() {
   if (academicYearOptions.value.length > 0) {
     reportPeriodDraft.value.academicYearId = academicYearOptions.value[0].value
   }
+  reportPeriodDraft.value.termId = filteredTermOptions.value[0]?.value || ''
   reportPeriodErrors.value = {}
   reportPeriodDialogVisible.value = true
 }
@@ -318,6 +319,7 @@ function validateReportPeriodDraft() {
   const end = reportPeriodDraft.value.endDate ? new Date(reportPeriodDraft.value.endDate) : null
 
   if (!String(reportPeriodDraft.value.academicYearId || '').trim()) errors.academicYearId = 'required'
+  if (!String(reportPeriodDraft.value.termId || '').trim()) errors.termId = 'required'
   if (!String(reportPeriodDraft.value.name || '').trim()) errors.name = 'required'
   if (!reportPeriodDraft.value.startDate) errors.startDate = 'required'
   if (!reportPeriodDraft.value.endDate) errors.endDate = 'required'
@@ -1130,6 +1132,7 @@ onMounted(loadPage)
             option-value="value"
             class="w-full"
           />
+          <small v-if="reportPeriodErrors.termId" class="text-xs font-medium text-rose-600">{{ t(`preschoolAssessmentSettingsPage.validation.${reportPeriodErrors.termId}`) }}</small>
         </label>
 
         <label class="field">

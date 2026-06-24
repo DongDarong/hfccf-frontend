@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 import { usePreschoolClassroomReports } from '@/modules/preschool/composables/usePreschoolClassroomReports'
 
 const mockGetCurrentUser = vi.fn()
@@ -19,6 +20,15 @@ vi.mock('@/modules/preschool/services/preschoolApi', () => ({
 vi.mock('@/modules/preschool/services/api/preschoolReportsApi', () => ({
   fetchReportPeriods: (...args) => mockFetchReportPeriods(...args),
   fetchClassroomReport: (...args) => mockFetchClassroomReport(...args),
+}))
+
+vi.mock('@/composables/useLanguage', () => ({
+  useLanguage: () => ({
+    t: (key) => key,
+    te: () => false,
+    tm: () => ({}),
+    locale: ref('en'),
+  }),
 }))
 
 // Keep the classroom report composable covered so period loading and class

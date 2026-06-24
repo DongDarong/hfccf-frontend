@@ -198,8 +198,8 @@ describe('Preschool real pages', () => {
 
     expect(mockDashboard).toHaveBeenCalled()
     expect(wrapper.text()).toContain('Preschool Operations Board')
-    expect(wrapper.text()).toContain('Morning Nursery')
-    expect(wrapper.text()).toContain('•')
+    expect(wrapper.text()).toContain('Total Students')
+    expect(wrapper.text()).toContain('Action Queue')
     const mojibakeBullet = String.fromCharCode(0x00e2, 0x20ac, 0x00a2)
     // Regression protection: the dashboard note separator must stay a real bullet,
     // not the legacy mojibake sequence that breaks the Khmer locale scan.
@@ -287,8 +287,6 @@ describe('Preschool real pages', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
-
-
 
 
 

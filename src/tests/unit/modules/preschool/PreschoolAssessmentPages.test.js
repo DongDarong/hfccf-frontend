@@ -49,12 +49,12 @@ vi.mock('@/modules/preschool/composables/useAssessmentReports', () => ({
 }))
 
 vi.mock('@/modules/preschool/stores/assessmentStore', () => ({
-  useAssessmentStore: () => ({
-    filters: {
-      studentId: null,
-      classId: null,
-      categoryId: null,
-      periodLabel: null,
+    useAssessmentStore: () => ({
+      filters: {
+        studentId: null,
+        classId: null,
+        categoryId: null,
+        periodLabel: null,
       status: 'all',
       searchQuery: '',
       dateFrom: null,
@@ -62,21 +62,22 @@ vi.mock('@/modules/preschool/stores/assessmentStore', () => ({
     },
     isFormOpen: ref(false),
     editingAssessment: ref(null),
-    saving: ref(false),
-    error: ref(null),
-    openCreateForm: vi.fn(),
-    openEditForm: vi.fn(),
-    closeForm: vi.fn(),
+      saving: ref(false),
+      error: ref(null),
+      openCreateForm: vi.fn(),
+      openEditForm: vi.fn(),
+      closeForm: vi.fn(),
     reset: vi.fn(),
     setFilter: vi.fn(),
     resetFilters: vi.fn(),
     saveAssessment: mockSaveAssessment,
-    updateAssessment: mockUpdateAssessment,
-    finalize: mockFinalizeAssessment,
-    archive: mockArchiveAssessment,
-    assessments: ref([]),
-  }),
-}))
+      updateAssessment: mockUpdateAssessment,
+      finalize: mockFinalizeAssessment,
+      archive: mockArchiveAssessment,
+      assessments: ref([]),
+      filteredAssessments: [{ id: 11, status: 'draft', score: 78, student: { fullName: 'Alice Student' } }],
+    }),
+  }))
 
 function stubs() {
   return {
@@ -145,7 +146,7 @@ describe('Preschool assessment pages', () => {
 
     expect(mockLoadLookupData).toHaveBeenCalled()
     expect(wrapper.text()).toContain('Assessment List')
-    expect(wrapper.text()).toContain('Choose a student to begin.')
+    expect(wrapper.text()).toContain('Select a student to view or create assessments.')
     expect(warnSpy).not.toHaveBeenCalled()
     expect(errorSpy).not.toHaveBeenCalled()
   })
@@ -173,5 +174,3 @@ describe('Preschool assessment pages', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
-
-

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 import { usePreschoolReports } from '@/modules/preschool/composables/usePreschoolReports'
 
 const mockGetCurrentUser = vi.fn()
@@ -21,6 +22,15 @@ vi.mock('@/modules/preschool/services/api/preschoolReportsApi', () => ({
   fetchReportPeriods: (...args) => mockFetchReportPeriods(...args),
   fetchStudentReports: (...args) => mockFetchStudentReports(...args),
   fetchStudentReportPeriod: (...args) => mockFetchStudentReportPeriod(...args),
+}))
+
+vi.mock('@/composables/useLanguage', () => ({
+  useLanguage: () => ({
+    t: (key) => key,
+    te: () => false,
+    tm: () => ({}),
+    locale: ref('en'),
+  }),
 }))
 
 // Keep the Preschool student reporting composable covered so finalised-period
