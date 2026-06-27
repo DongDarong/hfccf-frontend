@@ -141,25 +141,31 @@ defineProps({
 
       <article class="preschool-dashboard-page__panel">
         <div class="preschool-dashboard-page__panel-header">
-          <div>
-            <h3 class="preschool-dashboard-page__panel-title">{{ classroomSummaryTitle }}</h3>
+          <div class="preschool-dashboard-page__classroom-summary-copy">
+            <div class="preschool-dashboard-page__classroom-summary-heading">
+              <h3 class="preschool-dashboard-page__panel-title">{{ classroomSummaryTitle }}</h3>
+              <RouterLink
+                :to="classroomSummaryViewAllTo"
+                class="preschool-dashboard-page__panel-link preschool-dashboard-page__classroom-summary-link"
+              >
+                {{ classroomSummaryViewAllText }}
+              </RouterLink>
+            </div>
             <p class="preschool-dashboard-page__panel-subtitle">{{ classroomSummarySubtitle }}</p>
           </div>
-          <RouterLink
-            :to="classroomSummaryViewAllTo"
-            class="preschool-dashboard-page__panel-link"
-          >
-            {{ classroomSummaryViewAllText }}
-          </RouterLink>
         </div>
-        <div class="preschool-dashboard-page__summary-grid">
+        <div class="preschool-dashboard-page__classroom-summary-grid">
           <article
-            v-for="item in classroomSummaryItems"
+            v-for="(item, index) in classroomSummaryItems"
             :key="item.label"
-            class="preschool-dashboard-page__summary-item"
+            class="preschool-dashboard-page__classroom-summary-item"
+            :data-tone="['success', 'info', 'warning', 'neutral'][index] || 'neutral'"
           >
-            <span>{{ item.label }}</span>
-            <strong>{{ item.value }}</strong>
+            <div class="preschool-dashboard-page__classroom-summary-indicator" aria-hidden="true"></div>
+            <div class="preschool-dashboard-page__classroom-summary-content">
+              <span class="preschool-dashboard-page__classroom-summary-label">{{ item.label }}</span>
+              <strong class="preschool-dashboard-page__classroom-summary-value">{{ item.value }}</strong>
+            </div>
           </article>
         </div>
       </article>

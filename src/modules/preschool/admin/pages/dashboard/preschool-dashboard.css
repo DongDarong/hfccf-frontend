@@ -327,6 +327,25 @@
   outline-offset: 2px;
 }
 
+.preschool-dashboard-page__classroom-summary-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.preschool-dashboard-page__classroom-summary-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.preschool-dashboard-page__classroom-summary-link {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
 .preschool-dashboard-page__empty {
   color: #64748b;
   font-size: 0.92rem;
@@ -376,6 +395,75 @@
 .preschool-dashboard-page__summary-grid {
   display: grid;
   gap: 0.5rem;
+}
+
+.preschool-dashboard-page__classroom-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.preschool-dashboard-page__classroom-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.72rem 0.8rem;
+  border-radius: 0.95rem;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.preschool-dashboard-page__classroom-summary-indicator {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+}
+
+.preschool-dashboard-page__classroom-summary-item[data-tone='success'] .preschool-dashboard-page__classroom-summary-indicator {
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+.preschool-dashboard-page__classroom-summary-item[data-tone='warning'] .preschool-dashboard-page__classroom-summary-indicator {
+  background: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
+}
+
+.preschool-dashboard-page__classroom-summary-item[data-tone='neutral'] .preschool-dashboard-page__classroom-summary-indicator {
+  background: #94a3b8;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.1);
+}
+
+.preschool-dashboard-page__classroom-summary-content {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.preschool-dashboard-page__classroom-summary-label {
+  min-width: 0;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preschool-dashboard-page__classroom-summary-value {
+  flex-shrink: 0;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .preschool-dashboard-page__shortcut-grid {
@@ -435,7 +523,8 @@
 
   .preschool-dashboard-page__insight-grid,
   .preschool-dashboard-page__operations-grid,
-  .preschool-dashboard-page__shortcut-grid {
+  .preschool-dashboard-page__shortcut-grid,
+  .preschool-dashboard-page__classroom-summary-grid {
     grid-template-columns: 1fr;
   }
 
