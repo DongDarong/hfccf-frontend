@@ -12,6 +12,13 @@ function normalizeNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+function normalizeNullableNumber(value) {
+  if (value === null || value === undefined || value === '') return null
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 function normalizeCard(card = {}) {
   return {
     title: normalizeText(card.title),
@@ -25,7 +32,9 @@ function normalizeKpis(kpis = {}) {
   return {
     totalStudents: normalizeNumber(kpis.total_students ?? kpis.totalStudents),
     activeStudents: normalizeNumber(kpis.active_students ?? kpis.activeStudents),
+    attendanceToday: normalizeNullableNumber(kpis.attendance_today ?? kpis.attendanceToday),
     newEnrollments: normalizeNumber(kpis.new_enrollments ?? kpis.newEnrollments),
+    pendingEnrollments: normalizeNumber(kpis.pending_enrollments ?? kpis.pendingEnrollments),
     attendanceRate: normalizeNumber(kpis.attendance_rate ?? kpis.attendanceRate),
     absenceRate: normalizeNumber(kpis.absence_rate ?? kpis.absenceRate),
     lateRate: normalizeNumber(kpis.late_rate ?? kpis.lateRate),
@@ -41,6 +50,35 @@ function normalizeKpis(kpis = {}) {
     openGuardianIssues: normalizeNumber(kpis.open_guardian_issues ?? kpis.openGuardianIssues),
     escalatedCases: normalizeNumber(kpis.escalated_cases ?? kpis.escalatedCases),
   }
+}
+
+function normalizeComparison(comparison = {}) {
+  return {
+    current: normalizeNullableNumber(comparison.current),
+    previous: normalizeNullableNumber(comparison.previous),
+    delta: normalizeNullableNumber(comparison.delta),
+    percent: normalizeNullableNumber(comparison.percent),
+    trend: normalizeText(comparison.trend || 'neutral').toLowerCase(),
+    comparison: normalizeText(comparison.comparison),
+  }
+}
+
+function normalizeAnalytics(analytics = {}) {
+  return {
+    activeStudents: normalizeComparison(analytics.active_students ?? analytics.activeStudents),
+    attendanceToday: normalizeComparison(analytics.attendance_today ?? analytics.attendanceToday),
+    openHealthAlerts: normalizeComparison(analytics.open_health_alerts ?? analytics.openHealthAlerts),
+    pendingEnrollments: normalizeComparison(analytics.pending_enrollments ?? analytics.pendingEnrollments),
+    outstandingPayments: normalizeComparison(analytics.outstanding_payments ?? analytics.outstandingPayments),
+  }
+}
+
+function normalizeExecutiveHealth(health = {}) {
+  return Object.fromEntries(Object.entries(health).map(([key, item = {}]) => [key, {
+    ...item,
+    status: normalizeText(item.status || 'neutral').toLowerCase(),
+    value: normalizeNullableNumber(item.value),
+  }]))
 }
 
 function normalizeSeries(items = []) {
@@ -78,6 +116,8 @@ function normalizeReport(payload = {}) {
       vaccinationCompliance: payload.summary.vaccination_compliance ?? payload.summary.vaccinationCompliance ?? null,
     } : {},
     kpis: payload.kpis ? normalizeKpis(payload.kpis) : {},
+    analytics: normalizeAnalytics(payload.analytics || {}),
+    executiveHealth: normalizeExecutiveHealth(payload.executive_health || payload.executiveHealth || {}),
     cards: Array.isArray(payload.cards) ? payload.cards.map(normalizeCard) : [],
     trend: normalizeSeries(payload.trend || []),
     performance: normalizeSeries(payload.performance || []),

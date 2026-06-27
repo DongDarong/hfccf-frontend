@@ -17,6 +17,7 @@ export default {
       attendanceToday: {
         title: 'Attendance Today',
         label: 'Records marked today',
+        rateLabel: 'Attendance rate today',
       },
       healthAlerts: {
         title: 'Open Health Alerts',
@@ -31,6 +32,11 @@ export default {
         label: 'Unpaid invoices',
       },
       noComparisonYet: 'No comparison yet',
+      comparison: {
+        previous_day: '{value} vs yesterday',
+        start_of_month: '{value} vs start of month',
+        previous_period: '{value} vs previous period',
+      },
       trend: {
         upCount: '+{value} this month',
         downCount: '-{value} this month',
@@ -66,6 +72,7 @@ export default {
         attendanceRate: 'Attendance at {rate}',
         outstandingPayments: '{amount} outstanding',
         assessmentRisk: '{count} students at risk',
+        assessmentCompletion: 'Assessment completion at {rate}',
         openHealthAlerts: '{count} open alerts',
         guardianIssues: '{count} open guardian issues',
       },

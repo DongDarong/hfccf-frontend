@@ -15,6 +15,7 @@ export default {
       attendanceToday: {
         title: 'វត្តមានថ្ងៃនេះ',
         label: 'កំណត់ត្រាដែលបានកត់ត្រាថ្ងៃនេះ',
+        rateLabel: 'អត្រាវត្តមានថ្ងៃនេះ',
       },
       healthAlerts: {
         title: 'ការជូនដំណឹងសុខភាពបើក',
@@ -29,6 +30,11 @@ export default {
         label: 'វិក្កយបត្រមិនទាន់ទូទាត់',
       },
       noComparisonYet: 'មិនទាន់មានការប្រៀបធៀបនៅឡើយ',
+      comparison: {
+        previous_day: '{value} បើប្រៀបធៀបម្សិលមិញ',
+        start_of_month: '{value} បើប្រៀបធៀបដើមខែ',
+        previous_period: '{value} បើប្រៀបធៀបរយៈពេលមុន',
+      },
       trend: {
         upCount: '+{value} ក្នុងខែនេះ',
         downCount: '-{value} ក្នុងខែនេះ',
@@ -64,6 +70,7 @@ export default {
         attendanceRate: 'វត្តមាន {rate}',
         outstandingPayments: '{amount} នៅសល់',
         assessmentRisk: '{count} សិស្សមានហានិភ័យ',
+        assessmentCompletion: 'ការវាយតម្លៃបានបញ្ចប់ {rate}',
         openHealthAlerts: '{count} ការជូនដំណឹងបើក',
         guardianIssues: '{count} ករណីអាណាព្យាបាលបើក',
       },

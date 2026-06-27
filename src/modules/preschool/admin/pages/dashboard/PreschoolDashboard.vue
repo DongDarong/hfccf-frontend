@@ -46,6 +46,8 @@ const defaultDashboard = {
 
 const defaultReportsDashboard = {
   kpis: {},
+  analytics: {},
+  executiveHealth: {},
   modules: {},
   cards: [],
   risk: {},
@@ -101,45 +103,28 @@ function getFirstNumber(source, paths = []) {
   return null
 }
 
-function getSeriesDelta(series = []) {
-  if (!Array.isArray(series) || series.length < 2) {
-    return null
-  }
+function formatAnalyticsComparison(metric, valueFormatter) {
+  const delta = Number(metric?.delta)
+  const direction = ['up', 'down', 'neutral'].includes(metric?.trend) ? metric.trend : 'neutral'
+  const comparison = String(metric?.comparison || '').trim()
 
-  const values = series
-    .map(item => Number(item?.value))
-    .filter(value => Number.isFinite(value))
-
-  if (values.length < 2) {
-    return null
-  }
-
-  const last = values[values.length - 1]
-  const previous = values[values.length - 2]
-
-  if (last === previous) {
-    return 0
-  }
-
-  return last - previous
-}
-
-function buildTrendState({ delta, series, valueFormatter, positiveKey, negativeKey, neutralText }) {
-  const resolvedDelta = Number.isFinite(Number(delta)) ? Number(delta) : getSeriesDelta(series)
-
-  if (Number.isFinite(resolvedDelta) && resolvedDelta !== 0) {
-    const direction = resolvedDelta > 0 ? 'up' : 'down'
-    const key = direction === 'up' ? positiveKey : negativeKey
-
+  if (!Number.isFinite(delta) || !comparison) {
     return {
-      direction,
-      label: t(key, { value: valueFormatter(Math.abs(resolvedDelta)) }),
+      direction: 'neutral',
+      label: t('preschoolDashboardPage.summary.noComparisonYet'),
     }
   }
 
+  const sign = delta > 0 ? '+' : delta < 0 ? '-' : ''
+  const comparisonKey = ['previous_day', 'start_of_month'].includes(comparison)
+    ? comparison
+    : 'previous_period'
+
   return {
-    direction: 'neutral',
-    label: neutralText,
+    direction,
+    label: t(`preschoolDashboardPage.summary.comparison.${comparisonKey}`, {
+      value: `${sign}${valueFormatter(Math.abs(delta))}`,
+    }),
   }
 }
 
@@ -262,7 +247,10 @@ const spotlightText = computed(() => {
 })
 
 const summaryCards = computed(() => {
-  const activeStudents = getFirstNumber(dashboard.value, [
+  const analytics = reportsDashboard.value.analytics || {}
+  const hasAttendanceAnalytics = analytics.attendanceToday?.current !== null
+    && analytics.attendanceToday?.current !== undefined
+  const activeStudents = analytics.activeStudents?.current ?? getFirstNumber(dashboard.value, [
     'summary.students',
     'summary.activeStudents',
     'summary.active_student_count',
@@ -271,14 +259,14 @@ const summaryCards = computed(() => {
     'kpis.activeStudents',
     'kpis.totalStudents',
   ]) ?? 0
-  const attendanceToday = getFirstNumber(dashboard.value, [
+  const attendanceToday = analytics.attendanceToday?.current ?? getFirstNumber(dashboard.value, [
     'summary.attendanceToday',
     'summary.attendance_today',
     'kpis.attendanceToday',
     'kpis.presentStudents',
     'kpis.present_students',
   ]) ?? 0
-  const openHealthAlerts = getFirstNumber({
+  const openHealthAlerts = analytics.openHealthAlerts?.current ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, [
@@ -286,14 +274,14 @@ const summaryCards = computed(() => {
     'summary.healthAlerts',
     'summary.openHealthAlerts',
   ]) ?? 0
-  const pendingEnrollments = getFirstNumber({
+  const pendingEnrollments = analytics.pendingEnrollments?.current ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, [
     'summary.pendingEnrollments',
     'kpis.newEnrollments',
   ]) ?? 0
-  const outstandingPayments = getFirstNumber({
+  const outstandingPayments = analytics.outstandingPayments?.current ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, [
@@ -301,33 +289,11 @@ const summaryCards = computed(() => {
     'summary.outstandingPayments',
   ]) ?? 0
 
-  const activeStudentsTrend = buildTrendState({
-    delta: getFirstNumber(dashboard.value, [
-      'summary.studentsDelta',
-      'summary.activeStudentsDelta',
-      'kpis.activeStudentsDelta',
-      'kpis.studentsDelta',
-    ]),
-    series: reportsDashboard.value.performance,
-    valueFormatter: formatCount,
-    positiveKey: 'preschoolDashboardPage.summary.trend.upCount',
-    negativeKey: 'preschoolDashboardPage.summary.trend.downCount',
-    neutralText: t('preschoolDashboardPage.summary.noComparisonYet'),
-  })
-
-  const attendanceTrend = buildTrendState({
-    delta: getFirstNumber(dashboard.value, [
-      'summary.attendanceTodayDelta',
-      'summary.attendanceDelta',
-      'kpis.attendanceRateDelta',
-      'kpis.attendanceDelta',
-    ]),
-    series: reportsDashboard.value.trend,
-    valueFormatter: formatPercent,
-    positiveKey: 'preschoolDashboardPage.summary.trend.upPercent',
-    negativeKey: 'preschoolDashboardPage.summary.trend.downPercent',
-    neutralText: t('preschoolDashboardPage.summary.noComparisonYet'),
-  })
+  const activeStudentsTrend = formatAnalyticsComparison(analytics.activeStudents, formatCount)
+  const attendanceTrend = formatAnalyticsComparison(analytics.attendanceToday, formatPercent)
+  const healthTrend = formatAnalyticsComparison(analytics.openHealthAlerts, formatCount)
+  const enrollmentTrend = formatAnalyticsComparison(analytics.pendingEnrollments, formatCount)
+  const paymentTrend = formatAnalyticsComparison(analytics.outstandingPayments, formatCurrency)
 
   return [
     {
@@ -340,8 +306,8 @@ const summaryCards = computed(() => {
     },
     {
       title: t('preschoolDashboardPage.summary.attendanceToday.title'),
-      value: formatCount(attendanceToday),
-      label: t('preschoolDashboardPage.summary.attendanceToday.label'),
+      value: hasAttendanceAnalytics ? formatPercent(attendanceToday) : formatCount(attendanceToday),
+      label: t(`preschoolDashboardPage.summary.attendanceToday.${hasAttendanceAnalytics ? 'rateLabel' : 'label'}`),
       comparison: attendanceTrend.label,
       trend: attendanceTrend,
       status: 'info',
@@ -350,125 +316,66 @@ const summaryCards = computed(() => {
       title: t('preschoolDashboardPage.summary.healthAlerts.title'),
       value: formatCount(openHealthAlerts),
       label: t('preschoolDashboardPage.summary.healthAlerts.label'),
-      comparison: openHealthAlerts > 0
-        ? t('preschoolDashboardPage.summary.healthAlertsComparison', { count: formatCount(openHealthAlerts) })
-        : t('preschoolDashboardPage.summary.noComparisonYet'),
-      trend: {
-        direction: 'neutral',
-        label: t('preschoolDashboardPage.summary.noComparisonYet'),
-      },
+      comparison: healthTrend.label,
+      trend: healthTrend,
       status: 'error',
     },
     {
       title: t('preschoolDashboardPage.summary.pendingEnrollments.title'),
       value: formatCount(pendingEnrollments),
       label: t('preschoolDashboardPage.summary.pendingEnrollments.label'),
-      comparison: pendingEnrollments > 0
-        ? t('preschoolDashboardPage.summary.pendingEnrollmentsComparison', { count: formatCount(pendingEnrollments) })
-        : t('preschoolDashboardPage.summary.noComparisonYet'),
-      trend: {
-        direction: 'neutral',
-        label: t('preschoolDashboardPage.summary.noComparisonYet'),
-      },
+      comparison: enrollmentTrend.label,
+      trend: enrollmentTrend,
       status: 'warning',
     },
     {
       title: t('preschoolDashboardPage.summary.outstandingPayments.title'),
       value: formatCurrency(outstandingPayments),
       label: t('preschoolDashboardPage.summary.outstandingPayments.label'),
-      comparison: outstandingPayments > 0
-        ? t('preschoolDashboardPage.summary.outstandingPaymentsComparison', { amount: formatCurrency(outstandingPayments) })
-        : t('preschoolDashboardPage.summary.noComparisonYet'),
-      trend: {
-        direction: 'neutral',
-        label: t('preschoolDashboardPage.summary.noComparisonYet'),
-      },
+      comparison: paymentTrend.label,
+      trend: paymentTrend,
       status: 'info',
     },
   ]
 })
 
 const systemHealthItems = computed(() => {
-  const openHealthAlerts = getFirstNumber({
+  const health = reportsDashboard.value.executiveHealth || {}
+  const openHealthAlerts = health.health?.value ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['kpis.openHealthAlerts', 'summary.healthAlerts']) ?? null
-  const criticalHealthAlerts = getFirstNumber({
-    ...dashboard.value,
-    kpis: reportsDashboard.value.kpis,
-  }, ['kpis.criticalHealthAlerts']) ?? 0
-  const pendingEnrollments = getFirstNumber({
+  const pendingEnrollments = health.enrollment?.value ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['summary.pendingEnrollments', 'kpis.newEnrollments']) ?? null
-  const attendanceExceptions = getFirstNumber({
+  const attendanceExceptions = health.attendance?.exceptions ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['summary.attendanceExceptions', 'kpis.lateRate']) ?? null
-  const attendanceRate = getFirstNumber({
+  const attendanceRate = health.attendance?.value ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['kpis.attendanceRate']) ?? null
-  const outstandingPayments = getFirstNumber({
+  const outstandingPayments = health.billing?.value ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['kpis.outstandingBalances', 'summary.outstandingPayments', 'kpis.overdueInvoices']) ?? null
-  const assessmentCompletion = getFirstNumber({
+  const assessmentCompletion = health.assessment?.value ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['kpis.assessmentCompletion']) ?? null
-  const atRiskStudents = getFirstNumber({
-    ...dashboard.value,
-    kpis: reportsDashboard.value.kpis,
-  }, ['kpis.atRiskStudents']) ?? null
-  const guardianIssues = getFirstNumber({
+  const guardianIssues = health.guardians?.value ?? getFirstNumber({
     ...dashboard.value,
     kpis: reportsDashboard.value.kpis,
   }, ['summary.guardianIssues', 'kpis.openGuardianIssues', 'kpis.escalatedCases']) ?? null
 
-  const enrollmentStatus = pendingEnrollments === null
-    ? 'neutral'
-    : pendingEnrollments > 0
-      ? 'warning'
-      : 'healthy'
-
-  const attendanceStatus = attendanceRate === null
-    ? (attendanceExceptions === null ? 'neutral' : Number(attendanceExceptions) > 0 ? 'warning' : 'neutral')
-    : Number(attendanceRate) < 80
-      ? 'critical'
-      : Number(attendanceExceptions) > 0 || Number(attendanceRate) < 90
-        ? 'warning'
-        : 'healthy'
-
-  const billingStatus = outstandingPayments === null
-    ? 'neutral'
-    : Number(outstandingPayments) > 0
-      ? 'warning'
-      : 'healthy'
-
-  const assessmentStatus = assessmentCompletion === null
-    ? 'neutral'
-    : Number(assessmentCompletion) < 70 || Number(atRiskStudents) > 4
-      ? 'critical'
-      : Number(assessmentCompletion) < 85 || Number(atRiskStudents) > 0
-        ? 'warning'
-        : 'healthy'
-
-  const healthStatus = openHealthAlerts === null
-    ? 'neutral'
-    : Number(criticalHealthAlerts) > 0 || Number(openHealthAlerts) > 3
-      ? 'critical'
-      : Number(openHealthAlerts) > 0
-        ? 'warning'
-        : 'healthy'
-
-  const guardianStatus = guardianIssues === null
-    ? 'neutral'
-    : Number(guardianIssues) > 2
-      ? 'critical'
-      : Number(guardianIssues) > 0
-        ? 'warning'
-        : 'healthy'
+  const enrollmentStatus = health.enrollment?.status || 'neutral'
+  const attendanceStatus = health.attendance?.status || 'neutral'
+  const billingStatus = health.billing?.status || 'neutral'
+  const assessmentStatus = health.assessment?.status || 'neutral'
+  const healthStatus = health.health?.status || 'neutral'
+  const guardianStatus = health.guardians?.status || 'neutral'
 
   return [
     {
@@ -489,7 +396,9 @@ const systemHealthItems = computed(() => {
         ? t('preschoolDashboardPage.executiveHealth.noData')
         : Number(attendanceExceptions) > 0
           ? t('preschoolDashboardPage.executiveHealth.details.attendanceExceptions', { count: formatCount(attendanceExceptions) })
-          : t('preschoolDashboardPage.executiveHealth.details.healthy'),
+          : attendanceRate === null
+            ? t('preschoolDashboardPage.executiveHealth.noData')
+            : t('preschoolDashboardPage.executiveHealth.details.attendanceRate', { rate: formatPercent(attendanceRate) }),
     },
     {
       label: t('preschoolDashboardPage.executiveHealth.modules.billing'),
@@ -507,9 +416,7 @@ const systemHealthItems = computed(() => {
       statusLabel: translateExecutiveStatus(assessmentStatus),
       detail: assessmentCompletion === null
         ? t('preschoolDashboardPage.executiveHealth.noData')
-        : Number(atRiskStudents) > 0
-          ? t('preschoolDashboardPage.executiveHealth.details.assessmentRisk', { count: formatCount(atRiskStudents) })
-          : t('preschoolDashboardPage.executiveHealth.details.healthy'),
+        : t('preschoolDashboardPage.executiveHealth.details.assessmentCompletion', { rate: formatPercent(assessmentCompletion) }),
     },
     {
       label: t('preschoolDashboardPage.executiveHealth.modules.health'),
