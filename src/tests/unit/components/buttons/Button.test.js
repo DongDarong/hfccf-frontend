@@ -22,6 +22,7 @@ describe('Button wrapper', () => {
     })
 
     expect(wrapper.text()).toContain('Health Records')
+    expect(wrapper.html()).toContain('pi-heart')
     expect(wrapper.html()).toContain('pi-arrow-right')
   })
 

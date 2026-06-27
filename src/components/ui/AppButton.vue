@@ -53,6 +53,18 @@ const emit = defineEmits(['click'])
 const attrs = useAttrs()
 const { t } = useLanguage()
 
+const buttonAttrs = computed(() => {
+  const next = { ...attrs }
+  delete next.label
+  delete next.icon
+  delete next.iconPos
+  return next
+})
+
+const buttonIconClass = computed(() => String(attrs.icon || '').trim())
+const buttonLabel = computed(() => String(attrs.label || '').trim())
+const buttonIconPosition = computed(() => String(attrs.iconPos || 'left').toLowerCase())
+
 const sizeClass = computed(() => {
   const classes = {
     xs: '!h-7 !min-h-7 !px-3 !text-xs !gap-1.5 !leading-[1.1]',
@@ -213,18 +225,6 @@ const pt = computed(() => ({
   root: {
     class: rootClass.value,
   },
-  label: {
-    class: [
-      'ui-button__label',
-      'inline-flex',
-      'items-center',
-      'justify-center',
-      'min-w-0',
-      'max-w-full',
-      'truncate',
-      props.variant === 'link' ? 'leading-none' : '',
-    ],
-  },
   loadingIcon: {
     class: 'ui-button__spinner !text-current',
   },
@@ -238,7 +238,7 @@ function handleClick(event) {
 
 <template>
   <PrimeButton
-    v-bind="attrs"
+    v-bind="buttonAttrs"
     :type="type"
     :loading="loading"
     :disabled="disabled || loading"
@@ -246,19 +246,27 @@ function handleClick(event) {
     :aria-busy="loading ? 'true' : undefined"
     @click="handleClick"
   >
-    <template v-if="$slots.iconLeft && !loading" #icon>
-      <slot name="iconLeft" />
-    </template>
+    <span class="ui-button__content">
+      <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft)" class="ui-button__icon ui-button__icon--left" aria-hidden="true">
+        <i v-if="buttonIconClass" :class="buttonIconClass" />
+        <slot v-else name="iconLeft" />
+      </span>
 
-    <slot />
+      <span class="ui-button__label">
+        <slot>{{ buttonLabel }}</slot>
+      </span>
 
-    <template v-if="!$slots.default && loading">
-      {{ loadingLabel }}
-    </template>
+      <span v-if="!loading && buttonIconPosition === 'right' && (buttonIconClass || $slots.iconRight)" class="ui-button__icon ui-button__icon--right" aria-hidden="true">
+        <i v-if="buttonIconClass" :class="buttonIconClass" />
+        <slot v-else name="iconRight" />
+      </span>
 
-    <template v-if="$slots.iconRight && !loading">
-      <slot name="iconRight" />
-    </template>
+      <span v-else-if="!loading && buttonIconPosition !== 'right' && $slots.iconRight" class="ui-button__icon ui-button__icon--right" aria-hidden="true">
+        <slot name="iconRight" />
+      </span>
+
+      <span v-if="loading" class="sr-only">{{ loadingLabel }}</span>
+    </span>
   </PrimeButton>
 </template>
 
@@ -268,11 +276,15 @@ function handleClick(event) {
   min-width: 0;
 }
 
-:deep(.ui-button.p-button .p-button-content) {
+.ui-button__content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
+  gap: 0.5rem;
 }
 
-:deep(.ui-button.p-button .p-button-label) {
+.ui-button__label {
   display: inline-flex;
   align-items: center;
   min-width: 0;
@@ -282,8 +294,14 @@ function handleClick(event) {
   text-overflow: ellipsis;
 }
 
-:deep(.ui-button.p-button .p-button-icon) {
+.ui-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+}
+
+:deep(.ui-button.p-button .p-button-icon) {
   font-size: 0.95em;
 }
 </style>

@@ -37,6 +37,25 @@ describe('AppButton', () => {
     expect(wrapper.classes()).toContain('ui-button')
   })
 
+  it('renders icon prop text and icon content together', () => {
+    const wrapper = mountWithPlugins(AppButton, {
+      props: {
+        type: 'button',
+        variant: 'secondary',
+        icon: 'pi pi-save',
+        label: 'Save',
+      },
+      messages: {
+        en: {
+          common: { states: { loading: 'Loading' } },
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Save')
+    expect(wrapper.html()).toContain('pi-save')
+  })
+
   it('applies the secondary style and emits click events', async () => {
     const wrapper = mountWithPlugins(AppButton, {
       props: { variant: 'secondary', type: 'button' },
@@ -86,6 +105,7 @@ describe('AppButton', () => {
       })
 
       expect(wrapper.text()).toContain('ត្រឡប់ទៅបញ្ជីសិស្ស')
+      expect(wrapper.html()).toContain('ui-button__label')
     } finally {
       document.documentElement.lang = previousLang
     }
