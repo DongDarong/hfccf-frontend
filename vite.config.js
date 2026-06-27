@@ -157,16 +157,9 @@ export default defineConfig(({ command }) => {
       }),
     },
     resolve: {
-      alias: [
-        {
-          find: /^primevue\/button$/,
-          replacement: fileURLToPath(new URL('./src/components/buttons/Button.vue', import.meta.url)),
-        },
-        {
-          find: '@',
-          replacement: fileURLToPath(new URL('./src', import.meta.url)),
-        },
-      ],
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
     },
     build: {
       rollupOptions: {

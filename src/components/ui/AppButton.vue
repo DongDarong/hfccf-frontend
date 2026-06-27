@@ -1,6 +1,6 @@
 <script setup>
 import { computed, useAttrs } from 'vue'
-import PrimeButton from '../../../node_modules/primevue/button/index.mjs'
+import PrimeButton from 'primevue/button'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
