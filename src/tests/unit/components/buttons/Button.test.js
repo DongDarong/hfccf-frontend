@@ -86,4 +86,25 @@ describe('Button wrapper', () => {
 
     expect(wrapper.text()).toContain('ត្រឡប់ទៅបញ្ជីសិស្ស')
   })
+
+  it('supports legacy icon-only usage and right-positioned icons', () => {
+    const wrapper = mountWithPlugins(Button, {
+      props: {
+        type: 'button',
+        outlined: true,
+        icon: 'pi pi-arrow-right',
+        iconPos: 'right',
+        label: 'Open',
+      },
+      messages: {
+        en: {
+          common: { states: { loading: 'Loading' } },
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Open')
+    expect(wrapper.html()).toContain('pi-arrow-right')
+    expect(wrapper.find('.p-button-label').exists()).toBe(true)
+  })
 })

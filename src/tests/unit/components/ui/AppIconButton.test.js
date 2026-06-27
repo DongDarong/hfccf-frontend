@@ -18,6 +18,21 @@ describe('AppIconButton', () => {
     expect(wrapper.classes()).toContain('ui-icon-button')
   })
 
+  it('forwards default slot icon markup for compatibility with legacy call sites', () => {
+    const wrapper = mountWithPlugins(AppIconButton, {
+      props: {
+        ariaLabel: 'Toggle sidebar',
+        type: 'button',
+      },
+      slots: {
+        default: '<svg data-testid="sidebar-icon" viewBox="0 0 24 24" aria-hidden="true"></svg>',
+      },
+    })
+
+    expect(wrapper.find('[data-testid="sidebar-icon"]').exists()).toBe(true)
+    expect(wrapper.classes()).toContain('ui-icon-button')
+  })
+
   it('emits clicks when enabled and stays disabled while loading', async () => {
     const wrapper = mountWithPlugins(AppIconButton, {
       props: {

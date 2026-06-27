@@ -54,6 +54,28 @@ describe('AppButton', () => {
 
     expect(wrapper.text()).toContain('Save')
     expect(wrapper.html()).toContain('pi-save')
+    expect(wrapper.find('.p-button-label').exists()).toBe(true)
+    expect(wrapper.find('.p-button-icon').exists()).toBe(true)
+  })
+
+  it('renders icon-only buttons with a visible icon hook for legacy styling', () => {
+    const wrapper = mountWithPlugins(AppButton, {
+      props: {
+        type: 'button',
+        variant: 'secondary',
+        icon: 'pi pi-eye',
+        'aria-label': 'View',
+      },
+      messages: {
+        en: {
+          common: { states: { loading: 'Loading' } },
+        },
+      },
+    })
+
+    expect(wrapper.attributes('aria-label')).toBe('View')
+    expect(wrapper.html()).toContain('pi-eye')
+    expect(wrapper.find('.p-button-icon').exists()).toBe(true)
   })
 
   it('applies the secondary style and emits click events', async () => {

@@ -169,6 +169,9 @@ function handleClick(event) {
     <template v-if="slots.icon" #iconLeft>
       <slot name="icon" />
     </template>
+    <template v-else-if="slots.default" #iconLeft>
+      <slot />
+    </template>
     <template v-else #iconLeft>
       <i :class="props.icon" aria-hidden="true" />
     </template>

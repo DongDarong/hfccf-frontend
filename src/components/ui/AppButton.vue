@@ -252,22 +252,22 @@ function handleClick(event) {
     @click="handleClick"
   >
     <span class="ui-button__content">
-      <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft || $slots.icon)" class="ui-button__icon ui-button__icon--left" aria-hidden="true">
+      <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft || $slots.icon)" class="ui-button__icon ui-button__icon--left p-button-icon" aria-hidden="true">
         <i v-if="buttonIconClass" :class="buttonIconClass" />
         <slot v-else name="iconLeft" />
         <slot v-if="!buttonIconClass && !$slots.iconLeft" name="icon" />
       </span>
 
-      <span class="ui-button__label">
+      <span class="ui-button__label p-button-label">
         <slot>{{ buttonLabel }}</slot>
       </span>
 
-      <span v-if="!loading && buttonIconPosition === 'right' && (buttonIconClass || $slots.iconRight)" class="ui-button__icon ui-button__icon--right" aria-hidden="true">
+      <span v-if="!loading && buttonIconPosition === 'right' && (buttonIconClass || $slots.iconRight)" class="ui-button__icon ui-button__icon--right p-button-icon" aria-hidden="true">
         <i v-if="buttonIconClass" :class="buttonIconClass" />
         <slot v-else name="iconRight" />
       </span>
 
-      <span v-else-if="!loading && buttonIconPosition !== 'right' && $slots.iconRight" class="ui-button__icon ui-button__icon--right" aria-hidden="true">
+      <span v-else-if="!loading && buttonIconPosition !== 'right' && $slots.iconRight" class="ui-button__icon ui-button__icon--right p-button-icon" aria-hidden="true">
         <slot name="iconRight" />
       </span>
 
