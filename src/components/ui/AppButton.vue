@@ -1,6 +1,6 @@
 <script setup>
 import { computed, useAttrs } from 'vue'
-import PrimeButton from 'primevue/button'
+import PrimeButton from '../../../node_modules/primevue/button/index.mjs'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -58,6 +58,11 @@ const buttonAttrs = computed(() => {
   delete next.label
   delete next.icon
   delete next.iconPos
+  delete next.severity
+  delete next.outlined
+  delete next.text
+  delete next.link
+  delete next.raised
   return next
 })
 
@@ -247,9 +252,10 @@ function handleClick(event) {
     @click="handleClick"
   >
     <span class="ui-button__content">
-      <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft)" class="ui-button__icon ui-button__icon--left" aria-hidden="true">
+      <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft || $slots.icon)" class="ui-button__icon ui-button__icon--left" aria-hidden="true">
         <i v-if="buttonIconClass" :class="buttonIconClass" />
         <slot v-else name="iconLeft" />
+        <slot v-if="!buttonIconClass && !$slots.iconLeft" name="icon" />
       </span>
 
       <span class="ui-button__label">

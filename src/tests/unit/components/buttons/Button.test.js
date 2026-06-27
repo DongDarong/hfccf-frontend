@@ -26,6 +26,50 @@ describe('Button wrapper', () => {
     expect(wrapper.html()).toContain('pi-arrow-right')
   })
 
+  it('maps legacy severity and icon slot props to the shared button system', () => {
+    const wrapper = mountWithPlugins(Button, {
+      props: {
+        type: 'button',
+        severity: 'danger',
+      },
+      slots: {
+        default: 'Delete',
+        icon: '<i class="pi pi-trash" aria-hidden="true"></i>',
+      },
+      messages: {
+        en: {
+          common: { states: { loading: 'Loading' } },
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Delete')
+    expect(wrapper.html()).toContain('pi-trash')
+    expect(wrapper.classes()).toContain('!bg-rose-600')
+  })
+
+  it('supports legacy link-style buttons and disabled state', () => {
+    const wrapper = mountWithPlugins(Button, {
+      props: {
+        type: 'button',
+        link: true,
+        disabled: true,
+      },
+      slots: {
+        default: 'Read more',
+      },
+      messages: {
+        en: {
+          common: { states: { loading: 'Loading' } },
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Read more')
+    expect(wrapper.classes()).toContain('!px-0')
+    expect(wrapper.attributes('disabled')).toBeDefined()
+  })
+
   it('forwards label prop text through the wrapper', () => {
     const wrapper = mountWithPlugins(Button, {
       props: {

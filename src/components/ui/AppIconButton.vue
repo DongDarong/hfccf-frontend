@@ -1,13 +1,16 @@
 <script setup>
-import { computed, useAttrs, useSlots } from 'vue'
-import PrimeButton from 'primevue/button'
+import { computed, useSlots } from 'vue'
+import AppButton from '@/components/ui/AppButton.vue'
 
 defineOptions({
   name: 'AppIconButton',
-  inheritAttrs: false,
 })
 
 const props = defineProps({
+  icon: {
+    type: String,
+    default: '',
+  },
   ariaLabel: {
     type: String,
     required: true,
@@ -43,7 +46,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click'])
-const attrs = useAttrs()
 const slots = useSlots()
 
 const sizeClass = computed(() => {
@@ -123,7 +125,7 @@ const rootClass = computed(() => [
   '!inline-flex',
   '!items-center',
   '!justify-center',
-  '!rounded-[12px]',
+  '!rounded-full',
   '!border',
   '!font-semibold',
   '!transition-all',
@@ -137,16 +139,12 @@ const rootClass = computed(() => [
   sizeClass.value,
   ...variantClass.value,
   props.active ? '!ring-2 !ring-brand-primary-200' : '',
+  props.size === 'xs'
+    ? '!w-7 !min-w-7 !px-0'
+    : props.size === 'sm'
+      ? '!w-[34px] !min-w-[34px] !px-0'
+      : '!w-10 !min-w-10 !px-0',
 ])
-
-const pt = computed(() => ({
-  root: {
-    class: rootClass.value,
-  },
-  loadingIcon: {
-    class: 'ui-icon-button__spinner !text-current',
-  },
-}))
 
 function handleClick(event) {
   if (props.disabled || props.loading) return
@@ -155,21 +153,24 @@ function handleClick(event) {
 </script>
 
 <template>
-  <PrimeButton
-    v-bind="attrs"
+  <AppButton
     :type="type"
+    :variant="variant"
+    :size="size"
     :loading="loading"
     :disabled="disabled || loading"
-    :pt="pt"
+    :active="active"
+    rounded="full"
+    :class="rootClass"
     :aria-label="ariaLabel"
     :aria-busy="loading ? 'true' : undefined"
     @click="handleClick"
   >
-    <template v-if="slots.icon" #icon>
+    <template v-if="slots.icon" #iconLeft>
       <slot name="icon" />
     </template>
-    <template v-else-if="slots.default" #icon>
-      <slot />
+    <template v-else #iconLeft>
+      <i :class="props.icon" aria-hidden="true" />
     </template>
-  </PrimeButton>
+  </AppButton>
 </template>
