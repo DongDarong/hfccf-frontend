@@ -263,7 +263,27 @@ function handleClick(event) {
 </template>
 
 <style scoped>
+:deep(.ui-button.p-button) {
+  align-items: center;
+  min-width: 0;
+}
+
+:deep(.ui-button.p-button .p-button-content) {
+  min-width: 0;
+}
+
+:deep(.ui-button.p-button .p-button-label) {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 :deep(.ui-button.p-button .p-button-icon) {
+  flex-shrink: 0;
   font-size: 0.95em;
 }
 </style>

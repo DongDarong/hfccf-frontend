@@ -143,7 +143,6 @@ body,
 }
 
 html[lang='kh'] :where(
-  .p-button .p-button-label,
   .p-select .p-select-label,
   .p-inputtext,
   .p-textarea,
@@ -167,7 +166,6 @@ html[lang='kh'] :where(
 }
 
 html[lang='kh'] :where(
-  .p-button .p-button-label,
   .p-select .p-select-label,
   .p-inputtext,
   .p-textarea,
@@ -189,7 +187,6 @@ html[lang='kh'] :where(
   line-height: 1.45;
 }
 
-html[lang='kh'] .p-button .p-button-label,
 html[lang='kh'] .p-select .p-select-label,
 html[lang='kh'] .sidebar-section__label,
 html[lang='kh'] .sidebar-section__caption,
