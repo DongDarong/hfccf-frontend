@@ -6,6 +6,8 @@ export default {
     subtitle: 'Enrollment readiness, attendance, health, and classroom oversight at a glance.',
     loading: 'Loading preschool dashboard...',
     header: {
+      academicYear: 'Academic year',
+      term: 'Term',
       scheduleManagement: 'Schedule',
       openReports: 'Reports',
       refresh: 'Refresh',

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Menu from 'primevue/menu'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -62,6 +63,7 @@ const dashboard = ref(defaultDashboard)
 const reportsDashboard = ref(defaultReportsDashboard)
 const loading = ref(false)
 const errorMessage = ref('')
+const toolbarMenu = ref(null)
 
 function formatCount(value) {
   const number = Number(value)
@@ -204,7 +206,7 @@ async function loadDashboard() {
   loading.value = false
 }
 
-const academicContext = computed(() => {
+const academicYear = computed(() => {
   const year = getFirstValue(dashboard.value, [
     'academicYear.currentAcademicYear',
     'academicYearLabel',
@@ -212,6 +214,10 @@ const academicContext = computed(() => {
     'summary.academicYear',
     'academicYear',
   ])
+  return String(year || '').trim()
+})
+
+const academicTerm = computed(() => {
   const term = getFirstValue(dashboard.value, [
     'term.currentTerm',
     'termLabel',
@@ -220,8 +226,20 @@ const academicContext = computed(() => {
     'term',
   ])
 
-  return joinParts([year, term])
+  return String(term || '').trim()
 })
+
+const toolbarMenuItems = computed(() => [
+  {
+    label: t('preschoolDashboardPage.header.openReports'),
+    icon: 'pi pi-chart-bar',
+    command: () => goToReportsCenter(),
+  },
+])
+
+function toggleToolbarMenu(event) {
+  toolbarMenu.value?.toggle(event)
+}
 
 const lastUpdated = computed(() => {
   const rawValue = reportsDashboard.value.generatedAt || dashboard.value.generatedAt
@@ -742,14 +760,24 @@ onMounted(() => {
         <div class="preschool-dashboard-page__header-tools">
           <div class="preschool-dashboard-page__context">
             <AppBadge
-              v-if="academicContext"
+              v-if="academicYear"
               class="preschool-dashboard-page__context-pill"
               size="sm"
               variant="neutral"
-              :title="academicContext"
+              :title="t('preschoolDashboardPage.header.academicYear')"
             >
               <i class="pi pi-calendar" aria-hidden="true" />
-              {{ academicContext }}
+              {{ academicYear }}
+            </AppBadge>
+            <AppBadge
+              v-if="academicTerm"
+              class="preschool-dashboard-page__context-pill"
+              size="sm"
+              variant="neutral"
+              :title="t('preschoolDashboardPage.header.term')"
+            >
+              <i class="pi pi-book" aria-hidden="true" />
+              {{ academicTerm }}
             </AppBadge>
             <span v-if="lastUpdated" class="preschool-dashboard-page__updated">
               {{ t('preschoolDashboardPage.header.lastUpdated', { time: lastUpdated }) }}
@@ -772,26 +800,36 @@ onMounted(() => {
             <span class="sr-only">{{ t('preschoolDashboardPage.header.refresh') }}</span>
             <AppButton
               type="button"
-              variant="secondary"
-              size="sm"
-              class="preschool-dashboard-page__action-button preschool-dashboard-page__action-button--secondary"
-              @click="goToReportsCenter"
-            >
-              <template #iconLeft><i class="pi pi-chart-bar" aria-hidden="true" /></template>
-              {{ t('preschoolDashboardPage.header.openReports') }}
-            </AppButton>
-            <AppButton
-              type="button"
               variant="primary"
               size="sm"
-              class="preschool-dashboard-page__action-button preschool-dashboard-page__action-button--primary"
               @click="goToScheduleManagement"
             >
               <template #iconLeft><i class="pi pi-calendar-plus" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.scheduleManagement') }}
             </AppButton>
+            <AppIconButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="preschool-dashboard-page__menu-button"
+              :aria-label="t('common.actions.menu')"
+              aria-haspopup="menu"
+              :aria-controls="'preschool-dashboard-toolbar-menu'"
+              @click="toggleToolbarMenu"
+            >
+              <template #default>
+                <i class="pi pi-ellipsis-h" aria-hidden="true" />
+              </template>
+            </AppIconButton>
           </div>
         </div>
+        <Menu
+          id="preschool-dashboard-toolbar-menu"
+          ref="toolbarMenu"
+          :model="toolbarMenuItems"
+          popup
+          class="preschool-dashboard-page__toolbar-menu"
+        />
       </div>
 
       <div
@@ -1044,20 +1082,6 @@ onMounted(() => {
 
 .preschool-dashboard-page__refresh-button {
   flex: none;
-}
-
-.preschool-dashboard-page__action-button {
-  flex: 0 0 auto;
-  min-width: 8.25rem;
-  white-space: nowrap;
-}
-
-.preschool-dashboard-page__action-button--secondary {
-  min-width: 7.75rem;
-}
-
-.preschool-dashboard-page__action-button--primary {
-  min-width: 8.75rem;
 }
 
 .preschool-dashboard-page__updated {
@@ -1405,19 +1429,9 @@ onMounted(() => {
     width: 100%;
   }
 
-  .preschool-dashboard-page__actions {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
   .preschool-dashboard-page__context,
   .preschool-dashboard-page__actions {
     justify-content: flex-start;
-  }
-
-  .preschool-dashboard-page__action-button {
-    min-width: 7.5rem;
-    flex: 1 1 10rem;
   }
 
   .preschool-dashboard-page__insight-grid,
@@ -1457,9 +1471,4 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 520px) {
-  .preschool-dashboard-page__actions > * {
-    flex: 1 1 auto;
-  }
-}
 </style>

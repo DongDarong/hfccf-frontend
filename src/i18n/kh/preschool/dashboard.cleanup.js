@@ -4,6 +4,8 @@ export default {
     subtitle: 'ទិដ្ឋភាពរួមអំពីការចុះឈ្មោះចូលរៀន វត្តមាន សុខភាព និងការត្រួតពិនិត្យថ្នាក់រៀន។',
     loading: 'កំពុងផ្ទុកផ្ទាំងគ្រប់គ្រង Preschool...',
     header: {
+      academicYear: 'ឆ្នាំសិក្សា',
+      term: 'វគ្គ',
       scheduleManagement: 'កាលវិភាគ',
       openReports: 'របាយការណ៍',
       refresh: 'ផ្ទុកឡើងវិញ',
