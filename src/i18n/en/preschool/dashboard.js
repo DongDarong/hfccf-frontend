@@ -3,8 +3,127 @@
 export default {
   preschoolDashboardPage: {
     title: 'Preschool Operations Board',
-    subtitle: 'Enrollment readiness, attendance, and classroom resourcing.',
+    subtitle: 'Enrollment readiness, attendance, health, and classroom oversight at a glance.',
     loading: 'Loading preschool dashboard...',
+    header: {
+      scheduleManagement: 'Manage schedules',
+      openReports: 'Open reports center',
+    },
+    summary: {
+      activeStudents: {
+        title: 'Active Students',
+        label: 'Live student records',
+      },
+      attendanceToday: {
+        title: 'Attendance Today',
+        label: 'Records marked today',
+      },
+      healthAlerts: {
+        title: 'Open Health Alerts',
+        label: 'Needs follow-up',
+      },
+      pendingEnrollments: {
+        title: 'Pending Enrollments',
+        label: 'Applications awaiting review',
+      },
+      outstandingPayments: {
+        title: 'Outstanding Payments',
+        label: 'Unpaid invoices',
+      },
+    },
+    priority: {
+      title: 'Today / Action Required',
+      subtitle: 'Only the items that need attention right now.',
+      cardTitle: 'Priority Queue',
+      empty: 'No urgent items right now.',
+      health: 'Urgent health alerts',
+      healthDetail: 'Needs medical follow-up',
+      enrollment: 'Pending enrollment decisions',
+      enrollmentDetail: 'Review new applications',
+      guardians: 'Unresolved guardian issues',
+      guardiansDetail: 'Follow up with families',
+      payments: 'Overdue payments',
+      paymentsDetail: 'Invoices past due',
+      attendance: 'Attendance exceptions',
+      attendanceDetail: 'Late or missing check-ins',
+    },
+    insights: {
+      title: 'Main Insights',
+      subtitle: 'Summary analytics for the current day and reporting cycle.',
+      attendance: {
+        title: 'Attendance Overview',
+        label: 'Attendance rate',
+        note: 'Absence rate {absence}, late rate {late}.',
+        metrics: {
+          present: 'Recorded today',
+          absent: 'Absence rate',
+        },
+      },
+      enrollment: {
+        title: 'Enrollment Trend',
+        label: 'New enrollments',
+        note: '{active} active students currently enrolled.',
+        metrics: {
+          active: 'Active students',
+          students: 'Total students',
+        },
+      },
+      assessment: {
+        title: 'Assessment Snapshot',
+        label: 'Completion rate',
+        note: '{risk} students are currently at risk.',
+        metrics: {
+          risk: 'At-risk students',
+          score: 'Average score',
+        },
+      },
+      payments: {
+        title: 'Payment Snapshot',
+        label: 'Revenue',
+        note: '{overdue} invoices still need follow-up.',
+        metrics: {
+          outstanding: 'Outstanding balance',
+          overdue: 'Overdue invoices',
+        },
+      },
+    },
+    operations: {
+      title: 'Operational Sections',
+      subtitle: 'Secondary information, schedules, and shortcuts stay below the fold.',
+      recentActivityEmpty: 'No attendance activity has been recorded yet.',
+      upcomingSchedules: 'Upcoming Schedules',
+      upcomingEmpty: 'No upcoming classes are scheduled.',
+      recentActivityFallback: 'Student activity',
+      classFallback: 'Class',
+      classroomSummary: {
+        title: 'Classroom Summary',
+        students: 'Students',
+        classes: 'Classes',
+        teachers: 'Teachers',
+        attendance: 'Attendance today',
+      },
+      shortcuts: {
+        title: 'Shortcuts',
+        schedule: 'Manage schedules',
+        reports: 'Open reports center',
+        settings: 'Open settings',
+        enrollments: 'Open enrollments',
+      },
+    },
+    spotlight: {
+      eyebrow: 'Current Academic Context',
+      noUpcomingClasses: 'No upcoming classes',
+      nextClassSuffix: 'is next',
+      assignedTeacher: 'Assigned teacher',
+      fallback: 'Create classes and assign teachers to populate this section.',
+      nextClassFallback: 'Upcoming class',
+      nextClassText: '{teacher} teaches {students} students',
+    },
+    errors: {
+      coreLoadFailed: 'Failed to load preschool dashboard.',
+      reportsLoadFailed: 'Failed to load reporting dashboard.',
+      loadFailed: 'Failed to load preschool dashboard.',
+    },
     cards: {
       students: {
         title: 'Total Students',
@@ -49,9 +168,12 @@ export default {
     nextClassSuffix: 'is next',
     assignedTeacher: 'Assigned teacher',
     populateText: 'Create classes and assign teachers to populate this board.',
-    errors: {
-      loadFailed: 'Failed to load preschool dashboard.',
-    },
+  },
+  preschoolDashboardActivity: {
+    title: 'Recent Activity',
+  },
+  preschoolDashboardSpotlight: {
+    eyebrow: 'Current Academic Context',
   },
   preschoolTeacherDashboardPage: {
     title: 'Preschool Teaching Workspace',

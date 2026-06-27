@@ -12,13 +12,20 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  emptyText: {
+    type: String,
+    default: '',
+  },
 })
 </script>
 
 <template>
   <section class="preschool-dashboard-activity">
     <h3 class="preschool-dashboard-activity__title">{{ t('preschoolDashboardActivity.title') }}</h3>
-    <div class="preschool-dashboard-activity__list">
+    <div v-if="items.length === 0" class="preschool-dashboard-activity__empty">
+      {{ emptyText }}
+    </div>
+    <div v-else class="preschool-dashboard-activity__list">
       <article
         v-for="item in items"
         :key="item.title"
@@ -72,5 +79,11 @@ defineProps({
   font-size: 0.9rem;
   line-height: 1.6;
   color: #475569;
+}
+
+.preschool-dashboard-activity__empty {
+  margin-top: 1rem;
+  color: #64748b;
+  font-size: 0.92rem;
 }
 </style>

@@ -1,9 +1,11 @@
 <script setup>
+import { computed } from 'vue'
+
 defineOptions({
   name: 'PreschoolDashboardActionList',
 })
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -12,20 +14,45 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  emptyText: {
+    type: String,
+    default: '',
+  },
 })
+
+const normalizedItems = computed(() =>
+  (Array.isArray(props.items) ? props.items : []).map((item) => (
+    typeof item === 'string'
+      ? { label: item, detail: '', value: '', tone: 'info' }
+      : {
+        label: item.label || item.title || '',
+        detail: item.detail || item.text || '',
+        value: item.value ?? '',
+        tone: item.tone || 'info',
+      }
+  )),
+)
 </script>
 
 <template>
   <section class="preschool-dashboard-action-list">
-    <h3 class="preschool-dashboard-action-list__title">{{ title }}</h3>
-    <ul class="preschool-dashboard-action-list__list">
+    <h3 class="preschool-dashboard-action-list__title">{{ props.title }}</h3>
+    <div v-if="normalizedItems.length === 0" class="preschool-dashboard-action-list__empty">
+      {{ props.emptyText }}
+    </div>
+    <ul v-else class="preschool-dashboard-action-list__list">
       <li
-        v-for="item in items"
-        :key="item"
+        v-for="item in normalizedItems"
+        :key="`${item.label}-${item.detail}-${item.value}`"
         class="preschool-dashboard-action-list__item"
+        :data-tone="item.tone"
       >
         <span class="preschool-dashboard-action-list__bullet" aria-hidden="true"></span>
-        <span>{{ item }}</span>
+        <div class="preschool-dashboard-action-list__content">
+          <span class="preschool-dashboard-action-list__label">{{ item.label }}</span>
+          <span v-if="item.detail" class="preschool-dashboard-action-list__detail">{{ item.detail }}</span>
+        </div>
+        <span v-if="item.value !== ''" class="preschool-dashboard-action-list__value">{{ item.value }}</span>
       </li>
     </ul>
   </section>
@@ -62,6 +89,10 @@ defineProps({
   gap: 0.75rem;
   color: #334155;
   line-height: 1.6;
+  padding: 0.85rem 0.95rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .preschool-dashboard-action-list__bullet {
@@ -71,5 +102,44 @@ defineProps({
   border-radius: 999px;
   background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%);
   flex-shrink: 0;
+}
+
+.preschool-dashboard-action-list__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.preschool-dashboard-action-list__label {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.preschool-dashboard-action-list__detail {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.preschool-dashboard-action-list__value {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.preschool-dashboard-action-list__empty {
+  margin-top: 1rem;
+  color: #64748b;
+  font-size: 0.92rem;
 }
 </style>

@@ -12,6 +12,12 @@ import AttendanceHistory from '@/modules/preschool/admin/pages/attendance/Attend
 // wiring, and runtime safety regressions get caught before the UI ships.
 const mockDashboard = vi.fn(() =>
   Promise.resolve({
+    academicYear: {
+      currentAcademicYear: '2026 - 2027',
+    },
+    term: {
+      currentTerm: 'Term 1',
+    },
     summary: {
       students: 20,
       classes: 4,
@@ -19,6 +25,11 @@ const mockDashboard = vi.fn(() =>
       attendanceToday: 18,
       pendingPayments: 2,
       overduePayments: 1,
+      pendingEnrollments: 3,
+      outstandingPayments: 1,
+      healthAlerts: 2,
+      guardianIssues: 1,
+      attendanceExceptions: 1,
     },
     recentAttendance: [
       {
@@ -40,6 +51,32 @@ const mockDashboard = vi.fn(() =>
       pending: 2,
       overdue: 1,
       cancelled: 0,
+    },
+  }),
+)
+
+const mockReportsDashboard = vi.fn(() =>
+  Promise.resolve({
+    dashboard: {
+      kpis: {
+        attendanceRate: 96,
+        absenceRate: 4,
+        lateRate: 1,
+        newEnrollments: 5,
+        activeStudents: 20,
+        totalStudents: 20,
+        assessmentCompletion: 88,
+        atRiskStudents: 2,
+        openHealthAlerts: 2,
+        openGuardianIssues: 1,
+        revenue: 1825,
+        outstandingBalances: 250,
+        overdueInvoices: 1,
+        averageScore: 82,
+      },
+      modules: {},
+      cards: [],
+      risk: {},
     },
   }),
 )
@@ -142,6 +179,10 @@ vi.mock('@/modules/preschool/services/preschoolApi', () => ({
   updatePreschoolClass: vi.fn(() => Promise.resolve({})),
 }))
 
+vi.mock('@/modules/preschool/services/api/preschoolReportingApi', () => ({
+  fetchReportsDashboard: (...args) => mockReportsDashboard(...args),
+}))
+
 beforeEach(() => {
   vi.clearAllMocks()
 })
@@ -197,9 +238,12 @@ describe('Preschool real pages', () => {
     await flushPromises()
 
     expect(mockDashboard).toHaveBeenCalled()
+    expect(mockReportsDashboard).toHaveBeenCalled()
     expect(wrapper.text()).toContain('Preschool Operations Board')
-    expect(wrapper.text()).toContain('Total Students')
-    expect(wrapper.text()).toContain('Action Queue')
+    expect(wrapper.text()).toContain('Active Students')
+    expect(wrapper.text()).toContain('Priority Queue')
+    expect(wrapper.text()).toContain('Main Insights')
+    expect(wrapper.text()).toContain('Operational Sections')
     const mojibakeBullet = String.fromCharCode(0x00e2, 0x20ac, 0x00a2)
     // Regression protection: the dashboard note separator must stay a real bullet,
     // not the legacy mojibake sequence that breaks the Khmer locale scan.
@@ -287,6 +331,3 @@ describe('Preschool real pages', () => {
     expect(errorSpy).not.toHaveBeenCalled()
   })
 })
-
-
-

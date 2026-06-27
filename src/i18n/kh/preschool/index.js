@@ -1,4 +1,5 @@
 import dashboard from './dashboard'
+import dashboardCleanup from './dashboard.cleanup'
 import classes from './classes'
 import students from './students'
 import payments from './payments'
@@ -32,6 +33,18 @@ export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
   // and scaffold-only routes can stay explicit without pretending they are built.
   ...dashboard,
+  preschoolDashboardPage: {
+    ...dashboard.preschoolDashboardPage,
+    ...dashboardCleanup.preschoolDashboardPage,
+  },
+  preschoolDashboardActivity: {
+    ...dashboard.preschoolDashboardActivity,
+    ...dashboardCleanup.preschoolDashboardActivity,
+  },
+  preschoolDashboardSpotlight: {
+    ...dashboard.preschoolDashboardSpotlight,
+    ...dashboardCleanup.preschoolDashboardSpotlight,
+  },
   ...classes,
   ...students,
   ...payments,

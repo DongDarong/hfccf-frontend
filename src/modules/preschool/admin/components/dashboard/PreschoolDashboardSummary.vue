@@ -36,13 +36,14 @@ function toneClass(status) {
 <style scoped>
 .preschool-dashboard-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
 }
 
 .preschool-dashboard-summary__card {
-  padding: 1.2rem;
-  border-radius: 1.25rem;
+  min-height: 9rem;
+  padding: 1.25rem;
+  border-radius: 1.35rem;
   border: 1px solid #dbe6f2;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
   box-shadow: 0 18px 45px -34px rgba(15, 23, 42, 0.5);
