@@ -85,8 +85,8 @@ defineProps({
 
 .preschool-dashboard-activity__view-all {
   color: #1d4ed8;
-  font-size: 0.86rem;
-  font-weight: 800;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
 }

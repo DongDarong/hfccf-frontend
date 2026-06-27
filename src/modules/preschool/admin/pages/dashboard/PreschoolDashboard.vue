@@ -3,8 +3,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Button from '@/components/buttons/Button.vue'
-import StatusBadge from '@/components/badges/StatusBadge.vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import AppBadge from '@/components/ui/AppBadge.vue'
+import AppStatusChip from '@/components/ui/AppStatusChip.vue'
 import PreschoolDashboardSummary from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSummary.vue'
 import PreschoolDashboardSpotlight from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSpotlight.vue'
 import PreschoolDashboardActionList from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActionList.vue'
@@ -739,27 +740,33 @@ onMounted(() => {
         />
         <div class="preschool-dashboard-page__header-tools">
           <div class="preschool-dashboard-page__context">
-            <span v-if="academicContext" class="preschool-dashboard-page__context-pill">
+            <AppBadge
+              v-if="academicContext"
+              class="preschool-dashboard-page__context-pill"
+              size="sm"
+              variant="neutral"
+              :title="academicContext"
+            >
               <i class="pi pi-calendar" aria-hidden="true" />
               {{ academicContext }}
-            </span>
+            </AppBadge>
             <span v-if="lastUpdated" class="preschool-dashboard-page__updated">
               {{ t('preschoolDashboardPage.header.lastUpdated', { time: lastUpdated }) }}
             </span>
           </div>
           <div class="preschool-dashboard-page__actions">
-            <Button type="button" variant="ghost" size="sm" :loading="loading" @click="loadDashboard">
+            <AppButton type="button" variant="ghost" size="sm" :loading="loading" @click="loadDashboard">
               <template #iconLeft><i class="pi pi-refresh" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.refresh') }}
-            </Button>
-            <Button type="button" variant="outline" size="sm" @click="goToReportsCenter">
+            </AppButton>
+            <AppButton type="button" variant="outline" size="sm" @click="goToReportsCenter">
               <template #iconLeft><i class="pi pi-chart-bar" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.openReports') }}
-            </Button>
-            <Button type="button" variant="primary" size="sm" @click="goToScheduleManagement">
+            </AppButton>
+            <AppButton type="button" variant="primary" size="sm" @click="goToScheduleManagement">
               <template #iconLeft><i class="pi pi-calendar-plus" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.scheduleManagement') }}
-            </Button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -818,7 +825,7 @@ onMounted(() => {
               <p class="preschool-dashboard-page__health-label">{{ item.label }}</p>
               <p class="preschool-dashboard-page__health-detail">{{ item.detail }}</p>
             </div>
-            <StatusBadge
+            <AppStatusChip
               :status="item.status === 'healthy' ? 'success' : item.status"
               :label="item.statusLabel"
               :translate-label="false"
@@ -946,7 +953,7 @@ onMounted(() => {
               </div>
             </div>
             <div class="preschool-dashboard-page__shortcut-grid">
-              <Button
+              <AppButton
                 v-for="shortcut in shortcutActions"
                 :key="shortcut.label"
                 type="button"
@@ -956,7 +963,7 @@ onMounted(() => {
                 @click="shortcut.click"
               >
                 {{ shortcut.label }}
-              </Button>
+              </AppButton>
             </div>
           </article>
         </div>
@@ -1012,26 +1019,16 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-.preschool-dashboard-page__context-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 1.75rem;
-  padding: 0.28rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid #dbe6f2;
-  background: #f8fbff;
-  color: #0f172a;
-  font-size: 0.76rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
 .preschool-dashboard-page__updated {
   color: #64748b;
   font-size: 0.74rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.preschool-dashboard-page__context-pill {
+  max-width: min(100%, 16rem);
+  min-width: 0;
 }
 
 .preschool-dashboard-page__section {

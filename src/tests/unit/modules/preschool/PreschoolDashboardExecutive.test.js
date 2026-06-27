@@ -7,7 +7,6 @@ import PreschoolDashboardActivity from '@/modules/preschool/admin/components/das
 
 const sharedStubs = {
   RouterLink: { props: ['to'], template: '<a><slot /></a>' },
-  StatusBadge: { props: ['status', 'label'], template: '<span class="status-badge-stub">{{ label || status }}</span>' },
 }
 
 describe('Preschool dashboard executive widgets', () => {
@@ -52,6 +51,7 @@ describe('Preschool dashboard executive widgets', () => {
     expect(wrapper.text().match(/\+8 this month/g)).toHaveLength(1)
     expect(wrapper.find('[data-direction="up"]').exists()).toBe(true)
     expect(wrapper.find('[data-direction="neutral"]').exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'AppStatusChip' }).exists()).toBe(true)
     expect(wrapper.find('.preschool-dashboard-summary__icon').exists()).toBe(true)
   })
 
@@ -84,6 +84,7 @@ describe('Preschool dashboard executive widgets', () => {
     expect(wrapper.text()).toContain('Critical')
     expect(wrapper.text()).toContain('Review now')
     expect(wrapper.text()).toContain('2')
+    expect(wrapper.findComponent({ name: 'AppStatusChip' }).exists()).toBe(true)
   })
 
   it('shows the empty state when the priority queue is empty', () => {

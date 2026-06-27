@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import AppStatusChip from '@/components/ui/AppStatusChip.vue'
 
 defineOptions({
   name: 'PreschoolDashboardSummary',
@@ -20,18 +21,11 @@ function toneClass(status) {
   return 'preschool-dashboard-summary__card--info'
 }
 
-function trendClass(direction) {
+function trendIcon(direction) {
   const normalized = String(direction || 'neutral').trim().toLowerCase()
-  if (normalized === 'up') return 'preschool-dashboard-summary__trend--up'
-  if (normalized === 'down') return 'preschool-dashboard-summary__trend--down'
-  return 'preschool-dashboard-summary__trend--neutral'
-}
-
-function trendPath(direction) {
-  const normalized = String(direction || 'neutral').trim().toLowerCase()
-  if (normalized === 'up') return 'M6 14l4-4 4 4 4-6'
-  if (normalized === 'down') return 'M6 10l4 4 4-4 4 6'
-  return 'M5 12h14'
+  if (normalized === 'up') return 'pi pi-arrow-up'
+  if (normalized === 'down') return 'pi pi-arrow-down'
+  return 'pi pi-minus'
 }
 
 const normalizedCards = computed(() =>
@@ -63,16 +57,16 @@ const normalizedCards = computed(() =>
 
       <p class="preschool-dashboard-summary__value">{{ card.value }}</p>
       <p class="preschool-dashboard-summary__label">{{ card.label }}</p>
-      <span
+      <AppStatusChip
         class="preschool-dashboard-summary__trend"
-        :class="trendClass(card.trend.direction)"
         :data-direction="card.trend.direction || 'neutral'"
-      >
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path :d="trendPath(card.trend.direction)" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        <span>{{ card.trend.label || card.comparison || '—' }}</span>
-      </span>
+        :status="card.trend.direction || 'neutral'"
+        :label="card.trend.label || card.comparison || '—'"
+        :icon="trendIcon(card.trend.direction)"
+        :translate-label="false"
+        size="sm"
+        :dot="false"
+      />
     </article>
   </div>
 </template>
@@ -138,39 +132,7 @@ const normalizedCards = computed(() =>
 }
 
 .preschool-dashboard-summary__trend {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   margin-top: 0.65rem;
-  padding: 0.28rem 0.5rem;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-size: 0.7rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.preschool-dashboard-summary__trend svg {
-  width: 0.85rem;
-  height: 0.85rem;
-}
-
-.preschool-dashboard-summary__trend--up {
-  color: #047857;
-  background: #ecfdf3;
-  border-color: #bbf7d0;
-}
-
-.preschool-dashboard-summary__trend--down {
-  color: #b91c1c;
-  background: #fff1f2;
-  border-color: #fecdd3;
-}
-
-.preschool-dashboard-summary__trend--neutral {
-  color: #475569;
-  background: #f8fafc;
-  border-color: #e2e8f0;
 }
 
 .preschool-dashboard-summary__value {

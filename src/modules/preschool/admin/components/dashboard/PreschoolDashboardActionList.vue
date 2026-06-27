@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import StatusBadge from '@/components/badges/StatusBadge.vue'
+import AppStatusChip from '@/components/ui/AppStatusChip.vue'
 
 defineOptions({
   name: 'PreschoolDashboardActionList',
@@ -94,7 +94,7 @@ const groupedItems = computed(() => {
             <div class="preschool-dashboard-action-list__content">
               <div class="preschool-dashboard-action-list__meta">
                 <span class="preschool-dashboard-action-list__label">{{ item.label }}</span>
-                <StatusBadge
+                <AppStatusChip
                   v-if="item.priorityLabel"
                   :status="item.tone"
                   :label="item.priorityLabel"
@@ -244,21 +244,22 @@ const groupedItems = computed(() => {
   align-items: center;
   gap: 0.35rem;
   flex-shrink: 0;
-  padding: 0.38rem 0.55rem;
-  border-radius: 0.65rem;
-  border: 1px solid #bfdbfe;
-  background: #eff6ff;
+  padding: 0.12rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: #1d4ed8;
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .preschool-dashboard-action-list__action:hover {
-  background: #dbeafe;
+  text-decoration: underline;
 }
 
 .preschool-dashboard-action-list__action:focus-visible {
+  border-radius: 0.35rem;
   outline: 3px solid rgba(14, 165, 233, 0.28);
   outline-offset: 2px;
 }
