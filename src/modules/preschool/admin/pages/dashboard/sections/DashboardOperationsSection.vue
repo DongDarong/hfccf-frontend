@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import PreschoolDashboardActivity from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardActivity.vue'
-import AppButton from '@/components/ui/AppButton.vue'
+import DashboardShortcutCard from '@/modules/preschool/admin/pages/dashboard/components/DashboardShortcutCard.vue'
 
 defineOptions({
   name: 'DashboardOperationsSection',
@@ -172,17 +172,15 @@ defineProps({
           </div>
         </div>
         <div class="preschool-dashboard-page__shortcut-grid">
-          <AppButton
+          <DashboardShortcutCard
             v-for="shortcut in shortcutActions"
             :key="shortcut.label"
-            type="button"
-            variant="outline"
-            size="sm"
-            rounded="xl"
+            :title="shortcut.label"
+            :description="shortcut.description"
+            :action-label="shortcut.actionLabel"
+            :icon-class="shortcut.iconClass"
             @click="shortcut.click"
-          >
-            {{ shortcut.label }}
-          </AppButton>
+          />
         </div>
       </article>
     </div>
