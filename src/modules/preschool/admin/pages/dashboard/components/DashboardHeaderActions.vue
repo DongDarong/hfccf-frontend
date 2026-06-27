@@ -13,6 +13,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  showPrimaryAction: {
+    type: Boolean,
+    default: true,
+  },
   primaryLabel: {
     type: String,
     required: true,
@@ -60,14 +64,17 @@ function onPrimary() {
       @click="onRefresh"
     >
       <template #default>
+        <span class="sr-only">{{ refreshLabel }}</span>
         <i class="pi pi-refresh" aria-hidden="true" />
       </template>
     </AppIconButton>
     <span class="sr-only">{{ refreshLabel }}</span>
     <AppButton
+      v-if="showPrimaryAction"
       type="button"
       variant="primary"
       size="sm"
+      class="preschool-dashboard-page__primary-action"
       @click="onPrimary"
     >
       <template #iconLeft><i class="pi pi-calendar-plus" aria-hidden="true" /></template>
@@ -96,4 +103,3 @@ function onPrimary() {
     />
   </div>
 </template>
-

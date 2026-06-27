@@ -8,16 +8,16 @@
 
 .preschool-dashboard-page__header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.7rem;
   padding-bottom: 0.15rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .preschool-dashboard-page__header-copy {
   min-width: 0;
-  margin-bottom: 0.65rem !important;
+  margin-bottom: 0 !important;
 }
 
 .preschool-dashboard-page__header-tools {
@@ -26,6 +26,22 @@
   flex-direction: column;
   gap: 0.4rem;
   padding-bottom: 0.65rem;
+}
+
+.preschool-dashboard-page__header-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.65rem;
+}
+
+.preschool-dashboard-page__header-context {
+  min-width: 0;
+}
+
+.preschool-dashboard-page__header-spacer {
+  min-width: 0;
 }
 
 .preschool-dashboard-page__context {
@@ -49,6 +65,10 @@
 }
 
 .preschool-dashboard-page__menu-button {
+  flex: none;
+}
+
+.preschool-dashboard-page__primary-action {
   flex: none;
 }
 
@@ -392,13 +412,24 @@
     gap: 0;
   }
 
-  .preschool-dashboard-page__header-tools {
-    align-items: flex-start;
+  .preschool-dashboard-page__header-toolbar {
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .preschool-dashboard-page__header-spacer {
+    display: none;
+  }
+
+  .preschool-dashboard-page__header-context,
+  .preschool-dashboard-page__actions {
+    justify-self: start;
     width: 100%;
   }
 
-  .preschool-dashboard-page__context,
   .preschool-dashboard-page__actions {
+    flex-wrap: wrap;
     justify-content: flex-start;
   }
 
@@ -411,6 +442,12 @@
   .preschool-dashboard-page__section-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 1120px) {
+  .preschool-dashboard-page__primary-action {
+    display: none;
   }
 }
 

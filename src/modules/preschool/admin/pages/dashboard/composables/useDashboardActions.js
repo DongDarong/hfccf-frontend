@@ -8,6 +8,11 @@ export function useDashboardActions() {
 
   const toolbarMenuItems = computed(() => [
     {
+      label: t('preschoolDashboardPage.header.scheduleManagement'),
+      icon: 'pi pi-calendar-plus',
+      command: () => goToScheduleManagement(),
+    },
+    {
       label: t('preschoolDashboardPage.header.openReports'),
       icon: 'pi pi-chart-bar',
       command: () => goToReportsCenter(),
@@ -48,4 +53,3 @@ export function useDashboardActions() {
     goToReportsCenter,
   }
 }
-

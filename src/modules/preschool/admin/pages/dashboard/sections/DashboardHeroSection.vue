@@ -79,16 +79,20 @@ function onPrimary() {
       :title="props.title"
       :subtitle="props.subtitle"
     />
-    <div class="preschool-dashboard-page__header-tools">
-      <DashboardAcademicContext
-        :academic-year="props.academicYear"
-        :academic-term="props.academicTerm"
-        :last-updated="props.lastUpdated ? t('preschoolDashboardPage.header.lastUpdated', { time: props.lastUpdated }) : ''"
-        :academic-year-label="t('preschoolDashboardPage.header.academicYear')"
-        :academic-term-label="t('preschoolDashboardPage.header.term')"
-      />
+    <div class="preschool-dashboard-page__header-toolbar">
+      <div class="preschool-dashboard-page__header-context">
+        <DashboardAcademicContext
+          :academic-year="props.academicYear"
+          :academic-term="props.academicTerm"
+          :last-updated="props.lastUpdated ? t('preschoolDashboardPage.header.lastUpdated', { time: props.lastUpdated }) : ''"
+          :academic-year-label="t('preschoolDashboardPage.header.academicYear')"
+          :academic-term-label="t('preschoolDashboardPage.header.term')"
+        />
+      </div>
+      <div class="preschool-dashboard-page__header-spacer" aria-hidden="true" />
       <DashboardHeaderActions
         :loading="props.loading"
+        :show-primary-action="true"
         :primary-label="props.primaryLabel"
         :menu-label="props.menuLabel"
         :refresh-label="props.refreshLabel"
@@ -103,4 +107,3 @@ function onPrimary() {
     :text="props.spotlightText"
   />
 </template>
-
