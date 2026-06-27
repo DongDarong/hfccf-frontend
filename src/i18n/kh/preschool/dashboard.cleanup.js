@@ -67,6 +67,12 @@ export default {
         critical: 'ត្រូវការយកចិត្តទុកដាក់',
         neutral: 'មិនមានទិន្នន័យ',
       },
+      statusesShort: {
+        healthy: 'ល្អ',
+        watch: 'តាមដាន',
+        critical: 'បន្ទាន់',
+        neutral: 'គ្មានទិន្នន័យ',
+      },
       details: {
         healthy: 'ដំណើរការធម្មតា',
         pendingEnrollments: '{count} ពាក្យស្នើកំពុងរង់ចាំ',

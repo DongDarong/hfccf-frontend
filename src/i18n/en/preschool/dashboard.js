@@ -69,6 +69,12 @@ export default {
         critical: 'Needs attention',
         neutral: 'No data',
       },
+      statusesShort: {
+        healthy: 'Healthy',
+        watch: 'Watch',
+        critical: 'Critical',
+        neutral: 'No data',
+      },
       details: {
         healthy: 'Operating normally',
         pendingEnrollments: '{count} pending applications',

@@ -122,25 +122,83 @@
 .preschool-dashboard-page__health-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  overflow: hidden;
-  border: 1px solid #dbe6f2;
-  border-radius: 1.05rem;
-  background: #fff;
-  box-shadow: 0 14px 34px -32px rgba(15, 23, 42, 0.45);
+  gap: 0.65rem;
 }
 
 .preschool-dashboard-page__health-item {
+  min-width: 0;
+  border: 1px solid #dbe6f2;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 14px 34px -32px rgba(15, 23, 42, 0.45);
+  padding: 0.9rem;
+}
+
+.preschool-dashboard-page__health-item[data-status='critical'] {
+  border-color: #fecdd3;
+  box-shadow: 0 14px 34px -32px rgba(190, 18, 60, 0.45);
+}
+
+.preschool-dashboard-page__health-item[data-status='warning'] {
+  border-color: #fde68a;
+  box-shadow: 0 14px 34px -32px rgba(180, 83, 9, 0.38);
+}
+
+.preschool-dashboard-page__health-item[data-status='healthy'] {
+  border-color: #bbf7d0;
+  box-shadow: 0 14px 34px -32px rgba(22, 163, 74, 0.22);
+}
+
+.preschool-dashboard-page__health-item[data-status='neutral'] {
+  border-color: #e2e8f0;
+}
+
+.preschool-dashboard-page__health-card {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.preschool-dashboard-page__health-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.55rem;
-  min-width: 0;
-  padding: 0.7rem 0.75rem;
-  border-right: 1px solid #e2e8f0;
+  gap: 0.75rem;
 }
 
-.preschool-dashboard-page__health-item:last-child {
-  border-right: 0;
+.preschool-dashboard-page__health-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.preschool-dashboard-page__health-item[data-status='healthy'] .preschool-dashboard-page__health-icon-wrap {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.preschool-dashboard-page__health-item[data-status='warning'] .preschool-dashboard-page__health-icon-wrap {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.preschool-dashboard-page__health-item[data-status='critical'] .preschool-dashboard-page__health-icon-wrap {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.preschool-dashboard-page__health-item[data-status='info'] .preschool-dashboard-page__health-icon-wrap {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.preschool-dashboard-page__health-icon {
+  font-size: 1rem;
 }
 
 .preschool-dashboard-page__health-copy {
@@ -150,21 +208,19 @@
 .preschool-dashboard-page__health-label {
   margin: 0;
   color: #0f172a;
-  overflow: hidden;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
 }
 
 .preschool-dashboard-page__health-detail {
   margin: 0.12rem 0 0;
   color: #64748b;
-  overflow: hidden;
-  font-size: 0.7rem;
-  line-height: 1.35;
+  font-size: 0.76rem;
+  line-height: 1.45;
   text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .preschool-dashboard-page__insight-grid {
@@ -476,14 +532,6 @@
   .preschool-dashboard-page__health-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .preschool-dashboard-page__health-item:nth-child(3n) {
-    border-right: 0;
-  }
-
-  .preschool-dashboard-page__health-item:nth-child(-n + 3) {
-    border-bottom: 1px solid #e2e8f0;
-  }
 }
 
 @media (max-width: 1100px) {
@@ -528,6 +576,10 @@
     grid-template-columns: 1fr;
   }
 
+  .preschool-dashboard-page__health-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .preschool-dashboard-page__section-header {
     align-items: flex-start;
     flex-direction: column;
@@ -543,16 +595,6 @@
 @media (max-width: 640px) {
   .preschool-dashboard-page__health-grid {
     grid-template-columns: 1fr;
-  }
-
-  .preschool-dashboard-page__health-item,
-  .preschool-dashboard-page__health-item:nth-child(3n) {
-    border-right: 0;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .preschool-dashboard-page__health-item:last-child {
-    border-bottom: 0;
   }
 
   .preschool-dashboard-page__insight-value {

@@ -114,6 +114,32 @@ function translateExecutiveStatus(t, status) {
   return t(`preschoolDashboardPage.executiveHealth.statuses.${key}`)
 }
 
+function translateExecutiveBadgeStatus(t, status) {
+  const normalized = String(status || 'neutral').trim().toLowerCase()
+  const key = normalized === 'warning' ? 'watch' : normalized
+
+  return t(`preschoolDashboardPage.executiveHealth.statusesShort.${key}`)
+}
+
+function resolveExecutiveHealthIcon(statusKey) {
+  switch (String(statusKey || '').trim().toLowerCase()) {
+    case 'enrollment':
+      return 'pi pi-user-plus'
+    case 'attendance':
+      return 'pi pi-calendar-clock'
+    case 'billing':
+      return 'pi pi-credit-card'
+    case 'assessment':
+      return 'pi pi-chart-line'
+    case 'health':
+      return 'pi pi-heart'
+    case 'guardians':
+      return 'pi pi-users'
+    default:
+      return 'pi pi-info-circle'
+  }
+}
+
 function formatAnalyticsComparison(t, metric, valueFormatter) {
   const delta = Number(metric?.delta)
   const direction = ['up', 'down', 'neutral'].includes(metric?.trend) ? metric.trend : 'neutral'
@@ -382,8 +408,10 @@ export function useDashboardData() {
     return [
       {
         label: t('preschoolDashboardPage.executiveHealth.modules.enrollment'),
+        iconClass: resolveExecutiveHealthIcon('enrollment'),
         status: enrollmentStatus,
         statusLabel: translateExecutiveStatus(t, enrollmentStatus),
+        statusBadgeLabel: translateExecutiveBadgeStatus(t, enrollmentStatus),
         detail: pendingEnrollments === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : pendingEnrollments > 0
@@ -392,8 +420,10 @@ export function useDashboardData() {
       },
       {
         label: t('preschoolDashboardPage.executiveHealth.modules.attendance'),
+        iconClass: resolveExecutiveHealthIcon('attendance'),
         status: attendanceStatus,
         statusLabel: translateExecutiveStatus(t, attendanceStatus),
+        statusBadgeLabel: translateExecutiveBadgeStatus(t, attendanceStatus),
         detail: attendanceExceptions === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : Number(attendanceExceptions) > 0
@@ -404,8 +434,10 @@ export function useDashboardData() {
       },
       {
         label: t('preschoolDashboardPage.executiveHealth.modules.billing'),
+        iconClass: resolveExecutiveHealthIcon('billing'),
         status: billingStatus,
         statusLabel: translateExecutiveStatus(t, billingStatus),
+        statusBadgeLabel: translateExecutiveBadgeStatus(t, billingStatus),
         detail: outstandingPayments === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : Number(outstandingPayments) > 0
@@ -414,16 +446,20 @@ export function useDashboardData() {
       },
       {
         label: t('preschoolDashboardPage.executiveHealth.modules.assessment'),
+        iconClass: resolveExecutiveHealthIcon('assessment'),
         status: assessmentStatus,
         statusLabel: translateExecutiveStatus(t, assessmentStatus),
+        statusBadgeLabel: translateExecutiveBadgeStatus(t, assessmentStatus),
         detail: assessmentCompletion === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : t('preschoolDashboardPage.executiveHealth.details.assessmentCompletion', { rate: formatPercent(assessmentCompletion) }),
       },
       {
         label: t('preschoolDashboardPage.executiveHealth.modules.health'),
+        iconClass: resolveExecutiveHealthIcon('health'),
         status: healthStatus,
         statusLabel: translateExecutiveStatus(t, healthStatus),
+        statusBadgeLabel: translateExecutiveBadgeStatus(t, healthStatus),
         detail: openHealthAlerts === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : Number(openHealthAlerts) > 0
@@ -432,8 +468,10 @@ export function useDashboardData() {
       },
       {
         label: t('preschoolDashboardPage.executiveHealth.modules.guardians'),
+        iconClass: resolveExecutiveHealthIcon('guardians'),
         status: guardianStatus,
         statusLabel: translateExecutiveStatus(t, guardianStatus),
+        statusBadgeLabel: translateExecutiveBadgeStatus(t, guardianStatus),
         detail: guardianIssues === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : Number(guardianIssues) > 0
