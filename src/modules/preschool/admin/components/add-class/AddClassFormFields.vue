@@ -33,6 +33,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  scheduleOptions: {
+    type: Array,
+    default: () => [],
+  },
   level: {
     type: String,
     default: '',
@@ -57,6 +61,18 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  codeLabel: {
+    type: String,
+    default: '',
+  },
+  codeHint: {
+    type: String,
+    default: '',
+  },
+  codeLoading: {
+    type: Boolean,
+    default: false,
+  },
   isLocked: {
     type: Boolean,
     default: false,
@@ -64,7 +80,6 @@ const props = defineProps({
 })
 
 defineEmits([
-  'update:code',
   'update:name',
   'update:teacher',
   'update:level',
@@ -103,20 +118,41 @@ const translatedStatusOptions = computed(() =>
     label: translateOption('common.status', option),
   })),
 )
+
+const renderedScheduleOptions = computed(() =>
+  [
+    ...(props.schedule
+      && !props.scheduleOptions.some((option) => option.value === props.schedule)
+      ? [{
+          value: props.schedule,
+          label: props.schedule,
+          description: '',
+          displayLabel: props.schedule,
+        }]
+      : []),
+    ...props.scheduleOptions.map((option) => ({
+      ...option,
+      displayLabel: option.description ? `${option.label} - ${option.description}` : option.label,
+    })),
+  ],
+)
 </script>
 
 <template>
   <div :class="isKh ? 'add-class-form-fields add-class-form-fields--kh' : 'add-class-form-fields'">
-    <label class="add-class-form-fields__field add-class-form-fields__field--half">
-      <span class="add-class-form-fields__label">{{ t('preschoolAddClass.classCode') }}</span>
-      <input
-        :value="code"
-        type="text"
-        :placeholder="t('preschoolAddClass.classCodePlaceholder')"
-        :disabled="isLocked"
-        @input="$emit('update:code', $event.target.value)"
-      />
-    </label>
+    <div class="add-class-form-fields__field add-class-form-fields__field--half">
+      <span class="add-class-form-fields__label">{{ codeLabel || t('preschoolAddClass.classCode') }}</span>
+      <div
+        class="add-class-form-fields__code-preview"
+        data-testid="add-class-code-preview"
+        :class="{ 'add-class-form-fields__code-preview--loading': codeLoading }"
+      >
+        <strong class="add-class-form-fields__code-value">{{ code || '-' }}</strong>
+        <span class="add-class-form-fields__code-hint">
+          {{ codeHint || t('preschoolAddClass.generatedClassCodeHint') }}
+        </span>
+      </div>
+    </div>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
       <span class="add-class-form-fields__label">{{ t('preschoolAddClass.className') }}</span>
@@ -156,13 +192,23 @@ const translatedStatusOptions = computed(() =>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
       <span class="add-class-form-fields__label">{{ t('preschoolAddClass.schedule') }}</span>
-      <input
+      <select
+        data-testid="add-class-schedule-select"
         :value="schedule"
-        type="text"
-        :placeholder="t('preschoolAddClass.schedulePlaceholder')"
         :disabled="isLocked"
-        @input="$emit('update:schedule', $event.target.value)"
-      />
+        @change="$emit('update:schedule', $event.target.value)"
+      >
+        <option value="">
+          {{ t('preschoolAddClass.scheduleSelectPlaceholder') }}
+        </option>
+        <option
+          v-for="option in renderedScheduleOptions"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.displayLabel }}
+        </option>
+      </select>
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
@@ -223,6 +269,33 @@ const translatedStatusOptions = computed(() =>
   gap: 0.45rem;
 }
 
+.add-class-form-fields__code-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #dbeafe;
+  border-radius: 0.95rem;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.add-class-form-fields__code-preview--loading {
+  opacity: 0.85;
+}
+
+.add-class-form-fields__code-value {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.add-class-form-fields__code-hint {
+  color: #475569;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .add-class-form-fields__field--half {
   grid-column: span 1;
 }
@@ -243,6 +316,10 @@ const translatedStatusOptions = computed(() =>
 .add-class-form-fields--kh :deep(textarea) {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
+}
+
+.add-class-form-fields--kh .add-class-form-fields__code-hint {
+  line-height: 1.65;
 }
 
 @media (max-width: 720px) {

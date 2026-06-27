@@ -1,7 +1,7 @@
 <script setup>
 // Keep the class editor locale-driven so the visible setup labels stay
 // consistent across EN/KH and regressions surface in unit tests.
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -16,6 +16,7 @@ import AddClassFormActions from '@/modules/preschool/admin/components/add-class/
 import {
   createPreschoolClass,
   fetchPreschoolClass,
+  fetchPreschoolClasses,
   fetchPreschoolTeachers,
   updatePreschoolClass,
 } from '@/modules/preschool/services/preschoolApi'
@@ -32,6 +33,28 @@ const { t, language } = useLanguage()
 const classesDirectoryPath = '/module/preschool-admin/classes'
 const levelOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
 const statusOptions = ['active', 'pending', 'closed', 'archived']
+const scheduleOptions = [
+  {
+    value: 'Morning',
+    labelKey: 'preschoolAddClass.scheduleOptions.morning.label',
+    descriptionKey: 'preschoolAddClass.scheduleOptions.morning.description',
+  },
+  {
+    value: 'Afternoon',
+    labelKey: 'preschoolAddClass.scheduleOptions.afternoon.label',
+    descriptionKey: 'preschoolAddClass.scheduleOptions.afternoon.description',
+  },
+  {
+    value: 'Full Day',
+    labelKey: 'preschoolAddClass.scheduleOptions.fullDay.label',
+    descriptionKey: 'preschoolAddClass.scheduleOptions.fullDay.description',
+  },
+  {
+    value: 'Custom / To be scheduled',
+    labelKey: 'preschoolAddClass.scheduleOptions.custom.label',
+    descriptionKey: 'preschoolAddClass.scheduleOptions.custom.description',
+  },
+]
 
 const form = reactive({
   code: '',
@@ -52,6 +75,9 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const isKh = computed(() => language.value === 'KH')
 const teacherOptions = ref([])
+const generatedCode = ref('')
+const generatedCodeLoading = ref(false)
+let codeRequestSeq = 0
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -124,7 +150,7 @@ const summaryCards = computed(() => [
   {
     id: 'class-schedule',
     title: t('preschoolAddClass.schedule'),
-    value: form.schedule.trim() || t('preschoolAddClass.pending'),
+    value: scheduleLabelMap.value[form.schedule.trim()] || form.schedule.trim() || t('preschoolAddClass.pending'),
     label: t('preschoolAddClass.teachingTimeSlot'),
     status: form.schedule.trim() ? 'success' : 'warning',
     statusLabel: form.schedule.trim() ? t('preschoolAddClass.ready') : t('preschoolAddClass.pending'),
@@ -151,6 +177,21 @@ const checklistItems = computed(() => [
   },
 ])
 
+const translatedScheduleOptions = computed(() =>
+  scheduleOptions.map((option) => ({
+    value: option.value,
+    label: t(option.labelKey),
+    description: t(option.descriptionKey),
+  })),
+)
+
+const scheduleLabelMap = computed(() =>
+  translatedScheduleOptions.value.reduce((carry, option) => {
+    carry[option.value] = option.label
+    return carry
+  }, {}),
+)
+
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
@@ -159,6 +200,64 @@ function resetFeedback() {
 function normalizeNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
+}
+
+function normalizeLevelPrefix(level) {
+  const normalized = String(level || '')
+    .trim()
+    .toLowerCase()
+
+  if (normalized.includes('nursery')) return 'NUR'
+  if (normalized.includes('kindergarten')) return 'KIN'
+  if (normalized.includes('preschool')) return 'PRE'
+
+  const fallback = String(level || '')
+    .replace(/[^a-z0-9]+/gi, '')
+    .toUpperCase()
+
+  return fallback.slice(0, 3) || 'CLS'
+}
+
+function extractClassSequence(code, prefix) {
+  const normalized = String(code || '').trim().toUpperCase()
+  const match = normalized.match(new RegExp(`^PS-${prefix}-(\\d{2,})$`))
+  return match ? Number(match[1]) : 0
+}
+
+async function refreshGeneratedCode(level = form.level) {
+  if (isEditMode.value || isViewMode.value) return
+
+  const currentSeq = ++codeRequestSeq
+  generatedCodeLoading.value = true
+
+  try {
+    const prefix = normalizeLevelPrefix(level)
+    const response = await fetchPreschoolClasses({
+      page: 1,
+      perPage: 100,
+      level,
+      sortBy: 'code',
+      sortDirection: 'asc',
+    })
+
+    if (currentSeq !== codeRequestSeq) return
+
+    const nextSequence = (response.items || []).reduce((max, item) => {
+      return Math.max(max, extractClassSequence(item.code, prefix))
+    }, 0) + 1
+
+    generatedCode.value = `PS-${prefix}-${String(nextSequence).padStart(2, '0')}`
+    form.code = generatedCode.value
+  } catch {
+    if (currentSeq !== codeRequestSeq) return
+
+    generatedCode.value = `PS-${normalizeLevelPrefix(level)}-01`
+    form.code = generatedCode.value
+  } finally {
+    if (currentSeq === codeRequestSeq) {
+      generatedCodeLoading.value = false
+    }
+  }
 }
 
 function validateForm() {
@@ -219,6 +318,14 @@ async function loadClass() {
   }
 }
 
+watch(
+  () => form.level,
+  (nextLevel) => {
+    if (mode.value !== 'add') return
+    refreshGeneratedCode(nextLevel)
+  },
+)
+
 async function onSubmit() {
   if (isViewMode.value) return
 
@@ -236,7 +343,7 @@ async function onSubmit() {
   try {
     const teacherLabel = teacherLabelMap.value[form.teacher] || form.teacherDisplayName || ''
     const payload = {
-      code: form.code.trim(),
+      code: form.code.trim() || generatedCode.value,
       name: form.name.trim(),
       teacher_user_id: form.teacher,
       teacher_display_name: teacherLabel,
@@ -277,7 +384,10 @@ onMounted(async () => {
 
   if (mode.value !== 'add') {
     await loadClass()
+    return
   }
+
+  await refreshGeneratedCode(form.level)
 })
 </script>
 
@@ -293,7 +403,8 @@ onMounted(async () => {
           class="add-class-page__form"
           :title="pageTitle"
           :description="t('preschoolAddClass.formDescription')"
-          :cancel-text="t('common.cancel')"
+          :submit-text="t('preschoolAddClass.createClass')"
+          :cancel-text="t('preschoolAddClass.backToClasses')"
           :loading="isSubmitting"
           :disabled="isViewMode"
           :show-cancel="true"
@@ -305,8 +416,12 @@ onMounted(async () => {
           <AddClassFormFields
             :level-options="levelOptions"
             :status-options="statusOptions"
+            :schedule-options="translatedScheduleOptions"
             :teacher-options="teacherOptions"
-            :code="form.code"
+            :code="generatedCode || form.code"
+            :code-label="isEditMode ? t('preschoolAddClass.currentClassCode') : t('preschoolAddClass.generatedClassCode')"
+            :code-hint="isEditMode ? t('preschoolAddClass.currentClassCodeHint') : t('preschoolAddClass.generatedClassCodeHint')"
+            :code-loading="generatedCodeLoading"
             :name="form.name"
             :teacher="form.teacher"
             :level="form.level"
@@ -316,7 +431,6 @@ onMounted(async () => {
             :room="form.room"
             :notes="form.notes"
             :is-locked="isFormLocked"
-            @update:code="form.code = $event"
             @update:name="form.name = $event"
             @update:teacher="form.teacher = $event"
             @update:level="form.level = $event"

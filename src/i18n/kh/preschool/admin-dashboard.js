@@ -102,6 +102,11 @@ export default {
     sidebarText: 'ពិនិត្យចំណុចសំខាន់ៗមុនបង្កើតថ្នាក់។',
     selectedLevel: 'កម្រិតដែលបានជ្រើស',
     classCode: 'កូដថ្នាក់',
+    generatedClassCode: 'កូដថ្នាក់ដែលបានបង្កើត',
+    classCodePreview: 'មើលកូដថ្នាក់',
+    currentClassCode: 'កូដថ្នាក់បច្ចុប្បន្ន',
+    generatedClassCodeHint: 'កូដថ្នាក់បន្ទាប់នឹងត្រូវបង្កើតដោយស្វ័យប្រវត្តិពីកម្រិតដែលបានជ្រើស។',
+    currentClassCodeHint: 'កូដថ្នាក់ដែលបានរក្សាទុកបង្ហាញតែសម្រាប់យោង។',
     className: 'ឈ្មោះថ្នាក់',
     teacher: 'គ្រូ',
     room: 'បន្ទប់',
@@ -112,7 +117,9 @@ export default {
     classCodePlaceholder: 'PS-NUR-03',
     classNamePlaceholder: 'Morning Nursery Blue',
     schedulePlaceholder: 'ចន្ទ-សុក្រ 8:00 ព្រឹក',
+    scheduleSelectPlaceholder: 'ជ្រើសរើសកាលវិភាគ',
     studentsPlaceholder: '0',
+    createClass: 'បង្កើតថ្នាក់',
     backToClasses: 'ត្រឡប់ទៅថ្នាក់',
     editAction: 'កែប្រែថ្នាក់',
     updateAction: 'ធ្វើបច្ចុប្បន្នភាពថ្នាក់',
@@ -128,10 +135,29 @@ export default {
       teacherRequired: 'ត្រូវបំពេញឈ្មោះគ្រូ។',
       levelRequired: 'ត្រូវជ្រើសរើសកម្រិតថ្នាក់។',
       scheduleRequired: 'ត្រូវបំពេញកាលវិភាគ។',
+      classCodeDuplicate: 'កូដថ្នាក់មានរួចហើយ។',
       studentsNegative: 'ចំនួនសិស្សមិនអាចតិចជាងសូន្យបានទេ។',
       statusRequired: 'ត្រូវជ្រើសរើសស្ថានភាពថ្នាក់។',
       createFailed: 'មិនអាចបង្កើតថ្នាក់បានទេ។',
       updateFailed: 'មិនអាចធ្វើបច្ចុប្បន្នភាពថ្នាក់បានទេ។',
+    },
+    scheduleOptions: {
+      morning: {
+        label: 'ពេលព្រឹក',
+        description: 'ចន្ទ-សុក្រ 8:00 ព្រឹក-11:00 ព្រឹក',
+      },
+      afternoon: {
+        label: 'ពេលរសៀល',
+        description: 'ចន្ទ-សុក្រ 1:00 រសៀល-4:00 រសៀល',
+      },
+      fullDay: {
+        label: 'ពេញមួយថ្ងៃ',
+        description: 'ចន្ទ-សុក្រ 8:00 ព្រឹក-4:00 រសៀល',
+      },
+      custom: {
+        label: 'កំណត់តាមតម្រូវការ / រង់ចាំកំណត់',
+        description: 'ប្រើសម្រាប់កាលវិភាគពិសេស ឬកាលវិភាគដែលមិនទាន់បញ្ចប់។',
+      },
     },
   },
   preschoolTeachersManagement: {
@@ -339,4 +365,3 @@ export default {
     },
   },
 }
-

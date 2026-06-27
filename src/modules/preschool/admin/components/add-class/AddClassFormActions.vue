@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -29,38 +30,50 @@ const isKh = computed(() => language.value === 'KH')
 
 <template>
   <div :class="isKh ? 'add-class-form-actions add-class-form-actions--kh' : 'add-class-form-actions'">
-    <button
+    <Button
       v-if="isViewMode"
       type="button"
-      class="add-class-form-actions__action add-class-form-actions__action--secondary"
+      variant="outline"
+      size="md"
+      rounded="xl"
+      class="add-class-form-actions__action"
       @click="$emit('back')"
     >
       {{ t('preschoolAddClass.backToClasses') }}
-    </button>
-    <button
+    </Button>
+    <Button
       v-if="isViewMode"
       type="button"
-      class="add-class-form-actions__action add-class-form-actions__action--primary"
+      variant="primary"
+      size="md"
+      rounded="xl"
+      class="add-class-form-actions__action"
       @click="$emit('edit')"
     >
       {{ t('preschoolAddClass.editAction') }}
-    </button>
-    <button
+    </Button>
+    <Button
       v-else
       type="button"
-      class="add-class-form-actions__action add-class-form-actions__action--secondary"
+      variant="outline"
+      size="md"
+      rounded="xl"
+      class="add-class-form-actions__action"
       @click="$emit('back')"
     >
       {{ t('preschoolAddClass.backToClasses') }}
-    </button>
-    <button
+    </Button>
+    <Button
       v-if="isEditMode"
       type="submit"
-      class="add-class-form-actions__action add-class-form-actions__action--primary"
+      variant="primary"
+      size="md"
+      rounded="xl"
+      class="add-class-form-actions__action"
       :disabled="isSubmitting"
     >
       {{ isSubmitting ? t('preschoolAddClass.saving') : t('preschoolAddClass.updateAction') }}
-    </button>
+    </Button>
   </div>
 </template>
 
@@ -72,43 +85,6 @@ const isKh = computed(() => language.value === 'KH')
   width: 100%;
 }
 
-.add-class-form-actions__action {
-  min-height: 2.8rem;
-  width: 100%;
-  border-radius: 0.9rem;
-  border: 1px solid transparent;
-  font-size: 0.95rem;
-  font-weight: 800;
-  transition: all 0.18s ease;
-}
-
-.add-class-form-actions__action--primary {
-  background: #00aeef;
-  border-color: #00aeef;
-  color: #fff;
-}
-
-.add-class-form-actions__action--primary:hover:enabled {
-  background: #0284c7;
-  border-color: #0284c7;
-}
-
-.add-class-form-actions__action--secondary {
-  background: #fff;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-.add-class-form-actions__action--secondary:hover:enabled {
-  background: #f8fafc;
-  border-color: #94a3b8;
-}
-
-.add-class-form-actions__action:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .add-class-form-actions--kh .add-class-form-actions__action {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
@@ -118,11 +94,6 @@ const isKh = computed(() => language.value === 'KH')
   .add-class-form-actions {
     flex-direction: row;
     justify-content: flex-end;
-  }
-
-  .add-class-form-actions__action {
-    width: auto;
-    min-width: 10rem;
   }
 }
 </style>
