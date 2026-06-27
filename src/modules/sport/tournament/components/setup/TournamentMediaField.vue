@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import Button from 'primevue/button'
+import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -106,4 +106,5 @@ watch(
     </div>
   </div>
 </template>
+
 

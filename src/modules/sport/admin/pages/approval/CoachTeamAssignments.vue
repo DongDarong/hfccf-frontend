@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import Button from 'primevue/button'
+import Button from '@/components/buttons/Button.vue'
 import Card from 'primevue/card'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -141,3 +141,4 @@ onMounted(() => {
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
 }
 </style>
+

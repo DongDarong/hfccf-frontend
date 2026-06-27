@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
-import Button from 'primevue/button'
+import Button from '@/components/buttons/Button.vue'
 import Card from 'primevue/card'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -342,3 +342,4 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
