@@ -58,6 +58,7 @@ const mockDashboard = vi.fn(() =>
 const mockReportsDashboard = vi.fn(() =>
   Promise.resolve({
     dashboard: {
+      generatedAt: '2026-06-27T09:30:00+07:00',
       kpis: {
         attendanceRate: 96,
         absenceRate: 4,
@@ -254,6 +255,9 @@ describe('Preschool real pages', () => {
     expect(wrapper.text()).toContain('System Health')
     expect(wrapper.text()).toContain('Watch')
     expect(wrapper.text()).toContain('Priority Queue')
+    expect(wrapper.text()).toContain('Refresh')
+    expect(wrapper.text()).toContain('Updated')
+    expect(wrapper.text().indexOf('Priority Queue')).toBeLessThan(wrapper.text().indexOf('System Health'))
     expect(wrapper.text()).toContain('Main Insights')
     expect(wrapper.text()).toContain('Operational Sections')
     expect(wrapper.text()).toContain('View all')

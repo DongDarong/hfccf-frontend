@@ -8,6 +8,8 @@ export default {
     header: {
       scheduleManagement: 'Manage schedules',
       openReports: 'Open reports center',
+      refresh: 'Refresh',
+      lastUpdated: 'Updated {time}',
     },
     summary: {
       activeStudents: {

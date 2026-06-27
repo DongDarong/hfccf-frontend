@@ -17,7 +17,7 @@ defineOptions({
   name: 'PreschoolDashboardPage',
 })
 
-const { t } = useLanguage()
+const { t, language } = useLanguage()
 const router = useRouter()
 
 const defaultDashboard = {
@@ -221,6 +221,21 @@ const academicContext = computed(() => {
   return joinParts([year, term])
 })
 
+const lastUpdated = computed(() => {
+  const rawValue = reportsDashboard.value.generatedAt || dashboard.value.generatedAt
+  if (!rawValue) return ''
+
+  const date = new Date(rawValue)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return new Intl.DateTimeFormat(language.value === 'KH' ? 'km-KH' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
+})
+
 const spotlightTitle = computed(() => {
   const nextClass = dashboard.value.upcomingClasses?.[0]
   if (!nextClass) {
@@ -298,6 +313,7 @@ const summaryCards = computed(() => {
   return [
     {
       title: t('preschoolDashboardPage.summary.activeStudents.title'),
+      icon: 'pi pi-users',
       value: formatCount(activeStudents),
       label: t('preschoolDashboardPage.summary.activeStudents.label'),
       comparison: activeStudentsTrend.label,
@@ -306,6 +322,7 @@ const summaryCards = computed(() => {
     },
     {
       title: t('preschoolDashboardPage.summary.attendanceToday.title'),
+      icon: 'pi pi-calendar-clock',
       value: hasAttendanceAnalytics ? formatPercent(attendanceToday) : formatCount(attendanceToday),
       label: t(`preschoolDashboardPage.summary.attendanceToday.${hasAttendanceAnalytics ? 'rateLabel' : 'label'}`),
       comparison: attendanceTrend.label,
@@ -314,6 +331,7 @@ const summaryCards = computed(() => {
     },
     {
       title: t('preschoolDashboardPage.summary.healthAlerts.title'),
+      icon: 'pi pi-heart',
       value: formatCount(openHealthAlerts),
       label: t('preschoolDashboardPage.summary.healthAlerts.label'),
       comparison: healthTrend.label,
@@ -322,6 +340,7 @@ const summaryCards = computed(() => {
     },
     {
       title: t('preschoolDashboardPage.summary.pendingEnrollments.title'),
+      icon: 'pi pi-user-plus',
       value: formatCount(pendingEnrollments),
       label: t('preschoolDashboardPage.summary.pendingEnrollments.label'),
       comparison: enrollmentTrend.label,
@@ -330,6 +349,7 @@ const summaryCards = computed(() => {
     },
     {
       title: t('preschoolDashboardPage.summary.outstandingPayments.title'),
+      icon: 'pi pi-wallet',
       value: formatCurrency(outstandingPayments),
       label: t('preschoolDashboardPage.summary.outstandingPayments.label'),
       comparison: paymentTrend.label,
@@ -660,7 +680,7 @@ const insightCards = computed(() => {
 })
 
 const recentActivityItems = computed(() =>
-  (dashboard.value.recentAttendance || []).slice(0, 4).map((item) => ({
+  (dashboard.value.recentAttendance || []).slice(0, 3).map((item) => ({
     title: item.studentName || t('preschoolDashboardPage.operations.recentActivityFallback'),
     text: joinParts([
       item.className || t('preschoolDashboardPage.operations.classFallback'),
@@ -671,7 +691,7 @@ const recentActivityItems = computed(() =>
 )
 
 const upcomingClasses = computed(() =>
-  (dashboard.value.upcomingClasses || []).slice(0, 4).map((item) => ({
+  (dashboard.value.upcomingClasses || []).slice(0, 3).map((item) => ({
     title: item.name || t('preschoolDashboardPage.operations.classFallback'),
     text: joinParts([
       item.teacherDisplayName || item.teacherName || t('preschoolDashboardPage.spotlight.assignedTeacher'),
@@ -711,36 +731,38 @@ onMounted(() => {
 <template>
   <MainLayout>
     <section class="preschool-dashboard-page">
-      <HeaderSection
-        :title="t('preschoolDashboardPage.title')"
-        :subtitle="t('preschoolDashboardPage.subtitle')"
-      >
-        <template #actions>
-          <div class="preschool-dashboard-page__actions">
+      <div class="preschool-dashboard-page__header">
+        <HeaderSection
+          class="preschool-dashboard-page__header-copy"
+          :title="t('preschoolDashboardPage.title')"
+          :subtitle="t('preschoolDashboardPage.subtitle')"
+        />
+        <div class="preschool-dashboard-page__header-tools">
+          <div class="preschool-dashboard-page__context">
             <span v-if="academicContext" class="preschool-dashboard-page__context-pill">
+              <i class="pi pi-calendar" aria-hidden="true" />
               {{ academicContext }}
             </span>
-            <Button
-              type="button"
-              variant="secondary"
-              size="md"
-              rounded="xl"
-              @click="goToReportsCenter"
-            >
+            <span v-if="lastUpdated" class="preschool-dashboard-page__updated">
+              {{ t('preschoolDashboardPage.header.lastUpdated', { time: lastUpdated }) }}
+            </span>
+          </div>
+          <div class="preschool-dashboard-page__actions">
+            <Button type="button" variant="ghost" size="sm" :loading="loading" @click="loadDashboard">
+              <template #iconLeft><i class="pi pi-refresh" aria-hidden="true" /></template>
+              {{ t('preschoolDashboardPage.header.refresh') }}
+            </Button>
+            <Button type="button" variant="outline" size="sm" @click="goToReportsCenter">
+              <template #iconLeft><i class="pi pi-chart-bar" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.openReports') }}
             </Button>
-            <Button
-              type="button"
-              variant="primary"
-              size="md"
-              rounded="xl"
-              @click="goToScheduleManagement"
-            >
+            <Button type="button" variant="primary" size="sm" @click="goToScheduleManagement">
+              <template #iconLeft><i class="pi pi-calendar-plus" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.scheduleManagement') }}
             </Button>
           </div>
-        </template>
-      </HeaderSection>
+        </div>
+      </div>
 
       <div
         v-if="errorMessage"
@@ -764,6 +786,20 @@ onMounted(() => {
 
       <PreschoolDashboardSummary :cards="summaryCards" />
 
+      <section class="preschool-dashboard-page__section preschool-dashboard-page__section--priority">
+        <div class="preschool-dashboard-page__section-header">
+          <div>
+            <h2 class="preschool-dashboard-page__section-title">{{ t('preschoolDashboardPage.priority.title') }}</h2>
+            <p class="preschool-dashboard-page__section-subtitle">{{ t('preschoolDashboardPage.priority.subtitle') }}</p>
+          </div>
+        </div>
+        <PreschoolDashboardActionList
+          :title="t('preschoolDashboardPage.priority.cardTitle')"
+          :items="priorityItems"
+          :empty-text="t('preschoolDashboardPage.priority.empty')"
+        />
+      </section>
+
       <section class="preschool-dashboard-page__section preschool-dashboard-page__section--health">
         <div class="preschool-dashboard-page__section-header">
           <div>
@@ -778,32 +814,18 @@ onMounted(() => {
             class="preschool-dashboard-page__health-item"
             :data-status="item.status"
           >
-            <div class="preschool-dashboard-page__health-head">
+            <div class="preschool-dashboard-page__health-copy">
               <p class="preschool-dashboard-page__health-label">{{ item.label }}</p>
-              <StatusBadge
-                :status="item.status"
-                :label="item.statusLabel"
-                :translate-label="false"
-                size="sm"
-              />
+              <p class="preschool-dashboard-page__health-detail">{{ item.detail }}</p>
             </div>
-            <p class="preschool-dashboard-page__health-detail">{{ item.detail }}</p>
+            <StatusBadge
+              :status="item.status === 'healthy' ? 'success' : item.status"
+              :label="item.statusLabel"
+              :translate-label="false"
+              size="sm"
+            />
           </article>
         </div>
-      </section>
-
-      <section class="preschool-dashboard-page__section">
-        <div class="preschool-dashboard-page__section-header">
-          <div>
-            <h2 class="preschool-dashboard-page__section-title">{{ t('preschoolDashboardPage.priority.title') }}</h2>
-            <p class="preschool-dashboard-page__section-subtitle">{{ t('preschoolDashboardPage.priority.subtitle') }}</p>
-          </div>
-        </div>
-        <PreschoolDashboardActionList
-          :title="t('preschoolDashboardPage.priority.cardTitle')"
-          :items="priorityItems"
-          :empty-text="t('preschoolDashboardPage.priority.empty')"
-        />
       </section>
 
       <section class="preschool-dashboard-page__section">
@@ -855,7 +877,7 @@ onMounted(() => {
           <PreschoolDashboardActivity
             :items="recentActivityItems"
             :empty-text="t('preschoolDashboardPage.operations.recentActivityEmpty')"
-            :max-items="4"
+            :max-items="3"
             :view-all-text="t('preschoolDashboardPage.operations.viewAll')"
             :view-all-to="{ name: 'dashboard-preschool-admin-attendance-history' }"
           />
@@ -928,8 +950,8 @@ onMounted(() => {
                 v-for="shortcut in shortcutActions"
                 :key="shortcut.label"
                 type="button"
-                variant="secondary"
-                size="md"
+                variant="outline"
+                size="sm"
                 rounded="xl"
                 @click="shortcut.click"
               >
@@ -947,13 +969,45 @@ onMounted(() => {
 .preschool-dashboard-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.preschool-dashboard-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.preschool-dashboard-page__header-copy {
+  min-width: 0;
+  margin-bottom: 0.65rem !important;
+}
+
+.preschool-dashboard-page__header-tools {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-bottom: 0.65rem;
+}
+
+.preschool-dashboard-page__context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
 }
 
 .preschool-dashboard-page__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.45rem;
   align-items: center;
   justify-content: flex-end;
 }
@@ -961,13 +1015,21 @@ onMounted(() => {
 .preschool-dashboard-page__context-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 2.5rem;
-  padding: 0.5rem 0.9rem;
+  gap: 0.4rem;
+  min-height: 1.75rem;
+  padding: 0.28rem 0.6rem;
   border-radius: 999px;
   border: 1px solid #dbe6f2;
   background: #f8fbff;
   color: #0f172a;
-  font-size: 0.85rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.preschool-dashboard-page__updated {
+  color: #64748b;
+  font-size: 0.74rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -975,11 +1037,15 @@ onMounted(() => {
 .preschool-dashboard-page__section {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .preschool-dashboard-page__section--health {
-  gap: 0.75rem;
+  gap: 0.55rem;
+}
+
+.preschool-dashboard-page__section--priority {
+  margin-top: 0.1rem;
 }
 
 .preschool-dashboard-page__section-header {
@@ -991,69 +1057,82 @@ onMounted(() => {
 
 .preschool-dashboard-page__section-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #0f172a;
 }
 
 .preschool-dashboard-page__section-subtitle {
-  margin: 0.35rem 0 0;
+  margin: 0.2rem 0 0;
   color: #64748b;
-  font-size: 0.92rem;
-  line-height: 1.55;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .preschool-dashboard-page__health-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.8rem;
+  overflow: hidden;
+  border: 1px solid #dbe6f2;
+  border-radius: 1.05rem;
+  background: #fff;
+  box-shadow: 0 14px 34px -32px rgba(15, 23, 42, 0.45);
 }
 
 .preschool-dashboard-page__health-item {
-  padding: 0.95rem 1rem;
-  border-radius: 1.15rem;
-  border: 1px solid #dbe6f2;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
-  box-shadow: 0 18px 45px -36px rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+  border-right: 1px solid #e2e8f0;
 }
 
-.preschool-dashboard-page__health-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
+.preschool-dashboard-page__health-item:last-child {
+  border-right: 0;
+}
+
+.preschool-dashboard-page__health-copy {
+  min-width: 0;
 }
 
 .preschool-dashboard-page__health-label {
   margin: 0;
   color: #0f172a;
-  font-size: 0.9rem;
+  overflow: hidden;
+  font-size: 0.78rem;
   font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .preschool-dashboard-page__health-detail {
-  margin: 0.55rem 0 0;
+  margin: 0.12rem 0 0;
   color: #64748b;
-  font-size: 0.88rem;
-  line-height: 1.5;
+  overflow: hidden;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .preschool-dashboard-page__insight-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .preschool-dashboard-page__insight-card,
 .preschool-dashboard-page__panel {
   border: 1px solid #dbe6f2;
-  border-radius: 1.35rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
-  box-shadow: 0 18px 45px -36px rgba(15, 23, 42, 0.45);
+  border-radius: 1.05rem;
+  background: #fff;
+  box-shadow: 0 14px 34px -32px rgba(15, 23, 42, 0.45);
 }
 
 .preschool-dashboard-page__insight-card {
-  padding: 1.15rem;
+  padding: 0.9rem;
 }
 
 .preschool-dashboard-page__insight-topline {
@@ -1101,31 +1180,31 @@ onMounted(() => {
 
 .preschool-dashboard-page__insight-value {
   margin: 0.6rem 0 0;
-  font-size: 2rem;
+  font-size: 1.7rem;
   font-weight: 800;
   color: #0f172a;
 }
 
 .preschool-dashboard-page__insight-label {
-  margin: 0.35rem 0 0;
-  font-size: 0.92rem;
+  margin: 0.2rem 0 0;
+  font-size: 0.84rem;
   font-weight: 700;
   color: #2563eb;
 }
 
 .preschool-dashboard-page__insight-note {
-  margin: 0.5rem 0 0;
+  margin: 0.35rem 0 0;
   color: #475569;
   line-height: 1.55;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
 }
 
 .preschool-dashboard-page__insight-list {
   list-style: none;
-  margin: 1rem 0 0;
+  margin: 0.65rem 0 0;
   padding: 0;
   display: grid;
-  gap: 0.65rem;
+  gap: 0.4rem;
 }
 
 .preschool-dashboard-page__insight-list li,
@@ -1134,7 +1213,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .preschool-dashboard-page__insight-list span,
@@ -1145,17 +1224,17 @@ onMounted(() => {
 .preschool-dashboard-page__insight-list strong,
 .preschool-dashboard-page__summary-item strong {
   color: #0f172a;
-  font-size: 0.95rem;
+  font-size: 0.84rem;
 }
 
 .preschool-dashboard-page__operations-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .preschool-dashboard-page__panel {
-  padding: 1.25rem;
+  padding: 1rem;
 }
 
 .preschool-dashboard-page__panel-header {
@@ -1163,7 +1242,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.95rem;
+  margin-bottom: 0.7rem;
 }
 
 .preschool-dashboard-page__panel-title {
@@ -1192,15 +1271,21 @@ onMounted(() => {
   text-decoration: underline;
 }
 
+.preschool-dashboard-page__panel-link:focus-visible {
+  border-radius: 0.35rem;
+  outline: 3px solid rgba(14, 165, 233, 0.28);
+  outline-offset: 2px;
+}
+
 .preschool-dashboard-page__empty {
   color: #64748b;
   font-size: 0.92rem;
-  padding: 0.9rem 0 0.25rem;
+  padding: 0.65rem 0 0.15rem;
 }
 
 .preschool-dashboard-page__class-list {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .preschool-dashboard-page__class-item {
@@ -1208,22 +1293,22 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.8rem;
   background: #fff;
   border: 1px solid #e2e8f0;
 }
 
 .preschool-dashboard-page__class-title {
   margin: 0;
-  font-size: 0.94rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: #0f172a;
 }
 
 .preschool-dashboard-page__class-text {
   margin: 0.25rem 0 0;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   color: #64748b;
   line-height: 1.45;
 }
@@ -1240,18 +1325,26 @@ onMounted(() => {
 
 .preschool-dashboard-page__summary-grid {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .preschool-dashboard-page__shortcut-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 @media (max-width: 1200px) {
   .preschool-dashboard-page__health-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .preschool-dashboard-page__health-item:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .preschool-dashboard-page__health-item:nth-child(-n + 3) {
+    border-bottom: 1px solid #e2e8f0;
   }
 }
 
@@ -1263,11 +1356,22 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .preschool-dashboard-page__header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .preschool-dashboard-page__header-tools {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .preschool-dashboard-page__context,
   .preschool-dashboard-page__actions {
     justify-content: flex-start;
   }
 
-  .preschool-dashboard-page__health-grid,
   .preschool-dashboard-page__insight-grid,
   .preschool-dashboard-page__operations-grid,
   .preschool-dashboard-page__shortcut-grid {
@@ -1281,6 +1385,20 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .preschool-dashboard-page__health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preschool-dashboard-page__health-item,
+  .preschool-dashboard-page__health-item:nth-child(3n) {
+    border-right: 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .preschool-dashboard-page__health-item:last-child {
+    border-bottom: 0;
+  }
+
   .preschool-dashboard-page__insight-value {
     font-size: 1.7rem;
   }
@@ -1288,6 +1406,12 @@ onMounted(() => {
   .preschool-dashboard-page__class-item {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .preschool-dashboard-page__actions > * {
+    flex: 1 1 auto;
   }
 }
 </style>

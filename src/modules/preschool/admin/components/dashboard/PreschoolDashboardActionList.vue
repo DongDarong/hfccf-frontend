@@ -47,6 +47,25 @@ const normalizedItems = computed(() =>
       }
   )),
 )
+
+const groupedItems = computed(() => {
+  const order = ['critical', 'high', 'medium', 'info']
+  const groups = new Map()
+
+  normalizedItems.value.forEach((item) => {
+    const priority = order.includes(item.priority) ? item.priority : 'info'
+    if (!groups.has(priority)) groups.set(priority, [])
+    groups.get(priority).push(item)
+  })
+
+  return order
+    .filter(priority => groups.has(priority))
+    .map(priority => ({
+      priority,
+      label: groups.get(priority)[0]?.priorityLabel || priority,
+      items: groups.get(priority),
+    }))
+})
 </script>
 
 <template>
@@ -58,45 +77,54 @@ const normalizedItems = computed(() =>
     <div v-if="normalizedItems.length === 0" class="preschool-dashboard-action-list__empty">
       {{ props.emptyText }}
     </div>
-    <ul v-else class="preschool-dashboard-action-list__list">
-      <li
-        v-for="item in normalizedItems"
-        :key="`${item.label}-${item.detail}-${item.value}`"
-        class="preschool-dashboard-action-list__item"
-        :data-tone="item.tone"
-      >
-        <span class="preschool-dashboard-action-list__bullet" aria-hidden="true"></span>
-        <div class="preschool-dashboard-action-list__content">
-          <div class="preschool-dashboard-action-list__meta">
-            <span class="preschool-dashboard-action-list__label">{{ item.label }}</span>
-            <StatusBadge
-              v-if="item.priorityLabel"
-              :status="item.tone"
-              :label="item.priorityLabel"
-              :translate-label="false"
-              size="sm"
-              :dot="false"
-            />
-          </div>
-          <span v-if="item.detail" class="preschool-dashboard-action-list__detail">{{ item.detail }}</span>
-          <RouterLink
-            v-if="item.actionTo"
-            :to="item.actionTo"
-            class="preschool-dashboard-action-list__action"
-          >
-            {{ item.actionLabel }}
-          </RouterLink>
+    <div v-else class="preschool-dashboard-action-list__groups">
+      <section v-for="group in groupedItems" :key="group.priority" class="preschool-dashboard-action-list__group">
+        <div class="preschool-dashboard-action-list__group-heading">
+          <h4>{{ group.label }}</h4>
+          <span>{{ group.items.length }}</span>
         </div>
-        <span v-if="item.value !== ''" class="preschool-dashboard-action-list__value">{{ item.value }}</span>
-      </li>
-    </ul>
+        <ul class="preschool-dashboard-action-list__list">
+          <li
+            v-for="item in group.items"
+            :key="`${item.label}-${item.detail}-${item.value}`"
+            class="preschool-dashboard-action-list__item"
+            :data-tone="item.tone"
+          >
+            <span class="preschool-dashboard-action-list__bullet" aria-hidden="true"></span>
+            <div class="preschool-dashboard-action-list__content">
+              <div class="preschool-dashboard-action-list__meta">
+                <span class="preschool-dashboard-action-list__label">{{ item.label }}</span>
+                <StatusBadge
+                  v-if="item.priorityLabel"
+                  :status="item.tone"
+                  :label="item.priorityLabel"
+                  :translate-label="false"
+                  size="sm"
+                  :dot="false"
+                />
+              </div>
+              <span v-if="item.detail" class="preschool-dashboard-action-list__detail">{{ item.detail }}</span>
+            </div>
+            <span v-if="item.value !== ''" class="preschool-dashboard-action-list__value">{{ item.value }}</span>
+            <RouterLink
+              v-if="item.actionTo"
+              :to="item.actionTo"
+              class="preschool-dashboard-action-list__action"
+            >
+              {{ item.actionLabel }}
+              <i class="pi pi-arrow-right" aria-hidden="true" />
+            </RouterLink>
+          </li>
+        </ul>
+      </section>
+    </div>
   </section>
 </template>
 
 <style scoped>
 .preschool-dashboard-action-list {
-  padding: 1.35rem;
-  border-radius: 1.35rem;
+  padding: 1rem;
+  border-radius: 1.15rem;
   border: 1px solid #dbe6f2;
   background: #ffffff;
   box-shadow: 0 18px 45px -36px rgba(15, 23, 42, 0.45);
@@ -120,8 +148,8 @@ const normalizedItems = computed(() =>
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
-  min-height: 2rem;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
   padding: 0 0.6rem;
   border-radius: 999px;
   background: #eff6ff;
@@ -130,31 +158,57 @@ const normalizedItems = computed(() =>
   font-weight: 800;
 }
 
+.preschool-dashboard-action-list__groups {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.preschool-dashboard-action-list__group-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.4rem;
+}
+
+.preschool-dashboard-action-list__group-heading h4 {
+  margin: 0;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preschool-dashboard-action-list__group-heading span {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .preschool-dashboard-action-list__list {
   list-style: none;
-  margin: 1rem 0 0;
+  margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
+  display: grid;
+  gap: 0.5rem;
 }
 
 .preschool-dashboard-action-list__item {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.65rem;
   color: #334155;
   line-height: 1.6;
-  padding: 0.85rem 0.95rem;
-  border-radius: 1rem;
-  background: #f8fafc;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.85rem;
+  background: #fbfdff;
   border: 1px solid #e2e8f0;
 }
 
 .preschool-dashboard-action-list__bullet {
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-top: 0.35rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 999px;
   background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%);
   flex-shrink: 0;
@@ -186,15 +240,27 @@ const normalizedItems = computed(() =>
 }
 
 .preschool-dashboard-action-list__action {
-  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.38rem 0.55rem;
+  border-radius: 0.65rem;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
   color: #1d4ed8;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 800;
   text-decoration: none;
 }
 
 .preschool-dashboard-action-list__action:hover {
-  text-decoration: underline;
+  background: #dbeafe;
+}
+
+.preschool-dashboard-action-list__action:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.28);
+  outline-offset: 2px;
 }
 
 .preschool-dashboard-action-list__value {
@@ -202,8 +268,8 @@ const normalizedItems = computed(() =>
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
-  height: 2rem;
+  min-width: 1.75rem;
+  height: 1.75rem;
   padding: 0 0.6rem;
   border-radius: 999px;
   background: #eff6ff;
@@ -213,8 +279,19 @@ const normalizedItems = computed(() =>
 }
 
 .preschool-dashboard-action-list__empty {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   color: #64748b;
   font-size: 0.92rem;
+}
+
+@media (max-width: 640px) {
+  .preschool-dashboard-action-list__item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .preschool-dashboard-action-list__action {
+    margin-left: 1.15rem;
+  }
 }
 </style>

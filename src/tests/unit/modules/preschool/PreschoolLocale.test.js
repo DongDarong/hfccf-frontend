@@ -21,6 +21,8 @@ describe('preschool locale parity', () => {
       'preschoolDashboardPage.loading',
       'preschoolDashboardPage.header.scheduleManagement',
       'preschoolDashboardPage.header.openReports',
+      'preschoolDashboardPage.header.refresh',
+      'preschoolDashboardPage.header.lastUpdated',
       'preschoolDashboardPage.summary.activeStudents.title',
       'preschoolDashboardPage.summary.attendanceToday.title',
       'preschoolDashboardPage.summary.attendanceToday.rateLabel',

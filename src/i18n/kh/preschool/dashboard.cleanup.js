@@ -6,6 +6,8 @@ export default {
     header: {
       scheduleManagement: 'គ្រប់គ្រងកាលវិភាគ',
       openReports: 'បើកមជ្ឈមណ្ឌលរបាយការណ៍',
+      refresh: 'ផ្ទុកឡើងវិញ',
+      lastUpdated: 'បានធ្វើបច្ចុប្បន្នភាព {time}',
     },
     summary: {
       activeStudents: {

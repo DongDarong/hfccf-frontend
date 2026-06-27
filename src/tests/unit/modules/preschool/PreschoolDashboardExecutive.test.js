@@ -49,8 +49,10 @@ describe('Preschool dashboard executive widgets', () => {
 
     expect(wrapper.text()).toContain('+8 this month')
     expect(wrapper.text()).toContain('No comparison yet')
+    expect(wrapper.text().match(/\+8 this month/g)).toHaveLength(1)
     expect(wrapper.find('[data-direction="up"]').exists()).toBe(true)
     expect(wrapper.find('[data-direction="neutral"]').exists()).toBe(true)
+    expect(wrapper.find('.preschool-dashboard-summary__icon').exists()).toBe(true)
   })
 
   it('renders priority badges and action links', () => {
