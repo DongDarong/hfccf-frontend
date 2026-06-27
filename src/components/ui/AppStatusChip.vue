@@ -38,7 +38,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'sm',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    validator: (value) => ['xs', 'sm', 'md', 'lg'].includes(value),
   },
   dot: {
     type: Boolean,
@@ -84,10 +84,11 @@ const statusLabel = computed(() => {
 })
 
 const sizeClass = computed(() => ({
+  xs: '!min-h-5 !px-2 !py-0.5 !text-[0.65rem]',
   sm: '!min-h-6 !px-2.5 !py-1 !text-[0.7rem]',
   md: '!min-h-7 !px-3 !py-1.5 !text-[0.75rem]',
   lg: '!min-h-7 !px-3 !py-1.5 !text-[0.75rem]',
-}[props.size] || '!min-h-6 !px-2.5 !py-1 !text-[0.7rem]'))
+}[props.size] || '!min-h-5 !px-2 !py-0.5 !text-[0.65rem]'))
 
 const toneClass = computed(() => {
   switch (normalizedStatus.value) {
@@ -108,6 +109,7 @@ const rootClass = computed(() => [
   'ui-status-chip',
   'inline-flex',
   'max-w-full',
+  'min-w-0',
   'items-center',
   'gap-1.5',
   '!rounded-[var(--ui-pill-radius)]',

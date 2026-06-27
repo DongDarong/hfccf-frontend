@@ -55,11 +55,11 @@ const { t } = useLanguage()
 
 const sizeClass = computed(() => {
   const classes = {
-    xs: '!h-7 !min-h-7 !px-3 !text-xs !gap-1.5',
-    sm: '!h-[34px] !min-h-[34px] !px-3.5 !text-sm !gap-1.5',
-    md: '!h-10 !min-h-10 !px-4 !text-sm !gap-2',
-    lg: '!h-[46px] !min-h-[46px] !px-5 !text-base !gap-2',
-    xl: '!h-[46px] !min-h-[46px] !px-5 !text-base !gap-2',
+    xs: '!h-7 !min-h-7 !px-3 !text-xs !gap-1.5 !leading-[1.1]',
+    sm: '!h-[34px] !min-h-[34px] !px-3.5 !text-sm !gap-1.5 !leading-[1.1]',
+    md: '!h-10 !min-h-10 !px-4 !text-sm !gap-2 !leading-[1.1]',
+    lg: '!h-[46px] !min-h-[46px] !px-5 !text-base !gap-2 !leading-[1.1]',
+    xl: '!h-[46px] !min-h-[46px] !px-5 !text-base !gap-2 !leading-[1.1]',
   }
 
   return classes[props.size] || classes.md
@@ -178,6 +178,8 @@ const rootClass = computed(() => {
     '!inline-flex',
     '!items-center',
     '!justify-center',
+    '!min-w-0',
+    'whitespace-nowrap',
     '!border',
     '!font-semibold',
     '!transition-all',
@@ -217,7 +219,9 @@ const pt = computed(() => ({
       'inline-flex',
       'items-center',
       'justify-center',
-      'whitespace-nowrap',
+      'min-w-0',
+      'max-w-full',
+      'truncate',
       props.variant === 'link' ? 'leading-none' : '',
     ],
   },

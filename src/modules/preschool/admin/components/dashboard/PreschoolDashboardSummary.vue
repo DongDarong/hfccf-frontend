@@ -64,7 +64,7 @@ const normalizedCards = computed(() =>
         :label="card.trend.label || card.comparison || '—'"
         :icon="trendIcon(card.trend.direction)"
         :translate-label="false"
-        size="sm"
+        size="xs"
         :dot="false"
       />
     </article>
@@ -132,7 +132,7 @@ const normalizedCards = computed(() =>
 }
 
 .preschool-dashboard-summary__trend {
-  margin-top: 0.65rem;
+  margin-top: 0.5rem;
 }
 
 .preschool-dashboard-summary__value {

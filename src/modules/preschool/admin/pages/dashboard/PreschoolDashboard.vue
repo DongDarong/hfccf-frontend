@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppIconButton from '@/components/ui/AppIconButton.vue'
 import AppBadge from '@/components/ui/AppBadge.vue'
 import AppStatusChip from '@/components/ui/AppStatusChip.vue'
 import PreschoolDashboardSummary from '@/modules/preschool/admin/components/dashboard/PreschoolDashboardSummary.vue'
@@ -755,15 +756,37 @@ onMounted(() => {
             </span>
           </div>
           <div class="preschool-dashboard-page__actions">
-            <AppButton type="button" variant="ghost" size="sm" :loading="loading" @click="loadDashboard">
-              <template #iconLeft><i class="pi pi-refresh" aria-hidden="true" /></template>
-              {{ t('preschoolDashboardPage.header.refresh') }}
-            </AppButton>
-            <AppButton type="button" variant="outline" size="sm" @click="goToReportsCenter">
+            <AppIconButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="preschool-dashboard-page__refresh-button"
+              :aria-label="t('preschoolDashboardPage.header.refresh')"
+              :loading="loading"
+              @click="loadDashboard"
+            >
+              <template #default>
+                <i class="pi pi-refresh" aria-hidden="true" />
+              </template>
+            </AppIconButton>
+            <span class="sr-only">{{ t('preschoolDashboardPage.header.refresh') }}</span>
+            <AppButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              class="preschool-dashboard-page__action-button preschool-dashboard-page__action-button--secondary"
+              @click="goToReportsCenter"
+            >
               <template #iconLeft><i class="pi pi-chart-bar" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.openReports') }}
             </AppButton>
-            <AppButton type="button" variant="primary" size="sm" @click="goToScheduleManagement">
+            <AppButton
+              type="button"
+              variant="primary"
+              size="sm"
+              class="preschool-dashboard-page__action-button preschool-dashboard-page__action-button--primary"
+              @click="goToScheduleManagement"
+            >
               <template #iconLeft><i class="pi pi-calendar-plus" aria-hidden="true" /></template>
               {{ t('preschoolDashboardPage.header.scheduleManagement') }}
             </AppButton>
@@ -999,7 +1022,7 @@ onMounted(() => {
   display: flex;
   align-items: flex-end;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.4rem;
   padding-bottom: 0.65rem;
 }
 
@@ -1013,10 +1036,28 @@ onMounted(() => {
 
 .preschool-dashboard-page__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
   align-items: center;
   justify-content: flex-end;
+}
+
+.preschool-dashboard-page__refresh-button {
+  flex: none;
+}
+
+.preschool-dashboard-page__action-button {
+  flex: 0 0 auto;
+  min-width: 8.25rem;
+  white-space: nowrap;
+}
+
+.preschool-dashboard-page__action-button--secondary {
+  min-width: 7.75rem;
+}
+
+.preschool-dashboard-page__action-button--primary {
+  min-width: 8.75rem;
 }
 
 .preschool-dashboard-page__updated {
@@ -1364,9 +1405,19 @@ onMounted(() => {
     width: 100%;
   }
 
+  .preschool-dashboard-page__actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
   .preschool-dashboard-page__context,
   .preschool-dashboard-page__actions {
     justify-content: flex-start;
+  }
+
+  .preschool-dashboard-page__action-button {
+    min-width: 7.5rem;
+    flex: 1 1 10rem;
   }
 
   .preschool-dashboard-page__insight-grid,

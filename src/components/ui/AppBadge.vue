@@ -70,6 +70,7 @@ const badgeClass = computed(() => [
   'ui-badge',
   'inline-flex',
   'max-w-full',
+  'min-w-0',
   'items-center',
   'justify-center',
   'gap-1.5',

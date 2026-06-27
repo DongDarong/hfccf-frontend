@@ -99,7 +99,7 @@ const groupedItems = computed(() => {
                   :status="item.tone"
                   :label="item.priorityLabel"
                   :translate-label="false"
-                  size="sm"
+                  size="xs"
                   :dot="false"
                 />
               </div>
@@ -244,14 +244,17 @@ const groupedItems = computed(() => {
   align-items: center;
   gap: 0.35rem;
   flex-shrink: 0;
-  padding: 0.12rem 0;
+  min-height: 2rem;
+  padding: 0.25rem 0.25rem 0.25rem 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: #1d4ed8;
   font-size: 0.8rem;
   font-weight: 700;
+  line-height: 1.1;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .preschool-dashboard-action-list__action:hover {
