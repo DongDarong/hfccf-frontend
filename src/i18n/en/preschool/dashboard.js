@@ -168,6 +168,11 @@ export default {
         },
       },
       sparklineFallback: 'No trend data',
+      sparklineStates: {
+        noComparison: 'No comparison yet',
+        baseline: 'Baseline',
+        newPeriod: 'New reporting period',
+      },
     },
     operations: {
       title: 'Operational Sections',

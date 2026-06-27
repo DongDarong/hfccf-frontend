@@ -166,6 +166,11 @@ export default {
         },
       },
       sparklineFallback: 'មិនមានទិន្នន័យនិន្នាការ',
+      sparklineStates: {
+        noComparison: 'មិនទាន់មានការប្រៀបធៀបនៅឡើយ',
+        baseline: 'មូលដ្ឋាន',
+        newPeriod: 'វដ្តរបាយការណ៍ថ្មី',
+      },
     },
     operations: {
       title: 'ផ្នែកប្រតិបត្តិការ',

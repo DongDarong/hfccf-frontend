@@ -109,22 +109,49 @@ function getFirstNumber(source, paths = []) {
   return null
 }
 
-function buildSparkline(series = []) {
+function buildSparkline(series = [], comparison = null) {
   const values = (Array.isArray(series) ? series : [])
     .map(item => Number(item?.value))
     .filter(value => Number.isFinite(value))
     .slice(-5)
 
   if (values.length === 0) {
+    const current = Number(comparison?.current)
+    const previous = Number(comparison?.previous)
+
+    if (Number.isFinite(current) && Number.isFinite(previous)) {
+      return [
+        { id: 'previous', value: previous },
+        { id: 'current', value: current },
+      ]
+    }
+
     return []
   }
 
-  const max = Math.max(...values, 1)
-
   return values.map((value, index) => ({
     id: `${index}-${value}`,
-    height: Math.max(18, Math.round((value / max) * 100)),
+    value,
   }))
+}
+
+function resolveSparklineFallbackLabel(t, comparison = null) {
+  const current = Number(comparison?.current)
+  const previous = Number(comparison?.previous)
+
+  if (Number.isFinite(current) && Number.isFinite(previous)) {
+    return ''
+  }
+
+  if (Number.isFinite(current) && !Number.isFinite(previous)) {
+    return t('preschoolDashboardPage.insights.sparklineStates.newPeriod')
+  }
+
+  if (!Number.isFinite(current) && Number.isFinite(previous)) {
+    return t('preschoolDashboardPage.insights.sparklineStates.baseline')
+  }
+
+  return t('preschoolDashboardPage.insights.sparklineStates.noComparison')
 }
 
 function resolvePriorityTone(priority) {
@@ -650,9 +677,10 @@ export function useDashboardData() {
   })
 
   const insightCards = computed(() => {
-    const attendanceSeries = buildSparkline(reportsDashboard.value.trend)
-    const enrollmentSeries = buildSparkline(reportsDashboard.value.performance)
+    const attendanceSeries = buildSparkline(reportsDashboard.value.trend, reportsDashboard.value.analytics?.attendanceToday)
+    const enrollmentSeries = buildSparkline(reportsDashboard.value.performance, reportsDashboard.value.analytics?.pendingEnrollments)
     const assessmentSeries = buildSparkline(reportsDashboard.value.completion)
+    const paymentSeries = buildSparkline([], reportsDashboard.value.analytics?.outstandingPayments)
 
     const attendanceRate = getFirstNumber(reportsDashboard.value, ['kpis.attendanceRate']) ?? 0
     const absenceRate = getFirstNumber(reportsDashboard.value, ['kpis.absenceRate']) ?? 0
@@ -680,7 +708,7 @@ export function useDashboardData() {
           { label: t('preschoolDashboardPage.insights.attendance.metrics.absent'), value: formatPercent(absenceRate) },
         ],
         sparkline: attendanceSeries,
-        sparklineFallback: t('preschoolDashboardPage.insights.sparklineFallback'),
+        sparklineFallback: resolveSparklineFallbackLabel(t, reportsDashboard.value.analytics?.attendanceToday),
       },
       {
         title: t('preschoolDashboardPage.insights.enrollment.title'),
@@ -694,7 +722,7 @@ export function useDashboardData() {
           { label: t('preschoolDashboardPage.insights.enrollment.metrics.students'), value: formatCount(totalStudents) },
         ],
         sparkline: enrollmentSeries,
-        sparklineFallback: t('preschoolDashboardPage.insights.sparklineFallback'),
+        sparklineFallback: resolveSparklineFallbackLabel(t, reportsDashboard.value.analytics?.pendingEnrollments),
       },
       {
         title: t('preschoolDashboardPage.insights.assessment.title'),
@@ -708,7 +736,7 @@ export function useDashboardData() {
           { label: t('preschoolDashboardPage.insights.assessment.metrics.score'), value: reportsDashboard.value.kpis?.averageScore ?? 0 },
         ],
         sparkline: assessmentSeries,
-        sparklineFallback: t('preschoolDashboardPage.insights.sparklineFallback'),
+        sparklineFallback: resolveSparklineFallbackLabel(t, null),
       },
       {
         title: t('preschoolDashboardPage.insights.payments.title'),
@@ -721,8 +749,8 @@ export function useDashboardData() {
           { label: t('preschoolDashboardPage.insights.payments.metrics.outstanding'), value: formatCurrency(outstandingBalances) },
           { label: t('preschoolDashboardPage.insights.payments.metrics.overdue'), value: formatCount(overdueInvoices || dashboard.value.summary.overduePayments) },
         ],
-        sparkline: buildSparkline(reportsDashboard.value.cards),
-        sparklineFallback: t('preschoolDashboardPage.insights.sparklineFallback'),
+        sparkline: paymentSeries,
+        sparklineFallback: resolveSparklineFallbackLabel(t, reportsDashboard.value.analytics?.outstandingPayments),
       },
     ]
   })

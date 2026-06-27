@@ -261,7 +261,7 @@ describe('Preschool real pages', () => {
     expect(wrapper.text()).toContain('Main Insights')
     expect(wrapper.text()).toContain('Operational Sections')
     expect(wrapper.text()).toContain('View all')
-    expect(wrapper.text()).toContain('No trend data')
+    expect(wrapper.text()).toContain('No comparison yet')
     const mojibakeBullet = String.fromCharCode(0x00e2, 0x20ac, 0x00a2)
     // Regression protection: the dashboard note separator must stay a real bullet,
     // not the legacy mojibake sequence that breaks the Khmer locale scan.
