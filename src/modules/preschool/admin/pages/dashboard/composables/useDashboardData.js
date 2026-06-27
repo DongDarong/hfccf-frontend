@@ -58,6 +58,34 @@ function joinParts(parts) {
   return parts.filter(Boolean).join(' • ')
 }
 
+function formatRelativeTime(value, locale = 'en-US', t = (key => key)) {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const diffMs = date.getTime() - Date.now()
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
+  const diffMinutes = Math.round(diffMs / (1000 * 60))
+  const absDays = Math.abs(diffDays)
+  const absMinutes = Math.abs(diffMinutes)
+
+  const localDate = new Date(date)
+  const today = new Date()
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const startOfTarget = new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate())
+  const dayDiff = Math.round((startOfTarget.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (dayDiff === 0) return t('preschoolDashboardPage.operations.relative.today')
+  if (dayDiff === -1) return t('preschoolDashboardPage.operations.relative.yesterday')
+  if (dayDiff === 1) return t('preschoolDashboardPage.operations.relative.tomorrow')
+
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+  if (absDays >= 1) return rtf.format(diffDays, 'day')
+  if (absMinutes >= 1) return rtf.format(diffMinutes, 'minute')
+  return rtf.format(0, 'minute')
+}
+
 function getFirstValue(source, paths = []) {
   for (const path of paths) {
     const value = path.split('.').reduce((carry, key) => carry?.[key], source)
@@ -702,22 +730,21 @@ export function useDashboardData() {
   const recentActivityItems = computed(() =>
     (dashboard.value.recentAttendance || []).slice(0, 3).map((item) => ({
       title: item.studentName || t('preschoolDashboardPage.operations.recentActivityFallback'),
-      text: joinParts([
-        item.className || t('preschoolDashboardPage.operations.classFallback'),
-        item.attendanceDate || '-',
-        item.status || '-',
-      ]),
+      text: formatRelativeTime(
+        item.attendanceDate || item.updatedAt || item.createdAt || '',
+        language.value === 'KH' ? 'km-KH' : 'en-US',
+        t,
+      ) || (item.className || ''),
     })),
   )
 
   const upcomingClasses = computed(() =>
-    (dashboard.value.upcomingClasses || []).slice(0, 3).map((item) => ({
+    (dashboard.value.upcomingClasses || []).slice(0, 2).map((item) => ({
       title: item.name || t('preschoolDashboardPage.operations.classFallback'),
       text: joinParts([
-        item.teacherDisplayName || item.teacherName || t('preschoolDashboardPage.spotlight.assignedTeacher'),
-        item.scheduledTime || item.schedule || '-',
+        item.schedule || item.scheduledTime || '',
+        item.teacherDisplayName || item.teacherName || '',
       ]),
-      students: formatCount(item.studentsCount ?? item.studentCount ?? 0),
     })),
   )
 

@@ -175,6 +175,11 @@ export default {
       upcomingSchedules: 'កាលវិភាគបន្ទាប់',
       upcomingSchedulesSubtitle: 'ថ្នាក់ដែលបានកំណត់សម្រាប់ថ្ងៃនេះ និងសប្តាហ៍ខាងមុខ។',
       upcomingEmpty: 'មិនមានថ្នាក់បន្ទាប់ទេ។',
+      relative: {
+        today: 'ថ្ងៃនេះ',
+        yesterday: 'ម្សិលមិញ',
+        tomorrow: 'ថ្ងៃស្អែក',
+      },
       recentActivityFallback: 'សកម្មភាពសិស្ស',
       classFallback: 'ថ្នាក់',
       classroomSummary: {

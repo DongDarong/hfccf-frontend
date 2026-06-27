@@ -177,6 +177,11 @@ export default {
       upcomingSchedules: 'Upcoming Schedules',
       upcomingSchedulesSubtitle: 'The next few classes scheduled for today and the week ahead.',
       upcomingEmpty: 'No upcoming classes are scheduled.',
+      relative: {
+        today: 'Today',
+        yesterday: 'Yesterday',
+        tomorrow: 'Tomorrow',
+      },
       recentActivityFallback: 'Student activity',
       classFallback: 'Class',
       classroomSummary: {

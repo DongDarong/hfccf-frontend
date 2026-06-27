@@ -134,7 +134,6 @@ defineProps({
               <p class="preschool-dashboard-page__class-title">{{ item.title }}</p>
               <p class="preschool-dashboard-page__class-text">{{ item.text }}</p>
             </div>
-            <span class="preschool-dashboard-page__class-count">{{ item.students }}</span>
           </article>
         </div>
       </article>
