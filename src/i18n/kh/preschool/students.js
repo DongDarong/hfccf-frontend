@@ -100,6 +100,7 @@ export default {
   preschoolStudentProfilePage: {
     title: 'ព័ត៌មានលម្អិតសិស្ស',
     subtitle: 'មើលអត្តសញ្ញាណសិស្ស ព័ត៌មានអាណាព្យាបាល និងការចុះឈ្មោះថ្នាក់។',
+    avatarAlt: 'រូបភាពសិស្ស',
     actions: {
       back: 'ត្រឡប់ទៅបញ្ជីសិស្ស',
       health: 'កំណត់ត្រាសុខភាព',

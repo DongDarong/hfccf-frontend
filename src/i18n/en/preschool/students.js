@@ -100,6 +100,7 @@ export default {
   preschoolStudentProfilePage: {
     title: 'Student Profile',
     subtitle: 'View student identity, guardian contact, and class enrollment details.',
+    avatarAlt: 'Student avatar',
     actions: {
       back: 'Back to Students',
       health: 'Health Records',
