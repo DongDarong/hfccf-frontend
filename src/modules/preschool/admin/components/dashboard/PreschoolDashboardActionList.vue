@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import StatusBadge from '@/components/badges/StatusBadge.vue'
 
 defineOptions({
   name: 'PreschoolDashboardActionList',
@@ -23,12 +25,25 @@ const props = defineProps({
 const normalizedItems = computed(() =>
   (Array.isArray(props.items) ? props.items : []).map((item) => (
     typeof item === 'string'
-      ? { label: item, detail: '', value: '', tone: 'info' }
+      ? {
+        label: item,
+        detail: '',
+        value: '',
+        tone: 'info',
+        priority: '',
+        priorityLabel: '',
+        actionLabel: '',
+        actionTo: null,
+      }
       : {
         label: item.label || item.title || '',
         detail: item.detail || item.text || '',
         value: item.value ?? '',
         tone: item.tone || 'info',
+        priority: item.priority || '',
+        priorityLabel: item.priorityLabel || item.priority || '',
+        actionLabel: item.actionLabel || '',
+        actionTo: item.actionTo || null,
       }
   )),
 )
@@ -36,7 +51,10 @@ const normalizedItems = computed(() =>
 
 <template>
   <section class="preschool-dashboard-action-list">
-    <h3 class="preschool-dashboard-action-list__title">{{ props.title }}</h3>
+    <div class="preschool-dashboard-action-list__header">
+      <h3 class="preschool-dashboard-action-list__title">{{ props.title }}</h3>
+      <span class="preschool-dashboard-action-list__count">{{ normalizedItems.length }}</span>
+    </div>
     <div v-if="normalizedItems.length === 0" class="preschool-dashboard-action-list__empty">
       {{ props.emptyText }}
     </div>
@@ -49,8 +67,25 @@ const normalizedItems = computed(() =>
       >
         <span class="preschool-dashboard-action-list__bullet" aria-hidden="true"></span>
         <div class="preschool-dashboard-action-list__content">
-          <span class="preschool-dashboard-action-list__label">{{ item.label }}</span>
+          <div class="preschool-dashboard-action-list__meta">
+            <span class="preschool-dashboard-action-list__label">{{ item.label }}</span>
+            <StatusBadge
+              v-if="item.priorityLabel"
+              :status="item.tone"
+              :label="item.priorityLabel"
+              :translate-label="false"
+              size="sm"
+              :dot="false"
+            />
+          </div>
           <span v-if="item.detail" class="preschool-dashboard-action-list__detail">{{ item.detail }}</span>
+          <RouterLink
+            v-if="item.actionTo"
+            :to="item.actionTo"
+            class="preschool-dashboard-action-list__action"
+          >
+            {{ item.actionLabel }}
+          </RouterLink>
         </div>
         <span v-if="item.value !== ''" class="preschool-dashboard-action-list__value">{{ item.value }}</span>
       </li>
@@ -67,11 +102,32 @@ const normalizedItems = computed(() =>
   box-shadow: 0 18px 45px -36px rgba(15, 23, 42, 0.45);
 }
 
+.preschool-dashboard-action-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .preschool-dashboard-action-list__title {
   margin: 0;
   font-size: 1rem;
   font-weight: 800;
   color: #0f172a;
+}
+
+.preschool-dashboard-action-list__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .preschool-dashboard-action-list__list {
@@ -112,6 +168,13 @@ const normalizedItems = computed(() =>
   min-width: 0;
 }
 
+.preschool-dashboard-action-list__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .preschool-dashboard-action-list__label {
   color: #0f172a;
   font-weight: 700;
@@ -120,6 +183,18 @@ const normalizedItems = computed(() =>
 .preschool-dashboard-action-list__detail {
   color: #64748b;
   font-size: 0.9rem;
+}
+
+.preschool-dashboard-action-list__action {
+  align-self: flex-start;
+  color: #1d4ed8;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.preschool-dashboard-action-list__action:hover {
+  text-decoration: underline;
 }
 
 .preschool-dashboard-action-list__value {

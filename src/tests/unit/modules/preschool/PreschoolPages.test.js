@@ -191,6 +191,8 @@ function baseStubs() {
   return {
     MainLayout: { template: '<div><slot /></div>' },
     HeaderSection: { props: ['title', 'subtitle'], template: '<header><h1>{{ title }}</h1><p>{{ subtitle }}</p></header>' },
+    RouterLink: { props: ['to'], template: '<a><slot /></a>' },
+    StatusBadge: { props: ['status', 'label'], template: '<span class="status-badge-stub">{{ label || status }}</span>' },
     SearchFilterBar: { template: '<div class="search-filter-stub" />' },
     Pagination: { template: '<div class="pagination-stub" />' },
     AlertQuestion: { template: '<div class="alert-question-stub" />' },
@@ -241,9 +243,13 @@ describe('Preschool real pages', () => {
     expect(mockReportsDashboard).toHaveBeenCalled()
     expect(wrapper.text()).toContain('Preschool Operations Board')
     expect(wrapper.text()).toContain('Active Students')
+    expect(wrapper.text()).toContain('System Health')
+    expect(wrapper.text()).toContain('Watch')
     expect(wrapper.text()).toContain('Priority Queue')
     expect(wrapper.text()).toContain('Main Insights')
     expect(wrapper.text()).toContain('Operational Sections')
+    expect(wrapper.text()).toContain('View all')
+    expect(wrapper.text()).toContain('No trend data')
     const mojibakeBullet = String.fromCharCode(0x00e2, 0x20ac, 0x00a2)
     // Regression protection: the dashboard note separator must stay a real bullet,
     // not the legacy mojibake sequence that breaks the Khmer locale scan.
