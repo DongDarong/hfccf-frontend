@@ -54,6 +54,7 @@ export default {
   },
   searchUsersPlaceholder: 'ស្វែងរកអ្នកប្រើតាមឈ្មោះ អ៊ីមែល តួនាទី ឬសិទ្ធិ',
   allRoles: 'តួនាទីទាំងអស់',
+  all: 'ទាំងអស់',
   allDivisions: 'ផ្នែកទាំងអស់',
   allTeams: 'ក្រុមទាំងអស់',
   allClasses: 'ថ្នាក់ទាំងអស់',
@@ -218,4 +219,3 @@ export default {
   notifications,
   states,
 }
-

@@ -226,6 +226,7 @@ export default {
       critical: 'Critical',
     },
     messages: {
+      loading: 'Loading health records...',
       loadFailed: 'Unable to load health records.',
       saveFailed: 'Unable to save the record.',
       deleteSuccess: 'Record deleted successfully.',
