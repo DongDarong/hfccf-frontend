@@ -41,4 +41,35 @@ describe('Breadcrumb', () => {
     expect(wrapper.text()).toContain('New Application')
     expect(wrapper.findAll('a')).toHaveLength(2)
   })
+
+  it('renders the guardian communication breadcrumb trail', async () => {
+    const router = createTestRouter([
+      {
+        path: '/module/preschool-admin',
+        name: 'dashboard-preschool-admin',
+        component: { template: '<div />' },
+      },
+      {
+        path: '/module/preschool-admin/guardians/communications',
+        name: 'dashboard-preschool-admin-guardian-communications',
+        component: { template: '<div />' },
+      },
+    ])
+
+    await router.push({ name: 'dashboard-preschool-admin-guardian-communications' })
+    await router.isReady()
+
+    const wrapper = mount(Breadcrumb, {
+      global: {
+        plugins: [
+          createTestI18n({ en: enBreadcrumb }),
+          router,
+        ],
+      },
+    })
+
+    expect(wrapper.text()).toContain('Preschool')
+    expect(wrapper.text()).toContain('Guardian Communication')
+    expect(wrapper.findAll('a')).toHaveLength(1)
+  })
 })

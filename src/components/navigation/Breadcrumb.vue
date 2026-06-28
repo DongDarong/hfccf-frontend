@@ -363,6 +363,10 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
     { labelKey: 'breadcrumb.studentHealthProfile' },
   ],
+  'dashboard-preschool-admin-guardian-communications': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.guardianCommunications' },
+  ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
   'dashboard-preschool-admin-enrollments': [
