@@ -42,6 +42,7 @@ export default {
       overdueVaccinationsNote: 'វ៉ាក់សាំងដែលត្រូវតាមដានឬនៅរង់ចាំបញ្ចប់',
       unresolvedCriticalItems: 'ធាតុសំខាន់មិនទាន់ដោះស្រាយ',
       unresolvedCriticalItemsNote: 'ធាតុដែលត្រូវដោះស្រាយមុនការពិនិត្យបន្ទាប់',
+      noStudentSelected: 'មិនបានជ្រើសសិស្ស',
     },
     profile: {
       title: 'ប្រវត្តិរូបសុខភាពសិស្ស',
@@ -128,6 +129,13 @@ export default {
       noRecentResolutions: 'មិនមានការដោះស្រាយថ្មីៗទេ។',
       alertCount: 'ចំនួនការជូនដំណឹង',
     },
+    alertStatuses: {
+      new: 'ថ្មី',
+      acknowledged: 'បានទទួលស្គាល់',
+      inProgress: 'កំពុងដំណើរការ',
+      resolved: 'បានដោះស្រាយ',
+      closed: 'បានបិទ',
+    },
     actions: {
       backToStudents: 'ត្រឡប់ទៅបញ្ជីសិស្ស',
       openAdminDashboard: 'បើកផ្ទាំងគ្រប់គ្រងសុខភាព',
@@ -203,6 +211,12 @@ export default {
       critical: 'ធ្ងន់ខ្លាំង',
       recorded: 'បានកត់ត្រា',
       reviewed: 'បានពិនិត្យ',
+    },
+    severity: {
+      low: 'ទាប',
+      medium: 'មធ្យម',
+      high: 'ខ្ពស់',
+      critical: 'ធ្ងន់ខ្លាំង',
     },
     messages: {
       loadFailed: 'មិនអាចផ្ទុកកំណត់ត្រាសុខភាពបាន។',
