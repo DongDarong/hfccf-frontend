@@ -41,23 +41,21 @@
           <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div class="min-w-0 flex-1 space-y-4">
               <div class="flex flex-wrap items-center gap-2">
-                <AppBadge variant="secondary" class="bg-slate-900 text-white">
+                <AppBadge variant="neutral">
                   {{ item.statusLabel }}
                 </AppBadge>
-                <AppBadge variant="secondary">
+                <AppBadge variant="info">
                   {{ item.methodLabel }}
                 </AppBadge>
                 <AppBadge
                   v-if="item.outcomeLabel"
-                  variant="secondary"
-                  class="border border-emerald-200 bg-emerald-50 text-emerald-700"
+                  variant="success"
                 >
                   {{ item.outcomeLabel }}
                 </AppBadge>
                 <AppBadge
                   v-if="item.followUpBadge"
-                  variant="secondary"
-                  class="border border-amber-200 bg-amber-50 text-amber-700"
+                  variant="warning"
                 >
                   {{ item.followUpBadge }}
                 </AppBadge>

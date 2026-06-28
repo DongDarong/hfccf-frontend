@@ -1,14 +1,19 @@
 <template>
   <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div class="space-y-2">
-          <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+    <section class="rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-1.5">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             {{ t('preschoolGuardianCommunicationPage.hero.kicker') }}
           </p>
-          <h1 class="text-3xl font-bold text-slate-900">
-            {{ t('preschoolGuardianCommunicationPage.title') }}
-          </h1>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-[2rem]">
+              {{ t('preschoolGuardianCommunicationPage.title') }}
+            </h1>
+            <AppBadge variant="staff">
+              {{ t('preschoolGuardianCommunicationPage.hero.badge') }}
+            </AppBadge>
+          </div>
           <p class="max-w-3xl text-sm leading-6 text-slate-600">
             {{ t('preschoolGuardianCommunicationPage.hero.subtitle') }}
           </p>
@@ -19,16 +24,16 @@
         </AppButton>
       </div>
 
-      <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <div
           v-for="card in summaryCards"
           :key="card.label"
-          class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
         >
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
             {{ card.label }}
           </p>
-          <p class="mt-2 text-2xl font-bold text-slate-900">
+          <p class="mt-1.5 text-2xl font-bold text-slate-900">
             {{ card.value }}
           </p>
         </div>
@@ -37,179 +42,204 @@
 
     <div class="grid gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       <div class="space-y-6">
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">
-                {{ t('preschoolGuardianCommunicationPage.contactForm.title') }}
-              </h2>
-              <p class="mt-1 text-sm text-slate-500">
-                {{ t('preschoolGuardianCommunicationPage.contactForm.subtitle') }}
-              </p>
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <header class="border-b border-slate-200 px-5 py-4">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-base font-semibold text-slate-900">
+                  {{ t('preschoolGuardianCommunicationPage.contactForm.title') }}
+                </h2>
+                <p class="mt-1 text-sm text-slate-500">
+                  {{ t('preschoolGuardianCommunicationPage.contactForm.subtitle') }}
+                </p>
+              </div>
+              <AppBadge variant="staff">
+                {{ currentStaffLabel }}
+              </AppBadge>
             </div>
-            <AppBadge variant="staff">
-              {{ currentStaffLabel }}
-            </AppBadge>
-          </div>
+          </header>
 
-          <form class="mt-5 space-y-4" @submit.prevent="handleSubmit">
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700">
-                {{ t('preschoolGuardianCommunicationPage.labels.student') }}
-              </label>
-              <select
-                v-model="selectedStudentId"
-                :disabled="loadingStudents"
-                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-              >
-                <option value="">
-                  {{ loadingStudents ? t('preschoolGuardianCommunicationPage.messages.loading') : t('preschoolGuardianCommunicationPage.messages.selectStudent') }}
-                </option>
-                <option v-for="student in studentOptions" :key="student.id" :value="student.id">
-                  {{ student.label }}
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700">
-                {{ t('preschoolGuardianCommunicationPage.labels.guardian') }}
-              </label>
-              <select
-                v-model="form.guardianId"
-                :disabled="!guardianOptions.length"
-                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none disabled:bg-slate-100"
-              >
-                <option value="">
-                  {{ guardianPlaceholder }}
-                </option>
-                <option v-for="guardian in guardianOptions" :key="guardian.id" :value="guardian.id">
-                  {{ guardian.label }}
-                </option>
-              </select>
+          <form class="space-y-5 p-5" @submit.prevent="handleSubmit">
+            <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h3 class="text-sm font-semibold text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.formGroups.who') }}
+              </h3>
               <p class="mt-1 text-xs text-slate-500">
-                {{ guardianHelpText }}
+                {{ t('preschoolGuardianCommunicationPage.formGroups.whoHint') }}
               </p>
-            </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
-                  {{ t('preschoolGuardianCommunicationPage.labels.channel') }}
-                </label>
-                <select
-                  v-model="form.contactMethod"
-                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-                >
-                  <option value="">
-                    {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
-                  </option>
-                  <option v-for="option in contactMethodOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
+              <div class="mt-4 space-y-4">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.student') }}
+                  </label>
+                  <select
+                    v-model="selectedStudentId"
+                    :disabled="loadingStudents"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  >
+                    <option value="">
+                      {{ loadingStudents ? t('preschoolGuardianCommunicationPage.messages.loading') : t('preschoolGuardianCommunicationPage.messages.selectStudent') }}
+                    </option>
+                    <option v-for="student in studentOptions" :key="student.id" :value="student.id">
+                      {{ student.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.guardian') }}
+                  </label>
+                  <select
+                    v-model="form.guardianId"
+                    :disabled="!guardianOptions.length"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none disabled:bg-slate-100"
+                  >
+                    <option value="">
+                      {{ guardianPlaceholder }}
+                    </option>
+                    <option v-for="guardian in guardianOptions" :key="guardian.id" :value="guardian.id">
+                      {{ guardian.label }}
+                    </option>
+                  </select>
+                  <p class="mt-1 text-xs text-slate-500">
+                    {{ guardianHelpText }}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h3 class="text-sm font-semibold text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.formGroups.contactDetails') }}
+              </h3>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ t('preschoolGuardianCommunicationPage.formGroups.contactDetailsHint') }}
+              </p>
+
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.channel') }}
+                  </label>
+                  <select
+                    v-model="form.contactMethod"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  >
+                    <option value="">
+                      {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
+                    </option>
+                    <option v-for="option in contactMethodOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.reason') }}
+                  </label>
+                  <select
+                    v-model="form.reasonTopic"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  >
+                    <option value="">
+                      {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
+                    </option>
+                    <option v-for="option in reasonOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
-                  {{ t('preschoolGuardianCommunicationPage.labels.reason') }}
+              <div class="mt-4">
+                <label class="mb-2 block text-sm font-semibold text-slate-900">
+                  {{ t('preschoolGuardianCommunicationPage.labels.summary') }}
                 </label>
-                <select
-                  v-model="form.reasonTopic"
+                <textarea
+                  v-model="form.discussionSummary"
+                  rows="6"
                   class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-                >
-                  <option value="">
-                    {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
-                  </option>
-                  <option v-for="option in reasonOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700">
-                {{ t('preschoolGuardianCommunicationPage.labels.summary') }}
-              </label>
-              <textarea
-                v-model="form.discussionSummary"
-                rows="5"
-                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-                :placeholder="t('preschoolGuardianCommunicationPage.messages.summaryPlaceholder')"
-              />
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
-                  {{ t('preschoolGuardianCommunicationPage.labels.outcome') }}
-                </label>
-                <select
-                  v-model="form.outcome"
-                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-                >
-                  <option value="">
-                    {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
-                  </option>
-                  <option v-for="option in outcomeOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-
-              <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
-                  {{ t('preschoolGuardianCommunicationPage.labels.priority') }}
-                </label>
-                <select
-                  v-model="form.followUpPriority"
-                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-                >
-                  <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
-                  {{ t('preschoolGuardianCommunicationPage.labels.followUpRequired') }}
-                </label>
-                <select
-                  v-model="form.followUpRequired"
-                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-                >
-                  <option :value="false">{{ t('preschoolGuardianCommunicationPage.binary.no') }}</option>
-                  <option :value="true">{{ t('preschoolGuardianCommunicationPage.binary.yes') }}</option>
-                </select>
-              </div>
-
-              <div v-if="form.followUpRequired">
-                <label class="mb-1 block text-sm font-medium text-slate-700">
-                  {{ t('preschoolGuardianCommunicationPage.labels.followUpDate') }}
-                </label>
-                <input
-                  v-model="form.followUpDate"
-                  type="date"
-                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  :placeholder="t('preschoolGuardianCommunicationPage.messages.summaryPlaceholder')"
                 />
               </div>
-            </div>
+            </section>
 
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              <p class="font-medium text-slate-900">
-                {{ t('preschoolGuardianCommunicationPage.labels.followUpDate') }}:
-                <span class="font-normal text-slate-600">
-                  {{ form.followUpRequired ? (form.followUpDate || t('preschoolGuardianCommunicationPage.messages.selectFollowUpDate')) : 'N/A' }}
-                </span>
+            <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h3 class="text-sm font-semibold text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.formGroups.followUp') }}
+              </h3>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ t('preschoolGuardianCommunicationPage.formGroups.followUpHint') }}
               </p>
-              <p class="mt-1 font-medium text-slate-900">
-                {{ t('preschoolGuardianCommunicationPage.messages.previewLabel') }}:
+
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.outcome') }}
+                  </label>
+                  <select
+                    v-model="form.outcome"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  >
+                    <option value="">
+                      {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
+                    </option>
+                    <option v-for="option in outcomeOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.priority') }}
+                  </label>
+                  <select
+                    v-model="form.followUpPriority"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  >
+                    <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.followUpRequired') }}
+                  </label>
+                  <select
+                    v-model="form.followUpRequired"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  >
+                    <option :value="false">{{ t('preschoolGuardianCommunicationPage.binary.no') }}</option>
+                    <option :value="true">{{ t('preschoolGuardianCommunicationPage.binary.yes') }}</option>
+                  </select>
+                </div>
+
+                <div v-if="form.followUpRequired">
+                  <label class="mb-1 block text-sm font-medium text-slate-700">
+                    {{ t('preschoolGuardianCommunicationPage.labels.followUpDate') }}
+                  </label>
+                  <input
+                    v-model="form.followUpDate"
+                    type="date"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <p class="text-sm font-semibold text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.messages.previewLabel') }}
               </p>
-              <p class="mt-1 whitespace-pre-line text-sm leading-6 text-slate-600">
+              <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">
                 {{ contactPreview }}
               </p>
             </div>
@@ -265,6 +295,12 @@
             <p v-if="loadingStudents" class="rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500">
               {{ t('preschoolGuardianCommunicationPage.messages.loading') }}
             </p>
+            <p
+              v-else-if="!filteredStudentOptions.length"
+              class="rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500"
+            >
+              {{ t('preschoolGuardianCommunicationPage.messages.noStudentsFound') }}
+            </p>
             <button
               v-for="student in filteredStudentOptions"
               :key="student.id"
@@ -296,7 +332,7 @@
       <GuardianCommunicationTimeline
         :items="filteredCommunications"
         :loading="loadingCommunications"
-        :title="t('preschoolGuardianCommunicationPage.timelineTitle')"
+        :title="t('preschoolGuardianCommunicationPage.timelineContactHistoryTitle')"
         :subtitle="t('preschoolGuardianCommunicationPage.timelineSubtitle')"
         show-actions
         @sent="handleMarkCompleted"
@@ -466,7 +502,7 @@ const contactPreview = computed(() => {
   return [
     `${studentLabel}`,
     `${method} · ${reason}`,
-    form.discussionSummary,
+    form.discussionSummary || t('preschoolGuardianCommunicationPage.messages.summaryPlaceholder'),
     `${t('preschoolGuardianCommunicationPage.labels.outcome')}: ${outcome}`,
     `${t('preschoolGuardianCommunicationPage.labels.followUpRequired')}: ${form.followUpRequired ? t('preschoolGuardianCommunicationPage.binary.yes') : t('preschoolGuardianCommunicationPage.binary.no')}`,
     form.followUpRequired ? `${t('preschoolGuardianCommunicationPage.labels.followUpDate')}: ${form.followUpDate || t('preschoolGuardianCommunicationPage.messages.selectFollowUpDate')}` : '',

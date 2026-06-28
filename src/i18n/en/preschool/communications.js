@@ -9,12 +9,21 @@ export default {
     hero: {
       eyebrow: 'Guardian contact log',
       kicker: 'Guardian contact log',
-      title: 'Guardian contact log workspace',
-      subtitle: 'Record calls, visits, and follow-up history after contact happens outside the system.',
+      badge: 'Staff log',
+      title: 'Guardian Contact Log',
+      subtitle: 'Record and review real-world guardian follow-ups after contact happens outside the system.',
     },
     contactForm: {
       title: 'Record Guardian Contact',
       subtitle: 'Capture who was contacted, how it happened, and what follow-up is needed.',
+    },
+    formGroups: {
+      who: 'Who',
+      whoHint: 'Pick the student and guardian tied to this contact.',
+      contactDetails: 'Contact Details',
+      contactDetailsHint: 'Log how the contact happened and what was discussed.',
+      followUp: 'Follow-up',
+      followUpHint: 'Note the outcome and whether another check-in is needed.',
     },
     metrics: {
       totalContacts: 'Total Contacts',
@@ -23,6 +32,7 @@ export default {
       completed: 'Completed',
       overdueFollowUps: 'Overdue Follow-ups',
     },
+    timelineContactHistoryTitle: 'Contact History',
     filters: {
       searchPlaceholder: 'Search topic, summary, student, or guardian',
       allStudents: 'All students',
@@ -63,6 +73,8 @@ export default {
       previewLabel: 'Contact preview',
       studentRosterHint: 'Choose a student to review or add contacts for that class member.',
       searchStudents: 'Search students or guardians',
+      noStudentsFound: 'No students found',
+      selectStudentToRecord: 'Select a student to record a guardian contact.',
       selectFollowUpDate: 'Select a follow-up date',
       saveSuccess: 'Contact log saved successfully.',
     },

@@ -112,12 +112,16 @@ describe('GuardianCommunicationDashboard', () => {
     expect(mockFetchGuardianCommunications).toHaveBeenCalledWith({ studentId: 'student-1' })
     expect(wrapper.text()).toContain('Guardian Contact Log')
     expect(wrapper.text()).toContain('Record Guardian Contact')
+    expect(wrapper.text()).toContain('Who')
+    expect(wrapper.text()).toContain('Contact Details')
+    expect(wrapper.text()).toContain('Follow-up')
     expect(wrapper.text()).toContain('Contact History')
     expect(wrapper.text()).toContain('Contact method')
     expect(wrapper.text()).toContain('Reason / Topic')
     expect(wrapper.text()).toContain('Discussion Summary')
     expect(wrapper.text()).toContain('Outcome')
     expect(wrapper.text()).toContain('Save contact log')
+    expect(wrapper.text()).toContain('Select a student')
   })
 
   it('shows the follow-up date input only when follow-up is required', async () => {
@@ -162,5 +166,13 @@ describe('GuardianCommunicationDashboard', () => {
       }),
     )
     expect(mockCreateStudentGuardianCommunication.mock.calls[0][0].message).toContain('Guardian confirmed the pickup plan for tomorrow.')
+  })
+
+  it('renders the empty history state when there are no communication records', async () => {
+    mockFetchGuardianCommunications.mockResolvedValue({ items: [] })
+    const wrapper = await mountDashboard()
+
+    expect(wrapper.text()).toContain('No contact history yet')
+    expect(wrapper.text()).toContain('Record the first guardian contact from this page.')
   })
 })

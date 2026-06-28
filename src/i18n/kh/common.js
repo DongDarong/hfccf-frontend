@@ -59,6 +59,7 @@ export default {
   allTeams: 'ក្រុមទាំងអស់',
   allClasses: 'ថ្នាក់ទាំងអស់',
   allStatus: 'ស្ថានភាពទាំងអស់',
+  unknown: 'មិនស្គាល់',
   status: {
     success: 'ជោគជ័យ',
     warning: 'ព្រមាន',

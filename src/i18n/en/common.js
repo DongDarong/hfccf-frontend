@@ -58,6 +58,7 @@ export default {
   allTeams: 'All teams',
   allClasses: 'All classes',
   allStatus: 'All statuses',
+  unknown: 'Unknown',
   status: {
     success: 'Success',
     warning: 'Warning',
