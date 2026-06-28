@@ -19,6 +19,7 @@ import {
 } from './constants/studentFormConstants'
 import {
   buildStudentTypeOptions,
+  buildGuardianTypeOptions,
   buildGenderOptions,
   buildStatusOptions,
   buildClassOptions,
@@ -29,6 +30,14 @@ import {
   normalizeStudentPayload as performNormalizeStudentPayload,
   buildSuccessQuery,
 } from './utils/studentFormHelpers'
+import {
+  buildLocationAddress,
+  getLocationDisplayName,
+  fetchProvinces,
+  fetchDistricts,
+  fetchCommunes,
+  fetchVillages,
+} from '@/modules/preschool/services/cambodiaLocationService'
 
 defineOptions({
   name: 'PreschoolAdminStudentFormPage',
@@ -41,12 +50,18 @@ const router = useRouter()
 const loading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
+const locationErrorMessage = ref('')
 const showSuccess = ref(false)
 const successMessage = ref('')
 const classOptions = ref([])
+const provinceItems = ref([])
+const districtItems = ref([])
+const communeItems = ref([])
+const villageItems = ref([])
 const avatarFileInput = ref(null)
 const avatarPreview = ref('')
 const loadedStudent = ref(null)
+const isSyncingLocation = ref(false)
 
 const form = reactive({ ...DEFAULT_FORM })
 
@@ -65,11 +80,241 @@ const studentCodeDisplay = computed(() =>
     : t('preschoolStudentInfoPage.dialog.studentSignatureAuto'),
 )
 const studentTypeOptions = computed(() => buildStudentTypeOptions(t))
+const guardianTypeOptions = computed(() => buildGuardianTypeOptions(t))
 const genderOptions = computed(() => buildGenderOptions(t))
 const statusOptions = computed(() => buildStatusOptions(t))
 
-const avatarSrc = computed(() =>
-  avatarPreview.value,
+function normalizeText(value) {
+  return String(value ?? '').trim()
+}
+
+function displayLocationName(item = {}) {
+  return getLocationDisplayName(item, 'kh')
+}
+
+function buildLocationOptions(items = []) {
+  return items.map((item) => {
+    const label = displayLocationName(item)
+
+    return {
+      label,
+      value: label,
+    }
+  })
+}
+
+function findLocationItem(items = [], selectedValue = '') {
+  const normalized = normalizeText(selectedValue)
+  if (!normalized) return null
+
+  return items.find((item) => (
+    [item.code, item.nameEn, item.nameKh].some((candidate) => normalizeText(candidate) === normalized)
+  )) || null
+}
+
+const provinceOptions = computed(() => buildLocationOptions(provinceItems.value))
+const districtOptions = computed(() => buildLocationOptions(districtItems.value))
+const communeOptions = computed(() => buildLocationOptions(communeItems.value))
+const villageOptions = computed(() => buildLocationOptions(villageItems.value))
+const guardianContactProvided = computed(() =>
+  Boolean(form.guardian_name.trim() || form.guardian_phone.trim()),
+)
+const guardianTypeRequired = computed(() => guardianContactProvided.value)
+const addressPreview = computed(() => buildLocationAddress(form, 'kh'))
+
+const avatarSrc = computed(() => avatarPreview.value)
+
+function setLocationError(message = '') {
+  locationErrorMessage.value = normalizeText(message)
+}
+
+function syncLocationFields(apply) {
+  isSyncingLocation.value = true
+  try {
+    apply()
+  } finally {
+    queueMicrotask(() => {
+      isSyncingLocation.value = false
+    })
+  }
+}
+
+function resetLocationOptions() {
+  provinceItems.value = []
+  districtItems.value = []
+  communeItems.value = []
+  villageItems.value = []
+  setLocationError('')
+}
+
+function clearLocationChildren(level = 'province') {
+  if (level === 'province') {
+    form.district = ''
+    form.commune = ''
+    form.village = ''
+    districtItems.value = []
+    communeItems.value = []
+    villageItems.value = []
+    return
+  }
+
+  if (level === 'district') {
+    form.commune = ''
+    form.village = ''
+    communeItems.value = []
+    villageItems.value = []
+    return
+  }
+
+  if (level === 'commune') {
+    form.village = ''
+    villageItems.value = []
+  }
+}
+
+async function loadProvinceOptions() {
+  try {
+    provinceItems.value = await fetchProvinces()
+    setLocationError('')
+  } catch (error) {
+    provinceItems.value = []
+    districtItems.value = []
+    communeItems.value = []
+    villageItems.value = []
+    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+  }
+}
+
+async function loadDistrictOptionsForProvince(provinceValue) {
+  const province = findLocationItem(provinceItems.value, provinceValue)
+  if (!province) {
+    districtItems.value = []
+    communeItems.value = []
+    villageItems.value = []
+    return null
+  }
+
+  try {
+    districtItems.value = await fetchDistricts(province.code)
+    setLocationError('')
+    return province
+  } catch (error) {
+    districtItems.value = []
+    communeItems.value = []
+    villageItems.value = []
+    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    return null
+  }
+}
+
+async function loadCommuneOptionsForDistrict(districtValue) {
+  const district = findLocationItem(districtItems.value, districtValue)
+  if (!district) {
+    communeItems.value = []
+    villageItems.value = []
+    return null
+  }
+
+  try {
+    communeItems.value = await fetchCommunes(district.code)
+    setLocationError('')
+    return district
+  } catch (error) {
+    communeItems.value = []
+    villageItems.value = []
+    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    return null
+  }
+}
+
+async function loadVillageOptionsForCommune(communeValue) {
+  const commune = findLocationItem(communeItems.value, communeValue)
+  if (!commune) {
+    villageItems.value = []
+    return null
+  }
+
+  try {
+    villageItems.value = await fetchVillages(commune.code)
+    setLocationError('')
+    return commune
+  } catch (error) {
+    villageItems.value = []
+    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    return null
+  }
+}
+
+async function hydrateLocationHierarchy() {
+  isSyncingLocation.value = true
+  try {
+    const province = await loadDistrictOptionsForProvince(form.province)
+    if (province) {
+      form.province = displayLocationName(province)
+    }
+
+    if (!form.province || !form.district) return
+
+    const district = await loadCommuneOptionsForDistrict(form.district)
+    if (district) {
+      form.district = displayLocationName(district)
+    }
+
+    if (!form.district || !form.commune) return
+
+    const commune = await loadVillageOptionsForCommune(form.commune)
+    if (commune) {
+      form.commune = displayLocationName(commune)
+    }
+
+    const village = findLocationItem(villageItems.value, form.village)
+    if (village) {
+      form.village = displayLocationName(village)
+    }
+  } finally {
+    queueMicrotask(() => {
+      isSyncingLocation.value = false
+    })
+  }
+}
+
+watch(
+  () => form.province,
+  async (value) => {
+    if (isSyncingLocation.value) return
+    clearLocationChildren('province')
+    if (!value) {
+      return
+    }
+
+    await loadDistrictOptionsForProvince(value)
+  },
+)
+
+watch(
+  () => form.district,
+  async (value) => {
+    if (isSyncingLocation.value) return
+    clearLocationChildren('district')
+    if (!value) {
+      return
+    }
+
+    await loadCommuneOptionsForDistrict(value)
+  },
+)
+
+watch(
+  () => form.commune,
+  async (value) => {
+    if (isSyncingLocation.value) return
+    clearLocationChildren('commune')
+    if (!value) {
+      return
+    }
+
+    await loadVillageOptionsForCommune(value)
+  },
 )
 
 function clearAvatarPreview() {
@@ -79,10 +324,13 @@ function clearAvatarPreview() {
 
 function resetForm() {
   const resetData = createResetForm(DEFAULT_FORM)
-  Object.assign(form, resetData)
+  syncLocationFields(() => {
+    Object.assign(form, resetData)
+  })
   clearAvatarPreview()
   if (avatarFileInput.value) avatarFileInput.value.value = ''
   loadedStudent.value = null
+  resetLocationOptions()
 }
 
 async function loadClasses() {
@@ -112,9 +360,12 @@ async function loadStudent() {
     }
 
     loadedStudent.value = student
-    loadStudentIntoForm(student, form)
+    syncLocationFields(() => {
+      loadStudentIntoForm(student, form)
+    })
     clearAvatarPreview()
     avatarPreview.value = student.avatarUrl ? String(student.avatarUrl) : ''
+    await hydrateLocationHierarchy()
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.loadFailed')
   } finally {
@@ -146,8 +397,23 @@ function normalizeStudentPayload() {
   return performNormalizeStudentPayload(form, isEditMode.value)
 }
 
+function validateForm() {
+  if (guardianTypeRequired.value && !form.guardian_type) {
+    return t('preschoolStudentInfoPage.validation.guardianTypeRequired')
+  }
+
+  return ''
+}
+
 async function onSubmit() {
   errorMessage.value = ''
+
+  const validationError = validateForm()
+  if (validationError) {
+    errorMessage.value = validationError
+    return
+  }
+
   saving.value = true
 
   try {
@@ -184,22 +450,27 @@ function onCancel() {
   goBack()
 }
 
+async function initializePage() {
+  resetForm()
+  await Promise.allSettled([
+    loadClasses(),
+    loadProvinceOptions(),
+  ])
+
+  if (isEditMode.value) {
+    await loadStudent()
+  }
+}
+
 watch(
   () => [route.name, route.params.id],
   async () => {
-    resetForm()
-    await loadClasses()
-    if (isEditMode.value) {
-      await loadStudent()
-    }
+    await initializePage()
   },
 )
 
 onMounted(async () => {
-  await loadClasses()
-  if (isEditMode.value) {
-    await loadStudent()
-  }
+  await initializePage()
 })
 
 onUnmounted(clearAvatarPreview)
@@ -233,6 +504,10 @@ onUnmounted(clearAvatarPreview)
         <div v-else class="student-form-page__body">
           <div v-if="errorMessage" class="student-form-page__state student-form-page__state--error">
             {{ errorMessage }}
+          </div>
+
+          <div v-if="locationErrorMessage" class="student-form-page__state student-form-page__state--error">
+            {{ locationErrorMessage }}
           </div>
 
           <form class="student-form-page__form" @submit.prevent="onSubmit">
@@ -352,15 +627,71 @@ onUnmounted(clearAvatarPreview)
                     <input v-model="form.guardian_phone" class="student-form-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.guardianPhone')" />
                   </label>
 
-                  <label class="student-form-page__field student-form-page__field--full">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.address') }}</span>
-                    <textarea
-                      v-model="form.address"
-                      class="student-form-page__input student-form-page__textarea"
-                      rows="3"
-                      :placeholder="t('preschoolStudentInfoPage.dialog.address')"
-                    />
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">
+                      {{ t('preschoolStudentInfoPage.dialog.guardianType') }}
+                    </span>
+                    <select
+                      v-model="form.guardian_type"
+                      class="student-form-page__input"
+                      :required="guardianTypeRequired"
+                    >
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.guardianType') }}</option>
+                      <option v-for="opt in guardianTypeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
                   </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.province') }}</span>
+                    <select v-model="form.province" class="student-form-page__input">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectProvince') }}</option>
+                      <option v-for="opt in provinceOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.district') }}</span>
+                    <select v-model="form.district" class="student-form-page__input" :disabled="!form.province">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectDistrict') }}</option>
+                      <option v-for="opt in districtOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.commune') }}</span>
+                    <select v-model="form.commune" class="student-form-page__input" :disabled="!form.district">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectCommune') }}</option>
+                      <option v-for="opt in communeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.village') }}</span>
+                    <select v-model="form.village" class="student-form-page__input" :disabled="!form.commune">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectVillage') }}</option>
+                      <option v-for="opt in villageOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <div class="student-form-page__field student-form-page__field--full">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.addressPreview') }}</span>
+                    <div class="student-form-page__readonly student-form-page__readonly--address">
+                      <span class="student-form-page__readonly-label">
+                        {{ t('preschoolStudentInfoPage.dialog.fullAddress') }}
+                      </span>
+                      <span class="student-form-page__readonly-value">{{ addressPreview || '-' }}</span>
+                    </div>
+                  </div>
                 </div>
               </section>
 
@@ -664,6 +995,26 @@ onUnmounted(clearAvatarPreview)
   border-radius: 0.9rem;
   background: #faf5ff;
   color: #6d28d9;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.student-form-page__readonly--address {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.student-form-page__readonly-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.student-form-page__readonly-value {
+  color: #0f172a;
   font-size: 0.92rem;
   font-weight: 700;
 }

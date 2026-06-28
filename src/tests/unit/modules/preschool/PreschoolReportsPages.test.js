@@ -68,8 +68,10 @@ describe('Preschool report pages', () => {
       loadLookupData: vi.fn().mockResolvedValue(undefined),
       loadReportPeriodOptions: vi.fn().mockResolvedValue(undefined),
       loading: ref(false),
+      reportPeriodLockMessage: ref(''),
       reportPeriods: ref([{ label: 'Term 1', assessmentCount: 2, studentCount: 1, classCount: 1 }]),
       studentOptions: ref([{ id: 1, label: 'Student One' }]),
+      selectedReportPeriod: ref({ label: 'Term 1', status: 'finalized' }),
     })
 
     const wrapper = mountPage(ReportManagement)
@@ -134,6 +136,5 @@ describe('Preschool report pages', () => {
     expect(wrapper.text()).toContain('4')
   })
 })
-
 
 

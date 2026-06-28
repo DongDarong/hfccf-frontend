@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import Button from 'primevue/button'
+import Button from '@/components/buttons/Button.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import TournamentStatusBadge from '../shared/TournamentStatusBadge.vue'
@@ -145,4 +145,5 @@ function teamCount(tournament) {
     </Column>
   </DataTable>
 </template>
+
 

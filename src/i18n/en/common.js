@@ -53,10 +53,12 @@ export default {
   },
   searchUsersPlaceholder: 'Search users by name, email, role, or permission',
   allRoles: 'All roles',
+  all: 'All',
   allDivisions: 'All divisions',
   allTeams: 'All teams',
   allClasses: 'All classes',
   allStatus: 'All statuses',
+  unknown: 'Unknown',
   status: {
     success: 'Success',
     warning: 'Warning',

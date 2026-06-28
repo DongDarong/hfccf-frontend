@@ -42,6 +42,7 @@ export default {
       overdueVaccinationsNote: 'Vaccines marked overdue or pending follow-up',
       unresolvedCriticalItems: 'Unresolved critical items',
       unresolvedCriticalItemsNote: 'Items that need attention before the next review',
+      noStudentSelected: 'No student selected',
     },
     profile: {
       title: 'Student Health Profile',
@@ -135,6 +136,13 @@ export default {
       noRecentResolutions: 'No recent resolutions found.',
       alertCount: 'Alert count',
     },
+    alertStatuses: {
+      new: 'New',
+      acknowledged: 'Acknowledged',
+      inProgress: 'In progress',
+      resolved: 'Resolved',
+      closed: 'Closed',
+    },
     actions: {
       backToStudents: 'Back to Students',
       openAdminDashboard: 'Open Health Dashboard',
@@ -211,7 +219,14 @@ export default {
       recorded: 'Recorded',
       reviewed: 'Reviewed',
     },
+    severity: {
+      low: 'Low',
+      medium: 'Medium',
+      high: 'High',
+      critical: 'Critical',
+    },
     messages: {
+      loading: 'Loading health records...',
       loadFailed: 'Unable to load health records.',
       saveFailed: 'Unable to save the record.',
       deleteSuccess: 'Record deleted successfully.',

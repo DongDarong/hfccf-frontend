@@ -292,6 +292,11 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.classes' },
   ],
+  'dashboard-preschool-admin-class-details': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.classes', to: { name: 'dashboard-preschool-admin-classes' } },
+    { labelKey: 'breadcrumb.classDetails' },
+  ],
   'dashboard-preschool-admin-classes-add': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.classes', to: { name: 'dashboard-preschool-admin-classes' } },
@@ -358,11 +363,20 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
     { labelKey: 'breadcrumb.studentHealthProfile' },
   ],
+  'dashboard-preschool-admin-guardian-communications': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.guardianContactLog' },
+  ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
   'dashboard-preschool-admin-enrollments': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.enrollment' },
+  ],
+  'dashboard-preschool-admin-enrollments-create': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.enrollment', to: { name: 'dashboard-preschool-admin-enrollments' } },
+    { labelKey: 'breadcrumb.newApplication' },
   ],
 
   // ── Assignments ────────────────────────────────────────────────────��──────

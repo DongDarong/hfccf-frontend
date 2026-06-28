@@ -137,7 +137,7 @@ describe('PreschoolAssessmentSettingsPage', () => {
     expect(wrapper.text()).toContain('Assessment Categories')
     expect(wrapper.text()).toContain('Report Periods')
     expect(wrapper.text()).toContain('Assessment Weights')
-    expect(wrapper.text()).toContain('60')
+    expect(wrapper.findAll('input[type="number"]')[0].element.value).toBe('60')
     expect(wrapper.text()).toContain('Quiz')
   })
 

@@ -1,5 +1,5 @@
-﻿<script setup>
-import Button from 'primevue/button'
+<script setup>
+import Button from '@/components/buttons/Button.vue'
 import DatePicker from 'primevue/datepicker'
 import InputNumber from 'primevue/inputnumber'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -288,3 +288,4 @@ function updateSetting(key, value) {
   }
 }
 </style>
+

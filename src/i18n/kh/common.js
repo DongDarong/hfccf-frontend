@@ -54,10 +54,12 @@ export default {
   },
   searchUsersPlaceholder: 'ស្វែងរកអ្នកប្រើតាមឈ្មោះ អ៊ីមែល តួនាទី ឬសិទ្ធិ',
   allRoles: 'តួនាទីទាំងអស់',
+  all: 'ទាំងអស់',
   allDivisions: 'ផ្នែកទាំងអស់',
   allTeams: 'ក្រុមទាំងអស់',
   allClasses: 'ថ្នាក់ទាំងអស់',
   allStatus: 'ស្ថានភាពទាំងអស់',
+  unknown: 'មិនស្គាល់',
   status: {
     success: 'ជោគជ័យ',
     warning: 'ព្រមាន',
@@ -218,4 +220,3 @@ export default {
   notifications,
   states,
 }
-

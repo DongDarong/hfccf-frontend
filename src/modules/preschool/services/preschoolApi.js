@@ -29,6 +29,44 @@ function normalizeText(value) {
   return String(value ?? '').trim()
 }
 
+function firstNonEmpty(...values) {
+  const value = values.find((item) => {
+    if (item === null || item === undefined) return false
+    return String(item).trim() !== ''
+  })
+
+  return value === undefined ? '' : value
+}
+
+function resolveStudentAvatarUrl(row = {}) {
+  const media = row.media || {}
+  const nestedMediaUrl = Array.isArray(media)
+    ? firstNonEmpty(media[0]?.url, media[0]?.path)
+    : firstNonEmpty(media.url, media.path)
+
+  return normalizeText(firstNonEmpty(
+    row.avatarUrl,
+    row.avatar_url,
+    row.profilePhotoUrl,
+    row.profile_photo_url,
+    row.profileImageUrl,
+    row.profile_image_url,
+    row.profilePhoto,
+    row.profile_photo,
+    row.photoUrl,
+    row.photo_url,
+    row.imageUrl,
+    row.image_url,
+    row.avatar,
+    row.profileImage,
+    row.profile_image,
+    row.photo,
+    row.image,
+    row.thumbnail,
+    nestedMediaUrl,
+  ))
+}
+
 function normalizeClassAssignmentRow(row = {}) {
   return {
     id: row.id ?? '',
@@ -114,6 +152,7 @@ function normalizeStudentRow(row = {}) {
   const fullName = normalizeText(row.fullName || row.full_name || `${firstName} ${lastName}`)
   const classAssignments = Array.isArray(row.classAssignments) ? row.classAssignments.map(normalizeClassAssignmentRow) : []
   const activeClasses = Array.isArray(row.classes) ? row.classes.map(normalizeClassAssignmentRow) : classAssignments.filter((item) => item.status === 'active')
+  const avatarUrl = resolveStudentAvatarUrl(row)
 
   return {
     id: row.id ?? '',
@@ -130,14 +169,9 @@ function normalizeStudentRow(row = {}) {
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
     studentType: normalizeText(row.studentType || row.student_type || 'paying'),
-    avatarUrl: normalizeText(
-      row.avatarUrl || row.avatar_url ||
-      row.profile_photo_url || row.profilePhotoUrl ||
-      row.profile_photo_path || row.profilePhotoPath ||
-      row.photo_url || row.photoUrl ||
-      row.image_url || row.imageUrl ||
-      row.avatar || row.photo || row.image || row.thumbnail || '',
-    ),
+    avatarUrl,
+    avatar: avatarUrl,
+    profilePhotoUrl: avatarUrl,
     classesCount: Number(row.classesCount ?? row.classes_count ?? activeClasses.length ?? 0),
     classes: activeClasses,
     classAssignments,
@@ -219,7 +253,17 @@ function buildMultipartPayload(payload = {}, options = {}) {
   }
 
   Object.entries(payload).forEach(([key, value]) => {
-    if (['avatar', 'profileImage', 'password', 'confirmPassword', 'removeAvatar', 'studentIds', 'classIds'].includes(key)) {
+    if ([
+      'avatar',
+      'profileImage',
+      'password',
+      'confirmPassword',
+      'removeAvatar',
+      'studentIds',
+      'student_ids',
+      'classIds',
+      'class_ids',
+    ].includes(key)) {
       return
     }
     appendIfPresent(key, value)
@@ -572,6 +616,8 @@ export async function fetchReportPeriods(params = {}, options = {}) {
 function normalizePreschoolSettingsSnapshot(payload = {}) {
   const academicYear = payload.academicYear || {}
   const terms = Array.isArray(payload.terms) ? payload.terms : []
+  const groups = payload.groups && typeof payload.groups === 'object' ? payload.groups : {}
+  const metadata = payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}
 
   return {
     academicYear: {
@@ -621,6 +667,41 @@ function normalizePreschoolSettingsSnapshot(payload = {}) {
       transferPolicy: normalizeText(payload.enrollment?.transferPolicy || payload.enrollment?.transfer_policy),
       capacityReviewMode: normalizeText(payload.enrollment?.capacityReviewMode || payload.enrollment?.capacity_review_mode),
     },
+    health: {
+      criticalAlertsEnabled: Boolean(payload.health?.criticalAlertsEnabled ?? payload.health?.critical_alerts_enabled ?? true),
+      guardianNotifications: Boolean(payload.health?.guardianNotifications ?? payload.health?.guardian_notifications ?? true),
+      teacherNotifications: Boolean(payload.health?.teacherNotifications ?? payload.health?.teacher_notifications ?? true),
+      adminNotifications: Boolean(payload.health?.adminNotifications ?? payload.health?.admin_notifications ?? true),
+      medicationReminders: Boolean(payload.health?.medicationReminders ?? payload.health?.medication_reminders ?? true),
+      vaccinationReminders: Boolean(payload.health?.vaccinationReminders ?? payload.health?.vaccination_reminders ?? true),
+      overdueVaccinationAlertDays: Number(payload.health?.overdueVaccinationAlertDays ?? payload.health?.overdue_vaccination_alert_days ?? 7),
+      medicationReminderMinutesBefore: Number(payload.health?.medicationReminderMinutesBefore ?? payload.health?.medication_reminder_minutes_before ?? 30),
+    },
+    preferences: {
+      timezone: normalizeText(payload.preferences?.timezone || 'Asia/Phnom_Penh'),
+      defaultLanguage: normalizeText(payload.preferences?.defaultLanguage || payload.preferences?.default_language || 'en'),
+      dateFormat: normalizeText(payload.preferences?.dateFormat || payload.preferences?.date_format || 'DD/MM/YYYY'),
+      timeFormat: normalizeText(payload.preferences?.timeFormat || payload.preferences?.time_format || 'HH:mm'),
+      minimumEnrollmentAgeMonths: Number(payload.preferences?.minimumEnrollmentAgeMonths ?? payload.preferences?.minimum_enrollment_age_months ?? 24),
+      maximumEnrollmentAgeMonths: Number(payload.preferences?.maximumEnrollmentAgeMonths ?? payload.preferences?.maximum_enrollment_age_months ?? 60),
+      autoApproveEnrollment: Boolean(payload.preferences?.autoApproveEnrollment ?? payload.preferences?.auto_approve_enrollment ?? false),
+      studentCodePrefix: normalizeText(payload.preferences?.studentCodePrefix || payload.preferences?.student_code_prefix || 'PS'),
+      studentCodeYearFormat: normalizeText(payload.preferences?.studentCodeYearFormat || payload.preferences?.student_code_year_format || 'YYYY'),
+      studentCodeSequenceLength: Number(payload.preferences?.studentCodeSequenceLength ?? payload.preferences?.student_code_sequence_length ?? 4),
+      defaultClassCapacity: Number(payload.preferences?.defaultClassCapacity ?? payload.preferences?.default_class_capacity ?? 18),
+      teacherStudentRatio: Number(payload.preferences?.teacherStudentRatio ?? payload.preferences?.teacher_student_ratio ?? 10),
+      waitlistEnabled: Boolean(payload.preferences?.waitlistEnabled ?? payload.preferences?.waitlist_enabled ?? true),
+      minimumGuardians: Number(payload.preferences?.minimumGuardians ?? payload.preferences?.minimum_guardians ?? 1),
+      maximumGuardians: Number(payload.preferences?.maximumGuardians ?? payload.preferences?.maximum_guardians ?? 2),
+      primaryGuardianRequired: Boolean(payload.preferences?.primaryGuardianRequired ?? payload.preferences?.primary_guardian_required ?? true),
+      pickupAuthorizationRequired: Boolean(payload.preferences?.pickupAuthorizationRequired ?? payload.preferences?.pickup_authorization_required ?? true),
+      attendanceAlertEnabled: Boolean(payload.preferences?.attendanceAlertEnabled ?? payload.preferences?.attendance_alert_enabled ?? true),
+      assessmentAlertEnabled: Boolean(payload.preferences?.assessmentAlertEnabled ?? payload.preferences?.assessment_alert_enabled ?? true),
+      healthAlertEnabled: Boolean(payload.preferences?.healthAlertEnabled ?? payload.preferences?.health_alert_enabled ?? true),
+      enrollmentNotificationEnabled: Boolean(payload.preferences?.enrollmentNotificationEnabled ?? payload.preferences?.enrollment_notification_enabled ?? true),
+    },
+    groups,
+    metadata,
   }
 }
 

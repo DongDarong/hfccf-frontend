@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import Button from 'primevue/button'
+import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import SearchInputField from '@/components/forms/SearchInputField.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -113,3 +113,4 @@ function clearFilters() {
     />
   </div>
 </template>
+

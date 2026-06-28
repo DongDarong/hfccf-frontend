@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SidebarLink from '@/components/navigation/SidebarLink.vue'
+import AppBadge from '@/components/ui/AppBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar'
 import HomeIcon from '@/assets/icons/Home.vue'
@@ -202,9 +203,7 @@ function getNavItemInactiveClass(item) {
             <p class="sidebar-section__label">{{ section.label }}</p>
             <p class="sidebar-section__caption">{{ section.caption }}</p>
           </div>
-          <span class="sidebar-section__count" aria-hidden="true">
-            {{ section.badge || countSectionItems(section) }}
-          </span>
+          <AppBadge class="sidebar-section__count" size="xs" variant="neutral" :label="String(section.badge || countSectionItems(section))" aria-hidden="true" />
           <i
             v-if="section.collapsible"
             class="pi text-[0.66rem] text-surface-400"
@@ -227,7 +226,7 @@ function getNavItemInactiveClass(item) {
             >
               <span v-if="!collapsed" class="sidebar-link-content">
                 <span class="truncate">{{ item.label }}</span>
-                <span v-if="item.badge" class="sidebar-link-badge">{{ item.badge }}</span>
+                <AppBadge v-if="item.badge" class="sidebar-link-badge" size="xs" variant="neutral" :label="item.badge" :title="item.badge" />
               </span>
               <span v-else class="sr-only">{{ `${section.label} ${item.label}` }}</span>
             </SidebarLink>
@@ -249,7 +248,7 @@ function getNavItemInactiveClass(item) {
               >
                 <span v-if="!collapsed" class="sidebar-link-content">
                   <span class="truncate">{{ child.label }}</span>
-                  <span v-if="child.badge" class="sidebar-link-badge">{{ child.badge }}</span>
+                  <AppBadge v-if="child.badge" class="sidebar-link-badge" size="xs" variant="neutral" :label="child.badge" :title="child.badge" />
                 </span>
                 <span v-else class="sr-only">{{ `${section.label} ${child.label}` }}</span>
               </SidebarLink>
@@ -355,22 +354,6 @@ function getNavItemInactiveClass(item) {
   box-shadow: 0 0 0 3px var(--sidebar-section-accent-weak);
 }
 
-.sidebar-section__count {
-  display: inline-flex;
-  min-width: 1.42rem;
-  height: 1.42rem;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--sidebar-section-accent) 24%, white);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--sidebar-section-accent) 10%, white);
-  color: var(--brand-surface-700);
-  font-size: 0.66rem;
-  font-weight: 900;
-  line-height: 1;
-}
-
 .sidebar-section__label {
   margin: 0;
   overflow: hidden;
@@ -381,6 +364,10 @@ function getNavItemInactiveClass(item) {
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.sidebar-section__count {
+  min-width: 1.42rem;
 }
 
 .sidebar-section__caption {
@@ -431,23 +418,8 @@ function getNavItemInactiveClass(item) {
 }
 
 .sidebar-link-badge {
-  display: inline-flex;
   max-width: 5.6rem;
-  min-height: 1.15rem;
   flex: none;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--color-base) 18%, white);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-base) 8%, white);
-  color: var(--brand-surface-600);
-  font-size: 0.6rem;
-  font-weight: 900;
-  line-height: 1;
-  padding: 0 0.38rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 :deep(.sidebar-link--secondary) {

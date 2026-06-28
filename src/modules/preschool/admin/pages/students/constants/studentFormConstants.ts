@@ -16,6 +16,14 @@ export const STUDENT_STATUSES = {
   GRADUATED: 'graduated',
 }
 
+export const GUARDIAN_TYPES = {
+  FATHER: 'father',
+  MOTHER: 'mother',
+  GRANDFATHER: 'grandfather',
+  GRANDMOTHER: 'grandmother',
+  OTHER: 'other',
+}
+
 export const DEFAULT_FORM = {
   student_code: '',
   student_type: STUDENT_TYPES.PAYING,
@@ -25,6 +33,11 @@ export const DEFAULT_FORM = {
   date_of_birth: '',
   guardian_name: '',
   guardian_phone: '',
+  guardian_type: '',
+  province: '',
+  district: '',
+  commune: '',
+  village: '',
   address: '',
   status: STUDENT_STATUSES.ACTIVE,
   class_ids: [],

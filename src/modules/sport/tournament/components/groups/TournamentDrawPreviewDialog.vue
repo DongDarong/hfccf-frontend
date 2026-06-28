@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import Button from 'primevue/button'
+import Button from '@/components/buttons/Button.vue'
 import Dialog from 'primevue/dialog'
 import TournamentGroupGrid from './TournamentGroupGrid.vue'
 import TournamentGroupStats from './TournamentGroupStats.vue'
@@ -141,3 +141,4 @@ const dialogVisible = computed({
   gap: 0.75rem;
 }
 </style>
+
