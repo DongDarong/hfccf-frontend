@@ -97,25 +97,25 @@ const roundedClass = computed(() => {
 const variantClass = computed(() => {
   if (props.variant === 'secondary') {
     return [
-      '!border-brand-primary-200',
+      '!border-brand-200',
       '!bg-white',
-      '!text-brand-surface-800',
+      '!text-slate-800',
       'shadow-[var(--ui-button-shadow)]',
-      'hover:enabled:!border-brand-primary-300',
-      'hover:enabled:!bg-brand-primary-50',
-      'hover:enabled:!text-brand-surface-950',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-brand-50',
+      'hover:enabled:!text-slate-900',
     ]
   }
 
   if (props.variant === 'outline') {
     return [
-      '!border-brand-primary-200',
+      '!border-brand-200',
       '!bg-white',
-      '!text-brand-surface-800',
+      '!text-slate-800',
       'shadow-[var(--ui-button-shadow)]',
-      'hover:enabled:!border-brand-primary-300',
-      'hover:enabled:!bg-brand-primary-50',
-      'hover:enabled:!text-brand-surface-950',
+      'hover:enabled:!border-brand-300',
+      'hover:enabled:!bg-brand-50',
+      'hover:enabled:!text-slate-900',
     ]
   }
 
@@ -123,10 +123,10 @@ const variantClass = computed(() => {
     return [
       '!border-transparent',
       '!bg-transparent',
-      '!text-brand-surface-700',
+      '!text-slate-700',
       '!shadow-none',
       'hover:enabled:!bg-slate-100',
-      'hover:enabled:!text-brand-surface-900',
+      'hover:enabled:!text-slate-900',
     ]
   }
 
@@ -180,12 +180,12 @@ const variantClass = computed(() => {
   }
 
   return [
-    '!border-brand-primary-600',
-    '!bg-brand-primary-600',
+    '!border-brand-600',
+    '!bg-brand-600',
     '!text-white',
     'shadow-[var(--ui-button-shadow-strong)]',
-    'hover:enabled:!border-brand-primary-700',
-    'hover:enabled:!bg-brand-primary-700',
+    'hover:enabled:!border-brand-700',
+    'hover:enabled:!bg-brand-700',
   ]
 })
 
@@ -253,9 +253,9 @@ function handleClick(event) {
   >
     <span class="ui-button__content">
       <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft || $slots.icon)" class="ui-button__icon ui-button__icon--left p-button-icon" aria-hidden="true">
-        <i v-if="buttonIconClass" :class="buttonIconClass" />
-        <slot v-else name="iconLeft" />
-        <slot v-if="!buttonIconClass && !$slots.iconLeft" name="icon" />
+        <slot v-if="$slots.iconLeft" name="iconLeft" />
+        <slot v-else-if="$slots.icon" name="icon" />
+        <i v-else :class="buttonIconClass" />
       </span>
 
       <span class="ui-button__label p-button-label">
@@ -263,8 +263,8 @@ function handleClick(event) {
       </span>
 
       <span v-if="!loading && buttonIconPosition === 'right' && (buttonIconClass || $slots.iconRight)" class="ui-button__icon ui-button__icon--right p-button-icon" aria-hidden="true">
-        <i v-if="buttonIconClass" :class="buttonIconClass" />
-        <slot v-else name="iconRight" />
+        <slot v-if="$slots.iconRight" name="iconRight" />
+        <i v-else :class="buttonIconClass" />
       </span>
 
       <span v-else-if="!loading && buttonIconPosition !== 'right' && $slots.iconRight" class="ui-button__icon ui-button__icon--right p-button-icon" aria-hidden="true">
@@ -283,28 +283,57 @@ function handleClick(event) {
 }
 
 .ui-button__content {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   min-width: 0;
+  max-width: 100%;
   gap: 0.5rem;
 }
 
 .ui-button__label {
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  color: currentColor !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  line-height: 1 !important;
 }
 
 .ui-button__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  color: currentColor !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  line-height: 1 !important;
+}
+
+:deep(.ui-button__icon i) {
+  display: inline-block !important;
+  font-family: 'primeicons' !important;
+  font-style: normal !important;
+  font-size: 1em !important;
+  line-height: 1 !important;
+  color: currentColor !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+:deep(.ui-button__icon i::before) {
+  display: inline-block !important;
+  color: currentColor !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 :deep(.ui-button.p-button .p-button-icon) {
