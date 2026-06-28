@@ -98,7 +98,7 @@ export default {
     health: 'Health',
     healthRecords: 'Health Records',
     studentHealthProfile: 'Student Health Profile',
-    guardianCommunications: 'Guardian Communication',
+    guardianContactLog: 'Guardian Contact Log',
     auditLogs: 'Audit Logs',
     newForm: 'New Form',
     editForm: 'Edit Form',

@@ -69,7 +69,7 @@ describe('Breadcrumb', () => {
     })
 
     expect(wrapper.text()).toContain('Preschool')
-    expect(wrapper.text()).toContain('Guardian Communication')
+    expect(wrapper.text()).toContain('Guardian Contact Log')
     expect(wrapper.findAll('a')).toHaveLength(1)
   })
 })

@@ -97,7 +97,7 @@ export default {
     health: 'សុខភាព',
     healthRecords: 'កំណត់ត្រាសុខភាព',
     studentHealthProfile: 'ប្រវត្តិរូបសុខភាពសិស្ស',
-    guardianCommunications: 'ការទំនាក់ទំនងអាណាព្យាបាល',
+    guardianContactLog: 'កំណត់ត្រាទំនាក់ទំនងអាណាព្យាបាល',
     studentProfile: 'ប្រវត្តិរូបសិស្ស',
     auditLogs: 'កំណត់ត្រាសវនកម្ម',
     newForm: 'ទម្រង់ថ្មី',

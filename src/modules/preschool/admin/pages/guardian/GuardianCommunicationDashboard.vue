@@ -1,408 +1,658 @@
+<template>
+  <div class="space-y-6">
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div class="space-y-2">
+          <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            {{ t('preschoolGuardianCommunicationPage.hero.kicker') }}
+          </p>
+          <h1 class="text-3xl font-bold text-slate-900">
+            {{ t('preschoolGuardianCommunicationPage.title') }}
+          </h1>
+          <p class="max-w-3xl text-sm leading-6 text-slate-600">
+            {{ t('preschoolGuardianCommunicationPage.hero.subtitle') }}
+          </p>
+        </div>
+
+        <AppButton variant="ghost" @click="router.push({ name: 'dashboard-preschool-admin-students' })">
+          {{ t('common.actions.back') }}
+        </AppButton>
+      </div>
+
+      <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div
+          v-for="card in summaryCards"
+          :key="card.label"
+          class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+        >
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {{ card.label }}
+          </p>
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ card.value }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+      <div class="space-y-6">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.contactForm.title') }}
+              </h2>
+              <p class="mt-1 text-sm text-slate-500">
+                {{ t('preschoolGuardianCommunicationPage.contactForm.subtitle') }}
+              </p>
+            </div>
+            <AppBadge variant="staff">
+              {{ currentStaffLabel }}
+            </AppBadge>
+          </div>
+
+          <form class="mt-5 space-y-4" @submit.prevent="handleSubmit">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.labels.student') }}
+              </label>
+              <select
+                v-model="selectedStudentId"
+                :disabled="loadingStudents"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">
+                  {{ loadingStudents ? t('preschoolGuardianCommunicationPage.messages.loading') : t('preschoolGuardianCommunicationPage.messages.selectStudent') }}
+                </option>
+                <option v-for="student in studentOptions" :key="student.id" :value="student.id">
+                  {{ student.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.labels.guardian') }}
+              </label>
+              <select
+                v-model="form.guardianId"
+                :disabled="!guardianOptions.length"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none disabled:bg-slate-100"
+              >
+                <option value="">
+                  {{ guardianPlaceholder }}
+                </option>
+                <option v-for="guardian in guardianOptions" :key="guardian.id" :value="guardian.id">
+                  {{ guardian.label }}
+                </option>
+              </select>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ guardianHelpText }}
+              </p>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">
+                  {{ t('preschoolGuardianCommunicationPage.labels.channel') }}
+                </label>
+                <select
+                  v-model="form.contactMethod"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                >
+                  <option value="">
+                    {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
+                  </option>
+                  <option v-for="option in contactMethodOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">
+                  {{ t('preschoolGuardianCommunicationPage.labels.reason') }}
+                </label>
+                <select
+                  v-model="form.reasonTopic"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                >
+                  <option value="">
+                    {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
+                  </option>
+                  <option v-for="option in reasonOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.labels.summary') }}
+              </label>
+              <textarea
+                v-model="form.discussionSummary"
+                rows="5"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                :placeholder="t('preschoolGuardianCommunicationPage.messages.summaryPlaceholder')"
+              />
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">
+                  {{ t('preschoolGuardianCommunicationPage.labels.outcome') }}
+                </label>
+                <select
+                  v-model="form.outcome"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                >
+                  <option value="">
+                    {{ t('preschoolGuardianCommunicationPage.messages.selectOption') }}
+                  </option>
+                  <option v-for="option in outcomeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">
+                  {{ t('preschoolGuardianCommunicationPage.labels.priority') }}
+                </label>
+                <select
+                  v-model="form.followUpPriority"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                >
+                  <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">
+                  {{ t('preschoolGuardianCommunicationPage.labels.followUpRequired') }}
+                </label>
+                <select
+                  v-model="form.followUpRequired"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                >
+                  <option :value="false">{{ t('preschoolGuardianCommunicationPage.binary.no') }}</option>
+                  <option :value="true">{{ t('preschoolGuardianCommunicationPage.binary.yes') }}</option>
+                </select>
+              </div>
+
+              <div v-if="form.followUpRequired">
+                <label class="mb-1 block text-sm font-medium text-slate-700">
+                  {{ t('preschoolGuardianCommunicationPage.labels.followUpDate') }}
+                </label>
+                <input
+                  v-model="form.followUpDate"
+                  type="date"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+              <p class="font-medium text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.labels.followUpDate') }}:
+                <span class="font-normal text-slate-600">
+                  {{ form.followUpRequired ? (form.followUpDate || t('preschoolGuardianCommunicationPage.messages.selectFollowUpDate')) : 'N/A' }}
+                </span>
+              </p>
+              <p class="mt-1 font-medium text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.messages.previewLabel') }}:
+              </p>
+              <p class="mt-1 whitespace-pre-line text-sm leading-6 text-slate-600">
+                {{ contactPreview }}
+              </p>
+            </div>
+
+            <div v-if="formErrors.length" class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+              <ul class="list-disc space-y-1 pl-5">
+                <li v-for="error in formErrors" :key="error">
+                  {{ error }}
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="submitMessage" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+              {{ submitMessage }}
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <AppButton type="submit">
+                {{ t('preschoolGuardianCommunicationPage.actions.saveContactLog') }}
+              </AppButton>
+              <AppButton type="button" variant="ghost" @click="resetForm">
+                {{ t('common.reset') }}
+              </AppButton>
+            </div>
+          </form>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-900">
+                {{ t('preschoolGuardianCommunicationPage.labels.studentRoster') }}
+              </h2>
+              <p class="mt-1 text-sm text-slate-500">
+                {{ t('preschoolGuardianCommunicationPage.messages.studentRosterHint') }}
+              </p>
+            </div>
+            <span class="text-sm font-medium text-slate-500">
+              {{ filteredStudentOptions.length }}
+            </span>
+          </div>
+
+          <div class="mt-4">
+            <input
+              v-model="studentSearch"
+              type="search"
+              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              :placeholder="t('preschoolGuardianCommunicationPage.messages.searchStudents')"
+            />
+          </div>
+
+          <div class="mt-4 max-h-[26rem] space-y-2 overflow-y-auto pr-1">
+            <p v-if="loadingStudents" class="rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500">
+              {{ t('preschoolGuardianCommunicationPage.messages.loading') }}
+            </p>
+            <button
+              v-for="student in filteredStudentOptions"
+              :key="student.id"
+              type="button"
+              class="w-full rounded-2xl border px-4 py-3 text-left transition-colors"
+              :class="student.id === selectedStudentId
+                ? 'border-slate-900 bg-slate-900 text-white'
+                : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50'"
+              @click="selectStudent(student.id)"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate font-semibold">
+                    {{ student.label }}
+                  </p>
+                  <p class="mt-1 text-xs opacity-75">
+                    {{ student.guardianLabel }}
+                  </p>
+                </div>
+                <AppBadge variant="info" class="shrink-0">
+                  {{ student.communicationCount }}
+                </AppBadge>
+              </div>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <GuardianCommunicationTimeline
+        :items="filteredCommunications"
+        :loading="loadingCommunications"
+        :title="t('preschoolGuardianCommunicationPage.timelineTitle')"
+        :subtitle="t('preschoolGuardianCommunicationPage.timelineSubtitle')"
+        show-actions
+        @sent="handleMarkCompleted"
+        @acknowledged="handleMarkFollowedUp"
+        @cancelled="handleCloseLog"
+      />
+    </div>
+  </div>
+</template>
+
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Button from '@/components/buttons/Button.vue'
-import { useLanguage } from '@/composables/useLanguage'
-import { fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
+
+import AppBadge from '@/components/ui/AppBadge.vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import GuardianCommunicationTimeline from '@/modules/preschool/admin/components/guardian/GuardianCommunicationTimeline.vue'
+import {
+  buildGuardianContactLogMessage,
+  isOverdueFollowUp,
+  isToday,
+  normalizeText,
+  parseGuardianContactLogMessage
+} from '@/modules/preschool/admin/pages/guardian/contactLogUtils'
+import { useUserStore } from '@/store/userStore'
 import {
   acknowledgeGuardianCommunication,
   cancelGuardianCommunication,
   createStudentGuardianCommunication,
   fetchGuardianCommunications,
-  markGuardianCommunicationSent,
+  markGuardianCommunicationSent
 } from '@/modules/preschool/services/api/preschoolGuardianCommunicationApi'
-import GuardianCommunicationTimeline from '@/modules/preschool/admin/components/guardian/GuardianCommunicationTimeline.vue'
-
-defineOptions({
-  name: 'PreschoolGuardianCommunicationDashboard',
-})
+import { fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 
 const router = useRouter()
-const { t } = useLanguage()
+const { t } = useI18n()
+const userStore = useUserStore()
 
-const loading = ref(false)
-const saving = ref(false)
-const errorMessage = ref('')
+const loadingStudents = ref(false)
+const loadingCommunications = ref(false)
+const students = ref([])
 const communications = ref([])
-const summary = ref({ total: 0, queued: 0, sent: 0, acknowledged: 0, failed: 0, cancelled: 0 })
-const studentOptions = ref([])
-const filters = ref({
-  search: '',
-  status: 'all',
-  channel: 'all',
-  sourceType: 'all',
-  studentId: '',
+const studentSearch = ref('')
+const selectedStudentId = ref('')
+const submitMessage = ref('')
+const formErrors = ref([])
+
+const form = reactive({
+  guardianId: '',
+  contactMethod: '',
+  reasonTopic: '',
+  discussionSummary: '',
+  outcome: '',
+  followUpRequired: false,
+  followUpDate: '',
+  followUpPriority: 'medium'
 })
-const noteForm = ref({
-  studentId: '',
-  subject: '',
-  message: '',
-  severity: 'medium',
-  channel: 'manual_note',
+
+const contactMethodOptions = computed(() => ([
+  { value: 'phone-call', label: t('preschoolGuardianCommunicationPage.contactMethods.phoneCall') },
+  { value: 'telegram', label: t('preschoolGuardianCommunicationPage.contactMethods.telegram') },
+  { value: 'messenger', label: t('preschoolGuardianCommunicationPage.contactMethods.messenger') },
+  { value: 'sms', label: t('preschoolGuardianCommunicationPage.contactMethods.sms') },
+  { value: 'email', label: t('preschoolGuardianCommunicationPage.contactMethods.email') },
+  { value: 'face-to-face', label: t('preschoolGuardianCommunicationPage.contactMethods.faceToFace') },
+  { value: 'home-visit', label: t('preschoolGuardianCommunicationPage.contactMethods.homeVisit') },
+  { value: 'other', label: t('preschoolGuardianCommunicationPage.contactMethods.other') }
+]))
+
+const reasonOptions = computed(() => ([
+  { value: 'attendance', label: t('preschoolGuardianCommunicationPage.reasons.attendance') },
+  { value: 'health', label: t('preschoolGuardianCommunicationPage.reasons.health') },
+  { value: 'payment', label: t('preschoolGuardianCommunicationPage.reasons.payment') },
+  { value: 'enrollment', label: t('preschoolGuardianCommunicationPage.reasons.enrollment') },
+  { value: 'behaviour', label: t('preschoolGuardianCommunicationPage.reasons.behaviour') },
+  { value: 'pickup', label: t('preschoolGuardianCommunicationPage.reasons.pickup') },
+  { value: 'emergency', label: t('preschoolGuardianCommunicationPage.reasons.emergency') },
+  { value: 'academic', label: t('preschoolGuardianCommunicationPage.reasons.academic') },
+  { value: 'general', label: t('preschoolGuardianCommunicationPage.reasons.general') },
+  { value: 'other', label: t('preschoolGuardianCommunicationPage.reasons.other') }
+]))
+
+const outcomeOptions = computed(() => ([
+  { value: 'guardian-acknowledged', label: t('preschoolGuardianCommunicationPage.outcomes.guardianAcknowledged') },
+  { value: 'follow-up-requested', label: t('preschoolGuardianCommunicationPage.outcomes.guardianRequestedFollowUp') },
+  { value: 'guardian-unreachable', label: t('preschoolGuardianCommunicationPage.outcomes.guardianUnreachable') },
+  { value: 'appointment-scheduled', label: t('preschoolGuardianCommunicationPage.outcomes.appointmentScheduled') },
+  { value: 'issue-resolved', label: t('preschoolGuardianCommunicationPage.outcomes.issueResolved') },
+  { value: 'other', label: t('preschoolGuardianCommunicationPage.outcomes.other') }
+]))
+
+const priorityOptions = computed(() => ([
+  { value: 'low', label: t('preschoolGuardianCommunicationPage.severity.low') },
+  { value: 'medium', label: t('preschoolGuardianCommunicationPage.severity.medium') },
+  { value: 'high', label: t('preschoolGuardianCommunicationPage.severity.high') }
+]))
+
+const currentStaffLabel = computed(() => {
+  const user = userStore.currentUser || {}
+  return user.fullName || user.name || user.email || t('common.unknown')
 })
 
-const statusOptions = computed(() => [
-  { label: t('common.all'), value: 'all' },
-  { label: t('preschoolGuardianCommunicationPage.status.draft'), value: 'draft' },
-  { label: t('preschoolGuardianCommunicationPage.status.queued'), value: 'queued' },
-  { label: t('preschoolGuardianCommunicationPage.status.sent'), value: 'sent' },
-  { label: t('preschoolGuardianCommunicationPage.status.acknowledged'), value: 'acknowledged' },
-  { label: t('preschoolGuardianCommunicationPage.status.failed'), value: 'failed' },
-  { label: t('preschoolGuardianCommunicationPage.status.cancelled'), value: 'cancelled' },
-])
+const selectedStudent = computed(() => students.value.find(student => String(student.id) === String(selectedStudentId.value)) || null)
 
-const channelOptions = computed(() => [
-  { label: t('common.all'), value: 'all' },
-  { label: t('preschoolGuardianCommunicationPage.channels.in_app'), value: 'in_app' },
-  { label: t('preschoolGuardianCommunicationPage.channels.phone'), value: 'phone' },
-  { label: t('preschoolGuardianCommunicationPage.channels.sms'), value: 'sms' },
-  { label: t('preschoolGuardianCommunicationPage.channels.email'), value: 'email' },
-  { label: t('preschoolGuardianCommunicationPage.channels.manual_note'), value: 'manual_note' },
-])
+const guardianOptions = computed(() => {
+  const student = selectedStudent.value
+  const guardians = student?.guardians || student?.guardian ? [].concat(student.guardians || student.guardian) : []
 
-const sourceTypeOptions = computed(() => [
-  { label: t('common.all'), value: 'all' },
-  { label: t('preschoolGuardianCommunicationPage.sources.health_alert'), value: 'health_alert' },
-  { label: t('preschoolGuardianCommunicationPage.sources.attendance'), value: 'attendance' },
-  { label: t('preschoolGuardianCommunicationPage.sources.assessment'), value: 'assessment' },
-  { label: t('preschoolGuardianCommunicationPage.sources.enrollment'), value: 'enrollment' },
-  { label: t('preschoolGuardianCommunicationPage.sources.governance_issue'), value: 'governance_issue' },
-  { label: t('preschoolGuardianCommunicationPage.sources.manual_note'), value: 'manual_note' },
-])
+  return guardians
+    .filter(Boolean)
+    .map((guardian, index) => ({
+      id: guardian.id || guardian.guardianId || guardian.userId || `${index}`,
+      label: [guardian.fullName || guardian.name || guardian.displayName, guardian.phone || guardian.mobile]
+        .filter(Boolean)
+        .join(' • ') || t('preschoolGuardianCommunicationPage.messages.noGuardianData'),
+      raw: guardian
+    }))
+})
 
-const studentLabelMap = computed(() => new Map(studentOptions.value.map((student) => [String(student.value), student.label])))
+const guardianPlaceholder = computed(() =>
+  guardianOptions.value.length
+    ? t('preschoolGuardianCommunicationPage.messages.selectGuardian')
+    : t('preschoolGuardianCommunicationPage.messages.noGuardianData')
+)
 
-const selectedStudentLabel = computed(() => studentLabelMap.value.get(String(noteForm.value.studentId || '')) || '')
+const guardianHelpText = computed(() =>
+  guardianOptions.value.length
+    ? t('preschoolGuardianCommunicationPage.messages.guardianHelp')
+    : t('preschoolGuardianCommunicationPage.messages.noGuardianData')
+)
+
+const studentOptions = computed(() =>
+  students.value.map(student => ({
+    id: String(student.id),
+    label: [student.fullName || student.name || `${student.firstName || ''} ${student.lastName || ''}`.trim(), student.publicId || student.studentCode || student.code]
+      .filter(Boolean)
+      .join(' — ') || t('common.unknown'),
+    guardianLabel: student.guardianName || student.primaryGuardianName || t('preschoolGuardianCommunicationPage.messages.noGuardianData'),
+    communicationCount: communications.value.filter(item => String(item.studentId) === String(student.id)).length
+  }))
+)
+
+const filteredStudentOptions = computed(() => {
+  const query = normalizeText(studentSearch.value).toLowerCase()
+  if (!query) {
+    return studentOptions.value
+  }
+
+  return studentOptions.value.filter(student =>
+    student.label.toLowerCase().includes(query) ||
+    student.guardianLabel.toLowerCase().includes(query)
+  )
+})
+
+const filteredCommunications = computed(() => {
+  const studentId = selectedStudentId.value
+  return communications.value.filter(item => !studentId || String(item.studentId) === String(studentId))
+})
+
+const contactPreview = computed(() => {
+  const method = contactMethodOptions.value.find(option => option.value === form.contactMethod)?.label || t('preschoolGuardianCommunicationPage.messages.selectOption')
+  const reason = reasonOptions.value.find(option => option.value === form.reasonTopic)?.label || t('preschoolGuardianCommunicationPage.messages.selectOption')
+  const outcome = outcomeOptions.value.find(option => option.value === form.outcome)?.label || t('preschoolGuardianCommunicationPage.messages.selectOption')
+  const studentLabel = studentOptions.value.find(option => option.id === selectedStudentId.value)?.label || t('preschoolGuardianCommunicationPage.messages.selectStudent')
+
+  return [
+    `${studentLabel}`,
+    `${method} · ${reason}`,
+    form.discussionSummary,
+    `${t('preschoolGuardianCommunicationPage.labels.outcome')}: ${outcome}`,
+    `${t('preschoolGuardianCommunicationPage.labels.followUpRequired')}: ${form.followUpRequired ? t('preschoolGuardianCommunicationPage.binary.yes') : t('preschoolGuardianCommunicationPage.binary.no')}`,
+    form.followUpRequired ? `${t('preschoolGuardianCommunicationPage.labels.followUpDate')}: ${form.followUpDate || t('preschoolGuardianCommunicationPage.messages.selectFollowUpDate')}` : '',
+    `${t('preschoolGuardianCommunicationPage.labels.staffMember')}: ${currentStaffLabel.value}`
+  ].filter(Boolean).join('\n')
+})
+
+const summaryCards = computed(() => {
+  const items = filteredCommunications.value
+  const today = items.filter(item => isToday(item.createdAt || item.created_at || item.updatedAt || item.updated_at)).length
+  const parsed = items.map(item => parseGuardianContactLogMessage(item.message))
+  const followUps = items.filter((item, index) => parsed[index]?.followUpRequired || item.followUpRequired).length
+  const completed = items.filter(item => ['sent', 'acknowledged', 'resolved', 'closed'].includes(String(item.status || '').toLowerCase())).length
+  const overdue = items.filter((item, index) => isOverdueFollowUp(item, parsed[index])).length
+
+  return [
+    { label: t('preschoolGuardianCommunicationPage.metrics.totalContacts'), value: items.length },
+    { label: t('preschoolGuardianCommunicationPage.metrics.today'), value: today },
+    { label: t('preschoolGuardianCommunicationPage.metrics.followUpRequired'), value: followUps },
+    { label: t('preschoolGuardianCommunicationPage.metrics.completed'), value: completed },
+    { label: t('preschoolGuardianCommunicationPage.metrics.overdueFollowUps'), value: overdue }
+  ]
+})
+
+function unwrapList(response) {
+  if (Array.isArray(response)) {
+    return response
+  }
+
+  return response?.data?.items || response?.data || response?.items || response?.records || []
+}
+
+function resetForm() {
+  form.guardianId = guardianOptions.value[0]?.id || ''
+  form.contactMethod = ''
+  form.reasonTopic = ''
+  form.discussionSummary = ''
+  form.outcome = ''
+  form.followUpRequired = false
+  form.followUpDate = ''
+  form.followUpPriority = 'medium'
+  formErrors.value = []
+  submitMessage.value = ''
+}
 
 async function loadStudents() {
+  loadingStudents.value = true
+
   try {
-    const response = await fetchPreschoolStudents({ page: 1, perPage: 200, search: '' })
-    studentOptions.value = (response.items || []).map((student) => ({
-      label: `${student.fullName || student.name || '-'}${student.publicId || student.studentCode ? ` (${student.publicId || student.studentCode})` : ''}`,
-      value: student.id,
-    }))
-  } catch {
-    studentOptions.value = []
+    const response = await fetchPreschoolStudents({ perPage: 200 })
+    students.value = unwrapList(response)
+
+    if (!selectedStudentId.value && students.value.length) {
+      selectedStudentId.value = String(students.value[0].id)
+    }
+  } finally {
+    loadingStudents.value = false
   }
 }
 
 async function loadCommunications() {
-  loading.value = true
-  errorMessage.value = ''
+  loadingCommunications.value = true
 
   try {
-    const payload = await fetchGuardianCommunications({
-      search: filters.value.search,
-      status: filters.value.status,
-      channel: filters.value.channel,
-      sourceType: filters.value.sourceType,
-      studentId: filters.value.studentId,
-      perPage: 100,
-      page: 1,
+    const response = await fetchGuardianCommunications({
+      studentId: selectedStudentId.value || undefined
     })
 
-    communications.value = payload.items || []
-    summary.value = payload.pagination
-      ? {
-          total: payload.pagination.total ?? communications.value.length,
-          queued: communications.value.filter((item) => item.status === 'queued').length,
-          sent: communications.value.filter((item) => item.status === 'sent').length,
-          acknowledged: communications.value.filter((item) => item.status === 'acknowledged').length,
-          failed: communications.value.filter((item) => item.status === 'failed').length,
-          cancelled: communications.value.filter((item) => item.status === 'cancelled').length,
-        }
-      : summary.value
-  } catch (error) {
-    errorMessage.value = error?.message || t('preschoolGuardianCommunicationPage.messages.loadFailed')
+    communications.value = unwrapList(response)
   } finally {
-    loading.value = false
+    loadingCommunications.value = false
   }
 }
 
-async function submitNote() {
-  if (!noteForm.value.studentId) return
+function selectStudent(studentId) {
+  selectedStudentId.value = String(studentId)
+}
 
-  saving.value = true
-  errorMessage.value = ''
+function validateForm() {
+  const errors = []
+
+  if (!selectedStudentId.value) {
+    errors.push(t('preschoolGuardianCommunicationPage.validation.studentRequired'))
+  }
+
+  if (!form.contactMethod) {
+    errors.push(t('preschoolGuardianCommunicationPage.validation.contactMethodRequired'))
+  }
+
+  if (!form.reasonTopic) {
+    errors.push(t('preschoolGuardianCommunicationPage.validation.reasonRequired'))
+  }
+
+  if (!normalizeText(form.discussionSummary)) {
+    errors.push(t('preschoolGuardianCommunicationPage.validation.summaryRequired'))
+  }
+
+  if (!form.outcome) {
+    errors.push(t('preschoolGuardianCommunicationPage.validation.outcomeRequired'))
+  }
+
+  if (form.followUpRequired && !form.followUpDate) {
+    errors.push(t('preschoolGuardianCommunicationPage.validation.followUpDateRequired'))
+  }
+
+  formErrors.value = errors
+  return errors.length === 0
+}
+
+async function handleSubmit() {
+  if (!validateForm()) {
+    return
+  }
+
   try {
-    await createStudentGuardianCommunication(noteForm.value.studentId, {
-      subject: noteForm.value.subject,
-      message: noteForm.value.message,
-      severity: noteForm.value.severity,
-      channel: noteForm.value.channel,
+    const guardian = guardianOptions.value.find(option => option.id === form.guardianId)
+    const method = contactMethodOptions.value.find(option => option.value === form.contactMethod)?.label || form.contactMethod
+    const reason = reasonOptions.value.find(option => option.value === form.reasonTopic)?.label || form.reasonTopic
+    const outcome = outcomeOptions.value.find(option => option.value === form.outcome)?.label || form.outcome
+
+    const message = buildGuardianContactLogMessage({
+      student: studentOptions.value.find(option => option.id === selectedStudentId.value)?.label || '',
+      guardian: guardian?.label || '',
+      method,
+      reason,
+      summary: form.discussionSummary,
+      outcome,
+      followUpRequired: form.followUpRequired,
+      followUpDate: form.followUpDate,
+      priority: form.followUpPriority
+    }, {}, currentStaffLabel.value)
+
+    await createStudentGuardianCommunication({
+      studentId: selectedStudentId.value,
+      guardianId: form.guardianId || undefined,
+      sourceType: 'manual_note',
+      channel: form.contactMethod,
+      subject: form.reasonTopic,
+      message,
+      severity: form.followUpPriority,
+      status: 'queued'
     })
 
-    noteForm.value.subject = ''
-    noteForm.value.message = ''
+    submitMessage.value = t('preschoolGuardianCommunicationPage.messages.saveSuccess')
+    resetForm()
     await loadCommunications()
-  } catch (error) {
-    errorMessage.value = error?.message || t('preschoolGuardianCommunicationPage.messages.saveFailed')
-  } finally {
-    saving.value = false
+  } catch {
+    submitMessage.value = t('preschoolGuardianCommunicationPage.messages.saveFailed')
   }
 }
 
-async function handleMarkSent(item) {
-  if (!item?.id) return
+async function handleMarkCompleted(item) {
   await markGuardianCommunicationSent(item.id)
   await loadCommunications()
 }
 
-async function handleAcknowledge(item) {
-  if (!item?.id) return
+async function handleMarkFollowedUp(item) {
   await acknowledgeGuardianCommunication(item.id)
   await loadCommunications()
 }
 
-async function handleCancel(item) {
-  if (!item?.id) return
+async function handleCloseLog(item) {
   await cancelGuardianCommunication(item.id)
   await loadCommunications()
 }
 
-function openStudentProfile(studentId) {
-  const id = String(studentId || '').trim()
-  if (!id) return
-  router.push({ name: 'dashboard-preschool-admin-student-profile', params: { id } })
-}
+watch(selectedStudentId, async (value) => {
+  const student = students.value.find(entry => String(entry.id) === String(value))
+  form.guardianId = guardianOptions.value[0]?.id || student?.guardianId || ''
+  await loadCommunications()
+})
 
-watch(filters, () => {
-  loadCommunications()
-}, { deep: true })
+watch(guardianOptions, () => {
+  if (!guardianOptions.value.length) {
+    form.guardianId = ''
+    return
+  }
+
+  if (!guardianOptions.value.some(option => option.id === form.guardianId)) {
+    form.guardianId = guardianOptions.value[0].id
+  }
+}, { immediate: true })
 
 onMounted(async () => {
-  await Promise.all([loadStudents(), loadCommunications()])
+  await loadStudents()
+  resetForm()
+  await loadCommunications()
 })
 </script>
-
-<template>
-  <MainLayout>
-    <section class="guardian-communication-dashboard">
-      <HeaderSection
-        :title="t('preschoolGuardianCommunicationPage.title')"
-        :subtitle="t('preschoolGuardianCommunicationPage.subtitle')"
-      />
-
-      <div class="guardian-communication-dashboard__shell">
-        <div class="guardian-communication-dashboard__hero">
-          <div>
-            <p class="guardian-communication-dashboard__eyebrow">
-              {{ t('preschoolGuardianCommunicationPage.hero.eyebrow') }}
-            </p>
-            <h2 class="guardian-communication-dashboard__hero-title">
-              {{ t('preschoolGuardianCommunicationPage.hero.title') }}
-            </h2>
-            <p class="guardian-communication-dashboard__hero-subtitle">
-              {{ t('preschoolGuardianCommunicationPage.hero.subtitle') }}
-            </p>
-          </div>
-
-          <Button
-            type="button"
-            variant="secondary"
-            rounded="xl"
-            :label="t('preschoolGuardianCommunicationPage.actions.backToStudent')"
-            @click="openStudentProfile(filters.studentId || noteForm.studentId)"
-          />
-        </div>
-
-        <div class="guardian-communication-dashboard__filters">
-          <input v-model="filters.search" type="search" class="guardian-communication-dashboard__input" :placeholder="t('preschoolGuardianCommunicationPage.filters.searchPlaceholder')" />
-          <select v-model="filters.status" class="guardian-communication-dashboard__input">
-            <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-          </select>
-          <select v-model="filters.channel" class="guardian-communication-dashboard__input">
-            <option v-for="option in channelOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-          </select>
-          <select v-model="filters.sourceType" class="guardian-communication-dashboard__input">
-            <option v-for="option in sourceTypeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-          </select>
-          <select v-model="filters.studentId" class="guardian-communication-dashboard__input">
-            <option value="">{{ t('preschoolGuardianCommunicationPage.filters.allStudents') }}</option>
-            <option v-for="student in studentOptions" :key="student.value" :value="student.value">{{ student.label }}</option>
-          </select>
-        </div>
-
-        <div v-if="errorMessage" class="guardian-communication-dashboard__state guardian-communication-dashboard__state--error">
-          {{ errorMessage }}
-        </div>
-
-        <div class="guardian-communication-dashboard__content">
-          <section class="guardian-communication-dashboard__note-card">
-            <div>
-              <p class="guardian-communication-dashboard__section-eyebrow">{{ t('preschoolGuardianCommunicationPage.manualNote') }}</p>
-              <h3 class="guardian-communication-dashboard__section-title">{{ t('preschoolGuardianCommunicationPage.contactGuardian') }}</h3>
-            </div>
-
-            <div class="guardian-communication-dashboard__note-form">
-              <select v-model="noteForm.studentId" class="guardian-communication-dashboard__input">
-                <option value="">{{ t('preschoolGuardianCommunicationPage.filters.selectStudent') }}</option>
-                <option v-for="student in studentOptions" :key="student.value" :value="student.value">{{ student.label }}</option>
-              </select>
-              <input v-model="noteForm.subject" type="text" class="guardian-communication-dashboard__input" :placeholder="t('preschoolGuardianCommunicationPage.filters.subjectPlaceholder')" />
-              <textarea v-model="noteForm.message" class="guardian-communication-dashboard__textarea" rows="4" :placeholder="t('preschoolGuardianCommunicationPage.filters.messagePlaceholder')" />
-              <div class="guardian-communication-dashboard__note-actions">
-                <select v-model="noteForm.severity" class="guardian-communication-dashboard__input">
-                  <option value="low">{{ t('preschoolGuardianCommunicationPage.severity.low') }}</option>
-                  <option value="medium">{{ t('preschoolGuardianCommunicationPage.severity.medium') }}</option>
-                  <option value="high">{{ t('preschoolGuardianCommunicationPage.severity.high') }}</option>
-                  <option value="critical">{{ t('preschoolGuardianCommunicationPage.severity.critical') }}</option>
-                </select>
-                <Button type="button" variant="primary" rounded="xl" :loading="saving" :disabled="!noteForm.studentId || !noteForm.subject || !noteForm.message" :label="t('preschoolGuardianCommunicationPage.actions.saveNote')" @click="submitNote" />
-              </div>
-              <p v-if="selectedStudentLabel" class="guardian-communication-dashboard__note-hint">
-                {{ t('preschoolGuardianCommunicationPage.messages.noteForStudent', { student: selectedStudentLabel }) }}
-              </p>
-            </div>
-          </section>
-
-          <GuardianCommunicationTimeline
-            :title="t('preschoolGuardianCommunicationPage.timelineTitle')"
-            :subtitle="t('preschoolGuardianCommunicationPage.timelineSubtitle')"
-            :communications="communications"
-            :summary="summary"
-            :loading="loading"
-            :empty-text="t('preschoolGuardianCommunicationPage.messages.noCommunicationYet')"
-            :show-actions="true"
-            @mark-sent="handleMarkSent"
-            @acknowledge="handleAcknowledge"
-            @cancel="handleCancel"
-            @refresh="loadCommunications"
-          />
-        </div>
-      </div>
-    </section>
-  </MainLayout>
-</template>
-
-<style scoped>
-.guardian-communication-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.guardian-communication-dashboard__shell {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.25rem;
-  border: 1px solid #dbe3ef;
-  border-radius: 1.5rem;
-  background:
-    radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.99) 100%);
-  box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
-}
-
-.guardian-communication-dashboard__hero {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 1.25rem;
-  background: linear-gradient(135deg, #0f2e63 0%, #12356f 45%, #0f2a58 100%);
-  color: #fff;
-}
-
-.guardian-communication-dashboard__eyebrow,
-.guardian-communication-dashboard__section-eyebrow {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #93c5fd;
-}
-
-.guardian-communication-dashboard__hero-title,
-.guardian-communication-dashboard__section-title {
-  margin: 0.25rem 0 0;
-  font-size: 1.35rem;
-  font-weight: 800;
-}
-
-.guardian-communication-dashboard__hero-subtitle {
-  margin: 0.35rem 0 0;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.guardian-communication-dashboard__filters {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.6rem;
-}
-
-.guardian-communication-dashboard__input,
-.guardian-communication-dashboard__textarea {
-  width: 100%;
-  min-height: 2.7rem;
-  border-radius: 0.9rem;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  padding: 0.7rem 0.85rem;
-  font: inherit;
-  color: #0f172a;
-}
-
-.guardian-communication-dashboard__textarea {
-  min-height: 7rem;
-  resize: vertical;
-}
-
-.guardian-communication-dashboard__content {
-  display: grid;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.2fr);
-  gap: 1rem;
-}
-
-.guardian-communication-dashboard__note-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 1.25rem;
-  border: 1px solid #dbe3ef;
-  background: #fff;
-  box-shadow: 0 18px 36px -30px rgba(15, 23, 42, 0.45);
-}
-
-.guardian-communication-dashboard__note-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.guardian-communication-dashboard__note-actions {
-  display: flex;
-  gap: 0.7rem;
-  align-items: center;
-}
-
-.guardian-communication-dashboard__note-hint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.guardian-communication-dashboard__state {
-  padding: 0.85rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.9rem;
-}
-
-.guardian-communication-dashboard__state--error {
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #b91c1c;
-}
-
-@media (max-width: 1100px) {
-  .guardian-communication-dashboard__filters,
-  .guardian-communication-dashboard__content {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

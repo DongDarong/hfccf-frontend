@@ -57,7 +57,7 @@ const {
           :status-class="statusClass"
           :back-label="t('preschoolStudentProfilePage.actions.back')"
           :health-label="t('preschoolStudentProfilePage.actions.health')"
-          :communications-label="t('preschoolGuardianCommunicationPage.title')"
+      :communications-label="t('preschoolGuardianCommunicationPage.profile.contactHistory')"
           @back="goBack"
           @health="goToHealthRecords"
           @communications="goToCommunications"

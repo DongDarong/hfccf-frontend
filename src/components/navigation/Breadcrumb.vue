@@ -365,7 +365,7 @@ const CRUMB_MAP = {
   ],
   'dashboard-preschool-admin-guardian-communications': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'breadcrumb.guardianCommunications' },
+    { labelKey: 'breadcrumb.guardianContactLog' },
   ],
 
   // ── Enrollment ──────────────────────────────────────────────────��─────────
