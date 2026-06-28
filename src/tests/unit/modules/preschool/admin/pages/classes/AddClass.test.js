@@ -32,8 +32,8 @@ function mountPage() {
         HeaderSection: { props: ['title', 'subtitle'], template: '<div data-testid="header">{{ title }} {{ subtitle }}</div>' },
         AdminSummaryCards: { template: '<div data-testid="summary" />' },
         AdminChecklistPanel: { template: '<aside data-testid="checklist" />' },
-        AlertError: { template: '<div data-testid="error" />' },
-        AlertSuccess: { template: '<div data-testid="success" />' },
+        AlertError: { props: ['message'], template: '<div data-testid="error">{{ message }}</div>' },
+        AlertSuccess: { props: ['message'], template: '<div data-testid="success">{{ message }}</div>' },
         MultiSelect: {
           name: 'MultiSelect',
           props: ['modelValue', 'options', 'placeholder', 'loading', 'disabled'],
@@ -103,7 +103,7 @@ beforeEach(() => {
 })
 
 describe('AddClass', () => {
-  it('renders generated code, student multiselect, and shared footer actions', async () => {
+  it('renders generated code, student multiselect, and schedule controls', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
@@ -124,15 +124,21 @@ describe('AddClass', () => {
     expect(wrapper.text()).toContain('Create Class')
     expect(wrapper.text()).toContain('Cancel')
     expect(wrapper.text()).toContain('Selected: 0 students')
+    expect(wrapper.text()).toContain('Select days and times to preview the schedule.')
 
     expect(wrapper.find('[data-testid="add-class-level-input"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="add-class-schedule-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-input"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="add-class-code-preview"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="student-multiselect"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-day-monday"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-day-friday"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-start-time"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-end-time"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-preview"]').exists()).toBe(true)
     expect(wrapper.find('input[type="number"]').exists()).toBe(false)
   })
 
-  it('updates the selected student count and submits student ids', async () => {
+  it('updates the selected student count, schedule preview, and submits student ids', async () => {
     const wrapper = mountPage()
     const fields = wrapper.findComponent({ name: 'AddClassFormFields' })
 
@@ -145,12 +151,20 @@ describe('AddClass', () => {
     fields.vm.$emit('update:notes', 'Optional note')
     fields.vm.$emit('update:status', 'active')
 
+    await wrapper.find('[data-testid="add-class-schedule-day-monday"]').setChecked()
+    await wrapper.find('[data-testid="add-class-schedule-day-tuesday"]').setChecked()
+    await wrapper.find('[data-testid="add-class-schedule-day-wednesday"]').setChecked()
+    await wrapper.find('[data-testid="add-class-schedule-day-thursday"]').setChecked()
+    await wrapper.find('[data-testid="add-class-schedule-day-friday"]').setChecked()
+    await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('08:00')
+    await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('11:00')
     await wrapper.find('[data-testid="add-class-level-input"]').setValue('Level A')
-    await wrapper.find('[data-testid="add-class-schedule-input"]').setValue('Afternoon')
     await flushPromises()
 
     expect(wrapper.text()).toContain('PS-LEV-01')
     expect(wrapper.text()).toContain('Selected: 2 students')
+    expect(wrapper.find('[data-testid="add-class-schedule-preview"]').text()).toContain('Monday, Tuesday, Wednesday, Thursday, Friday')
+    expect(wrapper.find('[data-testid="add-class-schedule-preview"]').text()).toContain('08:00–11:00')
 
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -166,7 +180,7 @@ describe('AddClass', () => {
         name: 'Morning Nursery Blue',
         teacher_user_id: 'teacher-1',
         level: 'Level A',
-        schedule: 'Afternoon',
+        schedule: 'Monday, Tuesday, Wednesday, Thursday, Friday, 08:00–11:00',
         students_count: 2,
         student_ids: [101, 202],
         status: 'active',
@@ -176,7 +190,44 @@ describe('AddClass', () => {
     )
   })
 
-  it('keeps the selected count as the submitted fallback when student assignment data is unavailable', async () => {
+  it('shows structured schedule validation errors', async () => {
+    const wrapper = mountPage()
+    const fields = wrapper.findComponent({ name: 'AddClassFormFields' })
+
+    await flushPromises()
+
+    fields.vm.$emit('update:name', 'Morning Nursery Blue')
+    fields.vm.$emit('update:teacher', 'teacher-1')
+    fields.vm.$emit('update:level', 'Level A')
+    fields.vm.$emit('update:status', 'active')
+    await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('08:00')
+    await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('11:00')
+    await wrapper.find('form').trigger('submit.prevent')
+
+    expect(wrapper.text()).toContain('Select at least one day.')
+    expect(mockCreateClass).not.toHaveBeenCalled()
+  })
+
+  it('shows an end time validation error when the range is invalid', async () => {
+    const wrapper = mountPage()
+    const fields = wrapper.findComponent({ name: 'AddClassFormFields' })
+
+    await flushPromises()
+
+    fields.vm.$emit('update:name', 'Morning Nursery Blue')
+    fields.vm.$emit('update:teacher', 'teacher-1')
+    fields.vm.$emit('update:level', 'Level A')
+    fields.vm.$emit('update:status', 'active')
+    await wrapper.find('[data-testid="add-class-schedule-day-monday"]').setChecked()
+    await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('11:00')
+    await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('08:00')
+    await wrapper.find('form').trigger('submit.prevent')
+
+    expect(wrapper.text()).toContain('End time must be after start time.')
+    expect(mockCreateClass).not.toHaveBeenCalled()
+  })
+
+  it('keeps a raw unparseable schedule in edit mode and preserves it on submit', async () => {
     mockFetchClass.mockResolvedValueOnce({
       id: 'class-1',
       code: 'PS-KIN-02',
@@ -184,7 +235,7 @@ describe('AddClass', () => {
       teacherUserId: 'teacher-1',
       teacherDisplayName: 'Teacher Alpha',
       level: 'Kindergarten A',
-      schedule: 'Morning',
+      schedule: 'Mon-Fri, 8:00 AM',
       studentsCount: 5,
       studentAssignments: [],
       activeStudentAssignments: [],
@@ -198,13 +249,16 @@ describe('AddClass', () => {
     await wrapper.vm.$router.push({ query: { mode: 'edit', id: 'class-1' } })
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Selected: 5 students')
+    expect(wrapper.text()).toContain('Mon-Fri, 8:00 AM')
+    expect(wrapper.text()).toContain('Unable to parse existing schedule.')
+    expect(wrapper.text()).toContain('Custom schedule preserved.')
 
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(mockUpdateClass).toHaveBeenCalledWith(
       'class-1',
       expect.objectContaining({
+        schedule: 'Mon-Fri, 8:00 AM',
         students_count: 5,
       }),
     )
@@ -219,6 +273,14 @@ describe('AddClass', () => {
     expect(enPreschool.preschoolAddClass.selectedStudentsCount).toBe('Selected: {count} students')
     expect(enPreschool.preschoolAddClass.studentAssignment).toBe('Student assignment')
     expect(enPreschool.preschoolAddClass.selectedStudents).toBe('Selected students')
+    expect(enPreschool.preschoolAddClass.schedulePreview).toBe('Schedule preview')
+    expect(enPreschool.preschoolAddClass.schedulePreviewEmpty).toBe('Select days and times to preview the schedule.')
+    expect(enPreschool.preschoolAddClass.unableToParseExistingSchedule).toBe('Unable to parse existing schedule.')
+    expect(enPreschool.preschoolAddClass.customSchedulePreserved).toBe('Custom schedule preserved.')
+    expect(enPreschool.preschoolAddClass.days).toBe('Days')
+    expect(enPreschool.preschoolAddClass.time).toBe('Time')
+    expect(enPreschool.preschoolAddClass.weekdays.monday).toBe('Monday')
+    expect(enPreschool.preschoolAddClass.weekdays.friday).toBe('Friday')
 
     expect(khPreschool.preschoolAddClass.selectStudents).toBe('ជ្រើសរើសសិស្ស')
     expect(khPreschool.preschoolAddClass.noStudentsFound).toBe('រកមិនឃើញសិស្ស')
@@ -226,5 +288,13 @@ describe('AddClass', () => {
     expect(khPreschool.preschoolAddClass.selectedStudentsCount).toBe('បានជ្រើស: {count} នាក់')
     expect(khPreschool.preschoolAddClass.studentAssignment).toBe('ការចាត់តាំងសិស្ស')
     expect(khPreschool.preschoolAddClass.selectedStudents).toBe('សិស្សដែលបានជ្រើស')
+    expect(khPreschool.preschoolAddClass.schedulePreview).toBe('មើលកាលវិភាគ')
+    expect(khPreschool.preschoolAddClass.schedulePreviewEmpty).toBe('ជ្រើសរើសថ្ងៃ និងម៉ោង ដើម្បីមើលកាលវិភាគ។')
+    expect(khPreschool.preschoolAddClass.unableToParseExistingSchedule).toBe('មិនអាចបំបែកកាលវិភាគដែលមានស្រាប់បានទេ។')
+    expect(khPreschool.preschoolAddClass.customSchedulePreserved).toBe('បានរក្សាកាលវិភាគផ្ទាល់ខ្លួន។')
+    expect(khPreschool.preschoolAddClass.days).toBe('ថ្ងៃ')
+    expect(khPreschool.preschoolAddClass.time).toBe('ម៉ោង')
+    expect(khPreschool.preschoolAddClass.weekdays.monday).toBe('ថ្ងៃចន្ទ')
+    expect(khPreschool.preschoolAddClass.weekdays.friday).toBe('ថ្ងៃសុក្រ')
   })
 })

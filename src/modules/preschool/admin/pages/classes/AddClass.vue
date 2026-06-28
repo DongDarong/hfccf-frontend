@@ -57,9 +57,37 @@ const selectedStudentIds = ref([])
 const selectedStudentAssignments = ref([])
 const studentCountFallback = ref(0)
 const studentsLoading = ref(false)
+const scheduleDays = ref([])
+const scheduleStartTime = ref('')
+const scheduleEndTime = ref('')
+const scheduleRaw = ref('')
+const scheduleMode = ref('structured')
+const scheduleParseWarning = ref('')
 const generatedCode = ref('')
 const generatedCodeLoading = ref(false)
 let codeRequestSeq = 0
+
+const scheduleDayOptions = computed(() => ([
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+]).map((day) => ({
+  value: day,
+  label: t(`preschoolAddClass.weekdays.${day}`),
+  payloadLabel: {
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+    sunday: 'Sunday',
+  }[day],
+})))
 
 const mode = computed(() => {
   if (route.query.mode === 'view') return 'view'
@@ -119,6 +147,187 @@ function buildStudentOption(student = {}) {
 
 function sortStudentOptions(items = []) {
   return [...items].sort((left, right) => left.label.localeCompare(right.label))
+}
+
+function resetScheduleState() {
+  scheduleDays.value = []
+  scheduleStartTime.value = ''
+  scheduleEndTime.value = ''
+  scheduleRaw.value = ''
+  scheduleMode.value = 'structured'
+  scheduleParseWarning.value = ''
+  form.schedule = ''
+}
+
+function getDayCode(day) {
+  return String(day || '').trim().toLowerCase()
+}
+
+function formatTimeValue(value) {
+  return String(value || '').trim()
+}
+
+function parseTimeToMinutes(value) {
+  const match = formatTimeValue(value).match(/^(\d{1,2}):(\d{2})$/)
+  if (!match) return null
+
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null
+
+  return hours * 60 + minutes
+}
+
+function formatScheduleTimeRange(startTime, endTime) {
+  const start = formatTimeValue(startTime)
+  const end = formatTimeValue(endTime)
+  if (!start || !end) return ''
+  return `${start}–${end}`
+}
+
+function formatScheduleDays(days = [], usePayloadLabels = false) {
+  const labels = scheduleDayOptions.value
+    .filter((option) => days.includes(option.value))
+    .map((option) => (usePayloadLabels ? option.payloadLabel : option.label))
+
+  return labels.join(', ')
+}
+
+function buildScheduleString(days = scheduleDays.value, startTime = scheduleStartTime.value, endTime = scheduleEndTime.value) {
+  const dayText = formatScheduleDays(days, true)
+  const timeText = formatScheduleTimeRange(startTime, endTime)
+
+  if (!dayText || !timeText) return ''
+  return `${dayText}, ${timeText}`
+}
+
+function buildSchedulePreview(days = scheduleDays.value, startTime = scheduleStartTime.value, endTime = scheduleEndTime.value) {
+  if (scheduleMode.value === 'raw' && scheduleRaw.value) return scheduleRaw.value
+
+  const dayText = formatScheduleDays(days, false)
+  const timeText = formatScheduleTimeRange(startTime, endTime)
+
+  if (dayText && timeText) return `${dayText} · ${timeText}`
+  if (dayText) return dayText
+  if (timeText) return timeText
+  return t('preschoolAddClass.schedulePreviewEmpty')
+}
+
+const schedulePreview = computed(() => buildSchedulePreview())
+const scheduleIsStructured = computed(() => scheduleMode.value !== 'raw')
+const scheduleHasWarning = computed(() => scheduleMode.value === 'raw' && Boolean(scheduleParseWarning.value))
+
+function syncScheduleValue() {
+  if (scheduleMode.value === 'raw') {
+    form.schedule = scheduleRaw.value
+    return
+  }
+
+  form.schedule = buildScheduleString()
+}
+
+function ensureStructuredSchedule() {
+  if (scheduleMode.value === 'raw') {
+    scheduleMode.value = 'structured'
+    scheduleParseWarning.value = ''
+    scheduleRaw.value = ''
+  }
+}
+
+function updateScheduleDay(day, checked) {
+  ensureStructuredSchedule()
+  const normalized = getDayCode(day)
+  const current = new Set(scheduleDays.value)
+
+  if (checked) {
+    current.add(normalized)
+  } else {
+    current.delete(normalized)
+  }
+
+  scheduleDays.value = [...current]
+  syncScheduleValue()
+}
+
+function updateScheduleStartTime(value) {
+  ensureStructuredSchedule()
+  scheduleStartTime.value = formatTimeValue(value)
+  syncScheduleValue()
+}
+
+function updateScheduleEndTime(value) {
+  ensureStructuredSchedule()
+  scheduleEndTime.value = formatTimeValue(value)
+  syncScheduleValue()
+}
+
+function formatParsedScheduleDays(rawValue) {
+  const normalized = String(rawValue || '').toLowerCase()
+  const selected = []
+  const dayPatterns = [
+    ['monday', /\b(mon|monday)\b/],
+    ['tuesday', /\b(tue|tues|tuesday)\b/],
+    ['wednesday', /\b(wed|weds|wednesday)\b/],
+    ['thursday', /\b(thu|thur|thurs|thursday)\b/],
+    ['friday', /\b(fri|friday)\b/],
+    ['saturday', /\b(sat|saturday)\b/],
+    ['sunday', /\b(sun|sunday)\b/],
+  ]
+
+  dayPatterns.forEach(([day, pattern]) => {
+    if (pattern.test(normalized)) {
+      selected.push(day)
+    }
+  })
+
+  return selected
+}
+
+function parseScheduleString(rawValue) {
+  const value = String(rawValue || '').trim()
+  if (!value) return null
+
+  const timeMatch = value.match(/(\d{1,2}:\d{2}\s?(?:am|pm)?)[\s]*[–—-][\s]*(\d{1,2}:\d{2}\s?(?:am|pm)?)/i)
+  if (!timeMatch) return null
+
+  const daysPart = value.slice(0, timeMatch.index).replace(/[,·•]+$/, '').trim()
+  const days = formatParsedScheduleDays(daysPart)
+  const startTime = formatTimeValue(timeMatch[1]).toUpperCase().replace(/\s+/g, ' ')
+  const endTime = formatTimeValue(timeMatch[2]).toUpperCase().replace(/\s+/g, ' ')
+
+  if (!days.length) return null
+  if (!/^(\d{1,2}:\d{2})$/.test(startTime) || !/^(\d{1,2}:\d{2})$/.test(endTime)) return null
+
+  return {
+    days,
+    startTime,
+    endTime,
+  }
+}
+
+function applyScheduleValue(rawValue) {
+  const parsed = parseScheduleString(rawValue)
+  scheduleRaw.value = String(rawValue || '').trim()
+  scheduleParseWarning.value = ''
+
+  if (parsed) {
+    scheduleMode.value = 'structured'
+    scheduleDays.value = parsed.days
+    scheduleStartTime.value = parsed.startTime
+    scheduleEndTime.value = parsed.endTime
+    form.schedule = buildScheduleString(parsed.days, parsed.startTime, parsed.endTime)
+    return
+  }
+
+  scheduleMode.value = 'raw'
+  scheduleDays.value = []
+  scheduleStartTime.value = ''
+  scheduleEndTime.value = ''
+  form.schedule = scheduleRaw.value
+  scheduleParseWarning.value = scheduleRaw.value
+    ? t('preschoolAddClass.unableToParseExistingSchedule')
+    : ''
 }
 
 const selectedStudentOptionIds = computed(() => new Set(selectedStudentIds.value.map((id) => String(id))))
@@ -291,7 +500,19 @@ function validateForm() {
   if (!form.name.trim()) return t('preschoolAddClass.validation.classNameRequired')
   if (!form.teacher.trim()) return t('preschoolAddClass.validation.teacherRequired')
   if (!form.level) return t('preschoolAddClass.validation.levelRequired')
-  if (!form.schedule.trim()) return t('preschoolAddClass.validation.scheduleRequired')
+  if (scheduleIsStructured.value) {
+    if (!scheduleDays.value.length) return t('preschoolAddClass.validation.scheduleDaysRequired')
+    if (!scheduleStartTime.value) return t('preschoolAddClass.validation.scheduleStartTimeRequired')
+    if (!scheduleEndTime.value) return t('preschoolAddClass.validation.scheduleEndTimeRequired')
+
+    const startMinutes = parseTimeToMinutes(scheduleStartTime.value)
+    const endMinutes = parseTimeToMinutes(scheduleEndTime.value)
+    if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
+      return t('preschoolAddClass.validation.scheduleEndTimeAfterStartTime')
+    }
+  } else if (!form.schedule.trim()) {
+    return t('preschoolAddClass.validation.scheduleRequired')
+  }
   if (!form.status) return t('preschoolAddClass.validation.statusRequired')
   return ''
 }
@@ -311,10 +532,10 @@ function populateFromClass(item) {
   form.teacher = item.teacherUserId || item.teacher_user_id || ''
   form.teacherDisplayName = item.teacherDisplayName || item.teacher_display_name || item.teacher || ''
   form.level = item.level || ''
-  form.schedule = item.schedule || ''
   form.status = item.status || statusOptions[0]
   form.room = item.room || ''
   form.notes = item.notes || ''
+  applyScheduleValue(item.schedule || '')
   studentCountFallback.value = Number(item.studentsCount ?? item.students_count ?? item.students ?? 0)
   selectedStudentAssignments.value = Array.isArray(item.studentAssignments) ? item.studentAssignments : []
   selectedStudentIds.value = Array.isArray(item.activeStudentAssignments)
@@ -376,6 +597,7 @@ async function initializePage() {
     return
   }
 
+  resetScheduleState()
   await refreshGeneratedCode(form.level)
 }
 
@@ -392,6 +614,15 @@ watch(
   async () => {
     await initializePage()
   },
+)
+
+watch(
+  [scheduleDays, scheduleStartTime, scheduleEndTime],
+  () => {
+    if (scheduleMode.value === 'raw') return
+    syncScheduleValue()
+  },
+  { deep: true },
 )
 
 function onUpdateSelectedStudentIds(value) {
@@ -423,7 +654,7 @@ async function onSubmit() {
       teacher_user_id: form.teacher,
       teacher_display_name: teacherLabel,
       level: form.level,
-      schedule: form.schedule.trim(),
+      schedule: scheduleMode.value === 'raw' ? scheduleRaw.value : buildScheduleString(),
       students_count: selectedStudentCount.value,
       status: form.status,
       room: form.room.trim(),
@@ -499,6 +730,13 @@ onMounted(initializePage)
             :student-selection-disabled="studentSelectionDisabled"
             :selected-student-count="selectedStudentCount"
             :selected-student-summary="selectedStudentSummary"
+            :schedule-days="scheduleDays"
+            :schedule-day-options="scheduleDayOptions"
+            :schedule-start-time="scheduleStartTime"
+            :schedule-end-time="scheduleEndTime"
+            :schedule-preview="schedulePreview"
+            :schedule-warning="scheduleParseWarning"
+            :schedule-has-warning="scheduleHasWarning"
             :status="form.status"
             :room="form.room"
             :notes="form.notes"
@@ -506,7 +744,9 @@ onMounted(initializePage)
             @update:name="form.name = $event"
             @update:teacher="form.teacher = $event"
             @update:level="form.level = $event"
-            @update:schedule="form.schedule = $event"
+            @update:schedule-day="updateScheduleDay"
+            @update:schedule-start-time="updateScheduleStartTime"
+            @update:schedule-end-time="updateScheduleEndTime"
             @update:selected-student-ids="onUpdateSelectedStudentIds"
             @update:status="form.status = $event"
             @update:room="form.room = $event"

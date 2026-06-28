@@ -34,10 +34,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  schedule: {
-    type: String,
-    default: '',
-  },
   studentOptions: {
     type: Array,
     default: () => [],
@@ -61,6 +57,34 @@ const props = defineProps({
   selectedStudentSummary: {
     type: String,
     default: '',
+  },
+  scheduleDayOptions: {
+    type: Array,
+    default: () => [],
+  },
+  scheduleDays: {
+    type: Array,
+    default: () => [],
+  },
+  scheduleStartTime: {
+    type: String,
+    default: '',
+  },
+  scheduleEndTime: {
+    type: String,
+    default: '',
+  },
+  schedulePreview: {
+    type: String,
+    default: '',
+  },
+  scheduleWarning: {
+    type: String,
+    default: '',
+  },
+  scheduleHasWarning: {
+    type: Boolean,
+    default: false,
   },
   status: {
     type: String,
@@ -96,7 +120,9 @@ defineEmits([
   'update:name',
   'update:teacher',
   'update:level',
-  'update:schedule',
+  'update:schedule-day',
+  'update:schedule-start-time',
+  'update:schedule-end-time',
   'update:selectedStudentIds',
   'update:status',
   'update:room',
@@ -192,14 +218,65 @@ const translatedStatusOptions = computed(() =>
 
         <label class="add-class-form-fields__field add-class-form-fields__field--wide">
           <span class="add-class-form-fields__label">{{ t('preschoolAddClass.schedule') }}</span>
-          <input
-            data-testid="add-class-schedule-input"
-            :value="schedule"
-            type="text"
-            :placeholder="t('preschoolAddClass.schedulePlaceholder')"
-            :disabled="isLocked"
-            @input="$emit('update:schedule', $event.target.value)"
-          />
+          <div class="add-class-form-fields__schedule">
+            <div class="add-class-form-fields__schedule-days">
+              <span class="add-class-form-fields__schedule-subtitle">{{ t('preschoolAddClass.days') }}</span>
+              <div class="add-class-form-fields__days-grid">
+                <label
+                  v-for="option in scheduleDayOptions"
+                  :key="option.value"
+                  class="add-class-form-fields__day-option"
+                >
+                  <input
+                    :data-testid="`add-class-schedule-day-${option.value}`"
+                    type="checkbox"
+                    :checked="scheduleDays.includes(option.value)"
+                    :disabled="isLocked"
+                    @change="$emit('update:schedule-day', option.value, $event.target.checked)"
+                  />
+                  <span>{{ option.label }}</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="add-class-form-fields__schedule-time">
+              <span class="add-class-form-fields__schedule-subtitle">{{ t('preschoolAddClass.time') }}</span>
+              <div class="add-class-form-fields__time-grid">
+                <label class="add-class-form-fields__field">
+                  <span class="add-class-form-fields__label">{{ t('preschoolAddClass.startTime') }}</span>
+                  <input
+                    data-testid="add-class-schedule-start-time"
+                    :value="scheduleStartTime"
+                    type="time"
+                    :disabled="isLocked"
+                    @input="$emit('update:schedule-start-time', $event.target.value)"
+                  />
+                </label>
+
+                <label class="add-class-form-fields__field">
+                  <span class="add-class-form-fields__label">{{ t('preschoolAddClass.endTime') }}</span>
+                  <input
+                    data-testid="add-class-schedule-end-time"
+                    :value="scheduleEndTime"
+                    type="time"
+                    :disabled="isLocked"
+                    @input="$emit('update:schedule-end-time', $event.target.value)"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="add-class-form-fields__schedule-preview" data-testid="add-class-schedule-preview">
+              <span class="add-class-form-fields__schedule-subtitle">{{ t('preschoolAddClass.schedulePreview') }}</span>
+              <p class="add-class-form-fields__schedule-preview-text">{{ schedulePreview || t('preschoolAddClass.schedulePreviewEmpty') }}</p>
+              <p v-if="scheduleHasWarning" class="add-class-form-fields__schedule-warning">
+                {{ scheduleWarning }}
+              </p>
+              <p v-if="scheduleHasWarning" class="add-class-form-fields__schedule-warning-hint">
+                {{ t('preschoolAddClass.customSchedulePreserved') }}
+              </p>
+            </div>
+          </div>
         </label>
       </div>
     </section>
@@ -459,6 +536,83 @@ const translatedStatusOptions = computed(() =>
   color: #64748b;
   font-size: 0.78rem;
   line-height: 1.3;
+}
+
+.add-class-form-fields__schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.85rem;
+  border: 1px solid #dbe5ef;
+  border-radius: 0.95rem;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.add-class-form-fields__schedule-subtitle {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.add-class-form-fields__schedule-days,
+.add-class-form-fields__schedule-time,
+.add-class-form-fields__schedule-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.add-class-form-fields__days-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.8rem;
+}
+
+.add-class-form-fields__day-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.add-class-form-fields__day-option input {
+  flex-shrink: 0;
+  width: 0.95rem;
+  height: 0.95rem;
+  min-height: 0;
+  padding: 0;
+}
+
+.add-class-form-fields__time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.add-class-form-fields__schedule-preview-text {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.add-class-form-fields__schedule-warning {
+  margin: 0;
+  color: #b45309;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.add-class-form-fields__schedule-warning-hint {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .add-class-form-fields--kh .add-class-form-fields__label,
