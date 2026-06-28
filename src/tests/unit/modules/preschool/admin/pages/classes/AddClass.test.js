@@ -75,7 +75,7 @@ beforeEach(() => {
 })
 
 describe('AddClass', () => {
-  it('renders generated code, schedule options, and shared footer actions', async () => {
+  it('renders generated code, text inputs, and shared footer actions', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
@@ -83,26 +83,26 @@ describe('AddClass', () => {
     expect(mockFetchTeachers).toHaveBeenCalled()
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: 'Nursery',
+        level: '',
       }),
     )
-    expect(wrapper.text()).toContain('PS-NUR-03')
+    expect(wrapper.text()).toContain('PS-CLS-01')
     expect(wrapper.text()).toContain('Create Class')
     expect(wrapper.text()).toContain('Back to Classes')
 
-    const scheduleOptions = wrapper.find('[data-testid="add-class-schedule-select"]').findAll('option').map((option) => option.text())
-    expect(scheduleOptions).toContain('Select a schedule')
-    expect(scheduleOptions.some((label) => label.includes('Morning'))).toBe(true)
-    expect(scheduleOptions.some((label) => label.includes('Afternoon'))).toBe(true)
-    expect(scheduleOptions.some((label) => label.includes('Full Day'))).toBe(true)
-    expect(scheduleOptions.some((label) => label.includes('Custom / To be scheduled'))).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-level-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-schedule-select"]').exists()).toBe(false)
   })
 
-  it('regenerates the class code when the level changes and submits the selected schedule', async () => {
+  it('regenerates the class code when the level changes and submits the typed level and schedule', async () => {
     const wrapper = mountPage()
     const fields = wrapper.findComponent({ name: 'AddClassFormFields' })
 
     await flushPromises()
+
+    await wrapper.find('[data-testid="add-class-level-input"]').setValue('Level A')
+    await wrapper.find('[data-testid="add-class-schedule-input"]').setValue('Afternoon')
 
     fields.vm.$emit('update:name', 'Morning Nursery Blue')
     fields.vm.$emit('update:teacher', 'teacher-1')
@@ -110,29 +110,24 @@ describe('AddClass', () => {
     fields.vm.$emit('update:notes', 'Optional note')
     fields.vm.$emit('update:students', 12)
     fields.vm.$emit('update:status', 'active')
-    fields.vm.$emit('update:schedule', 'Afternoon')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('PS-NUR-03')
-
-    fields.vm.$emit('update:level', 'Kindergarten A')
-    await flushPromises()
+    expect(wrapper.text()).toContain('PS-LEV-01')
 
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: 'Kindergarten A',
+        level: 'Level A',
       }),
     )
-    expect(wrapper.text()).toContain('PS-KIN-02')
 
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(mockCreateClass).toHaveBeenCalledWith(
       expect.objectContaining({
-        code: 'PS-KIN-02',
+        code: 'PS-LEV-01',
         name: 'Morning Nursery Blue',
         teacher_user_id: 'teacher-1',
-        level: 'Kindergarten A',
+        level: 'Level A',
         schedule: 'Afternoon',
         students_count: 12,
         status: 'active',

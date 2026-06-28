@@ -31,37 +31,14 @@ const route = useRoute()
 const { t, language } = useLanguage()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
-const levelOptions = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
 const statusOptions = ['active', 'pending', 'closed', 'archived']
-const scheduleOptions = [
-  {
-    value: 'Morning',
-    labelKey: 'preschoolAddClass.scheduleOptions.morning.label',
-    descriptionKey: 'preschoolAddClass.scheduleOptions.morning.description',
-  },
-  {
-    value: 'Afternoon',
-    labelKey: 'preschoolAddClass.scheduleOptions.afternoon.label',
-    descriptionKey: 'preschoolAddClass.scheduleOptions.afternoon.description',
-  },
-  {
-    value: 'Full Day',
-    labelKey: 'preschoolAddClass.scheduleOptions.fullDay.label',
-    descriptionKey: 'preschoolAddClass.scheduleOptions.fullDay.description',
-  },
-  {
-    value: 'Custom / To be scheduled',
-    labelKey: 'preschoolAddClass.scheduleOptions.custom.label',
-    descriptionKey: 'preschoolAddClass.scheduleOptions.custom.description',
-  },
-]
 
 const form = reactive({
   code: '',
   name: '',
   teacher: '',
   teacherDisplayName: '',
-  level: levelOptions[0],
+  level: '',
   schedule: '',
   students: 0,
   status: statusOptions[0],
@@ -95,17 +72,6 @@ const teacherLabelMap = computed(() =>
   }, {}),
 )
 
-const levelLabelMap = computed(() =>
-  levelOptions.reduce((carry, level) => {
-    const key = String(level || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[\s-]+/g, '_')
-    carry[level] = t(`common.role.${key}`)
-    return carry
-  }, {}),
-)
-
 const pageTitle = computed(() => {
   if (isViewMode.value) return t('preschoolAddClass.viewTitle')
   if (isEditMode.value) return t('preschoolAddClass.updateTitle')
@@ -121,7 +87,7 @@ const summaryCards = computed(() => [
   {
     id: 'class-level',
     title: t('preschoolAddClass.level'),
-    value: levelLabelMap.value[form.level] || form.level || '-',
+    value: form.level.trim() || '-',
     label: t('preschoolAddClass.selectedLearningStage'),
     status: 'info',
     statusLabel: t('preschoolAddClass.statusLabels.info'),
@@ -150,7 +116,7 @@ const summaryCards = computed(() => [
   {
     id: 'class-schedule',
     title: t('preschoolAddClass.schedule'),
-    value: scheduleLabelMap.value[form.schedule.trim()] || form.schedule.trim() || t('preschoolAddClass.pending'),
+    value: form.schedule.trim() || t('preschoolAddClass.pending'),
     label: t('preschoolAddClass.teachingTimeSlot'),
     status: form.schedule.trim() ? 'success' : 'warning',
     statusLabel: form.schedule.trim() ? t('preschoolAddClass.ready') : t('preschoolAddClass.pending'),
@@ -177,21 +143,6 @@ const checklistItems = computed(() => [
   },
 ])
 
-const translatedScheduleOptions = computed(() =>
-  scheduleOptions.map((option) => ({
-    value: option.value,
-    label: t(option.labelKey),
-    description: t(option.descriptionKey),
-  })),
-)
-
-const scheduleLabelMap = computed(() =>
-  translatedScheduleOptions.value.reduce((carry, option) => {
-    carry[option.value] = option.label
-    return carry
-  }, {}),
-)
-
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
@@ -203,15 +154,8 @@ function normalizeNumber(value) {
 }
 
 function normalizeLevelPrefix(level) {
-  const normalized = String(level || '')
-    .trim()
-    .toLowerCase()
-
-  if (normalized.includes('nursery')) return 'NUR'
-  if (normalized.includes('kindergarten')) return 'KIN'
-  if (normalized.includes('preschool')) return 'PRE'
-
   const fallback = String(level || '')
+    .trim()
     .replace(/[^a-z0-9]+/gi, '')
     .toUpperCase()
 
@@ -285,7 +229,7 @@ function populateFromClass(item) {
   form.name = item.name || ''
   form.teacher = item.teacherUserId || item.teacher_user_id || ''
   form.teacherDisplayName = item.teacherDisplayName || item.teacher_display_name || item.teacher || ''
-  form.level = item.level || levelOptions[0]
+  form.level = item.level || ''
   form.schedule = item.schedule || ''
   form.students = Number(item.studentsCount ?? item.students_count ?? item.students ?? 0)
   form.status = item.status || statusOptions[0]
@@ -414,9 +358,7 @@ onMounted(async () => {
           <AddClassIntro />
 
           <AddClassFormFields
-            :level-options="levelOptions"
             :status-options="statusOptions"
-            :schedule-options="translatedScheduleOptions"
             :teacher-options="teacherOptions"
             :code="generatedCode || form.code"
             :code-label="isEditMode ? t('preschoolAddClass.currentClassCode') : t('preschoolAddClass.generatedClassCode')"
@@ -458,7 +400,7 @@ onMounted(async () => {
             :description="t('preschoolAddClass.sidebarText')"
             :items="checklistItems"
             :highlight-label="t('preschoolAddClass.selectedLevel')"
-            :highlight-value="form.level"
+            :highlight-value="form.level || t('preschoolAddClass.pending')"
           />
         </div>
       </div>

@@ -1,6 +1,6 @@
 <script setup>
-// Keep the class form localized at the field level so Preschool level/status
-// labels stay readable without leaking hardcoded English into the editor.
+// Keep the class form localized at the field level so status labels stay
+// readable without leaking hardcoded English into the editor.
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -9,10 +9,6 @@ defineOptions({
 })
 
 const props = defineProps({
-  levelOptions: {
-    type: Array,
-    default: () => [],
-  },
   statusOptions: {
     type: Array,
     default: () => [],
@@ -30,10 +26,6 @@ const props = defineProps({
     default: '',
   },
   teacherOptions: {
-    type: Array,
-    default: () => [],
-  },
-  scheduleOptions: {
     type: Array,
     default: () => [],
   },
@@ -101,40 +93,14 @@ function normalizeKey(value) {
 }
 
 function translateOption(namespace, value) {
-  const key = `${namespace}.${normalizeKey(value)}`
-  return t(key)
+  return t(`${namespace}.${normalizeKey(value)}`)
 }
-
-const translatedLevelOptions = computed(() =>
-  props.levelOptions.map((option) => ({
-    value: option,
-    label: translateOption('common.role', option),
-  })),
-)
 
 const translatedStatusOptions = computed(() =>
   props.statusOptions.map((option) => ({
     value: option,
     label: translateOption('common.status', option),
   })),
-)
-
-const renderedScheduleOptions = computed(() =>
-  [
-    ...(props.schedule
-      && !props.scheduleOptions.some((option) => option.value === props.schedule)
-      ? [{
-          value: props.schedule,
-          label: props.schedule,
-          description: '',
-          displayLabel: props.schedule,
-        }]
-      : []),
-    ...props.scheduleOptions.map((option) => ({
-      ...option,
-      displayLabel: option.description ? `${option.label} - ${option.description}` : option.label,
-    })),
-  ],
 )
 </script>
 
@@ -183,32 +149,26 @@ const renderedScheduleOptions = computed(() =>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
       <span class="add-class-form-fields__label">{{ t('preschoolAddClass.level') }}</span>
-      <select :value="level" :disabled="isLocked" @change="$emit('update:level', $event.target.value)">
-        <option v-for="option in translatedLevelOptions" :key="option.value" :value="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+      <input
+        data-testid="add-class-level-input"
+        :value="level"
+        type="text"
+        :placeholder="t('preschoolAddClass.levelPlaceholder')"
+        :disabled="isLocked"
+        @input="$emit('update:level', $event.target.value)"
+      />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
       <span class="add-class-form-fields__label">{{ t('preschoolAddClass.schedule') }}</span>
-      <select
-        data-testid="add-class-schedule-select"
+      <input
+        data-testid="add-class-schedule-input"
         :value="schedule"
+        type="text"
+        :placeholder="t('preschoolAddClass.schedulePlaceholder')"
         :disabled="isLocked"
-        @change="$emit('update:schedule', $event.target.value)"
-      >
-        <option value="">
-          {{ t('preschoolAddClass.scheduleSelectPlaceholder') }}
-        </option>
-        <option
-          v-for="option in renderedScheduleOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.displayLabel }}
-        </option>
-      </select>
+        @input="$emit('update:schedule', $event.target.value)"
+      />
     </label>
 
     <label class="add-class-form-fields__field add-class-form-fields__field--half">
