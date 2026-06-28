@@ -3,6 +3,7 @@ import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
 import StudentProfile from '@/modules/preschool/admin/pages/students/StudentProfile.vue'
+import { buildGuardianContactLogMessage } from '@/modules/preschool/admin/pages/guardian/contactLogUtils'
 
 const mockFetchPreschoolStudent = vi.fn()
 const mockFetchStudentHealthSummary = vi.fn()
@@ -38,12 +39,20 @@ function createStudentProfileRoute() {
   }
 }
 
+function createGuardianContactLogRoute() {
+  return {
+    path: '/module/preschool-admin/guardians/communications',
+    name: 'dashboard-preschool-admin-guardian-communications',
+    component: { template: '<div />' },
+  }
+}
+
 async function mountProfilePage(studentId = 'student-1') {
   const wrapper = mountWithPlugins(StudentProfile, {
     messages: {
       en: enPreschool,
     },
-    routes: [createStudentProfileRoute()],
+    routes: [createStudentProfileRoute(), createGuardianContactLogRoute()],
     global: {
       stubs: {
         MainLayout: { template: '<div><slot /></div>' },
@@ -140,13 +149,25 @@ function mockResolvedStudentData() {
     items: [
       {
         id: 'comm-1',
-        subject: 'Family update',
-        message: 'Parent contacted about tomorrow pickup.',
+        subject: 'Attendance',
+        message: buildGuardianContactLogMessage({
+          student: 'Alice Student — STU-HFCCF-0005',
+          guardian: 'Sokha Guardian',
+          method: 'Phone Call',
+          reason: 'Attendance',
+          summary: 'Parent confirmed the pickup plan for tomorrow.',
+          outcome: 'Guardian acknowledged',
+          followUpRequired: true,
+          followUpDate: '2025-01-06',
+          priority: 'medium',
+          sourceEvent: 'Attendance alert',
+        }, {}, 'Ms. Dara'),
         status: 'sent',
         severity: 'medium',
         channel: 'manual_note',
         sourceType: 'student',
         createdAt: '2025-01-05T08:00:00Z',
+        followUpDate: '2025-01-06',
       },
     ],
     summary: {
@@ -185,14 +206,22 @@ describe('StudentProfile', () => {
     expect(wrapper.text()).toContain('Alice Student')
     expect(wrapper.text()).toContain('Morning Stars')
     expect(wrapper.text()).toContain('Guardian Contact History')
-    expect(wrapper.text()).toContain('Sokha Guardian')
-    expect(wrapper.text()).toContain('Medical profile')
-    expect(wrapper.text()).toContain('Allergies: 1')
-    expect(wrapper.text()).toContain('Outstanding Balance')
-    expect(wrapper.text()).toContain('INV-001')
-    expect(wrapper.text()).toContain('No contact history yet')
+    expect(wrapper.text()).toContain('Recent Guardian Contacts')
+    expect(wrapper.text()).toContain('Latest Contact')
+    expect(wrapper.text()).toContain('Last Contact Date')
+    expect(wrapper.text()).toContain('Contact method')
+    expect(wrapper.text()).toContain('Reason / Topic')
+    expect(wrapper.text()).toContain('Outcome')
+    expect(wrapper.text()).toContain('Follow-up Status')
+    expect(wrapper.text()).toContain('View Full Contact History')
+    expect(wrapper.text()).toContain('Parent confirmed the pickup plan for tomorrow.')
     expect(wrapper.find('.student-profile-page__avatar-initials').text()).toBe('AS')
     expect(wrapper.text()).toContain('en:Village 1, Prek Pra, Dangkao, Phnom Penh')
+
+    await wrapper.get('[data-testid="view-full-contact-history"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.$router.currentRoute.value.name).toBe('dashboard-preschool-admin-guardian-communications')
+    expect(wrapper.vm.$router.currentRoute.value.query.studentId).toBe('student-1')
   })
 
   it('renders a loading state while the student request is pending', async () => {
@@ -205,7 +234,7 @@ describe('StudentProfile', () => {
       messages: {
         en: enPreschool,
       },
-      routes: [createStudentProfileRoute()],
+      routes: [createStudentProfileRoute(), createGuardianContactLogRoute()],
       global: {
         stubs: {
           MainLayout: { template: '<div><slot /></div>' },

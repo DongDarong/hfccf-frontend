@@ -5,6 +5,7 @@ import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
 import khPreschool from '@/i18n/kh/preschool'
 import GuardianCommunicationDashboard from '@/modules/preschool/admin/pages/guardian/GuardianCommunicationDashboard.vue'
+import { buildGuardianContactLogMessage } from '@/modules/preschool/admin/pages/guardian/contactLogUtils'
 
 const mockFetchPreschoolStudents = vi.fn()
 const mockFetchGuardianCommunications = vi.fn()
@@ -43,7 +44,62 @@ function createRoute() {
   }
 }
 
+function toInputDate(date) {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 10)
+}
+
+function makeCommunication({
+  id,
+  studentId,
+  studentName,
+  guardianId,
+  guardianName,
+  channel,
+  subject,
+  summary,
+  outcome,
+  followUpRequired,
+  followUpDate,
+  status,
+  createdAt,
+  sourceEvent,
+}) {
+  return {
+    id,
+    studentId,
+    studentName,
+    guardianId,
+    guardianName,
+    channel,
+    subject,
+    status,
+    followUpDate,
+    createdAt,
+    message: buildGuardianContactLogMessage({
+      student: `${studentName} — STU-HFCCF-000${studentId.slice(-1)}`,
+      guardian: guardianName,
+      method: channel === 'phone-call' ? 'Phone Call' : channel === 'telegram' ? 'Telegram' : channel === 'sms' ? 'SMS' : channel,
+      reason: subject,
+      summary,
+      outcome,
+      followUpRequired,
+      followUpDate,
+      priority: 'medium',
+      sourceEvent,
+    }, {}, 'Ms. Dara'),
+  }
+}
+
 function mockResolvedData() {
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+  const twoDaysAgo = new Date(today)
+  twoDaysAgo.setDate(today.getDate() - 2)
+
   mockFetchPreschoolStudents.mockResolvedValue({
     items: [
       {
@@ -58,10 +114,90 @@ function mockResolvedData() {
           },
         ],
       },
+      {
+        id: 'student-2',
+        fullName: 'Bopha Student',
+        publicId: 'STU-HFCCF-0006',
+        guardians: [
+          {
+            id: 'guardian-2',
+            fullName: 'Dara Guardian',
+            phone: '098765432',
+          },
+        ],
+      },
     ],
   })
 
-  mockFetchGuardianCommunications.mockResolvedValue({ items: [] })
+  mockFetchGuardianCommunications.mockResolvedValue({
+    items: [
+      makeCommunication({
+        id: 'contact-1',
+        studentId: 'student-1',
+        studentName: 'Alice Student',
+        guardianId: 'guardian-1',
+        guardianName: 'Sokha Guardian',
+        channel: 'phone-call',
+        subject: 'attendance',
+        summary: 'Pickup plan confirmed for tomorrow.',
+        outcome: 'guardian-acknowledged',
+        followUpRequired: true,
+        followUpDate: toInputDate(today),
+        status: 'queued',
+        createdAt: today.toISOString(),
+        sourceEvent: 'Attendance alert',
+      }),
+      makeCommunication({
+        id: 'contact-2',
+        studentId: 'student-2',
+        studentName: 'Bopha Student',
+        guardianId: 'guardian-2',
+        guardianName: 'Dara Guardian',
+        channel: 'telegram',
+        subject: 'health',
+        summary: 'Guardian asked about fever treatment.',
+        outcome: 'guardian-requested-follow-up',
+        followUpRequired: true,
+        followUpDate: toInputDate(yesterday),
+        status: 'queued',
+        createdAt: yesterday.toISOString(),
+        sourceEvent: 'Health alert',
+      }),
+      makeCommunication({
+        id: 'contact-3',
+        studentId: 'student-1',
+        studentName: 'Alice Student',
+        guardianId: 'guardian-1',
+        guardianName: 'Sokha Guardian',
+        channel: 'sms',
+        subject: 'payment',
+        summary: 'Payment receipt shared for the monthly fee.',
+        outcome: 'issue-resolved',
+        followUpRequired: true,
+        followUpDate: toInputDate(tomorrow),
+        status: 'queued',
+        createdAt: tomorrow.toISOString(),
+        sourceEvent: 'Payment reminder',
+      }),
+      makeCommunication({
+        id: 'contact-4',
+        studentId: 'student-2',
+        studentName: 'Bopha Student',
+        guardianId: 'guardian-2',
+        guardianName: 'Dara Guardian',
+        channel: 'face-to-face',
+        subject: 'enrollment',
+        summary: 'Enrollment documents reviewed at pickup time.',
+        outcome: 'guardian-acknowledged',
+        followUpRequired: false,
+        followUpDate: '',
+        status: 'sent',
+        createdAt: twoDaysAgo.toISOString(),
+        sourceEvent: 'Enrollment note',
+      }),
+    ],
+  })
+
   mockCreateStudentGuardianCommunication.mockResolvedValue({ id: 'contact-1' })
   mockMarkGuardianCommunicationSent.mockResolvedValue({})
   mockAcknowledgeGuardianCommunication.mockResolvedValue({})
@@ -95,58 +231,66 @@ async function mountDashboard() {
   return wrapper
 }
 
-function getSelects(wrapper) {
-  return wrapper.findAll('select')
-}
-
 beforeEach(() => {
   vi.clearAllMocks()
   mockResolvedData()
 })
 
 describe('GuardianCommunicationDashboard', () => {
-  it('renders the contact log title and structured contact form', async () => {
+  it('renders the contact log dashboard, search, filters, and summary cards', async () => {
     const wrapper = await mountDashboard()
 
     expect(mockFetchPreschoolStudents).toHaveBeenCalledWith({ perPage: 200 })
-    expect(mockFetchGuardianCommunications).toHaveBeenCalledWith({ studentId: 'student-1' })
+    expect(mockFetchGuardianCommunications).toHaveBeenCalledWith({ perPage: 100 })
     expect(wrapper.text()).toContain('Guardian Contact Log')
-    expect(wrapper.text()).toContain('Record Guardian Contact')
-    expect(wrapper.text()).toContain('Who')
-    expect(wrapper.text()).toContain('Contact Details')
-    expect(wrapper.text()).toContain('Follow-up')
-    expect(wrapper.text()).toContain('Contact History')
-    expect(wrapper.text()).toContain('Contact method')
-    expect(wrapper.text()).toContain('Reason / Topic')
-    expect(wrapper.text()).toContain('Discussion Summary')
-    expect(wrapper.text()).toContain('Outcome')
+    expect(wrapper.text()).toContain('Follow-up Dashboard')
+    expect(wrapper.text()).toContain('Search contacts')
+    expect(wrapper.text()).toContain('Filter contacts')
     expect(wrapper.text()).toContain('Save contact log')
-    expect(wrapper.text()).toContain('Select a student')
+    expect(wrapper.text()).toContain('Contact History')
+
+    const summaryValues = wrapper.findAll('[data-testid="guardian-contact-summary-value"]').map(node => node.text())
+    expect(summaryValues).toEqual(['4', '1', '1', '1', '1'])
+    expect(wrapper.findAll('[data-testid="guardian-contact-record"]').length).toBe(4)
   })
 
-  it('shows the follow-up date input only when follow-up is required', async () => {
+  it('filters visible timeline records with search and structured filters', async () => {
     const wrapper = await mountDashboard()
 
-    expect(wrapper.find('input[type="date"]').exists()).toBe(false)
+    await wrapper.get('[data-testid="guardian-contact-search"]').setValue('fever')
+    await flushPromises()
+    expect(wrapper.findAll('[data-testid="guardian-contact-record"]').length).toBe(1)
+    expect(wrapper.text()).toContain('Guardian asked about fever treatment.')
 
-    const selects = getSelects(wrapper)
-    await selects[6].setValue('true')
+    await wrapper.get('[data-testid="guardian-contact-search"]').setValue('')
+    await wrapper.get('[data-testid="guardian-contact-filter-student"]').setValue('student-2')
+    await wrapper.get('[data-testid="guardian-contact-filter-guardian"]').setValue('guardian-2')
+    await wrapper.get('[data-testid="guardian-contact-filter-method"]').setValue('telegram')
+    await wrapper.get('[data-testid="guardian-contact-filter-reason"]').setValue('health')
+    await wrapper.get('[data-testid="guardian-contact-filter-outcome"]').setValue('guardian-requested-follow-up')
+    await wrapper.get('[data-testid="guardian-contact-filter-follow-up-status"]').setValue('overdue')
+    await wrapper.get('[data-testid="guardian-contact-filter-date-from"]').setValue(toInputDate(new Date(Date.now() - 86400000)))
+    await wrapper.get('[data-testid="guardian-contact-filter-date-to"]').setValue(toInputDate(new Date(Date.now() - 86400000)))
     await flushPromises()
 
-    expect(wrapper.find('input[type="date"]').exists()).toBe(true)
+    expect(wrapper.findAll('[data-testid="guardian-contact-record"]').length).toBe(1)
+    expect(wrapper.text()).toContain('Bopha Student')
+    expect(wrapper.text()).toContain('Dara Guardian')
+    expect(wrapper.text()).toContain('Telegram')
+    expect(wrapper.text()).toContain('Health')
   })
 
   it('saves a structured contact log using the current backend payload shape', async () => {
     const wrapper = await mountDashboard()
-    const selects = getSelects(wrapper)
+    const formSelects = wrapper.find('form').findAll('select')
     const textarea = wrapper.find('textarea')
 
-    await selects[2].setValue('phone-call')
-    await selects[3].setValue('attendance')
+    await formSelects[2].setValue('phone-call')
+    await formSelects[3].setValue('attendance')
     await textarea.setValue('Guardian confirmed the pickup plan for tomorrow.')
-    await selects[4].setValue('guardian-acknowledged')
-    await selects[5].setValue('high')
-    await selects[6].setValue('false')
+    await formSelects[4].setValue('guardian-acknowledged')
+    await formSelects[5].setValue('high')
+    await formSelects[6].setValue('false')
     await flushPromises()
 
     await wrapper.find('form').trigger('submit.prevent')

@@ -24,18 +24,187 @@
         </AppButton>
       </div>
 
-      <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div
-          v-for="card in summaryCards"
-          :key="card.label"
-          class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-        >
-          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-            {{ card.label }}
+      <div class="mt-5">
+        <div class="space-y-1.5">
+          <h2 class="text-sm font-semibold text-slate-900">
+            {{ t('preschoolGuardianCommunicationPage.dashboard.title') }}
+          </h2>
+          <p class="text-sm text-slate-500">
+            {{ t('preschoolGuardianCommunicationPage.dashboard.subtitle') }}
           </p>
-          <p class="mt-1.5 text-2xl font-bold text-slate-900">
-            {{ card.value }}
+        </div>
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div
+            v-for="card in summaryCards"
+            :key="card.label"
+            data-testid="guardian-contact-summary-card"
+            class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+          >
+            <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              {{ card.label }}
+            </p>
+            <p class="mt-1.5 text-2xl font-bold text-slate-900" data-testid="guardian-contact-summary-value">
+              {{ card.value }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-1">
+          <h2 class="text-base font-semibold text-slate-900">
+            {{ t('preschoolGuardianCommunicationPage.filters.filterContacts') }}
+          </h2>
+          <p class="text-sm text-slate-500">
+            {{ t('preschoolGuardianCommunicationPage.filters.searchContacts') }}
           </p>
+        </div>
+
+        <AppButton type="button" variant="ghost" @click="clearTimelineFilters">
+          {{ t('common.reset') }}
+        </AppButton>
+      </div>
+
+      <div class="mt-4 grid gap-4 xl:grid-cols-12">
+        <div class="xl:col-span-5">
+          <label class="mb-1 block text-sm font-medium text-slate-700">
+            {{ t('preschoolGuardianCommunicationPage.filters.searchContacts') }}
+          </label>
+          <input
+            v-model="timelineFilters.search"
+            type="search"
+            data-testid="guardian-contact-search"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+            :placeholder="t('preschoolGuardianCommunicationPage.filters.searchPlaceholder')"
+          />
+        </div>
+
+        <div class="xl:col-span-7">
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.student') }}
+              </label>
+              <select
+                v-model="timelineFilters.studentId"
+                data-testid="guardian-contact-filter-student"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">{{ t('common.all') }}</option>
+                <option v-for="student in studentFilterOptions" :key="student.id" :value="student.id">
+                  {{ student.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.guardian') }}
+              </label>
+              <select
+                v-model="timelineFilters.guardianId"
+                data-testid="guardian-contact-filter-guardian"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">{{ t('common.all') }}</option>
+                <option v-for="guardian in guardianFilterOptions" :key="guardian.id" :value="guardian.id">
+                  {{ guardian.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.contactMethod') }}
+              </label>
+              <select
+                v-model="timelineFilters.contactMethod"
+                data-testid="guardian-contact-filter-method"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">{{ t('common.all') }}</option>
+                <option v-for="option in contactMethodFilterOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.reasonTopic') }}
+              </label>
+              <select
+                v-model="timelineFilters.reasonTopic"
+                data-testid="guardian-contact-filter-reason"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">{{ t('common.all') }}</option>
+                <option v-for="option in reasonFilterOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.outcome') }}
+              </label>
+              <select
+                v-model="timelineFilters.outcome"
+                data-testid="guardian-contact-filter-outcome"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">{{ t('common.all') }}</option>
+                <option v-for="option in outcomeFilterOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.followUpStatus') }}
+              </label>
+              <select
+                v-model="timelineFilters.followUpStatus"
+                data-testid="guardian-contact-filter-follow-up-status"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              >
+                <option value="">{{ t('common.all') }}</option>
+                <option v-for="option in followUpStatusFilterOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.dateFrom') }}
+              </label>
+              <input
+                v-model="timelineFilters.dateFrom"
+                data-testid="guardian-contact-filter-date-from"
+                type="date"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">
+                {{ t('preschoolGuardianCommunicationPage.filters.dateTo') }}
+              </label>
+              <input
+                v-model="timelineFilters.dateTo"
+                data-testid="guardian-contact-filter-date-to"
+                type="date"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -330,10 +499,12 @@
       </div>
 
       <GuardianCommunicationTimeline
-        :items="filteredCommunications"
+        :items="timelineItems"
         :loading="loadingCommunications"
         :title="t('preschoolGuardianCommunicationPage.timelineContactHistoryTitle')"
         :subtitle="t('preschoolGuardianCommunicationPage.timelineSubtitle')"
+        :empty-title="timelineEmptyTitle"
+        :empty-subtitle="timelineEmptySubtitle"
         show-actions
         @sent="handleMarkCompleted"
         @acknowledged="handleMarkFollowedUp"
@@ -351,10 +522,9 @@ import { useRouter } from 'vue-router'
 import AppBadge from '@/components/ui/AppBadge.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import GuardianCommunicationTimeline from '@/modules/preschool/admin/components/guardian/GuardianCommunicationTimeline.vue'
+import { formatDate } from '@/utils/date'
 import {
   buildGuardianContactLogMessage,
-  isOverdueFollowUp,
-  isToday,
   normalizeText,
   parseGuardianContactLogMessage
 } from '@/modules/preschool/admin/pages/guardian/contactLogUtils'
@@ -380,6 +550,17 @@ const studentSearch = ref('')
 const selectedStudentId = ref('')
 const submitMessage = ref('')
 const formErrors = ref([])
+const timelineFilters = reactive({
+  search: '',
+  studentId: '',
+  guardianId: '',
+  contactMethod: '',
+  reasonTopic: '',
+  outcome: '',
+  followUpStatus: '',
+  dateFrom: '',
+  dateTo: ''
+})
 
 const form = reactive({
   guardianId: '',
@@ -429,6 +610,14 @@ const priorityOptions = computed(() => ([
   { value: 'low', label: t('preschoolGuardianCommunicationPage.severity.low') },
   { value: 'medium', label: t('preschoolGuardianCommunicationPage.severity.medium') },
   { value: 'high', label: t('preschoolGuardianCommunicationPage.severity.high') }
+]))
+
+const followUpStatusFilterOptions = computed(() => ([
+  { value: 'required', label: t('preschoolGuardianCommunicationPage.followUpStatuses.required') },
+  { value: 'today', label: t('preschoolGuardianCommunicationPage.followUpStatuses.today') },
+  { value: 'upcoming', label: t('preschoolGuardianCommunicationPage.followUpStatuses.upcoming') },
+  { value: 'overdue', label: t('preschoolGuardianCommunicationPage.followUpStatuses.overdue') },
+  { value: 'completed', label: t('preschoolGuardianCommunicationPage.followUpStatuses.completed') }
 ]))
 
 const currentStaffLabel = computed(() => {
@@ -488,9 +677,235 @@ const filteredStudentOptions = computed(() => {
   )
 })
 
+const studentFilterOptions = computed(() => studentOptions.value)
+
+const guardianFilterOptions = computed(() => {
+  const seen = new Set()
+  const options = []
+
+  normalizedCommunications.value.forEach((record) => {
+    const id = record.guardianId || record.guardianLabel
+    if (!record.guardianLabel || seen.has(id)) {
+      return
+    }
+
+    seen.add(id)
+    options.push({
+      id,
+      label: record.guardianLabel
+    })
+  })
+
+  return options.sort((left, right) => left.label.localeCompare(right.label))
+})
+
+const contactMethodFilterOptions = computed(() => contactMethodOptions.value)
+const reasonFilterOptions = computed(() => reasonOptions.value)
+const outcomeFilterOptions = computed(() => outcomeOptions.value)
+
+function getFollowUpStatusKey(record) {
+  if (record.followUpStatus) {
+    return record.followUpStatus
+  }
+
+  const status = String(record.status || '').toLowerCase()
+  if (['sent', 'acknowledged', 'resolved', 'closed', 'cancelled', 'done'].includes(status)) {
+    return 'completed'
+  }
+
+  if (!record.followUpRequired) {
+    return ''
+  }
+
+  const followUpDate = record.followUpDate ? new Date(record.followUpDate) : null
+  if (!followUpDate || Number.isNaN(followUpDate.getTime())) {
+    return 'required'
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  followUpDate.setHours(0, 0, 0, 0)
+
+  if (followUpDate.getTime() === today.getTime()) return 'today'
+  if (followUpDate < today) return 'overdue'
+  return 'upcoming'
+}
+
+function createCommunicationRecord(item = {}) {
+  const parsed = parseGuardianContactLogMessage(item.message)
+  const createdAt = item.createdAt || item.created_at || item.updatedAt || item.updated_at || ''
+  const createdDate = createdAt ? new Date(createdAt) : null
+  const dateTime = createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate.getTime() : 0
+  const studentId = String(item.studentId || item.student_id || '')
+  const guardianId = String(item.guardianId || item.guardian_id || '')
+  const studentLabel = normalizeText(parsed?.student || item.studentName || item.student?.fullName || item.student?.name || item.student?.code)
+  const guardianLabel = normalizeText(parsed?.guardian || item.guardianName || item.guardian?.fullName || item.guardian?.name || item.guardian?.code)
+  const methodValue = normalizeText(item.channel || item.communicationType || item.sourceType || parsed?.method)
+  const reasonValue = normalizeText(item.subject || parsed?.reason)
+  const outcomeValue = normalizeText(item.outcome || parsed?.outcome)
+  const summaryValue = normalizeText(parsed?.summary || item.message)
+  const followUpRequired = Boolean(parsed?.followUpRequired || item.followUpRequired)
+  const followUpDate = normalizeText(parsed?.followUpDate || item.followUpDate)
+  const followUpStatus = getFollowUpStatusKey({
+    ...item,
+    followUpRequired,
+    followUpDate,
+    status: item.status
+  })
+  const staffLabel = normalizeText(parsed?.staff || item.createdByName || item.createdBy?.fullName || item.createdBy?.name || currentStaffLabel.value)
+  const sourceEventLabel = normalizeText(parsed?.sourceEvent || item.relatedEvent?.name || item.sourceEvent || item.sourceType)
+
+  return {
+    raw: item,
+    parsed,
+    id: item.id || createdAt || Math.random().toString(36).slice(2),
+    dateTime,
+    createdAt,
+    dateKey: createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate.toISOString().slice(0, 10) : 'unknown',
+    dateLabel: createdAt ? formatDate(createdAt) : '—',
+    studentId,
+    guardianId,
+    studentLabel,
+    guardianLabel,
+    methodValue,
+    methodLabel: contactMethodOptions.value.find(option => option.value === methodValue)?.label || parsed?.method || methodValue,
+    reasonValue,
+    reasonLabel: reasonOptions.value.find(option => option.value === reasonValue)?.label || parsed?.reason || reasonValue,
+    outcomeValue,
+    outcomeLabel: outcomeOptions.value.find(option => option.value === outcomeValue)?.label || parsed?.outcome || outcomeValue,
+    summaryValue,
+    followUpRequired,
+    followUpDate,
+    followUpStatus,
+    followUpStatusLabel: followUpStatus ? t(`preschoolGuardianCommunicationPage.followUpStatuses.${followUpStatus}`) : '',
+    followUpStatusVariant: followUpStatus === 'completed' ? 'success' : followUpStatus === 'overdue' ? 'danger' : followUpStatus === 'today' ? 'warning' : followUpStatus === 'upcoming' ? 'info' : 'warning',
+    status: String(item.status || '').toLowerCase(),
+    statusLabel: String(item.status || '').toLowerCase() === 'queued'
+      ? t('preschoolGuardianCommunicationPage.status.queued')
+      : String(item.status || '').toLowerCase() === 'sent'
+        ? t('preschoolGuardianCommunicationPage.status.sent')
+        : String(item.status || '').toLowerCase() === 'acknowledged'
+          ? t('preschoolGuardianCommunicationPage.status.acknowledged')
+          : String(item.status || '').toLowerCase() === 'failed'
+            ? t('preschoolGuardianCommunicationPage.status.failed')
+            : String(item.status || '').toLowerCase() === 'cancelled'
+              ? t('preschoolGuardianCommunicationPage.status.cancelled')
+              : t('common.unknown'),
+    staffLabel,
+    sourceEventLabel,
+    searchText: normalizeText([
+      studentLabel,
+      guardianLabel,
+      methodValue,
+      reasonValue,
+      summaryValue,
+      outcomeValue,
+      staffLabel,
+      sourceEventLabel
+    ].join(' ')).toLowerCase()
+  }
+}
+
+const normalizedCommunications = computed(() =>
+  [...communications.value]
+    .map(createCommunicationRecord)
+    .sort((left, right) => right.dateTime - left.dateTime)
+)
+
 const filteredCommunications = computed(() => {
-  const studentId = selectedStudentId.value
-  return communications.value.filter(item => !studentId || String(item.studentId) === String(studentId))
+  const query = normalizeText(timelineFilters.search).toLowerCase()
+
+  return normalizedCommunications.value.filter((record) => {
+    if (query && !record.searchText.includes(query)) {
+      return false
+    }
+
+    if (timelineFilters.studentId && record.studentId !== String(timelineFilters.studentId)) {
+      return false
+    }
+
+    if (timelineFilters.guardianId && record.guardianId !== String(timelineFilters.guardianId) && record.guardianLabel !== String(timelineFilters.guardianId)) {
+      return false
+    }
+
+    if (timelineFilters.contactMethod && record.methodValue !== String(timelineFilters.contactMethod)) {
+      return false
+    }
+
+    if (timelineFilters.reasonTopic && record.reasonValue !== String(timelineFilters.reasonTopic)) {
+      return false
+    }
+
+    if (timelineFilters.outcome && record.outcomeValue !== String(timelineFilters.outcome)) {
+      return false
+    }
+
+    if (timelineFilters.followUpStatus && getFollowUpStatusKey(record) !== String(timelineFilters.followUpStatus)) {
+      return false
+    }
+
+    if (timelineFilters.dateFrom || timelineFilters.dateTo) {
+      const recordDate = record.createdAt ? new Date(record.createdAt) : null
+      if (!recordDate || Number.isNaN(recordDate.getTime())) {
+        return false
+      }
+
+      const timestamp = recordDate.getTime()
+      if (timelineFilters.dateFrom) {
+        const fromDate = new Date(`${timelineFilters.dateFrom}T00:00:00`)
+        if (!Number.isNaN(fromDate.getTime()) && timestamp < fromDate.getTime()) {
+          return false
+        }
+      }
+
+      if (timelineFilters.dateTo) {
+        const toDate = new Date(`${timelineFilters.dateTo}T23:59:59.999`)
+        if (!Number.isNaN(toDate.getTime()) && timestamp > toDate.getTime()) {
+          return false
+        }
+      }
+    }
+
+    return true
+  })
+})
+
+const timelineItems = computed(() => filteredCommunications.value.map(item => item.raw))
+
+const timelineEmptyTitle = computed(() => {
+  const hasFilters = Boolean(
+    timelineFilters.search
+    || timelineFilters.studentId
+    || timelineFilters.guardianId
+    || timelineFilters.contactMethod
+    || timelineFilters.reasonTopic
+    || timelineFilters.outcome
+    || timelineFilters.followUpStatus
+    || timelineFilters.dateFrom
+    || timelineFilters.dateTo,
+  )
+
+  return hasFilters
+    ? t('preschoolGuardianCommunicationPage.messages.noFilteredResults')
+    : t('preschoolGuardianCommunicationPage.messages.noCommunicationYet')
+})
+
+const timelineEmptySubtitle = computed(() => {
+  const hasFilters = Boolean(
+    timelineFilters.search
+    || timelineFilters.studentId
+    || timelineFilters.guardianId
+    || timelineFilters.contactMethod
+    || timelineFilters.reasonTopic
+    || timelineFilters.outcome
+    || timelineFilters.followUpStatus
+    || timelineFilters.dateFrom
+    || timelineFilters.dateTo,
+  )
+
+  return hasFilters
+    ? t('preschoolGuardianCommunicationPage.messages.clearFiltersHint')
+    : t('preschoolGuardianCommunicationPage.messages.noCommunicationDescription')
 })
 
 const contactPreview = computed(() => {
@@ -512,18 +927,17 @@ const contactPreview = computed(() => {
 
 const summaryCards = computed(() => {
   const items = filteredCommunications.value
-  const today = items.filter(item => isToday(item.createdAt || item.created_at || item.updatedAt || item.updated_at)).length
-  const parsed = items.map(item => parseGuardianContactLogMessage(item.message))
-  const followUps = items.filter((item, index) => parsed[index]?.followUpRequired || item.followUpRequired).length
-  const completed = items.filter(item => ['sent', 'acknowledged', 'resolved', 'closed'].includes(String(item.status || '').toLowerCase())).length
-  const overdue = items.filter((item, index) => isOverdueFollowUp(item, parsed[index])).length
+  const followUpsToday = items.filter(item => item.followUpStatus === 'today').length
+  const completed = items.filter(item => item.followUpStatus === 'completed').length
+  const overdue = items.filter(item => item.followUpStatus === 'overdue').length
+  const upcoming = items.filter(item => item.followUpStatus === 'upcoming').length
 
   return [
     { label: t('preschoolGuardianCommunicationPage.metrics.totalContacts'), value: items.length },
-    { label: t('preschoolGuardianCommunicationPage.metrics.today'), value: today },
-    { label: t('preschoolGuardianCommunicationPage.metrics.followUpRequired'), value: followUps },
-    { label: t('preschoolGuardianCommunicationPage.metrics.completed'), value: completed },
-    { label: t('preschoolGuardianCommunicationPage.metrics.overdueFollowUps'), value: overdue }
+    { label: t('preschoolGuardianCommunicationPage.metrics.followUpToday'), value: followUpsToday },
+    { label: t('preschoolGuardianCommunicationPage.metrics.overdueFollowUps'), value: overdue },
+    { label: t('preschoolGuardianCommunicationPage.metrics.upcomingFollowUps'), value: upcoming },
+    { label: t('preschoolGuardianCommunicationPage.metrics.completedFollowUps'), value: completed }
   ]
 })
 
@@ -568,7 +982,7 @@ async function loadCommunications() {
 
   try {
     const response = await fetchGuardianCommunications({
-      studentId: selectedStudentId.value || undefined
+      perPage: 100
     })
 
     communications.value = unwrapList(response)
@@ -579,6 +993,18 @@ async function loadCommunications() {
 
 function selectStudent(studentId) {
   selectedStudentId.value = String(studentId)
+}
+
+function clearTimelineFilters() {
+  timelineFilters.search = ''
+  timelineFilters.studentId = ''
+  timelineFilters.guardianId = ''
+  timelineFilters.contactMethod = ''
+  timelineFilters.reasonTopic = ''
+  timelineFilters.outcome = ''
+  timelineFilters.followUpStatus = ''
+  timelineFilters.dateFrom = ''
+  timelineFilters.dateTo = ''
 }
 
 function validateForm() {
@@ -672,7 +1098,6 @@ async function handleCloseLog(item) {
 watch(selectedStudentId, async (value) => {
   const student = students.value.find(entry => String(entry.id) === String(value))
   form.guardianId = guardianOptions.value[0]?.id || student?.guardianId || ''
-  await loadCommunications()
 })
 
 watch(guardianOptions, () => {

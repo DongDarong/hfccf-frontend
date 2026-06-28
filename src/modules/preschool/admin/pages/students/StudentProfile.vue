@@ -49,19 +49,19 @@ const {
       />
 
       <div class="student-profile-page__shell">
-        <StudentProfileHeader
-          :student="student"
-          :avatar-src="avatarSrc"
-          :initials="initials"
-          :status-label="statusLabel"
-          :status-class="statusClass"
-          :back-label="t('preschoolStudentProfilePage.actions.back')"
-          :health-label="t('preschoolStudentProfilePage.actions.health')"
-      :communications-label="t('preschoolGuardianCommunicationPage.profile.contactHistory')"
-          @back="goBack"
-          @health="goToHealthRecords"
-          @communications="goToCommunications"
-        />
+          <StudentProfileHeader
+            :student="student"
+            :avatar-src="avatarSrc"
+            :initials="initials"
+            :status-label="statusLabel"
+            :status-class="statusClass"
+            :back-label="t('preschoolStudentProfilePage.actions.back')"
+            :health-label="t('preschoolStudentProfilePage.actions.health')"
+            :communications-label="t('preschoolGuardianCommunicationPage.profile.viewFullContactHistory')"
+            @back="goBack"
+            @health="goToHealthRecords"
+            @communications="goToCommunications"
+          />
 
         <div v-if="loading" class="student-profile-page__state">
           {{ t('preschoolStudentProfilePage.messages.loading') }}
