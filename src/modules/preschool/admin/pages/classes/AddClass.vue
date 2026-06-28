@@ -351,7 +351,6 @@ onMounted(async () => {
           :cancel-text="t('preschoolAddClass.backToClasses')"
           :loading="isSubmitting"
           :disabled="isViewMode"
-          :show-cancel="true"
           @submit="onSubmit"
           @cancel="goBackToClasses"
         >
@@ -383,7 +382,7 @@ onMounted(async () => {
             @update:notes="form.notes = $event"
           />
 
-          <template v-if="isViewMode || isEditMode" #actions>
+          <template #actions>
             <AddClassFormActions
               :is-submitting="isSubmitting"
               :is-view-mode="isViewMode"

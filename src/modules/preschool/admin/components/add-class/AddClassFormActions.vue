@@ -30,50 +30,54 @@ const isKh = computed(() => language.value === 'KH')
 
 <template>
   <div :class="isKh ? 'add-class-form-actions add-class-form-actions--kh' : 'add-class-form-actions'">
-    <Button
-      v-if="isViewMode"
-      type="button"
-      variant="outline"
-      size="md"
-      rounded="xl"
-      class="add-class-form-actions__action"
-      @click="$emit('back')"
-    >
-      {{ t('preschoolAddClass.backToClasses') }}
-    </Button>
-    <Button
-      v-if="isViewMode"
-      type="button"
-      variant="primary"
-      size="md"
-      rounded="xl"
-      class="add-class-form-actions__action"
-      @click="$emit('edit')"
-    >
-      {{ t('preschoolAddClass.editAction') }}
-    </Button>
-    <Button
-      v-else
-      type="button"
-      variant="outline"
-      size="md"
-      rounded="xl"
-      class="add-class-form-actions__action"
-      @click="$emit('back')"
-    >
-      {{ t('preschoolAddClass.backToClasses') }}
-    </Button>
-    <Button
-      v-if="isEditMode"
-      type="submit"
-      variant="primary"
-      size="md"
-      rounded="xl"
-      class="add-class-form-actions__action"
-      :disabled="isSubmitting"
-    >
-      {{ isSubmitting ? t('preschoolAddClass.saving') : t('preschoolAddClass.updateAction') }}
-    </Button>
+    <template v-if="isViewMode">
+      <Button
+        type="button"
+        variant="outline"
+        size="md"
+        rounded="xl"
+        class="add-class-form-actions__action"
+        @click="$emit('back')"
+      >
+        {{ t('preschoolAddClass.backToClasses') }}
+      </Button>
+      <Button
+        type="button"
+        variant="primary"
+        size="md"
+        rounded="xl"
+        class="add-class-form-actions__action add-class-form-actions__action--primary"
+        @click="$emit('edit')"
+      >
+        {{ t('preschoolAddClass.editAction') }}
+      </Button>
+    </template>
+    <template v-else>
+      <Button
+        type="button"
+        variant="outline"
+        size="md"
+        rounded="xl"
+        class="add-class-form-actions__action"
+        @click="$emit('back')"
+      >
+        {{ isEditMode ? t('preschoolAddClass.backToClasses') : t('preschoolAddClass.cancelAction') }}
+      </Button>
+      <Button
+        type="submit"
+        variant="primary"
+        size="md"
+        rounded="xl"
+        class="add-class-form-actions__action add-class-form-actions__action--primary"
+        :disabled="isSubmitting"
+      >
+        {{ isSubmitting
+          ? t('preschoolAddClass.saving')
+          : isEditMode
+            ? t('preschoolAddClass.updateAction')
+            : t('preschoolAddClass.createClass') }}
+      </Button>
+    </template>
   </div>
 </template>
 
@@ -85,6 +89,14 @@ const isKh = computed(() => language.value === 'KH')
   width: 100%;
 }
 
+.add-class-form-actions__action {
+  min-width: 10rem;
+}
+
+.add-class-form-actions__action--primary {
+  box-shadow: 0 10px 24px -18px rgba(15, 23, 42, 0.65);
+}
+
 .add-class-form-actions--kh .add-class-form-actions__action {
   font-family:
     'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS Battambang', 'Leelawadee UI', sans-serif;
@@ -93,7 +105,13 @@ const isKh = computed(() => language.value === 'KH')
 @media (min-width: 640px) {
   .add-class-form-actions {
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .add-class-form-actions__action {
+    width: auto;
   }
 }
 </style>

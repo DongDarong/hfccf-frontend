@@ -88,10 +88,11 @@ describe('AddClass', () => {
     )
     expect(wrapper.text()).toContain('PS-CLS-01')
     expect(wrapper.text()).toContain('Create Class')
-    expect(wrapper.text()).toContain('Back to Classes')
+    expect(wrapper.text()).toContain('Cancel')
 
     expect(wrapper.find('[data-testid="add-class-level-input"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="add-class-schedule-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-code-preview"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="add-class-schedule-select"]').exists()).toBe(false)
   })
 
