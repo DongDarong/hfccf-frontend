@@ -51,6 +51,7 @@ export default {
     newApplication: 'New Application',
     classes: 'Classes',
     addClass: 'Add Class',
+    classDetails: 'Class Details',
     payment: 'Payment',
     invoiceDetail: 'Invoice Detail',
     attendance: 'Attendance',

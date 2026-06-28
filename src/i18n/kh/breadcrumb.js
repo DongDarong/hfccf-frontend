@@ -51,6 +51,7 @@ export default {
     newApplication: 'ពាក្យស្នើថ្មី',
     classes: 'ថ្នាក់',
     addClass: 'បន្ថែមថ្នាក់',
+    classDetails: 'ព័ត៌មានលម្អិតថ្នាក់',
     payment: 'ការទូទាត់',
     invoiceDetail: 'ព័ត៌មានលម្អិតវិក្កយបត្រ',
     attendance: 'វត្តមាន',

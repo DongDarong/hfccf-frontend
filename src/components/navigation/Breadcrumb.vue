@@ -292,6 +292,11 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.classes' },
   ],
+  'dashboard-preschool-admin-class-details': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.classes', to: { name: 'dashboard-preschool-admin-classes' } },
+    { labelKey: 'breadcrumb.classDetails' },
+  ],
   'dashboard-preschool-admin-classes-add': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.classes', to: { name: 'dashboard-preschool-admin-classes' } },

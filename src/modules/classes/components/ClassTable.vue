@@ -14,6 +14,7 @@
  */
 
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Avatar from 'primevue/avatar'
@@ -162,7 +163,10 @@ const tablePt = computed(() => ({
       sortable
     >
       <template #body="{ data }">
-        <div class="flex items-center gap-3">
+        <RouterLink
+          :to="{ name: 'dashboard-preschool-admin-class-details', params: { id: data.id } }"
+          class="flex items-center gap-3 rounded-xl text-inherit no-underline transition-colors hover:text-brand-700"
+        >
           <Avatar
             :label="classInitials(data.name)"
             shape="circle"
@@ -178,7 +182,7 @@ const tablePt = computed(() => ({
               {{ data.code }}
             </div>
           </div>
-        </div>
+        </RouterLink>
       </template>
     </Column>
 
