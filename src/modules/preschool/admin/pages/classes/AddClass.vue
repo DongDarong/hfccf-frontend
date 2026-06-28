@@ -445,17 +445,20 @@ function resetFeedback() {
 }
 
 function normalizeLevelPrefix(level) {
-  const fallback = String(level || '')
-    .trim()
-    .replace(/[^a-z0-9]+/gi, '')
-    .toUpperCase()
+  const normalized = String(level || '').trim().toLowerCase()
 
+  if (!normalized) return 'CLS'
+  if (/(^|\b)(nursery|nur)\b/.test(normalized)) return 'NUR'
+  if (/(^|\b)(kindergarten|kin)\b/.test(normalized)) return 'KIN'
+  if (/(^|\b)(preschool|pre)\b/.test(normalized)) return 'PRE'
+
+  const fallback = normalized.replace(/[^a-z]+/g, '').toUpperCase()
   return fallback.slice(0, 3) || 'CLS'
 }
 
 function extractClassSequence(code, prefix) {
   const normalized = String(code || '').trim().toUpperCase()
-  const match = normalized.match(new RegExp(`^PS-${prefix}-(\\d{2,})$`))
+  const match = normalized.match(new RegExp(`^PS-${prefix}-(\\d+)$`))
   return match ? Number(match[1]) : 0
 }
 
@@ -481,12 +484,12 @@ async function refreshGeneratedCode(level = form.level) {
       return Math.max(max, extractClassSequence(item.code, prefix))
     }, 0) + 1
 
-    generatedCode.value = `PS-${prefix}-${String(nextSequence).padStart(2, '0')}`
+    generatedCode.value = `PS-${prefix}-${String(nextSequence).padStart(3, '0')}`
     form.code = generatedCode.value
   } catch {
     if (currentSeq !== codeRequestSeq) return
 
-    generatedCode.value = `PS-${normalizeLevelPrefix(level)}-01`
+    generatedCode.value = `PS-${normalizeLevelPrefix(level)}-${String(1).padStart(3, '0')}`
     form.code = generatedCode.value
   } finally {
     if (currentSeq === codeRequestSeq) {

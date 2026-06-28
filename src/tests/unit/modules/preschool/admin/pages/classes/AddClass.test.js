@@ -84,15 +84,25 @@ beforeEach(() => {
     if (level === 'Kindergarten A') {
       return Promise.resolve({
         items: [
-          { code: 'PS-KIN-01' },
+          { code: 'PS-KIN-001' },
+          { code: 'PS-KIN-002' },
+        ],
+      })
+    }
+
+    if (level === '11') {
+      return Promise.resolve({
+        items: [
+          { code: 'PS-CLS-001' },
+          { code: 'PS-CLS-002' },
         ],
       })
     }
 
     return Promise.resolve({
       items: [
-        { code: 'PS-NUR-01' },
-        { code: 'PS-NUR-02' },
+        { code: 'PS-NUR-001' },
+        { code: 'PS-NUR-002' },
       ],
     })
   })
@@ -120,7 +130,7 @@ describe('AddClass', () => {
         level: '',
       }),
     )
-    expect(wrapper.text()).toContain('PS-CLS-01')
+    expect(wrapper.text()).toContain('PS-CLS-001')
     expect(wrapper.text()).toContain('Create Class')
     expect(wrapper.text()).toContain('Cancel')
     expect(wrapper.text()).toContain('Selected: 0 students')
@@ -158,17 +168,17 @@ describe('AddClass', () => {
     await wrapper.find('[data-testid="add-class-schedule-day-friday"]').setChecked()
     await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('08:00')
     await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('11:00')
-    await wrapper.find('[data-testid="add-class-level-input"]').setValue('Level A')
+    await wrapper.find('[data-testid="add-class-level-input"]').setValue('Kindergarten A')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('PS-LEV-01')
+    expect(wrapper.text()).toContain('PS-KIN-003')
     expect(wrapper.text()).toContain('Selected: 2 students')
     expect(wrapper.find('[data-testid="add-class-schedule-preview"]').text()).toContain('Monday, Tuesday, Wednesday, Thursday, Friday')
     expect(wrapper.find('[data-testid="add-class-schedule-preview"]').text()).toContain('08:00–11:00')
 
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: 'Level A',
+        level: 'Kindergarten A',
       }),
     )
 
@@ -176,16 +186,33 @@ describe('AddClass', () => {
 
     expect(mockCreateClass).toHaveBeenCalledWith(
       expect.objectContaining({
-        code: 'PS-LEV-01',
+        code: 'PS-KIN-003',
         name: 'Morning Nursery Blue',
         teacher_user_id: 'teacher-1',
-        level: 'Level A',
+        level: 'Kindergarten A',
         schedule: 'Monday, Tuesday, Wednesday, Thursday, Friday, 08:00–11:00',
         students_count: 2,
         student_ids: [101, 202],
         status: 'active',
         room: 'A1',
         notes: 'Optional note',
+      }),
+    )
+  })
+
+  it('falls back to the CLS prefix for numeric levels and keeps a 3-digit sequence', async () => {
+    const wrapper = mountPage()
+    const fields = wrapper.findComponent({ name: 'AddClassFormFields' })
+
+    await flushPromises()
+
+    fields.vm.$emit('update:level', '11')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('PS-CLS-003')
+    expect(mockFetchClasses).toHaveBeenCalledWith(
+      expect.objectContaining({
+        level: '11',
       }),
     )
   })
