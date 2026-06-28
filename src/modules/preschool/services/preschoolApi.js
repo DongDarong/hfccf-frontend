@@ -253,7 +253,17 @@ function buildMultipartPayload(payload = {}, options = {}) {
   }
 
   Object.entries(payload).forEach(([key, value]) => {
-    if (['avatar', 'profileImage', 'password', 'confirmPassword', 'removeAvatar', 'studentIds', 'classIds'].includes(key)) {
+    if ([
+      'avatar',
+      'profileImage',
+      'password',
+      'confirmPassword',
+      'removeAvatar',
+      'studentIds',
+      'student_ids',
+      'classIds',
+      'class_ids',
+    ].includes(key)) {
       return
     }
     appendIfPresent(key, value)

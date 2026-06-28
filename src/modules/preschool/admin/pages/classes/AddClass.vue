@@ -17,6 +17,7 @@ import {
   createPreschoolClass,
   fetchPreschoolClass,
   fetchPreschoolClasses,
+  fetchPreschoolStudents,
   fetchPreschoolTeachers,
   updatePreschoolClass,
 } from '@/modules/preschool/services/preschoolApi'
@@ -40,7 +41,6 @@ const form = reactive({
   teacherDisplayName: '',
   level: '',
   schedule: '',
-  students: 0,
   status: statusOptions[0],
   room: '',
   notes: '',
@@ -52,6 +52,11 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const isKh = computed(() => language.value === 'KH')
 const teacherOptions = ref([])
+const studentOptions = ref([])
+const selectedStudentIds = ref([])
+const selectedStudentAssignments = ref([])
+const studentCountFallback = ref(0)
+const studentsLoading = ref(false)
 const generatedCode = ref('')
 const generatedCodeLoading = ref(false)
 let codeRequestSeq = 0
@@ -71,6 +76,88 @@ const teacherLabelMap = computed(() =>
     return carry
   }, {}),
 )
+
+function normalizeText(value) {
+  return String(value ?? '').trim()
+}
+
+function getStudentDisplayName(student = {}) {
+  return normalizeText(
+    student.fullName
+    || student.name
+    || `${student.firstName || ''} ${student.lastName || ''}`.trim(),
+  )
+}
+
+function getStudentCode(student = {}) {
+  return normalizeText(student.publicId || student.studentCode || student.student_code || student.code || student.id)
+}
+
+function getStudentInitials(student = {}) {
+  const name = getStudentDisplayName(student) || getStudentCode(student)
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('') || 'S'
+}
+
+function buildStudentOption(student = {}) {
+  const name = getStudentDisplayName(student)
+  const code = getStudentCode(student)
+
+  return {
+    value: student.id,
+    name: name || code || String(student.id || ''),
+    code,
+    label: name && code ? `${name} — ${code}` : name || code || String(student.id || ''),
+    avatarUrl: normalizeText(student.avatarUrl || student.avatar || student.profilePhotoUrl),
+    initials: getStudentInitials(student),
+  }
+}
+
+function sortStudentOptions(items = []) {
+  return [...items].sort((left, right) => left.label.localeCompare(right.label))
+}
+
+const selectedStudentOptionIds = computed(() => new Set(selectedStudentIds.value.map((id) => String(id))))
+
+const selectedStudentOptions = computed(() =>
+  selectedStudentAssignments.value
+    .filter((student) => selectedStudentOptionIds.value.has(String(student.id)))
+    .map(buildStudentOption),
+)
+
+const mergedStudentOptions = computed(() => {
+  const optionMap = new Map()
+
+  ;[...studentOptions.value, ...selectedStudentOptions.value].forEach((option) => {
+    optionMap.set(String(option.value), option)
+  })
+
+  return sortStudentOptions([...optionMap.values()])
+})
+
+const studentSelectionLocked = computed(() => (
+  isEditMode.value
+  && selectedStudentAssignments.value.length === 0
+  && studentCountFallback.value > 0
+))
+
+const selectedStudentCount = computed(() => (
+  selectedStudentIds.value.length > 0
+    ? selectedStudentIds.value.length
+    : studentSelectionLocked.value
+      ? studentCountFallback.value
+      : 0
+))
+
+const selectedStudentSummary = computed(() =>
+  t('preschoolAddClass.selectedStudentsCount', { count: selectedStudentCount.value }),
+)
+
+const studentSelectionDisabled = computed(() => isFormLocked.value || studentSelectionLocked.value)
 
 const pageTitle = computed(() => {
   if (isViewMode.value) return t('preschoolAddClass.viewTitle')
@@ -96,10 +183,10 @@ const summaryCards = computed(() => [
   {
     id: 'class-students',
     title: t('preschoolAddClass.students'),
-    value: Number(form.students || 0),
-    label: t('preschoolAddClass.plannedEnrollment'),
-    status: Number(form.students || 0) > 0 ? 'success' : 'warning',
-    statusLabel: Number(form.students || 0) > 0
+    value: Number(selectedStudentCount.value || 0),
+    label: t('preschoolAddClass.selectedStudents'),
+    status: Number(selectedStudentCount.value || 0) > 0 ? 'success' : 'warning',
+    statusLabel: Number(selectedStudentCount.value || 0) > 0
       ? t('preschoolAddClass.statusLabels.success')
       : t('preschoolAddClass.statusLabels.warning'),
     surfaceClass: 'bg-lime-50/80 border-lime-200',
@@ -146,11 +233,6 @@ const checklistItems = computed(() => [
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
-}
-
-function normalizeNumber(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
 }
 
 function normalizeLevelPrefix(level) {
@@ -210,7 +292,6 @@ function validateForm() {
   if (!form.teacher.trim()) return t('preschoolAddClass.validation.teacherRequired')
   if (!form.level) return t('preschoolAddClass.validation.levelRequired')
   if (!form.schedule.trim()) return t('preschoolAddClass.validation.scheduleRequired')
-  if (normalizeNumber(form.students) < 0) return t('preschoolAddClass.validation.studentsNegative')
   if (!form.status) return t('preschoolAddClass.validation.statusRequired')
   return ''
 }
@@ -231,10 +312,32 @@ function populateFromClass(item) {
   form.teacherDisplayName = item.teacherDisplayName || item.teacher_display_name || item.teacher || ''
   form.level = item.level || ''
   form.schedule = item.schedule || ''
-  form.students = Number(item.studentsCount ?? item.students_count ?? item.students ?? 0)
   form.status = item.status || statusOptions[0]
   form.room = item.room || ''
   form.notes = item.notes || ''
+  studentCountFallback.value = Number(item.studentsCount ?? item.students_count ?? item.students ?? 0)
+  selectedStudentAssignments.value = Array.isArray(item.studentAssignments) ? item.studentAssignments : []
+  selectedStudentIds.value = Array.isArray(item.activeStudentAssignments)
+    ? item.activeStudentAssignments.map((student) => Number(student.id)).filter((studentId) => Number.isFinite(studentId))
+    : []
+}
+
+async function loadStudents() {
+  studentsLoading.value = true
+
+  try {
+    const response = await fetchPreschoolStudents({
+      page: 1,
+      perPage: 100,
+      status: 'active',
+    })
+
+    studentOptions.value = sortStudentOptions((response.items || []).map(buildStudentOption))
+  } catch {
+    studentOptions.value = []
+  } finally {
+    studentsLoading.value = false
+  }
 }
 
 async function loadTeachers() {
@@ -262,6 +365,20 @@ async function loadClass() {
   }
 }
 
+async function initializePage() {
+  await Promise.allSettled([
+    loadTeachers(),
+    loadStudents(),
+  ])
+
+  if (mode.value !== 'add') {
+    await loadClass()
+    return
+  }
+
+  await refreshGeneratedCode(form.level)
+}
+
 watch(
   () => form.level,
   (nextLevel) => {
@@ -269,6 +386,19 @@ watch(
     refreshGeneratedCode(nextLevel)
   },
 )
+
+watch(
+  () => [route.name, route.params.id, route.query.mode, route.query.id],
+  async () => {
+    await initializePage()
+  },
+)
+
+function onUpdateSelectedStudentIds(value) {
+  selectedStudentIds.value = Array.isArray(value)
+    ? value.map((studentId) => Number(studentId)).filter((studentId) => Number.isFinite(studentId))
+    : []
+}
 
 async function onSubmit() {
   if (isViewMode.value) return
@@ -286,6 +416,7 @@ async function onSubmit() {
 
   try {
     const teacherLabel = teacherLabelMap.value[form.teacher] || form.teacherDisplayName || ''
+    const studentIds = selectedStudentIds.value.map((studentId) => Number(studentId)).filter((studentId) => Number.isFinite(studentId))
     const payload = {
       code: form.code.trim() || generatedCode.value,
       name: form.name.trim(),
@@ -293,10 +424,14 @@ async function onSubmit() {
       teacher_display_name: teacherLabel,
       level: form.level,
       schedule: form.schedule.trim(),
-      students_count: normalizeNumber(form.students),
+      students_count: selectedStudentCount.value,
       status: form.status,
       room: form.room.trim(),
       notes: form.notes.trim(),
+    }
+
+    if (!isEditMode.value || selectedStudentAssignments.value.length > 0) {
+      payload.student_ids = studentIds
     }
 
     if (isEditMode.value) {
@@ -323,16 +458,7 @@ async function onSuccessClose() {
   await goBackToClasses()
 }
 
-onMounted(async () => {
-  await loadTeachers()
-
-  if (mode.value !== 'add') {
-    await loadClass()
-    return
-  }
-
-  await refreshGeneratedCode(form.level)
-})
+onMounted(initializePage)
 </script>
 
 <template>
@@ -367,7 +493,12 @@ onMounted(async () => {
             :teacher="form.teacher"
             :level="form.level"
             :schedule="form.schedule"
-            :students="form.students"
+            :student-options="mergedStudentOptions"
+            :selected-student-ids="selectedStudentIds"
+            :student-loading="studentsLoading"
+            :student-selection-disabled="studentSelectionDisabled"
+            :selected-student-count="selectedStudentCount"
+            :selected-student-summary="selectedStudentSummary"
             :status="form.status"
             :room="form.room"
             :notes="form.notes"
@@ -376,7 +507,7 @@ onMounted(async () => {
             @update:teacher="form.teacher = $event"
             @update:level="form.level = $event"
             @update:schedule="form.schedule = $event"
-            @update:students="form.students = $event"
+            @update:selected-student-ids="onUpdateSelectedStudentIds"
             @update:status="form.status = $event"
             @update:room="form.room = $event"
             @update:notes="form.notes = $event"

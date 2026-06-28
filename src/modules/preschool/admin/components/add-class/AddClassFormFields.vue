@@ -2,6 +2,7 @@
 // Keep the class form localized at the field level so status labels stay
 // readable without leaking hardcoded English into the editor.
 import { computed } from 'vue'
+import MultiSelect from 'primevue/multiselect'
 import { useLanguage } from '@/composables/useLanguage'
 
 defineOptions({
@@ -37,9 +38,29 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  students: {
-    type: [String, Number],
+  studentOptions: {
+    type: Array,
+    default: () => [],
+  },
+  selectedStudentIds: {
+    type: Array,
+    default: () => [],
+  },
+  studentLoading: {
+    type: Boolean,
+    default: false,
+  },
+  studentSelectionDisabled: {
+    type: Boolean,
+    default: false,
+  },
+  selectedStudentCount: {
+    type: Number,
     default: 0,
+  },
+  selectedStudentSummary: {
+    type: String,
+    default: '',
   },
   status: {
     type: String,
@@ -76,7 +97,7 @@ defineEmits([
   'update:teacher',
   'update:level',
   'update:schedule',
-  'update:students',
+  'update:selectedStudentIds',
   'update:status',
   'update:room',
   'update:notes',
@@ -192,14 +213,25 @@ const translatedStatusOptions = computed(() =>
       <div class="add-class-form-fields__capacity-grid">
         <label class="add-class-form-fields__field">
           <span class="add-class-form-fields__label">{{ t('preschoolAddClass.students') }}</span>
-          <input
-            :value="students"
-            type="number"
-            min="0"
-            :placeholder="t('preschoolAddClass.studentsPlaceholder')"
-            :disabled="isLocked"
-            @input="$emit('update:students', $event.target.value)"
+          <MultiSelect
+            :model-value="selectedStudentIds"
+            :options="studentOptions"
+            option-label="label"
+            option-value="value"
+            display="chip"
+            filter
+            class="add-class-form-fields__multiselect"
+            :placeholder="t('preschoolAddClass.selectStudents')"
+            :filter-placeholder="t('preschoolAddClass.selectStudents')"
+            :loading="studentLoading"
+            :empty-message="t('preschoolAddClass.noStudentsFound')"
+            :disabled="isLocked || studentSelectionDisabled"
+            @update:model-value="$emit('update:selectedStudentIds', $event)"
           />
+          <div class="add-class-form-fields__student-help">
+            <span class="add-class-form-fields__student-help-label">{{ t('preschoolAddClass.studentAssignment') }}</span>
+            <span class="add-class-form-fields__student-help-text">{{ selectedStudentSummary || t('preschoolAddClass.selectedStudentsCount', { count: selectedStudentCount }) }}</span>
+          </div>
         </label>
 
         <label class="add-class-form-fields__field">
@@ -351,6 +383,82 @@ const translatedStatusOptions = computed(() =>
   font-weight: 700;
   line-height: 1.3;
   overflow-wrap: anywhere;
+}
+
+.add-class-form-fields__student-help {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.add-class-form-fields__student-help-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.add-class-form-fields__student-help-text {
+  color: #475569;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.add-class-form-fields__multiselect {
+  width: 100%;
+}
+
+.add-class-form-fields__student-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.add-class-form-fields__student-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%);
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.add-class-form-fields__student-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.add-class-form-fields__student-avatar--fallback {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.add-class-form-fields__student-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.add-class-form-fields__student-name {
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.add-class-form-fields__student-code {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.3;
 }
 
 .add-class-form-fields--kh .add-class-form-fields__label,
