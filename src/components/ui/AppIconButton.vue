@@ -61,11 +61,11 @@ const sizeClass = computed(() => {
 const variantClass = computed(() => {
   if (props.variant === 'primary') {
     return [
-      '!border-brand-primary-600',
-      '!bg-brand-primary-600',
+      '!border-brand-600',
+      '!bg-brand-600',
       '!text-white',
-      'hover:enabled:!border-brand-primary-700',
-      'hover:enabled:!bg-brand-primary-700',
+      'hover:enabled:!border-brand-700',
+      'hover:enabled:!bg-brand-700',
     ]
   }
 
@@ -103,20 +103,20 @@ const variantClass = computed(() => {
     return [
       '!border-transparent',
       '!bg-transparent',
-      '!text-brand-surface-700',
+      '!text-surface-700',
       '!shadow-none',
       'hover:enabled:!bg-slate-100',
-      'hover:enabled:!text-brand-surface-900',
+      'hover:enabled:!text-surface-900',
     ]
   }
 
   return [
-    '!border-brand-primary-200',
+    '!border-brand-200',
     '!bg-white',
-    '!text-brand-surface-700',
-    'hover:enabled:!border-brand-primary-300',
-    'hover:enabled:!bg-brand-primary-50',
-    'hover:enabled:!text-brand-surface-900',
+    '!text-surface-700',
+    'hover:enabled:!border-brand-300',
+    'hover:enabled:!bg-brand-50',
+    'hover:enabled:!text-surface-900',
   ]
 })
 
@@ -155,6 +155,7 @@ function handleClick(event) {
 <template>
   <AppButton
     :type="type"
+    :icon="icon"
     :variant="variant"
     :size="size"
     :loading="loading"
@@ -171,9 +172,6 @@ function handleClick(event) {
     </template>
     <template v-else-if="slots.default" #iconLeft>
       <slot />
-    </template>
-    <template v-else #iconLeft>
-      <i :class="props.icon" aria-hidden="true" />
     </template>
   </AppButton>
 </template>

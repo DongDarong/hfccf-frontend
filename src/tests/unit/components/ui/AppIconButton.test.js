@@ -31,6 +31,28 @@ describe('AppIconButton', () => {
 
     expect(wrapper.find('[data-testid="sidebar-icon"]').exists()).toBe(true)
     expect(wrapper.classes()).toContain('ui-icon-button')
+    expect(wrapper.find('.ui-button__content').exists()).toBe(true)
+  })
+
+  it('renders the icon prop when no custom icon slot is provided', () => {
+    const wrapper = mountWithPlugins(AppIconButton, {
+      props: {
+        ariaLabel: 'Refresh dashboard',
+        icon: 'pi pi-refresh',
+        type: 'button',
+      },
+      messages: {
+        en: {
+          common: { states: { loading: 'Loading' } },
+        },
+      },
+    })
+
+    expect(wrapper.attributes('aria-label')).toBe('Refresh dashboard')
+    expect(wrapper.html()).toContain('pi-refresh')
+    expect(wrapper.classes()).toContain('ui-icon-button')
+    expect(wrapper.classes()).toContain('!text-surface-700')
+    expect(wrapper.find('.ui-button__icon').exists()).toBe(true)
   })
 
   it('emits clicks when enabled and stays disabled while loading', async () => {
