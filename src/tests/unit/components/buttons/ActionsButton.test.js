@@ -35,5 +35,6 @@ describe('ActionsButton', () => {
     expect(wrapper.html()).toContain('pi-ellipsis-h')
     expect(wrapper.find('[aria-label="Actions"]').exists()).toBe(true)
     expect(wrapper.find('.ui-button__icon i').exists()).toBe(true)
+    expect(wrapper.find('.ui-button__content').classes()).toContain('ui-button__content--icon-only')
   })
 })

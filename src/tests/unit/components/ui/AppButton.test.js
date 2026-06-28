@@ -122,6 +122,7 @@ describe('AppButton', () => {
     expect(wrapper.attributes('aria-label')).toBe('View')
     expect(wrapper.html()).toContain('pi-eye')
     expect(wrapper.find('.ui-button__content').exists()).toBe(true)
+    expect(wrapper.find('.ui-button__content').classes()).toContain('ui-button__content--icon-only')
     expect(wrapper.find('.p-button-icon').exists()).toBe(true)
   })
 

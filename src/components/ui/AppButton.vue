@@ -1,5 +1,5 @@
 <script setup>
-import { computed, useAttrs } from 'vue'
+import { computed, useAttrs, useSlots } from 'vue'
 import PrimeButton from 'primevue/button'
 import { useLanguage } from '@/composables/useLanguage'
 
@@ -51,6 +51,7 @@ const props = defineProps({
 const emit = defineEmits(['click'])
 
 const attrs = useAttrs()
+const slots = useSlots()
 const { t } = useLanguage()
 
 const buttonAttrs = computed(() => {
@@ -69,6 +70,12 @@ const buttonAttrs = computed(() => {
 const buttonIconClass = computed(() => String(attrs.icon || '').trim())
 const buttonLabel = computed(() => String(attrs.label || '').trim())
 const buttonIconPosition = computed(() => String(attrs.iconPos || 'left').toLowerCase())
+const hasLabelContent = computed(() => Boolean(buttonLabel.value || slots.default))
+
+const contentClass = computed(() => [
+  'ui-button__content',
+  hasLabelContent.value ? '' : 'ui-button__content--icon-only',
+])
 
 const sizeClass = computed(() => {
   const classes = {
@@ -251,7 +258,7 @@ function handleClick(event) {
     :aria-busy="loading ? 'true' : undefined"
     @click="handleClick"
   >
-    <span class="ui-button__content">
+    <span :class="contentClass">
       <span v-if="!loading && buttonIconPosition === 'left' && (buttonIconClass || $slots.iconLeft || $slots.icon)" class="ui-button__icon ui-button__icon--left p-button-icon" aria-hidden="true">
         <slot v-if="$slots.iconLeft" name="iconLeft" />
         <slot v-else-if="$slots.icon" name="icon" />
@@ -289,6 +296,10 @@ function handleClick(event) {
   min-width: 0;
   max-width: 100%;
   gap: 0.5rem;
+}
+
+.ui-button__content--icon-only {
+  gap: 0 !important;
 }
 
 .ui-button__label {
