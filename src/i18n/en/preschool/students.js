@@ -95,6 +95,7 @@ export default {
       updateSuccess: 'Student updated successfully.',
       deleteSuccess: 'Student deleted successfully.',
       noResults: 'No students found.',
+      noClassAssigned: 'No class assigned',
     },
   },
   preschoolStudentProfilePage: {

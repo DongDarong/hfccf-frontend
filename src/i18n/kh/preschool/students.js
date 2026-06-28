@@ -95,6 +95,7 @@ export default {
       updateSuccess: 'បានកែប្រែសិស្សដោយជោគជ័យ។',
       deleteSuccess: 'បានលុបសិស្សដោយជោគជ័យ។',
       noResults: 'មិនមានសិស្សទេ។',
+      noClassAssigned: 'មិនមានការចាត់តាំងថ្នាក់',
     },
   },
   preschoolStudentProfilePage: {
