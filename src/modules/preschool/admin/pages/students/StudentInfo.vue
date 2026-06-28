@@ -76,6 +76,59 @@ const tableColumns = computed(() => [
   { key: 'actions', label: t('preschoolStudentInfoPage.columns.actions'), align: 'right' },
 ])
 
+function resolveClassName(student) {
+  const fallbackLabel = t('preschoolStudentInfoPage.messages.noClassAssigned')
+  const classNames = Array.isArray(student?.classes)
+    ? student.classes
+        .map((item) => String(item?.name || item?.code || '').trim())
+        .filter(Boolean)
+    : []
+  const directClassName = String(
+    student?.className ||
+      student?.class?.name ||
+      student?.class?.code ||
+      '',
+  ).trim()
+
+  if (classNames.length > 1) {
+    return {
+      className: classNames[0],
+      classNames,
+      classCount: classNames.length,
+      extraClassCount: classNames.length - 1,
+      classTooltip: classNames.join(', '),
+    }
+  }
+
+  if (classNames.length === 1) {
+    return {
+      className: classNames[0],
+      classNames,
+      classCount: 1,
+      extraClassCount: 0,
+      classTooltip: classNames[0],
+    }
+  }
+
+  if (directClassName) {
+    return {
+      className: directClassName,
+      classNames: [directClassName],
+      classCount: 1,
+      extraClassCount: 0,
+      classTooltip: directClassName,
+    }
+  }
+
+  return {
+    className: fallbackLabel,
+    classNames: [],
+    classCount: 0,
+    extraClassCount: 0,
+    classTooltip: fallbackLabel,
+  }
+}
+
 const mappedStudents = computed(() =>
   students.value.map((student) => {
     const fullName =
@@ -89,12 +142,7 @@ const mappedStudents = computed(() =>
       name: fullName,
       avatarUrl: resolveAvatarSource(student.avatarUrl || ''),
       dateOfBirth: student.dateOfBirth || '-',
-      className: Array.isArray(student.classes) && student.classes.length
-        ? student.classes
-            .map((item) => item?.name || item?.code || '')
-            .filter(Boolean)
-            .join(', ')
-        : student.className || student.class?.name || student.class?.code || '-',
+      ...resolveClassName(student),
       guardianPhone: student.guardianPhone || '-',
     }
   }),

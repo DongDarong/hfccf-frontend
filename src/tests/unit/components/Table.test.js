@@ -367,6 +367,69 @@ describe('Table', () => {
     expect(wrapper.find('[data-testid="cell"]').text()).toContain('-')
   })
 
+  // ─── column: className ──────────────────────────────────────────────────────
+
+  it('renders only the class name with a tooltip in the className column', () => {
+    const wrapper = mountTable({
+      rows: [{ id: 1, className: 'Morning Stars' }],
+      columns: [{ key: 'className', label: 'Class Name' }],
+    })
+
+    const classCell = wrapper.find('[data-col="className"] [title="Morning Stars"]')
+    expect(classCell.text()).toBe('Morning Stars')
+    expect(classCell.attributes('title')).toBe('Morning Stars')
+    expect(classCell.find('span').classes()).toContain('truncate')
+    expect(wrapper.findComponent({ name: 'AppBadge' }).exists()).toBe(false)
+  })
+
+  it('renders a compact count badge when className metadata includes multiple classes', () => {
+    const wrapper = mountTable({
+      rows: [{
+        id: 1,
+        className: 'Morning Stars',
+        classCount: 3,
+        extraClassCount: 2,
+        classTooltip: 'Morning Stars, Extra Class, Morning Class',
+      }],
+      columns: [{ key: 'className', label: 'Class Name' }],
+    })
+
+    const classCell = wrapper.find('[data-col="className"] [title="Morning Stars, Extra Class, Morning Class"]')
+    expect(classCell.text()).toContain('Morning Stars')
+    expect(classCell.text()).toContain('+2')
+    expect(classCell.attributes('title')).toBe('Morning Stars, Extra Class, Morning Class')
+    expect(wrapper.findComponent({ name: 'AppBadge' }).exists()).toBe(true)
+  })
+
+  it('shows the localized no-class fallback when the className is missing', () => {
+    const wrapper = mountTable({
+      rows: [{ id: 1, className: 'No class assigned' }],
+      columns: [{ key: 'className', label: 'Class Name' }],
+    })
+
+    const classCell = wrapper.find('[data-col="className"] [title="No class assigned"]')
+    expect(classCell.text()).toBe('No class assigned')
+    expect(classCell.attributes('title')).toBe('No class assigned')
+  })
+
+  it('applies truncation styles to long class names', () => {
+    const wrapper = mountTable({
+      rows: [{
+        id: 1,
+        className: 'Room113',
+        classCount: 3,
+        extraClassCount: 2,
+        classTooltip: 'Room113, បន្ទប់ខៀវ, មត្តេយ្យកម្រិត...',
+      }],
+      columns: [{ key: 'className', label: 'Class Name' }],
+    })
+
+    const classCell = wrapper.find('[data-col="className"] [title="Room113, បន្ទប់ខៀវ, មត្តេយ្យកម្រិត..."]')
+    expect(classCell.classes()).toContain('max-w-[14rem]')
+    expect(classCell.find('span').classes()).toContain('truncate')
+    expect(classCell.attributes('title')).toBe('Room113, បន្ទប់ខៀវ, មត្តេយ្យកម្រិត...')
+  })
+
   // ─── actions: menu style (default) ───────────────────────────────────────────
 
   it('renders ActionsButton by default (actionStyle="menu")', () => {

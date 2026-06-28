@@ -46,7 +46,7 @@ function mountPage() {
         Table: {
           props: ['rows', 'columns', 'loading', 'emptyText'],
           template:
-            '<div data-testid="student-table">{{ rows?.length || 0 }}|{{ rows?.[0]?.avatarUrl || "" }}</div>',
+            '<div><div data-testid="student-table-count">{{ rows?.length || 0 }}|{{ rows?.[0]?.avatarUrl || "" }}</div><div data-testid="student-class-name">{{ rows?.map((row) => `${row.className}|${row.classCount}|${row.extraClassCount}|${row.classTooltip}`).join("||") }}</div></div>',
         },
       },
     },
@@ -89,7 +89,11 @@ beforeEach(() => {
               avatarUrl: '/uploads/alice-full-list.jpg',
               status: 'active',
               gender: 'female',
-              className: 'Morning Stars',
+              classes: [
+                { name: 'Morning Stars' },
+                { name: 'Extra Class' },
+                { name: 'Morning Class' },
+              ],
             },
             {
               id: 'student-2',
@@ -97,7 +101,6 @@ beforeEach(() => {
               avatarUrl: '',
               status: 'pending',
               gender: 'male',
-              className: 'Morning Stars',
             },
           ],
       pagination: { page: 1, perPage: 10, total: hasFilters ? 1 : 2, totalPages: 1 },
@@ -119,7 +122,9 @@ describe('StudentInfo', () => {
       gender: '',
       classId: '',
     }))
-    expect(wrapper.find('[data-testid="student-table"]').text()).toBe('2|/uploads/alice-full-list.jpg')
+    expect(wrapper.find('[data-testid="student-table-count"]').text()).toBe('2|/uploads/alice-full-list.jpg')
+    expect(wrapper.find('[data-testid="student-class-name"]').text()).toContain('Morning Stars|3|2|Morning Stars, Extra Class, Morning Class')
+    expect(wrapper.find('[data-testid="student-class-name"]').text()).toContain('No class assigned')
 
     const searchInput = wrapper.find('input[type="search"]')
     const statusSelect = wrapper.findAll('select').at(0)
@@ -140,7 +145,8 @@ describe('StudentInfo', () => {
       gender: 'female',
       classId: 'class-1',
     }))
-    expect(wrapper.find('[data-testid="student-table"]').text()).toBe('1|/uploads/alice-filtered.jpg')
+    expect(wrapper.find('[data-testid="student-table-count"]').text()).toBe('1|/uploads/alice-filtered.jpg')
+    expect(wrapper.find('[data-testid="student-class-name"]').text()).toContain('Morning Stars|1|0|Morning Stars')
 
     const clearButton = wrapper.findAll('button').find((button) => button.text() === 'Clear Filters')
     await clearButton.trigger('click')
@@ -151,7 +157,8 @@ describe('StudentInfo', () => {
     expect(genderSelect.element.value).toBe('')
     expect(classSelect.element.value).toBe('')
     expect(clearButton.attributes('disabled')).toBeDefined()
-    expect(wrapper.find('[data-testid="student-table"]').text()).toBe('2|/uploads/alice-full-list.jpg')
+    expect(wrapper.find('[data-testid="student-table-count"]').text()).toBe('2|/uploads/alice-full-list.jpg')
+    expect(wrapper.find('[data-testid="student-class-name"]').text()).toContain('Morning Stars|3|2|Morning Stars, Extra Class, Morning Class')
     expect(mockFetchPreschoolStudents).toHaveBeenLastCalledWith(expect.objectContaining({
       page: 1,
       perPage: 10,
