@@ -6,6 +6,7 @@ import khPreschool from '@/i18n/kh/preschool'
 import AddClass from '@/modules/preschool/admin/pages/classes/AddClass.vue'
 
 const mockFetchTeachers = vi.fn()
+const mockFetchClassLevels = vi.fn()
 const mockFetchStudents = vi.fn()
 const mockFetchClasses = vi.fn()
 const mockFetchClass = vi.fn()
@@ -14,6 +15,7 @@ const mockUpdateClass = vi.fn()
 
 vi.mock('@/modules/preschool/services/preschoolApi', () => ({
   fetchPreschoolTeachers: (...args) => mockFetchTeachers(...args),
+  fetchPreschoolClassLevels: (...args) => mockFetchClassLevels(...args),
   fetchPreschoolStudents: (...args) => mockFetchStudents(...args),
   fetchPreschoolClasses: (...args) => mockFetchClasses(...args),
   fetchPreschoolClass: (...args) => mockFetchClass(...args),
@@ -46,6 +48,7 @@ function mountPage() {
 
 beforeEach(() => {
   mockFetchTeachers.mockReset()
+  mockFetchClassLevels.mockReset()
   mockFetchStudents.mockReset()
   mockFetchClasses.mockReset()
   mockFetchClass.mockReset()
@@ -58,6 +61,15 @@ beforeEach(() => {
         id: 'teacher-1',
         fullName: 'Teacher Alpha',
       },
+    ],
+  })
+
+  mockFetchClassLevels.mockResolvedValue({
+    items: [
+      { id: 1, nameEn: 'Nursery', nameKh: 'មត្តេយ្យកម្រិតតូច', code: 'NUR', sortOrder: 1, isActive: true },
+      { id: 2, nameEn: 'Kindergarten A', nameKh: 'មត្តេយ្យ A', code: 'KGA', sortOrder: 2, isActive: true },
+      { id: 3, nameEn: 'Kindergarten B', nameKh: 'មត្តេយ្យ B', code: 'KGB', sortOrder: 3, isActive: true },
+      { id: 4, nameEn: 'Prep', nameKh: 'ត្រៀមចូលរៀន', code: 'PRE', sortOrder: 4, isActive: true },
     ],
   })
 
@@ -80,29 +92,20 @@ beforeEach(() => {
     ],
   })
 
-  mockFetchClasses.mockImplementation(({ level } = {}) => {
-    if (level === 'Kindergarten A') {
+  mockFetchClasses.mockImplementation(({ classLevelId } = {}) => {
+    if (String(classLevelId) === '2') {
       return Promise.resolve({
         items: [
-          { code: 'PS-KIN-001' },
-          { code: 'PS-KIN-002' },
-        ],
-      })
-    }
-
-    if (level === '11') {
-      return Promise.resolve({
-        items: [
-          { code: 'PS-CLS-001' },
-          { code: 'PS-CLS-002' },
+          { code: 'PS-KGA-001' },
+          { code: 'PS-KGA-002' },
         ],
       })
     }
 
     return Promise.resolve({
       items: [
-        { code: 'PS-NUR-001' },
-        { code: 'PS-NUR-002' },
+        { code: 'PS-CLS-001' },
+        { code: 'PS-CLS-002' },
       ],
     })
   })
@@ -119,6 +122,7 @@ describe('AddClass', () => {
     await flushPromises()
 
     expect(mockFetchTeachers).toHaveBeenCalled()
+    expect(mockFetchClassLevels).toHaveBeenCalled()
     expect(mockFetchStudents).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'active',
@@ -127,16 +131,16 @@ describe('AddClass', () => {
     )
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: '',
+        classLevelId: '',
       }),
     )
-    expect(wrapper.text()).toContain('PS-CLS-001')
+    expect(wrapper.text()).toContain('PS-CLS-003')
     expect(wrapper.text()).toContain('Create Class')
     expect(wrapper.text()).toContain('Cancel')
     expect(wrapper.text()).toContain('Selected: 0 students')
     expect(wrapper.text()).toContain('Select days and times to preview the schedule.')
 
-    expect(wrapper.find('[data-testid="add-class-level-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-class-level-select"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="add-class-schedule-input"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="add-class-code-preview"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="student-multiselect"]').exists()).toBe(true)
@@ -168,17 +172,17 @@ describe('AddClass', () => {
     await wrapper.find('[data-testid="add-class-schedule-day-friday"]').setChecked()
     await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('08:00')
     await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('11:00')
-    await wrapper.find('[data-testid="add-class-level-input"]').setValue('Kindergarten A')
+    await wrapper.find('[data-testid="add-class-level-select"]').setValue('2')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('PS-KIN-003')
+    expect(wrapper.text()).toContain('PS-KGA-003')
     expect(wrapper.text()).toContain('Selected: 2 students')
     expect(wrapper.find('[data-testid="add-class-schedule-preview"]').text()).toContain('Monday, Tuesday, Wednesday, Thursday, Friday')
     expect(wrapper.find('[data-testid="add-class-schedule-preview"]').text()).toContain('08:00–11:00')
 
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: 'Kindergarten A',
+        classLevelId: '2',
       }),
     )
 
@@ -186,9 +190,10 @@ describe('AddClass', () => {
 
     expect(mockCreateClass).toHaveBeenCalledWith(
       expect.objectContaining({
-        code: 'PS-KIN-003',
+        code: 'PS-KGA-003',
         name: 'Morning Nursery Blue',
         teacher_user_id: 'teacher-1',
+        class_level_id: '2',
         level: 'Kindergarten A',
         schedule: 'Monday, Tuesday, Wednesday, Thursday, Friday, 08:00–11:00',
         students_count: 2,
@@ -202,17 +207,16 @@ describe('AddClass', () => {
 
   it('falls back to the CLS prefix for numeric levels and keeps a 3-digit sequence', async () => {
     const wrapper = mountPage()
-    const fields = wrapper.findComponent({ name: 'AddClassFormFields' })
 
     await flushPromises()
 
-    fields.vm.$emit('update:level', '11')
+    await wrapper.find('[data-testid="add-class-level-select"]').setValue('')
     await flushPromises()
 
     expect(wrapper.text()).toContain('PS-CLS-003')
     expect(mockFetchClasses).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: '11',
+        classLevelId: '',
       }),
     )
   })
@@ -225,7 +229,7 @@ describe('AddClass', () => {
 
     fields.vm.$emit('update:name', 'Morning Nursery Blue')
     fields.vm.$emit('update:teacher', 'teacher-1')
-    fields.vm.$emit('update:level', 'Kindergarten A')
+    fields.vm.$emit('update:classLevelId', '2')
     fields.vm.$emit('update:status', 'active')
     await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('08:00')
     await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('11:00')
@@ -243,7 +247,7 @@ describe('AddClass', () => {
 
     fields.vm.$emit('update:name', 'Morning Nursery Blue')
     fields.vm.$emit('update:teacher', 'teacher-1')
-    fields.vm.$emit('update:level', 'Kindergarten A')
+    fields.vm.$emit('update:classLevelId', '2')
     fields.vm.$emit('update:status', 'active')
     await wrapper.find('[data-testid="add-class-schedule-day-monday"]').setChecked()
     await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('11:00')
@@ -261,6 +265,8 @@ describe('AddClass', () => {
       name: 'Kindergarten A',
       teacherUserId: 'teacher-1',
       teacherDisplayName: 'Teacher Alpha',
+      classLevelId: 2,
+      classLevel: { id: 2, nameEn: 'Kindergarten A', code: 'KGA' },
       level: 'Kindergarten A',
       schedule: 'Mon-Fri, 8:00 AM',
       studentsCount: 5,

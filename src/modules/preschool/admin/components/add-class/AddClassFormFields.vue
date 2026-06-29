@@ -30,9 +30,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  level: {
-    type: String,
+  classLevelId: {
+    type: [String, Number],
     default: '',
+  },
+  levelOptions: {
+    type: Array,
+    default: () => [],
   },
   studentOptions: {
     type: Array,
@@ -119,7 +123,7 @@ const props = defineProps({
 defineEmits([
   'update:name',
   'update:teacher',
-  'update:level',
+  'update:classLevelId',
   'update:schedule-day',
   'update:schedule-start-time',
   'update:schedule-end-time',
@@ -206,14 +210,18 @@ const translatedStatusOptions = computed(() =>
 
         <label class="add-class-form-fields__field">
           <span class="add-class-form-fields__label">{{ t('preschoolAddClass.level') }}</span>
-          <input
-            data-testid="add-class-level-input"
-            :value="level"
-            type="text"
+          <select
+            data-testid="add-class-level-select"
+            :value="classLevelId"
             :placeholder="t('preschoolAddClass.levelPlaceholder')"
             :disabled="isLocked"
-            @input="$emit('update:level', $event.target.value)"
-          />
+            @change="$emit('update:classLevelId', $event.target.value)"
+          >
+            <option value="">{{ t('preschoolAddClass.levelPlaceholder') }}</option>
+            <option v-for="option in levelOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
         </label>
 
         <label class="add-class-form-fields__field add-class-form-fields__field--wide">

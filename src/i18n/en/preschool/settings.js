@@ -134,6 +134,56 @@ export default {
       },
     },
   },
+  preschoolClassLevelsPage: {
+    eyebrow: 'Class configuration',
+    title: 'Class Levels',
+    subtitle: 'Manage the configurable preschool class levels used by the class editor and enrollment forms.',
+    description: 'Add new levels here, then use them in class creation without hardcoding the option list.',
+    actions: {
+      add: 'Add Level',
+      save: 'Save Level',
+      deactivate: 'Deactivate',
+      restore: 'Restore',
+    },
+    status: {
+      active: 'Active',
+      inactive: 'Inactive',
+    },
+    labels: {
+      sortOrder: 'Sort order: {value}',
+    },
+    emptyStates: {
+      none: 'No levels found.',
+      noKhmer: 'No Khmer name provided',
+    },
+    dialog: {
+      addTitle: 'Add Level',
+      editTitle: 'Edit Level',
+      subtitle: 'Keep the code short and unique so the class-code generator can reuse it safely.',
+    },
+    fields: {
+      nameEn: 'Level Name EN',
+      nameKh: 'Level Name KH',
+      code: 'Level Code',
+      sortOrder: 'Sort Order',
+      isActive: 'Active',
+    },
+    placeholders: {
+      nameEn: 'Nursery',
+      nameKh: 'មត្តេយ្យកម្រិតតូច',
+      code: 'NUR',
+      sortOrder: '0',
+    },
+    help: {
+      isActive: 'Inactive levels stay available for records but are hidden from new class selection.',
+    },
+    validation: {
+      required: 'This field is required.',
+      max: 'Must be 10 characters or fewer.',
+      positive: 'Please enter a zero or positive number.',
+      alphaNumeric: 'Use uppercase letters and numbers only.',
+    },
+  },
   preschoolAttendanceSettingsPage: {
     pageTitle: 'Attendance Configuration',
     pageSubtitle: 'Manage attendance thresholds, alerts, school week rules, and school calendar events.',

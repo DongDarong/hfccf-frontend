@@ -127,6 +127,8 @@ function normalizeClassRow(row = {}) {
     teacher: normalizeText(
       row.teacherDisplayName || row.teacher_display_name || row.teacher || row.teacherName,
     ),
+    classLevelId: row.classLevelId ?? row.class_level_id ?? row.classLevel?.id ?? '',
+    classLevel: row.classLevel || row.class_level || null,
     level: normalizeText(row.level || row.grade),
     schedule: normalizeText(row.schedule || row.time),
     studentsCount: Number(row.studentsCount ?? row.students_count ?? studentAssignments.filter((item) => item.status === 'active').length ?? row.students ?? row.studentCount ?? 0),
@@ -319,6 +321,30 @@ function normalizeStudentListResponse(response, fallbackPage = 1, fallbackPerPag
   return {
     items: items.map(normalizeStudentRow),
     pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+function normalizeClassLevelRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    nameEn: normalizeText(row.nameEn || row.name_en || row.name || row.label),
+    nameKh: normalizeText(row.nameKh || row.name_kh),
+    code: normalizeText(row.code || row.classLevelCode || row.class_level_code).toUpperCase(),
+    sortOrder: Number(row.sortOrder ?? row.sort_order ?? 0),
+    isActive: Boolean(row.isActive ?? row.is_active ?? true),
+    status: row.status || (row.isActive ?? row.is_active ?? true ? 'active' : 'inactive'),
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    raw: row,
+  }
+}
+
+function normalizeClassLevelListResponse(response) {
+  const items = unwrapApiItems(response)
+
+  return {
+    items: items.map(normalizeClassLevelRow),
   }
 }
 
@@ -817,7 +843,17 @@ export async function deletePreschoolTeacher(id) {
 }
 
 export async function fetchPreschoolClasses(
-  { page = 1, perPage = 10, search = '', status = '', level = '', teacherUserId = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
+  {
+    page = 1,
+    perPage = 10,
+    search = '',
+    status = '',
+    level = '',
+    classLevelId = '',
+    teacherUserId = '',
+    sortBy = 'created_at',
+    sortDirection = 'desc',
+  } = {},
   options = {},
 ) {
   const normalizedPerPage = normalizePerPage(perPage, 10, 100)
@@ -828,6 +864,7 @@ export async function fetchPreschoolClasses(
       search,
       status,
       level,
+      class_level_id: classLevelId,
       teacher_user_id: teacherUserId,
       sort_by: sortBy,
       sort_direction: sortDirection,
@@ -876,6 +913,47 @@ export async function deletePreschoolClass(id) {
   if (!classId) return false
 
   await http.delete(`/preschool/classes/${encodeURIComponent(classId)}`)
+  return true
+}
+
+export async function fetchPreschoolClassLevels(options = {}) {
+  const response = await http.get('/preschool/class-levels', {
+    signal: options.signal,
+  })
+
+  return normalizeClassLevelListResponse(response)
+}
+
+export async function createPreschoolClassLevel(payload = {}) {
+  const response = await http.post('/preschool/class-levels', payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeClassLevelRow(data.classLevel || data.class_level || data)
+}
+
+export async function updatePreschoolClassLevel(id, payload = {}) {
+  const classLevelId = resolveId(id)
+  if (!classLevelId) {
+    throw new Error('Class level id is required.')
+  }
+
+  const response = await http.put(`/preschool/class-levels/${encodeURIComponent(classLevelId)}`, payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeClassLevelRow(data.classLevel || data.class_level || data)
+}
+
+export async function deactivatePreschoolClassLevel(id) {
+  const classLevelId = resolveId(id)
+  if (!classLevelId) return false
+
+  await http.patch(`/preschool/class-levels/${encodeURIComponent(classLevelId)}/deactivate`)
+  return true
+}
+
+export async function restorePreschoolClassLevel(id) {
+  const classLevelId = resolveId(id)
+  if (!classLevelId) return false
+
+  await http.patch(`/preschool/class-levels/${encodeURIComponent(classLevelId)}/restore`)
   return true
 }
 
