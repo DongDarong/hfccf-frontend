@@ -30,10 +30,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  levelOptions: {
-    type: Array,
-    default: () => [],
-  },
   level: {
     type: String,
     default: '',
@@ -153,13 +149,6 @@ const translatedStatusOptions = computed(() =>
     label: translateOption('common.status', option),
   })),
 )
-
-const translatedLevelOptions = computed(() =>
-  props.levelOptions.map((option) => ({
-    value: option.value ?? option,
-    label: option.label ?? String(option.value ?? option ?? ''),
-  })),
-)
 </script>
 
 <template>
@@ -217,17 +206,14 @@ const translatedLevelOptions = computed(() =>
 
         <label class="add-class-form-fields__field">
           <span class="add-class-form-fields__label">{{ t('preschoolAddClass.level') }}</span>
-          <select
+          <input
             data-testid="add-class-level-input"
             :value="level"
+            type="text"
+            :placeholder="t('preschoolAddClass.levelPlaceholder')"
             :disabled="isLocked"
-            @change="$emit('update:level', $event.target.value)"
-          >
-            <option value="">{{ t('preschoolAddClass.levelPlaceholder') }}</option>
-            <option v-for="option in translatedLevelOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+            @input="$emit('update:level', $event.target.value)"
+          />
         </label>
 
         <label class="add-class-form-fields__field add-class-form-fields__field--wide">

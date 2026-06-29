@@ -32,13 +32,6 @@ const route = useRoute()
 const { t, language } = useLanguage()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
-const levelOptions = [
-  { label: 'Nursery', value: 'Nursery' },
-  { label: 'Kindergarten A', value: 'Kindergarten A' },
-  { label: 'Kindergarten B', value: 'Kindergarten B' },
-  { label: 'Prep', value: 'Prep' },
-]
-const levelValues = levelOptions.map((option) => option.value)
 const statusOptions = ['active', 'pending', 'closed']
 
 const form = reactive({
@@ -129,7 +122,8 @@ function normalizeClassLevel(level) {
   }
   if (normalized === 'prep' || normalized === 'pre') return 'Prep'
 
-  return levelValues.find((option) => option.toLowerCase() === normalized) || ''
+  const canonicalLevels = ['Nursery', 'Kindergarten A', 'Kindergarten B', 'Prep']
+  return canonicalLevels.find((option) => option.toLowerCase() === normalized) || ''
 }
 
 function normalizeClassStatus(status) {
@@ -753,7 +747,6 @@ onMounted(initializePage)
           <AddClassFormFields
             :status-options="statusOptions"
             :teacher-options="teacherOptions"
-            :level-options="levelOptions"
             :code="generatedCode || form.code"
             :code-label="isEditMode ? t('preschoolAddClass.currentClassCode') : t('preschoolAddClass.generatedClassCode')"
             :code-hint="isEditMode ? t('preschoolAddClass.currentClassCodeHint') : t('preschoolAddClass.generatedClassCodeHint')"
