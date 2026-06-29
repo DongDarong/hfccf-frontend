@@ -532,9 +532,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/forms',
     name: 'dashboard-preschool-admin-forms',
-    // Forms stays as a compatibility launcher. The canonical authoring and
-    // reporting work happens in the Preschool assessment routes.
-    component: () => import('@/modules/preschool/admin/pages/forms/FormTracker.vue'),
+    component: () => import('@/modules/preschool/admin/pages/forms/FormManagement.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
