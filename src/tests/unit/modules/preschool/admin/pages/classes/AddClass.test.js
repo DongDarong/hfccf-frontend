@@ -225,7 +225,7 @@ describe('AddClass', () => {
 
     fields.vm.$emit('update:name', 'Morning Nursery Blue')
     fields.vm.$emit('update:teacher', 'teacher-1')
-    fields.vm.$emit('update:level', 'Level A')
+    fields.vm.$emit('update:level', 'Kindergarten A')
     fields.vm.$emit('update:status', 'active')
     await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('08:00')
     await wrapper.find('[data-testid="add-class-schedule-end-time"]').setValue('11:00')
@@ -243,7 +243,7 @@ describe('AddClass', () => {
 
     fields.vm.$emit('update:name', 'Morning Nursery Blue')
     fields.vm.$emit('update:teacher', 'teacher-1')
-    fields.vm.$emit('update:level', 'Level A')
+    fields.vm.$emit('update:level', 'Kindergarten A')
     fields.vm.$emit('update:status', 'active')
     await wrapper.find('[data-testid="add-class-schedule-day-monday"]').setChecked()
     await wrapper.find('[data-testid="add-class-schedule-start-time"]').setValue('11:00')

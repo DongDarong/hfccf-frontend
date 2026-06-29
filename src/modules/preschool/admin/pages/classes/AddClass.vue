@@ -32,7 +32,14 @@ const route = useRoute()
 const { t, language } = useLanguage()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
-const statusOptions = ['active', 'pending', 'closed', 'archived']
+const levelOptions = [
+  { label: 'Nursery', value: 'Nursery' },
+  { label: 'Kindergarten A', value: 'Kindergarten A' },
+  { label: 'Kindergarten B', value: 'Kindergarten B' },
+  { label: 'Prep', value: 'Prep' },
+]
+const levelValues = levelOptions.map((option) => option.value)
+const statusOptions = ['active', 'pending', 'closed']
 
 const form = reactive({
   code: '',
@@ -107,6 +114,30 @@ const teacherLabelMap = computed(() =>
 
 function normalizeText(value) {
   return String(value ?? '').trim()
+}
+
+function normalizeClassLevel(level) {
+  const normalized = normalizeText(level).toLowerCase()
+
+  if (!normalized) return ''
+  if (normalized === 'nursery' || normalized === 'nur') return 'Nursery'
+  if (normalized === 'kindergarten a' || normalized === 'kindergarten-1' || normalized === 'kindergarten_1' || normalized === 'k1') {
+    return 'Kindergarten A'
+  }
+  if (normalized === 'kindergarten b' || normalized === 'kindergarten-2' || normalized === 'kindergarten_2' || normalized === 'k2') {
+    return 'Kindergarten B'
+  }
+  if (normalized === 'prep' || normalized === 'pre') return 'Prep'
+
+  return levelValues.find((option) => option.toLowerCase() === normalized) || ''
+}
+
+function normalizeClassStatus(status) {
+  const normalized = normalizeText(status).toLowerCase()
+
+  if (statusOptions.includes(normalized)) return normalized
+  if (normalized === 'archived') return 'closed'
+  return statusOptions[0]
 }
 
 function getStudentDisplayName(student = {}) {
@@ -469,11 +500,12 @@ async function refreshGeneratedCode(level = form.level) {
   generatedCodeLoading.value = true
 
   try {
-    const prefix = normalizeLevelPrefix(level)
+    const normalizedLevel = normalizeClassLevel(level)
+    const prefix = normalizeLevelPrefix(normalizedLevel || level)
     const response = await fetchPreschoolClasses({
       page: 1,
       perPage: 100,
-      level,
+      level: normalizedLevel || level,
       sortBy: 'code',
       sortDirection: 'asc',
     })
@@ -502,7 +534,7 @@ function validateForm() {
   if (!form.code.trim()) return t('preschoolAddClass.validation.classCodeRequired')
   if (!form.name.trim()) return t('preschoolAddClass.validation.classNameRequired')
   if (!form.teacher.trim()) return t('preschoolAddClass.validation.teacherRequired')
-  if (!form.level) return t('preschoolAddClass.validation.levelRequired')
+  if (!normalizeClassLevel(form.level)) return t('preschoolAddClass.validation.levelRequired')
   if (scheduleIsStructured.value) {
     if (!scheduleDays.value.length) return t('preschoolAddClass.validation.scheduleDaysRequired')
     if (!scheduleStartTime.value) return t('preschoolAddClass.validation.scheduleStartTimeRequired')
@@ -534,8 +566,8 @@ function populateFromClass(item) {
   form.name = item.name || ''
   form.teacher = item.teacherUserId || item.teacher_user_id || ''
   form.teacherDisplayName = item.teacherDisplayName || item.teacher_display_name || item.teacher || ''
-  form.level = item.level || ''
-  form.status = item.status || statusOptions[0]
+  form.level = normalizeClassLevel(item.level) || item.level || ''
+  form.status = normalizeClassStatus(item.status)
   form.room = item.room || ''
   form.notes = item.notes || ''
   applyScheduleValue(item.schedule || '')
@@ -651,15 +683,17 @@ async function onSubmit() {
   try {
     const teacherLabel = teacherLabelMap.value[form.teacher] || form.teacherDisplayName || ''
     const studentIds = selectedStudentIds.value.map((studentId) => Number(studentId)).filter((studentId) => Number.isFinite(studentId))
+    const normalizedLevel = normalizeClassLevel(form.level)
+    const normalizedStatus = normalizeClassStatus(form.status)
     const payload = {
       code: form.code.trim() || generatedCode.value,
       name: form.name.trim(),
       teacher_user_id: form.teacher,
       teacher_display_name: teacherLabel,
-      level: form.level,
+      level: normalizedLevel || form.level.trim(),
       schedule: scheduleMode.value === 'raw' ? scheduleRaw.value : buildScheduleString(),
       students_count: selectedStudentCount.value,
-      status: form.status,
+      status: normalizedStatus,
       room: form.room.trim(),
       notes: form.notes.trim(),
     }
@@ -719,6 +753,7 @@ onMounted(initializePage)
           <AddClassFormFields
             :status-options="statusOptions"
             :teacher-options="teacherOptions"
+            :level-options="levelOptions"
             :code="generatedCode || form.code"
             :code-label="isEditMode ? t('preschoolAddClass.currentClassCode') : t('preschoolAddClass.generatedClassCode')"
             :code-hint="isEditMode ? t('preschoolAddClass.currentClassCodeHint') : t('preschoolAddClass.generatedClassCodeHint')"
