@@ -85,3 +85,17 @@ export async function fetchPreschoolAttendanceAlerts(filters = {}, options = {})
     pagination: payload.pagination || null,
   }
 }
+
+export async function fetchPreschoolAttendanceAlertSummary(filters = {}, options = {}) {
+  const response = await fetchPreschoolAttendanceAlerts({
+    ...filters,
+    page: 1,
+    perPage: filters.perPage ?? 5,
+  }, options)
+
+  return {
+    summary: response.summary,
+    recentAlerts: response.items,
+    pagination: response.pagination,
+  }
+}

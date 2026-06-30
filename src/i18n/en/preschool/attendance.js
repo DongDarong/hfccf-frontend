@@ -176,6 +176,41 @@ export default {
       loadFailed: 'Failed to load attendance data.',
       noData: 'No attendance records found for the selected filters.',
     },
+    alertSummary: {
+      title: 'Attendance alert summary',
+      subtitle: 'Canonical repeated-absence alerts created from attendance records.',
+      viewAllAttendanceAlerts: 'View all attendance alerts',
+      latestAttendanceAlert: 'Latest attendance alert',
+      recentRepeatedAbsences: 'Recent repeated absences',
+      recentRepeatedAbsencesSubtitle: 'Most recent backend-issued attendance alerts.',
+      noRepeatedAbsenceAlerts: 'No repeated absence alerts available.',
+      detail: {
+        open: '{count} open attendance alerts',
+        overdue: '{count} overdue attendance follow-ups',
+      },
+      cards: {
+        open: {
+          title: 'Open Alerts',
+          label: 'Open attendance alerts',
+          caption: 'Alerts waiting for guardian follow-up.',
+        },
+        acknowledged: {
+          title: 'Acknowledged',
+          label: 'Acknowledged alerts',
+          caption: 'Alerts already acknowledged by the guardian.',
+        },
+        overdue: {
+          title: 'Overdue',
+          label: 'Overdue follow-ups',
+          caption: 'Open alerts that need attention.',
+        },
+        recent: {
+          title: 'Recent',
+          label: 'Recent repeated absences',
+          caption: 'Latest backend-issued repeated absence alerts.',
+        },
+      },
+    },
   },
 
   // ── Absence alerts ─────────────────────────────────────────────────────────

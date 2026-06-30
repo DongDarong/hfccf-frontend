@@ -6,6 +6,7 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolAttendance, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
+import { fetchPreschoolAttendanceAlertSummary } from '@/modules/preschool/services/api/preschoolAttendanceAlertApi'
 
 defineOptions({ name: 'PreschoolAdminAttendanceDashboardPage' })
 
@@ -14,6 +15,15 @@ const router = useRouter()
 
 const records = ref([])
 const classOptions = ref([])
+const attendanceAlertSummary = ref({
+  total: 0,
+  open: 0,
+  acknowledged: 0,
+  overdue: 0,
+  byClass: [],
+  bySeverity: [],
+})
+const recentAttendanceAlerts = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -60,6 +70,49 @@ const statCards = computed(() => [
   { label: t('preschoolAttendanceDashboardPage.cards.excused'), value: stats.value.excused, caption: t('preschoolAttendanceDashboardPage.cards.excusedCaption'), color: 'text-sky-700', bg: 'bg-sky-50' },
 ])
 
+const alertSummaryCards = computed(() => [
+  {
+    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.title'),
+    value: attendanceAlertSummary.value.open,
+    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.caption'),
+    color: 'text-rose-700',
+    bg: 'bg-rose-50',
+  },
+  {
+    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.title'),
+    value: attendanceAlertSummary.value.overdue,
+    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.caption'),
+    color: 'text-amber-700',
+    bg: 'bg-amber-50',
+  },
+  {
+    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.title'),
+    value: attendanceAlertSummary.value.acknowledged,
+    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.caption'),
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+  },
+  {
+    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.title'),
+    value: recentAttendanceAlerts.value.length,
+    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.caption'),
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+  },
+])
+
+const recentAlertItems = computed(() =>
+  recentAttendanceAlerts.value.map((alert) => ({
+    id: alert.id,
+    studentName: alert.studentName || t('common.unknown'),
+    className: alert.className || '—',
+    guardianName: alert.guardianName || '—',
+    followUpStatus: alert.followUpStatus || alert.status || 'open',
+    createdAt: alert.createdAt || '',
+    label: alert.alertLabel || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert'),
+  })),
+)
+
 function rateColor(rate) {
   if (rate >= 90) return 'text-emerald-600'
   if (rate >= 75) return 'text-amber-600'
@@ -77,14 +130,32 @@ async function loadData() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const res = await fetchPreschoolAttendance({
-      classId: filters.value.classId,
-      dateFrom: filters.value.dateFrom,
-      dateTo: filters.value.dateTo,
-      page: 1,
-      perPage: 500,
-    })
-    records.value = res.items || []
+    const [attendanceResponse, alertResponse] = await Promise.all([
+      fetchPreschoolAttendance({
+        classId: filters.value.classId,
+        dateFrom: filters.value.dateFrom,
+        dateTo: filters.value.dateTo,
+        page: 1,
+        perPage: 500,
+      }),
+      fetchPreschoolAttendanceAlertSummary({
+        classId: filters.value.classId,
+        dateFrom: filters.value.dateFrom,
+        dateTo: filters.value.dateTo,
+        perPage: 5,
+      }),
+    ])
+
+    records.value = attendanceResponse.items || []
+    attendanceAlertSummary.value = alertResponse.summary || {
+      total: 0,
+      open: 0,
+      acknowledged: 0,
+      overdue: 0,
+      byClass: [],
+      bySeverity: [],
+    }
+    recentAttendanceAlerts.value = alertResponse.recentAlerts || []
   } catch (e) {
     errorMessage.value = e?.message || t('preschoolAttendanceDashboardPage.messages.loadFailed')
   } finally {
@@ -141,6 +212,81 @@ onMounted(async () => {
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
           <p class="mt-2 text-3xl font-bold" :class="card.color">{{ card.value }}</p>
           <p class="mt-1 text-xs text-slate-500">{{ card.caption }}</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.title') }}
+            </h3>
+            <p class="text-sm text-slate-500">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.subtitle') }}
+            </p>
+          </div>
+          <Button type="button" variant="ghost" size="md" rounded="xl" @click="router.push({ name: 'dashboard-preschool-admin-attendance-alerts' })">
+            {{ t('preschoolAttendanceDashboardPage.alertSummary.viewAllAttendanceAlerts') }}
+          </Button>
+        </div>
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div v-for="card in alertSummaryCards" :key="card.label" class="rounded-2xl border border-slate-200 p-4 shadow-sm" :class="card.bg">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+            <p class="mt-2 text-3xl font-bold" :class="card.color">{{ card.value }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ card.caption }}</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 lg:grid-cols-2">
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h4 class="text-sm font-semibold text-slate-900">
+                  {{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsences') }}
+                </h4>
+                <p class="text-sm text-slate-500">
+                  {{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsencesSubtitle') }}
+                </p>
+              </div>
+              <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                {{ recentAlertItems.length }}
+              </span>
+            </div>
+
+            <div v-if="recentAlertItems.length === 0" class="mt-4 rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-500">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
+            </div>
+
+            <div v-else class="mt-4 space-y-3">
+              <article v-for="alert in recentAlertItems" :key="alert.id" class="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">{{ alert.studentName }}</p>
+                    <p class="mt-1 text-sm text-slate-500">
+                      {{ alert.className }} • {{ alert.guardianName }}
+                    </p>
+                    <p class="mt-1 text-sm text-slate-500">
+                      {{ t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}:
+                      {{ alert.label }}
+                    </p>
+                  </div>
+                  <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    {{ t(`preschoolGuardianCommunicationPage.followUpStatuses.${alert.followUpStatus}`) }}
+                  </span>
+                </div>
+              </article>
+            </div>
+          </article>
+
+          <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h4 class="text-sm font-semibold text-slate-900">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}
+            </h4>
+            <p class="mt-2 text-sm text-slate-500">
+              {{ recentAlertItems[0]?.studentName || t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
+            </p>
+          </article>
         </div>
       </div>
 

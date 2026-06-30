@@ -25,6 +25,15 @@ const defaultDashboard = {
     overdue: 0,
     cancelled: 0,
   },
+  attendanceAlerts: {
+    total: 0,
+    open: 0,
+    acknowledged: 0,
+    overdue: 0,
+    byClass: [],
+    bySeverity: [],
+  },
+  recentAttendanceAlerts: [],
 }
 
 const defaultReportsDashboard = {
@@ -250,6 +259,13 @@ export function useDashboardData() {
           ...defaultDashboard.paymentSummary,
           ...dashboardResult.value?.paymentSummary,
         },
+        attendanceAlerts: {
+          ...defaultDashboard.attendanceAlerts,
+          ...dashboardResult.value?.attendanceAlerts,
+        },
+        recentAttendanceAlerts: Array.isArray(dashboardResult.value?.recentAttendanceAlerts)
+          ? dashboardResult.value.recentAttendanceAlerts
+          : [],
       }
     } else {
       errors.push(dashboardResult.reason?.message || t('preschoolDashboardPage.errors.coreLoadFailed'))
@@ -422,8 +438,58 @@ export function useDashboardData() {
     ]
   })
 
+  const attendanceAlertSummary = computed(() => dashboard.value.attendanceAlerts || defaultDashboard.attendanceAlerts)
+
+  const attendanceAlertSummaryCards = computed(() => {
+    const summary = attendanceAlertSummary.value
+    const recentAlerts = Array.isArray(dashboard.value.recentAttendanceAlerts) ? dashboard.value.recentAttendanceAlerts : []
+
+    return [
+      {
+        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.title'),
+        value: formatCount(summary.open),
+        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.label'),
+        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.caption'),
+      },
+      {
+        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.title'),
+        value: formatCount(summary.acknowledged),
+        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.label'),
+        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.caption'),
+      },
+      {
+        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.title'),
+        value: formatCount(summary.overdue),
+        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.label'),
+        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.caption'),
+      },
+      {
+        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.title'),
+        value: formatCount(recentAlerts.length),
+        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.label'),
+        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.caption'),
+      },
+    ]
+  })
+
+  const recentAttendanceAlertItems = computed(() => {
+    const recentAlerts = Array.isArray(dashboard.value.recentAttendanceAlerts) ? dashboard.value.recentAttendanceAlerts : []
+
+    return recentAlerts.map((alert) => ({
+      title: alert.studentName || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert'),
+      text: joinParts([
+        alert.className || '',
+        alert.guardianName || '',
+        alert.followUpStatus ? t(`preschoolGuardianCommunicationPage.followUpStatuses.${alert.followUpStatus}`) : '',
+      ]),
+      status: alert.status,
+      label: alert.alertLabel || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert'),
+    }))
+  })
+
   const systemHealthItems = computed(() => {
     const health = reportsDashboard.value.executiveHealth || {}
+    const attendanceAlerts = attendanceAlertSummary.value
     const openHealthAlerts = health.health?.value ?? getFirstNumber({
       ...dashboard.value,
       kpis: reportsDashboard.value.kpis,
@@ -479,7 +545,11 @@ export function useDashboardData() {
         status: attendanceStatus,
         statusLabel: translateExecutiveStatus(t, attendanceStatus),
         statusBadgeLabel: translateExecutiveBadgeStatus(t, attendanceStatus),
-        detail: attendanceExceptions === null
+        detail: attendanceAlerts.total > 0
+          ? attendanceAlerts.overdue > 0
+            ? t('preschoolAttendanceDashboardPage.alertSummary.detail.overdue', { count: formatCount(attendanceAlerts.overdue) })
+            : t('preschoolAttendanceDashboardPage.alertSummary.detail.open', { count: formatCount(attendanceAlerts.open) })
+          : attendanceExceptions === null
           ? t('preschoolDashboardPage.executiveHealth.noData')
           : Number(attendanceExceptions) > 0
             ? t('preschoolDashboardPage.executiveHealth.details.attendanceExceptions', { count: formatCount(attendanceExceptions) })
@@ -559,10 +629,7 @@ export function useDashboardData() {
       ...dashboard.value,
       kpis: reportsDashboard.value.kpis,
     }, ['summary.overduePayments', 'kpis.overdueInvoices']) ?? 0
-    const attendanceExceptions = getFirstNumber({
-      ...dashboard.value,
-      kpis: reportsDashboard.value.kpis,
-    }, ['summary.attendanceExceptions', 'kpis.lateRate']) ?? 0
+    const attendanceAlerts = attendanceAlertSummary.value
     const atRiskStudents = getFirstNumber({
       ...dashboard.value,
       kpis: reportsDashboard.value.kpis,
@@ -626,16 +693,18 @@ export function useDashboardData() {
       })
     }
 
-    if (attendanceExceptions > 0) {
+    if ((attendanceAlerts.total ?? 0) > 0) {
       items.push({
-        title: t('preschoolDashboardPage.priority.attendance.title'),
-        detail: t('preschoolDashboardPage.priority.attendance.detail', { count: formatCount(attendanceExceptions) }),
-        value: formatCount(attendanceExceptions),
-        priority: 'medium',
-        priorityLabel: t('preschoolDashboardPage.priority.levels.medium'),
-        tone: resolvePriorityTone('medium'),
-        actionLabel: t('preschoolDashboardPage.priority.review'),
-        actionTo: { name: 'dashboard-preschool-admin-attendance-history' },
+        title: t('preschoolAttendanceDashboardPage.alertSummary.title'),
+        detail: attendanceAlerts.overdue > 0
+          ? t('preschoolAttendanceDashboardPage.alertSummary.detail.overdue', { count: formatCount(attendanceAlerts.overdue) })
+          : t('preschoolAttendanceDashboardPage.alertSummary.detail.open', { count: formatCount(attendanceAlerts.open) }),
+        value: formatCount(attendanceAlerts.open),
+        priority: attendanceAlerts.overdue > 0 ? 'high' : 'medium',
+        priorityLabel: t(`preschoolDashboardPage.priority.levels.${attendanceAlerts.overdue > 0 ? 'high' : 'medium'}`),
+        tone: resolvePriorityTone(attendanceAlerts.overdue > 0 ? 'high' : 'medium'),
+        actionLabel: t('preschoolAttendanceDashboardPage.alertSummary.viewAllAttendanceAlerts'),
+        actionTo: { name: 'dashboard-preschool-admin-attendance-alerts' },
       })
     }
 
@@ -796,6 +865,8 @@ export function useDashboardData() {
     summaryCards,
     systemHealthItems,
     priorityItems,
+    attendanceAlertSummaryCards,
+    recentAttendanceAlertItems,
     insightCards,
     recentActivityItems,
     upcomingClasses,

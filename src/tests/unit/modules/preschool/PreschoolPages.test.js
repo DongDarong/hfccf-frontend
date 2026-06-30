@@ -52,6 +52,37 @@ const mockDashboard = vi.fn(() =>
       overdue: 1,
       cancelled: 0,
     },
+    attendanceAlerts: {
+      total: 2,
+      open: 1,
+      acknowledged: 1,
+      overdue: 1,
+      byClass: [
+        {
+          classId: 'class-1',
+          className: 'Morning Nursery',
+          total: 2,
+          open: 1,
+          acknowledged: 1,
+          overdue: 1,
+        },
+      ],
+      bySeverity: [
+        { severity: 'high', total: 1 },
+        { severity: 'medium', total: 1 },
+      ],
+    },
+    recentAttendanceAlerts: [
+      {
+        id: 'alert-1',
+        studentName: 'Alice Student',
+        className: 'Morning Nursery',
+        guardianName: 'Guardian One',
+        followUpStatus: 'open',
+        createdAt: '2026-05-19T08:00:00Z',
+        alertLabel: 'Repeated Absence',
+      },
+    ],
   }),
 )
 
@@ -257,6 +288,9 @@ describe('Preschool real pages', () => {
     expect(wrapper.text()).toContain('Priority Queue')
     expect(wrapper.text()).toContain('Refresh')
     expect(wrapper.text()).toContain('Updated')
+    expect(wrapper.text()).toContain('Attendance alert summary')
+    expect(wrapper.text()).toContain('Open Alerts')
+    expect(wrapper.text()).toContain('Recent repeated absences')
     expect(wrapper.text().indexOf('Priority Queue')).toBeLessThan(wrapper.text().indexOf('System Health'))
     expect(wrapper.text()).toContain('Main Insights')
     expect(wrapper.text()).toContain('Operational Sections')

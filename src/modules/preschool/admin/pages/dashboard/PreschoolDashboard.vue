@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import DashboardHeroSection from '@/modules/preschool/admin/pages/dashboard/sections/DashboardHeroSection.vue'
@@ -24,6 +25,8 @@ const {
   spotlightTitle,
   spotlightText,
   summaryCards,
+  attendanceAlertSummaryCards,
+  recentAttendanceAlertItems,
   systemHealthItems,
   priorityItems,
   insightCards,
@@ -80,6 +83,96 @@ onMounted(loadDashboard)
       </div>
 
       <DashboardSummarySection :cards="summaryCards" />
+
+      <section class="preschool-dashboard-page__section">
+        <div class="preschool-dashboard-page__section-header">
+          <div>
+            <h2 class="preschool-dashboard-page__section-title">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.title') }}
+            </h2>
+            <p class="preschool-dashboard-page__section-subtitle">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.subtitle') }}
+            </p>
+          </div>
+          <RouterLink
+            :to="{ name: 'dashboard-preschool-admin-attendance-alerts' }"
+            class="preschool-dashboard-page__panel-link"
+          >
+            {{ t('preschoolAttendanceDashboardPage.alertSummary.viewAllAttendanceAlerts') }}
+          </RouterLink>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <article
+            v-for="card in attendanceAlertSummaryCards"
+            :key="card.title"
+            class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+          >
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {{ card.title }}
+            </p>
+            <p class="mt-2 text-3xl font-bold text-slate-900">
+              {{ card.value }}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">
+              {{ card.caption }}
+            </p>
+          </article>
+        </div>
+
+        <div class="mt-4 grid gap-3 lg:grid-cols-2">
+          <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-900">
+                  {{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsences') }}
+                </h3>
+                <p class="text-sm text-slate-500">
+                  {{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsencesSubtitle') }}
+                </p>
+              </div>
+              <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+                {{ recentAttendanceAlertItems.length }}
+              </span>
+            </div>
+
+            <div v-if="recentAttendanceAlertItems.length === 0" class="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
+            </div>
+
+            <div v-else class="mt-4 space-y-3">
+              <article
+                v-for="item in recentAttendanceAlertItems"
+                :key="`${item.label}-${item.title}`"
+                class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">
+                      {{ item.title }}
+                    </p>
+                    <p class="mt-1 text-sm text-slate-500">
+                      {{ item.text || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}
+                    </p>
+                  </div>
+                  <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    {{ item.label }}
+                  </span>
+                </div>
+              </article>
+            </div>
+          </article>
+
+          <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h3 class="text-sm font-semibold text-slate-900">
+              {{ t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}
+            </h3>
+            <p class="mt-1 text-sm text-slate-500">
+              {{ recentAttendanceAlertItems[0]?.text || t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
+            </p>
+          </article>
+        </div>
+      </section>
 
       <DashboardPrioritySection
         :title="t('preschoolDashboardPage.priority.title')"
