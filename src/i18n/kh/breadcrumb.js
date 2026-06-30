@@ -59,7 +59,7 @@ export default {
     attendanceTeachers: 'វត្តមានគ្រូ',
     attendanceHistory: 'ប្រវត្តិ',
     attendanceDashboard: 'ផ្ទាំងគ្រប់គ្រង',
-    attendanceAlerts: 'សញ្ញាព្រមានអវត្តមាន',
+    attendanceAlerts: 'ការជូនដំណឹងអវត្តមាន',
     attendanceCalendar: 'ប្រតិទិន',
     attendanceProfile: 'ប្រវត្តិសិស្ស',
     attendanceIdCard: 'បង្កើតប័ណ្ណសម្គាល់ខ្លួន',

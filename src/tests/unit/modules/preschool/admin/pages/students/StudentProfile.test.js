@@ -164,8 +164,9 @@ function mockResolvedStudentData() {
         }, {}, 'Ms. Dara'),
         status: 'sent',
         severity: 'medium',
-        channel: 'manual_note',
-        sourceType: 'student',
+        channel: 'in_app',
+        sourceType: 'attendance',
+        communicationType: 'repeated_absence',
         createdAt: '2025-01-05T08:00:00Z',
         followUpDate: '2025-01-06',
       },
@@ -215,6 +216,7 @@ describe('StudentProfile', () => {
     expect(wrapper.text()).toContain('Follow-up Status')
     expect(wrapper.text()).toContain('View Full Contact History')
     expect(wrapper.text()).toContain('Parent confirmed the pickup plan for tomorrow.')
+    expect(wrapper.text()).toContain('Attendance alert · Repeated absence')
     expect(wrapper.find('.student-profile-page__avatar-initials').text()).toBe('AS')
     expect(wrapper.text()).toContain('en:Village 1, Prek Pra, Dangkao, Phnom Penh')
 
