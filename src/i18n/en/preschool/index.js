@@ -10,6 +10,7 @@ import adminDashboard from './admin-dashboard'
 import assessment from './assessment'
 import progress from './progress'
 import reports from './reports'
+import analytics from './analytics'
 import schedules from './schedules'
 import settings from './settings'
 import lifecycle from './lifecycle'
@@ -41,6 +42,7 @@ export default {
   ...assessment,
   ...progress,
   ...reports,
+  ...analytics,
   ...schedules,
   ...settings,
   ...lifecycle,

@@ -52,6 +52,7 @@ export default {
     preschoolAssignments: 'ការចាត់តាំង',
     reportSnapshots: 'រូបថតរបាយការណ៍',
     exportGovernance: 'ការនាំចេញ',
+    analytics: 'វិភាគទិន្នន័យ',
     governanceReview: 'ពិនិត្យ',
     institutionalReconstruction: 'ស្ថាបនាឡើងវិញ',
     governanceDiff: 'ប្រៀបធៀប',

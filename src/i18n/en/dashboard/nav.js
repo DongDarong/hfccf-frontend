@@ -52,6 +52,7 @@ export default {
     preschoolAssignments: 'Assignments',
     reportSnapshots: 'Snapshots',
     exportGovernance: 'Exports',
+    analytics: 'Analytics',
     governanceReview: 'Review',
     institutionalReconstruction: 'Reconstruction',
     governanceDiff: 'Diff',
