@@ -36,9 +36,25 @@ defineProps({
     type: String,
     default: '',
   },
+  sessionViewLabel: {
+    type: String,
+    default: '',
+  },
+  sessionActionLabel: {
+    type: String,
+    default: '',
+  },
+  noSessionLabel: {
+    type: String,
+    default: '',
+  },
+  showSessionActions: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['edit', 'archive'])
+const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
 </script>
 
 <template>
@@ -68,8 +84,15 @@ const emit = defineEmits(['edit', 'archive'])
         :show-actions="showActions"
         :edit-label="editLabel"
         :archive-label="archiveLabel"
+        :show-session-actions="showSessionActions"
+        :session-view-label="sessionViewLabel"
+        :session-action-label="sessionActionLabel"
+        :no-session-label="noSessionLabel"
+        :session="entry.session"
         @edit="emit('edit', $event)"
         @archive="emit('archive', $event)"
+        @session-action="emit('session-action', $event)"
+        @session-view="emit('session-view', $event)"
       />
     </div>
   </div>

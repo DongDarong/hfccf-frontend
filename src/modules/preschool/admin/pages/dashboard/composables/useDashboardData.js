@@ -1,7 +1,15 @@
 import { computed, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { fetchTodayAttendanceSessions } from '@/modules/preschool/services/api/preschoolAttendanceSessionApi'
 import { fetchPreschoolDashboard } from '@/modules/preschool/services/preschoolApi'
+import { fetchSchedules } from '@/modules/preschool/services/api/preschoolScheduleApi'
 import { fetchReportsDashboard } from '@/modules/preschool/services/api/preschoolReportingApi'
+import { PreschoolScheduleDay } from '@/modules/preschool/services/scheduleConstants'
+import {
+  buildScheduleSessionIndex,
+  normalizeScheduleSessionStatus,
+  resolveScheduleSession,
+} from '@/modules/preschool/shared/components/schedule/scheduleSessionOverlay'
 
 const defaultDashboard = {
   summary: {
@@ -34,6 +42,10 @@ const defaultDashboard = {
     bySeverity: [],
   },
   recentAttendanceAlerts: [],
+  operationalSessions: {
+    schedules: [],
+    sessions: [],
+  },
 }
 
 const defaultReportsDashboard = {
@@ -229,10 +241,39 @@ function formatAnalyticsComparison(t, metric, valueFormatter) {
   }
 }
 
+function todayIso() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function todayDayOfWeek() {
+  const day = new Date().getDay()
+  return day === 0 ? PreschoolScheduleDay.SUNDAY : day
+}
+
+function resolveSessionActionLabel(t, status) {
+  const key = normalizeScheduleSessionStatus(status)
+
+  if (key === 'scheduled') {
+    return t('preschoolAttendanceSessionsPage.actions.openSession')
+  }
+
+  if (key === 'open') {
+    return t('preschoolAttendanceSessionsPage.actions.continueAttendance')
+  }
+
+  return t('preschoolAttendanceSessionsPage.actions.viewSession')
+}
+
 export function useDashboardData() {
   const { t, language } = useLanguage()
   const dashboard = ref(defaultDashboard)
   const reportsDashboard = ref(defaultReportsDashboard)
+  const todayOperationalSchedules = ref([])
+  const todayOperationalSessions = ref([])
   const loading = ref(false)
   const errorMessage = ref('')
 
@@ -240,9 +281,15 @@ export function useDashboardData() {
     loading.value = true
     errorMessage.value = ''
 
-    const [dashboardResult, reportsResult] = await Promise.allSettled([
+    const [dashboardResult, reportsResult, schedulesResult, sessionsResult] = await Promise.allSettled([
       fetchPreschoolDashboard(),
       fetchReportsDashboard(),
+      fetchSchedules({
+        page: 1,
+        perPage: 200,
+        dayOfWeek: todayDayOfWeek(),
+      }),
+      fetchTodayAttendanceSessions(),
     ])
 
     const errors = []
@@ -280,6 +327,14 @@ export function useDashboardData() {
       errors.push(reportsResult.reason?.message || t('preschoolDashboardPage.errors.reportsLoadFailed'))
     }
 
+    todayOperationalSchedules.value = schedulesResult.status === 'fulfilled' && Array.isArray(schedulesResult.value?.items)
+      ? schedulesResult.value.items
+      : []
+
+    todayOperationalSessions.value = sessionsResult.status === 'fulfilled' && Array.isArray(sessionsResult.value?.items)
+      ? sessionsResult.value.items
+      : []
+
     errorMessage.value = errors.join(' • ')
     loading.value = false
   }
@@ -313,6 +368,147 @@ export function useDashboardData() {
       hour: 'numeric',
       minute: '2-digit',
     }).format(date)
+  })
+
+  const todayScheduleSessionIndex = computed(() => buildScheduleSessionIndex(todayOperationalSessions.value))
+
+  const todayScheduleItems = computed(() => {
+    const currentDate = todayIso()
+
+    return (todayOperationalSchedules.value || []).map((schedule) => {
+      const session = resolveScheduleSession(schedule, todayScheduleSessionIndex.value, currentDate)
+      const status = normalizeScheduleSessionStatus(session?.status || '')
+
+      return {
+        ...schedule,
+        session: session
+          ? {
+              ...session,
+              statusKey: status,
+              statusLabel: t(`preschoolAttendanceSessionsPage.statuses.${status}`) || status,
+              actionLabel: resolveSessionActionLabel(t, status),
+            }
+          : null,
+      }
+    })
+  })
+
+  const todaySessionCounts = computed(() => {
+    const counts = {
+      scheduled: 0,
+      open: 0,
+      completed: 0,
+      locked: 0,
+      cancelled: 0,
+    }
+
+    for (const item of todayScheduleItems.value) {
+      const status = normalizeScheduleSessionStatus(item.session?.status || '')
+      if (status === 'scheduled') counts.scheduled += 1
+      else if (status === 'open') counts.open += 1
+      else if (status === 'completed') counts.completed += 1
+      else if (status === 'locked') counts.locked += 1
+      else if (status === 'cancelled') counts.cancelled += 1
+    }
+
+    return counts
+  })
+
+  const todayMissingSessionCount = computed(() =>
+    todayScheduleItems.value.filter((item) => !item.session).length,
+  )
+
+  const operationalSummaryCards = computed(() => [
+    {
+      title: t('preschoolDashboardPage.operationalSummary.todaySchedule.title'),
+      value: todayScheduleItems.value.length,
+      label: t('preschoolDashboardPage.operationalSummary.todaySchedule.label'),
+      status: 'info',
+    },
+    {
+      title: t('preschoolDashboardPage.operationalSummary.todaySessions.title'),
+      value: todayOperationalSessions.value.length,
+      label: t('preschoolDashboardPage.operationalSummary.todaySessions.label'),
+      status: 'info',
+    },
+    {
+      title: t('preschoolDashboardPage.operationalSummary.scheduled.title'),
+      value: todaySessionCounts.value.scheduled,
+      label: t('preschoolDashboardPage.operationalSummary.scheduled.label'),
+      status: 'info',
+    },
+    {
+      title: t('preschoolDashboardPage.operationalSummary.open.title'),
+      value: todaySessionCounts.value.open,
+      label: t('preschoolDashboardPage.operationalSummary.open.label'),
+      status: 'warning',
+    },
+    {
+      title: t('preschoolDashboardPage.operationalSummary.completed.title'),
+      value: todaySessionCounts.value.completed,
+      label: t('preschoolDashboardPage.operationalSummary.completed.label'),
+      status: 'success',
+    },
+    {
+      title: t('preschoolDashboardPage.operationalSummary.missing.title'),
+      value: todayMissingSessionCount.value,
+      label: t('preschoolDashboardPage.operationalSummary.missing.label'),
+      status: 'error',
+    },
+  ])
+
+  const todayScheduleItemsForView = computed(() =>
+    todayScheduleItems.value.map((item) => ({
+      id: item.id,
+      title: item.className || t('preschoolDashboardPage.operations.classFallback'),
+      text: joinParts([
+        [item.startTime, item.endTime].filter(Boolean).join(' - '),
+        item.teacherName || '',
+        item.room || '',
+      ]),
+      status: item.session?.statusKey || 'missing',
+      statusLabel: item.session?.statusLabel || t('preschoolDashboardPage.operationalSummary.missing.label'),
+      actionLabel: item.session?.actionLabel || t('preschoolSchedulesPage.actions.view'),
+      hasSession: Boolean(item.session),
+    })),
+  )
+
+  const todayAttendanceSessionItems = computed(() =>
+    (todayOperationalSessions.value || []).slice(0, 6).map((session) => {
+      const status = normalizeScheduleSessionStatus(session.status)
+
+      return {
+        id: session.id,
+        title: session.className || session.scheduleLabel || t('preschoolDashboardPage.operations.classFallback'),
+        text: joinParts([
+          [session.startTime, session.endTime].filter(Boolean).join(' - '),
+          session.teacherName || '',
+          session.roomName || '',
+        ]),
+        status,
+        statusLabel: t(`preschoolAttendanceSessionsPage.statuses.${status}`) || status,
+        actionLabel: resolveSessionActionLabel(t, status),
+      }
+    }),
+  )
+
+  const attendanceProgressCards = computed(() => {
+    const total = todayScheduleItems.value.length || todayOperationalSessions.value.length
+    const completed = todaySessionCounts.value.completed
+    const open = todaySessionCounts.value.open
+    const late = getFirstNumber(reportsDashboard.value, ['kpis.lateRate']) ?? 0
+    const excused = getFirstNumber(dashboard.value, ['summary.guardianIssues']) ?? 0
+    const present = total > 0 ? Math.max(total - todaySessionCounts.value.open - todayMissingSessionCount.value, 0) : 0
+    const absent = getFirstNumber(dashboard.value, ['summary.attendanceToday']) ?? 0
+
+    return [
+      { label: t('preschoolAttendanceDashboardPage.cards.present'), value: `${present}` },
+      { label: t('preschoolAttendanceDashboardPage.cards.absent'), value: `${absent}` },
+      { label: t('preschoolAttendanceDashboardPage.cards.late'), value: `${late}%` },
+      { label: t('preschoolAttendanceDashboardPage.cards.excused'), value: `${excused}` },
+      { label: t('preschoolDashboardPage.operationalSummary.open.label'), value: `${open}` },
+      { label: t('preschoolDashboardPage.operationalSummary.completed.label'), value: `${completed}` },
+    ]
   })
 
   const spotlightTitle = computed(() => {
@@ -867,6 +1063,11 @@ export function useDashboardData() {
     priorityItems,
     attendanceAlertSummaryCards,
     recentAttendanceAlertItems,
+    operationalSummaryCards,
+    todayScheduleItemsForView,
+    todayAttendanceSessionItems,
+    attendanceProgressCards,
+    todayMissingSessionCount,
     insightCards,
     recentActivityItems,
     upcomingClasses,

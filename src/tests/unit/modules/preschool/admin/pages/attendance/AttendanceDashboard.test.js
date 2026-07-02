@@ -6,6 +6,8 @@ import AttendanceDashboard from '@/modules/preschool/admin/pages/attendance/Atte
 
 const mockFetchPreschoolClasses = vi.fn()
 const mockFetchPreschoolAttendance = vi.fn()
+const mockFetchTodayAttendanceSessions = vi.fn()
+const mockFetchMissingAttendanceSessions = vi.fn()
 const mockFetchPreschoolAttendanceAlertSummary = vi.fn()
 
 vi.mock('@/modules/preschool/services/preschoolApi', () => ({
@@ -15,6 +17,12 @@ vi.mock('@/modules/preschool/services/preschoolApi', () => ({
 
 vi.mock('@/modules/preschool/services/api/preschoolAttendanceAlertApi', () => ({
   fetchPreschoolAttendanceAlertSummary: (...args) => mockFetchPreschoolAttendanceAlertSummary(...args),
+}))
+
+vi.mock('@/modules/preschool/services/api/preschoolAttendanceSessionApi', () => ({
+  fetchMissingAttendanceSessions: (...args) => mockFetchMissingAttendanceSessions(...args),
+  fetchTodayAttendanceSessions: (...args) => mockFetchTodayAttendanceSessions(...args),
+  openAttendanceSession: vi.fn(() => Promise.resolve(null)),
 }))
 
 function createRoute() {
@@ -79,6 +87,44 @@ beforeEach(() => {
     ],
   })
 
+  mockFetchTodayAttendanceSessions.mockResolvedValue({
+    items: [
+      {
+        id: 'session-1',
+        classId: 'class-1',
+        className: 'Morning Stars',
+        roomName: 'Room 1',
+        teacherName: 'Teacher One',
+        attendanceDate: '2026-05-19',
+        startTime: '08:00',
+        endTime: '10:00',
+        status: 'open',
+        studentCount: 18,
+        generatedFromSchedule: true,
+      },
+    ],
+    summary: {
+      open: 1,
+      closed: 0,
+      cancelled: 0,
+      missing: 1,
+    },
+  })
+
+  mockFetchMissingAttendanceSessions.mockResolvedValue({
+    items: [
+      {
+        id: 'missing-1',
+        classId: 'class-1',
+        className: 'Morning Stars',
+        attendanceDate: '2026-05-19',
+        status: 'scheduled',
+        generatedFromSchedule: true,
+      },
+    ],
+    count: 1,
+  })
+
   mockFetchPreschoolAttendanceAlertSummary.mockResolvedValue({
     summary: {
       total: 2,
@@ -118,20 +164,35 @@ describe('AttendanceDashboard', () => {
     const wrapper = await mountPage()
 
     expect(mockFetchPreschoolAttendance).toHaveBeenCalled()
-    expect(mockFetchPreschoolAttendanceAlertSummary).toHaveBeenCalledWith(
+    expect(mockFetchTodayAttendanceSessions).toHaveBeenCalledWith(
       expect.objectContaining({
         classId: '',
+      }),
+    )
+    expect(mockFetchMissingAttendanceSessions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        startDate: expect.any(String),
+        endDate: expect.any(String),
+      }),
+    )
+    expect(mockFetchPreschoolAttendanceAlertSummary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        classId: undefined,
         dateFrom: expect.any(String),
         dateTo: expect.any(String),
-        perPage: 5,
+        perPage: 4,
       }),
     )
 
     expect(wrapper.text()).toContain('Attendance Dashboard')
+    expect(wrapper.text()).toContain('Operational Summary')
+    expect(wrapper.text()).toContain('Today’s Sessions')
     expect(wrapper.text()).toContain('Attendance alert summary')
     expect(wrapper.text()).toContain('Open Alerts')
     expect(wrapper.text()).toContain('Overdue')
     expect(wrapper.text()).toContain('Recent repeated absences')
+    expect(wrapper.text()).toContain('Teacher One')
+    expect(wrapper.text()).toContain('Room 1')
     expect(wrapper.text()).toContain('Alice Student')
     expect(wrapper.text()).toContain('Repeated Absence')
   })

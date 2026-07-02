@@ -45,6 +45,42 @@ const mockDashboard = vi.fn(() =>
   }),
 )
 
+const mockSchedules = vi.fn(() =>
+  Promise.resolve({
+    items: [
+      {
+        id: 'schedule-1',
+        classId: 'class-1',
+        className: 'Morning Nursery',
+        teacherName: 'Teacher Sarah',
+        room: 'Room A',
+        startTime: '08:00',
+        endTime: '10:00',
+        dayOfWeek: 1,
+      },
+    ],
+  }),
+)
+
+const mockTodaySessions = vi.fn(() =>
+  Promise.resolve({
+    items: [
+      {
+        id: 'session-1',
+        scheduleId: 'schedule-1',
+        classId: 'class-1',
+        className: 'Morning Nursery',
+        teacherName: 'Teacher Sarah',
+        roomName: 'Room A',
+        startTime: '08:00',
+        endTime: '10:00',
+        attendanceDate: '2026-06-27',
+        status: 'open',
+      },
+    ],
+  }),
+)
+
 const mockReportsDashboard = vi.fn(() =>
   Promise.resolve({
     dashboard: {
@@ -88,6 +124,14 @@ vi.mock('@/modules/preschool/services/preschoolApi', () => ({
   fetchPreschoolAttendance: vi.fn(() => Promise.resolve({ items: [] })),
 }))
 
+vi.mock('@/modules/preschool/services/api/preschoolScheduleApi', () => ({
+  fetchSchedules: (...args) => mockSchedules(...args),
+}))
+
+vi.mock('@/modules/preschool/services/api/preschoolAttendanceSessionApi', () => ({
+  fetchTodayAttendanceSessions: (...args) => mockTodaySessions(...args),
+}))
+
 vi.mock('@/modules/preschool/services/api/preschoolReportingApi', () => ({
   fetchReportsDashboard: (...args) => mockReportsDashboard(...args),
 }))
@@ -112,6 +156,7 @@ async function mountPage() {
         DashboardHealthSection: { props: ['title'], template: '<div class="health">{{ title }}</div>' },
         DashboardInsightsSection: { props: ['title'], template: '<div class="insights">{{ title }}</div>' },
         DashboardOperationsSection: { props: ['title'], template: '<div class="ops">{{ title }}</div>' },
+        AppStatusChip: { props: ['label'], template: '<span class="chip">{{ label }}</span>' },
       },
     },
   })
@@ -125,6 +170,12 @@ describe('PreschoolDashboard', () => {
     const wrapper = await mountPage()
 
     expect(mockDashboard).toHaveBeenCalled()
+    expect(mockSchedules).toHaveBeenCalled()
+    expect(mockTodaySessions).toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Operational Summary')
+    expect(wrapper.text()).toContain('Today’s Schedule')
+    expect(wrapper.text()).toContain('Today’s Sessions')
+    expect(wrapper.text()).toContain('Morning Nursery')
     expect(wrapper.text()).toContain('Attendance alert summary')
     expect(wrapper.text()).toContain('Open Alerts')
     expect(wrapper.text()).toContain('Recent repeated absences')

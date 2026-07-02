@@ -24,6 +24,7 @@ import {
   updateAttendanceSettings,
   updateCalendarEvent,
 } from '@/modules/preschool/services/api/preschoolAttendanceConfigurationApi'
+import { saveAttendanceSessionRecord } from '@/modules/preschool/services/api/preschoolAttendanceSessionApi'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -202,6 +203,8 @@ function normalizeAttendanceRow(row = {}) {
     ),
     recordedByUserId: row.recordedByUserId ?? row.recorded_by_user_id ?? '',
     recordedByName: normalizeText(row.recordedByName || row.recorded_by_name || row.recordedBy?.name),
+    attendanceSessionId: row.attendanceSessionId ?? row.attendance_session_id ?? '',
+    attendanceSession: row.attendanceSession || row.attendance_session || null,
     attendanceDate: row.attendanceDate || row.attendance_date || '',
     status: normalizeText(row.status || ''),
     note: normalizeText(row.note),
@@ -1021,7 +1024,7 @@ export async function deletePreschoolStudent(id) {
 }
 
 export async function fetchPreschoolAttendance(
-  { page = 1, perPage = 10, search = '', classId = '', studentId = '', status = '', attendanceDate = '', dateFrom = '', dateTo = '' } = {},
+  { page = 1, perPage = 10, search = '', classId = '', studentId = '', status = '', attendanceDate = '', attendanceSessionId = '', dateFrom = '', dateTo = '' } = {},
   options = {},
 ) {
   const response = await http.get('/preschool/attendance', {
@@ -1033,6 +1036,7 @@ export async function fetchPreschoolAttendance(
       student_id: studentId,
       status,
       attendance_date: attendanceDate,
+      attendance_session_id: attendanceSessionId,
       date_from: dateFrom,
       date_to: dateTo,
     }),
@@ -1043,6 +1047,13 @@ export async function fetchPreschoolAttendance(
 }
 
 export async function savePreschoolAttendance(payload = {}) {
+  const attendanceSessionId = String(payload.attendance_session_id || payload.attendanceSessionId || '').trim()
+
+  if (attendanceSessionId) {
+    const response = await saveAttendanceSessionRecord(attendanceSessionId, payload)
+    return normalizeAttendanceRow(response.attendance || response)
+  }
+
   const attendanceId = resolveId(payload)
   const method = attendanceId ? 'put' : 'post'
   const url = attendanceId ? `/preschool/attendance/${encodeURIComponent(attendanceId)}` : '/preschool/attendance'

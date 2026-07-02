@@ -4,9 +4,21 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
+import AppStatusChip from '@/components/ui/AppStatusChip.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolAttendance, fetchPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
+import {
+  fetchMissingAttendanceSessions,
+  fetchTodayAttendanceSessions,
+  openAttendanceSession,
+} from '@/modules/preschool/services/api/preschoolAttendanceSessionApi'
 import { fetchPreschoolAttendanceAlertSummary } from '@/modules/preschool/services/api/preschoolAttendanceAlertApi'
+import {
+  getSessionActionTone,
+  getSessionStatusKey,
+  getSessionStatusTone,
+  normalizeSessionStatus,
+} from '@/modules/preschool/admin/pages/attendance/sessionUi'
 
 defineOptions({ name: 'PreschoolAdminAttendanceDashboardPage' })
 
@@ -15,24 +27,29 @@ const router = useRouter()
 
 const records = ref([])
 const classOptions = ref([])
-const attendanceAlertSummary = ref({
-  total: 0,
-  open: 0,
-  acknowledged: 0,
-  overdue: 0,
-  byClass: [],
-  bySeverity: [],
+const attendanceSessions = ref([])
+const missingSessions = ref([])
+const alertSummary = ref({
+  summary: {
+    total: 0,
+    open: 0,
+    acknowledged: 0,
+    overdue: 0,
+    byClass: [],
+    bySeverity: [],
+  },
+  recentAlerts: [],
 })
-const recentAttendanceAlerts = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
 
 const today = new Date()
 const firstOfMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`
+const todayIso = today.toISOString().slice(0, 10)
 const filters = ref({
   classId: '',
   dateFrom: firstOfMonth,
-  dateTo: today.toISOString().slice(0, 10),
+  dateTo: todayIso,
 })
 
 const stats = computed(() => {
@@ -44,6 +61,48 @@ const stats = computed(() => {
   const rate = total ? Math.round((present / total) * 100) : 0
   return { total, present, absent, late, excused, rate }
 })
+
+const visibleMissingSessions = computed(() =>
+  filters.value.classId
+    ? missingSessions.value.filter((session) => String(session.classId || '') === String(filters.value.classId))
+    : missingSessions.value,
+)
+
+const sessionCards = computed(() => {
+  const actualSessions = attendanceSessions.value.map((session) => ({
+    ...session,
+    displayStatus: normalizeSessionStatus(session.status),
+    isMissing: false,
+  }))
+
+  const missingCards = visibleMissingSessions.value.map((session) => ({
+    ...session,
+    displayStatus: 'missing',
+    isMissing: true,
+  }))
+
+  return [...actualSessions, ...missingCards]
+})
+
+const sessionCounts = computed(() => sessionCards.value.reduce((counts, session) => {
+  const status = normalizeSessionStatus(session.displayStatus || session.status)
+  counts.total += 1
+  if (status === 'scheduled') counts.scheduled += 1
+  else if (status === 'open') counts.open += 1
+  else if (status === 'completed') counts.completed += 1
+  else if (status === 'locked') counts.locked += 1
+  else if (status === 'cancelled') counts.cancelled += 1
+  else if (session.isMissing || status === 'missing') counts.missing += 1
+  return counts
+}, {
+  total: 0,
+  scheduled: 0,
+  open: 0,
+  completed: 0,
+  locked: 0,
+  cancelled: 0,
+  missing: 0,
+}))
 
 const classSummary = computed(() => {
   const map = {}
@@ -70,48 +129,24 @@ const statCards = computed(() => [
   { label: t('preschoolAttendanceDashboardPage.cards.excused'), value: stats.value.excused, caption: t('preschoolAttendanceDashboardPage.cards.excusedCaption'), color: 'text-sky-700', bg: 'bg-sky-50' },
 ])
 
-const alertSummaryCards = computed(() => [
-  {
-    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.title'),
-    value: attendanceAlertSummary.value.open,
-    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.caption'),
-    color: 'text-rose-700',
-    bg: 'bg-rose-50',
-  },
-  {
-    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.title'),
-    value: attendanceAlertSummary.value.overdue,
-    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.caption'),
-    color: 'text-amber-700',
-    bg: 'bg-amber-50',
-  },
-  {
-    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.title'),
-    value: attendanceAlertSummary.value.acknowledged,
-    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.caption'),
-    color: 'text-emerald-700',
-    bg: 'bg-emerald-50',
-  },
-  {
-    label: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.title'),
-    value: recentAttendanceAlerts.value.length,
-    caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.caption'),
-    color: 'text-slate-700',
-    bg: 'bg-slate-50',
-  },
+const operationalSummaryCards = computed(() => [
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.todaySessions'), value: sessionCounts.value.total, caption: t('preschoolAttendanceDashboardPage.operationalSummary.todaySessionsCaption'), color: 'text-slate-700', bg: 'bg-slate-50' },
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.scheduled'), value: sessionCounts.value.scheduled, caption: t('preschoolAttendanceSessionsPage.statuses.scheduled'), color: 'text-sky-700', bg: 'bg-sky-50' },
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.open'), value: sessionCounts.value.open, caption: t('preschoolAttendanceSessionsPage.statuses.open'), color: 'text-amber-700', bg: 'bg-amber-50' },
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.completed'), value: sessionCounts.value.completed, caption: t('preschoolAttendanceSessionsPage.statuses.completed'), color: 'text-emerald-700', bg: 'bg-emerald-50' },
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.locked'), value: sessionCounts.value.locked, caption: t('preschoolAttendanceSessionsPage.statuses.locked'), color: 'text-slate-700', bg: 'bg-slate-50' },
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.cancelled'), value: sessionCounts.value.cancelled, caption: t('preschoolAttendanceSessionsPage.statuses.cancelled'), color: 'text-rose-700', bg: 'bg-rose-50' },
+  { label: t('preschoolAttendanceDashboardPage.operationalSummary.missing'), value: sessionCounts.value.missing, caption: t('preschoolAttendanceSessionsPage.missingAttendance'), color: 'text-rose-700', bg: 'bg-rose-50' },
 ])
 
-const recentAlertItems = computed(() =>
-  recentAttendanceAlerts.value.map((alert) => ({
-    id: alert.id,
-    studentName: alert.studentName || t('common.unknown'),
-    className: alert.className || '—',
-    guardianName: alert.guardianName || '—',
-    followUpStatus: alert.followUpStatus || alert.status || 'open',
-    createdAt: alert.createdAt || '',
-    label: alert.alertLabel || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert'),
-  })),
-)
+const alertCards = computed(() => ([
+  { key: 'total', label: t('preschoolAttendanceAlertsPage.labels.absenceAlert'), value: alertSummary.value.summary.total || 0 },
+  { key: 'open', label: t('preschoolAttendanceAlertsPage.labels.openAlerts'), value: alertSummary.value.summary.open || 0 },
+  { key: 'acknowledged', label: t('preschoolAttendanceAlertsPage.labels.acknowledgedAlerts'), value: alertSummary.value.summary.acknowledged || 0 },
+  { key: 'overdue', label: t('preschoolAttendanceAlertsPage.labels.overdueAlerts'), value: alertSummary.value.summary.overdue || 0 },
+]))
+
+const recentAlerts = computed(() => (alertSummary.value.recentAlerts || []).slice(0, 4))
 
 function rateColor(rate) {
   if (rate >= 90) return 'text-emerald-600'
@@ -123,14 +158,16 @@ async function loadClasses() {
   try {
     const res = await fetchPreschoolClasses({ page: 1, perPage: 100 })
     classOptions.value = (res.items || []).map((c) => ({ label: c.name, value: c.id }))
-  } catch { classOptions.value = [] }
+  } catch {
+    classOptions.value = []
+  }
 }
 
 async function loadData() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [attendanceResponse, alertResponse] = await Promise.all([
+    const [attendanceResponse, sessionResponse, missingResponse, alertResponse] = await Promise.all([
       fetchPreschoolAttendance({
         classId: filters.value.classId,
         dateFrom: filters.value.dateFrom,
@@ -138,29 +175,118 @@ async function loadData() {
         page: 1,
         perPage: 500,
       }),
+      fetchTodayAttendanceSessions({ classId: filters.value.classId })
+        .catch(() => ({
+          items: [],
+          summary: { open: 0, closed: 0, cancelled: 0, missing: 0 },
+        })),
+      fetchMissingAttendanceSessions({
+        startDate: filters.value.dateTo,
+        endDate: filters.value.dateTo,
+      }).catch(() => ({
+        items: [],
+        count: 0,
+      })),
       fetchPreschoolAttendanceAlertSummary({
-        classId: filters.value.classId,
-        dateFrom: filters.value.dateFrom,
-        dateTo: filters.value.dateTo,
-        perPage: 5,
-      }),
+        classId: filters.value.classId || undefined,
+        dateFrom: filters.value.dateFrom || undefined,
+        dateTo: filters.value.dateTo || undefined,
+        page: 1,
+        perPage: 4,
+      })
+        .catch(() => ({
+          summary: {
+            total: 0,
+            open: 0,
+            acknowledged: 0,
+            overdue: 0,
+            byClass: [],
+            bySeverity: [],
+          },
+          recentAlerts: [],
+        })),
     ])
 
+    attendanceSessions.value = sessionResponse.items || []
+    missingSessions.value = missingResponse.items || []
+    alertSummary.value = alertResponse
     records.value = attendanceResponse.items || []
-    attendanceAlertSummary.value = alertResponse.summary || {
-      total: 0,
-      open: 0,
-      acknowledged: 0,
-      overdue: 0,
-      byClass: [],
-      bySeverity: [],
-    }
-    recentAttendanceAlerts.value = alertResponse.recentAlerts || []
   } catch (e) {
     errorMessage.value = e?.message || t('preschoolAttendanceDashboardPage.messages.loadFailed')
   } finally {
     loading.value = false
   }
+}
+
+async function takeAttendance(session) {
+  const status = normalizeSessionStatus(session.status)
+  const sessionId = String(session.id || session.sessionKey || '').trim()
+
+  if (!sessionId || session.isMissing) {
+    return
+  }
+
+  try {
+    if (status === 'scheduled') {
+      const openedSession = await openAttendanceSession(sessionId)
+      await router.push({
+        name: 'dashboard-preschool-admin-attendance-students',
+        query: {
+          classId: openedSession?.classId || session.classId || '',
+          date: openedSession?.attendanceDate || session.attendanceDate || filters.value.dateTo,
+          attendance_session_id: openedSession?.id || sessionId,
+          sessionId: openedSession?.id || sessionId,
+        },
+      })
+      return
+    }
+
+    if (status === 'open') {
+      await router.push({
+        name: 'dashboard-preschool-admin-attendance-students',
+        query: {
+          classId: session.classId || '',
+          date: session.attendanceDate || filters.value.dateTo,
+          attendance_session_id: sessionId,
+          sessionId,
+        },
+      })
+      return
+    }
+
+    await router.push({
+      name: 'dashboard-preschool-admin-attendance-session-details',
+      params: { id: sessionId },
+    })
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolAttendanceDashboardPage.messages.loadFailed')
+  }
+}
+
+function statusLabel(status) {
+  return t(`preschoolAttendanceSessionsPage.statuses.${getSessionStatusKey(status)}`) || String(status || '—')
+}
+
+function actionLabel(session) {
+  const status = normalizeSessionStatus(session.status)
+  if (session.isMissing || !String(session.id || '').trim()) {
+    return ''
+  }
+
+  if (status === 'scheduled' && session.id) return t('preschoolAttendanceSessionsPage.actions.openSession')
+  if (status === 'open') return t('preschoolAttendanceSessionsPage.actions.continueAttendance')
+  if (status === 'completed') return t('preschoolAttendanceSessionsPage.actions.viewSession')
+  if (status === 'locked') return t('preschoolAttendanceSessionsPage.actions.view')
+  if (status === 'cancelled') return t('preschoolAttendanceSessionsPage.actions.viewDetails')
+  return t('preschoolAttendanceSessionsPage.actions.viewSession')
+}
+
+function alertTone(status) {
+  const normalized = String(status || '').toLowerCase()
+  if (['open', 'queued', 'pending'].includes(normalized)) return 'warning'
+  if (['acknowledged', 'sent', 'completed'].includes(normalized)) return 'success'
+  if (['overdue', 'failed'].includes(normalized)) return 'danger'
+  return 'neutral'
 }
 
 onMounted(async () => {
@@ -177,7 +303,6 @@ onMounted(async () => {
         :subtitle="t('preschoolAttendanceDashboardPage.subtitle')"
       />
 
-      <!-- Filters -->
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-wrap items-end gap-3">
           <label class="flex flex-col gap-1">
@@ -206,7 +331,95 @@ onMounted(async () => {
 
       <div v-if="errorMessage" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ errorMessage }}</div>
 
-      <!-- Stat cards -->
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-4 py-3">
+          <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolAttendanceDashboardPage.operationalSummary.title') }}</h3>
+        </div>
+        <div v-if="loading" class="px-4 py-8 text-center text-sm text-slate-400">{{ t('preschoolAttendanceDashboardPage.messages.loadFailed') }}</div>
+        <div v-else class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <article v-for="card in operationalSummaryCards" :key="card.label" class="rounded-2xl border border-slate-200 p-4 shadow-sm" :class="card.bg">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+            <p class="mt-2 text-3xl font-bold" :class="card.color">{{ card.value }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ card.caption }}</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolAttendanceSessionsPage.today') }}</h3>
+            <p class="text-xs text-slate-500">{{ t('preschoolAttendanceSessionsPage.title') }}</p>
+          </div>
+          <div class="text-xs text-slate-500">
+            {{ t('preschoolAttendanceSessionsPage.summary', { open: sessionCounts.open, closed: sessionCounts.completed, missing: sessionCounts.missing }) }}
+          </div>
+        </div>
+        <div v-if="loading" class="px-4 py-8 text-center text-sm text-slate-400">{{ t('preschoolAttendanceDashboardPage.messages.loadFailed') }}</div>
+        <div v-else-if="!sessionCards.length" class="px-4 py-8 text-center text-sm text-slate-400">{{ t('preschoolAttendanceSessionsPage.noSessionsToday') }}</div>
+        <div v-else class="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+          <article
+            v-for="session in sessionCards"
+            :key="session.sessionKey || session.id || `${session.classId}-${session.attendanceDate}`"
+            class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {{ session.classCode || t('preschoolAttendanceSessionsPage.sessionDate') }}
+                </p>
+                <h4 class="mt-1 truncate font-semibold text-slate-900">{{ session.className || '—' }}</h4>
+                <p class="mt-1 text-xs text-slate-500">
+                  {{ session.attendanceDate || '—' }}
+                  <span v-if="session.startTime || session.endTime">
+                    · {{ session.startTime || '--:--' }} - {{ session.endTime || '--:--' }}
+                  </span>
+                </p>
+              </div>
+              <AppStatusChip
+                :status="getSessionStatusTone(session.displayStatus || session.status)"
+                :label="session.isMissing ? t('preschoolAttendanceSessionsPage.missingAttendance') : statusLabel(session.displayStatus || session.status)"
+                :translate-label="false"
+                size="xs"
+              />
+            </div>
+            <div class="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2">
+              <div>
+                <p class="uppercase tracking-wide text-slate-400">{{ t('preschoolAttendanceDashboardPage.operationalSummary.teacher') }}</p>
+                <p class="mt-0.5 truncate text-slate-700">{{ session.teacherName || '—' }}</p>
+              </div>
+              <div>
+                <p class="uppercase tracking-wide text-slate-400">{{ t('preschoolAttendanceDashboardPage.operationalSummary.room') }}</p>
+                <p class="mt-0.5 truncate text-slate-700">{{ session.roomName || '—' }}</p>
+              </div>
+              <div>
+                <p class="uppercase tracking-wide text-slate-400">{{ t('preschoolAttendanceDashboardPage.operationalSummary.studentCount') }}</p>
+                <p class="mt-0.5 text-slate-700">{{ session.studentCount ?? session.recordsCount ?? '—' }}</p>
+              </div>
+              <div>
+                <p class="uppercase tracking-wide text-slate-400">{{ t('preschoolAttendanceSessionsPage.sessionStatus') }}</p>
+                <p class="mt-0.5 truncate text-slate-700">{{ session.generatedFromSchedule ? t('preschoolAttendanceSessionsPage.generatedFromSchedule') : t('preschoolAttendanceSessionsPage.manualSession') }}</p>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-between gap-2">
+              <p class="text-xs text-slate-500">
+                {{ session.generatedFromSchedule ? t('preschoolAttendanceSessionsPage.generatedFromSchedule') : t('preschoolAttendanceSessionsPage.manualSession') }}
+              </p>
+              <Button
+                v-if="!session.isMissing"
+                type="button"
+                :variant="getSessionActionTone(session.displayStatus || session.status) === 'danger' ? 'ghost' : 'primary'"
+                size="sm"
+                rounded="xl"
+                @click="takeAttendance(session)"
+              >
+                {{ actionLabel(session) }}
+              </Button>
+            </div>
+          </article>
+        </div>
+      </div>
+
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <div v-for="card in statCards" :key="card.label" class="rounded-2xl border border-slate-200 p-4 shadow-sm" :class="card.bg">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
@@ -215,82 +428,6 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 class="text-sm font-semibold text-slate-900">
-              {{ t('preschoolAttendanceDashboardPage.alertSummary.title') }}
-            </h3>
-            <p class="text-sm text-slate-500">
-              {{ t('preschoolAttendanceDashboardPage.alertSummary.subtitle') }}
-            </p>
-          </div>
-          <Button type="button" variant="ghost" size="md" rounded="xl" @click="router.push({ name: 'dashboard-preschool-admin-attendance-alerts' })">
-            {{ t('preschoolAttendanceDashboardPage.alertSummary.viewAllAttendanceAlerts') }}
-          </Button>
-        </div>
-
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div v-for="card in alertSummaryCards" :key="card.label" class="rounded-2xl border border-slate-200 p-4 shadow-sm" :class="card.bg">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
-            <p class="mt-2 text-3xl font-bold" :class="card.color">{{ card.value }}</p>
-            <p class="mt-1 text-xs text-slate-500">{{ card.caption }}</p>
-          </div>
-        </div>
-
-        <div class="mt-4 grid gap-3 lg:grid-cols-2">
-          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <h4 class="text-sm font-semibold text-slate-900">
-                  {{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsences') }}
-                </h4>
-                <p class="text-sm text-slate-500">
-                  {{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsencesSubtitle') }}
-                </p>
-              </div>
-              <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                {{ recentAlertItems.length }}
-              </span>
-            </div>
-
-            <div v-if="recentAlertItems.length === 0" class="mt-4 rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-500">
-              {{ t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
-            </div>
-
-            <div v-else class="mt-4 space-y-3">
-              <article v-for="alert in recentAlertItems" :key="alert.id" class="rounded-xl border border-slate-200 bg-white px-4 py-3">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="text-sm font-semibold text-slate-900">{{ alert.studentName }}</p>
-                    <p class="mt-1 text-sm text-slate-500">
-                      {{ alert.className }} • {{ alert.guardianName }}
-                    </p>
-                    <p class="mt-1 text-sm text-slate-500">
-                      {{ t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}:
-                      {{ alert.label }}
-                    </p>
-                  </div>
-                  <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                    {{ t(`preschoolGuardianCommunicationPage.followUpStatuses.${alert.followUpStatus}`) }}
-                  </span>
-                </div>
-              </article>
-            </div>
-          </article>
-
-          <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h4 class="text-sm font-semibold text-slate-900">
-              {{ t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}
-            </h4>
-            <p class="mt-2 text-sm text-slate-500">
-              {{ recentAlertItems[0]?.studentName || t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
-            </p>
-          </article>
-        </div>
-      </div>
-
-      <!-- Class breakdown -->
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="border-b border-slate-100 px-4 py-3">
           <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolAttendanceDashboardPage.breakdown.title') }}</h3>
@@ -320,6 +457,47 @@ onMounted(async () => {
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900">{{ t('preschoolAttendanceDashboardPage.alertSummary.title') }}</h3>
+            <p class="text-xs text-slate-500">{{ t('preschoolAttendanceDashboardPage.alertSummary.subtitle') }}</p>
+          </div>
+          <Button type="button" variant="ghost" size="sm" rounded="xl" @click="router.push({ name: 'dashboard-preschool-admin-attendance-alerts' })">
+            {{ t('preschoolAttendanceDashboardPage.alertSummary.viewAllAttendanceAlerts') }}
+          </Button>
+        </div>
+        <div class="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4">
+          <article v-for="card in alertCards" :key="card.key" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+            <p class="mt-2 text-3xl font-bold text-slate-900">{{ card.value }}</p>
+          </article>
+        </div>
+        <div v-if="!recentAlerts.length" class="px-4 pb-6 text-sm text-slate-400">
+          {{ t('preschoolAttendanceDashboardPage.alertSummary.noRepeatedAbsenceAlerts') }}
+        </div>
+        <div v-else class="border-t border-slate-100 px-4 py-4">
+          <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ t('preschoolAttendanceDashboardPage.alertSummary.recentRepeatedAbsences') }}</h4>
+          <div class="mt-3 space-y-2">
+            <div v-for="alert in recentAlerts" :key="alert.id" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+              <div class="min-w-0">
+                <p class="font-medium text-slate-900">{{ alert.studentName || '—' }}</p>
+                <p class="text-xs text-slate-500">{{ alert.className || '—' }} · {{ alert.guardianName || '—' }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <AppStatusChip
+                  :status="alertTone(alert.followUpStatus || alert.status)"
+                  :label="alert.alertLabel || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert')"
+                  :translate-label="false"
+                  size="xs"
+                />
+                <span class="text-xs text-slate-500">{{ alert.createdAt || '—' }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

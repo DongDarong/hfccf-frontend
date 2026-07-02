@@ -128,6 +128,46 @@ export default {
         title: 'Upcoming schedule',
       },
     },
+    operationalSummary: {
+      title: 'Operational Summary',
+      subtitle: 'Today’s schedules, generated sessions, and missing coverage stay visible here.',
+      todaySchedule: {
+        title: 'Today’s Schedule',
+        subtitle: 'Structured schedule entries for today.',
+        label: 'Scheduled classes',
+      },
+      todaySessions: {
+        title: 'Today’s Sessions',
+        subtitle: 'Attendance sessions generated from today’s schedule.',
+        label: 'Generated sessions',
+      },
+      scheduled: {
+        title: 'Scheduled',
+        label: 'Scheduled sessions',
+      },
+      open: {
+        title: 'Open',
+        label: 'Active sessions',
+      },
+      completed: {
+        title: 'Completed',
+        label: 'Finalized sessions',
+      },
+      locked: {
+        title: 'Locked',
+        label: 'Read-only sessions',
+      },
+      cancelled: {
+        title: 'Cancelled',
+        label: 'Cancelled sessions',
+      },
+      missing: {
+        title: 'Missing Sessions',
+        label: 'No session generated',
+      },
+      noSessionsToday: 'No Sessions Today',
+      noSessionGenerated: 'No Session Generated',
+    },
     insights: {
       title: 'Main Insights',
       subtitle: 'Summary analytics for the current day and reporting cycle.',
