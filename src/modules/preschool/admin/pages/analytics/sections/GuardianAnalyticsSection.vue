@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsChartCard from '../components/AnalyticsChartCard.vue'
 import AnalyticsBreakdownList from '../components/AnalyticsBreakdownList.vue'
@@ -18,11 +19,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  detailsTo: {
+    type: Object,
+    default: () => ({}),
+  },
   emptyText: {
     type: String,
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function toSeries(value) {
   if (Array.isArray(value)) return value
@@ -52,25 +59,25 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard title="Contact Logs" :value="summary.contactLogs ?? summary.total ?? '—'" tone="blue" />
-        <AnalyticsMetricCard title="Follow-ups" :value="summary.followUps ?? summary.follow_ups ?? '—'" tone="amber" />
-        <AnalyticsMetricCard title="Completed" :value="summary.completed ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard title="Outstanding" :value="summary.outstandingFollowUps ?? summary.outstanding ?? '—'" tone="rose" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.contactLogs')" :value="summary.contactLogs ?? summary.total ?? '—'" tone="blue" :to="detailsTo.guardianContacts || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.followUps')" :value="summary.followUps ?? summary.follow_ups ?? '—'" tone="amber" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.completed')" :value="summary.completed ?? '—'" tone="emerald" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.outstanding')" :value="summary.outstandingFollowUps ?? summary.outstanding ?? '—'" tone="rose" />
       </div>
 
       <div class="grid gap-4 xl:grid-cols-2">
         <AnalyticsChartCard
-          title="Guardian Contact Trend"
-          subtitle="Daily, weekly, or monthly contact volume."
+          :title="t('preschoolAnalyticsPage.trend')"
+          :subtitle="t('preschoolAnalyticsPage.sections.guardians.subtitle')"
           chart-type="bar"
           :series="toSeries(analytics?.charts?.guardianContacts || analytics?.trends?.guardianContacts || [])"
-          empty-text="No guardian contact trend data available."
+          :empty-text="t('preschoolAnalyticsPage.noTrendData')"
         />
         <AnalyticsBreakdownList
-          title="Contact Method Breakdown"
-          subtitle="Contact method, reason, staff member, or class."
+          :title="t('preschoolAnalyticsPage.breakdown')"
+          :subtitle="t('preschoolAnalyticsPage.byMethod')"
           :items="breakdownItems"
-          empty-text="No guardian contact breakdown data available."
+          :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
         />
       </div>
     </template>

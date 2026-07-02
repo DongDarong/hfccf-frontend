@@ -352,6 +352,66 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/preschool/analytics/attendance',
+    alias: '/module/preschool-admin/analytics/attendance',
+    name: 'dashboard-preschool-admin-analytics-attendance',
+    component: () => import('@/modules/preschool/admin/pages/analytics/AttendanceAnalyticsDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/analytics/sessions',
+    alias: '/module/preschool-admin/analytics/sessions',
+    name: 'dashboard-preschool-admin-analytics-sessions',
+    component: () => import('@/modules/preschool/admin/pages/analytics/SessionAnalyticsDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/analytics/alerts',
+    alias: '/module/preschool-admin/analytics/alerts',
+    name: 'dashboard-preschool-admin-analytics-alerts',
+    component: () => import('@/modules/preschool/admin/pages/analytics/AlertAnalyticsDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/analytics/students',
+    alias: '/module/preschool-admin/analytics/students',
+    name: 'dashboard-preschool-admin-analytics-students',
+    component: () => import('@/modules/preschool/admin/pages/analytics/StudentAnalyticsDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/analytics/teachers',
+    alias: '/module/preschool-admin/analytics/teachers',
+    name: 'dashboard-preschool-admin-analytics-teachers',
+    component: () => import('@/modules/preschool/admin/pages/analytics/TeacherAnalyticsDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/preschool/analytics/guardian-contacts',
+    alias: '/module/preschool-admin/analytics/guardian-contacts',
+    name: 'dashboard-preschool-admin-analytics-guardian-contacts',
+    component: () => import('@/modules/preschool/admin/pages/analytics/GuardianContactAnalyticsDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/preschool/reports',
     alias: '/module/preschool-admin/reports',
     name: 'dashboard-preschool-admin-reports',

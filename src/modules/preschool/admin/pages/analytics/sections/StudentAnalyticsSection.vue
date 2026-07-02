@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsBreakdownList from '../components/AnalyticsBreakdownList.vue'
 import AnalyticsEmptyState from '../components/AnalyticsEmptyState.vue'
@@ -17,11 +18,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  detailsTo: {
+    type: Object,
+    default: () => ({}),
+  },
   emptyText: {
     type: String,
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function toSeries(value) {
   if (Array.isArray(value)) return value
@@ -51,17 +58,20 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard title="Active Students" :value="summary.activeStudents ?? summary.students ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard title="Attendance %" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="blue" />
-        <AnalyticsMetricCard title="Alert Count" :value="summary.alertCount ?? summary.alerts ?? '—'" tone="rose" />
-        <AnalyticsMetricCard title="Guardian Contacts" :value="summary.guardianContacts ?? summary.guardian_contacts ?? '—'" tone="amber" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.activeStudents')" :value="summary.activeStudents ?? summary.students ?? '—'" tone="emerald" :to="detailsTo.students || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="blue" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.alertCount')" :value="summary.alertCount ?? summary.alerts ?? '—'" tone="rose" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.guardianContacts')"
+          :value="summary.guardianContacts ?? summary.guardian_contacts ?? '—'"
+          tone="amber"
+        />
       </div>
 
       <AnalyticsBreakdownList
-        title="Student Breakdown"
-        subtitle="Class or academic-year level student analytics."
+        :title="t('preschoolAnalyticsPage.breakdown')"
+        :subtitle="t('preschoolAnalyticsPage.byClass')"
         :items="breakdownItems"
-        empty-text="No student breakdown data available."
+        :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
       />
     </template>
   </section>

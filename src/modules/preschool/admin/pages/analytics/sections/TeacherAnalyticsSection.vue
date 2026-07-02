@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsChartCard from '../components/AnalyticsChartCard.vue'
 import AnalyticsBreakdownList from '../components/AnalyticsBreakdownList.vue'
@@ -18,11 +19,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  detailsTo: {
+    type: Object,
+    default: () => ({}),
+  },
   emptyText: {
     type: String,
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function toSeries(value) {
   if (Array.isArray(value)) return value
@@ -52,25 +59,25 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard title="Assigned Classes" :value="summary.assignedClasses ?? summary.classes ?? '—'" tone="violet" />
-        <AnalyticsMetricCard title="Students" :value="summary.students ?? summary.activeStudents ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard title="Attendance Sessions" :value="summary.attendanceSessions ?? summary.sessions ?? '—'" tone="blue" />
-        <AnalyticsMetricCard title="Attendance Rate" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="amber" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.assignedClasses')" :value="summary.assignedClasses ?? summary.classes ?? '—'" tone="violet" :to="detailsTo.teachers || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.students')" :value="summary.students ?? summary.activeStudents ?? '—'" tone="emerald" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceSessions')" :value="summary.attendanceSessions ?? summary.sessions ?? '—'" tone="blue" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="amber" />
       </div>
 
       <div class="grid gap-4 xl:grid-cols-2">
         <AnalyticsChartCard
-          title="Teacher Utilization"
-          subtitle="Weekly or monthly workload snapshots."
+          :title="t('preschoolAnalyticsPage.trend')"
+          :subtitle="t('preschoolAnalyticsPage.sections.teachers.subtitle')"
           chart-type="bar"
           :series="toSeries(analytics?.charts?.teachers || analytics?.trends?.teachers || [])"
-          empty-text="No teacher utilization data available."
+          :empty-text="t('preschoolAnalyticsPage.noTrendData')"
         />
         <AnalyticsBreakdownList
-          title="Teacher Breakdown"
-          subtitle="Weekly or monthly teacher analytics from the backend."
+          :title="t('preschoolAnalyticsPage.breakdown')"
+          :subtitle="t('preschoolAnalyticsPage.byWeek')"
           :items="breakdownItems"
-          empty-text="No teacher breakdown data available."
+          :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
         />
       </div>
     </template>

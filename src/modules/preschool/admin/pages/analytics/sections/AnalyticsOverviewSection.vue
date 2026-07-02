@@ -1,9 +1,14 @@
 <script setup>
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsEmptyState from '../components/AnalyticsEmptyState.vue'
+import { useLanguage } from '@/composables/useLanguage'
 
 defineProps({
   analytics: {
+    type: Object,
+    default: () => ({}),
+  },
+  detailsTo: {
     type: Object,
     default: () => ({}),
   },
@@ -20,6 +25,8 @@ defineProps({
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function pickMetric(source, keys, fallback = '') {
   for (const key of keys) {
@@ -47,28 +54,32 @@ function pickMetric(source, keys, fallback = '') {
 
     <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <AnalyticsMetricCard
-        :title="pickMetric(analytics.summary, ['attendanceRateLabel', 'attendanceRateTitle'], 'Attendance Rate')"
+        :title="t('preschoolAnalyticsPage.attendanceRate')"
         :value="pickMetric(analytics.summary, ['attendanceRate', 'attendance_rate'], '—')"
         :caption="pickMetric(analytics.summary, ['attendanceRateCaption'], '')"
         tone="emerald"
+        :to="detailsTo.attendance || null"
       />
       <AnalyticsMetricCard
-        :title="pickMetric(analytics.summary, ['sessionsGeneratedLabel', 'sessionsGeneratedTitle'], 'Sessions Generated')"
+        :title="t('preschoolAnalyticsPage.sessionsGenerated')"
         :value="pickMetric(analytics.summary, ['sessionsGenerated', 'sessions_generated'], '—')"
         :caption="pickMetric(analytics.summary, ['sessionsGeneratedCaption'], '')"
         tone="blue"
+        :to="detailsTo.sessions || null"
       />
       <AnalyticsMetricCard
-        :title="pickMetric(analytics.summary, ['openAlertsLabel', 'openAlertsTitle'], 'Open Alerts')"
+        :title="t('preschoolAnalyticsPage.openAlerts')"
         :value="pickMetric(analytics.summary, ['openAlerts', 'open_alerts'], '—')"
         :caption="pickMetric(analytics.summary, ['openAlertsCaption'], '')"
         tone="rose"
+        :to="detailsTo.alerts || null"
       />
       <AnalyticsMetricCard
-        :title="pickMetric(analytics.summary, ['guardianContactsLabel', 'guardianContactsTitle'], 'Guardian Contacts')"
+        :title="t('preschoolAnalyticsPage.guardianContacts')"
         :value="pickMetric(analytics.summary, ['guardianContacts', 'guardian_contacts'], '—')"
         :caption="pickMetric(analytics.summary, ['guardianContactsCaption'], '')"
         tone="amber"
+        :to="detailsTo.guardianContacts || null"
       />
     </div>
   </section>

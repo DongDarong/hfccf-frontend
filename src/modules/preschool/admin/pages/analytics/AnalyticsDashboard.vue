@@ -74,6 +74,33 @@ const reportLaunchers = computed(() => [
   },
 ])
 
+const detailLinks = computed(() => ({
+  attendance: {
+    name: 'dashboard-preschool-admin-analytics-attendance',
+    query: { ...filters.value },
+  },
+  sessions: {
+    name: 'dashboard-preschool-admin-analytics-sessions',
+    query: { ...filters.value },
+  },
+  alerts: {
+    name: 'dashboard-preschool-admin-analytics-alerts',
+    query: { ...filters.value },
+  },
+  students: {
+    name: 'dashboard-preschool-admin-analytics-students',
+    query: { ...filters.value },
+  },
+  teachers: {
+    name: 'dashboard-preschool-admin-analytics-teachers',
+    query: { ...filters.value },
+  },
+  guardianContacts: {
+    name: 'dashboard-preschool-admin-analytics-guardian-contacts',
+    query: { ...filters.value },
+  },
+}))
+
 async function refreshAnalytics() {
   await loadAnalytics(filters.value)
 }
@@ -122,6 +149,7 @@ onMounted(() => {
         :analytics="dashboard"
         :title="t('preschoolAnalyticsPage.overview')"
         :subtitle="t('preschoolAnalyticsPage.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -129,6 +157,7 @@ onMounted(() => {
         :analytics="attendance"
         :title="t('preschoolAnalyticsPage.attendanceAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.attendance.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -136,6 +165,7 @@ onMounted(() => {
         :analytics="sessions"
         :title="t('preschoolAnalyticsPage.sessionAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.sessions.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -143,6 +173,7 @@ onMounted(() => {
         :analytics="schedules"
         :title="t('preschoolAnalyticsPage.scheduleAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.schedules.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -150,6 +181,7 @@ onMounted(() => {
         :analytics="alerts"
         :title="t('preschoolAnalyticsPage.alertAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.alerts.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -157,6 +189,7 @@ onMounted(() => {
         :analytics="guardianContacts"
         :title="t('preschoolAnalyticsPage.guardianAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.guardians.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -164,6 +197,7 @@ onMounted(() => {
         :analytics="students"
         :title="t('preschoolAnalyticsPage.studentAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.students.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -171,6 +205,7 @@ onMounted(() => {
         :analytics="teachers"
         :title="t('preschoolAnalyticsPage.teacherAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.teachers.subtitle')"
+        :details-to="detailLinks"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 

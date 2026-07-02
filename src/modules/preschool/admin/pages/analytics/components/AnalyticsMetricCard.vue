@@ -1,8 +1,11 @@
 <script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+
 const props = defineProps({
   title: {
     type: String,
-    default: '',
+    required: true,
   },
   value: {
     type: [String, Number],
@@ -16,24 +19,79 @@ const props = defineProps({
     type: String,
     default: 'slate',
   },
+  to: {
+    type: [String, Object],
+    default: null,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
+const router = useRouter()
+
 const toneClasses = {
-  slate: 'border-slate-200 bg-white text-slate-900',
-  blue: 'border-blue-100 bg-blue-50 text-blue-900',
-  emerald: 'border-emerald-100 bg-emerald-50 text-emerald-900',
-  amber: 'border-amber-100 bg-amber-50 text-amber-900',
-  rose: 'border-rose-100 bg-rose-50 text-rose-900',
-  violet: 'border-violet-100 bg-violet-50 text-violet-900',
+  slate: 'border-slate-200 bg-slate-50 text-slate-900',
+  emerald: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  blue: 'border-blue-200 bg-blue-50 text-blue-900',
+  violet: 'border-violet-200 bg-violet-50 text-violet-900',
+  rose: 'border-rose-200 bg-rose-50 text-rose-900',
+  amber: 'border-amber-200 bg-amber-50 text-amber-900',
 }
 
-const className = toneClasses[props.tone] || toneClasses.slate
+const canNavigate = computed(() => {
+  if (!props.to) {
+    return false
+  }
+
+  if (typeof props.to === 'string') {
+    return true
+  }
+
+  if (props.to?.name) {
+    return router.hasRoute(props.to.name)
+  }
+
+  return true
+})
+
+const cardClasses = computed(() => [
+  'rounded-2xl border p-4 shadow-sm transition',
+  toneClasses[props.tone] ?? toneClasses.slate,
+  canNavigate.value ? 'hover:-translate-y-0.5 hover:shadow-md' : '',
+])
 </script>
 
 <template>
-  <article :class="['rounded-2xl border p-4 shadow-sm', className]">
-    <p class="text-xs font-semibold uppercase tracking-wide opacity-75">{{ title }}</p>
-    <div class="mt-2 text-3xl font-semibold">{{ value }}</div>
-    <p v-if="caption" class="mt-2 text-sm opacity-80">{{ caption }}</p>
-  </article>
+  <RouterLink
+    v-if="canNavigate"
+    :to="to"
+    class="block focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 rounded-2xl"
+  >
+    <div :class="cardClasses">
+      <div class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+        {{ title }}
+      </div>
+      <div class="mt-3 text-3xl font-bold text-slate-900">
+        <span v-if="loading">...</span>
+        <span v-else>{{ value }}</span>
+      </div>
+      <div v-if="caption" class="mt-2 text-sm text-slate-500">
+        {{ caption }}
+      </div>
+    </div>
+  </RouterLink>
+  <div v-else :class="cardClasses">
+    <div class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+      {{ title }}
+    </div>
+    <div class="mt-3 text-3xl font-bold text-slate-900">
+      <span v-if="loading">...</span>
+      <span v-else>{{ value }}</span>
+    </div>
+    <div v-if="caption" class="mt-2 text-sm text-slate-500">
+      {{ caption }}
+    </div>
+  </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsChartCard from '../components/AnalyticsChartCard.vue'
 import AnalyticsBreakdownList from '../components/AnalyticsBreakdownList.vue'
@@ -18,11 +19,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  detailsTo: {
+    type: Object,
+    default: () => ({}),
+  },
   emptyText: {
     type: String,
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function toSeries(value) {
   if (Array.isArray(value)) return value
@@ -58,25 +65,25 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard title="Attendance Rate" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard title="Present" :value="summary.present ?? '—'" tone="blue" />
-        <AnalyticsMetricCard title="Absent" :value="summary.absent ?? '—'" tone="rose" />
-        <AnalyticsMetricCard title="Late / Excused" :value="`${summary.late ?? 0} / ${summary.excused ?? 0}`" tone="amber" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="emerald" :to="detailsTo.attendance || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.present')" :value="summary.present ?? '—'" tone="blue" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.absent')" :value="summary.absent ?? '—'" tone="rose" />
+        <AnalyticsMetricCard :title="`${t('preschoolAnalyticsPage.late')} / ${t('preschoolAnalyticsPage.excused')}`" :value="`${summary.late ?? 0} / ${summary.excused ?? 0}`" tone="amber" />
       </div>
 
       <div class="grid gap-4 xl:grid-cols-2">
         <AnalyticsChartCard
-          title="Attendance Trend"
-          subtitle="Trend-ready data supplied by the backend."
+          :title="t('preschoolAnalyticsPage.attendanceTrend')"
+          :subtitle="t('preschoolAnalyticsPage.sections.attendance.subtitle')"
           chart-type="line"
           :series="chartSeries"
-          empty-text="No attendance trend data available."
+          :empty-text="t('preschoolAnalyticsPage.noTrendData')"
         />
         <AnalyticsBreakdownList
-          title="Attendance Status Breakdown"
-          subtitle="By class or backend-provided attendance grouping."
+          :title="t('preschoolAnalyticsPage.breakdown')"
+          :subtitle="t('preschoolAnalyticsPage.byClass')"
           :items="breakdownItems"
-          empty-text="No attendance breakdown data available."
+          :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
         />
       </div>
     </template>

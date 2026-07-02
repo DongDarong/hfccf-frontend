@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsChartCard from '../components/AnalyticsChartCard.vue'
 import AnalyticsBreakdownList from '../components/AnalyticsBreakdownList.vue'
@@ -18,11 +19,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  detailsTo: {
+    type: Object,
+    default: () => ({}),
+  },
   emptyText: {
     type: String,
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function toSeries(value) {
   if (Array.isArray(value)) return value
@@ -57,25 +64,25 @@ const alertTrend = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard title="Total Alerts" :value="summary.totalAlerts ?? summary.total ?? '—'" tone="rose" />
-        <AnalyticsMetricCard title="Open Alerts" :value="summary.openAlerts ?? summary.open ?? '—'" tone="amber" />
-        <AnalyticsMetricCard title="Completed" :value="summary.completedAlerts ?? summary.completed ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard title="Overdue Alerts" :value="summary.overdueAlerts ?? summary.overdue ?? '—'" tone="violet" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.totalAlerts')" :value="summary.totalAlerts ?? summary.total ?? '—'" tone="rose" :to="detailsTo.alerts || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.openAlerts')" :value="summary.openAlerts ?? summary.open ?? '—'" tone="amber" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.completed')" :value="summary.completedAlerts ?? summary.completed ?? '—'" tone="emerald" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.overdueAlerts')" :value="summary.overdueAlerts ?? summary.overdue ?? '—'" tone="violet" />
       </div>
 
       <div class="grid gap-4 xl:grid-cols-2">
         <AnalyticsChartCard
-          title="Alert Trend"
-          subtitle="Daily, weekly, or monthly alert movement."
+          :title="t('preschoolAnalyticsPage.trend')"
+          :subtitle="t('preschoolAnalyticsPage.sections.alerts.subtitle')"
           chart-type="line"
           :series="alertTrend"
-          empty-text="No alert trend data available."
+          :empty-text="t('preschoolAnalyticsPage.noTrendData')"
         />
         <AnalyticsBreakdownList
-          title="Severity Breakdown"
-          subtitle="Severity-level distribution supplied by the backend."
+          :title="t('preschoolAnalyticsPage.breakdown')"
+          :subtitle="t('preschoolAnalyticsPage.bySeverity')"
           :items="severityBreakdown"
-          empty-text="No alert breakdown data available."
+          :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
         />
       </div>
     </template>

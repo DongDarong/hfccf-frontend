@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguage } from '@/composables/useLanguage'
 import AnalyticsMetricCard from '../components/AnalyticsMetricCard.vue'
 import AnalyticsChartCard from '../components/AnalyticsChartCard.vue'
 import AnalyticsBreakdownList from '../components/AnalyticsBreakdownList.vue'
@@ -18,11 +19,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  detailsTo: {
+    type: Object,
+    default: () => ({}),
+  },
   emptyText: {
     type: String,
     default: '',
   },
 })
+
+const { t } = useLanguage()
 
 function toSeries(value) {
   if (Array.isArray(value)) return value
@@ -58,25 +65,25 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard title="Sessions Generated" :value="summary.sessionsGenerated ?? summary.generated ?? '—'" tone="blue" />
-        <AnalyticsMetricCard title="Sessions Completed" :value="summary.sessionsCompleted ?? summary.completed ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard title="Missing Sessions" :value="summary.missingSessions ?? summary.missing ?? '—'" tone="rose" />
-        <AnalyticsMetricCard title="Completion Rate" :value="summary.completionRate ?? summary.completion_rate ?? '—'" tone="violet" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.sessionsGenerated')" :value="summary.sessionsGenerated ?? summary.generated ?? '—'" tone="blue" :to="detailsTo.sessions || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.sessionsCompleted')" :value="summary.sessionsCompleted ?? summary.completed ?? '—'" tone="emerald" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.missingSessions')" :value="summary.missingSessions ?? summary.missing ?? '—'" tone="rose" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.completionRate')" :value="summary.completionRate ?? summary.completion_rate ?? '—'" tone="violet" />
       </div>
 
       <div class="grid gap-4 xl:grid-cols-2">
         <AnalyticsChartCard
-          title="Session Trend"
-          subtitle="Generated, completed, locked, cancelled, and missing sessions."
+          :title="t('preschoolAnalyticsPage.trend')"
+          :subtitle="t('preschoolAnalyticsPage.sections.sessions.subtitle')"
           chart-type="bar"
           :series="chartSeries"
-          empty-text="No session trend data available."
+          :empty-text="t('preschoolAnalyticsPage.noTrendData')"
         />
         <AnalyticsBreakdownList
-          title="Session Breakdown"
-          subtitle="Teacher, class, or day-level breakdowns from the backend."
+          :title="t('preschoolAnalyticsPage.breakdown')"
+          :subtitle="t('preschoolAnalyticsPage.byTeacher')"
           :items="breakdownItems"
-          empty-text="No session breakdown data available."
+          :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
         />
       </div>
     </template>
