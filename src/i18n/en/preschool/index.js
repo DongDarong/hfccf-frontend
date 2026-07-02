@@ -11,6 +11,7 @@ import assessment from './assessment'
 import progress from './progress'
 import reports from './reports'
 import analytics from './analytics'
+import operations from './operations'
 import schedules from './schedules'
 import settings from './settings'
 import lifecycle from './lifecycle'
@@ -43,6 +44,7 @@ export default {
   ...progress,
   ...reports,
   ...analytics,
+  ...operations,
   ...schedules,
   ...settings,
   ...lifecycle,

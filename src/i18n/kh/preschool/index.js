@@ -13,6 +13,7 @@ import assessmentExtra from './assessment.extra'
 import progress from './progress'
 import reports from './reports'
 import analytics from './analytics'
+import operations from './operations'
 import schedules from './schedules'
 import settings from './settings'
 import settingsBackbone from './settings.backbone'
@@ -59,6 +60,7 @@ export default {
   ...progress,
   ...reports,
   ...analytics,
+  ...operations,
   ...schedules,
   ...settings,
   ...settingsBackbone,

@@ -48,6 +48,7 @@ export default {
     adminDashboard: 'ផ្ទាំងគ្រប់គ្រងអ្នកគ្រប់គ្រង',
     englishDashboard: 'ផ្ទាំងគ្រប់គ្រងភាសាអង់គ្លេស',
     preschoolDashboard: 'ផ្ទាំងគ្រប់គ្រង',
+    operations: 'ប្រតិបត្តិការ',
     preschoolSettings: 'ការកំណត់',
     preschoolAssignments: 'ការចាត់តាំង',
     reportSnapshots: 'រូបថតរបាយការណ៍',

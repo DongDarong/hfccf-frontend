@@ -48,6 +48,7 @@ export default {
     adminDashboard: 'Admin Dashboard',
     englishDashboard: 'English Dashboard',
     preschoolDashboard: 'Dashboard',
+    operations: 'Operations',
     preschoolSettings: 'Settings',
     preschoolAssignments: 'Assignments',
     reportSnapshots: 'Snapshots',
