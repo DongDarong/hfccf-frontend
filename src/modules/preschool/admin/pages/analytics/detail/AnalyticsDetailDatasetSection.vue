@@ -24,6 +24,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  rowTo: {
+    type: Function,
+    default: null,
+  },
 })
 
 const hasRows = computed(() => props.rows.length > 0)
@@ -44,6 +48,7 @@ const hasRows = computed(() => props.rows.length > 0)
       :columns="columns"
       :rows="rows"
       :empty-text="emptyText"
+      :row-to="rowTo"
     />
   </section>
 </template>

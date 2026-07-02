@@ -1,20 +1,27 @@
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  createAnalyticsFilters,
+  createAnalyticsQuery,
+} from '../../analyticsInteractionMap'
 
 export function createDefaultAnalyticsDetailFilters(query = {}) {
-  return {
-    academicYearId: String(query.academicYearId || query.academic_year_id || ''),
-    classId: String(query.classId || query.class_id || ''),
-    teacherUserId: String(query.teacherUserId || query.teacher_user_id || ''),
-    dateFrom: String(query.dateFrom || query.date_from || ''),
-    dateTo: String(query.dateTo || query.date_to || ''),
-    status: String(query.status || ''),
-  }
+  return createAnalyticsFilters(query)
 }
 
 export function useAnalyticsDetailFilters() {
   const route = useRoute()
+  const router = useRouter()
   const filters = ref(createDefaultAnalyticsDetailFilters(route.query))
+  const routeQuery = computed(() => createAnalyticsQuery(filters.value))
+
+  watch(
+    () => route.query,
+    (query) => {
+      filters.value = createDefaultAnalyticsDetailFilters(query)
+    },
+    { deep: true },
+  )
 
   function resetFilters() {
     filters.value = createDefaultAnalyticsDetailFilters()
@@ -27,9 +34,15 @@ export function useAnalyticsDetailFilters() {
     }
   }
 
+  function syncRoute(nextFilters = filters.value) {
+    return router.replace({ query: createAnalyticsQuery(nextFilters) })
+  }
+
   return {
     filters,
     resetFilters,
     updateFilters,
+    routeQuery,
+    syncRoute,
   }
 }

@@ -3,8 +3,8 @@ import { useRouter } from 'vue-router'
 export function useAnalyticsDetailActions(backRouteName = 'dashboard-preschool-admin-analytics') {
   const router = useRouter()
 
-  function goBack() {
-    return router.push({ name: backRouteName })
+  function goBack(query = {}) {
+    return router.push({ name: backRouteName, query })
   }
 
   return {

@@ -27,6 +27,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  detailsLabel: {
+    type: String,
+    default: '',
+  },
 })
 
 const router = useRouter()
@@ -59,7 +63,7 @@ const canNavigate = computed(() => {
 const cardClasses = computed(() => [
   'rounded-2xl border p-4 shadow-sm transition',
   toneClasses[props.tone] ?? toneClasses.slate,
-  canNavigate.value ? 'hover:-translate-y-0.5 hover:shadow-md' : '',
+  canNavigate.value ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : '',
 ])
 </script>
 
@@ -79,6 +83,9 @@ const cardClasses = computed(() => [
       </div>
       <div v-if="caption" class="mt-2 text-sm text-slate-500">
         {{ caption }}
+      </div>
+      <div v-if="canNavigate && detailsLabel" class="mt-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+        {{ detailsLabel }}
       </div>
     </div>
   </RouterLink>

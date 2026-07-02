@@ -1,11 +1,12 @@
 export const preschoolAnalyticsDetailConfigs = {
   attendance: {
+    domain: 'attendance',
     titleKey: 'preschoolAnalyticsPage.attendanceDetail',
     subtitleKey: 'preschoolAnalyticsPage.sections.attendance.subtitle',
     fetchName: 'attendance',
     backRouteName: 'dashboard-preschool-admin-analytics',
     summaryCards: [
-      { labelKey: 'preschoolAnalyticsPage.attendanceRate', paths: ['summary.attendanceRate', 'summary.attendance_rate'], tone: 'emerald' },
+      { labelKey: 'preschoolAnalyticsPage.attendanceRate', paths: ['summary.attendanceRate', 'summary.attendance_rate'], tone: 'emerald', interactionKey: 'attendanceRate' },
       { labelKey: 'preschoolAnalyticsPage.present', paths: ['summary.present'], tone: 'blue' },
       { labelKey: 'preschoolAnalyticsPage.absent', paths: ['summary.absent'], tone: 'rose' },
       { labelKey: 'preschoolAnalyticsPage.late', paths: ['summary.late'], tone: 'amber' },
@@ -41,6 +42,7 @@ export const preschoolAnalyticsDetailConfigs = {
     ],
     datasets: [
       {
+        sectionKey: 'topClasses',
         titleKey: 'preschoolAnalyticsPage.dataset',
         subtitleKey: 'preschoolAnalyticsPage.byClass',
         sources: ['datasets.topClasses'],
@@ -50,6 +52,7 @@ export const preschoolAnalyticsDetailConfigs = {
         ],
       },
       {
+        sectionKey: 'topStudents',
         titleKey: 'preschoolAnalyticsPage.dataset',
         subtitleKey: 'preschoolAnalyticsPage.byStudent',
         sources: ['datasets.topStudents'],
@@ -61,14 +64,15 @@ export const preschoolAnalyticsDetailConfigs = {
     ],
   },
   sessions: {
+    domain: 'sessions',
     titleKey: 'preschoolAnalyticsPage.sessionDetail',
     subtitleKey: 'preschoolAnalyticsPage.sections.sessions.subtitle',
     fetchName: 'sessions',
     backRouteName: 'dashboard-preschool-admin-analytics',
     summaryCards: [
-      { labelKey: 'preschoolAnalyticsPage.sessionsGenerated', paths: ['summary.totalSessions', 'summary.sessionsGenerated', 'summary.generated'], tone: 'blue' },
-      { labelKey: 'preschoolAnalyticsPage.sessionsCompleted', paths: ['summary.completed'], tone: 'emerald' },
-      { labelKey: 'preschoolAnalyticsPage.missingSessions', paths: ['summary.missing'], tone: 'rose' },
+      { labelKey: 'preschoolAnalyticsPage.sessionsGenerated', paths: ['summary.totalSessions', 'summary.sessionsGenerated', 'summary.generated'], tone: 'blue', interactionKey: 'sessionsGenerated' },
+      { labelKey: 'preschoolAnalyticsPage.sessionsCompleted', paths: ['summary.completed'], tone: 'emerald', interactionKey: 'sessionsCompleted' },
+      { labelKey: 'preschoolAnalyticsPage.missingSessions', paths: ['summary.missing'], tone: 'rose', interactionKey: 'missingSessions' },
       { labelKey: 'preschoolAnalyticsPage.completionRate', paths: ['summary.completionRate', 'summary.completion_rate'], tone: 'violet' },
       { labelKey: 'preschoolAnalyticsPage.attendanceRate', paths: ['summary.attendanceRate', 'summary.attendance_rate'], tone: 'amber' },
       { labelKey: 'preschoolAnalyticsPage.generatedSessions', paths: ['summary.generatedSessions', 'summary.totalSessions'], tone: 'slate' },
@@ -86,11 +90,12 @@ export const preschoolAnalyticsDetailConfigs = {
       { titleKey: 'preschoolAnalyticsPage.byStatus', subtitleKey: 'preschoolAnalyticsPage.sections.sessions.subtitle', sources: ['breakdowns.byDay'], emptyKey: 'preschoolAnalyticsPage.noBreakdownData' },
     ],
     datasets: [
-      { titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.sessionReport', sources: ['datasets.recentSessions'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byStatus' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.sessionsCompleted' }] },
-      { titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.missingSessions', sources: ['datasets.missingSessions'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byStatus' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.missingSessions' }] },
+      { sectionKey: 'recentSessions', titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.sessionReport', sources: ['datasets.recentSessions'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byStatus' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.sessionsCompleted' }] },
+      { sectionKey: 'missingSessions', titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.missingSessions', sources: ['datasets.missingSessions'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byStatus' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.missingSessions' }] },
     ],
   },
   alerts: {
+    domain: 'alerts',
     titleKey: 'preschoolAnalyticsPage.alertDetail',
     subtitleKey: 'preschoolAnalyticsPage.sections.alerts.subtitle',
     fetchName: 'alerts',
@@ -115,16 +120,17 @@ export const preschoolAnalyticsDetailConfigs = {
       { titleKey: 'preschoolAnalyticsPage.byReason', subtitleKey: 'preschoolAnalyticsPage.sections.alerts.subtitle', sources: ['breakdowns.byAlertType'], emptyKey: 'preschoolAnalyticsPage.noBreakdownData' },
     ],
     datasets: [
-      { titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.alertAnalytics', sources: ['datasets.recentAlerts'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.bySeverity' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.totalAlerts' }] },
+      { sectionKey: 'recentAlerts', titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.alertAnalytics', sources: ['datasets.recentAlerts'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.bySeverity' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.totalAlerts' }] },
     ],
   },
   students: {
+    domain: 'students',
     titleKey: 'preschoolAnalyticsPage.studentDetail',
     subtitleKey: 'preschoolAnalyticsPage.sections.students.subtitle',
     fetchName: 'students',
     backRouteName: 'dashboard-preschool-admin-analytics',
     summaryCards: [
-      { labelKey: 'preschoolAnalyticsPage.activeStudents', paths: ['summary.activeStudents'], tone: 'emerald' },
+      { labelKey: 'preschoolAnalyticsPage.activeStudents', paths: ['summary.activeStudents'], tone: 'emerald', interactionKey: 'activeStudents' },
       { labelKey: 'preschoolAnalyticsPage.attendanceRate', paths: ['summary.attendanceRate', 'summary.attendance_rate'], tone: 'blue' },
       { labelKey: 'preschoolAnalyticsPage.alertCount', paths: ['summary.alertCount'], tone: 'rose' },
       { labelKey: 'preschoolAnalyticsPage.guardianContacts', paths: ['summary.guardianContacts'], tone: 'amber' },
@@ -137,20 +143,21 @@ export const preschoolAnalyticsDetailConfigs = {
       { titleKey: 'preschoolAnalyticsPage.byStatus', subtitleKey: 'preschoolAnalyticsPage.sections.students.subtitle', sources: ['breakdowns.byAcademicYear'], emptyKey: 'preschoolAnalyticsPage.noBreakdownData' },
     ],
     datasets: [
-      { titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.studentAnalytics', sources: ['datasets.topStudents'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byStudent' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.attendanceRate' }] },
+      { sectionKey: 'topStudents', titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.studentAnalytics', sources: ['datasets.topStudents'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byStudent' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.attendanceRate' }] },
     ],
   },
   teachers: {
+    domain: 'teachers',
     titleKey: 'preschoolAnalyticsPage.teacherDetail',
     subtitleKey: 'preschoolAnalyticsPage.sections.teachers.subtitle',
     fetchName: 'teachers',
     backRouteName: 'dashboard-preschool-admin-analytics',
     summaryCards: [
-      { labelKey: 'preschoolAnalyticsPage.assignedClasses', paths: ['summary.assignedClasses'], tone: 'violet' },
+      { labelKey: 'preschoolAnalyticsPage.assignedClasses', paths: ['summary.assignedClasses'], tone: 'violet', interactionKey: 'assignedClasses' },
       { labelKey: 'preschoolAnalyticsPage.students', paths: ['summary.students'], tone: 'emerald' },
       { labelKey: 'preschoolAnalyticsPage.attendanceSessions', paths: ['summary.attendanceSessions'], tone: 'blue' },
       { labelKey: 'preschoolAnalyticsPage.sessionsCompleted', paths: ['summary.completedSessions'], tone: 'amber' },
-      { labelKey: 'preschoolAnalyticsPage.attendanceRate', paths: ['summary.attendanceRate'], tone: 'rose' },
+      { labelKey: 'preschoolAnalyticsPage.attendanceRate', paths: ['summary.attendanceRate'], tone: 'rose', interactionKey: 'teacherUtilization' },
       { labelKey: 'preschoolAnalyticsPage.alertCount', paths: ['summary.alertCount'], tone: 'slate' },
     ],
     trend: {
@@ -165,16 +172,17 @@ export const preschoolAnalyticsDetailConfigs = {
       { titleKey: 'preschoolAnalyticsPage.byTeacher', subtitleKey: 'preschoolAnalyticsPage.sections.teachers.subtitle', sources: ['breakdowns.byTeacher'], emptyKey: 'preschoolAnalyticsPage.noBreakdownData' },
     ],
     datasets: [
-      { titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.teacherAnalytics', sources: ['datasets.teachers'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byTeacher' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.attendanceRate' }] },
+      { sectionKey: 'teachers', titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.teacherAnalytics', sources: ['datasets.teachers'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byTeacher' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.attendanceRate' }] },
     ],
   },
   guardianContacts: {
+    domain: 'guardianContacts',
     titleKey: 'preschoolAnalyticsPage.guardianContactDetail',
     subtitleKey: 'preschoolAnalyticsPage.sections.guardians.subtitle',
     fetchName: 'guardianContacts',
     backRouteName: 'dashboard-preschool-admin-analytics',
     summaryCards: [
-      { labelKey: 'preschoolAnalyticsPage.contactLogs', paths: ['summary.contactLogs'], tone: 'blue' },
+      { labelKey: 'preschoolAnalyticsPage.contactLogs', paths: ['summary.contactLogs'], tone: 'blue', interactionKey: 'guardianContacts' },
       { labelKey: 'preschoolAnalyticsPage.followUps', paths: ['summary.followUps'], tone: 'amber' },
       { labelKey: 'preschoolAnalyticsPage.completed', paths: ['summary.completed'], tone: 'emerald' },
       { labelKey: 'preschoolAnalyticsPage.outstanding', paths: ['summary.outstanding'], tone: 'rose' },
@@ -193,7 +201,7 @@ export const preschoolAnalyticsDetailConfigs = {
       { titleKey: 'preschoolAnalyticsPage.byClass', subtitleKey: 'preschoolAnalyticsPage.sections.guardians.subtitle', sources: ['breakdowns.byClass'], emptyKey: 'preschoolAnalyticsPage.noBreakdownData' },
     ],
     datasets: [
-      { titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.guardianAnalytics', sources: ['datasets.recentCommunications'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byMethod' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.contactLogs' }] },
+      { sectionKey: 'recentCommunications', titleKey: 'preschoolAnalyticsPage.dataset', subtitleKey: 'preschoolAnalyticsPage.guardianAnalytics', sources: ['datasets.recentCommunications'], columns: [{ key: 'label', labelKey: 'preschoolAnalyticsPage.byMethod' }, { key: 'value', labelKey: 'preschoolAnalyticsPage.contactLogs' }] },
     ],
   },
 }

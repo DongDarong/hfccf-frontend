@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { useRouter } from 'vue-router'
+
+const props = defineProps({
   title: {
     type: String,
     default: '',
@@ -16,7 +18,38 @@ defineProps({
     type: String,
     default: '',
   },
+  itemTo: {
+    type: Function,
+    default: null,
+  },
+  viewLabel: {
+    type: String,
+    default: '',
+  },
 })
+
+const router = useRouter()
+
+function resolveTo(item) {
+  if (typeof props.itemTo !== 'function') {
+    return null
+  }
+
+  const target = props.itemTo(item)
+  if (!target) {
+    return null
+  }
+
+  if (typeof target === 'string') {
+    return target
+  }
+
+  if (target?.name && router.hasRoute(target.name)) {
+    return target
+  }
+
+  return null
+}
 </script>
 
 <template>
@@ -31,12 +64,29 @@ defineProps({
     </div>
 
     <ul v-else class="space-y-2">
-      <li v-for="item in items" :key="item.label || item.name || JSON.stringify(item)" class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm">
-        <div class="min-w-0">
-          <p class="truncate font-medium text-slate-900">{{ item.label || item.name || item.title }}</p>
-          <p v-if="item.caption" class="truncate text-xs text-slate-500">{{ item.caption }}</p>
+      <li v-for="item in items" :key="item.label || item.name || JSON.stringify(item)">
+        <RouterLink
+          v-if="resolveTo(item)"
+          :to="resolveTo(item)"
+          class="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          :aria-label="`${item.label || item.name || item.title} ${item.value ?? item.count ?? item.total ?? '—'}`"
+        >
+          <div class="min-w-0">
+            <p class="truncate font-medium text-slate-900">{{ item.label || item.name || item.title }}</p>
+            <p v-if="item.caption" class="truncate text-xs text-slate-500">{{ item.caption }}</p>
+            <p v-if="viewLabel || item.viewLabel" class="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              {{ item.viewLabel || viewLabel }}
+            </p>
+          </div>
+          <span class="shrink-0 font-semibold text-slate-700">{{ item.value ?? item.count ?? item.total ?? '—' }}</span>
+        </RouterLink>
+        <div v-else class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm">
+          <div class="min-w-0">
+            <p class="truncate font-medium text-slate-900">{{ item.label || item.name || item.title }}</p>
+            <p v-if="item.caption" class="truncate text-xs text-slate-500">{{ item.caption }}</p>
+          </div>
+          <span class="shrink-0 font-semibold text-slate-700">{{ item.value ?? item.count ?? item.total ?? '—' }}</span>
         </div>
-        <span class="shrink-0 font-semibold text-slate-700">{{ item.value ?? item.count ?? item.total ?? '—' }}</span>
       </li>
     </ul>
   </section>

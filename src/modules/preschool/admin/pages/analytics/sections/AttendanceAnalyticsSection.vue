@@ -23,6 +23,14 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  chartItemTo: {
+    type: Function,
+    default: null,
+  },
+  breakdownItemTo: {
+    type: Function,
+    default: null,
+  },
   emptyText: {
     type: String,
     default: '',
@@ -65,7 +73,7 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="emerald" :to="detailsTo.attendance || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="emerald" :to="detailsTo.attendance || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.present')" :value="summary.present ?? '—'" tone="blue" />
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.absent')" :value="summary.absent ?? '—'" tone="rose" />
         <AnalyticsMetricCard :title="`${t('preschoolAnalyticsPage.late')} / ${t('preschoolAnalyticsPage.excused')}`" :value="`${summary.late ?? 0} / ${summary.excused ?? 0}`" tone="amber" />
@@ -78,12 +86,16 @@ const breakdownItems = computed(() => toSeries(
           chart-type="line"
           :series="chartSeries"
           :empty-text="t('preschoolAnalyticsPage.noTrendData')"
+          :item-to="chartItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
         />
         <AnalyticsBreakdownList
           :title="t('preschoolAnalyticsPage.breakdown')"
           :subtitle="t('preschoolAnalyticsPage.byClass')"
           :items="breakdownItems"
           :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
+          :item-to="breakdownItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
         />
       </div>
     </template>

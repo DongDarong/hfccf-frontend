@@ -23,6 +23,14 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  chartItemTo: {
+    type: Function,
+    default: null,
+  },
+  breakdownItemTo: {
+    type: Function,
+    default: null,
+  },
   emptyText: {
     type: String,
     default: '',
@@ -68,7 +76,7 @@ const breakdownItems = computed(() => toSeries(
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.activeSchedules')" :value="summary.activeSchedules ?? summary.active_schedules ?? '—'" tone="emerald" />
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.inactiveSchedules')" :value="summary.inactiveSchedules ?? summary.inactive_schedules ?? '—'" tone="slate" />
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.weeklySessions')" :value="summary.weeklySessions ?? summary.weekly_sessions ?? '—'" tone="blue" />
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.generatedSessions')" :value="summary.generatedSessions ?? summary.generated_sessions ?? '—'" tone="violet" :to="detailsTo.sessions || null" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.generatedSessions')" :value="summary.generatedSessions ?? summary.generated_sessions ?? '—'" tone="violet" :to="detailsTo.sessions || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
       </div>
 
       <div class="grid gap-4 xl:grid-cols-2">
@@ -78,12 +86,16 @@ const breakdownItems = computed(() => toSeries(
           chart-type="heatmap"
           :series="chartSeries"
           :empty-text="t('preschoolAnalyticsPage.noTrendData')"
+          :item-to="chartItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
         />
         <AnalyticsBreakdownList
           :title="t('preschoolAnalyticsPage.breakdown')"
           :subtitle="t('preschoolAnalyticsPage.byClass')"
           :items="breakdownItems"
           :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
+          :item-to="breakdownItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
         />
       </div>
     </template>

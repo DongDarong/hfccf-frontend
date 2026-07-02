@@ -18,9 +18,13 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  presets: {
+    type: Array,
+    default: () => [],
+  },
 })
 
-const emit = defineEmits(['update:modelValue', 'apply', 'reset'])
+const emit = defineEmits(['update:modelValue', 'apply', 'reset', 'preset'])
 
 const localFilters = ref({
   academicYearId: '',
@@ -104,6 +108,10 @@ function onReset() {
   }
   emit('update:modelValue', { ...localFilters.value })
   emit('reset')
+}
+
+function onPreset(presetKey) {
+  emit('preset', presetKey)
 }
 </script>
 
@@ -207,6 +215,24 @@ function onReset() {
       >
         {{ labels.reset || 'Reset Filters' }}
       </button>
+    </div>
+
+    <div v-if="presets.length" class="mt-4 border-t border-slate-100 pt-4">
+      <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+        {{ labels.savedFilters || 'Saved Filters' }}
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="preset in presets"
+          :key="preset.key"
+          type="button"
+          class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="loading"
+          @click="onPreset(preset.key)"
+        >
+          {{ preset.label }}
+        </button>
+      </div>
     </div>
   </section>
 </template>

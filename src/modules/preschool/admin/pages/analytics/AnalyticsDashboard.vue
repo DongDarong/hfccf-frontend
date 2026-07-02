@@ -6,6 +6,13 @@ import { useLanguage } from '@/composables/useLanguage'
 import { useAnalyticsFilters } from './composables/useAnalyticsFilters'
 import { useAnalyticsActions } from './composables/useAnalyticsActions'
 import { useAnalyticsData } from './composables/useAnalyticsData'
+import {
+  createAnalyticsPresetFilters,
+  createAnalyticsPresetLabels,
+  createAnalyticsRoute,
+  resolveAnalyticsBreakdownTo,
+  resolveAnalyticsChartItemTo,
+} from './analyticsInteractionMap'
 import AnalyticsHeaderSection from './sections/AnalyticsHeaderSection.vue'
 import AnalyticsFilterBar from './components/AnalyticsFilterBar.vue'
 import AnalyticsOverviewSection from './sections/AnalyticsOverviewSection.vue'
@@ -23,7 +30,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
-const { filters, resetFilters } = useAnalyticsFilters()
+const { filters, resetFilters, syncRoute } = useAnalyticsFilters()
 const {
   loading,
   errorMessage,
@@ -51,7 +58,10 @@ const filterLabels = computed(() => ({
   status: t('preschoolAnalyticsPage.filters.status'),
   apply: t('preschoolAnalyticsPage.filters.apply'),
   reset: t('preschoolAnalyticsPage.filters.reset'),
+  savedFilters: t('preschoolAnalyticsPage.savedFilters'),
 }))
+
+const presetItems = computed(() => createAnalyticsPresetLabels(t))
 
 const reportLaunchers = computed(() => [
   {
@@ -75,39 +85,59 @@ const reportLaunchers = computed(() => [
 ])
 
 const detailLinks = computed(() => ({
+  attendance: createAnalyticsRoute('dashboard-preschool-admin-analytics-attendance', filters.value),
+  sessions: createAnalyticsRoute('dashboard-preschool-admin-analytics-sessions', filters.value),
+  alerts: createAnalyticsRoute('dashboard-preschool-admin-analytics-alerts', filters.value),
+  students: createAnalyticsRoute('dashboard-preschool-admin-analytics-students', filters.value),
+  teachers: createAnalyticsRoute('dashboard-preschool-admin-analytics-teachers', filters.value),
+  guardianContacts: createAnalyticsRoute('dashboard-preschool-admin-analytics-guardian-contacts', filters.value),
+}))
+
+const interactionResolvers = computed(() => ({
   attendance: {
-    name: 'dashboard-preschool-admin-analytics-attendance',
-    query: { ...filters.value },
+    chartItemTo: (item) => resolveAnalyticsChartItemTo('attendance', item, filters.value),
+    breakdownItemTo: (item) => resolveAnalyticsBreakdownTo('attendance', item, filters.value),
   },
   sessions: {
-    name: 'dashboard-preschool-admin-analytics-sessions',
-    query: { ...filters.value },
+    chartItemTo: (item) => resolveAnalyticsChartItemTo('sessions', item, filters.value),
+    breakdownItemTo: (item) => resolveAnalyticsBreakdownTo('sessions', item, filters.value),
+  },
+  schedules: {
+    chartItemTo: null,
+    breakdownItemTo: null,
   },
   alerts: {
-    name: 'dashboard-preschool-admin-analytics-alerts',
-    query: { ...filters.value },
-  },
-  students: {
-    name: 'dashboard-preschool-admin-analytics-students',
-    query: { ...filters.value },
-  },
-  teachers: {
-    name: 'dashboard-preschool-admin-analytics-teachers',
-    query: { ...filters.value },
+    chartItemTo: (item) => resolveAnalyticsChartItemTo('alerts', item, filters.value),
+    breakdownItemTo: (item) => resolveAnalyticsBreakdownTo('alerts', item, filters.value),
   },
   guardianContacts: {
-    name: 'dashboard-preschool-admin-analytics-guardian-contacts',
-    query: { ...filters.value },
+    chartItemTo: (item) => resolveAnalyticsChartItemTo('guardianContacts', item, filters.value),
+    breakdownItemTo: (item) => resolveAnalyticsBreakdownTo('guardianContacts', item, filters.value),
+  },
+  students: {
+    chartItemTo: (item) => resolveAnalyticsChartItemTo('students', item, filters.value),
+    breakdownItemTo: (item) => resolveAnalyticsBreakdownTo('students', item, filters.value),
+  },
+  teachers: {
+    chartItemTo: (item) => resolveAnalyticsChartItemTo('teachers', item, filters.value),
+    breakdownItemTo: (item) => resolveAnalyticsBreakdownTo('teachers', item, filters.value),
   },
 }))
 
 async function refreshAnalytics() {
+  await syncRoute(filters.value)
   await loadAnalytics(filters.value)
 }
 
 function resetAndRefresh() {
   resetFilters()
-  return loadAnalytics(filters.value)
+  return syncRoute(filters.value).then(() => loadAnalytics(filters.value))
+}
+
+function applyPreset(presetKey) {
+  const nextFilters = createAnalyticsPresetFilters(presetKey, filters.value)
+  filters.value = nextFilters
+  return syncRoute(nextFilters).then(() => loadAnalytics(nextFilters))
 }
 
 onMounted(() => {
@@ -136,9 +166,11 @@ onMounted(() => {
         v-model="filters"
         :options="filterOptions"
         :labels="filterLabels"
+        :presets="presetItems"
         :loading="loading"
         @apply="refreshAnalytics"
         @reset="resetAndRefresh"
+        @preset="applyPreset"
       />
 
       <div v-if="errorMessage" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -158,6 +190,8 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.attendanceAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.attendance.subtitle')"
         :details-to="detailLinks"
+        :chart-item-to="interactionResolvers.attendance.chartItemTo"
+        :breakdown-item-to="interactionResolvers.attendance.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -166,6 +200,8 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.sessionAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.sessions.subtitle')"
         :details-to="detailLinks"
+        :chart-item-to="interactionResolvers.sessions.chartItemTo"
+        :breakdown-item-to="interactionResolvers.sessions.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -174,6 +210,8 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.scheduleAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.schedules.subtitle')"
         :details-to="detailLinks"
+        :chart-item-to="interactionResolvers.schedules.chartItemTo"
+        :breakdown-item-to="interactionResolvers.schedules.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -182,6 +220,8 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.alertAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.alerts.subtitle')"
         :details-to="detailLinks"
+        :chart-item-to="interactionResolvers.alerts.chartItemTo"
+        :breakdown-item-to="interactionResolvers.alerts.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -190,6 +230,8 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.guardianAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.guardians.subtitle')"
         :details-to="detailLinks"
+        :chart-item-to="interactionResolvers.guardianContacts.chartItemTo"
+        :breakdown-item-to="interactionResolvers.guardianContacts.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -198,6 +240,7 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.studentAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.students.subtitle')"
         :details-to="detailLinks"
+        :breakdown-item-to="interactionResolvers.students.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 
@@ -206,6 +249,8 @@ onMounted(() => {
         :title="t('preschoolAnalyticsPage.teacherAnalytics')"
         :subtitle="t('preschoolAnalyticsPage.sections.teachers.subtitle')"
         :details-to="detailLinks"
+        :chart-item-to="interactionResolvers.teachers.chartItemTo"
+        :breakdown-item-to="interactionResolvers.teachers.breakdownItemTo"
         :empty-text="t('preschoolAnalyticsPage.noAnalyticsData')"
       />
 

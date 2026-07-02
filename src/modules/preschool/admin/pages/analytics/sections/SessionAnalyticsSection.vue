@@ -23,6 +23,14 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  chartItemTo: {
+    type: Function,
+    default: null,
+  },
+  breakdownItemTo: {
+    type: Function,
+    default: null,
+  },
   emptyText: {
     type: String,
     default: '',
@@ -65,9 +73,9 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.sessionsGenerated')" :value="summary.sessionsGenerated ?? summary.generated ?? '—'" tone="blue" :to="detailsTo.sessions || null" />
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.sessionsCompleted')" :value="summary.sessionsCompleted ?? summary.completed ?? '—'" tone="emerald" />
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.missingSessions')" :value="summary.missingSessions ?? summary.missing ?? '—'" tone="rose" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.sessionsGenerated')" :value="summary.sessionsGenerated ?? summary.generated ?? '—'" tone="blue" :to="detailsTo.sessions || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.sessionsCompleted')" :value="summary.sessionsCompleted ?? summary.completed ?? '—'" tone="emerald" :to="detailsTo.sessions || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.missingSessions')" :value="summary.missingSessions ?? summary.missing ?? '—'" tone="rose" :to="detailsTo.sessions || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.completionRate')" :value="summary.completionRate ?? summary.completion_rate ?? '—'" tone="violet" />
       </div>
 
@@ -78,12 +86,16 @@ const breakdownItems = computed(() => toSeries(
           chart-type="bar"
           :series="chartSeries"
           :empty-text="t('preschoolAnalyticsPage.noTrendData')"
+          :item-to="chartItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
         />
         <AnalyticsBreakdownList
           :title="t('preschoolAnalyticsPage.breakdown')"
           :subtitle="t('preschoolAnalyticsPage.byTeacher')"
           :items="breakdownItems"
           :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
+          :item-to="breakdownItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
         />
       </div>
     </template>

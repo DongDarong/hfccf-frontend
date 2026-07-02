@@ -22,6 +22,14 @@ defineProps({
     type: String,
     default: '',
   },
+  itemTo: {
+    type: Function,
+    default: null,
+  },
+  viewLabel: {
+    type: String,
+    default: '',
+  },
 })
 </script>
 
@@ -32,5 +40,7 @@ defineProps({
     :chart-type="chartType"
     :series="series"
     :empty-text="emptyText"
+    :item-to="itemTo"
+    :view-label="viewLabel"
   />
 </template>

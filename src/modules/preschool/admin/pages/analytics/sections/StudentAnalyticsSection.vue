@@ -22,6 +22,14 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  chartItemTo: {
+    type: Function,
+    default: null,
+  },
+  breakdownItemTo: {
+    type: Function,
+    default: null,
+  },
   emptyText: {
     type: String,
     default: '',
@@ -58,21 +66,25 @@ const breakdownItems = computed(() => toSeries(
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.activeStudents')" :value="summary.activeStudents ?? summary.students ?? '—'" tone="emerald" :to="detailsTo.students || null" />
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="blue" />
-        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.alertCount')" :value="summary.alertCount ?? summary.alerts ?? '—'" tone="rose" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.activeStudents')" :value="summary.activeStudents ?? summary.students ?? '—'" tone="emerald" :to="detailsTo.students || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.attendanceRate')" :value="summary.attendanceRate ?? summary.attendance_rate ?? '—'" tone="blue" :to="detailsTo.students || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
+        <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.alertCount')" :value="summary.alertCount ?? summary.alerts ?? '—'" tone="rose" :to="detailsTo.students || null" :details-label="t('preschoolAnalyticsPage.viewDetails')" />
         <AnalyticsMetricCard :title="t('preschoolAnalyticsPage.guardianContacts')"
           :value="summary.guardianContacts ?? summary.guardian_contacts ?? '—'"
           tone="amber"
+          :to="detailsTo.students || null"
+          :details-label="t('preschoolAnalyticsPage.viewDetails')"
         />
       </div>
 
-      <AnalyticsBreakdownList
-        :title="t('preschoolAnalyticsPage.breakdown')"
-        :subtitle="t('preschoolAnalyticsPage.byClass')"
-        :items="breakdownItems"
-        :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
-      />
+        <AnalyticsBreakdownList
+          :title="t('preschoolAnalyticsPage.breakdown')"
+          :subtitle="t('preschoolAnalyticsPage.byClass')"
+          :items="breakdownItems"
+          :empty-text="t('preschoolAnalyticsPage.noBreakdownData')"
+          :item-to="breakdownItemTo"
+          :view-label="t('preschoolAnalyticsPage.viewDetails')"
+        />
     </template>
   </section>
 </template>

@@ -19,6 +19,14 @@ defineProps({
     type: String,
     default: '',
   },
+  viewLabel: {
+    type: String,
+    default: '',
+  },
+  itemTo: {
+    type: Function,
+    default: null,
+  },
 })
 </script>
 
@@ -36,6 +44,8 @@ defineProps({
       :subtitle="subtitle"
       :items="items"
       :empty-text="emptyText"
+      :view-label="viewLabel"
+      :item-to="itemTo"
     />
   </section>
 </template>

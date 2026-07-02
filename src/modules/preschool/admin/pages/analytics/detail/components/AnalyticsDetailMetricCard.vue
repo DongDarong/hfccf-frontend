@@ -22,6 +22,10 @@ defineProps({
     type: [Object, String],
     default: null,
   },
+  detailsLabel: {
+    type: String,
+    default: '',
+  },
 })
 </script>
 
@@ -32,5 +36,6 @@ defineProps({
     :caption="caption"
     :tone="tone"
     :to="to"
+    :details-label="detailsLabel"
   />
 </template>

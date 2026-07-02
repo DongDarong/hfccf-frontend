@@ -101,7 +101,13 @@ describe('AnalyticsDashboard', () => {
     const inputs = wrapper.findAll('input[type="date"]')
     await inputs[0].setValue('2026-07-01')
     await inputs[1].setValue('2026-07-15')
-    await wrapper.find('section button[type="button"]').trigger('click')
+    const applyButton = wrapper
+      .findAll('button[type="button"]')
+      .find((button) => button.text().includes('Apply Filters'))
+
+    expect(applyButton).toBeDefined()
+    await applyButton.trigger('click')
+    await flushPromises()
 
     expect(mockLoadAnalytics).toHaveBeenCalledWith(expect.objectContaining({
       dateFrom: '2026-07-01',

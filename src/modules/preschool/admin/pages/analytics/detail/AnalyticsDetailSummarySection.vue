@@ -43,6 +43,7 @@ const hasMetrics = computed(() => props.metrics.length > 0)
         :caption="metric.caption"
         :tone="metric.tone"
         :to="metric.to"
+        :details-label="metric.detailsLabel"
       />
     </div>
   </section>

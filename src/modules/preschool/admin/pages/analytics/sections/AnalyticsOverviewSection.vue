@@ -59,6 +59,7 @@ function pickMetric(source, keys, fallback = '') {
         :caption="pickMetric(analytics.summary, ['attendanceRateCaption'], '')"
         tone="emerald"
         :to="detailsTo.attendance || null"
+        :details-label="t('preschoolAnalyticsPage.viewDetails')"
       />
       <AnalyticsMetricCard
         :title="t('preschoolAnalyticsPage.sessionsGenerated')"
@@ -66,6 +67,7 @@ function pickMetric(source, keys, fallback = '') {
         :caption="pickMetric(analytics.summary, ['sessionsGeneratedCaption'], '')"
         tone="blue"
         :to="detailsTo.sessions || null"
+        :details-label="t('preschoolAnalyticsPage.viewDetails')"
       />
       <AnalyticsMetricCard
         :title="t('preschoolAnalyticsPage.openAlerts')"
@@ -73,6 +75,7 @@ function pickMetric(source, keys, fallback = '') {
         :caption="pickMetric(analytics.summary, ['openAlertsCaption'], '')"
         tone="rose"
         :to="detailsTo.alerts || null"
+        :details-label="t('preschoolAnalyticsPage.viewDetails')"
       />
       <AnalyticsMetricCard
         :title="t('preschoolAnalyticsPage.guardianContacts')"
@@ -80,6 +83,7 @@ function pickMetric(source, keys, fallback = '') {
         :caption="pickMetric(analytics.summary, ['guardianContactsCaption'], '')"
         tone="amber"
         :to="detailsTo.guardianContacts || null"
+        :details-label="t('preschoolAnalyticsPage.viewDetails')"
       />
     </div>
   </section>
