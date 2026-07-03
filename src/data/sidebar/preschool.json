@@ -28,6 +28,20 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-notifications",
+          "routeName": "dashboard-preschool-admin-notifications",
+          "labelKey": "nav.items.notificationAutomation",
+          "icon": "notification",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
+          "id": "preschool-workflows",
+          "routeName": "dashboard-preschool-admin-workflows",
+          "labelKey": "nav.items.workflows",
+          "icon": "dashboard",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-enrollments",
           "routeName": "dashboard-preschool-admin-enrollments",
           "labelKey": "nav.items.preschoolEnrollments",

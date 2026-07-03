@@ -30,6 +30,8 @@ import governanceDiff from './governance-diff'
 import governanceCases from './governance-cases'
 import enrollment from './enrollment'
 import reviewWorkflow from './review-workflow'
+import notifications from './notifications'
+import workflows from './workflows'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -77,4 +79,6 @@ export default {
   ...governanceCases,
   ...enrollment,
   ...reviewWorkflow,
+  ...notifications,
+  ...workflows,
 }

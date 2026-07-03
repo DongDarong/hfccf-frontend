@@ -22,6 +22,8 @@ const cards = computed(() => {
   const payments = props.operations.payments || {}
   const assessments = props.operations.assessments || {}
   const risks = props.operations.risks || {}
+  const notifications = props.operations.notifications || {}
+  const automationTasks = props.operations.automationTasks || {}
 
   return [
     {
@@ -78,6 +80,38 @@ const cards = computed(() => {
       caption: t('preschoolOperationsPage.guardianFollowUp'),
       tone: 'amber',
       to: resolveOperationsRoute(router, 'dashboard-preschool-admin-guardian-communications'),
+      detailsLabel: t('preschoolOperationsPage.viewDetails'),
+    },
+    {
+      title: t('preschoolOperationsPage.unreadNotifications'),
+      value: notifications.summary?.unread ?? '—',
+      caption: t('preschoolOperationsPage.notificationsCenter'),
+      tone: 'rose',
+      to: resolveOperationsRoute(router, 'dashboard-preschool-admin-notifications'),
+      detailsLabel: t('preschoolOperationsPage.viewDetails'),
+    },
+    {
+      title: t('preschoolOperationsPage.openAutomationTasks'),
+      value: automationTasks.summary?.open ?? '—',
+      caption: t('preschoolOperationsPage.notificationsCenter'),
+      tone: 'blue',
+      to: resolveOperationsRoute(router, 'dashboard-preschool-admin-notifications'),
+      detailsLabel: t('preschoolOperationsPage.viewDetails'),
+    },
+    {
+      title: t('preschoolOperationsPage.overdueAutomationTasks'),
+      value: automationTasks.summary?.overdue ?? '—',
+      caption: t('preschoolOperationsPage.notificationsCenter'),
+      tone: 'amber',
+      to: resolveOperationsRoute(router, 'dashboard-preschool-admin-notifications'),
+      detailsLabel: t('preschoolOperationsPage.viewDetails'),
+    },
+    {
+      title: t('preschoolOperationsPage.criticalNotifications'),
+      value: notifications.summary?.critical ?? '—',
+      caption: t('preschoolOperationsPage.notificationsCenter'),
+      tone: 'rose',
+      to: resolveOperationsRoute(router, 'dashboard-preschool-admin-notifications'),
       detailsLabel: t('preschoolOperationsPage.viewDetails'),
     },
     {

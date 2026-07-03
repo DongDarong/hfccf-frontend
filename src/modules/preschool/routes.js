@@ -147,6 +147,33 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/notifications',
+    name: 'dashboard-preschool-admin-notifications',
+    component: () => import('@/modules/preschool/admin/pages/notifications/NotificationAutomationCenter.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/workflows',
+    name: 'dashboard-preschool-admin-workflows',
+    component: () => import('@/modules/preschool/admin/pages/workflows/WorkflowApprovalCenter.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/workflows/:id',
+    name: 'dashboard-preschool-admin-workflow-details',
+    component: () => import('@/modules/preschool/admin/pages/workflows/WorkflowDetails.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/attendance/students',
     name: 'dashboard-preschool-admin-attendance-students',
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceStudents.vue'),
