@@ -108,6 +108,13 @@ describe('preschool notification automation api', () => {
       unread: 1,
       critical: 1,
     })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/notifications/summary', {
+      params: {
+        status: 'unread',
+      },
+      signal: undefined,
+    })
   })
 
   it('normalizes task lists and summary payloads', async () => {
@@ -188,6 +195,11 @@ describe('preschool notification automation api', () => {
     await expect(fetchPreschoolAutomationTaskSummary({})).resolves.toMatchObject({
       open: 1,
       today: 1,
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/automation-tasks/summary', {
+      params: {},
+      signal: undefined,
     })
   })
 

@@ -50,6 +50,7 @@ export default {
     englishDashboard: 'English Dashboard',
     preschoolDashboard: 'Dashboard',
     operations: 'Operations',
+    notificationAutomation: 'Notification Center',
     workflows: 'Workflows',
     preschoolSettings: 'Settings',
     preschoolAssignments: 'Assignments',

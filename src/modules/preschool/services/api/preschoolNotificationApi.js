@@ -114,10 +114,32 @@ function buildNotificationQuery(filters = {}) {
   })
 }
 
+function buildNotificationSummaryQuery(filters = {}) {
+  return buildQueryParams({
+    status: filters.status || undefined,
+    type: filters.type || filters.notificationType || undefined,
+    severity: filters.severity || undefined,
+    search: filters.search || undefined,
+    student_id: filters.studentId || filters.student_id || undefined,
+    class_id: filters.classId || filters.class_id || undefined,
+  })
+}
+
 function buildTaskQuery(filters = {}) {
   return buildQueryParams({
     page: filters.page ?? 1,
     per_page: normalizePerPage(filters.perPage ?? filters.per_page, 10, 100),
+    status: filters.status || undefined,
+    type: filters.type || filters.taskType || undefined,
+    priority: filters.priority || undefined,
+    search: filters.search || undefined,
+    student_id: filters.studentId || filters.student_id || undefined,
+    class_id: filters.classId || filters.class_id || undefined,
+  })
+}
+
+function buildTaskSummaryQuery(filters = {}) {
+  return buildQueryParams({
     status: filters.status || undefined,
     type: filters.type || filters.taskType || undefined,
     priority: filters.priority || undefined,
@@ -148,7 +170,7 @@ export async function fetchPreschoolNotifications(filters = {}, options = {}) {
 
 export async function fetchPreschoolNotificationSummary(filters = {}, options = {}) {
   const response = await http.get('/preschool/notifications/summary', {
-    params: buildNotificationQuery(filters),
+    params: buildNotificationSummaryQuery(filters),
     signal: options.signal,
   })
 
@@ -180,7 +202,7 @@ export async function fetchPreschoolAutomationTasks(filters = {}, options = {}) 
 
 export async function fetchPreschoolAutomationTaskSummary(filters = {}, options = {}) {
   const response = await http.get('/preschool/automation-tasks/summary', {
-    params: buildTaskQuery(filters),
+    params: buildTaskSummaryQuery(filters),
     signal: options.signal,
   })
 

@@ -50,6 +50,7 @@ export default {
     englishDashboard: 'ផ្ទាំងគ្រប់គ្រងភាសាអង់គ្លេស',
     preschoolDashboard: 'ផ្ទាំងគ្រប់គ្រង',
     operations: 'ប្រតិបត្តិការ',
+    notificationAutomation: 'មជ្ឈមណ្ឌលជូនដំណឹង',
     workflows: 'លំហូរការងារ',
     preschoolSettings: 'ការកំណត់',
     preschoolAssignments: 'ការចាត់តាំង',
