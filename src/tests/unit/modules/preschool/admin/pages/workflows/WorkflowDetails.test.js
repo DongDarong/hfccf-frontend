@@ -70,6 +70,7 @@ function createState() {
       sourceLabel: 'Health Alert #1',
       sourceType: 'health_alert',
       sourceId: 'health-1',
+      sourceExists: true,
       currentStep: {
         id: 'step-1',
         key: 'assigned',
@@ -86,7 +87,7 @@ function createState() {
           status: 'pending',
           requestedToRole: 'adminpreschool',
           dueAt: '2026-07-03T11:00:00Z',
-          workflow: {
+          instance: {
             id: 'wf-1',
             sourceLabel: 'Health Alert #1',
             sourceType: 'health_alert',
@@ -104,17 +105,17 @@ function createState() {
     ]),
     definitions: ref([]),
     approvals: ref([
-      {
-        id: 'approval-1',
-        status: 'pending',
-        requestedToRole: 'adminpreschool',
-        dueAt: '2026-07-03T11:00:00Z',
-        workflow: {
-          id: 'wf-1',
-          sourceLabel: 'Health Alert #1',
-          sourceType: 'health_alert',
+        {
+          id: 'approval-1',
+          status: 'pending',
+          requestedToRole: 'adminpreschool',
+          dueAt: '2026-07-03T11:00:00Z',
+          instance: {
+            id: 'wf-1',
+            sourceLabel: 'Health Alert #1',
+            sourceType: 'health_alert',
+          },
         },
-      },
     ]),
     sourceTypeLabel: ref('Health Alert'),
     currentStep: ref('Assigned'),
@@ -253,5 +254,19 @@ describe('WorkflowDetails', () => {
     expect(wrapper.text()).not.toContain('Approve')
     expect(wrapper.text()).not.toContain('Reject')
     expect(wrapper.text()).not.toContain('Return')
+  })
+
+  it('hides broken source routes and shows source unavailable safely', async () => {
+    detailsState.workflow.value = {
+      ...detailsState.workflow.value,
+      sourceExists: false,
+      sourceRouteName: 'dashboard-preschool-admin-health-student',
+      sourceRouteParams: { id: 'health-1' },
+    }
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.text()).toContain('Source Unavailable')
+    expect(wrapper.text()).not.toContain('View Source')
   })
 })

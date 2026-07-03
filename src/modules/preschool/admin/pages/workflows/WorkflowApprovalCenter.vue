@@ -63,6 +63,8 @@ const labels = computed(() => ({
   timeline: t('preschoolWorkflowsPage.timeline'),
   currentStep: t('preschoolWorkflowsPage.currentStep'),
   sourceEntity: t('preschoolWorkflowsPage.sourceEntity'),
+  workflowSource: t('preschoolWorkflowsPage.workflowSource'),
+  sourceUnavailable: t('preschoolWorkflowsPage.sourceUnavailable'),
   assignee: t('preschoolWorkflowsPage.assignee'),
   dueDate: t('preschoolWorkflowsPage.dueDate'),
   sla: t('preschoolWorkflowsPage.sla'),
@@ -99,6 +101,19 @@ function openWorkflow(workflow) {
   router.push({
     name: 'dashboard-preschool-admin-workflow-details',
     params: { id: workflow.id },
+  })
+}
+
+function openSource(workflow) {
+  const routeName = String(workflow?.sourceRouteName || '').trim()
+
+  if (!routeName || workflow?.sourceExists === false || !router.hasRoute(routeName)) {
+    return
+  }
+
+  router.push({
+    name: routeName,
+    params: workflow.sourceRouteParams || {},
   })
 }
 
@@ -183,6 +198,7 @@ onMounted(refreshWorkflows)
         :workflows="workflows"
         :labels="labels"
         @view-workflow="openWorkflow"
+        @view-source="openSource"
       />
 
       <OverdueWorkflowsSection
@@ -201,6 +217,7 @@ onMounted(refreshWorkflows)
         :workflows="recentlyUpdatedWorkflows"
         :labels="labels"
         @view-workflow="openWorkflow"
+        @view-source="openSource"
       />
 
       <WorkflowTimelinePreviewSection

@@ -43,6 +43,14 @@ function createRoute() {
   }
 }
 
+function createWorkflowRoute() {
+  return {
+    path: '/module/preschool-admin/workflows/:id',
+    name: 'dashboard-preschool-admin-workflow-details',
+    component: { template: '<div />' },
+  }
+}
+
 function baseMessages() {
   return {
     ...enPreschool,
@@ -62,7 +70,7 @@ function baseMessages() {
 async function mountPage() {
   const wrapper = mountWithPlugins(NotificationAutomationCenter, {
     messages: baseMessages(),
-    routes: [createRoute()],
+    routes: [createRoute(), createWorkflowRoute()],
     global: {
       stubs: {
         MainLayout: { template: '<div><slot /></div>' },
@@ -100,8 +108,8 @@ beforeEach(() => {
   mockCurrentUser = { role_code: 'adminpreschool' }
 
   mockFetchPreschoolNotificationSummary.mockResolvedValue({
-    total: 2,
-    unread: 1,
+    total: 3,
+    unread: 2,
     read: 1,
     archived: 0,
     critical: 1,
@@ -125,12 +133,26 @@ beforeEach(() => {
         severity: 'high',
         status: 'unread',
         sourceType: 'attendance_communication',
+        workflowInstanceId: 'wf-1',
+        workflowStatus: 'open',
+        workflowRoute: 'dashboard-preschool-admin-workflow-details',
+        workflowActionParams: { id: 'wf-1' },
         createdAt: '2026-07-02T08:00:00Z',
+      },
+      {
+        id: 2,
+        notificationType: 'health.alert',
+        title: 'Health alert created',
+        body: 'Monitor the student.',
+        severity: 'medium',
+        status: 'unread',
+        sourceType: 'health_alert',
+        createdAt: '2026-07-02T07:30:00Z',
       },
     ],
     summary: {
-      total: 1,
-      unread: 1,
+      total: 2,
+      unread: 2,
       read: 0,
       archived: 0,
       critical: 1,
@@ -168,20 +190,39 @@ beforeEach(() => {
         priority: 'high',
         status: 'open',
         dueAt: '2026-07-02T12:00:00Z',
+        workflowInstanceId: 'wf-2',
+        workflowStatus: 'in_progress',
+        workflowRoute: 'dashboard-preschool-admin-workflow-details',
+        workflowActionParams: { id: 'wf-2' },
+      },
+      {
+        id: 11,
+        taskType: 'payments.follow_up',
+        title: 'Review invoice',
+        description: 'Check the invoice status',
+        priority: 'normal',
+        status: 'open',
+        dueAt: '2026-07-02T15:00:00Z',
       },
     ],
     summary: {
-      total: 1,
-      open: 1,
+      total: 2,
+      open: 2,
       inProgress: 0,
       completed: 0,
       cancelled: 0,
       overdue: 0,
-      today: 1,
-      byType: [{ taskType: 'attendance.follow_up', total: 1 }],
-      byPriority: [{ priority: 'high', total: 1 }],
+      today: 2,
+      byType: [
+        { taskType: 'attendance.follow_up', total: 1 },
+        { taskType: 'payments.follow_up', total: 1 },
+      ],
+      byPriority: [
+        { priority: 'high', total: 1 },
+        { priority: 'normal', total: 1 },
+      ],
     },
-    pagination: { currentPage: 1, lastPage: 1, perPage: 20, total: 1 },
+    pagination: { currentPage: 1, lastPage: 1, perPage: 20, total: 2 },
   })
 
   mockMarkPreschoolNotificationRead.mockResolvedValue({})
@@ -203,6 +244,8 @@ describe('NotificationAutomationCenter', () => {
     expect(wrapper.text()).toContain('Automation Tasks')
     expect(wrapper.text()).toContain('Overdue Tasks')
     expect(wrapper.text()).toContain('Today’s Tasks')
+    expect(wrapper.text()).toContain('Related Workflow')
+    expect(wrapper.findAll('button').filter((button) => button.text().includes('Open Workflow'))).toHaveLength(2)
 
     await findButton(wrapper, 'Mark as Read').trigger('click')
     await flushPromises()

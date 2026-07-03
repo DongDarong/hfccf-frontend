@@ -61,6 +61,7 @@ function normalizeQuickAction(action = {}) {
 function normalizeOperationsBundle(payload = {}) {
   const operationsPayload = isPlainObject(payload.operations) ? payload.operations : payload
   const normalizedPayload = normalizePrimitive(operationsPayload)
+  const workflowsPayload = isPlainObject(normalizedPayload.workflows) ? normalizedPayload.workflows : {}
 
   return {
     scope: normalizeText(payload.scope || operationsPayload.scope),
@@ -76,6 +77,11 @@ function normalizeOperationsBundle(payload = {}) {
     teachers: normalizedPayload.teachers || {},
     students: normalizedPayload.students || {},
     risks: normalizedPayload.risks || {},
+    workflows: {
+      summary: workflowsPayload.summary || {},
+      items: Array.isArray(workflowsPayload.items) ? workflowsPayload.items : [],
+      recentActivity: Array.isArray(workflowsPayload.recentActivity) ? workflowsPayload.recentActivity : [],
+    },
     timeline: Array.isArray(normalizedPayload.timeline) ? normalizedPayload.timeline : [],
     quickActions: Array.isArray(normalizedPayload.quickActions)
       ? normalizedPayload.quickActions.map(normalizeQuickAction)

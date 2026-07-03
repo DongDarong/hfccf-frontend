@@ -18,6 +18,10 @@ defineProps({
     type: Object,
     default: () => ({}),
   },
+  sourceExists: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 defineEmits(['view-source'])
@@ -32,11 +36,11 @@ defineEmits(['view-source'])
     <template #content>
       <dl class="workflow-details-overview">
         <div>
-          <dt>Type</dt>
-          <dd>{{ workflow.sourceType || '—' }}</dd>
+          <dt>{{ labels.workflowSource || 'Workflow Source' }}</dt>
+          <dd>{{ workflow.sourceLabel || workflow.sourceType || labels.sourceUnavailable || 'Source Unavailable' }}</dd>
         </div>
         <div>
-          <dt>ID</dt>
+          <dt>{{ labels.sourceId || 'Source ID' }}</dt>
           <dd>{{ workflow.sourceId || '—' }}</dd>
         </div>
         <div>
@@ -58,13 +62,20 @@ defineEmits(['view-source'])
       </dl>
 
       <button
-        v-if="sourceRouteName"
+        v-if="sourceRouteName && sourceExists"
         type="button"
         class="workflow-details-overview__link"
         @click="$emit('view-source', workflow)"
       >
         {{ labels.viewSource || 'View Source' }}
       </button>
+
+      <p
+        v-else-if="workflow.sourceExists === false || sourceExists === false"
+        class="workflow-details-overview__unavailable"
+      >
+        {{ labels.sourceUnavailable || 'Source Unavailable' }}
+      </p>
     </template>
   </Card>
 </template>
@@ -100,6 +111,13 @@ defineEmits(['view-source'])
   font-weight: 700;
   cursor: pointer;
   padding: 0;
+}
+
+.workflow-details-overview__unavailable {
+  margin-top: 1rem;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

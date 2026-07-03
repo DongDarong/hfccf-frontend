@@ -64,6 +64,9 @@ const labels = computed(() => ({
   workflow: t('preschoolWorkflowsPage.workflow'),
   currentStep: t('preschoolWorkflowsPage.currentStep'),
   sourceEntity: t('preschoolWorkflowsPage.sourceEntity'),
+  workflowSource: t('preschoolWorkflowsPage.workflowSource'),
+  sourceUnavailable: t('preschoolWorkflowsPage.sourceUnavailable'),
+  sourceId: t('preschoolWorkflowsPage.sourceId'),
   assignee: t('preschoolWorkflowsPage.assignee'),
   dueDate: t('preschoolWorkflowsPage.dueDate'),
   sla: t('preschoolWorkflowsPage.sla'),
@@ -99,6 +102,17 @@ const currentWorkflow = computed(() => workflow.value || {})
 const isTerminalWorkflow = computed(() => ['completed', 'cancelled', 'approved', 'rejected'].includes(String(currentWorkflow.value.status || '').toLowerCase()))
 
 function resolveSourceRoute(workflowItem) {
+  const workflowRoute = String(workflowItem?.sourceRouteName || '').trim()
+  const workflowParams = workflowItem?.sourceRouteParams || {}
+
+  if (workflowItem?.sourceExists === false) {
+    return null
+  }
+
+  if (workflowRoute && router.hasRoute(workflowRoute)) {
+    return { name: workflowRoute, params: workflowParams }
+  }
+
   const sourceType = String(workflowItem?.sourceType || '').toLowerCase()
   const sourceId = String(workflowItem?.sourceId || '')
 
@@ -263,6 +277,7 @@ watch(
         :labels="labels"
         :source-route-name="sourceRoute?.name || ''"
         :source-route-params="sourceRoute?.params || {}"
+        :source-exists="currentWorkflow.sourceExists !== false"
         @view-source="sourceRoute && router.push(sourceRoute)"
       />
 

@@ -79,7 +79,7 @@ const workflowData = {
       status: 'pending',
       requestedToRole: 'adminpreschool',
       dueAt: '2026-07-03T11:00:00Z',
-      workflow: {
+      instance: {
         id: 'wf-1',
         sourceLabel: 'Application #1',
         sourceType: 'enrollment_application',
@@ -199,7 +199,7 @@ function resetWorkflowData() {
       status: 'pending',
       requestedToRole: 'adminpreschool',
       dueAt: '2026-07-03T11:00:00Z',
-      workflow: {
+      instance: {
         id: 'wf-1',
         sourceLabel: 'Application #1',
         sourceType: 'enrollment_application',
@@ -345,6 +345,7 @@ describe('WorkflowApprovalCenter', () => {
     expect(wrapper.text()).toContain('Recently Updated')
     expect(wrapper.text()).toContain('Timeline')
     expect(wrapper.text()).toContain('Application #1')
+    expect(wrapper.text()).toContain('Workflow Source')
   })
 
   it('calls the approval action API and refreshes the list', async () => {

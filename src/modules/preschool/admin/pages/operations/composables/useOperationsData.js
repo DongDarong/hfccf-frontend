@@ -15,6 +15,11 @@ const defaultOperations = {
   teachers: {},
   students: {},
   risks: {},
+  workflows: {
+    summary: {},
+    items: [],
+    recentActivity: [],
+  },
   timeline: [],
   quickActions: [],
   generatedAt: '',
@@ -53,6 +58,9 @@ export function useOperationsData() {
       || Object.keys(value.teachers || {}).length
       || Object.keys(value.students || {}).length
       || Object.keys(value.risks || {}).length
+      || Object.keys(value.workflows?.summary || {}).length
+      || (value.workflows?.items || []).length
+      || (value.workflows?.recentActivity || []).length
       || (value.timeline || []).length
       || (value.quickActions || []).length,
     )

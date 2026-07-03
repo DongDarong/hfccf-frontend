@@ -119,6 +119,47 @@ const operationsState = ref({
     missingSessions: 1,
     openAttendanceAlerts: 2,
   },
+  workflows: {
+    summary: {
+      total: 2,
+      pendingWorkflows: 2,
+      pendingApprovals: 1,
+      overdueWorkflows: 0,
+      escalatedWorkflows: 0,
+      recentlyUpdatedWorkflows: 2,
+      myAssignments: 1,
+    },
+    items: [
+      {
+        id: 'wf-1',
+        workflowDefinitionName: 'Invoice Collection',
+        sourceLabel: 'Invoice INV-OPS-001',
+        sourceType: 'invoice',
+        sourceRouteName: 'dashboard-preschool-admin-invoice-detail',
+        sourceRouteParams: { id: 'INV-OPS-001' },
+        sourceExists: true,
+        status: 'open',
+        priority: 'high',
+        currentStep: { name: 'Issued' },
+        updatedAt: '2026-07-02T08:00:00Z',
+      },
+    ],
+    recentActivity: [
+      {
+        id: 'wf-1',
+        workflowDefinitionName: 'Invoice Collection',
+        sourceLabel: 'Invoice INV-OPS-001',
+        sourceType: 'invoice',
+        sourceRouteName: 'dashboard-preschool-admin-invoice-detail',
+        sourceRouteParams: { id: 'INV-OPS-001' },
+        sourceExists: true,
+        status: 'open',
+        priority: 'high',
+        currentStep: { name: 'Issued' },
+        updatedAt: '2026-07-02T08:00:00Z',
+      },
+    ],
+  },
   timeline: [
     { id: 'timeline-1', type: 'session', label: 'Morning Stars', text: 'Session opened', status: 'open', createdAt: '2026-07-02T08:00:00Z' },
   ],
@@ -147,12 +188,20 @@ function createRoute() {
   }
 }
 
+function createWorkflowRoute() {
+  return {
+    path: '/module/preschool-admin/workflows/:id',
+    name: 'dashboard-preschool-admin-workflow-details',
+    component: { template: '<div />' },
+  }
+}
+
 async function mountPage() {
   const wrapper = mountWithPlugins(OperationsCenter, {
     messages: {
       en: enPreschool,
     },
-    routes: [createRoute()],
+    routes: [createRoute(), createWorkflowRoute()],
     global: {
       stubs: {
         MainLayout: { template: '<div><slot /></div>' },
@@ -282,6 +331,47 @@ beforeEach(() => {
       missingSessions: 1,
       openAttendanceAlerts: 2,
     },
+    workflows: {
+      summary: {
+        total: 2,
+        pendingWorkflows: 2,
+        pendingApprovals: 1,
+        overdueWorkflows: 0,
+        escalatedWorkflows: 0,
+        recentlyUpdatedWorkflows: 2,
+        myAssignments: 1,
+      },
+      items: [
+        {
+          id: 'wf-1',
+          workflowDefinitionName: 'Invoice Collection',
+          sourceLabel: 'Invoice INV-OPS-001',
+          sourceType: 'invoice',
+          sourceRouteName: 'dashboard-preschool-admin-invoice-detail',
+          sourceRouteParams: { id: 'INV-OPS-001' },
+          sourceExists: true,
+          status: 'open',
+          priority: 'high',
+          currentStep: { name: 'Issued' },
+          updatedAt: '2026-07-02T08:00:00Z',
+        },
+      ],
+      recentActivity: [
+        {
+          id: 'wf-1',
+          workflowDefinitionName: 'Invoice Collection',
+          sourceLabel: 'Invoice INV-OPS-001',
+          sourceType: 'invoice',
+          sourceRouteName: 'dashboard-preschool-admin-invoice-detail',
+          sourceRouteParams: { id: 'INV-OPS-001' },
+          sourceExists: true,
+          status: 'open',
+          priority: 'high',
+          currentStep: { name: 'Issued' },
+          updatedAt: '2026-07-02T08:00:00Z',
+        },
+      ],
+    },
     timeline: [
       { id: 'timeline-1', type: 'session', label: 'Morning Stars', text: 'Session opened', status: 'open', createdAt: '2026-07-02T08:00:00Z' },
     ],
@@ -316,6 +406,14 @@ describe('OperationsCenter', () => {
     expect(wrapper.text()).toContain('Assessment Operations')
     expect(wrapper.text()).toContain('Teacher Operations')
     expect(wrapper.text()).toContain('Operational Risks')
+    expect(wrapper.text()).toContain('Workflow Visibility')
+    expect(wrapper.text()).toContain('Workflow Activity')
+    expect(wrapper.text()).toContain('Pending Workflows')
+    expect(wrapper.text()).toContain('Pending Approvals')
+    expect(wrapper.text()).toContain('Overdue Workflows')
+    expect(wrapper.text()).toContain('Escalated Workflows')
+    expect(wrapper.text()).toContain('Recently Updated Workflows')
+    expect(wrapper.text()).toContain('Open Workflow')
     expect(wrapper.text()).toContain('Timeline')
     expect(wrapper.text()).toContain('Quick Actions')
   })
@@ -343,6 +441,7 @@ describe('OperationsCenter', () => {
       assessments: {},
       teachers: {},
       risks: {},
+      workflows: {},
       timeline: [],
       quickActions: [],
       generatedAt: '',

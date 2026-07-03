@@ -42,9 +42,11 @@ export function useWorkflowData() {
   const definitions = ref([])
   const summary = ref({
     total: 0,
+    pendingWorkflows: 0,
     open: 0,
     inProgress: 0,
     pendingApproval: 0,
+    pendingApprovals: 0,
     approved: 0,
     rejected: 0,
     returned: 0,
@@ -53,7 +55,12 @@ export function useWorkflowData() {
     escalated: 0,
     overdue: 0,
     myAssignments: 0,
+    assignedToMe: 0,
     myApprovals: 0,
+    byDefinition: [],
+    byStatus: [],
+    byPriority: [],
+    recentlyUpdatedWorkflows: 0,
   })
   const workflows = ref([])
   const approvals = ref([])

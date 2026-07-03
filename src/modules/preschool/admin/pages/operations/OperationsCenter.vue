@@ -18,6 +18,7 @@ import TeacherOperationsSection from './sections/TeacherOperationsSection.vue'
 import OperationalRisksSection from './sections/OperationalRisksSection.vue'
 import OperationsTimelineSection from './sections/OperationsTimelineSection.vue'
 import OperationsQuickActionsSection from './sections/OperationsQuickActionsSection.vue'
+import WorkflowVisibilitySection from './sections/WorkflowVisibilitySection.vue'
 
 defineOptions({
   name: 'PreschoolOperationsCenterPage',
@@ -93,6 +94,7 @@ onMounted(refreshOperations)
       </div>
 
       <OperationsSummarySection :operations="operations" />
+      <WorkflowVisibilitySection :workflows="operations.workflows" />
       <TodaySessionsSection
         :today="operations.today"
         :resolve-session-action="resolveSessionAction"

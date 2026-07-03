@@ -105,6 +105,9 @@ function normalizeInstance(instance = {}) {
     sourceType: normalizeText(instance.sourceType || instance.source_type),
     sourceId: normalizeText(instance.sourceId || instance.source_id),
     sourceLabel: normalizeText(instance.sourceLabel || instance.source_label),
+    sourceRouteName: normalizeText(instance.sourceRouteName || instance.source_route_name),
+    sourceRouteParams: normalizePrimitive(instance.sourceRouteParams || instance.source_route_params || {}),
+    sourceExists: Boolean(instance.sourceExists ?? instance.source_exists),
     currentStepId: instance.currentStepId ?? instance.current_step_id ?? null,
     currentStep: normalizeStep(instance.currentStep || instance.current_step || null),
     status: normalizeText(instance.status),
@@ -219,9 +222,11 @@ function normalizeTimelineEvent(event = {}) {
 function normalizeSummary(summary = {}) {
   return {
     total: normalizeNumber(summary.total, 0),
+    pendingWorkflows: normalizeNumber(summary.pendingWorkflows ?? summary.pending_workflows, 0),
     open: normalizeNumber(summary.open, 0),
     inProgress: normalizeNumber(summary.inProgress ?? summary.in_progress, 0),
     pendingApproval: normalizeNumber(summary.pendingApproval ?? summary.pending_approval, 0),
+    pendingApprovals: normalizeNumber(summary.pendingApprovals ?? summary.pending_approvals ?? summary.pendingApproval ?? summary.pending_approval, 0),
     approved: normalizeNumber(summary.approved, 0),
     rejected: normalizeNumber(summary.rejected, 0),
     returned: normalizeNumber(summary.returned, 0),
@@ -230,7 +235,23 @@ function normalizeSummary(summary = {}) {
     escalated: normalizeNumber(summary.escalated, 0),
     overdue: normalizeNumber(summary.overdue, 0),
     myAssignments: normalizeNumber(summary.myAssignments ?? summary.my_assignments, 0),
+    assignedToMe: normalizeNumber(summary.assignedToMe ?? summary.assigned_to_me ?? summary.myAssignments ?? summary.my_assignments, 0),
     myApprovals: normalizeNumber(summary.myApprovals ?? summary.my_approvals, 0),
+    byDefinition: Array.isArray(summary.byDefinition) ? summary.byDefinition.map((item = {}) => ({
+      workflowDefinitionId: item.workflowDefinitionId ?? item.workflow_definition_id ?? null,
+      workflowDefinitionKey: normalizeText(item.workflowDefinitionKey || item.workflow_definition_key),
+      workflowDefinitionName: normalizeText(item.workflowDefinitionName || item.workflow_definition_name),
+      total: normalizeNumber(item.total, 0),
+    })) : [],
+    byStatus: Array.isArray(summary.byStatus) ? summary.byStatus.map((item = {}) => ({
+      status: normalizeText(item.status),
+      total: normalizeNumber(item.total, 0),
+    })) : [],
+    byPriority: Array.isArray(summary.byPriority) ? summary.byPriority.map((item = {}) => ({
+      priority: normalizeText(item.priority),
+      total: normalizeNumber(item.total, 0),
+    })) : [],
+    recentlyUpdatedWorkflows: normalizeNumber(summary.recentlyUpdatedWorkflows ?? summary.recently_updated_workflows, 0),
   }
 }
 

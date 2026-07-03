@@ -14,7 +14,7 @@ defineProps({
   },
 })
 
-defineEmits(['view-workflow'])
+defineEmits(['view-workflow', 'view-source'])
 </script>
 
 <template>
@@ -38,7 +38,11 @@ defineEmits(['view-workflow'])
           :key="workflow.id"
           :workflow="workflow"
           :labels="labels"
+          :show-source-link="Boolean(workflow.sourceRouteName)"
+          :source-route-name="workflow.sourceRouteName || ''"
+          :source-route-params="workflow.sourceRouteParams || {}"
           @view-workflow="$emit('view-workflow', $event)"
+          @view-source="$emit('view-source', $event)"
         />
       </div>
     </template>

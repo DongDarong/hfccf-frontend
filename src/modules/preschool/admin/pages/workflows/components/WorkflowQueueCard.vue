@@ -1,8 +1,10 @@
 <script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from '@/components/buttons/Button.vue'
 import WorkflowStatusBadge from './WorkflowStatusBadge.vue'
 
-defineProps({
+const props = defineProps({
   workflow: {
     type: Object,
     required: true,
@@ -26,6 +28,16 @@ defineProps({
 })
 
 defineEmits(['view-workflow', 'view-source'])
+
+const router = useRouter()
+
+const canOpenSource = computed(() => {
+  if (!props.sourceRouteName || props.workflow?.sourceExists === false) {
+    return false
+  }
+
+  return router.hasRoute(props.sourceRouteName)
+})
 </script>
 
 <template>
@@ -60,6 +72,12 @@ defineEmits(['view-workflow', 'view-source'])
         </div>
       </div>
       <div>
+        <span class="workflow-queue-card__label">{{ labels.workflowSource || 'Workflow Source' }}</span>
+        <div class="workflow-queue-card__value">
+          {{ workflow.sourceLabel || labels.sourceUnavailable || 'Source Unavailable' }}
+        </div>
+      </div>
+      <div>
         <span class="workflow-queue-card__label">{{ labels.dueDate || 'Due Date' }}</span>
         <div class="workflow-queue-card__value">
           {{ workflow.dueAt || '—' }}
@@ -85,7 +103,7 @@ defineEmits(['view-workflow', 'view-source'])
       </Button>
 
       <Button
-        v-if="showSourceLink && sourceRouteName"
+        v-if="showSourceLink && canOpenSource"
         type="button"
         severity="secondary"
         text

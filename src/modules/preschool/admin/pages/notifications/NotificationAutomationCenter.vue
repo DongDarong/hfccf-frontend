@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -28,6 +29,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(false)
@@ -103,6 +105,29 @@ const recentActivity = computed(() => [
 
 const notificationBreakdown = computed(() => notificationSummary.value.byType || [])
 const taskBreakdown = computed(() => taskSummary.value.byType || [])
+
+function resolveWorkflowLink(item) {
+  const routeName = String(item?.workflowRoute || '').trim()
+
+  if (!routeName || !router.hasRoute(routeName)) {
+    return null
+  }
+
+  return {
+    name: routeName,
+    params: item?.workflowActionParams || {},
+  }
+}
+
+function openRelatedWorkflow(item) {
+  const target = resolveWorkflowLink(item)
+
+  if (!target) {
+    return
+  }
+
+  router.push(target)
+}
 
 function severityTone(severity) {
   const key = String(severity || '').toLowerCase()
@@ -349,8 +374,24 @@ onMounted(loadAll)
                 </p>
 
                 <div class="notification-automation-center__item-footer">
-                  <span>{{ formatDateTime(notification.createdAt) }}</span>
+                  <div class="flex flex-col gap-1">
+                    <span>{{ formatDateTime(notification.createdAt) }}</span>
+                    <span v-if="notification.workflowInstanceId" class="text-xs text-slate-500">
+                      {{ t('preschoolNotificationAutomationPage.relatedWorkflow') }}:
+                      {{ notification.workflowStatus || notification.workflowInstanceId }}
+                    </span>
+                  </div>
                   <div class="flex flex-wrap gap-2">
+                    <Button
+                      v-if="resolveWorkflowLink(notification)"
+                      type="button"
+                      severity="secondary"
+                      outlined
+                      size="small"
+                      @click="openRelatedWorkflow(notification)"
+                    >
+                      {{ t('preschoolNotificationAutomationPage.openWorkflow') }}
+                    </Button>
                     <Button type="button" severity="secondary" size="small" @click="markRead(notification)">
                       {{ t('preschoolNotificationAutomationPage.markAsRead') }}
                     </Button>
@@ -406,11 +447,27 @@ onMounted(loadAll)
                 </p>
 
                 <div class="notification-automation-center__item-footer">
-                  <span>
-                    {{ t('preschoolNotificationAutomationPage.dueDate') }}:
-                    {{ formatDateTime(task.dueAt) }}
-                  </span>
+                  <div class="flex flex-col gap-1">
+                    <span>
+                      {{ t('preschoolNotificationAutomationPage.dueDate') }}:
+                      {{ formatDateTime(task.dueAt) }}
+                    </span>
+                    <span v-if="task.workflowInstanceId" class="text-xs text-slate-500">
+                      {{ t('preschoolNotificationAutomationPage.relatedWorkflow') }}:
+                      {{ task.workflowStatus || task.workflowInstanceId }}
+                    </span>
+                  </div>
                   <div class="flex flex-wrap gap-2">
+                    <Button
+                      v-if="resolveWorkflowLink(task)"
+                      type="button"
+                      severity="secondary"
+                      outlined
+                      size="small"
+                      @click="openRelatedWorkflow(task)"
+                    >
+                      {{ t('preschoolNotificationAutomationPage.openWorkflow') }}
+                    </Button>
                     <Button type="button" severity="secondary" size="small" @click="completeTask(task)">
                       {{ t('preschoolNotificationAutomationPage.completeTask') }}
                     </Button>

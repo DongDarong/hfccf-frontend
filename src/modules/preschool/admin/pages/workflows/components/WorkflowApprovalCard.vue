@@ -1,8 +1,9 @@
 <script setup>
+import { computed } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import WorkflowStatusBadge from './WorkflowStatusBadge.vue'
 
-defineProps({
+const props = defineProps({
   approval: {
     type: Object,
     required: true,
@@ -18,6 +19,8 @@ defineProps({
 })
 
 defineEmits(['approve', 'reject', 'return', 'cancel', 'view-workflow'])
+
+const workflowItem = computed(() => props.approval.instance || props.approval.workflow || {})
 </script>
 
 <template>
@@ -25,7 +28,7 @@ defineEmits(['approve', 'reject', 'return', 'cancel', 'view-workflow'])
     <div class="workflow-approval-card__header">
       <div>
         <h4 class="workflow-approval-card__title">
-          {{ approval.workflow?.sourceLabel || approval.workflow?.workflowDefinitionName || labels.approval || 'Approval' }}
+          {{ workflowItem.sourceLabel || workflowItem.workflowDefinitionName || labels.approval || 'Approval' }}
         </h4>
         <p class="workflow-approval-card__meta">
           {{ approval.requestedToRole || approval.requestedTo?.firstName || approval.requestedBy?.firstName || '—' }}
@@ -40,9 +43,9 @@ defineEmits(['approve', 'reject', 'return', 'cancel', 'view-workflow'])
 
     <div class="workflow-approval-card__body">
       <div>
-        <span class="workflow-approval-card__label">{{ labels.sourceEntity || 'Source Entity' }}</span>
+        <span class="workflow-approval-card__label">{{ labels.workflowSource || 'Workflow Source' }}</span>
         <div class="workflow-approval-card__value">
-          {{ approval.workflow?.sourceType || '—' }}
+          {{ workflowItem.sourceLabel || workflowItem.workflowDefinitionName || labels.sourceUnavailable || 'Source Unavailable' }}
         </div>
       </div>
       <div>
@@ -66,7 +69,7 @@ defineEmits(['approve', 'reject', 'return', 'cancel', 'view-workflow'])
         severity="secondary"
         outlined
         size="small"
-        @click="$emit('view-workflow', approval.workflow)"
+        @click="$emit('view-workflow', workflowItem)"
       >
         {{ labels.viewWorkflow || 'View Workflow' }}
       </Button>
