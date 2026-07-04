@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useLanguage } from '@/composables/useLanguage'
@@ -15,6 +15,10 @@ import MyAssignmentsSection from './sections/MyAssignmentsSection.vue'
 import RecentlyUpdatedWorkflowsSection from './sections/RecentlyUpdatedWorkflowsSection.vue'
 import WorkflowTimelinePreviewSection from './sections/WorkflowTimelinePreviewSection.vue'
 import { useWorkflowActions } from './composables/useWorkflowActions'
+import {
+  fetchPreschoolWorkflowSyncPreview,
+  runPreschoolWorkflowSync,
+} from '@/modules/preschool/services/api/preschoolWorkflowApi'
 
 defineOptions({
   name: 'PreschoolWorkflowApprovalCenter',
@@ -29,6 +33,7 @@ const {
   errorMessage,
   summary,
   workflows,
+  definitions,
   approvals,
   overdueWorkflows,
   myAssignments,
@@ -85,12 +90,188 @@ const labels = computed(() => ({
   emptyApprovals: t('preschoolWorkflowsPage.empty.approvals'),
   emptyTimeline: t('preschoolWorkflowsPage.empty.timeline'),
   workflow: t('preschoolWorkflowsPage.workflow'),
+  workflowSync: t('preschoolWorkflowsPage.workflowSync'),
+  previewSync: t('preschoolWorkflowsPage.previewSync'),
+  runSync: t('preschoolWorkflowsPage.runSync'),
+  syncResults: t('preschoolWorkflowsPage.syncResults'),
+  eligible: t('preschoolWorkflowsPage.eligible'),
+  created: t('preschoolWorkflowsPage.created'),
+  existing: t('preschoolWorkflowsPage.existing'),
+  skipped: t('preschoolWorkflowsPage.skipped'),
+  failed: t('preschoolWorkflowsPage.failed'),
+  dryRun: t('preschoolWorkflowsPage.dryRun'),
+  syncWarning: t('preschoolWorkflowsPage.syncWarning'),
+  adminControlledSync: t('preschoolWorkflowsPage.adminControlledSync'),
+  noEligibleRecords: t('preschoolWorkflowsPage.noEligibleRecords'),
+  syncCompleted: t('preschoolWorkflowsPage.syncCompleted'),
+  allDefinitions: t('preschoolWorkflowsPage.allDefinitions'),
+  allSourceTypes: t('preschoolWorkflowsPage.allSourceTypes'),
+  allStatuses: t('preschoolWorkflowsPage.allStatuses'),
+  dateFrom: t('preschoolWorkflowsPage.dateFrom'),
+  dateTo: t('preschoolWorkflowsPage.dateTo'),
+  limit: t('preschoolWorkflowsPage.limit'),
+  syncStatusOptions: {
+    submitted: t('preschoolWorkflowsPage.syncStatusOptions.submitted'),
+    underReview: t('preschoolWorkflowsPage.syncStatusOptions.underReview'),
+    approved: t('preschoolWorkflowsPage.syncStatusOptions.approved'),
+    waitlisted: t('preschoolWorkflowsPage.syncStatusOptions.waitlisted'),
+    enrolled: t('preschoolWorkflowsPage.syncStatusOptions.enrolled'),
+    rejected: t('preschoolWorkflowsPage.syncStatusOptions.rejected'),
+    cancelled: t('preschoolWorkflowsPage.syncStatusOptions.cancelled'),
+    new: t('preschoolWorkflowsPage.syncStatusOptions.new'),
+    acknowledged: t('preschoolWorkflowsPage.syncStatusOptions.acknowledged'),
+    inProgress: t('preschoolWorkflowsPage.syncStatusOptions.inProgress'),
+    resolved: t('preschoolWorkflowsPage.syncStatusOptions.resolved'),
+    closed: t('preschoolWorkflowsPage.syncStatusOptions.closed'),
+    issued: t('preschoolWorkflowsPage.syncStatusOptions.issued'),
+    partial: t('preschoolWorkflowsPage.syncStatusOptions.partial'),
+    paid: t('preschoolWorkflowsPage.syncStatusOptions.paid'),
+    overdue: t('preschoolWorkflowsPage.syncStatusOptions.overdue'),
+    open: t('preschoolWorkflowsPage.syncStatusOptions.open'),
+    completed: t('preschoolWorkflowsPage.syncStatusOptions.completed'),
+  },
 }))
 
 const currentRole = computed(() => String(userStore.currentUser?.role_code ?? userStore.currentUser?.role ?? ''))
+const canManageSync = computed(() => ['superadmin', 'adminpreschool'].includes(currentRole.value))
+
+const syncFilters = reactive({
+  definitionKey: '',
+  sourceType: '',
+  status: '',
+  dateFrom: '',
+  dateTo: '',
+  limit: 25,
+})
+const syncLoading = ref(false)
+const syncErrorMessage = ref('')
+const syncResult = ref(null)
+const syncPreviewReady = ref(false)
+
+const definitionOptions = computed(() => [
+  { label: labels.value.allDefinitions, value: '' },
+  ...definitions.value.map((definition) => ({
+    label: definition.name || definition.key,
+    value: definition.key,
+  })),
+])
+
+const syncSourceTypeOptions = computed(() => ([
+  { label: labels.value.allSourceTypes, value: '' },
+  { label: t('preschoolWorkflowsPage.sourceTypes.enrollmentApplication'), value: 'preschool_enrollment_application' },
+  { label: t('preschoolWorkflowsPage.sourceTypes.healthAlert'), value: 'preschool_health_alert' },
+  { label: t('preschoolWorkflowsPage.sourceTypes.invoice'), value: 'preschool_invoice' },
+  { label: t('preschoolWorkflowsPage.sourceTypes.automationTask'), value: 'preschool_automation_task' },
+  { label: t('preschoolWorkflowsPage.sourceTypes.guardianCommunication'), value: 'preschool_guardian_communication' },
+]))
+
+const syncStatusOptions = computed(() => ([
+  { label: labels.value.allStatuses, value: '' },
+  { label: labels.value.syncStatusOptions.submitted, value: 'submitted' },
+  { label: labels.value.syncStatusOptions.underReview, value: 'under_review' },
+  { label: labels.value.syncStatusOptions.approved, value: 'approved' },
+  { label: labels.value.syncStatusOptions.waitlisted, value: 'waitlisted' },
+  { label: labels.value.syncStatusOptions.enrolled, value: 'enrolled' },
+  { label: labels.value.syncStatusOptions.rejected, value: 'rejected' },
+  { label: labels.value.syncStatusOptions.cancelled, value: 'cancelled' },
+  { label: labels.value.syncStatusOptions.new, value: 'new' },
+  { label: labels.value.syncStatusOptions.acknowledged, value: 'acknowledged' },
+  { label: labels.value.syncStatusOptions.inProgress, value: 'in_progress' },
+  { label: labels.value.syncStatusOptions.resolved, value: 'resolved' },
+  { label: labels.value.syncStatusOptions.closed, value: 'closed' },
+  { label: labels.value.syncStatusOptions.issued, value: 'issued' },
+  { label: labels.value.syncStatusOptions.partial, value: 'partial' },
+  { label: labels.value.syncStatusOptions.paid, value: 'paid' },
+  { label: labels.value.syncStatusOptions.overdue, value: 'overdue' },
+  { label: labels.value.syncStatusOptions.open, value: 'open' },
+  { label: labels.value.syncStatusOptions.completed, value: 'completed' },
+]))
 
 async function refreshWorkflows() {
   await loadWorkflows(cloneFilters())
+}
+
+watch(syncFilters, () => {
+  syncPreviewReady.value = false
+}, { deep: true })
+
+function currentSyncFilters() {
+  return {
+    definitionKey: syncFilters.definitionKey,
+    sourceType: syncFilters.sourceType,
+    status: syncFilters.status,
+    dateFrom: syncFilters.dateFrom,
+    dateTo: syncFilters.dateTo,
+    limit: syncFilters.limit,
+    dryRun: false,
+  }
+}
+
+async function previewWorkflowSync() {
+  syncLoading.value = true
+  syncErrorMessage.value = ''
+
+  try {
+    syncResult.value = await fetchPreschoolWorkflowSyncPreview(currentSyncFilters())
+    syncPreviewReady.value = true
+  } catch (error) {
+    syncErrorMessage.value = error?.response?.data?.message || error?.message || t('common.errorOccurred')
+    syncPreviewReady.value = false
+  } finally {
+    syncLoading.value = false
+  }
+}
+
+async function runWorkflowSync() {
+  if (!syncPreviewReady.value) {
+    return
+  }
+
+  syncLoading.value = true
+  syncErrorMessage.value = ''
+
+  try {
+    syncResult.value = await runPreschoolWorkflowSync(currentSyncFilters())
+    syncPreviewReady.value = true
+  } catch (error) {
+    syncErrorMessage.value = error?.response?.data?.message || error?.message || t('common.errorOccurred')
+  } finally {
+    syncLoading.value = false
+  }
+}
+
+function formatSyncStatus(status) {
+  const key = String(status || '').toLowerCase()
+  if (['created', 'existing', 'skipped', 'failed'].includes(key)) {
+    return labels.value[key]
+  }
+
+  const labelKey = {
+    submitted: 'submitted',
+    under_review: 'underReview',
+    approved: 'approved',
+    waitlisted: 'waitlisted',
+    enrolled: 'enrolled',
+    rejected: 'rejected',
+    cancelled: 'cancelled',
+    new: 'new',
+    acknowledged: 'acknowledged',
+    in_progress: 'inProgress',
+    resolved: 'resolved',
+    closed: 'closed',
+    issued: 'issued',
+    partial: 'partial',
+    paid: 'paid',
+    overdue: 'overdue',
+    open: 'open',
+    completed: 'completed',
+    created: 'created',
+    existing: 'existing',
+    skipped: 'skipped',
+    failed: 'failed',
+  }[key]
+
+  return labelKey ? labels.value.syncStatusOptions[labelKey] : key || '—'
 }
 
 function openWorkflow(workflow) {
@@ -183,6 +364,178 @@ onMounted(refreshWorkflows)
         :labels="labels"
       />
 
+      <section
+        v-if="canManageSync"
+        class="workflow-sync-panel"
+      >
+        <div class="workflow-sync-panel__header">
+          <div>
+            <div class="workflow-sync-panel__eyebrow">{{ labels.adminControlledSync }}</div>
+            <h2 class="workflow-sync-panel__title">{{ labels.workflowSync }}</h2>
+          </div>
+          <span class="workflow-sync-panel__badge">{{ labels.dryRun }}</span>
+        </div>
+
+        <p class="workflow-sync-panel__warning">
+          {{ labels.syncWarning }}
+        </p>
+
+        <div class="workflow-sync-panel__grid">
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.workflow }}</span>
+            <select v-model="syncFilters.definitionKey">
+              <option
+                v-for="option in definitionOptions"
+                :key="`definition-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.sourceEntity }}</span>
+            <select v-model="syncFilters.sourceType">
+              <option
+                v-for="option in syncSourceTypeOptions"
+                :key="`source-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.status }}</span>
+            <select v-model="syncFilters.status">
+              <option
+                v-for="option in syncStatusOptions"
+                :key="`status-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.dateFrom }}</span>
+            <input
+              v-model="syncFilters.dateFrom"
+              type="date"
+            >
+          </label>
+
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.dateTo }}</span>
+            <input
+              v-model="syncFilters.dateTo"
+              type="date"
+            >
+          </label>
+
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.limit }}</span>
+            <input
+              v-model.number="syncFilters.limit"
+              type="number"
+              min="1"
+              max="500"
+            >
+          </label>
+        </div>
+
+        <div class="workflow-sync-panel__actions">
+          <button
+            type="button"
+            class="workflow-sync-panel__button workflow-sync-panel__button--secondary"
+            :disabled="syncLoading"
+            @click="previewWorkflowSync"
+          >
+            {{ labels.previewSync }}
+          </button>
+
+          <button
+            type="button"
+            class="workflow-sync-panel__button workflow-sync-panel__button--primary"
+            :disabled="syncLoading || !syncPreviewReady"
+            @click="runWorkflowSync"
+          >
+            {{ labels.runSync }}
+          </button>
+        </div>
+
+        <div
+          v-if="syncErrorMessage"
+          class="workflow-sync-panel__error"
+        >
+          {{ syncErrorMessage }}
+        </div>
+
+        <div
+          v-if="syncResult"
+          class="workflow-sync-panel__results"
+        >
+          <div class="workflow-sync-panel__summary">
+            <div class="workflow-sync-panel__metric">
+              <span>{{ labels.eligible }}</span>
+              <strong>{{ syncResult.summary.eligible }}</strong>
+            </div>
+            <div class="workflow-sync-panel__metric">
+              <span>{{ labels.created }}</span>
+              <strong>{{ syncResult.summary.created }}</strong>
+            </div>
+            <div class="workflow-sync-panel__metric">
+              <span>{{ labels.existing }}</span>
+              <strong>{{ syncResult.summary.existing }}</strong>
+            </div>
+            <div class="workflow-sync-panel__metric">
+              <span>{{ labels.skipped }}</span>
+              <strong>{{ syncResult.summary.skipped }}</strong>
+            </div>
+            <div class="workflow-sync-panel__metric">
+              <span>{{ labels.failed }}</span>
+              <strong>{{ syncResult.summary.failed }}</strong>
+            </div>
+          </div>
+
+          <div class="workflow-sync-panel__results-header">
+            <h3>{{ labels.syncResults }}</h3>
+            <span>{{ syncResult.dryRun ? labels.dryRun : labels.syncCompleted }}</span>
+          </div>
+
+          <ul
+            v-if="syncResult.items.length > 0"
+            class="workflow-sync-panel__items"
+          >
+            <li
+              v-for="item in syncResult.items"
+              :key="`${item.definitionKey}-${item.sourceType}-${item.sourceId}`"
+              class="workflow-sync-panel__item"
+            >
+              <div class="workflow-sync-panel__item-main">
+                <strong>{{ item.sourceLabel || item.sourceId }}</strong>
+                <span>{{ item.definitionKey }}</span>
+              </div>
+              <div class="workflow-sync-panel__item-meta">
+                <span>{{ item.sourceType }}</span>
+                <span>{{ formatSyncStatus(item.status) }}</span>
+                <span v-if="item.reason">{{ item.reason }}</span>
+              </div>
+            </li>
+          </ul>
+
+          <div
+            v-else
+            class="workflow-sync-panel__empty"
+          >
+            {{ labels.noEligibleRecords }}
+          </div>
+        </div>
+      </section>
+
       <PendingApprovalsSection
         :approvals="approvals"
         :labels="labels"
@@ -252,5 +605,221 @@ onMounted(refreshWorkflows)
   border: 1px solid #cbd5e1;
   background: #f8fafc;
   color: #475569;
+}
+
+.workflow-sync-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 251, 0.95)),
+    linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(15, 23, 42, 0.03));
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.workflow-sync-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.workflow-sync-panel__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0369a1;
+}
+
+.workflow-sync-panel__title {
+  margin: 0.15rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.workflow-sync-panel__badge {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.workflow-sync-panel__warning {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  color: #155e75;
+  font-size: 0.9rem;
+}
+
+.workflow-sync-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.workflow-sync-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.workflow-sync-panel__field select,
+.workflow-sync-panel__field input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #0f172a;
+}
+
+.workflow-sync-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.workflow-sync-panel__button {
+  padding: 0.7rem 1rem;
+  border-radius: 0.85rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.workflow-sync-panel__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workflow-sync-panel__button--secondary {
+  border-color: #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+}
+
+.workflow-sync-panel__button--primary {
+  background: linear-gradient(135deg, #0369a1, #0f766e);
+  color: #fff;
+}
+
+.workflow-sync-panel__error {
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.workflow-sync-panel__results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.workflow-sync-panel__summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.workflow-sync-panel__metric {
+  padding: 0.8rem;
+  border-radius: 0.95rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.workflow-sync-panel__metric span {
+  font-size: 0.76rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.workflow-sync-panel__metric strong {
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.workflow-sync-panel__results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.workflow-sync-panel__results-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.workflow-sync-panel__results-header span {
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.workflow-sync-panel__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-sync-panel__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.95rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.workflow-sync-panel__item-main,
+.workflow-sync-panel__item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.workflow-sync-panel__item-main strong {
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.workflow-sync-panel__empty {
+  padding: 0.95rem 1rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.95rem;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+@media (max-width: 1024px) {
+  .workflow-sync-panel__grid,
+  .workflow-sync-panel__summary {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

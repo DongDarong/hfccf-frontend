@@ -12,10 +12,12 @@ import {
   fetchPreschoolWorkflowApprovals,
   fetchPreschoolWorkflowDefinitions,
   fetchPreschoolWorkflowSummary,
+  fetchPreschoolWorkflowSyncPreview,
   fetchPreschoolWorkflowTimeline,
   fetchPreschoolWorkflows,
   rejectPreschoolWorkflowApproval,
   requestPreschoolWorkflowApproval,
+  runPreschoolWorkflowSync,
   returnPreschoolWorkflowApproval,
   transitionPreschoolWorkflow,
 } from '@/modules/preschool/services/api/preschoolWorkflowApi'
@@ -368,5 +370,141 @@ describe('preschool workflow api', () => {
     expect(http.patch).toHaveBeenCalledWith('/preschool/workflows/approvals/approval-2/reject', { decisionNotes: 'Rejected' })
     expect(http.patch).toHaveBeenCalledWith('/preschool/workflows/approvals/approval-2/return', { decisionNotes: 'Return' })
     expect(http.patch).toHaveBeenCalledWith('/preschool/workflows/approvals/approval-2/cancel', { decisionNotes: 'Cancel' })
+  })
+
+  it('sends sync filters and normalizes sync preview and run payloads', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        dryRun: true,
+        limit: 2,
+        generatedAt: '2026-07-03T10:00:00Z',
+        summary: {
+          eligible: 2,
+          created: 1,
+          existing: 1,
+          skipped: 0,
+          failed: 0,
+        },
+        items: [
+          {
+            definition_key: 'enrollment_admission',
+            source_type: 'preschool_enrollment_application',
+            source_id: '101',
+            source_label: 'ENR-101',
+            source_status: 'submitted',
+            status: 'created',
+            reason: 'Workflow would be created.',
+          },
+        ],
+      }),
+    )
+    http.post.mockResolvedValueOnce(
+      stubResponse({
+        dryRun: false,
+        limit: 2,
+        generatedAt: '2026-07-03T10:05:00Z',
+        summary: {
+          eligible: 1,
+          created: 1,
+          existing: 0,
+          skipped: 0,
+          failed: 0,
+        },
+        items: [
+          {
+            definitionKey: 'health_alert_resolution',
+            sourceType: 'preschool_health_alert',
+            sourceId: '55',
+            sourceLabel: 'Health alert 55',
+            sourceStatus: 'new',
+            status: 'created',
+            reason: 'Workflow created successfully.',
+            workflow_instance_id: 77,
+          },
+        ],
+      }),
+    )
+
+    await expect(fetchPreschoolWorkflowSyncPreview({
+      definitionKey: 'enrollment_admission',
+      sourceType: 'preschool_enrollment_application',
+      status: 'submitted',
+      dateFrom: '2026-07-01',
+      dateTo: '2026-07-03',
+      limit: 2,
+    })).resolves.toMatchObject({
+      dryRun: true,
+      limit: 2,
+      summary: {
+        eligible: 2,
+        created: 1,
+        existing: 1,
+        skipped: 0,
+        failed: 0,
+      },
+      items: [
+        {
+          definitionKey: 'enrollment_admission',
+          sourceType: 'preschool_enrollment_application',
+          sourceId: '101',
+          sourceLabel: 'ENR-101',
+          sourceStatus: 'submitted',
+          status: 'created',
+          reason: 'Workflow would be created.',
+        },
+      ],
+    })
+
+    await expect(runPreschoolWorkflowSync({
+      definitionKey: 'health_alert_resolution',
+      sourceType: 'preschool_health_alert',
+      status: 'new',
+      limit: 2,
+    })).resolves.toMatchObject({
+      dryRun: false,
+      limit: 2,
+      summary: {
+        eligible: 1,
+        created: 1,
+        existing: 0,
+        skipped: 0,
+        failed: 0,
+      },
+      items: [
+        {
+          definitionKey: 'health_alert_resolution',
+          sourceType: 'preschool_health_alert',
+          sourceId: '55',
+          sourceLabel: 'Health alert 55',
+          sourceStatus: 'new',
+          status: 'created',
+          reason: 'Workflow created successfully.',
+          workflowInstanceId: 77,
+        },
+      ],
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/workflows/sync/preview', {
+      params: {
+        definition_key: 'enrollment_admission',
+        source_type: 'preschool_enrollment_application',
+        status: 'submitted',
+        date_from: '2026-07-01',
+        date_to: '2026-07-03',
+        limit: 2,
+        dry_run: false,
+      },
+      signal: undefined,
+    })
+
+    expect(http.post).toHaveBeenCalledWith('/preschool/workflows/sync/run', {
+      definition_key: 'health_alert_resolution',
+      source_type: 'preschool_health_alert',
+      status: 'new',
+      limit: 2,
+      dry_run: false,
+    }, {
+      signal: undefined,
+    })
   })
 })

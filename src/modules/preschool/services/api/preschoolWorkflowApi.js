@@ -310,9 +310,58 @@ function buildApprovalQuery(filters = {}) {
   })
 }
 
+function buildWorkflowSyncQuery(filters = {}) {
+  return buildQueryParams({
+    definition_key: pickFilter(filters, 'definition_key', 'definitionKey'),
+    source_type: pickFilter(filters, 'source_type', 'sourceType'),
+    status: pickFilter(filters, 'status', 'status'),
+    date_from: pickFilter(filters, 'date_from', 'dateFrom'),
+    date_to: pickFilter(filters, 'date_to', 'dateTo'),
+    limit: normalizePerPage(pickFilter(filters, 'limit', 'limit'), 50, 500),
+    dry_run: Boolean(pickFilter(filters, 'dry_run', 'dryRun')),
+  })
+}
+
 async function unwrapListResponse(request, options = {}) {
   const response = await request(options)
   return normalizeListPayload(unwrapApiData(response) || {})
+}
+
+function normalizeSyncItem(item = {}) {
+  if (!isObject(item)) {
+    return null
+  }
+
+  return {
+    definitionKey: normalizeText(item.definitionKey || item.definition_key),
+    sourceType: normalizeText(item.sourceType || item.source_type),
+    sourceId: normalizeText(item.sourceId || item.source_id),
+    sourceLabel: normalizeText(item.sourceLabel || item.source_label),
+    sourceStatus: normalizeText(item.sourceStatus || item.source_status),
+    sourceRouteName: normalizeText(item.sourceRouteName || item.source_route_name),
+    status: normalizeText(item.status),
+    reason: normalizeText(item.reason),
+    workflowInstanceId: item.workflowInstanceId ?? item.workflow_instance_id ?? null,
+  }
+}
+
+function normalizeSyncResult(payload = {}) {
+  const summary = payload.summary || {}
+  const items = Array.isArray(payload.items) ? payload.items : []
+
+  return {
+    dryRun: Boolean(payload.dryRun ?? payload.dry_run),
+    limit: normalizeNumber(payload.limit, 0),
+    generatedAt: normalizeText(payload.generatedAt || payload.generated_at),
+    summary: {
+      eligible: normalizeNumber(summary.eligible, 0),
+      created: normalizeNumber(summary.created, 0),
+      existing: normalizeNumber(summary.existing, 0),
+      skipped: normalizeNumber(summary.skipped, 0),
+      failed: normalizeNumber(summary.failed, 0),
+    },
+    items: items.map(normalizeSyncItem).filter(Boolean),
+  }
 }
 
 export async function fetchPreschoolWorkflowDefinitions(options = {}) {
@@ -455,12 +504,31 @@ export async function fetchPreschoolWorkflowTimeline(id, options = {}) {
   }
 }
 
+export async function fetchPreschoolWorkflowSyncPreview(filters = {}, options = {}) {
+  const response = await http.get('/preschool/workflows/sync/preview', {
+    params: buildWorkflowSyncQuery(filters),
+    signal: options.signal,
+  })
+
+  return normalizeSyncResult(unwrapApiData(response) || {})
+}
+
+export async function runPreschoolWorkflowSync(filters = {}, options = {}) {
+  const response = await http.post('/preschool/workflows/sync/run', buildWorkflowSyncQuery(filters), {
+    signal: options.signal,
+  })
+
+  return normalizeSyncResult(unwrapApiData(response) || {})
+}
+
 export {
   buildWorkflowQuery,
+  buildWorkflowSyncQuery,
   normalizeApproval,
   normalizeDefinition,
   normalizeInstance,
   normalizeListPayload,
   normalizeSummary,
   normalizeTimelineEvent,
+  normalizeSyncResult,
 }

@@ -24,11 +24,19 @@ const mockCancelApproval = vi.fn(async (id, payload, onSuccess) => {
   await onSuccess?.()
   return { approval: { id, payload } }
 })
+const mockFetchPreschoolWorkflowSyncPreview = vi.fn()
+const mockRunPreschoolWorkflowSync = vi.fn()
 
 const workflowData = {
   loading: ref(false),
   errorMessage: ref(''),
-  definitions: ref([]),
+  definitions: ref([
+    {
+      id: 'def-1',
+      key: 'enrollment_admission',
+      name: 'Enrollment Admission',
+    },
+  ]),
   summary: ref({
     total: 4,
     open: 1,
@@ -149,6 +157,13 @@ const workflowData = {
 function resetWorkflowData() {
   workflowData.loading.value = false
   workflowData.errorMessage.value = ''
+  workflowData.definitions.value = [
+    {
+      id: 'def-1',
+      key: 'enrollment_admission',
+      name: 'Enrollment Admission',
+    },
+  ]
   workflowData.summary.value = {
     total: 4,
     open: 1,
@@ -275,6 +290,11 @@ vi.mock('@/modules/preschool/admin/pages/workflows/composables/useWorkflowAction
   }),
 }))
 
+vi.mock('@/modules/preschool/services/api/preschoolWorkflowApi', () => ({
+  fetchPreschoolWorkflowSyncPreview: (...args) => mockFetchPreschoolWorkflowSyncPreview(...args),
+  runPreschoolWorkflowSync: (...args) => mockRunPreschoolWorkflowSync(...args),
+}))
+
 function createRoute() {
   return {
     path: '/module/preschool-admin/workflows',
@@ -283,7 +303,7 @@ function createRoute() {
   }
 }
 
-async function mountPage() {
+async function mountPage(currentUser = { id: 'user-1', role: 'adminpreschool' }) {
   const wrapper = mountWithPlugins(WorkflowApprovalCenter, {
     messages: {
       en: { common: enCommon, ...enPreschool },
@@ -291,7 +311,7 @@ async function mountPage() {
     routes: [createRoute()],
     piniaSetup(pinia) {
       const userStore = useUserStore(pinia)
-      userStore.currentUser = { id: 'user-1', role: 'adminpreschool' }
+      userStore.currentUser = currentUser
     },
     global: {
       stubs: {
@@ -346,6 +366,7 @@ describe('WorkflowApprovalCenter', () => {
     expect(wrapper.text()).toContain('Timeline')
     expect(wrapper.text()).toContain('Application #1')
     expect(wrapper.text()).toContain('Workflow Source')
+    expect(wrapper.text()).toContain('Workflow Sync')
   })
 
   it('calls the approval action API and refreshes the list', async () => {
@@ -379,5 +400,109 @@ describe('WorkflowApprovalCenter', () => {
     expect(wrapper.text()).toContain('No Workflows')
     expect(wrapper.text()).toContain('No Pending Approvals')
     expect(wrapper.text()).toContain('No Timeline')
+  })
+
+  it('shows the sync panel for admin users, previews before run, and renders results', async () => {
+    mockFetchPreschoolWorkflowSyncPreview.mockResolvedValue({
+      dryRun: true,
+      limit: 25,
+      summary: {
+        eligible: 1,
+        created: 1,
+        existing: 0,
+        skipped: 0,
+        failed: 0,
+      },
+      items: [
+        {
+          definitionKey: 'enrollment_admission',
+          sourceType: 'preschool_enrollment_application',
+          sourceId: 'app-99',
+          sourceLabel: 'Application #99',
+          sourceStatus: 'submitted',
+          status: 'created',
+          reason: 'Workflow would be created.',
+        },
+      ],
+    })
+    mockRunPreschoolWorkflowSync.mockResolvedValue({
+      dryRun: false,
+      limit: 25,
+      summary: {
+        eligible: 1,
+        created: 1,
+        existing: 0,
+        skipped: 0,
+        failed: 0,
+      },
+      items: [
+        {
+          definitionKey: 'enrollment_admission',
+          sourceType: 'preschool_enrollment_application',
+          sourceId: 'app-99',
+          sourceLabel: 'Application #99',
+          sourceStatus: 'submitted',
+          status: 'created',
+          reason: 'Workflow created successfully.',
+          workflowInstanceId: 123,
+        },
+      ],
+    })
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.text()).toContain('Workflow Sync')
+    expect(wrapper.text()).toContain('Admin controlled sync')
+    expect(wrapper.text()).toContain('This does not change source statuses.')
+
+    const runButtonBeforePreview = wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Run Sync')
+    expect(runButtonBeforePreview.attributes('disabled')).toBeDefined()
+
+    const previewButton = wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Preview Sync')
+    await previewButton.trigger('click')
+    await flushPromises()
+
+    expect(mockFetchPreschoolWorkflowSyncPreview).toHaveBeenCalledWith({
+      definitionKey: '',
+      sourceType: '',
+      status: '',
+      dateFrom: '',
+      dateTo: '',
+      limit: 25,
+      dryRun: false,
+    })
+    expect(wrapper.text()).toContain('Application #99')
+    expect(wrapper.text()).toContain('Workflow would be created.')
+
+    const runButtonAfterPreview = wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Run Sync')
+    expect(runButtonAfterPreview.attributes('disabled')).toBeUndefined()
+
+    await runButtonAfterPreview.trigger('click')
+    await flushPromises()
+
+    expect(mockRunPreschoolWorkflowSync).toHaveBeenCalledWith({
+      definitionKey: '',
+      sourceType: '',
+      status: '',
+      dateFrom: '',
+      dateTo: '',
+      limit: 25,
+      dryRun: false,
+    })
+    expect(wrapper.text()).toContain('Sync completed')
+  })
+
+  it('hides the sync panel for teacher users', async () => {
+    const wrapper = await mountPage({ id: 'teacher-1', role: 'teacher-preschool' })
+
+    expect(wrapper.text()).not.toContain('Workflow Sync')
+    expect(wrapper.text()).not.toContain('Preview Sync')
+    expect(wrapper.text()).not.toContain('Run Sync')
   })
 })
