@@ -250,7 +250,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.dashboard' },
   ],
 
-  // ── Students ��─────────────────────��────────────────────────────────��──────
+  // Students
   'dashboard-preschool-admin-students': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.students' },
@@ -271,7 +271,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.studentProfile' },
   ],
 
-  // ── Teachers ─────��────────────────────────────��───────────────────────────
+  // Teachers
   'dashboard-preschool-admin-users': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.teachers' },
@@ -287,7 +287,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.teacherDetail' },
   ],
 
-  // ── Classes ───────────────────────��─────────────────────────────���─────────
+  // Classes
   'dashboard-preschool-admin-classes': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.classes' },
@@ -303,7 +303,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.addClass' },
   ],
 
-  // ── Payment ───────────────────────���───────────────────────────────────────
+  // Payment
   'dashboard-preschool-admin-payment': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.payment' },
@@ -314,7 +314,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.invoiceDetail' },
   ],
 
-  // ── Attendance ────────────────────���───────────────────────────────────────
+  // Attendance
   'dashboard-preschool-admin-attendance': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.attendance' },
@@ -368,7 +368,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.guardianContactLog' },
   ],
 
-  // ── Enrollment ──────────────────────────────────────────────────��─────────
+  // Enrollment
   'dashboard-preschool-admin-enrollments': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.enrollment' },
@@ -379,13 +379,13 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.newApplication' },
   ],
 
-  // ── Assignments ────────────────────────────────────────────────────��──────
+  // Assignments
   'dashboard-preschool-admin-assignments': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.assignments' },
   ],
 
-  // ── Assessments ───────────────────────────────────────��───────────────────
+  // Assessments
   'dashboard-preschool-assessments': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.assessments' },
@@ -401,7 +401,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.progressSummary' },
   ],
 
-  // ── Schedules ───────────────────��─────────────────────────────────────────
+  // Schedules
   'dashboard-preschool-admin-schedules': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.schedules' },
@@ -417,7 +417,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.teacherSchedule' },
   ],
 
-  // ── Reports ──────────────────────────��─────────────────────────────────��──
+  // Reports
   'dashboard-preschool-admin-reports': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.reports' },
@@ -448,7 +448,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.exportGovernance' },
   ],
 
-  // ── Governance ────────────────────────────────────────────────────────────
+  // Governance
   'dashboard-preschool-admin-governance-review': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.governance' },
@@ -470,7 +470,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.governanceCases' },
   ],
 
-  // ── Other admin pages ───────────────────────���─────────────────────────────
+  // Other admin pages
   'dashboard-preschool-admin-forms': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.forms' },
@@ -489,7 +489,7 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.settings' },
   ],
 
-  // ── Teacher portal ──────────────────────────────────────────────────��─────
+  // Teacher portal
   // root of the teacher section — single crumb, no parent link
   'dashboard-preschool-teacher': [
     { labelKey: 'breadcrumb.teacherDashboard' },

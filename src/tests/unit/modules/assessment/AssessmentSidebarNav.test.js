@@ -10,37 +10,34 @@ function getSections(user) {
   return buildSidebarSections({ config: preschoolSidebar, router, user, t })
 }
 
-describe('assessment sidebar navigation', () => {
-  it('preschool admin sees the assessment section', () => {
+describe('preschool assessment sidebar navigation', () => {
+  it('preschool admin sees the assessment item in the preschool section', () => {
     const sections = getSections(makeAdminPreschool())
-    const assessmentSection = sections.find((s) => s.id === 'assessment')
-    expect(assessmentSection).toBeDefined()
+    const preschoolSection = sections.find((s) => s.id === 'preschool')
+    expect(preschoolSection).toBeDefined()
+    expect(preschoolSection?.items.some((item) => item.id === 'preschool-assessments')).toBe(true)
   })
 
-  it('assessment section has dashboard, forms, submissions, wizard, reports, audit-logs', () => {
+  it('assessment item points to the preschool assessment dashboard route', () => {
     const sections = getSections(makeAdminPreschool())
-    const assessmentSection = sections.find((s) => s.id === 'assessment')
-    const itemIds = assessmentSection?.items.map((i) => i.id) ?? []
-    expect(itemIds).toContain('assessment-dashboard')
-    expect(itemIds).toContain('assessment-forms')
-    expect(itemIds).toContain('assessment-submissions')
-    expect(itemIds).toContain('assessment-wizard')
-    expect(itemIds).toContain('assessment-reports')
-    expect(itemIds).toContain('assessment-audit-logs')
+    const preschoolSection = sections.find((s) => s.id === 'preschool')
+    const assessmentItem = preschoolSection?.items.find((item) => item.id === 'preschool-assessments')
+
+    expect(assessmentItem?.routeName).toBe('preschool-assessment-dashboard')
+    expect(router.hasRoute('preschool-assessment-dashboard')).toBe(true)
   })
 
-  it('assessment section routes have no dynamic parameters', () => {
+  it('assessment item route has no dynamic parameters', () => {
     const sections = getSections(makeAdminPreschool())
-    const assessmentSection = sections.find((s) => s.id === 'assessment')
-    const paths = assessmentSection?.items.map((i) => i.routePath) ?? []
-    expect(paths.every((p) => !p.includes(':'))).toBe(true)
+    const preschoolSection = sections.find((s) => s.id === 'preschool')
+    const assessmentItem = preschoolSection?.items.find((item) => item.id === 'preschool-assessments')
+    expect(String(assessmentItem?.routePath || '')).not.toContain(':')
   })
 
   it('teacher does not see assessment admin-only items via the preschool sidebar', () => {
     const sections = getSections(makeTeacherPreschool())
-    // Teacher scope is 'staff', assessment section requires 'admin' — should be absent
-    const assessmentSection = sections.find((s) => s.id === 'assessment')
-    expect(assessmentSection).toBeUndefined()
+    const preschoolSection = sections.find((s) => s.id === 'preschool')
+    expect(preschoolSection).toBeUndefined()
   })
 
   it('preschool admin does not see removed guardian nav items', () => {
