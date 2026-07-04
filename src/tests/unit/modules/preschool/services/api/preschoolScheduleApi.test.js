@@ -83,6 +83,24 @@ describe('preschool schedule api', () => {
       signal: undefined,
     })
 
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        items: [],
+        pagination: { page: 1, perPage: 100, total: 0, totalPages: 0 },
+      }),
+    )
+
+    await fetchSchedules({ page: 1, perPage: 200, dayOfWeek: 6 })
+
+    expect(http.get).toHaveBeenLastCalledWith('/preschool/schedules', {
+      params: {
+        page: 1,
+        per_page: 100,
+        day_of_week: 6,
+      },
+      signal: undefined,
+    })
+
     http.post.mockResolvedValueOnce(
       stubResponse({
         schedule: {

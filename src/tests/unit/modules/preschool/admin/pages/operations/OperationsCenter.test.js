@@ -205,7 +205,6 @@ async function mountPage() {
     global: {
       stubs: {
         MainLayout: { template: '<div><slot /></div>' },
-        Button: { props: ['loading', 'label'], template: '<button type="button"><slot />{{ label }}</button>' },
       },
     },
   })
@@ -385,6 +384,7 @@ beforeEach(() => {
 
 describe('OperationsCenter', () => {
   it('loads the operations dashboard endpoint and renders operational sections', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const wrapper = await mountPage()
 
     expect(mockLoadOperations).toHaveBeenCalledWith({
@@ -416,6 +416,12 @@ describe('OperationsCenter', () => {
     expect(wrapper.text()).toContain('Open Workflow')
     expect(wrapper.text()).toContain('Timeline')
     expect(wrapper.text()).toContain('Quick Actions')
+    const unresolvedButtonWarnings = warnSpy.mock.calls.filter((call) =>
+      String(call[0] ?? '').includes('Failed to resolve component: Button'),
+    )
+    expect(unresolvedButtonWarnings).toHaveLength(0)
+
+    warnSpy.mockRestore()
   })
 
   it('renders loading and error states when backend data changes', async () => {

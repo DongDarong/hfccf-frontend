@@ -12,6 +12,16 @@ function normalizeText(value) {
   return String(value ?? '').trim()
 }
 
+function normalizeSchedulePageSize(perPage) {
+  const parsed = Number(perPage)
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 10
+  }
+
+  return Math.min(Math.trunc(parsed), 100)
+}
+
 function normalizeScheduleSession(row = {}) {
   return {
     id: row.id ?? '',
@@ -123,10 +133,12 @@ export async function fetchSchedules(
   { page = 1, perPage = 10, search = '', status = '', classId = '', teacherUserId = '', dayOfWeek = '' } = {},
   options = {},
 ) {
+  const normalizedPerPage = normalizeSchedulePageSize(perPage)
+
   const response = await http.get('/preschool/schedules', {
     params: buildQueryParams({
       page,
-      per_page: perPage,
+      per_page: normalizedPerPage,
       search,
       status,
       class_id: classId,

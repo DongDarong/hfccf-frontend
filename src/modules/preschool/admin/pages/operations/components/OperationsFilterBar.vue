@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import Button from '@/components/buttons/Button.vue'
 
 const props = defineProps({
   modelValue: {

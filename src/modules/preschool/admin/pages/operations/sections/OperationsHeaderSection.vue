@@ -1,4 +1,6 @@
 <script setup>
+import Button from '@/components/buttons/Button.vue'
+
 defineProps({
   title: {
     type: String,
