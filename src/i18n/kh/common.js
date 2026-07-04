@@ -31,6 +31,7 @@ export default {
     save: 'រក្សាទុក',
     cancel: 'បោះបង់',
     refresh: 'ធ្វើឱ្យស្រស់',
+    viewAll: 'មើលទាំងអស់',
 
     menu: 'សកម្មភាព',
   },
