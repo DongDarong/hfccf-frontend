@@ -82,8 +82,11 @@ async function handleMarkAllRead() {
 }
 
 function goToNotificationsPage() {
-  overlayRef.value?.hide()
-  router.push({ name: 'notifications' })
+  overlayRef.value?.hide?.()
+  router.push({
+    name: 'dashboard-notifications',
+    query: { tab: 'notifications' },
+  })
 }
 
 onMounted(() => {

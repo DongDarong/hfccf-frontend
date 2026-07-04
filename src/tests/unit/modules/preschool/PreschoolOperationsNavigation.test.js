@@ -21,18 +21,27 @@ describe('preschool operations navigation', () => {
       preschoolRoutes.some((route) => route.name === 'dashboard-preschool-admin-operations' && route.path === '/preschool/operations'),
     ).toBe(true)
 
-    expect(
-      preschoolRoutes.some((route) => route.name === 'dashboard-preschool-admin-notifications' && route.path === '/module/preschool-admin/notifications'),
-    ).toBe(true)
+    const notificationsRoute = preschoolRoutes.find(
+      (route) => route.name === 'dashboard-preschool-admin-notifications' && route.path === '/module/preschool-admin/notifications',
+    )
+
+    expect(Boolean(notificationsRoute?.redirect)).toBe(true)
+    expect(notificationsRoute.redirect({ query: { from: 'operations' } })).toEqual({
+      name: 'dashboard-notifications',
+      query: {
+        from: 'operations',
+        tab: 'tasks',
+      },
+    })
 
     const adminSections = buildFor(makeAdminPreschool())
     const adminRouteNames = adminSections.flatMap((section) => section.items.map((item) => item.routeName))
     expect(adminRouteNames).toContain('dashboard-preschool-admin-operations')
-    expect(adminRouteNames).toContain('dashboard-preschool-admin-notifications')
+    expect(adminRouteNames).toContain('dashboard-notifications')
 
     const teacherSections = buildFor(makeTeacherPreschool())
     const teacherRouteNames = teacherSections.flatMap((section) => section.items.map((item) => item.routeName))
     expect(teacherRouteNames).not.toContain('dashboard-preschool-admin-operations')
-    expect(teacherRouteNames).not.toContain('dashboard-preschool-admin-notifications')
+    expect(teacherRouteNames).not.toContain('dashboard-notifications')
   })
 })

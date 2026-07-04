@@ -29,7 +29,7 @@
         },
         {
           "id": "preschool-notifications",
-          "routeName": "dashboard-preschool-admin-notifications",
+          "routeName": "dashboard-notifications",
           "labelKey": "nav.items.notificationAutomation",
           "icon": "notification",
           "badgeKey": "nav.badges.staff"

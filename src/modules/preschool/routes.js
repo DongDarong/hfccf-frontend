@@ -149,7 +149,13 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/notifications',
     name: 'dashboard-preschool-admin-notifications',
-    component: () => import('@/modules/preschool/admin/pages/notifications/NotificationAutomationCenter.vue'),
+    redirect: to => ({
+      name: 'dashboard-notifications',
+      query: {
+        ...to.query,
+        tab: 'tasks',
+      },
+    }),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

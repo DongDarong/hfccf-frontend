@@ -151,7 +151,7 @@ async function submitForm() {
 }
 
 function goBack() {
-  router.push({ name: 'notifications' })
+  router.push({ name: 'dashboard-notifications' })
 }
 
 async function handleSuccessClose() {
