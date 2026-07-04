@@ -12,7 +12,11 @@ import {
   fetchPreschoolWorkflowApprovals,
   fetchPreschoolWorkflowDefinitions,
   fetchPreschoolWorkflowSummary,
+  fetchPreschoolWorkflowObservabilityDashboard,
   fetchPreschoolWorkflowSyncPreview,
+  fetchPreschoolWorkflowSyncRun,
+  fetchPreschoolWorkflowSyncRunItems,
+  fetchPreschoolWorkflowSyncRuns,
   fetchPreschoolWorkflowTimeline,
   fetchPreschoolWorkflows,
   rejectPreschoolWorkflowApproval,
@@ -492,6 +496,7 @@ describe('preschool workflow api', () => {
         date_from: '2026-07-01',
         date_to: '2026-07-03',
         limit: 2,
+        batch_size: 25,
         dry_run: false,
       },
       signal: undefined,
@@ -502,9 +507,346 @@ describe('preschool workflow api', () => {
       source_type: 'preschool_health_alert',
       status: 'new',
       limit: 2,
+      batch_size: 25,
       dry_run: false,
     }, {
       signal: undefined,
+    })
+  })
+
+  it('sends observability filters and normalizes dashboard payloads', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        summary: {
+          totalRuns: 4,
+          successfulRuns: 2,
+          runsWithErrors: 1,
+          failedRuns: 1,
+          runningRuns: 1,
+          staleRuns: 1,
+          totalProcessed: 12,
+          totalCreated: 4,
+          totalExisting: 5,
+          totalSkipped: 2,
+          totalFailedItems: 1,
+          successRate: 50,
+          failureRate: 50,
+          averageDurationMs: 1200,
+          longestDurationMs: 5000,
+          averageItemsPerRun: 3,
+        },
+        performance: {
+          averageDurationMs: 1200,
+          longestDurationMs: 5000,
+          slowestRuns: [
+            {
+              id: 1,
+              mode: 'run',
+              status: 'completed',
+              definitionKey: 'invoice_collection',
+              sourceType: 'preschool_invoice',
+              durationMs: 5000,
+              throughputItemsPerSecond: 0.4,
+            },
+          ],
+          durationTrend: [
+            { date: '2026-07-03', averageDurationMs: 1200, longestDurationMs: 5000 },
+          ],
+          processedItemsTrend: [
+            { date: '2026-07-03', processedItems: 12 },
+          ],
+          throughputTrend: [
+            { date: '2026-07-03', throughputItemsPerSecond: 2.4 },
+          ],
+        },
+        health: {
+          status: 'warning',
+          staleRuns: [],
+          recentFailedRuns: [],
+          recentRunsWithErrors: [],
+          highFailureRateRuns: [],
+        },
+        breakdowns: {
+          byDefinition: [
+            {
+              definitionKey: 'invoice_collection',
+              definitionName: 'Invoice Collection',
+              totalRuns: 2,
+              failedRuns: 1,
+              averageDurationMs: 1200,
+            },
+          ],
+          bySourceType: [
+            {
+              sourceType: 'preschool_invoice',
+              sourceLabel: 'Invoice',
+              totalRuns: 2,
+              failedRuns: 1,
+            },
+          ],
+          byRunStatus: [
+            { status: 'completed', totalRuns: 2 },
+          ],
+          byItemStatus: [
+            { resultStatus: 'created', totalItems: 4 },
+          ],
+          byActor: [
+            {
+              startedByUserId: 'user-1',
+              startedBy: {
+                id: 'user-1',
+                name: 'Admin User',
+                roleCode: 'adminpreschool',
+              },
+              totalRuns: 4,
+              failedRuns: 1,
+            },
+          ],
+          byFailureCategory: [
+            {
+              failureCategory: 'database_error',
+              totalFailures: 1,
+              runFailures: 1,
+              itemFailures: 0,
+            },
+          ],
+        },
+        trends: {
+          runsOverTime: [
+            { date: '2026-07-03', totalRuns: 4, failedRuns: 1, failureRate: 50 },
+          ],
+          processedItemsOverTime: [
+            { date: '2026-07-03', processedItems: 12 },
+          ],
+          failureRateOverTime: [
+            { date: '2026-07-03', failureRate: 50 },
+          ],
+          durationOverTime: [
+            { date: '2026-07-03', averageDurationMs: 1200, longestDurationMs: 5000 },
+          ],
+        },
+        recentActivity: {
+          recentRuns: [],
+          recentFailures: [
+            {
+              kind: 'run',
+              id: 'run-1',
+              runId: 1,
+              definitionKey: 'invoice_collection',
+              sourceType: 'preschool_invoice',
+              status: 'failed',
+              failureCategory: 'database_error',
+              reason: 'Database error.',
+              errorMessage: 'Database error.',
+              occurredAt: '2026-07-03T10:00:00Z',
+            },
+          ],
+          recentlyCompletedRuns: [],
+        },
+        governance: {
+          oldestRunAt: '2026-07-01T00:00:00Z',
+          totalRunRecords: 4,
+          totalItemRecords: 8,
+          retentionMode: 'policy_only',
+          automaticPruningEnabled: false,
+        },
+      }),
+    )
+
+    await expect(fetchPreschoolWorkflowObservabilityDashboard({
+      definitionKey: 'invoice_collection',
+      sourceType: 'preschool_invoice',
+      status: 'failed',
+      startedByUserId: 'user-1',
+      dateFrom: '2026-07-01',
+      dateTo: '2026-07-03',
+      mode: 'run',
+    })).resolves.toMatchObject({
+      summary: {
+        totalRuns: 4,
+        successfulRuns: 2,
+        runsWithErrors: 1,
+        failedRuns: 1,
+        runningRuns: 1,
+        staleRuns: 1,
+        totalProcessed: 12,
+        totalCreated: 4,
+        totalExisting: 5,
+        totalSkipped: 2,
+        totalFailedItems: 1,
+        averageDurationMs: 1200,
+        longestDurationMs: 5000,
+        averageItemsPerRun: 3,
+      },
+      breakdowns: {
+        byFailureCategory: [
+          {
+            failureCategory: 'database_error',
+            totalFailures: 1,
+            runFailures: 1,
+            itemFailures: 0,
+          },
+        ],
+      },
+      governance: {
+        oldestRunAt: '2026-07-01T00:00:00Z',
+        totalRunRecords: 4,
+        totalItemRecords: 8,
+        retentionMode: 'policy_only',
+        automaticPruningEnabled: false,
+      },
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/workflows/observability/dashboard', {
+      params: {
+        definition_key: 'invoice_collection',
+        source_type: 'preschool_invoice',
+        status: 'failed',
+        started_by_user_id: 'user-1',
+        date_from: '2026-07-01',
+        date_to: '2026-07-03',
+        mode: 'run',
+      },
+      signal: undefined,
+    })
+  })
+
+  it('normalizes sync run history and run item payloads', async () => {
+    http.get
+      .mockResolvedValueOnce(
+        stubResponse({
+          items: [
+            {
+              id: 10,
+              mode: 'run',
+              status: 'completed_with_errors',
+              definition_key: 'invoice_collection',
+              source_type: 'preschool_invoice',
+              filters: {
+                definition_key: 'invoice_collection',
+                source_type: 'preschool_invoice',
+              },
+              requested_limit: 25,
+              batch_size: 10,
+              eligible_count: 3,
+              processed_count: 3,
+              created_count: 1,
+              existing_count: 1,
+              skipped_count: 0,
+              failed_count: 1,
+              started_by_user_id: 'user-1',
+              started_at: '2026-07-03T10:00:00Z',
+              completed_at: '2026-07-03T10:01:00Z',
+              started_by: {
+                id: 'user-1',
+                name: 'Admin User',
+                role_code: 'adminpreschool',
+              },
+            },
+          ],
+          pagination: {
+            current_page: 1,
+            last_page: 1,
+            per_page: 20,
+            total: 1,
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        stubResponse({
+          run: {
+            id: 10,
+            mode: 'run',
+            status: 'completed',
+            started_by_user_id: 'user-1',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        stubResponse({
+          items: [
+            {
+              id: 100,
+              sync_run_id: 10,
+              definition_key: 'invoice_collection',
+              source_type: 'preschool_invoice',
+              source_id: '55',
+              source_label: 'Invoice 55',
+              result_status: 'created',
+              reason: 'Workflow created successfully.',
+              workflow_instance_id: 88,
+              processed_at: '2026-07-03T10:00:30Z',
+            },
+          ],
+          pagination: {
+            current_page: 1,
+            last_page: 1,
+            per_page: 20,
+            total: 1,
+          },
+        }),
+      )
+
+    await expect(fetchPreschoolWorkflowSyncRuns({
+      mode: 'run',
+      status: 'completed_with_errors',
+      definitionKey: 'invoice_collection',
+      sourceType: 'preschool_invoice',
+      startedByUserId: 'user-1',
+      dateFrom: '2026-07-01',
+      dateTo: '2026-07-03',
+      perPage: 20,
+    })).resolves.toMatchObject({
+      items: [
+        {
+          id: 10,
+          mode: 'run',
+          status: 'completed_with_errors',
+          definitionKey: 'invoice_collection',
+          sourceType: 'preschool_invoice',
+          eligibleCount: 3,
+          processedCount: 3,
+          failedCount: 1,
+          startedBy: {
+            name: 'Admin User',
+          },
+        },
+      ],
+      pagination: {
+        currentPage: 1,
+        lastPage: 1,
+        perPage: 20,
+        total: 1,
+      },
+    })
+
+    await expect(fetchPreschoolWorkflowSyncRun(10)).resolves.toMatchObject({
+      run: {
+        id: 10,
+        mode: 'run',
+        status: 'completed',
+      },
+    })
+
+    await expect(fetchPreschoolWorkflowSyncRunItems(10)).resolves.toMatchObject({
+      items: [
+        {
+          id: 100,
+          syncRunId: 10,
+          definitionKey: 'invoice_collection',
+          sourceType: 'preschool_invoice',
+          sourceId: '55',
+          sourceLabel: 'Invoice 55',
+          resultStatus: 'created',
+          workflowInstanceId: 88,
+        },
+      ],
+      pagination: {
+        currentPage: 1,
+        lastPage: 1,
+        perPage: 20,
+        total: 1,
+      },
     })
   })
 })

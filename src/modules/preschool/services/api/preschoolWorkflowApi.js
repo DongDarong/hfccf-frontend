@@ -318,7 +318,20 @@ function buildWorkflowSyncQuery(filters = {}) {
     date_from: pickFilter(filters, 'date_from', 'dateFrom'),
     date_to: pickFilter(filters, 'date_to', 'dateTo'),
     limit: normalizePerPage(pickFilter(filters, 'limit', 'limit'), 50, 500),
+    batch_size: Math.min(Math.max(normalizeNumber(pickFilter(filters, 'batch_size', 'batchSize'), 25), 1), 100),
     dry_run: Boolean(pickFilter(filters, 'dry_run', 'dryRun')),
+  })
+}
+
+function buildWorkflowObservabilityQuery(filters = {}) {
+  return buildQueryParams({
+    definition_key: pickFilter(filters, 'definition_key', 'definitionKey'),
+    source_type: pickFilter(filters, 'source_type', 'sourceType'),
+    status: pickFilter(filters, 'status', 'status'),
+    started_by_user_id: pickFilter(filters, 'started_by_user_id', 'startedByUserId'),
+    date_from: pickFilter(filters, 'date_from', 'dateFrom'),
+    date_to: pickFilter(filters, 'date_to', 'dateTo'),
+    mode: pickFilter(filters, 'mode', 'mode'),
   })
 }
 
@@ -339,9 +352,80 @@ function normalizeSyncItem(item = {}) {
     sourceLabel: normalizeText(item.sourceLabel || item.source_label),
     sourceStatus: normalizeText(item.sourceStatus || item.source_status),
     sourceRouteName: normalizeText(item.sourceRouteName || item.source_route_name),
+    sourceRouteParams: normalizePrimitive(item.sourceRouteParams || item.source_route_params || {}),
+    sourceExists: item.sourceExists ?? item.source_exists ?? null,
     status: normalizeText(item.status),
     reason: normalizeText(item.reason),
     workflowInstanceId: item.workflowInstanceId ?? item.workflow_instance_id ?? null,
+    workflowRouteName: normalizeText(item.workflowRouteName || item.workflow_route_name),
+    workflowRouteParams: normalizePrimitive(item.workflowRouteParams || item.workflow_route_params || {}),
+    errorMessage: normalizeText(item.errorMessage || item.error_message),
+    processedAt: item.processedAt || item.processed_at || '',
+  }
+}
+
+function normalizeSyncRunStartedBy(user = {}) {
+  if (!isObject(user)) {
+    return null
+  }
+
+  return {
+    id: user.id ?? '',
+    name: normalizeText(user.name),
+    roleCode: normalizeText(user.roleCode || user.role_code),
+  }
+}
+
+function normalizeSyncRun(run = {}) {
+  if (!isObject(run)) {
+    return null
+  }
+
+  return {
+    id: run.id ?? '',
+    mode: normalizeText(run.mode),
+    status: normalizeText(run.status),
+    definitionKey: normalizeText(run.definitionKey || run.definition_key),
+    sourceType: normalizeText(run.sourceType || run.source_type),
+    filters: normalizePrimitive(run.filters || {}),
+    requestedLimit: normalizeNumber(run.requestedLimit ?? run.requested_limit, 0),
+    batchSize: normalizeNumber(run.batchSize ?? run.batch_size, 0),
+    eligibleCount: normalizeNumber(run.eligibleCount ?? run.eligible_count, 0),
+    processedCount: normalizeNumber(run.processedCount ?? run.processed_count, 0),
+    createdCount: normalizeNumber(run.createdCount ?? run.created_count, 0),
+    existingCount: normalizeNumber(run.existingCount ?? run.existing_count, 0),
+    skippedCount: normalizeNumber(run.skippedCount ?? run.skipped_count, 0),
+    failedCount: normalizeNumber(run.failedCount ?? run.failed_count, 0),
+    startedByUserId: normalizeText(run.startedByUserId || run.started_by_user_id),
+    startedAt: run.startedAt || run.started_at || '',
+    completedAt: run.completedAt || run.completed_at || '',
+    failureMessage: normalizeText(run.failureMessage || run.failure_message),
+    startedBy: normalizeSyncRunStartedBy(run.startedBy || run.started_by || null),
+  }
+}
+
+function normalizeSyncRunItem(item = {}) {
+  if (!isObject(item)) {
+    return null
+  }
+
+  return {
+    id: item.id ?? '',
+    syncRunId: item.syncRunId ?? item.sync_run_id ?? '',
+    definitionKey: normalizeText(item.definitionKey || item.definition_key),
+    sourceType: normalizeText(item.sourceType || item.source_type),
+    sourceId: normalizeText(item.sourceId || item.source_id),
+    sourceLabel: normalizeText(item.sourceLabel || item.source_label),
+    sourceRouteName: normalizeText(item.sourceRouteName || item.source_route_name),
+    sourceRouteParams: normalizePrimitive(item.sourceRouteParams || item.source_route_params || {}),
+    sourceExists: item.sourceExists ?? item.source_exists ?? null,
+    resultStatus: normalizeText(item.resultStatus || item.result_status),
+    reason: normalizeText(item.reason),
+    workflowInstanceId: item.workflowInstanceId ?? item.workflow_instance_id ?? null,
+    workflowRouteName: normalizeText(item.workflowRouteName || item.workflow_route_name),
+    workflowRouteParams: normalizePrimitive(item.workflowRouteParams || item.workflow_route_params || {}),
+    errorMessage: normalizeText(item.errorMessage || item.error_message),
+    processedAt: item.processedAt || item.processed_at || '',
   }
 }
 
@@ -352,7 +436,9 @@ function normalizeSyncResult(payload = {}) {
   return {
     dryRun: Boolean(payload.dryRun ?? payload.dry_run),
     limit: normalizeNumber(payload.limit, 0),
+    batchSize: normalizeNumber(payload.batchSize ?? payload.batch_size, 0),
     generatedAt: normalizeText(payload.generatedAt || payload.generated_at),
+    run: normalizeSyncRun(payload.run || payload.syncRun || null),
     summary: {
       eligible: normalizeNumber(summary.eligible, 0),
       created: normalizeNumber(summary.created, 0),
@@ -361,6 +447,207 @@ function normalizeSyncResult(payload = {}) {
       failed: normalizeNumber(summary.failed, 0),
     },
     items: items.map(normalizeSyncItem).filter(Boolean),
+  }
+}
+
+function normalizeSyncRunHistoryPayload(payload = {}) {
+  const items = Array.isArray(payload.items) ? payload.items : []
+
+  return {
+    items: items.map(normalizeSyncRun).filter(Boolean),
+    pagination: payload.pagination ? normalizePagination(payload.pagination) : null,
+  }
+}
+
+function normalizeObservabilityActor(actor = {}) {
+  if (!isObject(actor)) {
+    return null
+  }
+
+  return {
+    id: actor.id ?? '',
+    name: normalizeText(actor.name),
+    roleCode: normalizeText(actor.roleCode || actor.role_code),
+  }
+}
+
+function normalizeObservabilityStaleRun(stale = {}) {
+  if (!isObject(stale)) {
+    return null
+  }
+
+  return {
+    isStale: Boolean(stale.isStale ?? stale.is_stale),
+    staleReason: normalizeText(stale.staleReason || stale.stale_reason),
+    ageMs: stale.ageMs ?? stale.age_ms ?? null,
+    thresholdMs: stale.thresholdMs ?? stale.threshold_ms ?? null,
+    run: normalizeObservabilityRun(stale.run || null),
+  }
+}
+
+function normalizeObservabilityRun(run = {}) {
+  if (!isObject(run)) {
+    return null
+  }
+
+  return {
+    id: run.id ?? '',
+    mode: normalizeText(run.mode),
+    status: normalizeText(run.status),
+    definitionKey: normalizeText(run.definitionKey || run.definition_key),
+    definitionName: normalizeText(run.definitionName || run.definition_name),
+    sourceType: normalizeText(run.sourceType || run.source_type),
+    startedByUserId: normalizeText(run.startedByUserId || run.started_by_user_id),
+    startedBy: normalizeObservabilityActor(run.startedBy || null),
+    requestedLimit: run.requestedLimit ?? run.requested_limit ?? null,
+    batchSize: run.batchSize ?? run.batch_size ?? null,
+    eligibleCount: run.eligibleCount ?? run.eligible_count ?? null,
+    processedCount: run.processedCount ?? run.processed_count ?? 0,
+    createdCount: run.createdCount ?? run.created_count ?? 0,
+    existingCount: run.existingCount ?? run.existing_count ?? 0,
+    skippedCount: run.skippedCount ?? run.skipped_count ?? 0,
+    failedCount: run.failedCount ?? run.failed_count ?? 0,
+    startedAt: run.startedAt || run.started_at || '',
+    completedAt: run.completedAt || run.completed_at || '',
+    createdAt: run.createdAt || run.created_at || '',
+    updatedAt: run.updatedAt || run.updated_at || '',
+    durationMs: run.durationMs ?? run.duration_ms ?? null,
+    throughputItemsPerSecond: run.throughputItemsPerSecond ?? run.throughput_items_per_second ?? null,
+    failureMessage: normalizeText(run.failureMessage || run.failure_message),
+    stale: normalizeObservabilityStaleRun(run.stale || null),
+  }
+}
+
+function normalizeObservabilityFailureEvent(event = {}) {
+  if (!isObject(event)) {
+    return null
+  }
+
+  return {
+    kind: normalizeText(event.kind),
+    id: normalizeText(event.id),
+    runId: event.runId ?? event.run_id ?? null,
+    definitionKey: normalizeText(event.definitionKey || event.definition_key),
+    sourceType: normalizeText(event.sourceType || event.source_type),
+    sourceId: normalizeText(event.sourceId || event.source_id),
+    sourceLabel: normalizeText(event.sourceLabel || event.source_label),
+    status: normalizeText(event.status),
+    failureCategory: normalizeText(event.failureCategory || event.failure_category),
+    reason: normalizeText(event.reason),
+    errorMessage: normalizeText(event.errorMessage || event.error_message),
+    occurredAt: event.occurredAt || event.occurred_at || '',
+    run: normalizeObservabilityRun(event.run || null),
+  }
+}
+
+function normalizeObservabilityDashboard(payload = {}) {
+  const summary = payload.summary || {}
+  const performance = payload.performance || {}
+  const health = payload.health || {}
+  const breakdowns = payload.breakdowns || {}
+  const trends = payload.trends || {}
+  const recentActivity = payload.recentActivity || {}
+  const governance = payload.governance || {}
+
+  return {
+    summary: {
+      totalRuns: normalizeNumber(summary.totalRuns, 0),
+      successfulRuns: normalizeNumber(summary.successfulRuns, 0),
+      runsWithErrors: normalizeNumber(summary.runsWithErrors, 0),
+      failedRuns: normalizeNumber(summary.failedRuns, 0),
+      runningRuns: normalizeNumber(summary.runningRuns, 0),
+      staleRuns: normalizeNumber(summary.staleRuns, 0),
+      totalProcessed: normalizeNumber(summary.totalProcessed, 0),
+      totalCreated: normalizeNumber(summary.totalCreated, 0),
+      totalExisting: normalizeNumber(summary.totalExisting, 0),
+      totalSkipped: normalizeNumber(summary.totalSkipped, 0),
+      totalFailedItems: normalizeNumber(summary.totalFailedItems, 0),
+      successRate: normalizeNumber(summary.successRate, 0),
+      failureRate: normalizeNumber(summary.failureRate, 0),
+      averageDurationMs: performance.averageDurationMs ?? summary.averageDurationMs ?? null,
+      longestDurationMs: performance.longestDurationMs ?? summary.longestDurationMs ?? null,
+      averageItemsPerRun: normalizeNumber(summary.averageItemsPerRun, 0),
+    },
+    performance: {
+      averageDurationMs: performance.averageDurationMs ?? null,
+      longestDurationMs: performance.longestDurationMs ?? null,
+      slowestRuns: Array.isArray(performance.slowestRuns) ? performance.slowestRuns.map(normalizeObservabilityRun).filter(Boolean) : [],
+      durationTrend: Array.isArray(performance.durationTrend) ? performance.durationTrend.map(normalizePrimitive) : [],
+      processedItemsTrend: Array.isArray(performance.processedItemsTrend) ? performance.processedItemsTrend.map(normalizePrimitive) : [],
+      throughputTrend: Array.isArray(performance.throughputTrend) ? performance.throughputTrend.map(normalizePrimitive) : [],
+    },
+    health: {
+      status: normalizeText(health.status),
+      staleRuns: Array.isArray(health.staleRuns) ? health.staleRuns.map(normalizeObservabilityStaleRun).filter(Boolean) : [],
+      recentFailedRuns: Array.isArray(health.recentFailedRuns) ? health.recentFailedRuns.map(normalizeObservabilityRun).filter(Boolean) : [],
+      recentRunsWithErrors: Array.isArray(health.recentRunsWithErrors) ? health.recentRunsWithErrors.map(normalizeObservabilityRun).filter(Boolean) : [],
+      highFailureRateRuns: Array.isArray(health.highFailureRateRuns) ? health.highFailureRateRuns.map(normalizeObservabilityRun).filter(Boolean) : [],
+    },
+    breakdowns: {
+      byDefinition: Array.isArray(breakdowns.byDefinition) ? breakdowns.byDefinition.map((item = {}) => ({
+        definitionKey: normalizeText(item.definitionKey || item.definition_key),
+        definitionName: normalizeText(item.definitionName || item.definition_name),
+        totalRuns: normalizeNumber(item.totalRuns ?? item.total_runs, 0),
+        successfulRuns: normalizeNumber(item.successfulRuns ?? item.successful_runs, 0),
+        runsWithErrors: normalizeNumber(item.runsWithErrors ?? item.runs_with_errors, 0),
+        failedRuns: normalizeNumber(item.failedRuns ?? item.failed_runs, 0),
+        staleRuns: normalizeNumber(item.staleRuns ?? item.stale_runs, 0),
+        totalProcessed: normalizeNumber(item.totalProcessed ?? item.total_processed, 0),
+        averageDurationMs: item.averageDurationMs ?? item.average_duration_ms ?? null,
+      })) : [],
+      bySourceType: Array.isArray(breakdowns.bySourceType) ? breakdowns.bySourceType.map((item = {}) => ({
+        sourceType: normalizeText(item.sourceType || item.source_type),
+        sourceLabel: normalizeText(item.sourceLabel || item.source_label),
+        totalRuns: normalizeNumber(item.totalRuns ?? item.total_runs, 0),
+        successfulRuns: normalizeNumber(item.successfulRuns ?? item.successful_runs, 0),
+        runsWithErrors: normalizeNumber(item.runsWithErrors ?? item.runs_with_errors, 0),
+        failedRuns: normalizeNumber(item.failedRuns ?? item.failed_runs, 0),
+        staleRuns: normalizeNumber(item.staleRuns ?? item.stale_runs, 0),
+      })) : [],
+      byRunStatus: Array.isArray(breakdowns.byRunStatus) ? breakdowns.byRunStatus.map((item = {}) => ({
+        status: normalizeText(item.status),
+        totalRuns: normalizeNumber(item.totalRuns ?? item.total_runs, 0),
+      })) : [],
+      byItemStatus: Array.isArray(breakdowns.byItemStatus) ? breakdowns.byItemStatus.map((item = {}) => ({
+        resultStatus: normalizeText(item.resultStatus || item.result_status),
+        totalItems: normalizeNumber(item.totalItems ?? item.total_items, 0),
+      })) : [],
+      byActor: Array.isArray(breakdowns.byActor) ? breakdowns.byActor.map((item = {}) => ({
+        startedByUserId: normalizeText(item.startedByUserId || item.started_by_user_id),
+        startedBy: normalizeObservabilityActor(item.startedBy || item.started_by || null),
+        totalRuns: normalizeNumber(item.totalRuns ?? item.total_runs, 0),
+        successfulRuns: normalizeNumber(item.successfulRuns ?? item.successful_runs, 0),
+        runsWithErrors: normalizeNumber(item.runsWithErrors ?? item.runs_with_errors, 0),
+        failedRuns: normalizeNumber(item.failedRuns ?? item.failed_runs, 0),
+        totalProcessed: normalizeNumber(item.totalProcessed ?? item.total_processed, 0),
+      })) : [],
+      byFailureCategory: Array.isArray(breakdowns.byFailureCategory) ? breakdowns.byFailureCategory.map((item = {}) => ({
+        failureCategory: normalizeText(item.failureCategory || item.failure_category),
+        totalFailures: normalizeNumber(item.totalFailures ?? item.total_failures, 0),
+        runFailures: normalizeNumber(item.runFailures ?? item.run_failures, 0),
+        itemFailures: normalizeNumber(item.itemFailures ?? item.item_failures, 0),
+      })) : [],
+    },
+    trends: {
+      runsOverTime: Array.isArray(trends.runsOverTime) ? trends.runsOverTime.map(normalizePrimitive) : [],
+      processedItemsOverTime: Array.isArray(trends.processedItemsOverTime) ? trends.processedItemsOverTime.map(normalizePrimitive) : [],
+      failureRateOverTime: Array.isArray(trends.failureRateOverTime) ? trends.failureRateOverTime.map(normalizePrimitive) : [],
+      durationOverTime: Array.isArray(trends.durationOverTime) ? trends.durationOverTime.map(normalizePrimitive) : [],
+    },
+    recentActivity: {
+      recentRuns: Array.isArray(recentActivity.recentRuns) ? recentActivity.recentRuns.map(normalizeObservabilityRun).filter(Boolean) : [],
+      recentFailures: Array.isArray(recentActivity.recentFailures) ? recentActivity.recentFailures.map(normalizeObservabilityFailureEvent).filter(Boolean) : [],
+      recentlyCompletedRuns: Array.isArray(recentActivity.recentlyCompletedRuns) ? recentActivity.recentlyCompletedRuns.map(normalizeObservabilityRun).filter(Boolean) : [],
+    },
+    governance: {
+      oldestRunAt: governance.oldestRunAt || governance.oldest_run_at || '',
+      totalRunRecords: normalizeNumber(governance.totalRunRecords ?? governance.total_run_records, 0),
+      totalItemRecords: normalizeNumber(governance.totalItemRecords ?? governance.total_item_records, 0),
+      retentionMode: normalizeText(governance.retentionMode || governance.retention_mode),
+      automaticPruningEnabled: Boolean(governance.automaticPruningEnabled ?? governance.automatic_pruning_enabled),
+    },
+    filters: normalizePrimitive(payload.filters || {}),
+    generatedAt: normalizeText(payload.generatedAt || payload.generated_at),
   }
 }
 
@@ -521,14 +808,74 @@ export async function runPreschoolWorkflowSync(filters = {}, options = {}) {
   return normalizeSyncResult(unwrapApiData(response) || {})
 }
 
+export async function fetchPreschoolWorkflowSyncRuns(filters = {}, options = {}) {
+  const response = await http.get('/preschool/workflows/sync/runs', {
+    params: buildQueryParams({
+      mode: pickFilter(filters, 'mode', 'mode'),
+      status: pickFilter(filters, 'status', 'status'),
+      definition_key: pickFilter(filters, 'definition_key', 'definitionKey'),
+      source_type: pickFilter(filters, 'source_type', 'sourceType'),
+      started_by_user_id: pickFilter(filters, 'started_by_user_id', 'startedByUserId'),
+      date_from: pickFilter(filters, 'date_from', 'dateFrom'),
+      date_to: pickFilter(filters, 'date_to', 'dateTo'),
+      page: filters.page ?? 1,
+      per_page: normalizePerPage(filters.perPage ?? filters.per_page, 20, 100),
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeSyncRunHistoryPayload(unwrapApiData(response) || {})
+}
+
+export async function fetchPreschoolWorkflowSyncRun(id, options = {}) {
+  const response = await http.get(`/preschool/workflows/sync/runs/${id}`, { signal: options.signal })
+  const payload = unwrapApiData(response) || {}
+  return { run: normalizeSyncRun(payload.run || payload) }
+}
+
+export async function fetchPreschoolWorkflowSyncRunItems(id, filters = {}, options = {}) {
+  const response = await http.get(`/preschool/workflows/sync/runs/${id}/items`, {
+    params: buildQueryParams({
+      result_status: pickFilter(filters, 'result_status', 'resultStatus'),
+      page: filters.page ?? 1,
+      per_page: normalizePerPage(filters.perPage ?? filters.per_page, 20, 100),
+    }),
+    signal: options.signal,
+  })
+  const payload = unwrapApiData(response) || {}
+
+  return {
+    items: Array.isArray(payload.items) ? payload.items.map(normalizeSyncRunItem).filter(Boolean) : [],
+    pagination: payload.pagination ? normalizePagination(payload.pagination) : null,
+  }
+}
+
+export async function fetchPreschoolWorkflowObservabilityDashboard(filters = {}, options = {}) {
+  const response = await http.get('/preschool/workflows/observability/dashboard', {
+    params: buildWorkflowObservabilityQuery(filters),
+    signal: options.signal,
+  })
+
+  return normalizeObservabilityDashboard(unwrapApiData(response) || {})
+}
+
 export {
   buildWorkflowQuery,
   buildWorkflowSyncQuery,
+  buildWorkflowObservabilityQuery,
   normalizeApproval,
   normalizeDefinition,
   normalizeInstance,
   normalizeListPayload,
   normalizeSummary,
   normalizeTimelineEvent,
+  normalizeSyncItem,
   normalizeSyncResult,
+  normalizeSyncRun,
+  normalizeSyncRunItem,
+  normalizeSyncRunHistoryPayload,
+  normalizeObservabilityDashboard,
+  normalizeObservabilityFailureEvent,
+  normalizeObservabilityRun,
+  normalizeObservabilityStaleRun,
 }

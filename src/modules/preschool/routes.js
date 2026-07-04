@@ -174,6 +174,16 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/workflows/sync/runs/:id',
+    alias: '/preschool/workflows/sync/runs/:id',
+    name: 'dashboard-preschool-admin-workflow-sync-run',
+    component: () => import('@/modules/preschool/admin/pages/workflows/WorkflowSyncRunDetails.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/attendance/students',
     name: 'dashboard-preschool-admin-attendance-students',
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceStudents.vue'),

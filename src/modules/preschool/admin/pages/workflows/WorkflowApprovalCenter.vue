@@ -14,9 +14,12 @@ import OverdueWorkflowsSection from './sections/OverdueWorkflowsSection.vue'
 import MyAssignmentsSection from './sections/MyAssignmentsSection.vue'
 import RecentlyUpdatedWorkflowsSection from './sections/RecentlyUpdatedWorkflowsSection.vue'
 import WorkflowTimelinePreviewSection from './sections/WorkflowTimelinePreviewSection.vue'
+import WorkflowObservabilitySection from './sections/WorkflowObservabilitySection.vue'
 import { useWorkflowActions } from './composables/useWorkflowActions'
 import {
   fetchPreschoolWorkflowSyncPreview,
+  fetchPreschoolWorkflowObservabilityDashboard,
+  fetchPreschoolWorkflowSyncRuns,
   runPreschoolWorkflowSync,
 } from '@/modules/preschool/services/api/preschoolWorkflowApi'
 
@@ -104,6 +107,74 @@ const labels = computed(() => ({
   adminControlledSync: t('preschoolWorkflowsPage.adminControlledSync'),
   noEligibleRecords: t('preschoolWorkflowsPage.noEligibleRecords'),
   syncCompleted: t('preschoolWorkflowsPage.syncCompleted'),
+  syncHistory: t('preschoolWorkflowsPage.syncHistory'),
+  recentSyncRuns: t('preschoolWorkflowsPage.recentSyncRuns'),
+  syncRunDetails: t('preschoolWorkflowsPage.syncRunDetails'),
+  allModes: t('preschoolWorkflowsPage.allModes'),
+  startedBy: t('preschoolWorkflowsPage.startedBy'),
+  startedAt: t('preschoolWorkflowsPage.startedAt'),
+  completedAt: t('preschoolWorkflowsPage.completedAt'),
+  processed: t('preschoolWorkflowsPage.processed'),
+  batchSize: t('preschoolWorkflowsPage.batchSize'),
+  completed: t('preschoolWorkflowsPage.completed'),
+  completedWithErrors: t('preschoolWorkflowsPage.completedWithErrors'),
+  failedItems: t('preschoolWorkflowsPage.failedItems'),
+  resultItems: t('preschoolWorkflowsPage.resultItems'),
+  viewRun: t('preschoolWorkflowsPage.viewRun'),
+  noSyncHistory: t('preschoolWorkflowsPage.noSyncHistory'),
+  workflowObservability: t('preschoolWorkflowsPage.workflowObservability'),
+  syncHealth: t('preschoolWorkflowsPage.syncHealth'),
+  processingSummary: t('preschoolWorkflowsPage.processingSummary'),
+  performance: t('preschoolWorkflowsPage.performance'),
+  failureAnalysis: t('preschoolWorkflowsPage.failureAnalysis'),
+  runTrends: t('preschoolWorkflowsPage.runTrends'),
+  staleRuns: t('preschoolWorkflowsPage.staleRuns'),
+  recentOperationalActivity: t('preschoolWorkflowsPage.recentOperationalActivity'),
+  governance: t('preschoolWorkflowsPage.governance'),
+  investigationRequired: t('preschoolWorkflowsPage.investigationRequired'),
+  healthy: t('preschoolWorkflowsPage.healthy'),
+  warning: t('preschoolWorkflowsPage.warning'),
+  critical: t('preschoolWorkflowsPage.critical'),
+  successfulRuns: t('preschoolWorkflowsPage.successfulRuns'),
+  runsWithErrors: t('preschoolWorkflowsPage.runsWithErrors'),
+  failedRuns: t('preschoolWorkflowsPage.failedRuns'),
+  runningRuns: t('preschoolWorkflowsPage.runningRuns'),
+  totalProcessed: t('preschoolWorkflowsPage.totalProcessed'),
+  totalCreated: t('preschoolWorkflowsPage.totalCreated'),
+  totalExisting: t('preschoolWorkflowsPage.totalExisting'),
+  totalSkipped: t('preschoolWorkflowsPage.totalSkipped'),
+  totalFailedItems: t('preschoolWorkflowsPage.totalFailedItems'),
+  averageDuration: t('preschoolWorkflowsPage.averageDuration'),
+  longestDuration: t('preschoolWorkflowsPage.longestDuration'),
+  averageItemsPerRun: t('preschoolWorkflowsPage.averageItemsPerRun'),
+  throughput: t('preschoolWorkflowsPage.throughput'),
+  failureCategory: t('preschoolWorkflowsPage.failureCategory'),
+  totalFailures: t('preschoolWorkflowsPage.totalFailures'),
+  runFailures: t('preschoolWorkflowsPage.runFailures'),
+  itemFailures: t('preschoolWorkflowsPage.itemFailures'),
+  run: t('preschoolWorkflowsPage.run'),
+  definition: t('preschoolWorkflowsPage.definition'),
+  sourceType: t('preschoolWorkflowsPage.sourceType'),
+  totalRuns: t('preschoolWorkflowsPage.totalRuns'),
+  definitionBreakdown: t('preschoolWorkflowsPage.definitionBreakdown'),
+  sourceTypeBreakdown: t('preschoolWorkflowsPage.sourceTypeBreakdown'),
+  runStatusBreakdown: t('preschoolWorkflowsPage.runStatusBreakdown'),
+  actorBreakdown: t('preschoolWorkflowsPage.actorBreakdown'),
+  oldestAuditRecord: t('preschoolWorkflowsPage.oldestAuditRecord'),
+  totalRunRecords: t('preschoolWorkflowsPage.totalRunRecords'),
+  totalItemRecords: t('preschoolWorkflowsPage.totalItemRecords'),
+  retentionMode: t('preschoolWorkflowsPage.retentionMode'),
+  automaticPruningDisabled: t('preschoolWorkflowsPage.automaticPruningDisabled'),
+  noObservabilityData: t('preschoolWorkflowsPage.noObservabilityData'),
+  noFailures: t('preschoolWorkflowsPage.noFailures'),
+  noStaleRuns: t('preschoolWorkflowsPage.noStaleRuns'),
+  noRecentRuns: t('preschoolWorkflowsPage.noRecentRuns'),
+  noRecentFailures: t('preschoolWorkflowsPage.noRecentFailures'),
+  noRecentCompletedRuns: t('preschoolWorkflowsPage.noRecentCompletedRuns'),
+  runFilters: t('preschoolWorkflowsPage.runFilters'),
+  executionMode: t('preschoolWorkflowsPage.executionMode'),
+  previewMode: t('preschoolWorkflowsPage.previewMode'),
+  actualRunMode: t('preschoolWorkflowsPage.actualRunMode'),
   allDefinitions: t('preschoolWorkflowsPage.allDefinitions'),
   allSourceTypes: t('preschoolWorkflowsPage.allSourceTypes'),
   allStatuses: t('preschoolWorkflowsPage.allStatuses'),
@@ -142,11 +213,39 @@ const syncFilters = reactive({
   dateFrom: '',
   dateTo: '',
   limit: 25,
+  batchSize: 25,
 })
 const syncLoading = ref(false)
 const syncErrorMessage = ref('')
 const syncResult = ref(null)
 const syncPreviewReady = ref(false)
+const syncHistoryLoading = ref(false)
+const syncHistoryErrorMessage = ref('')
+const syncRuns = ref([])
+const syncHistoryPagination = ref(null)
+const syncHistoryFilters = reactive({
+  mode: '',
+  status: '',
+  definitionKey: '',
+  sourceType: '',
+  startedByUserId: '',
+  dateFrom: '',
+  dateTo: '',
+  page: 1,
+  perPage: 5,
+})
+const observabilityFilters = reactive({
+  definitionKey: '',
+  sourceType: '',
+  status: '',
+  startedByUserId: '',
+  dateFrom: '',
+  dateTo: '',
+  mode: '',
+})
+const observabilityLoading = ref(false)
+const observabilityErrorMessage = ref('')
+const observabilityDashboard = ref(null)
 
 const definitionOptions = computed(() => [
   { label: labels.value.allDefinitions, value: '' },
@@ -203,7 +302,34 @@ function currentSyncFilters() {
     dateFrom: syncFilters.dateFrom,
     dateTo: syncFilters.dateTo,
     limit: syncFilters.limit,
+    batchSize: syncFilters.batchSize,
     dryRun: false,
+  }
+}
+
+function currentSyncHistoryFilters() {
+  return {
+    mode: syncHistoryFilters.mode,
+    status: syncHistoryFilters.status,
+    definitionKey: syncHistoryFilters.definitionKey,
+    sourceType: syncHistoryFilters.sourceType,
+    startedByUserId: syncHistoryFilters.startedByUserId,
+    dateFrom: syncHistoryFilters.dateFrom,
+    dateTo: syncHistoryFilters.dateTo,
+    page: syncHistoryFilters.page,
+    perPage: syncHistoryFilters.perPage,
+  }
+}
+
+function currentObservabilityFilters() {
+  return {
+    definitionKey: observabilityFilters.definitionKey,
+    sourceType: observabilityFilters.sourceType,
+    status: observabilityFilters.status,
+    startedByUserId: observabilityFilters.startedByUserId,
+    dateFrom: observabilityFilters.dateFrom,
+    dateTo: observabilityFilters.dateTo,
+    mode: observabilityFilters.mode,
   }
 }
 
@@ -233,10 +359,47 @@ async function runWorkflowSync() {
   try {
     syncResult.value = await runPreschoolWorkflowSync(currentSyncFilters())
     syncPreviewReady.value = true
+    await loadSyncRuns()
   } catch (error) {
     syncErrorMessage.value = error?.response?.data?.message || error?.message || t('common.errorOccurred')
   } finally {
     syncLoading.value = false
+  }
+}
+
+async function loadSyncRuns() {
+  if (!canManageSync.value) {
+    return
+  }
+
+  syncHistoryLoading.value = true
+  syncHistoryErrorMessage.value = ''
+
+  try {
+    const payload = await fetchPreschoolWorkflowSyncRuns(currentSyncHistoryFilters())
+    syncRuns.value = payload.items || []
+    syncHistoryPagination.value = payload.pagination || null
+  } catch (error) {
+    syncHistoryErrorMessage.value = error?.response?.data?.message || error?.message || t('common.errorOccurred')
+  } finally {
+    syncHistoryLoading.value = false
+  }
+}
+
+async function loadObservability() {
+  if (!canManageSync.value) {
+    return
+  }
+
+  observabilityLoading.value = true
+  observabilityErrorMessage.value = ''
+
+  try {
+    observabilityDashboard.value = await fetchPreschoolWorkflowObservabilityDashboard(currentObservabilityFilters())
+  } catch (error) {
+    observabilityErrorMessage.value = error?.response?.data?.message || error?.message || t('common.errorOccurred')
+  } finally {
+    observabilityLoading.value = false
   }
 }
 
@@ -274,6 +437,25 @@ function formatSyncStatus(status) {
   return labelKey ? labels.value.syncStatusOptions[labelKey] : key || '—'
 }
 
+function formatRunMode(mode) {
+  return String(mode || '').toLowerCase() === 'preview'
+    ? labels.value.previewMode
+    : labels.value.actualRunMode
+}
+
+function formatRunStatus(status) {
+  const key = String(status || '').toLowerCase()
+
+  return {
+    pending: 'Pending',
+    running: 'Running',
+    completed: labels.value.completed,
+    completed_with_errors: labels.value.completedWithErrors,
+    failed: labels.value.failed,
+    cancelled: 'Cancelled',
+  }[key] || key || '—'
+}
+
 function openWorkflow(workflow) {
   if (!workflow?.id || !router.hasRoute('dashboard-preschool-admin-workflow-details')) {
     return
@@ -296,6 +478,21 @@ function openSource(workflow) {
     name: routeName,
     params: workflow.sourceRouteParams || {},
   })
+}
+
+function openSyncRun(run) {
+  if (!run?.id || !router.hasRoute('dashboard-preschool-admin-workflow-sync-run')) {
+    return
+  }
+
+  router.push({
+    name: 'dashboard-preschool-admin-workflow-sync-run',
+    params: { id: run.id },
+  })
+}
+
+function canOpenSyncRun(run) {
+  return Boolean(run?.id && router.hasRoute('dashboard-preschool-admin-workflow-sync-run'))
 }
 
 async function approvePendingApproval(approval) {
@@ -331,6 +528,12 @@ async function cancelPendingApproval(approval) {
 }
 
 onMounted(refreshWorkflows)
+watch(canManageSync, (enabled) => {
+  if (enabled) {
+    loadSyncRuns()
+    loadObservability()
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -363,6 +566,136 @@ onMounted(refreshWorkflows)
         :summary="summary"
         :labels="labels"
       />
+
+      <section
+        v-if="canManageSync"
+        class="workflow-observability-panel"
+      >
+        <div class="workflow-observability-panel__header">
+          <div>
+            <div class="workflow-observability-panel__eyebrow">{{ labels.workflowObservability }}</div>
+            <h2 class="workflow-observability-panel__title">{{ labels.syncHealth }}</h2>
+          </div>
+          <button
+            type="button"
+            class="workflow-observability-panel__refresh"
+            :disabled="observabilityLoading"
+            @click="loadObservability"
+          >
+            {{ labels.refresh }}
+          </button>
+        </div>
+
+        <div class="workflow-observability-panel__filters">
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.workflow }}</span>
+            <select v-model="observabilityFilters.definitionKey">
+              <option value="">{{ labels.allDefinitions }}</option>
+              <option
+                v-for="option in definitionOptions"
+                :key="`observability-definition-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.sourceEntity }}</span>
+            <select v-model="observabilityFilters.sourceType">
+              <option value="">{{ labels.allSourceTypes }}</option>
+              <option
+                v-for="option in syncSourceTypeOptions"
+                :key="`observability-source-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.status }}</span>
+            <select v-model="observabilityFilters.status">
+              <option value="">{{ labels.allStatuses }}</option>
+              <option value="pending">Pending</option>
+              <option value="running">Running</option>
+              <option value="completed">{{ labels.completed }}</option>
+              <option value="completed_with_errors">{{ labels.completedWithErrors }}</option>
+              <option value="failed">{{ labels.failed }}</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.startedBy }}</span>
+            <input
+              v-model="observabilityFilters.startedByUserId"
+              type="text"
+              placeholder="user id"
+            >
+          </label>
+
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.dateFrom }}</span>
+            <input
+              v-model="observabilityFilters.dateFrom"
+              type="date"
+            >
+          </label>
+
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.dateTo }}</span>
+            <input
+              v-model="observabilityFilters.dateTo"
+              type="date"
+            >
+          </label>
+
+          <label class="workflow-observability-panel__field">
+            <span>{{ labels.executionMode }}</span>
+            <select v-model="observabilityFilters.mode">
+              <option value="">{{ labels.allModes }}</option>
+              <option value="preview">{{ labels.previewMode }}</option>
+              <option value="run">{{ labels.actualRunMode }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="workflow-observability-panel__actions">
+          <button
+            type="button"
+            class="workflow-observability-panel__button"
+            :disabled="observabilityLoading"
+            @click="loadObservability"
+          >
+            {{ labels.runFilters }}
+          </button>
+        </div>
+
+        <div
+          v-if="observabilityErrorMessage"
+          class="workflow-observability-panel__error"
+        >
+          {{ observabilityErrorMessage }}
+        </div>
+
+        <div
+          v-if="observabilityLoading"
+          class="workflow-observability-panel__loading"
+        >
+          {{ t('preschoolWorkflowsPage.loading') }}
+        </div>
+
+        <WorkflowObservabilitySection
+          v-else
+          :dashboard="observabilityDashboard"
+          :labels="labels"
+          :can-open-run="canOpenSyncRun"
+          :open-run="openSyncRun"
+        />
+      </section>
 
       <section
         v-if="canManageSync"
@@ -443,6 +776,16 @@ onMounted(refreshWorkflows)
               type="number"
               min="1"
               max="500"
+            >
+          </label>
+
+          <label class="workflow-sync-panel__field">
+            <span>{{ labels.batchSize }}</span>
+            <input
+              v-model.number="syncFilters.batchSize"
+              type="number"
+              min="1"
+              max="100"
             >
           </label>
         </div>
@@ -536,6 +879,196 @@ onMounted(refreshWorkflows)
         </div>
       </section>
 
+      <section
+        v-if="canManageSync"
+        class="workflow-sync-history"
+      >
+        <div class="workflow-sync-history__header">
+          <div>
+            <div class="workflow-sync-history__eyebrow">{{ labels.syncHistory }}</div>
+            <h2 class="workflow-sync-history__title">{{ labels.recentSyncRuns }}</h2>
+          </div>
+          <button
+            type="button"
+            class="workflow-sync-history__refresh"
+            :disabled="syncHistoryLoading"
+            @click="loadSyncRuns"
+          >
+            {{ labels.refresh }}
+          </button>
+        </div>
+
+        <p class="workflow-sync-history__warning">
+          {{ labels.adminControlledSync }}. {{ labels.syncWarning }}
+        </p>
+
+        <div class="workflow-sync-history__filters">
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.executionMode }}</span>
+            <select v-model="syncHistoryFilters.mode">
+              <option value="">{{ labels.allModes }}</option>
+              <option value="preview">{{ labels.previewMode }}</option>
+              <option value="run">{{ labels.actualRunMode }}</option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.status }}</span>
+            <select v-model="syncHistoryFilters.status">
+              <option value="">{{ labels.allStatuses }}</option>
+              <option value="pending">Pending</option>
+              <option value="running">Running</option>
+              <option value="completed">{{ labels.completed }}</option>
+              <option value="completed_with_errors">{{ labels.completedWithErrors }}</option>
+              <option value="failed">{{ labels.failed }}</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.workflow }}</span>
+            <select v-model="syncHistoryFilters.definitionKey">
+              <option value="">{{ labels.allDefinitions }}</option>
+              <option
+                v-for="option in definitionOptions"
+                :key="`history-definition-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.sourceEntity }}</span>
+            <select v-model="syncHistoryFilters.sourceType">
+              <option value="">{{ labels.allSourceTypes }}</option>
+              <option
+                v-for="option in syncSourceTypeOptions"
+                :key="`history-source-${option.value || 'all'}`"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.startedBy }}</span>
+            <input
+              v-model="syncHistoryFilters.startedByUserId"
+              type="text"
+              placeholder="user id"
+            >
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.dateFrom }}</span>
+            <input
+              v-model="syncHistoryFilters.dateFrom"
+              type="date"
+            >
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.dateTo }}</span>
+            <input
+              v-model="syncHistoryFilters.dateTo"
+              type="date"
+            >
+          </label>
+
+          <label class="workflow-sync-history__field">
+            <span>{{ labels.batchSize }}</span>
+            <input
+              v-model.number="syncHistoryFilters.perPage"
+              type="number"
+              min="1"
+              max="100"
+            >
+          </label>
+        </div>
+
+        <div class="workflow-sync-history__actions">
+          <button
+            type="button"
+            class="workflow-sync-history__button"
+            :disabled="syncHistoryLoading"
+            @click="loadSyncRuns"
+          >
+            {{ labels.runFilters }}
+          </button>
+        </div>
+
+        <div
+          v-if="syncHistoryErrorMessage"
+          class="workflow-sync-history__error"
+        >
+          {{ syncHistoryErrorMessage }}
+        </div>
+
+        <div
+          v-if="syncHistoryLoading"
+          class="workflow-sync-history__loading"
+        >
+          {{ t('preschoolWorkflowsPage.loading') }}
+        </div>
+
+        <div
+          v-else-if="syncRuns.length > 0"
+          class="workflow-sync-history__table"
+        >
+          <div class="workflow-sync-history__table-head">
+            <span>{{ labels.executionMode }}</span>
+            <span>{{ labels.status }}</span>
+            <span>{{ labels.workflow }}</span>
+            <span>{{ labels.sourceEntity }}</span>
+            <span>{{ labels.startedBy }}</span>
+            <span>{{ labels.startedAt }}</span>
+            <span>{{ labels.completedAt }}</span>
+            <span>{{ labels.processed }}</span>
+            <span />
+          </div>
+
+          <div
+            v-for="run in syncRuns"
+            :key="run.id"
+            class="workflow-sync-history__row"
+          >
+            <span>{{ formatRunMode(run.mode) }}</span>
+            <span>{{ formatRunStatus(run.status) }}</span>
+            <span>{{ run.definitionKey || '—' }}</span>
+            <span>{{ run.sourceType || '—' }}</span>
+            <span>{{ run.startedBy?.name || run.startedByUserId || '—' }}</span>
+            <span>{{ run.startedAt || '—' }}</span>
+            <span>{{ run.completedAt || '—' }}</span>
+            <span>{{ run.processedCount }}</span>
+            <button
+              type="button"
+              class="workflow-sync-history__view"
+              :disabled="!canOpenSyncRun(run)"
+              @click="openSyncRun(run)"
+            >
+              {{ labels.viewRun }}
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="syncHistoryPagination"
+          class="workflow-sync-history__pagination"
+        >
+          Page {{ syncHistoryPagination.currentPage }} / {{ syncHistoryPagination.lastPage }}
+        </div>
+
+        <div
+          v-else
+          class="workflow-sync-history__empty"
+        >
+          {{ labels.noSyncHistory }}
+        </div>
+      </section>
+
       <PendingApprovalsSection
         :approvals="approvals"
         :labels="labels"
@@ -593,6 +1126,104 @@ onMounted(refreshWorkflows)
   padding: 0.9rem 1rem;
   border-radius: 1rem;
   font-size: 0.9rem;
+}
+
+.workflow-observability-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid #d8e1ec;
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.97)),
+    linear-gradient(135deg, rgba(15, 118, 110, 0.06), rgba(14, 165, 233, 0.04));
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.workflow-observability-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.workflow-observability-panel__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.workflow-observability-panel__title {
+  margin: 0.15rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.workflow-observability-panel__refresh,
+.workflow-observability-panel__button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 0.85rem;
+  font-weight: 700;
+  padding: 0.65rem 0.95rem;
+}
+
+.workflow-observability-panel__refresh:disabled,
+.workflow-observability-panel__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workflow-observability-panel__filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.workflow-observability-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.workflow-observability-panel__field select,
+.workflow-observability-panel__field input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #0f172a;
+}
+
+.workflow-observability-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.workflow-observability-panel__error,
+.workflow-observability-panel__loading {
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+}
+
+.workflow-observability-panel__error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.workflow-observability-panel__loading {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
 }
 
 .workflow-center__error {
@@ -816,9 +1447,157 @@ onMounted(refreshWorkflows)
   background: #f8fafc;
 }
 
+.workflow-sync-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid #d8e1ec;
+  border-radius: 1.25rem;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.workflow-sync-history__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.workflow-sync-history__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.workflow-sync-history__title {
+  margin: 0.15rem 0 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.workflow-sync-history__refresh,
+.workflow-sync-history__button,
+.workflow-sync-history__view {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 0.85rem;
+  font-weight: 700;
+  padding: 0.65rem 0.95rem;
+}
+
+.workflow-sync-history__warning {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.workflow-sync-history__filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.workflow-sync-history__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.workflow-sync-history__field select,
+.workflow-sync-history__field input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #0f172a;
+}
+
+.workflow-sync-history__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.workflow-sync-history__error,
+.workflow-sync-history__loading,
+.workflow-sync-history__empty {
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+}
+
+.workflow-sync-history__error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.workflow-sync-history__loading {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.workflow-sync-history__empty {
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.workflow-sync-history__pagination {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.workflow-sync-history__table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.workflow-sync-history__table-head,
+.workflow-sync-history__row {
+  display: grid;
+  grid-template-columns: 0.8fr 0.8fr 1fr 1fr 1fr 1fr 1fr 0.7fr 0.7fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.workflow-sync-history__table-head {
+  padding: 0 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.workflow-sync-history__row {
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.95rem;
+  background: #fff;
+  font-size: 0.86rem;
+  color: #334155;
+}
+
 @media (max-width: 1024px) {
+  .workflow-observability-panel__filters,
   .workflow-sync-panel__grid,
-  .workflow-sync-panel__summary {
+  .workflow-sync-panel__summary,
+  .workflow-sync-history__filters,
+  .workflow-sync-history__table-head,
+  .workflow-sync-history__row {
     grid-template-columns: 1fr;
   }
 }
