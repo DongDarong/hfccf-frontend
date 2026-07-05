@@ -16,7 +16,7 @@ function buildFor(user) {
 }
 
 describe('preschool operations navigation', () => {
-  it('registers the operations route and shows it for Preschool admins only', () => {
+  it('registers the operations route and hides Notifications from the Preschool sidebar', () => {
     expect(
       preschoolRoutes.some((route) => route.name === 'dashboard-preschool-admin-operations' && route.path === '/preschool/operations'),
     ).toBe(true)
@@ -34,14 +34,17 @@ describe('preschool operations navigation', () => {
       },
     })
 
+    const preschoolSection = preschoolSidebar.sections.find((section) => section.id === 'preschool')
+    const preschoolRouteNames = preschoolSection.items.map((item) => item.routeName)
+    expect(preschoolRouteNames).not.toContain('dashboard-notifications')
+    expect(preschoolSection.items.some((item) => item.id === 'preschool-notifications')).toBe(false)
+
     const adminSections = buildFor(makeAdminPreschool())
     const adminRouteNames = adminSections.flatMap((section) => section.items.map((item) => item.routeName))
     expect(adminRouteNames).toContain('dashboard-preschool-admin-operations')
-    expect(adminRouteNames).toContain('dashboard-notifications')
 
     const teacherSections = buildFor(makeTeacherPreschool())
     const teacherRouteNames = teacherSections.flatMap((section) => section.items.map((item) => item.routeName))
     expect(teacherRouteNames).not.toContain('dashboard-preschool-admin-operations')
-    expect(teacherRouteNames).not.toContain('dashboard-notifications')
   })
 })

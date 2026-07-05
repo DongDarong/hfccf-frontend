@@ -28,13 +28,6 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-notifications",
-          "routeName": "dashboard-notifications",
-          "labelKey": "nav.items.notificationAutomation",
-          "icon": "notification",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
           "id": "preschool-workflows",
           "routeName": "dashboard-preschool-admin-workflows",
           "labelKey": "nav.items.workflows",
