@@ -16,7 +16,7 @@ function buildFor(user) {
 }
 
 describe('preschool workflow navigation', () => {
-  it('registers the workflow routes and shows the sidebar entry for admins only', () => {
+  it('keeps the legacy workflow routes and removes workflow navigation from the Preschool sidebar', () => {
     expect(
       preschoolRoutes.some(
         (route) => route.name === 'dashboard-preschool-admin-workflows' && route.path === '/module/preschool-admin/workflows',
@@ -29,9 +29,13 @@ describe('preschool workflow navigation', () => {
       ),
     ).toBe(true)
 
+    const preschoolSection = preschoolSidebar.sections.find((section) => section.id === 'preschool')
+    const preschoolRouteNames = preschoolSection.items.map((item) => item.routeName)
+    expect(preschoolRouteNames).not.toContain('dashboard-preschool-admin-workflows')
+
     const adminSections = buildFor(makeAdminPreschool())
     const adminRouteNames = adminSections.flatMap((section) => section.items.map((item) => item.routeName))
-    expect(adminRouteNames).toContain('dashboard-preschool-admin-workflows')
+    expect(adminRouteNames).not.toContain('dashboard-preschool-admin-workflows')
 
     const teacherSections = buildFor(makeTeacherPreschool())
     const teacherRouteNames = teacherSections.flatMap((section) => section.items.map((item) => item.routeName))

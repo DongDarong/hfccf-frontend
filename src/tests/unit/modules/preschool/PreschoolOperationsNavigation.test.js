@@ -16,9 +16,13 @@ function buildFor(user) {
 }
 
 describe('preschool operations navigation', () => {
-  it('registers the operations route and hides Notifications from the Preschool sidebar', () => {
+  it('keeps the legacy operations route and removes operations from the Preschool sidebar', () => {
     expect(
       preschoolRoutes.some((route) => route.name === 'dashboard-preschool-admin-operations' && route.path === '/preschool/operations'),
+    ).toBe(true)
+
+    expect(
+      preschoolRoutes.some((route) => route.name === 'dashboard-preschool-admin-workflows' && route.path === '/module/preschool-admin/workflows'),
     ).toBe(true)
 
     const notificationsRoute = preschoolRoutes.find(
@@ -36,15 +40,19 @@ describe('preschool operations navigation', () => {
 
     const preschoolSection = preschoolSidebar.sections.find((section) => section.id === 'preschool')
     const preschoolRouteNames = preschoolSection.items.map((item) => item.routeName)
+    expect(preschoolRouteNames).not.toContain('dashboard-preschool-admin-operations')
+    expect(preschoolRouteNames).not.toContain('dashboard-preschool-admin-workflows')
     expect(preschoolRouteNames).not.toContain('dashboard-notifications')
     expect(preschoolSection.items.some((item) => item.id === 'preschool-notifications')).toBe(false)
 
     const adminSections = buildFor(makeAdminPreschool())
     const adminRouteNames = adminSections.flatMap((section) => section.items.map((item) => item.routeName))
-    expect(adminRouteNames).toContain('dashboard-preschool-admin-operations')
+    expect(adminRouteNames).not.toContain('dashboard-preschool-admin-operations')
+    expect(adminRouteNames).not.toContain('dashboard-preschool-admin-workflows')
 
     const teacherSections = buildFor(makeTeacherPreschool())
     const teacherRouteNames = teacherSections.flatMap((section) => section.items.map((item) => item.routeName))
     expect(teacherRouteNames).not.toContain('dashboard-preschool-admin-operations')
+    expect(teacherRouteNames).not.toContain('dashboard-preschool-admin-workflows')
   })
 })

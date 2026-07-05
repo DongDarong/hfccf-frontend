@@ -21,20 +21,6 @@
           "badgeKey": "nav.badges.admin"
         },
         {
-          "id": "preschool-operations",
-          "routeName": "dashboard-preschool-admin-operations",
-          "labelKey": "nav.items.operations",
-          "icon": "dashboard",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-workflows",
-          "routeName": "dashboard-preschool-admin-workflows",
-          "labelKey": "nav.items.workflows",
-          "icon": "dashboard",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
           "id": "preschool-enrollments",
           "routeName": "dashboard-preschool-admin-enrollments",
           "labelKey": "nav.items.preschoolEnrollments",
