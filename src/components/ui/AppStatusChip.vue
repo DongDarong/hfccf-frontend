@@ -12,6 +12,8 @@ const props = defineProps({
     default: 'neutral',
     validator: (value) => [
       'healthy',
+      'stable',
+      'watch',
       'warning',
       'critical',
       'neutral',
@@ -25,6 +27,13 @@ const props = defineProps({
       'success',
       'info',
       'error',
+      'high',
+      'medium',
+      'low',
+      'urgent',
+      'pending_review',
+      'draft',
+      'suspended',
     ].includes(String(value || '').trim().toLowerCase()),
   },
   label: {
