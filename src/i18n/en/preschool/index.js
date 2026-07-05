@@ -10,6 +10,8 @@ import adminDashboard from './admin-dashboard'
 import assessment from './assessment'
 import progress from './progress'
 import reports from './reports'
+import analytics from './analytics'
+import operations from './operations'
 import schedules from './schedules'
 import settings from './settings'
 import lifecycle from './lifecycle'
@@ -25,6 +27,8 @@ import governanceDiff from './governance-diff'
 import governanceCases from './governance-cases'
 import enrollment from './enrollment'
 import reviewWorkflow from './review-workflow'
+import notifications from './notifications'
+import workflows from './workflows'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -41,6 +45,8 @@ export default {
   ...assessment,
   ...progress,
   ...reports,
+  ...analytics,
+  ...operations,
   ...schedules,
   ...settings,
   ...lifecycle,
@@ -56,4 +62,6 @@ export default {
   ...governanceCases,
   ...enrollment,
   ...reviewWorkflow,
+  ...notifications,
+  ...workflows,
 }

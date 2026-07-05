@@ -380,6 +380,10 @@ function resolveStaffLabel(item, parsed) {
 }
 
 function resolveSourceEventLabel(item, parsed) {
+  if (item.sourceType === 'attendance' && item.communicationType === 'repeated_absence') {
+    return `${t('preschoolGuardianCommunicationPage.sources.attendance')} · ${t('preschoolGuardianCommunicationPage.sources.repeatedAbsence')}`
+  }
+
   return resolveLabel(parsed?.sourceEvent || item.relatedEvent?.name || item.sourceEvent || item.sourceType)
 }
 

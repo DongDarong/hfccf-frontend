@@ -78,20 +78,20 @@ beforeEach(() => {
   vi.clearAllMocks()
 
   mockFetchProvinces.mockResolvedValue([
-    { code: '01', nameEn: 'Phnom Penh', nameKh: 'áž—áŸ’áž“áŸ†áž–áŸáž‰' },
-    { code: '08', nameEn: 'Kandal', nameKh: 'áž€ážŽáŸ’ážáž¶áž›' },
+    { code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
+    { code: '08', nameEn: 'Kandal', nameKh: 'កណ្តាល' },
   ])
 
   mockFetchDistricts.mockImplementation((provinceCode) => {
     if (String(provinceCode) === '01') {
       return Promise.resolve([
-        { code: '0102', nameEn: 'Dangkao', nameKh: 'ážŠáž„áŸ’áž€áŸ„' },
+        { code: '0102', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
       ])
     }
 
     if (String(provinceCode) === '08') {
       return Promise.resolve([
-        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ážáŸ’ážŸáž¶áž…áŸ‹áž€ážŽáŸ’ážáž¶áž›' },
+        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្តាល' },
       ])
     }
 
@@ -101,13 +101,13 @@ beforeEach(() => {
   mockFetchCommunes.mockImplementation((districtCode) => {
     if (String(districtCode) === '0102') {
       return Promise.resolve([
-        { code: '010201', nameEn: 'Prek Pra', nameKh: 'áž–áŸ’ážšáŸ‚áž€áž”áŸ’ážšáž¶' },
+        { code: '010201', nameEn: 'Prek Pra', nameKh: 'ព្រែកប្រា' },
       ])
     }
 
     if (String(districtCode) === '0801') {
       return Promise.resolve([
-        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'áž¢ážšáž·áž™áž€áŸ’ážŸážáŸ’ážš' },
+        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អរិយក្សត្រ' },
       ])
     }
 
@@ -117,13 +117,13 @@ beforeEach(() => {
   mockFetchVillages.mockImplementation((communeCode) => {
     if (String(communeCode) === '010201') {
       return Promise.resolve([
-        { code: '01020101', nameEn: 'Village 1', nameKh: 'áž—áž¼áž˜áž·áŸ¡' },
+        { code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ ១' },
       ])
     }
 
     if (String(communeCode) === '080101') {
       return Promise.resolve([
-        { code: '08010101', nameEn: 'Village A', nameKh: 'áž—áž¼áž˜áž·áž¢áž¶' },
+        { code: '08010101', nameEn: 'Village A', nameKh: 'ភូមិ អា' },
       ])
     }
 
@@ -170,25 +170,25 @@ describe('EnrollmentApplicationDialog', () => {
     await flushAll()
 
     const provinceSelect = getSelect(wrapper, 5)
-    expect(provinceSelect.findAll('option').map((option) => option.text())).toContain('áž—áŸ’áž“áŸ†áž–áŸáž‰')
+    expect(provinceSelect.findAll('option').map((option) => option.text())).toContain('ភ្នំពេញ')
 
     await provinceSelect.setValue(provinceSelect.findAll('option').at(1).element.value)
     await flushAll()
 
     expect(mockFetchDistricts).toHaveBeenCalledWith('01')
-    expect(getSelect(wrapper, 6).findAll('option').map((option) => option.text())).toContain('ážŠáž„áŸ’áž€áŸ„')
+    expect(getSelect(wrapper, 6).findAll('option').map((option) => option.text())).toContain('ដង្កោ')
 
     await selectRenderedOption(wrapper, 6)
     await flushAll()
 
     expect(mockFetchCommunes).toHaveBeenCalledWith('0102')
-    expect(getSelect(wrapper, 7).findAll('option').map((option) => option.text())).toContain('áž–áŸ’ážšáŸ‚áž€áž”áŸ’ážšáž¶')
+    expect(getSelect(wrapper, 7).findAll('option').map((option) => option.text())).toContain('ព្រែកប្រា')
 
     await selectRenderedOption(wrapper, 7)
     await flushAll()
 
     expect(mockFetchVillages).toHaveBeenCalledWith('010201')
-    expect(getSelect(wrapper, 8).findAll('option').map((option) => option.text())).toContain('áž—áž¼áž˜áž·áŸ¡')
+    expect(getSelect(wrapper, 8).findAll('option').map((option) => option.text())).toContain('ភូមិ ១')
   })
 
   it('clears child selections when a parent selection changes', async () => {
@@ -250,7 +250,7 @@ describe('EnrollmentApplicationDialog', () => {
       guardian_relationship: 'father',
       guardian_phone: '012345678',
       guardian_email: 'sokha@example.test',
-      guardian_address: 'áž—áž¼áž˜áž·áŸ¡, áž–áŸ’ážšáŸ‚áž€áž”áŸ’ážšáž¶, ážŠáž„áŸ’áž€áŸ„, áž—áŸ’áž“áŸ†áž–áŸáž‰',
+      guardian_address: 'ភូមិ ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
     })
     expect(emitted[0][0].province_code).toBeUndefined()
     expect(emitted[0][0].district_code).toBeUndefined()
@@ -339,10 +339,10 @@ describe('EnrollmentApplicationDialog', () => {
     const communeSelect = getSelect(wrapper, 7)
     const villageSelect = getSelect(wrapper, 8)
 
-    expect(provinceSelect.element.value).toBe('áž—áŸ’áž“áŸ†áž–áŸáž‰')
-    expect(districtSelect.element.value).toBe('ážŠáž„áŸ’áž€áŸ„')
-    expect(communeSelect.element.value).toBe('áž–áŸ’ážšáŸ‚áž€áž”áŸ’ážšáž¶')
-    expect(villageSelect.element.value).toBe('áž—áž¼áž˜áž·áŸ¡')
+    expect(provinceSelect.element.value).toBe('ភ្នំពេញ')
+    expect(districtSelect.element.value).toBe('ដង្កោ')
+    expect(communeSelect.element.value).toBe('ព្រែកប្រា')
+    expect(villageSelect.element.value).toBe('ភូមិ ១')
     expect(wrapper.text()).toContain('Village:')
     expect(wrapper.text()).toContain('Commune/Ward:')
     expect(wrapper.text()).toContain('District/Khan:')
@@ -353,7 +353,7 @@ describe('EnrollmentApplicationDialog', () => {
         guardianName: 'Sokha',
         guardianPhone: '012345678',
         guardianAddress: 'Legacy Address 12',
-        guardianRelationship: 'áž˜áž¸áž„',
+        guardianRelationship: 'មីង',
       },
     })
 
@@ -361,7 +361,7 @@ describe('EnrollmentApplicationDialog', () => {
 
     expect(legacyWrapper.text()).toContain('Legacy Address 12')
     expect(legacyWrapper.findAll('select').at(4).element.value).toBe('other')
-    expect(legacyWrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]').element.value).toBe('áž˜áž¸áž„')
+    expect(legacyWrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]').element.value).toBe('មីង')
   })
 
   it('shows a location load error when the API fails', async () => {

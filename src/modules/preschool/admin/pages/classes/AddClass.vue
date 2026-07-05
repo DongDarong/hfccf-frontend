@@ -15,6 +15,7 @@ import AddClassFormFields from '@/modules/preschool/admin/components/add-class/A
 import AddClassFormActions from '@/modules/preschool/admin/components/add-class/AddClassFormActions.vue'
 import {
   createPreschoolClass,
+  fetchPreschoolClassLevels,
   fetchPreschoolClass,
   fetchPreschoolClasses,
   fetchPreschoolStudents,
@@ -32,14 +33,14 @@ const route = useRoute()
 const { t, language } = useLanguage()
 
 const classesDirectoryPath = '/module/preschool-admin/classes'
-const statusOptions = ['active', 'pending', 'closed', 'archived']
+const statusOptions = ['active', 'pending', 'closed']
 
 const form = reactive({
   code: '',
   name: '',
   teacher: '',
   teacherDisplayName: '',
-  level: '',
+  classLevelId: '',
   schedule: '',
   status: statusOptions[0],
   room: '',
@@ -57,6 +58,7 @@ const selectedStudentIds = ref([])
 const selectedStudentAssignments = ref([])
 const studentCountFallback = ref(0)
 const studentsLoading = ref(false)
+const classLevels = ref([])
 const scheduleDays = ref([])
 const scheduleStartTime = ref('')
 const scheduleEndTime = ref('')
@@ -104,9 +106,53 @@ const teacherLabelMap = computed(() =>
     return carry
   }, {}),
 )
+const selectedClassLevel = computed(() =>
+  classLevels.value.find((classLevel) => String(classLevel.id) === String(form.classLevelId)) || null,
+)
+const selectedClassLevelLabel = computed(() => getClassLevelLabel(selectedClassLevel.value))
+const classLevelOptions = computed(() =>
+  classLevels.value
+    .filter((classLevel) => classLevel.isActive !== false)
+    .slice()
+    .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0) || String(left.nameEn || '').localeCompare(String(right.nameEn || '')))
+    .map((classLevel) => ({
+      value: classLevel.id,
+      label: getClassLevelLabel(classLevel),
+      code: classLevel.code,
+    })),
+)
 
 function normalizeText(value) {
   return String(value ?? '').trim()
+}
+
+function getClassLevelLabel(classLevel) {
+  const value = classLevel || {}
+  return normalizeText(value.nameKh || value.name_kh || value.nameEn || value.name_en || value.name || value.code || '')
+}
+
+function resolveClassLevelId(value) {
+  const normalized = normalizeText(value)
+  if (!normalized) return ''
+
+  const candidateById = classLevels.value.find((classLevel) => String(classLevel.id) === normalized)
+  if (candidateById) return String(candidateById.id)
+
+  const candidateByCode = classLevels.value.find((classLevel) => normalizeText(classLevel.code).toLowerCase() === normalized.toLowerCase())
+  if (candidateByCode) return String(candidateByCode.id)
+
+  const candidateByLabel = classLevels.value.find((classLevel) => getClassLevelLabel(classLevel).toLowerCase() === normalized.toLowerCase())
+  if (candidateByLabel) return String(candidateByLabel.id)
+
+  return ''
+}
+
+function normalizeClassStatus(status) {
+  const normalized = normalizeText(status).toLowerCase()
+
+  if (statusOptions.includes(normalized)) return normalized
+  if (normalized === 'archived') return 'closed'
+  return statusOptions[0]
 }
 
 function getStudentDisplayName(student = {}) {
@@ -383,7 +429,7 @@ const summaryCards = computed(() => [
   {
     id: 'class-level',
     title: t('preschoolAddClass.level'),
-    value: form.level.trim() || '-',
+    value: selectedClassLevelLabel.value || '-',
     label: t('preschoolAddClass.selectedLearningStage'),
     status: 'info',
     statusLabel: t('preschoolAddClass.statusLabels.info'),
@@ -449,8 +495,8 @@ function normalizeLevelPrefix(level) {
 
   if (!normalized) return 'CLS'
   if (/(^|\b)(nursery|nur)\b/.test(normalized)) return 'NUR'
-  if (/(^|\b)(kindergarten|kin)\b/.test(normalized)) return 'KIN'
-  if (/(^|\b)(preschool|pre)\b/.test(normalized)) return 'PRE'
+  if (/(^|\b)(kindergarten|kin|kga|kgb)\b/.test(normalized)) return 'KGA'
+  if (/(^|\b)(prep|pre)\b/.test(normalized)) return 'PRE'
 
   const fallback = normalized.replace(/[^a-z]+/g, '').toUpperCase()
   return fallback.slice(0, 3) || 'CLS'
@@ -462,18 +508,20 @@ function extractClassSequence(code, prefix) {
   return match ? Number(match[1]) : 0
 }
 
-async function refreshGeneratedCode(level = form.level) {
+async function refreshGeneratedCode(level = form.classLevelId) {
   if (isEditMode.value || isViewMode.value) return
 
   const currentSeq = ++codeRequestSeq
   generatedCodeLoading.value = true
 
   try {
-    const prefix = normalizeLevelPrefix(level)
+    const normalizedLevelId = resolveClassLevelId(level || form.classLevelId)
+    const classLevel = classLevels.value.find((item) => String(item.id) === String(normalizedLevelId || form.classLevelId)) || null
+    const prefix = normalizeText(classLevel?.code) || normalizeLevelPrefix(getClassLevelLabel(classLevel) || level)
     const response = await fetchPreschoolClasses({
       page: 1,
       perPage: 100,
-      level,
+      classLevelId: normalizedLevelId || form.classLevelId,
       sortBy: 'code',
       sortDirection: 'asc',
     })
@@ -489,7 +537,8 @@ async function refreshGeneratedCode(level = form.level) {
   } catch {
     if (currentSeq !== codeRequestSeq) return
 
-    generatedCode.value = `PS-${normalizeLevelPrefix(level)}-${String(1).padStart(3, '0')}`
+    const fallbackLevel = classLevels.value.find((item) => String(item.id) === String(level || form.classLevelId)) || null
+    generatedCode.value = `PS-${normalizeLevelPrefix(fallbackLevel?.code || getClassLevelLabel(fallbackLevel) || level)}-${String(1).padStart(3, '0')}`
     form.code = generatedCode.value
   } finally {
     if (currentSeq === codeRequestSeq) {
@@ -502,7 +551,7 @@ function validateForm() {
   if (!form.code.trim()) return t('preschoolAddClass.validation.classCodeRequired')
   if (!form.name.trim()) return t('preschoolAddClass.validation.classNameRequired')
   if (!form.teacher.trim()) return t('preschoolAddClass.validation.teacherRequired')
-  if (!form.level) return t('preschoolAddClass.validation.levelRequired')
+  if (!resolveClassLevelId(form.classLevelId)) return t('preschoolAddClass.validation.levelRequired')
   if (scheduleIsStructured.value) {
     if (!scheduleDays.value.length) return t('preschoolAddClass.validation.scheduleDaysRequired')
     if (!scheduleStartTime.value) return t('preschoolAddClass.validation.scheduleStartTimeRequired')
@@ -534,8 +583,8 @@ function populateFromClass(item) {
   form.name = item.name || ''
   form.teacher = item.teacherUserId || item.teacher_user_id || ''
   form.teacherDisplayName = item.teacherDisplayName || item.teacher_display_name || item.teacher || ''
-  form.level = item.level || ''
-  form.status = item.status || statusOptions[0]
+  form.classLevelId = resolveClassLevelId(item.classLevelId || item.class_level_id || item.classLevel?.id || item.level) || ''
+  form.status = normalizeClassStatus(item.status)
   form.room = item.room || ''
   form.notes = item.notes || ''
   applyScheduleValue(item.schedule || '')
@@ -576,6 +625,15 @@ async function loadTeachers() {
   }
 }
 
+async function loadClassLevels() {
+  try {
+    const response = await fetchPreschoolClassLevels()
+    classLevels.value = Array.isArray(response.items) ? response.items : []
+  } catch {
+    classLevels.value = []
+  }
+}
+
 async function loadClass() {
   if (!editingClassId.value) return
 
@@ -593,6 +651,7 @@ async function initializePage() {
   await Promise.allSettled([
     loadTeachers(),
     loadStudents(),
+    loadClassLevels(),
   ])
 
   if (mode.value !== 'add') {
@@ -601,11 +660,11 @@ async function initializePage() {
   }
 
   resetScheduleState()
-  await refreshGeneratedCode(form.level)
+  await refreshGeneratedCode(form.classLevelId)
 }
 
 watch(
-  () => form.level,
+  () => form.classLevelId,
   (nextLevel) => {
     if (mode.value !== 'add') return
     refreshGeneratedCode(nextLevel)
@@ -651,15 +710,18 @@ async function onSubmit() {
   try {
     const teacherLabel = teacherLabelMap.value[form.teacher] || form.teacherDisplayName || ''
     const studentIds = selectedStudentIds.value.map((studentId) => Number(studentId)).filter((studentId) => Number.isFinite(studentId))
+    const classLevel = classLevels.value.find((item) => String(item.id) === String(form.classLevelId)) || null
+    const normalizedStatus = normalizeClassStatus(form.status)
     const payload = {
       code: form.code.trim() || generatedCode.value,
       name: form.name.trim(),
       teacher_user_id: form.teacher,
       teacher_display_name: teacherLabel,
-      level: form.level,
+      class_level_id: form.classLevelId,
+      level: normalizeText(classLevel?.nameEn || classLevel?.name_en || selectedClassLevelLabel.value),
       schedule: scheduleMode.value === 'raw' ? scheduleRaw.value : buildScheduleString(),
       students_count: selectedStudentCount.value,
-      status: form.status,
+      status: normalizedStatus,
       room: form.room.trim(),
       notes: form.notes.trim(),
     }
@@ -725,7 +787,8 @@ onMounted(initializePage)
             :code-loading="generatedCodeLoading"
             :name="form.name"
             :teacher="form.teacher"
-            :level="form.level"
+            :class-level-id="form.classLevelId"
+            :level-options="classLevelOptions"
             :schedule="form.schedule"
             :student-options="mergedStudentOptions"
             :selected-student-ids="selectedStudentIds"
@@ -746,7 +809,7 @@ onMounted(initializePage)
             :is-locked="isFormLocked"
             @update:name="form.name = $event"
             @update:teacher="form.teacher = $event"
-            @update:level="form.level = $event"
+            @update:classLevelId="form.classLevelId = $event"
             @update:schedule-day="updateScheduleDay"
             @update:schedule-start-time="updateScheduleStartTime"
             @update:schedule-end-time="updateScheduleEndTime"
@@ -773,7 +836,7 @@ onMounted(initializePage)
             :description="t('preschoolAddClass.sidebarText')"
             :items="checklistItems"
             :highlight-label="t('preschoolAddClass.selectedLevel')"
-            :highlight-value="form.level || t('preschoolAddClass.pending')"
+            :highlight-value="selectedClassLevelLabel || t('preschoolAddClass.pending')"
           />
         </div>
       </div>

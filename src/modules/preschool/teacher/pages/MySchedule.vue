@@ -11,6 +11,17 @@ import { usePreschoolTeacherSchedule } from '@/modules/preschool/composables/use
 import ScheduleDayTabs from '@/modules/preschool/shared/components/schedule/ScheduleDayTabs.vue'
 import WeeklyTimetableGrid from '@/modules/preschool/shared/components/schedule/WeeklyTimetableGrid.vue'
 import { PreschoolScheduleDay } from '@/modules/preschool/services/scheduleConstants'
+import {
+  getScheduleSessionActionKey,
+  getScheduleSessionActionTone,
+  normalizeScheduleSessionStatus,
+  buildScheduleSessionIndex,
+  resolveScheduleSession,
+} from '@/modules/preschool/shared/components/schedule/scheduleSessionOverlay'
+import {
+  fetchTodayAttendanceSessions,
+  openAttendanceSession,
+} from '@/modules/preschool/services/api/preschoolAttendanceSessionApi'
 
 defineOptions({
   name: 'TeacherPreschoolSchedulePage',
@@ -41,10 +52,35 @@ const dayOptions = computed(() => [
 ])
 
 const selectedDayOfWeek = ref('')
+const todaySessions = ref([])
+function todayIso() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+const sessionIndex = computed(() => buildScheduleSessionIndex(todaySessions.value))
 const visibleEntries = computed(() =>
   selectedDayOfWeek.value
     ? schedules.value.filter((entry) => String(entry.dayOfWeek) === String(selectedDayOfWeek.value))
     : schedules.value,
+)
+const scheduleEntries = computed(() =>
+  visibleEntries.value.map((entry) => {
+    const session = resolveScheduleSession(entry, sessionIndex.value, todayIso())
+    return {
+      ...entry,
+      session: session
+        ? {
+            ...session,
+            statusLabel: t(`preschoolAttendanceSessionsPage.statuses.${normalizeScheduleSessionStatus(session.status)}`) || session.status,
+            actionLabel: t(`preschoolAttendanceSessionsPage.actions.${getScheduleSessionActionKey(session.status)}`),
+            actionTone: getScheduleSessionActionTone(session.status),
+          }
+        : null,
+    }
+  }),
 )
 const selectedDayLabel = computed(() => {
   const option = dayOptions.value.find((item) => String(item.value) === String(selectedDayOfWeek.value))
@@ -56,8 +92,78 @@ function goBack() {
   router.push({ name: 'dashboard-preschool-teacher' })
 }
 
+async function loadScheduleTodaySessions() {
+  try {
+    const response = await fetchTodayAttendanceSessions()
+    todaySessions.value = response.items || []
+  } catch (error) {
+    if (error?.response?.status === 403 || error?.status === 403) {
+      todaySessions.value = []
+      return
+    }
+
+    todaySessions.value = []
+  }
+}
+
+async function refreshSchedule() {
+  await loadMySchedule()
+  await loadScheduleTodaySessions()
+}
+
+function handleSessionAction(entry) {
+  const session = entry?.session
+  const sessionId = String(session?.id || '').trim()
+  if (!sessionId) return
+
+  const status = normalizeScheduleSessionStatus(session.status)
+
+  if (status === 'scheduled') {
+    openAttendanceSession(sessionId).then(() => {
+      router.push({
+        name: 'dashboard-preschool-teacher-attendance',
+        query: {
+          classId: session.classId || entry.classId || '',
+          date: session.attendanceDate || todayIso(),
+          attendance_session_id: sessionId,
+          sessionId,
+        },
+      })
+    })
+    return
+  }
+
+  if (status === 'open') {
+    router.push({
+      name: 'dashboard-preschool-teacher-attendance',
+      query: {
+        classId: session.classId || entry.classId || '',
+        date: session.attendanceDate || todayIso(),
+        attendance_session_id: sessionId,
+        sessionId,
+      },
+    })
+    return
+  }
+
+  router.push({
+    name: 'dashboard-preschool-teacher-attendance-session-details',
+    params: { id: sessionId },
+  })
+}
+
+function handleSessionView(entry) {
+  const sessionId = String(entry?.session?.id || '').trim()
+  if (!sessionId) return
+
+  router.push({
+    name: 'dashboard-preschool-teacher-attendance-session-details',
+    params: { id: sessionId },
+  })
+}
+
 onMounted(() => {
-  loadMySchedule()
+  void refreshSchedule()
 })
 </script>
 
@@ -91,7 +197,7 @@ onMounted(() => {
           <Button type="button" variant="ghost" size="md" rounded="xl" @click="goBack">
             {{ t('preschoolSchedulesPage.actions.back') }}
           </Button>
-          <Button type="button" variant="primary" size="md" rounded="xl" @click="loadMySchedule">
+          <Button type="button" variant="primary" size="md" rounded="xl" @click="refreshSchedule">
             {{ t('preschoolSchedulesPage.actions.refresh') }}
           </Button>
         </div>
@@ -107,8 +213,13 @@ onMounted(() => {
         :loading="loading"
         :loading-label="t('preschoolSchedulesShared.loading.grid')"
         :day-label="selectedDayLabel"
-        :entries="visibleEntries"
+        :entries="scheduleEntries"
         :empty-label="t('preschoolSchedulesPage.empty')"
+        :show-session-actions="true"
+        :session-view-label="t('preschoolSchedulesPage.actions.viewDetails')"
+        :no-session-label="t('preschoolSchedulesPage.sessions.noSessionGenerated')"
+        @session-action="handleSessionAction"
+        @session-view="handleSessionView"
       />
     </section>
   </MainLayout>

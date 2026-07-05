@@ -35,10 +35,17 @@
     </div>
 
     <div v-else class="space-y-4">
+      <div v-if="isLatestAttendanceAlert" class="flex flex-wrap items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        <AppBadge variant="danger">
+          {{ latestSourceLabel }}
+        </AppBadge>
+        <span>{{ t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') }}</span>
+      </div>
+
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-            {{ t('preschoolGuardianCommunicationPage.profile.latestContact') }}
+            {{ isLatestAttendanceAlert ? t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert') : t('preschoolGuardianCommunicationPage.profile.latestContact') }}
           </p>
           <p class="mt-2 text-sm font-medium text-slate-900">
             {{ latestSummary }}
@@ -148,6 +155,10 @@ const sortedCommunications = computed(() =>
 
 const latestCommunication = computed(() => sortedCommunications.value[0] || null)
 const latestParsed = computed(() => parseGuardianContactLogMessage(latestCommunication.value?.message))
+const isLatestAttendanceAlert = computed(() => (
+  String(latestCommunication.value?.sourceType || '').toLowerCase() === 'attendance'
+  && String(latestCommunication.value?.communicationType || '').toLowerCase() === 'repeated_absence'
+))
 
 const latestSummary = computed(() => {
   const parsed = latestParsed.value
@@ -204,6 +215,12 @@ const latestFollowUpVariant = computed(() => {
   if (label === t('preschoolGuardianCommunicationPage.followUpStatuses.today')) return 'warning'
   if (label === t('preschoolGuardianCommunicationPage.followUpStatuses.upcoming')) return 'info'
   return 'neutral'
+})
+
+const latestSourceLabel = computed(() => {
+  if (!isLatestAttendanceAlert.value) return ''
+
+  return `${t('preschoolAttendanceAlertsPage.labels.attendanceAlerts')} · ${t('preschoolAttendanceAlertsPage.labels.repeatedAbsence')}`
 })
 
 const title = computed(() => t('preschoolGuardianCommunicationPage.profile.contactHistory'))

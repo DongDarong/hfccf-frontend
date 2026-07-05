@@ -29,10 +29,10 @@ export default {
   },
   users,
   notifications,
-  reports,
   ...english,
   ...sport,
   ...preschool,
   ...assessment,
   ...governance,
+  reports,
 }

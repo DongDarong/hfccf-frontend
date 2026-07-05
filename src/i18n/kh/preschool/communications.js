@@ -184,6 +184,7 @@ export default {
     sources: {
       health_alert: 'ការជូនដំណឹងសុខភាព',
       attendance: 'ការជូនដំណឹងវត្តមាន',
+      repeatedAbsence: 'អវត្តមានជាប់គ្នា',
       assessment: 'ហានិភ័យវាយតម្លៃ',
       enrollment: 'ការចុះឈ្មោះ/ចូលរៀន',
       governance_issue: 'អភិបាលកិច្ចអាណាព្យាបាល',

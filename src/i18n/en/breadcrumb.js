@@ -59,7 +59,7 @@ export default {
     attendanceTeachers: 'Teacher Attendance',
     attendanceHistory: 'History',
     attendanceDashboard: 'Dashboard',
-    attendanceAlerts: 'Absence Alerts',
+    attendanceAlerts: 'Attendance Alerts',
     attendanceCalendar: 'Calendar',
     attendanceProfile: 'Student Profile',
     attendanceIdCard: 'Generate ID Card',

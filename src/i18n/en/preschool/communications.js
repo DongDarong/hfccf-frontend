@@ -184,6 +184,7 @@ export default {
     sources: {
       health_alert: 'Health alert',
       attendance: 'Attendance alert',
+      repeatedAbsence: 'Repeated absence',
       assessment: 'Assessment risk',
       enrollment: 'Enrollment/admission',
       governance_issue: 'Guardian governance',
