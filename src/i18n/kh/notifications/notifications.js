@@ -70,6 +70,7 @@ export default {
   alertSummaryLabel: 'ចំនួនការជូនដំណឹងព្រមាន',
   moduleLabel: 'ម៉ូឌុល',
   sourceLabel: 'ប្រភព',
+  myNotificationsSource: 'ការជូនដំណឹងរបស់ខ្ញុំ',
   dueLabel: 'កាលបរិច្ឆេទកំណត់',
   priorityLabel: 'អាទិភាព',
   createdLabel: 'បង្កើតនៅ',

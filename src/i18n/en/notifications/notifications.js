@@ -70,6 +70,7 @@ export default {
   alertSummaryLabel: 'Alert total',
   moduleLabel: 'Module',
   sourceLabel: 'Source',
+  myNotificationsSource: 'My Notifications',
   dueLabel: 'Due',
   priorityLabel: 'Priority',
   createdLabel: 'Created',

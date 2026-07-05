@@ -10,6 +10,7 @@ import NotificationFilterTabs from '@/modules/dashboard/components/notifications
 import { useLanguage } from '@/composables/useLanguage'
 import { useUserStore } from '@/store/userStore'
 import { useNotifications } from '@/modules/notifications/composables/useNotifications'
+import { useUnreadNotifications } from '@/modules/notifications/composables/useUnreadNotifications'
 import {
   archiveUnifiedAlert,
   cancelUnifiedTask,
@@ -37,6 +38,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const { t, te } = useLanguage()
 const globalNotifications = useNotifications({ defaultPerPage: 8 })
+const unreadNotifications = useUnreadNotifications()
 
 const currentRole = computed(() => String(userStore.currentUser?.role_code ?? userStore.currentUser?.role ?? ''))
 const canViewTasks = computed(() => ['superadmin', 'adminpreschool', 'teacher-preschool', 'adminsport', 'coach'].includes(currentRole.value))
@@ -84,11 +86,17 @@ const approvalSummary = ref({
   overdue: 0,
 })
 
+const globalNotificationItems = computed(() => globalNotifications.items?.value ?? [])
+const globalUnreadCount = computed(() => unreadNotifications.unreadCount?.value ?? 0)
+const tabAliases = {
+  'my-notifications': 'notifications',
+}
+
 const tabDefinitions = computed(() => [
   {
     value: 'notifications',
     label: t('notifications.tabs.myNotifications'),
-    count: globalNotifications.unreadCount.value || globalNotifications.pagination.total || globalNotifications.items.value.length || 0,
+    count: globalUnreadCount.value || globalNotifications.pagination?.total || globalNotificationItems.value.length || 0,
     visible: true,
   },
   {
@@ -121,7 +129,8 @@ const tabLoading = computed(() =>
 )
 
 function resolveTab(value) {
-  const requested = String(value || '').trim().toLowerCase()
+  const normalized = String(value || '').trim().toLowerCase()
+  const requested = tabAliases[normalized] || normalized
   const available = visibleTabs.value.map((tab) => tab.value)
 
   if (requested && available.includes(requested)) {
@@ -242,7 +251,7 @@ async function loadNotificationsSection() {
     page: 1,
     perPage: 8,
   })
-  await globalNotifications.loadUnreadCount()
+  await unreadNotifications.loadUnreadCount()
 }
 
 async function loadAlertsSection() {
@@ -484,7 +493,7 @@ onMounted(refreshAll)
         <NotificationInboxCard
           :title="t('notifications.tabs.myNotifications')"
           :subtitle="t('notifications.myNotificationsSubtitle')"
-          :notifications="globalNotifications.items.value"
+          :notifications="globalNotificationItems"
           :loading="globalNotifications.loading.value"
           :loading-label="t('notifications.loadingMyNotifications')"
           :empty-title="t('notifications.noNotifications')"
@@ -508,7 +517,7 @@ onMounted(refreshAll)
             <div class="notifications-center__status-grid">
               <div class="notifications-center__status-item">
                 <span>{{ t('notifications.unreadCountLabel') }}</span>
-                <strong>{{ globalNotifications.unreadCount.value || 0 }}</strong>
+                <strong>{{ globalUnreadCount }}</strong>
               </div>
               <div class="notifications-center__status-item">
                 <span>{{ t('notifications.moduleLabel') }}</span>
