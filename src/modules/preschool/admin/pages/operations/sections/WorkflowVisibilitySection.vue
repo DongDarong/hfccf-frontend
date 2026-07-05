@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { resolveOperationsRoute } from '../composables/useOperationsActions'
+import { useOperationsDateTime } from '../composables/useOperationsDateTime'
 import OperationsMetricCard from '../components/OperationsMetricCard.vue'
 import OperationsEmptyState from '../components/OperationsEmptyState.vue'
 
@@ -16,6 +17,7 @@ const props = defineProps({
 
 const router = useRouter()
 const { t } = useLanguage()
+const { formatDateTime } = useOperationsDateTime()
 
 const summary = computed(() => props.workflows.summary || {})
 const recentActivity = computed(() => {
@@ -56,21 +58,6 @@ const cards = computed(() => [
     detailsLabel: t('preschoolOperationsPage.viewDetails'),
   },
 ])
-
-function formatTimestamp(value) {
-  if (!value) return '—'
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-
-  return new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
-}
 
 function openWorkflow(workflow) {
   if (!workflow?.id || !router.hasRoute('dashboard-preschool-admin-workflow-details')) {
@@ -149,7 +136,7 @@ function openWorkflow(workflow) {
             </div>
 
             <div class="text-right text-xs text-slate-500">
-              <div>{{ formatTimestamp(workflow.updatedAt) }}</div>
+              <div>{{ formatDateTime(workflow.updatedAt) }}</div>
               <div v-if="workflow.sourceType">{{ workflow.sourceType }}</div>
             </div>
           </div>

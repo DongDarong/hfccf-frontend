@@ -416,6 +416,22 @@ describe('OperationsCenter', () => {
     expect(wrapper.text()).toContain('Open Workflow')
     expect(wrapper.text()).toContain('Timeline')
     expect(wrapper.text()).toContain('Quick Actions')
+
+    const rawIsoTimestamps = [
+      '2026-06-29T07:56:49.000000Z',
+      '2026-07-02T10:00:00Z',
+      '2026-07-02T08:00:00Z',
+      '2026-07-02T09:00:00Z',
+      '2026-07-02T08:30:00Z',
+      '2026-07-02T08:45:00Z',
+      '2026-07-02T09:15:00Z',
+      '2026-07-02T07:45:00Z',
+    ]
+
+    rawIsoTimestamps.forEach((timestamp) => {
+      expect(wrapper.text()).not.toContain(timestamp)
+    })
+
     const unresolvedButtonWarnings = warnSpy.mock.calls.filter((call) =>
       String(call[0] ?? '').includes('Failed to resolve component: Button'),
     )

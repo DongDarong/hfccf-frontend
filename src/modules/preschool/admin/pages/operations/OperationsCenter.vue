@@ -5,6 +5,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { useOperationsFilters } from './composables/useOperationsFilters'
 import { useOperationsData } from './composables/useOperationsData'
 import { useOperationsActions } from './composables/useOperationsActions'
+import { useOperationsDateTime } from './composables/useOperationsDateTime'
 import OperationsHeaderSection from './sections/OperationsHeaderSection.vue'
 import OperationsFilterBar from './components/OperationsFilterBar.vue'
 import OperationsSummarySection from './sections/OperationsSummarySection.vue'
@@ -25,12 +26,18 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const { formatDateTime } = useOperationsDateTime()
 const { filters, resetFilters, cloneFilters } = useOperationsFilters()
 const { loading, errorMessage, operations, loadOperations } = useOperationsData()
 const { resolveQuickAction, resolveSessionAction } = useOperationsActions()
 
 const operationsTitle = computed(() => t('preschoolOperationsPage.title'))
 const operationsSubtitle = computed(() => t('preschoolOperationsPage.subtitle'))
+const generatedAtLabel = computed(() => (
+  operations.value.generatedAt
+    ? `${t('preschoolOperationsPage.generatedAt')}: ${formatDateTime(operations.value.generatedAt)}`
+    : ''
+))
 
 async function refreshOperations() {
   await loadOperations(cloneFilters())
@@ -54,7 +61,7 @@ onMounted(refreshOperations)
       <OperationsHeaderSection
         :title="operationsTitle"
         :subtitle="operationsSubtitle"
-        :generated-at="operations.generatedAt ? `${t('preschoolOperationsPage.generatedAt')}: ${operations.generatedAt}` : ''"
+        :generated-at="generatedAtLabel"
         :loading="loading"
         :refresh-label="t('preschoolOperationsPage.refresh')"
         @refresh="refreshOperations"

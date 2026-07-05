@@ -1,10 +1,18 @@
 <script setup>
+import { useOperationsDateTime } from '../composables/useOperationsDateTime'
+
 defineProps({
   item: {
     type: Object,
     default: () => ({}),
   },
 })
+
+const { formatDateTime } = useOperationsDateTime()
+
+function getTimestamp(item) {
+  return item?.createdAt || item?.occurredAt || item?.dueAt || item?.resolvedAt || item?.updatedAt || ''
+}
 </script>
 
 <template>
@@ -18,8 +26,8 @@ defineProps({
         {{ item.status || item.type }}
       </span>
     </div>
-    <p v-if="item.createdAt" class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-400">
-      {{ item.createdAt }}
+    <p v-if="getTimestamp(item)" class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-400">
+      {{ formatDateTime(getTimestamp(item)) }}
     </p>
   </article>
 </template>
