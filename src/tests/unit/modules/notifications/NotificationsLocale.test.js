@@ -70,6 +70,7 @@ describe('notification locale parity', () => {
       'unreadCountLabel',
       'moduleLabel',
       'sourceLabel',
+      'myNotificationsSource',
       'dueLabel',
       'priorityLabel',
       'createdLabel',

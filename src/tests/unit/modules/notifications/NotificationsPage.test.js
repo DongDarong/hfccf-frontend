@@ -56,6 +56,15 @@ vi.mock('@/modules/notifications/composables/useNotifications', () => ({
   }),
 }))
 
+vi.mock('@/modules/notifications/composables/useUnreadNotifications', () => ({
+  useUnreadNotifications: () => ({
+    unreadCount: ref(1),
+    loading: ref(false),
+    error: ref(''),
+    loadUnreadCount,
+  }),
+}))
+
 vi.mock('@/modules/notifications/services/notificationCenterApi', () => ({
   archiveUnifiedAlert: (...args) => archiveUnifiedAlert(...args),
   cancelUnifiedTask: (...args) => cancelUnifiedTask(...args),
@@ -96,7 +105,7 @@ function baseMessages() {
   }
 }
 
-async function mountPage() {
+async function mountPage(query = {}) {
   const wrapper = mountWithPlugins(NotificationsPage, {
     messages: {
       en: baseMessages(),
@@ -139,7 +148,10 @@ async function mountPage() {
     },
   })
 
-  await wrapper.vm.$router.push({ name: 'dashboard-notifications' })
+  await wrapper.vm.$router.push({
+    name: 'dashboard-notifications',
+    query,
+  })
   await flushPromises()
   await flushPromises()
 
@@ -264,7 +276,7 @@ beforeEach(() => {
 })
 
 describe('NotificationsPage', () => {
-  it('renders the unified tabs and loads all source feeds', async () => {
+  it('loads the unified inbox when the tab query is missing', async () => {
     const wrapper = await mountPage()
 
     expect(loadNotifications).toHaveBeenCalled()
@@ -278,6 +290,48 @@ describe('NotificationsPage', () => {
     expect(wrapper.text()).toContain('Alerts')
     expect(wrapper.text()).toContain('Approvals')
     expect(wrapper.text()).toContain('Global notice')
+  })
+
+  it('accepts the legacy my-notifications tab query', async () => {
+    const wrapper = await mountPage({ tab: 'my-notifications' })
+
+    expect(wrapper.text()).toContain('Global notice')
+    expect(wrapper.text()).toContain('My Notifications')
+    expect(wrapper.vm.$router.currentRoute.value.query.tab).toBe('my-notifications')
+  })
+
+  it('loads tasks from tab=tasks', async () => {
+    const wrapper = await mountPage({ tab: 'tasks' })
+
+    expect(wrapper.text()).toContain('Follow up')
+    expect(wrapper.vm.$router.currentRoute.value.query.tab).toBe('tasks')
+  })
+
+  it('loads alerts from tab=alerts', async () => {
+    const wrapper = await mountPage({ tab: 'alerts' })
+
+    expect(wrapper.text()).toContain('Health alert')
+    expect(wrapper.vm.$router.currentRoute.value.query.tab).toBe('alerts')
+  })
+
+  it('loads approvals from tab=approvals', async () => {
+    const wrapper = await mountPage({ tab: 'approvals' })
+
+    expect(wrapper.text()).toContain('Approve intake')
+    expect(wrapper.vm.$router.currentRoute.value.query.tab).toBe('approvals')
+  })
+
+  it('falls back safely for an invalid tab query', async () => {
+    const wrapper = await mountPage({ tab: 'invalid' })
+
+    expect(wrapper.text()).toContain('Global notice')
+    expect(wrapper.text()).not.toContain('Follow up')
+    expect(wrapper.text()).not.toContain('Approve intake')
+  })
+
+  it('switches tabs and exposes task and approval actions', async () => {
+    const wrapper = await mountPage()
+    const tabButtons = wrapper.findAll('button').filter((button) => ['My Notifications', 'Tasks', 'Alerts', 'Approvals'].some((label) => button.text().includes(label)))
 
     await wrapper.find('.inbox-card__mark-all').trigger('click')
     await flushPromises()
@@ -290,12 +344,6 @@ describe('NotificationsPage', () => {
     await wrapper.find('.inbox-card__dismiss').trigger('click')
     await flushPromises()
     expect(dismissUnifiedNotification).toHaveBeenCalledWith('global-1')
-  })
-
-  it('switches tabs and exposes task and approval actions', async () => {
-    const wrapper = await mountPage()
-
-    const tabButtons = wrapper.findAll('button').filter((button) => ['My Notifications', 'Tasks', 'Alerts', 'Approvals'].some((label) => button.text().includes(label)))
 
     await tabButtons.find((button) => button.text().includes('Tasks')).trigger('click')
     await flushPromises()
