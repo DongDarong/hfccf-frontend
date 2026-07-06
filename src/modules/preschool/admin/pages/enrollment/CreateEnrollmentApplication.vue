@@ -22,6 +22,7 @@ const terms = ref([])
 const classes = ref([])
 const saving = ref(false)
 const errorMessage = ref('')
+const validationErrors = ref({})
 
 const pageTitle = t('preschoolEnrollmentPage.createPage.title')
 const pageSubtitle = t('preschoolEnrollmentPage.createPage.subtitle')
@@ -46,6 +47,7 @@ async function loadLifecycle() {
 async function saveApplication(payload) {
   saving.value = true
   errorMessage.value = ''
+  validationErrors.value = {}
 
   try {
     await createEnrollment(payload)
@@ -57,6 +59,7 @@ async function saveApplication(payload) {
     router.push({ name: 'dashboard-preschool-admin-enrollments' })
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolEnrollmentPage.messages.errorSave')
+    validationErrors.value = error?.validationErrors || error?.details?.errors || {}
   } finally {
     saving.value = false
   }
@@ -85,11 +88,6 @@ onMounted(async () => {
 
       <div class="enr-create-page__shell">
         <div class="enr-create-page__toolbar">
-          <div>
-            <p class="enr-create-page__eyebrow">{{ t('preschoolEnrollmentPage.createPage.title') }}</p>
-            <p class="enr-create-page__lead">{{ t('preschoolEnrollmentPage.createPage.subtitle') }}</p>
-          </div>
-
           <Button type="button" variant="ghost" rounded="xl" @click="goBack">
             {{ t('preschoolEnrollmentPage.createPage.actions.backToEnrollments') }}
           </Button>
@@ -104,6 +102,7 @@ onMounted(async () => {
           :terms="terms"
           :classes="classes"
           :loading="saving"
+          :validation-errors="validationErrors"
           :cancel-label="t('preschoolEnrollmentPage.createPage.actions.cancel')"
           :save-label="t('preschoolEnrollmentPage.createPage.actions.saveApplication')"
           @cancel="cancel"
@@ -118,14 +117,17 @@ onMounted(async () => {
 .enr-create-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .enr-create-page__shell {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.5rem;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.25rem;
   border: 1px solid #dce6f2;
   border-radius: 1.5rem;
   background:
@@ -139,22 +141,7 @@ onMounted(async () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-}
-
-.enr-create-page__eyebrow {
-  margin: 0;
-  color: #7c3aed;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.enr-create-page__lead {
-  margin: 0.35rem 0 0;
-  color: #64748b;
-  font-size: 0.92rem;
-  line-height: 1.6;
+  flex-wrap: wrap;
 }
 
 .enr-create-page__state {
@@ -175,6 +162,10 @@ onMounted(async () => {
 @media (max-width: 900px) {
   .enr-create-page__toolbar {
     flex-direction: column;
+  }
+
+  .enr-create-page__shell {
+    padding: 1rem;
   }
 }
 </style>

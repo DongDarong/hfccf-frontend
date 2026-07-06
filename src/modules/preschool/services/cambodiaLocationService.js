@@ -7,9 +7,13 @@ function normalizeText(value) {
 
 function normalizeLocationRow(row = {}) {
   return {
+    id: row.id ?? row.location_id ?? null,
     code: normalizeText(row.code || row.location_code),
     nameKh: normalizeText(row.nameKh || row.name_kh),
     nameEn: normalizeText(row.nameEn || row.name_en),
+    provinceId: row.provinceId ?? row.province_id ?? null,
+    districtId: row.districtId ?? row.district_id ?? null,
+    communeId: row.communeId ?? row.commune_id ?? null,
   }
 }
 
