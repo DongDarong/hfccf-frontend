@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   buildLocationAddress,
@@ -133,12 +133,15 @@ function readApplicationText(application, camelKey, snakeKey) {
 }
 
 function createStructuredLocationState(prefix) {
-  const districtItems = ref([])
-  const communeItems = ref([])
-  const villageItems = ref([])
-  const errorMessage = ref('')
-  const loading = ref(false)
-  const syncing = ref(false)
+  const state = reactive({
+    districtItems: [],
+    communeItems: [],
+    villageItems: [],
+    errorMessage: '',
+    loading: false,
+    syncing: false,
+  })
+  let requestSequence = 0
 
   const keys = {
     province: `${prefix}_province_id`,
@@ -147,12 +150,12 @@ function createStructuredLocationState(prefix) {
     village: `${prefix}_village_id`,
   }
 
-  const districtOptions = computed(() => buildLocationOptions(districtItems.value))
-  const communeOptions = computed(() => buildLocationOptions(communeItems.value))
-  const villageOptions = computed(() => buildLocationOptions(villageItems.value))
+  const districtOptions = computed(() => buildLocationOptions(state.districtItems))
+  const communeOptions = computed(() => buildLocationOptions(state.communeItems))
+  const villageOptions = computed(() => buildLocationOptions(state.villageItems))
 
   function setError(message = '') {
-    errorMessage.value = normalizeText(message)
+    state.errorMessage = normalizeText(message)
   }
 
   function clearChildren(level = 'province') {
@@ -160,9 +163,9 @@ function createStructuredLocationState(prefix) {
       form.value[keys.district] = ''
       form.value[keys.commune] = ''
       form.value[keys.village] = ''
-      districtItems.value = []
-      communeItems.value = []
-      villageItems.value = []
+      state.districtItems = []
+      state.communeItems = []
+      state.villageItems = []
       setError('')
       return
     }
@@ -170,15 +173,15 @@ function createStructuredLocationState(prefix) {
     if (level === 'district') {
       form.value[keys.commune] = ''
       form.value[keys.village] = ''
-      communeItems.value = []
-      villageItems.value = []
+      state.communeItems = []
+      state.villageItems = []
       setError('')
       return
     }
 
     if (level === 'commune') {
       form.value[keys.village] = ''
-      villageItems.value = []
+      state.villageItems = []
       setError('')
     }
   }
@@ -186,69 +189,93 @@ function createStructuredLocationState(prefix) {
   async function loadDistrictOptionsForProvince(provinceValue) {
     const province = findLocationItem(provinceItems.value, provinceValue)
     if (!province) {
-      districtItems.value = []
-      communeItems.value = []
-      villageItems.value = []
+      state.districtItems = []
+      state.communeItems = []
+      state.villageItems = []
       return null
     }
 
-    loading.value = true
+    const requestId = ++requestSequence
+    state.loading = true
     try {
-      districtItems.value = await fetchDistricts(province.code)
+      const items = await fetchDistricts(province.code)
+      if (requestId !== requestSequence) return province
+
+      state.districtItems = items
       setError('')
       return province
     } catch (error) {
-      districtItems.value = []
-      communeItems.value = []
-      villageItems.value = []
+      if (requestId !== requestSequence) return null
+
+      state.districtItems = []
+      state.communeItems = []
+      state.villageItems = []
       setError(error?.message || t('preschoolEnrollmentPage.messages.locationLoadFailed'))
       return null
     } finally {
-      loading.value = false
+      if (requestId === requestSequence) {
+        state.loading = false
+      }
     }
   }
 
   async function loadCommuneOptionsForDistrict(districtValue) {
-    const district = findLocationItem(districtItems.value, districtValue)
+    const district = findLocationItem(state.districtItems, districtValue)
     if (!district) {
-      communeItems.value = []
-      villageItems.value = []
+      state.communeItems = []
+      state.villageItems = []
       return null
     }
 
-    loading.value = true
+    const requestId = ++requestSequence
+    state.loading = true
     try {
-      communeItems.value = await fetchCommunes(district.code)
+      const items = await fetchCommunes(district.code)
+      if (requestId !== requestSequence) return district
+
+      state.communeItems = items
       setError('')
       return district
     } catch (error) {
-      communeItems.value = []
-      villageItems.value = []
+      if (requestId !== requestSequence) return null
+
+      state.communeItems = []
+      state.villageItems = []
       setError(error?.message || t('preschoolEnrollmentPage.messages.locationLoadFailed'))
       return null
     } finally {
-      loading.value = false
+      if (requestId === requestSequence) {
+        state.loading = false
+      }
     }
   }
 
   async function loadVillageOptionsForCommune(communeValue) {
-    const commune = findLocationItem(communeItems.value, communeValue)
+    const commune = findLocationItem(state.communeItems, communeValue)
     if (!commune) {
-      villageItems.value = []
+      state.villageItems = []
       return null
     }
 
-    loading.value = true
+    const requestId = ++requestSequence
+    state.loading = true
     try {
-      villageItems.value = await fetchVillages(commune.code)
+      const items = await fetchVillages(commune.code)
+      if (requestId !== requestSequence) return commune
+
+      state.villageItems = items
       setError('')
       return commune
     } catch (error) {
-      villageItems.value = []
+      if (requestId !== requestSequence) return null
+
+      state.villageItems = []
       setError(error?.message || t('preschoolEnrollmentPage.messages.locationLoadFailed'))
       return null
     } finally {
-      loading.value = false
+      if (requestId === requestSequence) {
+        state.loading = false
+      }
     }
   }
 
@@ -256,7 +283,7 @@ function createStructuredLocationState(prefix) {
     const provinceValue = normalizeText(form.value[keys.province])
     if (!provinceValue) return
 
-    syncing.value = true
+    state.syncing = true
     try {
       const province = await loadDistrictOptionsForProvince(provinceValue)
       if (province) {
@@ -277,35 +304,29 @@ function createStructuredLocationState(prefix) {
         form.value[keys.commune] = String(commune.id)
       }
 
-      const village = findLocationItem(villageItems.value, form.value[keys.village])
+      const village = findLocationItem(state.villageItems, form.value[keys.village])
       if (village) {
         form.value[keys.village] = String(village.id)
       }
     } finally {
       queueMicrotask(() => {
-        syncing.value = false
+        state.syncing = false
       })
     }
   }
 
-  return {
+  return Object.assign(state, {
     keys,
-    districtItems,
-    communeItems,
-    villageItems,
     districtOptions,
     communeOptions,
     villageOptions,
-    errorMessage,
-    loading,
-    syncing,
     clearChildren,
     loadDistrictOptionsForProvince,
     loadCommuneOptionsForDistrict,
     loadVillageOptionsForCommune,
     hydrate,
     setError,
-  }
+  })
 }
 
 const birthLocation = createStructuredLocationState('birth')
@@ -709,7 +730,7 @@ watch(
 watch(
   () => form.value.birth_province_id,
   async (value) => {
-    if (isFormHydrating.value || birthLocation.syncing.value) return
+    if (isFormHydrating.value || birthLocation.syncing) return
     birthLocation.clearChildren('province')
     if (!value) return
 
@@ -720,7 +741,7 @@ watch(
 watch(
   () => form.value.birth_district_id,
   async (value) => {
-    if (isFormHydrating.value || birthLocation.syncing.value) return
+    if (isFormHydrating.value || birthLocation.syncing) return
     birthLocation.clearChildren('district')
     if (!value) return
 
@@ -731,7 +752,7 @@ watch(
 watch(
   () => form.value.birth_commune_id,
   async (value) => {
-    if (isFormHydrating.value || birthLocation.syncing.value) return
+    if (isFormHydrating.value || birthLocation.syncing) return
     birthLocation.clearChildren('commune')
     if (!value) return
 
@@ -742,7 +763,7 @@ watch(
 watch(
   () => form.value.residence_province_id,
   async (value) => {
-    if (isFormHydrating.value || residenceLocation.syncing.value) return
+    if (isFormHydrating.value || residenceLocation.syncing) return
     residenceLocation.clearChildren('province')
     if (!value) return
 
@@ -753,7 +774,7 @@ watch(
 watch(
   () => form.value.residence_district_id,
   async (value) => {
-    if (isFormHydrating.value || residenceLocation.syncing.value) return
+    if (isFormHydrating.value || residenceLocation.syncing) return
     residenceLocation.clearChildren('district')
     if (!value) return
 
@@ -764,7 +785,7 @@ watch(
 watch(
   () => form.value.residence_commune_id,
   async (value) => {
-    if (isFormHydrating.value || residenceLocation.syncing.value) return
+    if (isFormHydrating.value || residenceLocation.syncing) return
     residenceLocation.clearChildren('commune')
     if (!value) return
 

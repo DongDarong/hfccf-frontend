@@ -62,6 +62,18 @@ async function flushAll() {
   await flushPromises()
 }
 
+function deferred() {
+  let resolve
+  let reject
+
+  const promise = new Promise((nextResolve, nextReject) => {
+    resolve = nextResolve
+    reject = nextReject
+  })
+
+  return { promise, resolve, reject }
+}
+
 function findById(wrapper, id) {
   const node = wrapper.find(`#${id}`)
   expect(node.exists(), `missing element #${id}`).toBe(true)
@@ -247,6 +259,157 @@ describe('EnrollmentApplicationForm', () => {
 
     expect(wrapper.text()).toContain('Legacy current residence')
     expect(wrapper.text()).toContain('Legacy current residence retained: Legacy Residence 99')
+  })
+
+  it('does not render an empty location error container on a clean form', async () => {
+    const wrapper = mountForm()
+
+    await flushAll()
+
+    expect(wrapper.findAll('.enr-app-grid--location .enr-app-state--error')).toHaveLength(0)
+  })
+
+  it('loads birth location children and clears loading state after each response', async () => {
+    const districtLoad = deferred()
+    const communeLoad = deferred()
+    const villageLoad = deferred()
+
+    mockFetchDistricts.mockImplementation((provinceCode) => {
+      if (String(provinceCode) === '01') {
+        return districtLoad.promise
+      }
+
+      return Promise.resolve([])
+    })
+    mockFetchCommunes.mockImplementation((districtCode) => {
+      if (String(districtCode) === '0102') {
+        return communeLoad.promise
+      }
+
+      return Promise.resolve([])
+    })
+    mockFetchVillages.mockImplementation((communeCode) => {
+      if (String(communeCode) === '010201') {
+        return villageLoad.promise
+      }
+
+      return Promise.resolve([])
+    })
+
+    const wrapper = mountForm()
+
+    await flushAll()
+    await findById(wrapper, 'enr-birth-province').setValue('1')
+    await flushPromises()
+
+    expect(findById(wrapper, 'enr-birth-district').attributes('aria-busy')).toBe('true')
+    expect(findById(wrapper, 'enr-birth-district').text()).toContain('Loading locations')
+
+    districtLoad.resolve([
+      { id: '11', code: '0102', nameEn: 'Battambang', nameKh: 'បាត់ដំបង' },
+    ])
+    await flushAll()
+
+    expect(findById(wrapper, 'enr-birth-district').attributes('aria-busy')).toBe('false')
+    expect(findById(wrapper, 'enr-birth-district').findAll('option')[0].text()).toContain('Select')
+
+    await findById(wrapper, 'enr-birth-district').setValue('11')
+    await flushPromises()
+
+    expect(findById(wrapper, 'enr-birth-commune').attributes('aria-busy')).toBe('true')
+
+    communeLoad.resolve([
+      { id: '111', code: '010201', nameEn: 'Commune 1', nameKh: 'ឃុំ ១' },
+    ])
+    await flushAll()
+
+    expect(findById(wrapper, 'enr-birth-commune').attributes('aria-busy')).toBe('false')
+
+    await findById(wrapper, 'enr-birth-commune').setValue('111')
+    await flushPromises()
+
+    expect(findById(wrapper, 'enr-birth-village').attributes('aria-busy')).toBe('true')
+
+    villageLoad.resolve([
+      { id: '1111', code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ ១' },
+    ])
+    await flushAll()
+
+    expect(findById(wrapper, 'enr-birth-village').attributes('aria-busy')).toBe('false')
+  })
+
+  it('keeps birth and residence cascades independent and ignores stale responses', async () => {
+    const birthDistrictLoad = deferred()
+    const residenceDistrictLoad = deferred()
+
+    mockFetchDistricts.mockImplementation((provinceCode) => {
+      if (String(provinceCode) === '01') {
+        return birthDistrictLoad.promise
+      }
+
+      if (String(provinceCode) === '02') {
+        return residenceDistrictLoad.promise
+      }
+
+      return Promise.resolve([])
+    })
+
+    const wrapper = mountForm()
+
+    await flushAll()
+
+    await findById(wrapper, 'enr-residence-province').setValue('2')
+    await flushPromises()
+    await findById(wrapper, 'enr-birth-province').setValue('1')
+    await flushPromises()
+
+    residenceDistrictLoad.resolve([
+      { id: '21', code: '0201', nameEn: 'Residence District', nameKh: 'ស្រុកលំនៅ' },
+    ])
+    birthDistrictLoad.resolve([
+      { id: '11', code: '0102', nameEn: 'Birth District', nameKh: 'ស្រុកកំណើត' },
+    ])
+    await flushAll()
+
+    expect(findById(wrapper, 'enr-residence-district').text()).toContain('Residence District')
+    expect(findById(wrapper, 'enr-birth-district').text()).toContain('Birth District')
+
+    const firstBirthDistrictLoad = deferred()
+    const secondBirthDistrictLoad = deferred()
+
+    mockFetchDistricts.mockImplementationOnce(() => firstBirthDistrictLoad.promise)
+    mockFetchDistricts.mockImplementationOnce(() => secondBirthDistrictLoad.promise)
+
+    await findById(wrapper, 'enr-birth-province').setValue('2')
+    await flushPromises()
+    await findById(wrapper, 'enr-birth-province').setValue('1')
+    await flushPromises()
+
+    firstBirthDistrictLoad.resolve([
+      { id: '22', code: '0202', nameEn: 'Stale District', nameKh: 'ស្រុកចាស់' },
+    ])
+    secondBirthDistrictLoad.resolve([
+      { id: '12', code: '0103', nameEn: 'Latest District', nameKh: 'ស្រុកថ្មី' },
+    ])
+    await flushAll()
+
+    expect(findById(wrapper, 'enr-birth-district').text()).toContain('Latest District')
+    expect(findById(wrapper, 'enr-birth-district').text()).not.toContain('Stale District')
+    expect(findById(wrapper, 'enr-residence-district').text()).toContain('Residence District')
+  })
+
+  it('shows a localized location error when a child load fails', async () => {
+    mockFetchDistricts.mockRejectedValueOnce(new Error('Location service unavailable'))
+
+    const wrapper = mountForm()
+
+    await flushAll()
+    await findById(wrapper, 'enr-birth-province').setValue('1')
+    await flushAll()
+
+    const errorBlocks = wrapper.findAll('.enr-app-grid--location .enr-app-state--error')
+    expect(errorBlocks.length).toBe(1)
+    expect(errorBlocks[0].text()).toContain('Location service unavailable')
   })
 
   it('shows field-level validation errors from the parent contract', async () => {
