@@ -706,6 +706,11 @@ export default {
       required: 'This field is required.',
       positive: 'Please enter a positive number.',
       range: 'The maximum age must be greater than or equal to the minimum age.',
+      invalidTimezone: 'Select a supported timezone.',
+      unsupportedLanguage: 'Select a supported language.',
+      invalidDateFormat: 'Select a supported date format.',
+      invalidTimeFormat: 'Select a supported time format.',
+      invalidYearFormat: 'Select a supported year format.',
     },
   },
   preschoolAcademicSettingsPage: {

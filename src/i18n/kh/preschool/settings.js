@@ -101,6 +101,11 @@ const overrides = {
       required: 'វាលនេះត្រូវតែបំពេញ។',
       positive: 'សូមបញ្ចូលលេខវិជ្ជមាន។',
       range: 'អាយុអតិបរមាត្រូវធំជាង ឬស្មើអាយុអប្បបរមា។',
+      invalidTimezone: 'សូមជ្រើសល្វែងម៉ោងដែលគាំទ្រ។',
+      unsupportedLanguage: 'សូមជ្រើសភាសាដែលគាំទ្រ។',
+      invalidDateFormat: 'សូមជ្រើសទម្រង់កាលបរិច្ឆេទដែលគាំទ្រ។',
+      invalidTimeFormat: 'សូមជ្រើសទម្រង់ម៉ោងដែលគាំទ្រ។',
+      invalidYearFormat: 'សូមជ្រើសទម្រង់ឆ្នាំដែលគាំទ្រ។',
     },
   },
   preschoolSettingsPage: {
