@@ -34,6 +34,13 @@
           "badgeKey": "nav.badges.core"
         },
         {
+          "id": "command-center-preschool-analytics",
+          "routeName": "dashboard-super-admin-command-center-preschool-analytics",
+          "labelKey": "nav.items.preschoolAnalytics",
+          "icon": "performance",
+          "badgeKey": "nav.badges.core"
+        },
+        {
           "id": "admin-management",
           "routeName": "dashboard-super-admin-users-manage",
           "labelKey": "nav.items.manageUsers",

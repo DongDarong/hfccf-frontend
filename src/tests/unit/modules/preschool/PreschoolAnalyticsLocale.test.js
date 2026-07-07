@@ -64,7 +64,7 @@ describe('preschool analytics locale parity', () => {
       expectString(khPreschool, key)
     })
 
-    expectString(enNav, 'items.analytics')
-    expectString(khNav, 'items.analytics')
+    expectString(enNav, 'items.preschoolAnalytics')
+    expectString(khNav, 'items.preschoolAnalytics')
   })
 })

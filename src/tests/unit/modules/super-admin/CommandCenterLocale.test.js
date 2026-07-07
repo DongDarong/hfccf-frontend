@@ -14,5 +14,7 @@ describe('super-admin command center locale parity', () => {
     expectString(khNav, 'items.executiveOperations')
     expectString(enNav, 'items.workflowApprovals')
     expectString(khNav, 'items.workflowApprovals')
+    expectString(enNav, 'items.preschoolAnalytics')
+    expectString(khNav, 'items.preschoolAnalytics')
   })
 })
