@@ -1,4 +1,5 @@
 <script setup>
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import WorkflowStatusBadge from '../components/WorkflowStatusBadge.vue'
 
 defineProps({
@@ -16,6 +17,7 @@ defineProps({
 <template>
   <section class="workflow-details-header">
     <div>
+      <Breadcrumb />
       <div class="workflow-details-header__eyebrow">{{ labels.workflowDetails || 'Workflow Details' }}</div>
       <h2 class="workflow-details-header__title">
         {{ workflow.sourceLabel || workflow.workflowDefinitionName || workflow.workflowDefinitionKey || labels.workflow || 'Workflow' }}

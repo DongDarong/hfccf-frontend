@@ -1,4 +1,6 @@
 <script setup>
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
+
 defineEmits(['action'])
 
 defineProps({
@@ -23,6 +25,7 @@ defineProps({
 
 <template>
   <section class="calendar-page-header">
+    <Breadcrumb />
     <div class="calendar-page-header__copy">
       <p class="calendar-page-header__eyebrow">{{ eyebrowLabel }}</p>
       <h1 class="calendar-page-header__title">{{ title }}</h1>

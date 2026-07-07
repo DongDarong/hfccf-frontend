@@ -1,4 +1,5 @@
 <script setup>
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import Button from '@/components/buttons/Button.vue'
 
 defineProps({
@@ -30,6 +31,7 @@ defineEmits(['refresh'])
 <template>
   <header class="workflow-header-section">
     <div>
+      <Breadcrumb />
       <div class="workflow-header-section__eyebrow">Preschool</div>
       <h1 class="workflow-header-section__title">{{ title }}</h1>
       <p

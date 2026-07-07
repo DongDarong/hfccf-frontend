@@ -1,5 +1,6 @@
 <script setup>
 import MainLayout from '@/layouts/MainLayout.vue'
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import FormManagementHeaderSection from './form-management/sections/FormManagementHeaderSection.vue'
 import FormOverviewSection from './form-management/sections/FormOverviewSection.vue'
 import FormQuickActionsSection from './form-management/sections/FormQuickActionsSection.vue'
@@ -24,6 +25,7 @@ const {
 <template>
   <MainLayout>
     <section class="preschool-form-management-page">
+      <Breadcrumb />
       <FormManagementHeaderSection :hero="hero" />
 
       <FormOverviewSection

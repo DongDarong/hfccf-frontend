@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-6">
+    <Breadcrumb />
     <section class="rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
       <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-1.5">
@@ -519,6 +520,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import AppBadge from '@/components/ui/AppBadge.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import GuardianCommunicationTimeline from '@/modules/preschool/admin/components/guardian/GuardianCommunicationTimeline.vue'
