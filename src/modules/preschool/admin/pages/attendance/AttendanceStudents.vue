@@ -114,20 +114,51 @@ const sessionHeaderSubtitle = computed(() => {
 })
 const sessionActionLabel = computed(() => {
   if (!isSessionMode.value) return saveButtonLabel.value
-  if (selectedSessionStatus.value === 'scheduled') return t('preschoolAttendanceSessionsPage.actions.openSession')
+  if (selectedSessionStatus.value === 'scheduled') return t('preschoolAttendanceSessionsPage.openSession')
   if (selectedSessionStatus.value === 'open') return t('preschoolAttendanceSessionsPage.actions.saveAttendance')
   if (['completed', 'locked', 'cancelled'].includes(selectedSessionStatus.value)) return t('preschoolAttendanceSessionsPage.actions.viewSession')
   return t('preschoolAttendanceSessionsPage.actions.saveAttendance')
 })
 const sessionModeStatusTone = computed(() => getSessionStatusTone(selectedSessionStatus.value))
 
+function createAttendanceEntry(existing = {}) {
+  return {
+    status: '',
+    note: '',
+    existingId: null,
+    ...existing,
+  }
+}
+
 function buildMap(studentList, existingRecords) {
   const map = {}
   for (const s of studentList) {
     const existing = existingRecords.find((r) => String(r.studentId) === String(s.id))
-    map[s.id] = { status: existing?.status || '', note: existing?.note || '', existingId: existing?.id || null }
+    map[s.id] = createAttendanceEntry({
+      status: existing?.status || '',
+      note: existing?.note || '',
+      existingId: existing?.id || null,
+    })
   }
   return map
+}
+
+function ensureAttendanceEntries(studentList = visibleStudents.value) {
+  if (!Array.isArray(studentList) || !studentList.length) return
+
+  const next = { ...attendanceMap.value }
+  let changed = false
+
+  for (const student of studentList) {
+    if (!next[student.id]) {
+      next[student.id] = createAttendanceEntry()
+      changed = true
+    }
+  }
+
+  if (changed) {
+    attendanceMap.value = next
+  }
 }
 
 function studentHasSelectedClass(student, classId = selectedClassId.value) {
@@ -282,6 +313,7 @@ async function loadDay() {
       ? students.value.filter((student) => studentHasSelectedClass(student))
       : students.value
     attendanceMap.value = buildMap(scopedStudents, attendanceRes.items || [])
+    ensureAttendanceEntries(scopedStudents)
   } catch (e) {
     errorMessage.value = resolveErrorMessage(e, `${pageCopyKey.value}.messages.loadFailed`)
   } finally {
@@ -434,6 +466,10 @@ watch(
   },
   { immediate: true },
 )
+
+watch(visibleStudents, (studentList) => {
+  ensureAttendanceEntries(studentList)
+}, { immediate: true })
 </script>
 
 <template>

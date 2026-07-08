@@ -56,7 +56,7 @@ const sessionStatusLabel = computed(() => {
 })
 const primaryActionLabel = computed(() => {
   const key = getSessionStatusKey(sessionStatus.value)
-  if (key === 'scheduled') return t('preschoolAttendanceSessionsPage.actions.openSession')
+  if (key === 'scheduled') return t('preschoolAttendanceSessionsPage.openSession')
   if (key === 'open') return t('preschoolAttendanceSessionsPage.actions.continueAttendance')
   return t('preschoolAttendanceSessionsPage.actions.viewSession')
 })

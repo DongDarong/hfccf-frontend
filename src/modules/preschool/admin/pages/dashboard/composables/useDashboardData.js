@@ -258,7 +258,7 @@ function resolveSessionActionLabel(t, status) {
   const key = normalizeScheduleSessionStatus(status)
 
   if (key === 'scheduled') {
-    return t('preschoolAttendanceSessionsPage.actions.openSession')
+    return t('preschoolAttendanceSessionsPage.openSession')
   }
 
   if (key === 'open') {

@@ -247,6 +247,26 @@ describe('AttendanceStudents', () => {
     warnSpy.mockRestore()
   })
 
+  it('backfills missing attendance rows before rendering note inputs', async () => {
+    const wrapper = await mountPage({
+      classId: 'class-1',
+      date: '2026-05-19',
+    })
+
+    wrapper.vm.attendanceMap = {
+      'student-1': { status: 'present', note: 'On time', existingId: 'att-1' },
+    }
+    wrapper.vm.students = [
+      { id: 'student-1', fullName: 'Alice Student', studentCode: 'S-1' },
+      { id: 'student-2', fullName: 'Bopha Student', studentCode: 'S-2' },
+    ]
+
+    await flushPromises()
+
+    expect(wrapper.findAll('input').length).toBeGreaterThanOrEqual(2)
+    expect(wrapper.text()).toContain('Bopha Student')
+  })
+
   it('shows a teacher empty state when no assigned classes are returned', async () => {
     mockFetchMyPreschoolClasses.mockResolvedValueOnce({ items: [] })
 
@@ -272,6 +292,34 @@ describe('AttendanceStudents', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Please fix the highlighted attendance entries and try again.')
+  })
+
+  it.each([
+    ['scheduled', 'Open Session'],
+    ['completed', 'View Session'],
+    ['locked', 'View Session'],
+    ['cancelled', 'View Session'],
+  ])('renders %s sessions without a note crash', async (status, expectedAction) => {
+    mockFetchAttendanceSession.mockResolvedValueOnce({
+      id: `session-${status}`,
+      classId: 'class-1',
+      className: 'Morning Stars',
+      attendanceDate: '2026-05-19',
+      status,
+      teacherName: 'Teacher One',
+      roomName: 'Room 1',
+      studentCount: 2,
+    })
+
+    const wrapper = await mountPage({
+      classId: 'class-1',
+      date: '2026-05-19',
+      attendance_session_id: `session-${status}`,
+    })
+
+    expect(wrapper.text()).toContain('Morning Stars')
+    expect(wrapper.text()).toContain(expectedAction)
+    expect(wrapper.findAll('input').length).toBeGreaterThan(0)
   })
 
   it('shows a safe forbidden error when save returns 403', async () => {

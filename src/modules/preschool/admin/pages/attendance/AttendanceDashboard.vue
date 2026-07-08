@@ -273,7 +273,7 @@ function actionLabel(session) {
     return ''
   }
 
-  if (status === 'scheduled' && session.id) return t('preschoolAttendanceSessionsPage.actions.openSession')
+  if (status === 'scheduled' && session.id) return t('preschoolAttendanceSessionsPage.openSession')
   if (status === 'open') return t('preschoolAttendanceSessionsPage.actions.continueAttendance')
   if (status === 'completed') return t('preschoolAttendanceSessionsPage.actions.viewSession')
   if (status === 'locked') return t('preschoolAttendanceSessionsPage.actions.view')
