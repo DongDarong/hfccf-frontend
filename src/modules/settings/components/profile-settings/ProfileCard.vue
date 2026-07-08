@@ -134,10 +134,10 @@ const statusLabel = computed(() => {
 const bioText = computed(() => String(props.user.bio || '').trim())
 const departmentLabel = computed(() => String(props.user.department || '-').trim() || '-')
 const contactItems = computed(() => [
-  { label: t('pages.profile.general.username'), value: props.user.username || '-' },
-  { label: t('pages.profile.general.email'), value: props.user.email || '-' },
-  { label: t('pages.profile.general.phone'), value: props.user.phone || '-' },
-  { label: t('pages.profile.general.department'), value: departmentLabel.value },
+  { key: 'username', label: t('pages.profile.general.username'), value: props.user.username || '-' },
+  { key: 'email', label: t('pages.profile.general.email'), value: props.user.email || '-' },
+  { key: 'phone', label: t('pages.profile.general.phone'), value: props.user.phone || '-' },
+  { key: 'department', label: t('pages.profile.general.department'), value: departmentLabel.value },
 ])
 </script>
 
@@ -222,16 +222,20 @@ const contactItems = computed(() => [
         {{ requestError }}
       </div>
 
-      <div class="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+      <div class="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div
           v-for="item in contactItems"
           :key="item.label"
-          class="flex items-start justify-between gap-4"
+          class="flex min-w-0 flex-col gap-1 rounded-xl bg-white px-3 py-2.5 text-left shadow-[0_1px_0_rgba(15,23,42,0.03)]"
         >
           <span class="text-[0.76rem] font-bold uppercase tracking-[0.08em] text-slate-500">
             {{ item.label }}
           </span>
-          <span class="min-w-0 flex-1 break-words text-right text-sm font-semibold leading-6 text-slate-800">
+          <span
+            :data-profile-field="item.key"
+            class="min-w-0 truncate text-sm font-semibold leading-6 text-slate-800"
+            :title="String(item.value)"
+          >
             {{ item.value }}
           </span>
         </div>

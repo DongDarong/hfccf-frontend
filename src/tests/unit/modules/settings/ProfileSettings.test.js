@@ -63,8 +63,9 @@ beforeEach(() => {
 })
 
 describe('ProfileSettings', () => {
-  it('renders long profile values without truncating the sidebar card layout', async () => {
+  it('renders long profile values with stable stacked contact rows', async () => {
     const wrapper = mountProfileSettings('en')
+    const emailValue = wrapper.find('[data-profile-field="email"]')
 
     expect(wrapper.text()).toContain(longTeacherProfile.email)
     expect(wrapper.text()).toContain(longTeacherProfile.username)
@@ -73,7 +74,9 @@ describe('ProfileSettings', () => {
     expect(wrapper.find('.profile-settings-layout').exists()).toBe(true)
     expect(wrapper.find('.profile-settings-layout__sidebar').exists()).toBe(true)
     expect(wrapper.find('.profile-settings-layout__content').exists()).toBe(true)
-    expect(wrapper.find('.profile-settings-layout__sidebar .profile-settings-card .truncate').exists()).toBe(false)
+    expect(emailValue.exists()).toBe(true)
+    expect(emailValue.classes()).toContain('truncate')
+    expect(emailValue.attributes('title')).toBe(longTeacherProfile.email)
   })
 
   it('renders the Khmer locale title and keeps long values readable', async () => {
@@ -84,6 +87,6 @@ describe('ProfileSettings', () => {
     expect(wrapper.text()).not.toContain('pages.profile.')
     expect(wrapper.find('#profileDisplayName').exists()).toBe(true)
     expect(wrapper.find('#profileDisplayBio').exists()).toBe(true)
-    expect(wrapper.find('.profile-settings-layout__sidebar .truncate').exists()).toBe(false)
+    expect(wrapper.find('[data-profile-field="email"]').exists()).toBe(true)
   })
 })
