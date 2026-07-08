@@ -26,8 +26,14 @@ export default {
       title: 'រយៈពេលរបាយការណ៍ដែលបានជ្រើស',
       subtitle: 'រយៈពេលនេះកំណត់ថាតើរបាយការណ៍ណានឹងបង្ហាញខាងក្រោម។',
     },
+    periodTypes: {
+      monthly: 'ប្រចាំខែ',
+      term: 'តាម term',
+      annual: 'ប្រចាំឆ្នាំ',
+    },
     periodColumns: {
       label: 'រយៈពេល',
+      type: 'ប្រភេទ',
       status: 'ស្ថានភាព',
       dates: 'ចន្លោះថ្ងៃ',
       assessments: 'វាយតម្លៃ',
@@ -36,4 +42,3 @@ export default {
     },
   },
 }
-

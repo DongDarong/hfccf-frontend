@@ -184,6 +184,22 @@ const overrides = {
       alphaNumeric: 'ប្រើតែលេខកូដអក្សរធំ និងលេខប៉ុណ្ណោះ។',
     },
   },
+  preschoolAssessmentSettingsPage: {
+    fields: {
+      periodType: 'ប្រភេទរយៈពេល',
+    },
+    periodTypes: {
+      monthly: 'ប្រចាំខែ',
+      term: 'តាម term',
+      annual: 'ប្រចាំឆ្នាំ',
+    },
+    help: {
+      termOptional: 'អាចទុកទទេសម្រាប់រយៈពេលប្រចាំខែ ឬប្រចាំឆ្នាំ។',
+    },
+    placeholders: {
+      termOptional: 'ជាជម្រើសសម្រាប់ប្រចាំខែ ឬប្រចាំឆ្នាំ',
+    },
+  },
 }
 
 export default mergeDeep(enPreschool, overrides)

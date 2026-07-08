@@ -12,6 +12,10 @@ defineProps({
     type: Array,
     required: true,
   },
+  showSettings: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['create', 'reports', 'settings', 'navigate'])
@@ -52,6 +56,7 @@ const actionLabels = computed(() => ({
             @click="emit('reports')"
           />
           <Button
+            v-if="showSettings"
             :label="actionLabels.workspaceSettings"
             icon="pi pi-cog"
             variant="secondary"

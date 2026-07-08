@@ -56,6 +56,7 @@ export function normalizeReportPeriod(row = {}) {
   return {
     id: row.id ?? '',
     label: normalizeText(row.label || row.periodLabel || row.period_label),
+    periodType: normalizeText(row.periodType || row.period_type || 'term').toLowerCase() || 'term',
     academicYearId: row.academicYearId ?? row.academic_year_id ?? '',
     academicYear: normalizeText(row.academicYear || row.academic_year || row.academic_year_label),
     academicYearCode: normalizeText(row.academicYearCode || row.academic_year_code),
@@ -176,6 +177,7 @@ function normalizeStudentSummary(row = {}) {
 
 function normalizeReportPayload(row = {}) {
   const summary = row.summary || row.data?.summary || {}
+  const scoreSummary = row.scoreSummary || row.score_summary || {}
   const sourceAttendance = row.attendanceSummary || row.attendance_summary || {}
   const sourceCategories = row.categorySummaries || row.category_summaries || []
   const sourceObservations = row.observations || row.data?.observations || []
@@ -189,6 +191,18 @@ function normalizeReportPayload(row = {}) {
       latestAssessmentDate: summary.latestAssessmentDate || summary.latest_assessment_date || '',
       observationCount: normalizeNumber(summary.observationCount ?? summary.observation_count),
       studentCount: normalizeNumber(summary.studentCount ?? summary.student_count),
+    },
+    scoreSummary: {
+      categorySummaries: Array.isArray(scoreSummary.categorySummaries || scoreSummary.category_summaries)
+        ? (scoreSummary.categorySummaries || scoreSummary.category_summaries).map(normalizeCategorySummary)
+        : [],
+      overallScore: scoreSummary.overallScore ?? scoreSummary.overall_score ?? null,
+      grade: normalizeText(scoreSummary.grade),
+      passingScore: scoreSummary.passingScore ?? scoreSummary.passing_score ?? null,
+      isPassing: Boolean(scoreSummary.isPassing ?? scoreSummary.is_passing),
+      calculationMethod: normalizeText(scoreSummary.calculationMethod || scoreSummary.calculation_method),
+      includedAssessments: normalizeNumber(scoreSummary.includedAssessments ?? scoreSummary.included_assessments),
+      averageScore: scoreSummary.averageScore ?? scoreSummary.average_score ?? null,
     },
     attendanceSummary: normalizeAttendanceSummary(sourceAttendance),
     categorySummaries: Array.isArray(sourceCategories) ? sourceCategories.map(normalizeCategorySummary) : [],

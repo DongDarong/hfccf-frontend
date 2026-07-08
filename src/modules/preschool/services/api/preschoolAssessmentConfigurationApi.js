@@ -106,6 +106,7 @@ export function normalizeReportPeriod(record = {}) {
 
   return {
     id: record.id ?? '',
+    periodType: normalizeText(record.periodType || record.period_type || 'term').toLowerCase() || 'term',
     academicYearId: record.academicYearId ?? record.academic_year_id ?? '',
     academicYearName: normalizeText(
       record.academicYearName
@@ -210,6 +211,7 @@ function buildCategoryPayload(category = {}) {
 
 function buildReportPeriodPayload(period = {}) {
   return {
+    period_type: normalizeText(period.periodType ?? period.period_type ?? 'term').toLowerCase() || 'term',
     academic_year_id: period.academicYearId ?? period.academic_year_id ?? '',
     term_id: normalizeText(period.termId ?? period.term_id ?? '') || null,
     name: normalizeText(period.name),
