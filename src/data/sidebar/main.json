@@ -120,21 +120,6 @@
           }
         },
         {
-          "id": "preschool-teacher-emergency-contacts",
-          "routeName": "dashboard-preschool-teacher-emergency-contacts",
-          "labelKey": "nav.items.emergencyContacts",
-          "icon": "notification",
-          "badgeKey": "nav.badges.staff",
-          "access": {
-            "scopes": [
-              "staff"
-            ],
-            "domains": [
-              "preschool"
-            ]
-          }
-        },
-        {
           "id": "preschool-teacher-schedule",
           "routeName": "dashboard-preschool-teacher-schedule",
           "labelKey": "nav.items.schedules",
