@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import AppStatusChip from '@/components/ui/AppStatusChip.vue'
 
 defineOptions({
@@ -57,6 +58,14 @@ const normalizedCards = computed(() =>
 
       <p class="preschool-dashboard-summary__value">{{ card.value }}</p>
       <p class="preschool-dashboard-summary__label">{{ card.label }}</p>
+      <RouterLink
+        v-if="card.actionTo && card.actionLabel"
+        :to="card.actionTo"
+        class="preschool-dashboard-summary__action"
+      >
+        {{ card.actionLabel }}
+        <i class="pi pi-arrow-right" aria-hidden="true" />
+      </RouterLink>
       <AppStatusChip
         class="preschool-dashboard-summary__trend"
         :data-direction="card.trend.direction || 'neutral'"
@@ -147,6 +156,21 @@ const normalizedCards = computed(() =>
   font-size: 0.8rem;
   color: #475569;
   line-height: 1.5;
+}
+
+.preschool-dashboard-summary__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.preschool-dashboard-summary__action:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 1180px) {

@@ -970,10 +970,10 @@ const EXTRA_CRUMB_MAP = {
   ],
   'dashboard-preschool-teacher-attendance': [
     { labelKey: 'breadcrumb.teacherDashboard', to: { name: 'dashboard-preschool-teacher' } },
-    { labelKey: 'breadcrumb.attendanceStudents' },
+    { labelKey: 'breadcrumb.attendance' },
   ],
   'dashboard-preschool-teacher-attendance-session-details': [
-    { labelKey: 'breadcrumb.attendanceStudents', to: { name: 'dashboard-preschool-teacher-attendance' } },
+    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-preschool-teacher-attendance' } },
     { labelKey: 'breadcrumb.sessionDetails' },
   ],
 }

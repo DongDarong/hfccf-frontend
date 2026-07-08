@@ -90,8 +90,12 @@ function normalizeSessionRow(row = {}) {
       : Array.isArray(row.contactLogs)
         ? row.contactLogs
         : Array.isArray(row.communications)
-          ? row.communications
-          : []
+    ? row.communications
+    : []
+  const studentCount = normalizeNumber(row.studentCount ?? row.student_count ?? row.totalStudents ?? row.total_students, 0)
+  const recordedStudents = normalizeNumber(row.recordedStudents ?? row.recorded_students ?? row.recordsCount ?? row.records_count, rawRecords.length)
+  const missingStudents = normalizeNumber(row.missingStudents ?? row.missing_students, Math.max(studentCount - recordedStudents, 0))
+  const completionRate = normalizeNumber(row.completionRate ?? row.completion_rate, studentCount > 0 ? Number(((recordedStudents / studentCount) * 100).toFixed(2)) : 0)
 
   return {
     id: row.id ?? '',
@@ -120,12 +124,17 @@ function normalizeSessionRow(row = {}) {
     cancelledAt: row.cancelledAt || row.cancelled_at || '',
     closedByUserId: row.closedByUserId ?? row.closed_by_user_id ?? '',
     closedAt: row.closedAt || row.closed_at || '',
-    studentCount: normalizeNumber(row.studentCount ?? row.student_count ?? row.totalStudents ?? row.total_students, 0),
+    studentCount,
+    recordedStudents,
+    missingStudents,
+    completionRate,
+    canRecord: Boolean(row.canRecord ?? row.can_record),
+    canViewDetails: Boolean(row.canViewDetails ?? row.can_view_details ?? true),
     presentCount: normalizeNumber(row.presentCount ?? row.present_count, 0),
     absentCount: normalizeNumber(row.absentCount ?? row.absent_count, 0),
     lateCount: normalizeNumber(row.lateCount ?? row.late_count, 0),
     excusedCount: normalizeNumber(row.excusedCount ?? row.excused_count, 0),
-    pendingCount: normalizeNumber(row.pendingCount ?? row.pending_count, 0),
+    pendingCount: normalizeNumber(row.pendingCount ?? row.pending_count, missingStudents),
     recordsCount: normalizeNumber(row.recordsCount ?? row.records_count ?? rawRecords.length, 0),
     records: rawRecords.map(normalizeSessionRecord),
     relatedAlerts: rawAlerts.map(normalizeSessionAlert),

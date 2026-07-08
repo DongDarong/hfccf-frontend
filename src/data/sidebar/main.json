@@ -150,6 +150,21 @@
           }
         },
         {
+          "id": "preschool-teacher-attendance",
+          "routeName": "dashboard-preschool-teacher-attendance",
+          "labelKey": "nav.items.attendance",
+          "icon": "attendance",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
           "id": "preschool-teacher-assessments",
           "routeName": "dashboard-preschool-assessments",
           "labelKey": "nav.items.preschoolAssessments",
