@@ -111,18 +111,24 @@ function decorateNavItem(item) {
   }
 }
 
-function isPathActive(path) {
-  return (
-    currentPath.value === path ||
-    currentPath.value.startsWith(`${path}/`)
-  )
+function isPathActive(path, exact = false) {
+  if (!path) return false
+
+  if (exact) {
+    return currentPath.value === path
+  }
+
+  return currentPath.value === path || currentPath.value.startsWith(`${path}/`)
 }
 
 function isNavItemActive(item) {
+  const routeNames = Array.isArray(item.activeRouteNames) ? item.activeRouteNames : []
+  const exactActive = Boolean(item.exactActive)
+
   return (
     currentRouteName.value === item.routeName ||
-    (item.activeRouteNames || []).includes(currentRouteName.value) ||
-    isPathActive(item.routePath) ||
+    routeNames.includes(currentRouteName.value) ||
+    isPathActive(item.routePath, exactActive) ||
     (item.children || []).some((child) => isNavItemActive(child))
   )
 }

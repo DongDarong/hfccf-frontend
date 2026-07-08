@@ -37,6 +37,7 @@
               "staff"
             ]
           },
+          "exactActive": true,
           "routeNameByDomain": {
             "english": "dashboard-english-teacher",
             "preschool": "dashboard-preschool-teacher",
