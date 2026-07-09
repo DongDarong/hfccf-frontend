@@ -144,4 +144,27 @@ describe('Breadcrumb', () => {
     expect(wrapper.text()).toBe('')
     expect(wrapper.find('nav').exists()).toBe(false)
   })
+
+  it('stays empty for the stale sport coach attendance route name', async () => {
+    const wrapper = await mountAtRoute('dashboard-sport-admin-attendance-coaches', [
+      {
+        path: '/module/sport-admin',
+        name: 'dashboard-sport-admin',
+        component: { template: '<div />' },
+      },
+      {
+        path: '/module/sport-admin/attendance',
+        name: 'dashboard-sport-admin-attendance',
+        component: { template: '<div />' },
+      },
+      {
+        path: '/module/sport-admin/attendance/coaches',
+        name: 'dashboard-sport-admin-attendance-coaches',
+        component: { template: '<div />' },
+      },
+    ])
+
+    expect(wrapper.text()).toBe('')
+    expect(wrapper.find('nav').exists()).toBe(false)
+  })
 })

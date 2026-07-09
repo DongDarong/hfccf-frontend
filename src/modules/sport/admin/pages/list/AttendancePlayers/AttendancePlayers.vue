@@ -235,7 +235,7 @@ onMounted(() => {
       </div>
 
       <div v-else-if="loading" class="state-empty">
-        {{ t('preschoolReportsShared.loading') }}
+        {{ t('loading') }}
       </div>
 
       <div v-else-if="!players.length" class="state-empty">
