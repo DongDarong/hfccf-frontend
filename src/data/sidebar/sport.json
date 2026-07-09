@@ -8,7 +8,10 @@
       "collapsible": true,
       "access": {
         "scopes": [
-          "super_admin"
+          "admin"
+        ],
+        "domains": [
+          "sport"
         ]
       },
       "items": [
