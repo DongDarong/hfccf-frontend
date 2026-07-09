@@ -156,6 +156,14 @@ function normalizeStudentRow(row = {}) {
   const classAssignments = Array.isArray(row.classAssignments) ? row.classAssignments.map(normalizeClassAssignmentRow) : []
   const activeClasses = Array.isArray(row.classes) ? row.classes.map(normalizeClassAssignmentRow) : classAssignments.filter((item) => item.status === 'active')
   const avatarUrl = resolveStudentAvatarUrl(row)
+  const birthProvince = row.birthProvince || row.birth_province || null
+  const birthDistrict = row.birthDistrict || row.birth_district || null
+  const birthCommune = row.birthCommune || row.birth_commune || null
+  const birthVillage = row.birthVillage || row.birth_village || null
+  const residenceProvince = row.residenceProvince || row.residence_province || null
+  const residenceDistrict = row.residenceDistrict || row.residence_district || null
+  const residenceCommune = row.residenceCommune || row.residence_commune || null
+  const residenceVillage = row.residenceVillage || row.residence_village || null
 
   return {
     id: row.id ?? '',
@@ -165,10 +173,38 @@ function normalizeStudentRow(row = {}) {
     lastName,
     fullName,
     name: normalizeText(row.name || fullName),
+    latinName: normalizeText(row.latinName || row.latin_name),
+    nationality: normalizeText(row.nationality),
+    ethnicity: normalizeText(row.ethnicity),
     gender: normalizeText(row.gender),
     dateOfBirth: row.dateOfBirth || row.date_of_birth || '',
     guardianName: normalizeText(row.guardianName || row.guardian_name),
     guardianPhone: normalizeText(row.guardianPhone || row.guardian_phone),
+    guardianType: normalizeText(
+      row.guardianType
+      || row.guardian_type
+      || row.relationshipType
+      || row.relationship_type,
+    ),
+    placeOfBirth: normalizeText(row.placeOfBirth || row.place_of_birth),
+    birthProvinceId: row.birthProvinceId ?? row.birth_province_id ?? birthProvince?.id ?? '',
+    birthDistrictId: row.birthDistrictId ?? row.birth_district_id ?? birthDistrict?.id ?? '',
+    birthCommuneId: row.birthCommuneId ?? row.birth_commune_id ?? birthCommune?.id ?? '',
+    birthVillageId: row.birthVillageId ?? row.birth_village_id ?? birthVillage?.id ?? '',
+    birthProvince,
+    birthDistrict,
+    birthCommune,
+    birthVillage,
+    birthLocationDisplay: normalizeText(row.birthLocationDisplay || row.birth_location_display),
+    residenceProvinceId: row.residenceProvinceId ?? row.residence_province_id ?? residenceProvince?.id ?? '',
+    residenceDistrictId: row.residenceDistrictId ?? row.residence_district_id ?? residenceDistrict?.id ?? '',
+    residenceCommuneId: row.residenceCommuneId ?? row.residence_commune_id ?? residenceCommune?.id ?? '',
+    residenceVillageId: row.residenceVillageId ?? row.residence_village_id ?? residenceVillage?.id ?? '',
+    residenceProvince,
+    residenceDistrict,
+    residenceCommune,
+    residenceVillage,
+    currentResidenceDisplay: normalizeText(row.currentResidenceDisplay || row.current_residence_display),
     address: normalizeText(row.address),
     status: normalizeText(row.status || 'active'),
     studentType: normalizeText(row.studentType || row.student_type || 'paying'),

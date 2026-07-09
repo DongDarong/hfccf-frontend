@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
+import khPreschool from '@/i18n/kh/preschool'
 import StudentForm from '@/modules/preschool/admin/pages/students/StudentForm.vue'
 
 const mockFetchPreschoolClasses = vi.fn()
@@ -32,17 +33,11 @@ vi.mock('@/modules/preschool/services/cambodiaLocationService', () => ({
 
     return String(item.nameKh || item.name_kh || item.nameEn || item.name_en || item.code || '').trim()
   },
-  buildLocationAddress: (source = {}) => {
-    const parts = [source.village, source.commune, source.district, source.province].filter(Boolean)
-    return parts.length ? parts.join(', ') : String(source.address || '').trim()
-  },
 }))
 
-function mountPage() {
+function mountPage(messages = { en: enPreschool, kh: khPreschool }) {
   return mountWithPlugins(StudentForm, {
-    messages: {
-      en: enPreschool,
-    },
+    messages,
     global: {
       stubs: {
         MainLayout: { template: '<div><slot /></div>' },
@@ -68,8 +63,14 @@ function mountPage() {
   })
 }
 
-function getSelect(wrapper, index) {
-  return wrapper.findAll('select').at(index)
+function findPanel(wrapper, title) {
+  return wrapper.findAll('.student-form-page__panel').find((panel) => panel.text().includes(title))
+}
+
+function findFieldControl(panel, labelText) {
+  const field = panel.findAll('.student-form-page__field').find((item) => item.text().includes(labelText))
+  expect(field, `field with label ${labelText}`).toBeTruthy()
+  return field.find('input, select')
 }
 
 beforeEach(() => {
@@ -87,21 +88,21 @@ beforeEach(() => {
   })
 
   mockFetchProvinces.mockResolvedValue([
-    { code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
-    { code: '08', nameEn: 'Kandal', nameKh: 'កណ្ដាល' },
+    { id: 1, code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
+    { id: 2, code: '08', nameEn: 'Kandal', nameKh: 'កណ្ដាល' },
   ])
 
   mockFetchDistricts.mockImplementation((provinceCode) => {
     if (String(provinceCode) === '01') {
       return Promise.resolve([
-        { code: '0102', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
-        { code: '0103', nameEn: 'Sen Sok', nameKh: 'សែនសុខ' },
+        { id: 11, code: '0102', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
+        { id: 12, code: '0103', nameEn: 'Sen Sok', nameKh: 'សែនសុខ' },
       ])
     }
 
     if (String(provinceCode) === '08') {
       return Promise.resolve([
-        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្ដាល' },
+        { id: 21, code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្ដាល' },
       ])
     }
 
@@ -111,14 +112,14 @@ beforeEach(() => {
   mockFetchCommunes.mockImplementation((districtCode) => {
     if (String(districtCode) === '0102') {
       return Promise.resolve([
-        { code: '010201', nameEn: 'Prek Pra', nameKh: 'ព្រែកប្រា' },
-        { code: '010202', nameEn: 'Prek Kampeus', nameKh: 'ព្រែកកំពឹស' },
+        { id: 111, code: '010201', nameEn: 'Prek Pra', nameKh: 'ព្រែកប្រា' },
+        { id: 112, code: '010202', nameEn: 'Prek Kampeus', nameKh: 'ព្រែកកំពឹស' },
       ])
     }
 
     if (String(districtCode) === '0801') {
       return Promise.resolve([
-        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អរិយក្សត្រ' },
+        { id: 221, code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អរិយក្សត្រ' },
       ])
     }
 
@@ -128,14 +129,14 @@ beforeEach(() => {
   mockFetchVillages.mockImplementation((communeCode) => {
     if (String(communeCode) === '010201') {
       return Promise.resolve([
-        { code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ១' },
-        { code: '01020102', nameEn: 'Village 2', nameKh: 'ភូមិ២' },
+        { id: 1111, code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ១' },
+        { id: 1112, code: '01020102', nameEn: 'Village 2', nameKh: 'ភូមិ២' },
       ])
     }
 
     if (String(communeCode) === '080101') {
       return Promise.resolve([
-        { code: '08010101', nameEn: 'Village A', nameKh: 'ភូមិអា' },
+        { id: 2221, code: '08010101', nameEn: 'Village A', nameKh: 'ភូមិអា' },
       ])
     }
 
@@ -148,150 +149,181 @@ beforeEach(() => {
 })
 
 describe('StudentForm', () => {
-  it('renders Khmer location labels and cascading selects', async () => {
+  it('renders the new identity and split location fields', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
 
-    const selectGuardianType = getSelect(wrapper, 3)
-    const selectProvince = getSelect(wrapper, 4)
-    const selectDistrict = getSelect(wrapper, 5)
-    const selectCommune = getSelect(wrapper, 6)
-    const selectVillage = getSelect(wrapper, 7)
+    expect(wrapper.text()).toContain('Latin Name')
+    expect(wrapper.text()).toContain('Nationality')
+    expect(wrapper.text()).toContain('Ethnicity')
+    expect(wrapper.text()).toContain('Birth Location')
+    expect(wrapper.text()).toContain('Current Residence')
 
-    expect(selectProvince.findAll('option').map((option) => option.text())).toContain('ភ្នំពេញ')
-    expect(selectDistrict.attributes('disabled')).toBeDefined()
-    expect(selectCommune.attributes('disabled')).toBeDefined()
-    expect(selectVillage.attributes('disabled')).toBeDefined()
+    const birthPanel = findPanel(wrapper, 'Birth Location')
+    const residencePanel = findPanel(wrapper, 'Current Residence')
 
-    await selectProvince.setValue('ភ្នំពេញ')
+    expect(findFieldControl(birthPanel, 'Province').element.tagName).toBe('SELECT')
+    expect(findFieldControl(residencePanel, 'Province').element.tagName).toBe('SELECT')
+  })
+
+  it('keeps birth and current residence location state independent', async () => {
+    const wrapper = mountPage()
+
     await flushPromises()
 
+    const birthPanel = findPanel(wrapper, 'Birth Location')
+    const residencePanel = findPanel(wrapper, 'Current Residence')
+
+    const birthProvince = findFieldControl(birthPanel, 'Province')
+    const birthDistrict = findFieldControl(birthPanel, 'District')
+    const birthCommune = findFieldControl(birthPanel, 'Commune')
+    const birthVillage = findFieldControl(birthPanel, 'Village')
+    const residenceProvince = findFieldControl(residencePanel, 'Province')
+    const residenceDistrict = findFieldControl(residencePanel, 'District')
+    const residenceCommune = findFieldControl(residencePanel, 'Commune')
+    const residenceVillage = findFieldControl(residencePanel, 'Village')
+
+    await birthProvince.setValue('1')
+    await flushPromises()
     expect(mockFetchDistricts).toHaveBeenCalledWith('01')
-    expect(selectDistrict.attributes('disabled')).toBeUndefined()
-    expect(selectDistrict.findAll('option').map((option) => option.text())).toContain('ដង្កោ')
+    expect(birthDistrict.findAll('option').map((option) => option.text())).toContain('Dangkao')
 
-    await selectDistrict.setValue('ដង្កោ')
+    await residenceProvince.setValue('2')
     await flushPromises()
+    expect(mockFetchDistricts).toHaveBeenCalledWith('08')
+    expect(residenceDistrict.findAll('option').map((option) => option.text())).toContain('Khsach Kandal')
 
+    await birthDistrict.setValue('11')
+    await flushPromises()
     expect(mockFetchCommunes).toHaveBeenCalledWith('0102')
-    expect(selectCommune.attributes('disabled')).toBeUndefined()
-    expect(selectCommune.findAll('option').map((option) => option.text())).toContain('ព្រែកប្រា')
 
-    await selectCommune.setValue('ព្រែកប្រា')
+    await residenceDistrict.setValue('21')
     await flushPromises()
+    expect(mockFetchCommunes).toHaveBeenCalledWith('0801')
 
+    await birthCommune.setValue('111')
+    await flushPromises()
     expect(mockFetchVillages).toHaveBeenCalledWith('010201')
-    expect(selectVillage.attributes('disabled')).toBeUndefined()
-    expect(selectVillage.findAll('option').map((option) => option.text())).toContain('ភូមិ១')
-    expect(selectGuardianType.findAll('option').map((option) => option.text())).toContain('Father')
+    expect(birthVillage.findAll('option').map((option) => option.text())).toContain('Village 1')
+
+    expect(residenceProvince.element.value).toBe('2')
+    expect(residenceDistrict.element.value).toBe('21')
+    expect(residenceCommune.element.value).toBe('')
+    expect(residenceVillage.element.value).toBe('')
   })
 
-  it('clears child location selections when a parent selection changes', async () => {
+  it('clears invalid child selections when a parent changes', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
 
-    const selectProvince = getSelect(wrapper, 4)
-    const selectDistrict = getSelect(wrapper, 5)
-    const selectCommune = getSelect(wrapper, 6)
-    const selectVillage = getSelect(wrapper, 7)
+    const birthPanel = findPanel(wrapper, 'Birth Location')
+    const birthProvince = findFieldControl(birthPanel, 'Province')
+    const birthDistrict = findFieldControl(birthPanel, 'District')
+    const birthCommune = findFieldControl(birthPanel, 'Commune')
+    const birthVillage = findFieldControl(birthPanel, 'Village')
 
-    await selectProvince.setValue('ភ្នំពេញ')
+    await birthProvince.setValue('1')
     await flushPromises()
-    await selectDistrict.setValue('ដង្កោ')
+    await birthDistrict.setValue('11')
     await flushPromises()
-    await selectCommune.setValue('ព្រែកប្រា')
+    await birthCommune.setValue('111')
     await flushPromises()
-    await selectVillage.setValue('ភូមិ១')
-    await flushPromises()
-
-    expect(selectDistrict.element.value).toBe('ដង្កោ')
-    expect(selectCommune.element.value).toBe('ព្រែកប្រា')
-    expect(selectVillage.element.value).toBe('ភូមិ១')
-
-    await selectProvince.setValue('កណ្ដាល')
+    await birthVillage.setValue('1111')
     await flushPromises()
 
-    expect(selectDistrict.element.value).toBe('')
-    expect(selectCommune.element.value).toBe('')
-    expect(selectVillage.element.value).toBe('')
+    expect(birthDistrict.element.value).toBe('11')
+    expect(birthCommune.element.value).toBe('111')
+    expect(birthVillage.element.value).toBe('1111')
+
+    await birthProvince.setValue('2')
+    await flushPromises()
+
+    expect(birthDistrict.element.value).toBe('')
+    expect(birthCommune.element.value).toBe('')
+    expect(birthVillage.element.value).toBe('')
   })
 
-  it('submits guardian type and Khmer formatted address', async () => {
+  it('submits the structured identity and location payload once', async () => {
     const wrapper = mountPage()
 
     await flushPromises()
 
-    const textInputs = wrapper.findAll('input[type="text"]')
-    await textInputs.at(2).setValue('Sokha')
-    await textInputs.at(3).setValue('012345678')
+    const personalPanel = findPanel(wrapper, 'Personal information')
+    const guardianPanel = findPanel(wrapper, 'Guardian contact')
+    const birthPanel = findPanel(wrapper, 'Birth Location')
+    const residencePanel = findPanel(wrapper, 'Current Residence')
 
-    const selectGuardianType = getSelect(wrapper, 3)
-    const selectProvince = getSelect(wrapper, 4)
-    const selectDistrict = getSelect(wrapper, 5)
-    const selectCommune = getSelect(wrapper, 6)
-    const selectVillage = getSelect(wrapper, 7)
-
-    await selectGuardianType.setValue('mother')
-    await selectProvince.setValue('ភ្នំពេញ')
+    await findFieldControl(personalPanel, 'First name').setValue('Alice')
+    await findFieldControl(personalPanel, 'Last name').setValue('Student')
+    await findFieldControl(personalPanel, 'Latin Name').setValue('Alice Student')
+    await findFieldControl(personalPanel, 'Nationality').setValue('Cambodia')
+    await findFieldControl(personalPanel, 'Ethnicity').setValue('Khmer')
+    await findFieldControl(guardianPanel, 'Guardian name').setValue('Sokha')
+    await findFieldControl(guardianPanel, 'Guardian phone').setValue('012345678')
+    await findFieldControl(guardianPanel, 'Guardian Type').setValue('mother')
+    await findFieldControl(birthPanel, 'Province').setValue('1')
     await flushPromises()
-    await selectDistrict.setValue('ដង្កោ')
+    await findFieldControl(birthPanel, 'District').setValue('11')
     await flushPromises()
-    await selectCommune.setValue('ព្រែកប្រា')
+    await findFieldControl(birthPanel, 'Commune').setValue('111')
     await flushPromises()
-    await selectVillage.setValue('ភូមិ១')
+    await findFieldControl(birthPanel, 'Village').setValue('1111')
+    await flushPromises()
+    await findFieldControl(residencePanel, 'Province').setValue('2')
+    await flushPromises()
+    await findFieldControl(residencePanel, 'District').setValue('21')
+    await flushPromises()
+    await findFieldControl(residencePanel, 'Commune').setValue('221')
+    await flushPromises()
+    await findFieldControl(residencePanel, 'Village').setValue('2221')
     await flushPromises()
 
     await wrapper.find('form').trigger('submit.prevent')
     await flushPromises()
 
+    expect(mockCreatePreschoolStudent).toHaveBeenCalledTimes(1)
     expect(mockCreatePreschoolStudent).toHaveBeenCalledWith(expect.objectContaining({
+      first_name: 'Alice',
+      last_name: 'Student',
+      latin_name: 'Alice Student',
+      nationality: 'Cambodia',
+      ethnicity: 'Khmer',
       guardian_name: 'Sokha',
       guardian_phone: '012345678',
       guardian_type: 'mother',
-      address: 'ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
+      birth_province_id: 1,
+      birth_district_id: 11,
+      birth_commune_id: 111,
+      birth_village_id: 1111,
+      residence_province_id: 2,
+      residence_district_id: 21,
+      residence_commune_id: 221,
+      residence_village_id: 2221,
     }))
   })
 
-  it('requires guardian type when guardian contact is entered', async () => {
-    const wrapper = mountPage()
-
-    await flushPromises()
-
-    await wrapper.findAll('input[type="text"]').at(2).setValue('Sokha')
-    await wrapper.find('form').trigger('submit.prevent')
-    await flushPromises()
-
-    expect(mockCreatePreschoolStudent).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('Guardian type is required when guardian contact is provided.')
-  })
-
-  it('shows a location error when the location API fails', async () => {
-    mockFetchProvinces.mockRejectedValue(new Error('boom'))
-
-    const wrapper = mountPage()
-
-    await flushPromises()
-    await flushPromises()
-
-    expect(mockFetchProvinces).toHaveBeenCalled()
-    expect(wrapper.vm.locationErrorMessage).toBe('boom')
-    expect(wrapper.findAll('.student-form-page__state--error').length).toBeGreaterThan(0)
-  })
-
-  it('loads existing guardian and Khmer location values safely in edit mode', async () => {
+  it('hydrates saved identity and location values in edit mode', async () => {
     mockFetchPreschoolStudent.mockResolvedValueOnce({
       id: 'student-1',
       studentCode: 'ST-1',
+      firstName: 'Alice',
+      lastName: 'Student',
+      latinName: 'Alice Student',
+      nationality: 'Cambodia',
+      ethnicity: 'Khmer',
       guardianName: 'Sokha',
       guardianPhone: '012345678',
-      guardianType: 'mother',
-      province: 'ភ្នំពេញ',
-      district: 'ដង្កោ',
-      commune: 'ព្រែកប្រា',
-      village: 'ភូមិ១',
-      address: 'ភូមិ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
+      relationshipType: 'mother',
+      birthProvinceId: 1,
+      birthDistrictId: 11,
+      birthCommuneId: 111,
+      birthVillageId: 1111,
+      residenceProvinceId: 2,
+      residenceDistrictId: 21,
+      residenceCommuneId: 221,
+      residenceVillageId: 2221,
       avatarUrl: 'https://example.test/avatar.jpg',
       classes: [{ id: 'class-1' }],
     })
@@ -299,6 +331,7 @@ describe('StudentForm', () => {
     const wrapper = mountWithPlugins(StudentForm, {
       messages: {
         en: enPreschool,
+        kh: khPreschool,
       },
       routes: [
         {
@@ -336,17 +369,35 @@ describe('StudentForm', () => {
     await flushPromises()
     await flushPromises()
 
-    const selectGuardianType = getSelect(wrapper, 3)
-    const selectProvince = getSelect(wrapper, 4)
-    const selectDistrict = getSelect(wrapper, 5)
-    const selectCommune = getSelect(wrapper, 6)
-    const selectVillage = getSelect(wrapper, 7)
+    const personalPanel = findPanel(wrapper, 'Personal information')
+    const guardianPanel = findPanel(wrapper, 'Guardian contact')
+    const birthPanel = findPanel(wrapper, 'Birth Location')
+    const residencePanel = findPanel(wrapper, 'Current Residence')
 
-    expect(selectGuardianType.element.value).toBe('mother')
-    expect(selectProvince.element.value).toBe('ភ្នំពេញ')
-    expect(selectDistrict.element.value).toBe('ដង្កោ')
-    expect(selectCommune.element.value).toBe('ព្រែកប្រា')
-    expect(selectVillage.element.value).toBe('ភូមិ១')
-    expect(wrapper.text()).not.toContain('Failed to load location data.')
+    expect(findFieldControl(personalPanel, 'Latin Name').element.value).toBe('Alice Student')
+    expect(findFieldControl(personalPanel, 'Nationality').element.value).toBe('Cambodia')
+    expect(findFieldControl(personalPanel, 'Ethnicity').element.value).toBe('Khmer')
+    expect(findFieldControl(guardianPanel, 'Guardian Type').element.value).toBe('mother')
+    expect(findFieldControl(birthPanel, 'Province').element.value).toBe('1')
+    expect(findFieldControl(birthPanel, 'District').element.value).toBe('11')
+    expect(findFieldControl(birthPanel, 'Commune').element.value).toBe('111')
+    expect(findFieldControl(birthPanel, 'Village').element.value).toBe('1111')
+    expect(findFieldControl(residencePanel, 'Province').element.value).toBe('2')
+    expect(findFieldControl(residencePanel, 'District').element.value).toBe('21')
+    expect(findFieldControl(residencePanel, 'Commune').element.value).toBe('221')
+    expect(findFieldControl(residencePanel, 'Village').element.value).toBe('2221')
+  })
+
+  it('renders Khmer labels when the locale switches', async () => {
+    const wrapper = mountPage()
+
+    await flushPromises()
+
+    wrapper.vm.$i18n.locale = 'kh'
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('ឈ្មោះឡាតាំង')
+    expect(wrapper.text()).toContain('ទីកន្លែងកំណើត')
+    expect(wrapper.text()).toContain('ទីលំនៅបច្ចុប្បន្ន')
   })
 })

@@ -95,4 +95,24 @@ describe('preschool student api normalization', () => {
       avatarUrl: '',
     })
   })
+
+  it('normalizes guardian type from the student show response', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        student: {
+          id: 4,
+          first_name: 'Alice',
+          last_name: 'Student',
+          guardian_type: 'mother',
+          relationship_type: 'mother',
+        },
+      }),
+    )
+
+    await expect(fetchPreschoolStudent(4)).resolves.toMatchObject({
+      id: 4,
+      fullName: 'Alice Student',
+      guardianType: 'mother',
+    })
+  })
 })

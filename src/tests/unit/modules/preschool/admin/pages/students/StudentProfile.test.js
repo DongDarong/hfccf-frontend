@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
+import PrimeVue from 'primevue/config'
 import { flushPromises } from '@vue/test-utils'
-import { mountWithPlugins } from '@/tests/helpers/mount'
+import { createTestI18n, createTestRouter } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
+import khPreschool from '@/i18n/kh/preschool'
 import StudentProfile from '@/modules/preschool/admin/pages/students/StudentProfile.vue'
 import { buildGuardianContactLogMessage } from '@/modules/preschool/admin/pages/guardian/contactLogUtils'
 
@@ -47,13 +51,15 @@ function createGuardianContactLogRoute() {
   }
 }
 
-async function mountProfilePage(studentId = 'student-1') {
-  const wrapper = mountWithPlugins(StudentProfile, {
-    messages: {
-      en: enPreschool,
-    },
-    routes: [createStudentProfileRoute(), createGuardianContactLogRoute()],
+async function mountProfilePage(studentId = 'student-1', locale = 'en') {
+  const i18n = createTestI18n({ en: enPreschool, kh: khPreschool })
+  i18n.global.locale.value = locale
+  const router = createTestRouter([createStudentProfileRoute(), createGuardianContactLogRoute()])
+  const pinia = createPinia()
+
+  const wrapper = mount(StudentProfile, {
     global: {
+      plugins: [i18n, pinia, router, PrimeVue],
       stubs: {
         MainLayout: { template: '<div><slot /></div>' },
         HeaderSection: {
@@ -69,7 +75,7 @@ async function mountProfilePage(studentId = 'student-1') {
     },
   })
 
-  await wrapper.vm.$router.push({
+  await router.push({
     name: 'dashboard-preschool-admin-student-profile',
     params: { id: studentId },
   })
@@ -83,12 +89,26 @@ function mockResolvedStudentData() {
     id: 'student-1',
     fullName: 'Alice Student',
     studentCode: 'S-001',
+    latinName: 'Alice Student',
+    nationality: 'Cambodia',
+    ethnicity: 'Khmer',
+    studentType: 'paying',
     avatarUrl: '',
     gender: 'female',
     status: 'active',
     dateOfBirth: '2019-04-02',
     guardianName: 'Sokha Guardian',
     guardianPhone: '012345678',
+    birthLocationDisplay: 'Phnom Penh, Dangkao, Prek Pra, Village 1',
+    currentResidenceDisplay: 'Kandal, Khsach Kandal, Akreiy Ksatr, Village A',
+    birthProvince: { id: 'province-1', code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
+    birthDistrict: { id: 'district-1', code: '0102', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
+    birthCommune: { id: 'commune-1', code: '010201', nameEn: 'Prek Pra', nameKh: 'ព្រែកប្រា' },
+    birthVillage: { id: 'village-1', code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ១' },
+    residenceProvince: { id: 'province-2', code: '08', nameEn: 'Kandal', nameKh: 'កណ្ដាល' },
+    residenceDistrict: { id: 'district-2', code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្ដាល' },
+    residenceCommune: { id: 'commune-2', code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អរិយក្សត្រ' },
+    residenceVillage: { id: 'village-2', code: '08010101', nameEn: 'Village A', nameKh: 'ភូមិអា' },
     classes: [
       {
         id: 'class-1',
@@ -101,10 +121,6 @@ function mockResolvedStudentData() {
     updatedAt: '2025-01-02T08:00:00Z',
     raw: {
       address: 'Sample Street',
-      province: 'Phnom Penh',
-      district: 'Dangkao',
-      commune: 'Prek Pra',
-      village: 'Village 1',
     },
   })
 
@@ -198,14 +214,31 @@ describe('StudentProfile', () => {
     expect(mockFetchStudentHealthSummary).toHaveBeenCalledWith('student-1')
     expect(mockFetchPreschoolStudentPaymentSummary).toHaveBeenCalledWith('student-1')
     expect(mockFetchStudentGuardianCommunications).toHaveBeenCalledWith('student-1', { perPage: 5 })
-    expect(mockBuildLocationAddress).toHaveBeenCalledWith(expect.objectContaining({ province: 'Phnom Penh' }), 'en')
+    expect(mockBuildLocationAddress).not.toHaveBeenCalled()
 
     expect(wrapper.text()).toContain('Student Profile')
     expect(wrapper.text()).toContain('Back to Students')
     expect(wrapper.text()).toContain('Health Records')
     expect(wrapper.text()).toContain('Payment Summary')
     expect(wrapper.text()).toContain('Alice Student')
+    expect(wrapper.text()).toContain('Paying student')
+    expect(wrapper.text()).toContain('Latin Name')
+    expect(wrapper.text()).toContain('Nationality')
+    expect(wrapper.text()).toContain('Ethnicity')
+    expect(wrapper.text()).toContain('Student Type')
     expect(wrapper.text()).toContain('Morning Stars')
+    expect(wrapper.text()).toContain('Birth Location')
+    expect(wrapper.text()).toContain('Current Residence')
+    expect(wrapper.text()).toContain('Phnom Penh, Dangkao, Prek Pra, Village 1')
+    expect(wrapper.text()).toContain('Kandal, Khsach Kandal, Akreiy Ksatr, Village A')
+    expect(wrapper.text()).toContain('Phnom Penh')
+    expect(wrapper.text()).toContain('Dangkao')
+    expect(wrapper.text()).toContain('Prek Pra')
+    expect(wrapper.text()).toContain('Village 1')
+    expect(wrapper.text()).toContain('Kandal')
+    expect(wrapper.text()).toContain('Khsach Kandal')
+    expect(wrapper.text()).toContain('Akreiy Ksatr')
+    expect(wrapper.text()).toContain('Village A')
     expect(wrapper.text()).toContain('Guardian Contact History')
     expect(wrapper.text()).toContain('Recent Guardian Contacts')
     expect(wrapper.text()).toContain('Latest attendance alert')
@@ -219,12 +252,40 @@ describe('StudentProfile', () => {
     expect(wrapper.text()).toContain('Parent confirmed the pickup plan for tomorrow.')
     expect(wrapper.text()).toContain('Attendance alert · Repeated absence')
     expect(wrapper.find('.student-profile-page__avatar-initials').text()).toBe('AS')
-    expect(wrapper.text()).toContain('en:Village 1, Prek Pra, Dangkao, Phnom Penh')
-
     await wrapper.get('[data-testid="view-full-contact-history"]').trigger('click')
     await flushPromises()
     expect(wrapper.vm.$router.currentRoute.value.name).toBe('dashboard-preschool-admin-guardian-communications')
     expect(wrapper.vm.$router.currentRoute.value.query.studentId).toBe('student-1')
+  })
+
+  it('renders Khmer labels without raw keys', async () => {
+    const wrapper = await mountProfilePage('student-1', 'kh')
+
+    expect(wrapper.text()).toContain('ព័ត៌មានលម្អិតសិស្ស')
+    expect(wrapper.text()).toContain('ព័ត៌មានផ្ទាល់ខ្លួន')
+    expect(wrapper.text()).toContain('ឈ្មោះឡាតាំង')
+    expect(wrapper.text()).toContain('សញ្ជាតិ')
+    expect(wrapper.text()).toContain('ជនជាតិ')
+    expect(wrapper.text()).toContain('ទីកន្លែងកំណើត')
+    expect(wrapper.text()).toContain('ទីលំនៅបច្ចុប្បន្ន')
+    expect(wrapper.text()).not.toContain('preschoolStudentProfilePage.')
+  })
+
+  it('renders fallback values when optional profile data is missing', async () => {
+    mockFetchPreschoolStudent.mockResolvedValueOnce({
+      id: 'student-2',
+      fullName: 'Minimal Student',
+      studentCode: 'S-002',
+      studentType: 'paying',
+      classes: [],
+      raw: {},
+    })
+
+    const wrapper = await mountProfilePage('student-2')
+
+    expect(wrapper.text()).toContain('-')
+    expect(wrapper.text()).not.toContain('undefined')
+    expect(wrapper.text()).not.toContain('null')
   })
 
   it('renders a loading state while the student request is pending', async () => {
@@ -233,12 +294,13 @@ describe('StudentProfile', () => {
       resolveStudent = resolve
     }))
 
-    const wrapper = mountWithPlugins(StudentProfile, {
-      messages: {
-        en: enPreschool,
-      },
-      routes: [createStudentProfileRoute(), createGuardianContactLogRoute()],
+    const i18n = createTestI18n({ en: enPreschool, kh: khPreschool })
+    const router = createTestRouter([createStudentProfileRoute(), createGuardianContactLogRoute()])
+    const pinia = createPinia()
+
+    const wrapper = mount(StudentProfile, {
       global: {
+        plugins: [i18n, pinia, router, PrimeVue],
         stubs: {
           MainLayout: { template: '<div><slot /></div>' },
           HeaderSection: {
@@ -254,7 +316,7 @@ describe('StudentProfile', () => {
       },
     })
 
-    await wrapper.vm.$router.push({
+    await router.push({
       name: 'dashboard-preschool-admin-student-profile',
       params: { id: 'student-1' },
     })
