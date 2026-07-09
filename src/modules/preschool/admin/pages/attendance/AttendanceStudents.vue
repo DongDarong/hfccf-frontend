@@ -678,11 +678,8 @@ watch(visibleStudents, (studentList) => {
         <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
           <p class="text-xs text-slate-400">{{ t(`${pageCopyKey}.messages.skippedNote`) }}</p>
           <div class="flex flex-wrap gap-2">
-            <Button v-if="!isSessionMode" type="button" variant="primary" size="md" rounded="xl" :loading="saving" :disabled="isReadOnly() || saving || markedCount === 0" @click="saveAll">
+            <Button v-if="isSessionEditable" type="button" variant="primary" size="md" rounded="xl" :loading="saving" :disabled="isReadOnly() || saving || markedCount === 0" @click="saveAll">
               {{ saving ? savingButtonLabel : saveButtonLabel }}
-            </Button>
-            <Button v-if="selectedSessionStatus === 'open'" type="button" variant="primary" size="md" rounded="xl" :loading="saving" :disabled="isReadOnly() || saving || markedCount === 0" @click="saveAll">
-              {{ t('preschoolAttendanceSessionsPage.actions.saveAttendance') }}
             </Button>
             <Button v-if="selectedSessionStatus === 'open'" type="button" variant="ghost" size="md" rounded="xl" :loading="saving" :disabled="isReadOnly() || saving || markedCount === 0" @click="completeSession">
               {{ t('preschoolAttendanceSessionsPage.actions.completeSession') }}
