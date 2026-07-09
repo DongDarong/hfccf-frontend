@@ -30,6 +30,15 @@ export const superAdminRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/super-admin/command-center/preschool-analytics',
+    name: 'dashboard-super-admin-command-center-preschool-analytics',
+    component: () => import('@/modules/preschool/admin/pages/analytics/AnalyticsDashboard.vue'),
+    access: {
+      domains: [DOMAINS.GLOBAL],
+      scopes: [ACCESS_SCOPES.SUPER_ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/super-admin/users/manage',
     name: 'dashboard-super-admin-users-manage',
     component: () => import('@/modules/super-admin/pages/ManageAdmins.vue'),

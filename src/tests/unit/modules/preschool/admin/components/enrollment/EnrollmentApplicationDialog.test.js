@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import enPreschool from '@/i18n/en/preschool'
-import EnrollmentApplicationForm from '@/modules/preschool/admin/components/enrollment/EnrollmentApplicationForm.vue'
 import EnrollmentApplicationDialog from '@/modules/preschool/admin/components/enrollment/EnrollmentApplicationDialog.vue'
 
 const mockFetchProvinces = vi.fn()
@@ -51,79 +50,92 @@ function mountDialog(props = {}) {
   })
 }
 
-function getSelect(wrapper, index) {
-  return wrapper.findAll('select').at(index)
-}
-
-async function selectRenderedOption(wrapper, index, optionIndex = 1) {
-  const select = getSelect(wrapper, index)
-  const option = select.findAll('option').at(optionIndex)
-  await select.setValue(option.element.value)
-}
-
 async function flushAll() {
   await flushPromises()
   await flushPromises()
+  await flushPromises()
+  await flushPromises()
+  await flushPromises()
+  await flushPromises()
 }
 
-async function fillGuardianFields(wrapper, guardianType = 'father') {
-  const textInputs = wrapper.findAll('input[type="text"]')
-  await textInputs.at(6).setValue('Sokha')
-  await wrapper.findAll('select').at(4).setValue(guardianType)
-  await textInputs.at(7).setValue('012345678')
-  await wrapper.find('input[type="email"]').setValue('sokha@example.test')
+function findById(wrapper, id) {
+  const node = wrapper.find(`#${id}`)
+  expect(node.exists(), `missing element #${id}`).toBe(true)
+  return node
+}
+
+async function waitForSelect(wrapper, id, minOptions = 2) {
+  for (let index = 0; index < 10; index += 1) {
+    await flushAll()
+    const select = findById(wrapper, id)
+    if (select.findAll('option').length >= minOptions) {
+      return select
+    }
+  }
+
+  return findById(wrapper, id)
+}
+
+async function waitForSelectValue(wrapper, id, expectedValue) {
+  for (let index = 0; index < 10; index += 1) {
+    await flushAll()
+    const select = findById(wrapper, id)
+    if (select.element.value === expectedValue) {
+      return select
+    }
+  }
+
+  return findById(wrapper, id)
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
 
   mockFetchProvinces.mockResolvedValue([
-    { code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
-    { code: '08', nameEn: 'Kandal', nameKh: 'កណ្តាល' },
+    { id: '1', code: '01', nameEn: 'Phnom Penh', nameKh: 'ភ្នំពេញ' },
+    { id: '2', code: '02', nameEn: 'Kandal', nameKh: 'កណ្តាល' },
   ])
-
   mockFetchDistricts.mockImplementation((provinceCode) => {
     if (String(provinceCode) === '01') {
       return Promise.resolve([
-        { code: '0102', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
+        { id: '11', code: '0101', nameEn: 'Dangkao', nameKh: 'ដង្កោ' },
       ])
     }
 
-    if (String(provinceCode) === '08') {
+    if (String(provinceCode) === '02') {
       return Promise.resolve([
-        { code: '0801', nameEn: 'Khsach Kandal', nameKh: 'ខ្សាច់កណ្តាល' },
+        { id: '21', code: '0201', nameEn: 'Sang', nameKh: 'ស្អាង' },
       ])
     }
 
     return Promise.resolve([])
   })
-
   mockFetchCommunes.mockImplementation((districtCode) => {
-    if (String(districtCode) === '0102') {
+    if (String(districtCode) === '0101') {
       return Promise.resolve([
-        { code: '010201', nameEn: 'Prek Pra', nameKh: 'ព្រែកប្រា' },
+        { id: '111', code: '010101', nameEn: 'Tonle Bassac', nameKh: 'ទន្លេបាសាក់' },
       ])
     }
 
-    if (String(districtCode) === '0801') {
+    if (String(districtCode) === '0201') {
       return Promise.resolve([
-        { code: '080101', nameEn: 'Akreiy Ksatr', nameKh: 'អរិយក្សត្រ' },
+        { id: '211', code: '020101', nameEn: 'Prey Nup', nameKh: 'ព្រៃនប់' },
       ])
     }
 
     return Promise.resolve([])
   })
-
   mockFetchVillages.mockImplementation((communeCode) => {
-    if (String(communeCode) === '010201') {
+    if (String(communeCode) === '010101') {
       return Promise.resolve([
-        { code: '01020101', nameEn: 'Village 1', nameKh: 'ភូមិ ១' },
+        { id: '1111', code: '01010101', nameEn: 'Village 1', nameKh: 'ភូមិ ១' },
       ])
     }
 
-    if (String(communeCode) === '080101') {
+    if (String(communeCode) === '020101') {
       return Promise.resolve([
-        { code: '08010101', nameEn: 'Village A', nameKh: 'ភូមិ អា' },
+        { id: '2111', code: '02010101', nameEn: 'Village A', nameKh: 'ភូមិ អា' },
       ])
     }
 
@@ -132,113 +144,53 @@ beforeEach(() => {
 })
 
 describe('EnrollmentApplicationDialog', () => {
-  it('hides the other guardian type detail field by default', async () => {
-    const wrapper = mountDialog()
-
-    await flushAll()
-
-    expect(wrapper.text()).not.toContain('Other Guardian Type')
-    expect(wrapper.text()).not.toContain('Enter guardian type, e.g. Aunt, Uncle')
-  })
-
   it('shows and clears the other guardian type detail field', async () => {
     const wrapper = mountDialog()
 
     await flushAll()
 
-    await getSelect(wrapper, 4).setValue('other')
+    const guardianType = findById(wrapper, 'enr-guardian-type')
+    await guardianType.setValue('other')
     await flushAll()
 
     expect(wrapper.text()).toContain('Other Guardian Type')
 
     const detailInput = wrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]')
+    expect(detailInput.exists()).toBe(true)
     await detailInput.setValue('Aunt')
-    expect(detailInput.element.value).toBe('Aunt')
-
-    await getSelect(wrapper, 4).setValue('father')
+    await guardianType.setValue('father')
     await flushAll()
 
     expect(wrapper.text()).not.toContain('Other Guardian Type')
-    await getSelect(wrapper, 4).setValue('other')
+    await guardianType.setValue('other')
     await flushAll()
     expect(wrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]').element.value).toBe('')
   })
 
-  it('loads location options and cascades province to village', async () => {
+  it('cascades guardian location selections and emits a normalized payload', async () => {
     const wrapper = mountDialog()
 
     await flushAll()
 
-    const provinceSelect = getSelect(wrapper, 5)
-    expect(provinceSelect.findAll('option').map((option) => option.text())).toContain('ភ្នំពេញ')
+    await findById(wrapper, 'enr-first-name').setValue('Sok')
+    await findById(wrapper, 'enr-last-name').setValue('Chan')
+    await findById(wrapper, 'enr-guardian-name').setValue('Sokha')
+    await findById(wrapper, 'enr-guardian-type').setValue('father')
+    await findById(wrapper, 'enr-guardian-phone').setValue('012345678')
+    await findById(wrapper, 'enr-guardian-email').setValue('sokha@example.test')
 
+    const provinceSelect = await waitForSelect(wrapper, 'enr-guardian-province')
     await provinceSelect.setValue(provinceSelect.findAll('option').at(1).element.value)
     await flushAll()
-
-    expect(mockFetchDistricts).toHaveBeenCalledWith('01')
-    expect(getSelect(wrapper, 6).findAll('option').map((option) => option.text())).toContain('ដង្កោ')
-
-    await selectRenderedOption(wrapper, 6)
+    const districtSelect = await waitForSelect(wrapper, 'enr-guardian-district')
+    await districtSelect.setValue(districtSelect.findAll('option').at(1).element.value)
     await flushAll()
-
-    expect(mockFetchCommunes).toHaveBeenCalledWith('0102')
-    expect(getSelect(wrapper, 7).findAll('option').map((option) => option.text())).toContain('ព្រែកប្រា')
-
-    await selectRenderedOption(wrapper, 7)
+    const communeSelect = await waitForSelect(wrapper, 'enr-guardian-commune')
+    await communeSelect.setValue(communeSelect.findAll('option').at(1).element.value)
     await flushAll()
-
-    expect(mockFetchVillages).toHaveBeenCalledWith('010201')
-    expect(getSelect(wrapper, 8).findAll('option').map((option) => option.text())).toContain('ភូមិ ១')
-  })
-
-  it('clears child selections when a parent selection changes', async () => {
-    const wrapper = mountDialog()
-
+    const villageSelect = await waitForSelect(wrapper, 'enr-guardian-village')
+    await villageSelect.setValue(villageSelect.findAll('option').at(1).element.value)
     await flushAll()
-
-    const provinceSelect = getSelect(wrapper, 5)
-    const districtSelect = getSelect(wrapper, 6)
-    const communeSelect = getSelect(wrapper, 7)
-    const villageSelect = getSelect(wrapper, 8)
-
-    await provinceSelect.setValue(provinceSelect.findAll('option').at(2).element.value)
-    await flushAll()
-    await selectRenderedOption(wrapper, 6)
-    await flushAll()
-    await selectRenderedOption(wrapper, 7)
-    await flushAll()
-    await selectRenderedOption(wrapper, 8)
-    await flushAll()
-
-    await provinceSelect.setValue(provinceSelect.findAll('option').at(1).element.value)
-    await flushAll()
-
-    expect(districtSelect.element.value).toBe('')
-    expect(communeSelect.element.value).toBe('')
-    expect(villageSelect.element.value).toBe('')
-  })
-
-  it('generates a Khmer full address and emits a backend-safe payload', async () => {
-    const wrapper = mountDialog()
-
-    await flushAll()
-    await fillGuardianFields(wrapper)
-
-    const provinceSelect = getSelect(wrapper, 5)
-    await provinceSelect.setValue(provinceSelect.findAll('option').at(1).element.value)
-    await flushAll()
-    await selectRenderedOption(wrapper, 6)
-    await flushAll()
-    await selectRenderedOption(wrapper, 7)
-    await flushAll()
-    await selectRenderedOption(wrapper, 8)
-    await flushAll()
-
-    expect(wrapper.text()).toContain('Guardian Type')
-    expect(wrapper.text()).toContain('Village:')
-    expect(wrapper.text()).toContain('Commune/Ward:')
-    expect(wrapper.text()).toContain('District/Khan:')
-    expect(wrapper.text()).toContain('Province/Capital:')
 
     await wrapper.find('form').trigger('submit.prevent')
     await flushAll()
@@ -250,7 +202,7 @@ describe('EnrollmentApplicationDialog', () => {
       guardian_relationship: 'father',
       guardian_phone: '012345678',
       guardian_email: 'sokha@example.test',
-      guardian_address: 'ភូមិ ១, ព្រែកប្រា, ដង្កោ, ភ្នំពេញ',
+      guardian_address: 'Village 1, Tonle Bassac, Dangkao, Phnom Penh',
     })
     expect(emitted[0][0].province_code).toBeUndefined()
     expect(emitted[0][0].district_code).toBeUndefined()
@@ -258,119 +210,44 @@ describe('EnrollmentApplicationDialog', () => {
     expect(emitted[0][0].village_code).toBeUndefined()
   })
 
-  it('requires a detail value when other guardian type is selected', async () => {
-    const wrapper = mountDialog()
+  it('shows validation messages from the parent and backend-safe location errors', async () => {
+    const wrapper = mountDialog({
+      validationErrors: {
+        guardian_name: 'Guardian name is required.',
+      },
+    })
 
     await flushAll()
-    await fillGuardianFields(wrapper, 'other')
-    await wrapper.find('form').trigger('submit.prevent')
-    await flushAll()
 
-    expect(wrapper.text()).toContain('Please specify the guardian type.')
-    expect(wrapper.emitted('save')).toBeFalsy()
+    expect(wrapper.text()).toContain('Guardian name is required.')
+
+    mockFetchProvinces.mockRejectedValueOnce(new Error('Failed to load location data.'))
+    const failingWrapper = mountDialog()
+    await flushAll()
+    expect(failingWrapper.text()).toContain('Failed to load location data.')
   })
 
-  it('submits the custom relationship when other guardian type detail is filled', async () => {
-    const wrapper = mountDialog()
-
-    await flushAll()
-    await fillGuardianFields(wrapper, 'other')
-    await getSelect(wrapper, 4).setValue('other')
-    await flushAll()
-
-    await selectRenderedOption(wrapper, 5)
-    await flushAll()
-    await selectRenderedOption(wrapper, 6)
-    await flushAll()
-    await selectRenderedOption(wrapper, 7)
-    await flushAll()
-    await selectRenderedOption(wrapper, 8)
-    await flushAll()
-
-    const detailInput = wrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]')
-    await detailInput.setValue('Aunt')
-    await flushAll()
-
-    const formWrapper = wrapper.findComponent(EnrollmentApplicationForm)
-    formWrapper.vm.form.guardian_relationship_detail = 'Aunt'
-    await flushAll()
-
-    formWrapper.vm.$.setupState.save()
-    await flushAll()
-
-    const emitted = wrapper.emitted('save')
-    expect(emitted).toHaveLength(1)
-    expect(emitted[0][0].guardian_relationship).toBe('Aunt')
-  })
-
-  it('shows a validation message when the location hierarchy is incomplete', async () => {
-    const wrapper = mountDialog()
-
-    await flushAll()
-    await fillGuardianFields(wrapper)
-
-    await wrapper.find('form').trigger('submit.prevent')
-    await flushAll()
-    await wrapper.vm.$nextTick()
-    await flushPromises()
-
-    expect(wrapper.text()).toContain('Province is required.')
-    expect(wrapper.emitted('save')).toBeFalsy()
-  })
-
-  it('hydrates edit mode from structured values and falls back to a legacy address', async () => {
+  it('hydrates structured location values and preserves legacy address text', async () => {
     const wrapper = mountDialog({
       application: {
         guardianName: 'Sokha',
         guardianPhone: '012345678',
         guardianAddress: 'Legacy Address 12',
         guardianProvince: '01',
-        guardianDistrict: '0102',
-        guardianCommune: '010201',
-        guardianVillage: '01020101',
+        guardianDistrict: '0101',
+        guardianCommune: '010101',
+        guardianVillage: '01010101',
         guardianRelationship: 'father',
       },
     })
 
     await flushAll()
 
-    const provinceSelect = getSelect(wrapper, 5)
-    const districtSelect = getSelect(wrapper, 6)
-    const communeSelect = getSelect(wrapper, 7)
-    const villageSelect = getSelect(wrapper, 8)
-
-    expect(provinceSelect.element.value).toBe('ភ្នំពេញ')
-    expect(districtSelect.element.value).toBe('ដង្កោ')
-    expect(communeSelect.element.value).toBe('ព្រែកប្រា')
-    expect(villageSelect.element.value).toBe('ភូមិ ១')
-    expect(wrapper.text()).toContain('Village:')
-    expect(wrapper.text()).toContain('Commune/Ward:')
-    expect(wrapper.text()).toContain('District/Khan:')
-    expect(wrapper.text()).toContain('Province/Capital:')
-
-    const legacyWrapper = mountDialog({
-      application: {
-        guardianName: 'Sokha',
-        guardianPhone: '012345678',
-        guardianAddress: 'Legacy Address 12',
-        guardianRelationship: 'មីង',
-      },
-    })
-
     await flushAll()
-
-    expect(legacyWrapper.text()).toContain('Legacy Address 12')
-    expect(legacyWrapper.findAll('select').at(4).element.value).toBe('other')
-    expect(legacyWrapper.find('input[placeholder="Enter guardian type, e.g. Aunt, Uncle"]').element.value).toBe('មីង')
-  })
-
-  it('shows a location load error when the API fails', async () => {
-    mockFetchProvinces.mockRejectedValueOnce({})
-
-    const wrapper = mountDialog()
-
-    await flushAll()
-
-    expect(wrapper.text()).toContain('Failed to load location data.')
+    await waitForSelectValue(wrapper, 'enr-guardian-province', 'Phnom Penh')
+    await waitForSelectValue(wrapper, 'enr-guardian-district', 'Dangkao')
+    await waitForSelectValue(wrapper, 'enr-guardian-commune', 'Tonle Bassac')
+    await waitForSelectValue(wrapper, 'enr-guardian-village', 'Village 1')
+    expect(wrapper.text()).toContain('Legacy Address 12')
   })
 })

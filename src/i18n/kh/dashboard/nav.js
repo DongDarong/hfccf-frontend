@@ -56,6 +56,7 @@ export default {
     workflowApprovals: 'លំហូរការងារ និងការអនុម័ត',
     preschoolSettings: 'ការកំណត់',
     preschoolAssignments: 'ការចាត់តាំង',
+    preschoolAnalytics: 'វិភាគទិន្នន័យមត្តេយ្យ',
     reportSnapshots: 'រូបថតរបាយការណ៍',
     exportGovernance: 'ការនាំចេញ',
     analytics: 'វិភាគទិន្នន័យ',

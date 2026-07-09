@@ -83,6 +83,11 @@ const academicYearOptions = computed(() => academicYears.value.map((year) => ({
   label: year.name || year.label || year.code || `#${year.id}`,
   value: String(year.id || ''),
 })))
+const periodTypeOptions = computed(() => ([
+  { label: t('preschoolAssessmentSettingsPage.periodTypes.monthly'), value: 'monthly' },
+  { label: t('preschoolAssessmentSettingsPage.periodTypes.term'), value: 'term' },
+  { label: t('preschoolAssessmentSettingsPage.periodTypes.annual'), value: 'annual' },
+]))
 const filteredTermOptions = computed(() => {
   const yearId = String(reportPeriodDraft.value.academicYearId || '')
   return terms.value
@@ -146,6 +151,7 @@ function createEmptyCategoryDraft() {
 function createEmptyReportPeriodDraft() {
   return {
     id: '',
+    periodType: 'term',
     academicYearId: '',
     termId: '',
     name: '',
@@ -217,6 +223,7 @@ function openEditCategory(category) {
 function openCreateReportPeriod() {
   reportPeriodDialogMode.value = 'create'
   reportPeriodDraft.value = createEmptyReportPeriodDraft()
+  reportPeriodDraft.value.periodType = 'term'
   if (academicYearOptions.value.length > 0) {
     reportPeriodDraft.value.academicYearId = academicYearOptions.value[0].value
   }
@@ -225,10 +232,18 @@ function openCreateReportPeriod() {
   reportPeriodDialogVisible.value = true
 }
 
+function handleReportPeriodTypeChange(periodType) {
+  reportPeriodDraft.value.periodType = String(periodType || 'term')
+  reportPeriodDraft.value.termId = periodType === 'term'
+    ? filteredTermOptions.value[0]?.value || ''
+    : ''
+}
+
 function openEditReportPeriod(period) {
   reportPeriodDialogMode.value = 'edit'
   reportPeriodDraft.value = {
     id: period.id || '',
+    periodType: period.periodType || 'term',
     academicYearId: String(period.academicYearId || ''),
     termId: String(period.termId || ''),
     name: period.name || '',
@@ -317,9 +332,11 @@ function validateReportPeriodDraft() {
   const errors = {}
   const start = reportPeriodDraft.value.startDate ? new Date(reportPeriodDraft.value.startDate) : null
   const end = reportPeriodDraft.value.endDate ? new Date(reportPeriodDraft.value.endDate) : null
+  const periodType = String(reportPeriodDraft.value.periodType || 'term')
 
+  if (!periodTypeOptions.value.some((item) => item.value === periodType)) errors.periodType = 'required'
   if (!String(reportPeriodDraft.value.academicYearId || '').trim()) errors.academicYearId = 'required'
-  if (!String(reportPeriodDraft.value.termId || '').trim()) errors.termId = 'required'
+  if (periodType === 'term' && !String(reportPeriodDraft.value.termId || '').trim()) errors.termId = 'required'
   if (!String(reportPeriodDraft.value.name || '').trim()) errors.name = 'required'
   if (!reportPeriodDraft.value.startDate) errors.startDate = 'required'
   if (!reportPeriodDraft.value.endDate) errors.endDate = 'required'
@@ -543,6 +560,7 @@ async function saveReportPeriodDraft() {
   try {
     const payload = {
       ...reportPeriodDraft.value,
+      periodType: String(reportPeriodDraft.value.periodType || 'term'),
       name: String(reportPeriodDraft.value.name || '').trim(),
     }
     const saved = reportPeriodDialogMode.value === 'edit'
@@ -864,6 +882,7 @@ onMounted(loadPage)
                 <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                   <tr>
                     <th class="px-4 py-3 font-semibold">{{ t('preschoolAssessmentSettingsPage.fields.name') }}</th>
+                    <th class="px-4 py-3 font-semibold">{{ t('preschoolAssessmentSettingsPage.fields.periodType') }}</th>
                     <th class="px-4 py-3 font-semibold">{{ t('preschoolAssessmentSettingsPage.fields.academicYear') }}</th>
                     <th class="px-4 py-3 font-semibold">{{ t('preschoolAssessmentSettingsPage.fields.term') }}</th>
                     <th class="px-4 py-3 font-semibold">{{ t('preschoolAssessmentSettingsPage.fields.startDate') }}</th>
@@ -875,6 +894,11 @@ onMounted(loadPage)
                 <tbody class="divide-y divide-slate-50">
                   <tr v-for="period in reportPeriods" :key="period.id">
                     <td class="px-4 py-3 font-semibold text-slate-900">{{ period.name }}</td>
+                    <td class="px-4 py-3">
+                      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                        {{ t(`preschoolAssessmentSettingsPage.periodTypes.${period.periodType || 'term'}`) }}
+                      </span>
+                    </td>
                     <td class="px-4 py-3">{{ period.academicYearName || academicYearLabel(period.academicYearId) }}</td>
                     <td class="px-4 py-3">{{ period.termName || termLabel(period.termId) }}</td>
                     <td class="px-4 py-3">{{ formatDate(period.startDate) }}</td>
@@ -892,7 +916,7 @@ onMounted(loadPage)
                     </td>
                   </tr>
                   <tr v-if="!reportPeriods.length">
-                    <td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">
+                    <td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">
                       {{ t('preschoolAssessmentSettingsPage.emptyStates.reportPeriods') }}
                     </td>
                   </tr>
@@ -1112,6 +1136,19 @@ onMounted(loadPage)
         </label>
 
         <label class="field">
+          <span>{{ t('preschoolAssessmentSettingsPage.fields.periodType') }}</span>
+          <Select
+            v-model="reportPeriodDraft.periodType"
+            :options="periodTypeOptions"
+            option-label="label"
+            option-value="value"
+            class="w-full"
+            @update:model-value="handleReportPeriodTypeChange"
+          />
+          <small v-if="reportPeriodErrors.periodType" class="text-xs font-medium text-rose-600">{{ t(`preschoolAssessmentSettingsPage.validation.${reportPeriodErrors.periodType}`) }}</small>
+        </label>
+
+        <label class="field">
           <span>{{ t('preschoolAssessmentSettingsPage.fields.academicYear') }}</span>
           <Select
             v-model="reportPeriodDraft.academicYearId"
@@ -1131,7 +1168,9 @@ onMounted(loadPage)
             option-label="label"
             option-value="value"
             class="w-full"
+            :placeholder="t('preschoolAssessmentSettingsPage.placeholders.termOptional')"
           />
+          <small class="text-xs text-slate-500">{{ t('preschoolAssessmentSettingsPage.help.termOptional') }}</small>
           <small v-if="reportPeriodErrors.termId" class="text-xs font-medium text-rose-600">{{ t(`preschoolAssessmentSettingsPage.validation.${reportPeriodErrors.termId}`) }}</small>
         </label>
 

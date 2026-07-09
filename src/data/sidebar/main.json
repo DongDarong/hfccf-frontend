@@ -37,6 +37,7 @@
               "staff"
             ]
           },
+          "exactActive": true,
           "routeNameByDomain": {
             "english": "dashboard-english-teacher",
             "preschool": "dashboard-preschool-teacher",
@@ -120,10 +121,10 @@
           }
         },
         {
-          "id": "preschool-teacher-emergency-contacts",
-          "routeName": "dashboard-preschool-teacher-emergency-contacts",
-          "labelKey": "nav.items.emergencyContacts",
-          "icon": "notification",
+          "id": "preschool-teacher-schedule",
+          "routeName": "dashboard-preschool-teacher-schedule",
+          "labelKey": "nav.items.schedules",
+          "icon": "calendar",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -135,10 +136,10 @@
           }
         },
         {
-          "id": "preschool-teacher-schedule",
-          "routeName": "dashboard-preschool-teacher-schedule",
-          "labelKey": "nav.items.schedules",
-          "icon": "calendar",
+          "id": "preschool-teacher-attendance",
+          "routeName": "dashboard-preschool-teacher-attendance",
+          "labelKey": "nav.items.attendance",
+          "icon": "attendance",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [

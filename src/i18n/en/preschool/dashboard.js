@@ -336,6 +336,10 @@ export default {
       attendance: {
         title: 'Attendance Today',
         label: 'Records for today',
+        actions: {
+          recordAttendance: 'Record Attendance',
+          viewToday: "View Today's Attendance",
+        },
       },
       payments: {
         title: 'Pending Payments',
@@ -347,6 +351,36 @@ export default {
       overduePayments: 'Overdue payments: {count}',
       paidPayments: 'Paid payments: {count}',
       mySchedule: 'My schedule',
+    },
+    attendanceSessions: {
+      title: 'Attendance Sessions',
+      subtitle: 'Today’s attendance work for your assigned classes.',
+      todayCount: 'session(s) today',
+      loading: 'Loading today’s attendance sessions...',
+      warning: 'Attendance needs action',
+      noRoster: 'Roster count unavailable',
+      progressLabel: '{completed} of {total} marked',
+      completedSummary: '{completed} of {total} students marked',
+      pendingSummary: '{completed} of {total} marked · {pending} pending',
+      empty: {
+        title: 'No attendance session is scheduled for today.',
+        subtitle: 'Open Attendance to start or continue a class session when needed.',
+      },
+      labels: {
+        students: 'Students',
+        completed: 'Completed',
+        progress: 'Progress',
+      },
+      actions: {
+        openAttendance: 'Open Attendance',
+        recordAttendance: 'Record Attendance',
+        continueAttendance: 'Continue Attendance',
+        recordNow: 'Record Now',
+        viewDetails: 'View Details',
+      },
+      errors: {
+        loadFailed: 'Failed to load today’s attendance sessions.',
+      },
     },
     spotlight: {
       nextSuffix: 'is next',

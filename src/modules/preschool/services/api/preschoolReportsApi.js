@@ -20,6 +20,10 @@ export async function fetchReportPeriods(params = {}, options = {}) {
     params: buildQueryParams({
       student_id: params.studentId || '',
       class_id: params.classId || '',
+      period_type: params.periodType || '',
+      report_period_id: params.reportPeriodId || '',
+      academic_year_id: params.academicYearId || '',
+      term_id: params.termId || '',
     }),
     signal: options.signal,
   })
@@ -27,8 +31,18 @@ export async function fetchReportPeriods(params = {}, options = {}) {
   return normalizeReportPeriodList(response)
 }
 
+function buildReportQueryParams(params = {}) {
+  return buildQueryParams({
+    period_type: params.periodType || '',
+    report_period_id: params.reportPeriodId || '',
+    academic_year_id: params.academicYearId || '',
+    term_id: params.termId || '',
+  })
+}
+
 export async function fetchStudentReports(studentId, options = {}) {
   const response = await http.get(`/preschool/students/${encodeURIComponent(studentId)}/reports`, {
+    params: buildReportQueryParams(options),
     signal: options.signal,
   })
 
@@ -39,6 +53,7 @@ export async function fetchStudentReportPeriod(studentId, periodLabel, options =
   const response = await http.get(
     `/preschool/students/${encodeURIComponent(studentId)}/reports/${encodeURIComponent(periodLabel)}`,
     {
+      params: buildReportQueryParams(options),
       signal: options.signal,
     },
   )
@@ -52,6 +67,7 @@ export async function fetchClassroomReport(classId, periodLabel = '', options = 
     : `/preschool/classes/${encodeURIComponent(classId)}/reports`
 
   const response = await http.get(path, {
+    params: buildReportQueryParams(options),
     signal: options.signal,
   })
 

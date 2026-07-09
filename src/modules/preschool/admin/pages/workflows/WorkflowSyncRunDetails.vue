@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchPreschoolWorkflowSyncRun,
@@ -175,6 +176,7 @@ watch(
 <template>
   <MainLayout>
     <section class="workflow-sync-run">
+      <Breadcrumb />
       <div class="workflow-sync-run__header">
         <div>
           <div class="workflow-sync-run__eyebrow">{{ labels.syncHistory }}</div>

@@ -101,6 +101,11 @@ const overrides = {
       required: 'វាលនេះត្រូវតែបំពេញ។',
       positive: 'សូមបញ្ចូលលេខវិជ្ជមាន។',
       range: 'អាយុអតិបរមាត្រូវធំជាង ឬស្មើអាយុអប្បបរមា។',
+      invalidTimezone: 'សូមជ្រើសល្វែងម៉ោងដែលគាំទ្រ។',
+      unsupportedLanguage: 'សូមជ្រើសភាសាដែលគាំទ្រ។',
+      invalidDateFormat: 'សូមជ្រើសទម្រង់កាលបរិច្ឆេទដែលគាំទ្រ។',
+      invalidTimeFormat: 'សូមជ្រើសទម្រង់ម៉ោងដែលគាំទ្រ។',
+      invalidYearFormat: 'សូមជ្រើសទម្រង់ឆ្នាំដែលគាំទ្រ។',
     },
   },
   preschoolSettingsPage: {
@@ -177,6 +182,22 @@ const overrides = {
       max: 'ត្រូវមានត្រឹម 10 តួអក្សរ ឬតិចជាងនេះ។',
       positive: 'សូមបញ្ចូលលេខ 0 ឬច្រើនជាងនេះ។',
       alphaNumeric: 'ប្រើតែលេខកូដអក្សរធំ និងលេខប៉ុណ្ណោះ។',
+    },
+  },
+  preschoolAssessmentSettingsPage: {
+    fields: {
+      periodType: 'ប្រភេទរយៈពេល',
+    },
+    periodTypes: {
+      monthly: 'ប្រចាំខែ',
+      term: 'តាម term',
+      annual: 'ប្រចាំឆ្នាំ',
+    },
+    help: {
+      termOptional: 'អាចទុកទទេសម្រាប់រយៈពេលប្រចាំខែ ឬប្រចាំឆ្នាំ។',
+    },
+    placeholders: {
+      termOptional: 'ជាជម្រើសសម្រាប់ប្រចាំខែ ឬប្រចាំឆ្នាំ',
     },
   },
 }

@@ -89,7 +89,7 @@ const sessionInfoCards = computed(() => [
 ])
 
 function actionLabel() {
-  if (sessionStatus.value === 'scheduled') return t('preschoolAttendanceSessionsPage.actions.openSession')
+  if (sessionStatus.value === 'scheduled') return t('preschoolAttendanceSessionsPage.openSession')
   if (sessionStatus.value === 'open') return t('preschoolAttendanceSessionsPage.actions.continueAttendance')
   if (sessionStatus.value === 'locked') return isTeacherView.value ? t('preschoolAttendanceSessionsPage.actions.viewSession') : t('preschoolAttendanceSessionsPage.actions.reopenSession')
   if (sessionStatus.value === 'cancelled') return t('preschoolAttendanceSessionsPage.actions.viewDetails')

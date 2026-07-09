@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import { getCurrentUser } from '@/services/auth'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAssessmentData } from '@/modules/preschool/composables/useAssessmentData'
 import { useAssessmentReports } from '@/modules/preschool/composables/useAssessmentReports'
@@ -25,6 +26,9 @@ const router = useRouter()
 const { t } = useLanguage()
 const { loadAllLookupData, categories } = useAssessmentData()
 const { summaryStats, categoryPerformanceArray, highRiskStudents } = useAssessmentReports()
+const currentUser = getCurrentUser() || {}
+const currentUserRole = String(currentUser.role || currentUser.role_code || '')
+const canManageAssessmentSettings = computed(() => ['superadmin', 'adminpreschool'].includes(currentUserRole))
 
 onMounted(async () => {
   await loadAllLookupData()
@@ -89,7 +93,9 @@ const riskMetrics = computed(() => [
 const groupedWorkspaceCards = computed(() => {
   const groups = new Map()
 
-  PRESCHOOL_ASSESSMENT_NAV_CARDS.forEach((card) => {
+  PRESCHOOL_ASSESSMENT_NAV_CARDS
+    .filter((card) => canManageAssessmentSettings.value || card.routeName !== PRESCHOOL_ASSESSMENT_ROUTE_NAMES.settings)
+    .forEach((card) => {
     const groupLabel = card.groupKey ? t(card.groupKey) : card.group
     if (!groups.has(groupLabel)) {
       groups.set(groupLabel, [])
@@ -106,11 +112,13 @@ const groupedWorkspaceCards = computed(() => {
 })
 
 const quickStartSteps = computed(() =>
-  PRESCHOOL_ASSESSMENT_PAGE_FLOW.map(step => ({
-    ...step,
-    title: step.titleKey ? t(step.titleKey) : step.title,
-    description: step.descriptionKey ? t(step.descriptionKey) : step.description,
-  })),
+  PRESCHOOL_ASSESSMENT_PAGE_FLOW
+    .filter((step) => canManageAssessmentSettings.value || step.routeName !== PRESCHOOL_ASSESSMENT_ROUTE_NAMES.settings)
+    .map(step => ({
+      ...step,
+      title: step.titleKey ? t(step.titleKey) : step.title,
+      description: step.descriptionKey ? t(step.descriptionKey) : step.description,
+    })),
 )
 
 function navigateTo(routeName) {
@@ -132,6 +140,7 @@ function statClicked() {
 
       <AssessmentDashboardHero
         :workflow-steps="quickStartSteps"
+        :show-settings="canManageAssessmentSettings"
         @create="navigateTo(PRESCHOOL_ASSESSMENT_ROUTE_NAMES.list)"
         @reports="navigateTo(PRESCHOOL_ASSESSMENT_ROUTE_NAMES.reports)"
         @settings="navigateTo(PRESCHOOL_ASSESSMENT_ROUTE_NAMES.settings)"

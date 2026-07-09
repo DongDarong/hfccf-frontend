@@ -56,6 +56,7 @@ export default {
     workflowApprovals: 'Workflow & Approvals',
     preschoolSettings: 'Settings',
     preschoolAssignments: 'Assignments',
+    preschoolAnalytics: 'Preschool Analytics',
     reportSnapshots: 'Snapshots',
     exportGovernance: 'Exports',
     analytics: 'Analytics',

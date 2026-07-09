@@ -432,6 +432,7 @@ export default {
       status: 'Status',
       sortOrder: 'Sort Order',
       name: 'Name',
+      periodType: 'Period Type',
       academicYear: 'Academic Year',
       term: 'Term',
       startDate: 'Start Date',
@@ -476,11 +477,20 @@ export default {
         subtitle: 'Link the period to an academic year and optional term.',
       },
     },
+    periodTypes: {
+      monthly: 'Monthly',
+      term: 'Term',
+      annual: 'Annual',
+    },
     help: {
       weightingEnabled: 'When enabled, weights must total 100%.',
       passing: 'Mark the band that represents a passing score.',
       categoryStatus: 'Archived categories stay in history but are hidden from new use.',
       reportPeriodStatus: 'Archived report periods remain read-only.',
+      termOptional: 'Leave the term blank for monthly or annual periods if the period spans the full year.',
+    },
+    placeholders: {
+      termOptional: 'Optional for monthly or annual periods',
     },
     table: {
       actions: 'Actions',
@@ -706,6 +716,11 @@ export default {
       required: 'This field is required.',
       positive: 'Please enter a positive number.',
       range: 'The maximum age must be greater than or equal to the minimum age.',
+      invalidTimezone: 'Select a supported timezone.',
+      unsupportedLanguage: 'Select a supported language.',
+      invalidDateFormat: 'Select a supported date format.',
+      invalidTimeFormat: 'Select a supported time format.',
+      invalidYearFormat: 'Select a supported year format.',
     },
   },
   preschoolAcademicSettingsPage: {

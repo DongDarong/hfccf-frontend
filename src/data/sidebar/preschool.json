@@ -105,13 +105,6 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-analytics",
-          "routeName": "dashboard-preschool-admin-analytics",
-          "labelKey": "nav.items.analytics",
-          "icon": "performance",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
           "id": "preschool-settings",
           "routeName": "dashboard-preschool-admin-settings",
           "labelKey": "nav.items.preschoolSettings",

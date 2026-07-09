@@ -26,8 +26,14 @@ export default {
       title: 'Selected Report Period',
       subtitle: 'The selected period controls which report output is shown below.',
     },
+    periodTypes: {
+      monthly: 'Monthly',
+      term: 'Term',
+      annual: 'Annual',
+    },
     periodColumns: {
       label: 'Period',
+      type: 'Type',
       status: 'Status',
       dates: 'Date Range',
       assessments: 'Assessments',

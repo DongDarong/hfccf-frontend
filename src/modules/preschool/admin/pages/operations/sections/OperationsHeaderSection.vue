@@ -1,4 +1,5 @@
 <script setup>
+import Breadcrumb from '@/components/navigation/Breadcrumb.vue'
 import Button from '@/components/buttons/Button.vue'
 
 defineProps({
@@ -30,6 +31,7 @@ const emit = defineEmits(['refresh'])
 <template>
   <section class="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm md:flex-row md:items-end md:justify-between">
     <div class="space-y-2">
+      <Breadcrumb />
       <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Preschool</p>
       <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ title }}</h1>
       <p class="max-w-3xl text-sm leading-6 text-slate-600">{{ subtitle }}</p>
