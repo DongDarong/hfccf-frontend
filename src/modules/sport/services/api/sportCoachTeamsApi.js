@@ -22,6 +22,39 @@ export async function fetchCoachTeams(options = {}) {
   return normalizeTeamListResponse(response)
 }
 
+export async function fetchCoachOpponentTeams(options = {}) {
+  const response = await http.get('/sport/coach/opponent-teams', {
+    params: buildQueryParams({
+      search: options.search || '',
+      division: options.division || '',
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeTeamListResponse(response)
+}
+
+export async function fetchCoachRequests(options = {}) {
+  const response = await http.get('/sport/coach/requests', {
+    signal: options.signal,
+  })
+
+  const payload = unwrapApiData(response) || {}
+  const playerRequests = Array.isArray(payload.playerRequests) ? payload.playerRequests : []
+  const matchRequests = Array.isArray(payload.matchRequests) ? payload.matchRequests : []
+
+  return {
+    playerRequests: playerRequests.map(normalizePlayerRow),
+    matchRequests: matchRequests.map(normalizeMatchRow),
+    summary: payload.summary || {
+      playerRequests: playerRequests.length,
+      matchRequests: matchRequests.length,
+      total: playerRequests.length + matchRequests.length,
+    },
+    raw: payload,
+  }
+}
+
 export async function fetchCoachTeam(teamId, options = {}) {
   const id = resolveId(teamId)
   if (!id) return null

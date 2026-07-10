@@ -1,13 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { ref } from 'vue'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import MyTeams from '@/modules/sport/coach/pages/MyTeams.vue'
+import MyRequests from '@/modules/sport/coach/pages/MyRequests.vue'
+import MatchRequest from '@/modules/sport/coach/pages/MatchRequest.vue'
 import CoachTeamAssignments from '@/modules/sport/admin/pages/approval/CoachTeamAssignments.vue'
 
-const loadTeams = vi.fn()
-const listCoachTeamAssignments = vi.fn()
-const saveCoachTeamAssignment = vi.fn()
-const deactivateCoachTeamAssignment = vi.fn()
+const {
+  loadTeams,
+  loadRequests,
+  fetchCoachOpponentTeams,
+  listCoachTeamAssignments,
+  saveCoachTeamAssignment,
+  deactivateCoachTeamAssignment,
+} = vi.hoisted(() => ({
+  loadTeams: vi.fn(),
+  loadRequests: vi.fn(),
+  fetchCoachOpponentTeams: vi.fn(),
+  listCoachTeamAssignments: vi.fn(),
+  saveCoachTeamAssignment: vi.fn(),
+  deactivateCoachTeamAssignment: vi.fn(),
+}))
 
 vi.mock('@/modules/sport/coach/composables/useCoachTeams', () => ({
   useCoachTeams: () => ({
@@ -19,6 +33,21 @@ vi.mock('@/modules/sport/coach/composables/useCoachTeams', () => ({
     loadTeams,
     loadTeam: vi.fn(),
   }),
+}))
+
+vi.mock('@/modules/sport/coach/composables/useCoachRequests', () => ({
+  useCoachRequests: () => ({
+    playerRequests: ref([{ id: 'request-1', name: 'Player Request', team: { name: 'Assigned FC' }, approvalStatus: 'pending' }]),
+    matchRequests: ref([{ id: 'request-2', homeTeam: 'Assigned FC', awayTeam: 'Opponent FC', approvalStatus: 'pending' }]),
+    summary: ref({ playerRequests: 1, matchRequests: 1, total: 2 }),
+    loading: ref(false),
+    error: ref(''),
+    loadRequests,
+  }),
+}))
+
+vi.mock('@/modules/sport/services/api/sportCoachTeamsApi', () => ({
+  fetchCoachOpponentTeams,
 }))
 
 vi.mock('@/modules/sport/admin/composables/useSportApprovals', () => ({
@@ -83,6 +112,109 @@ describe('sport coach pages', () => {
     })
     expect(wrapper.text()).toContain('Assigned teams')
     expect(loadTeams).toHaveBeenCalled()
+  })
+
+  it('renders the my requests page with coach-safe data', async () => {
+    const wrapper = mountWithPlugins(MyRequests, {
+      messages: {
+        en: {
+          sportCoachTeamManagement: {
+            common: {
+              player: 'Player',
+              team: 'Team',
+              homeTeam: 'Home team',
+              awayTeam: 'Away team',
+              status: 'Status',
+            },
+            requests: {
+              title: 'My Requests',
+              subtitle: 'Track pending player and match requests you created.',
+              playersTitle: 'Player requests',
+              matchesTitle: 'Match requests',
+              emptyPlayers: 'No player requests have been submitted yet.',
+              emptyMatches: 'No match requests have been submitted yet.',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
+          DataTable: { props: ['value'], template: '<div><slot />{{ value?.[0]?.name || "" }}</div>' },
+          Column: { template: '<div><slot /></div>' },
+          Button: { template: '<button><slot /></button>' },
+          StatusBadge: { template: '<span><slot /></span>' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    expect(wrapper.text()).toContain('Player requests')
+    expect(loadRequests).toHaveBeenCalled()
+  })
+
+  it('renders the match request page using coach opponent lookups', async () => {
+    fetchCoachOpponentTeams.mockResolvedValueOnce({
+      items: [{ id: 'team-2', name: 'Opponent FC' }],
+      pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
+    })
+
+    mountWithPlugins(MatchRequest, {
+      messages: {
+        en: {
+          sportCoachTeamManagement: {
+            common: {
+              selectTeam: 'Select a team',
+              selectOpponent: 'Select an opponent',
+              matchType: 'Match type',
+              trainingMatch: 'Training match',
+              friendlyMatch: 'Friendly match',
+              scheduledAt: 'Scheduled time',
+              notes: 'Notes',
+              venue: 'Venue',
+              loadError: 'Unable to load data right now.',
+            },
+            matchRequest: {
+              title: 'Training / Friendly Match Request',
+              subtitle: 'Request a training or friendly match for one of your assigned teams.',
+              panelTitle: 'New match request',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
+          Button: { template: '<button><slot /></button>' },
+          Select: { template: '<div />' },
+          InputText: { template: '<div />' },
+          Textarea: { template: '<div />' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    expect(fetchCoachOpponentTeams).toHaveBeenCalled()
   })
 
   it('renders the coach assignments page shell', async () => {

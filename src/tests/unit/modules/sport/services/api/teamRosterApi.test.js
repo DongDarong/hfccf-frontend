@@ -3,6 +3,7 @@ import http from '@/services/http'
 import {
   addTeamRosterPlayer,
   fetchPlayerHistory,
+  fetchRosterCandidates,
   fetchTeamRoster,
   removeRosterMembership,
   updateRosterMembership,
@@ -84,5 +85,22 @@ describe('team roster api', () => {
       memberships: [{ id: 6, status: 'inactive' }],
     })
     expect(http.get).toHaveBeenCalledWith('/sport/players/5/history', { signal: undefined })
+  })
+
+  it('loads coach roster candidates from the coach-safe lookup', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        team: { id: 1, name: 'Assigned FC' },
+        items: [{ id: 8, name: 'Player Eight', approval_status: 'approved' }],
+        pagination: { page: 1, per_page: 10, total: 1, total_pages: 1 },
+      }),
+    )
+
+    const result = await fetchRosterCandidates(1)
+
+    expect(http.get).toHaveBeenCalledWith('/sport/coach/teams/1/roster-candidates', expect.objectContaining({
+      params: {},
+    }))
+    expect(result.items[0]).toMatchObject({ id: 8, name: 'Player Eight', approvalStatus: 'approved' })
   })
 })

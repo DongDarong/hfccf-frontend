@@ -1,5 +1,5 @@
 import http from '@/services/http'
-import { buildFormData, resolveId } from './sportApiUtils'
+import { buildFormData, buildQueryParams, normalizePlayerListResponse, resolveId, unwrapApiData } from './sportApiUtils'
 import { normalizePlayerHistoryResponse, normalizeTeamRosterResponse } from './playerLifecycleMappers'
 
 export async function fetchTeamRoster(teamId, options = {}) {
@@ -54,4 +54,26 @@ export async function fetchPlayerHistory(playerId, options = {}) {
   })
 
   return normalizePlayerHistoryResponse(response)
+}
+
+export async function fetchRosterCandidates(teamId, options = {}) {
+  const id = resolveId(teamId)
+  if (!id) return { team: null, items: [], pagination: { page: 1, perPage: 10, total: 0, totalPages: 1 }, raw: null }
+
+  const response = await http.get(`/sport/coach/teams/${encodeURIComponent(id)}/roster-candidates`, {
+    params: buildQueryParams({
+      search: options.search || '',
+    }),
+    signal: options.signal,
+  })
+
+  const payload = unwrapApiData(response) || {}
+  const normalized = normalizePlayerListResponse(response)
+
+  return {
+    team: payload.team || null,
+    items: normalized.items,
+    pagination: normalized.pagination,
+    raw: payload,
+  }
 }
