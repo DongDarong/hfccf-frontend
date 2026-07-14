@@ -5,6 +5,7 @@ import states from './common/states'
 
 export default {
   loading: 'កំពុងផ្ទុក',
+  today: 'ថ្ងៃនេះ',
   refresh: 'ធ្វើឱ្យស្រស់',
   logout: 'ចាកចេញ',
   logoutConfirm: 'តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?',
@@ -164,7 +165,7 @@ export default {
     'students:write': 'គ្រប់គ្រងសិស្ស',
   },
   table: {
-    number: 'លេខរៀង',
+    number: 'ល.រ',
     user: 'អ្នកប្រើ',
     email: 'អ៊ីមែល',
     department: 'ផ្នែក',

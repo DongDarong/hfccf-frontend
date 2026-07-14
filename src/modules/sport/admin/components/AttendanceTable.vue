@@ -97,10 +97,22 @@ function handleSave() {
       </div>
     </div>
 
+    <div class="att-panel__legend">
+      <span
+        v-for="option in statusOptions"
+        :key="option.value"
+        class="att-panel__legend-item"
+      >
+        <span class="att-panel__legend-short">{{ option.short }}</span>
+        <span class="att-panel__legend-label">{{ option.label }}</span>
+      </span>
+    </div>
+
     <div class="att-panel__table-wrapper">
       <table class="att-panel__table">
         <thead>
           <tr>
+            <th class="att-panel__number-header">{{ t('common.table.number') }}</th>
             <th>{{ t('sportAdminPlayerAttendancePage.columns.player') }}</th>
             <th>{{ t('sportAdminPlayerAttendancePage.columns.status') }}</th>
             <th>{{ t('sportAdminPlayerAttendancePage.columns.note') }}</th>
@@ -112,6 +124,7 @@ function handleSave() {
             :key="player.id"
             :class="index % 2 === 0 ? 'is-even' : 'is-odd'"
           >
+            <td class="att-panel__number-cell">{{ index + 1 }}</td>
             <td>
               <p class="att-panel__person">{{ player.fullName || player.name }}</p>
               <p v-if="player.playerCode" class="att-panel__meta">{{ player.playerCode }}</p>
@@ -200,6 +213,42 @@ function handleSave() {
   gap: 0.5rem;
 }
 
+.att-panel__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.att-panel__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.34rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #dbe4f0;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.att-panel__legend-short {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 0.72rem;
+}
+
+.att-panel__legend-label {
+  white-space: nowrap;
+}
+
 .att-panel__table-wrapper {
   overflow-x: auto;
 }
@@ -223,6 +272,19 @@ function handleSave() {
   padding: 0.85rem 0.95rem;
   text-align: left;
   border-bottom: 1px solid #eef2f7;
+}
+
+.att-panel__number-header,
+.att-panel__number-cell {
+  width: 3.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.att-panel__number-cell {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .att-panel__table tbody tr.is-even {
