@@ -26,6 +26,7 @@ const coaches = ref([])
 const teams = ref([])
 const loading = ref(false)
 const error = ref('')
+const editingAssignmentId = ref('')
 const isKh = computed(() => language.value === 'KH')
 
 const form = reactive({
@@ -36,12 +37,58 @@ const form = reactive({
 
 const pageTitle = computed(() => t('sportCoachTeamManagement.assignments.title'))
 const pageSubtitle = computed(() => t('sportCoachTeamManagement.assignments.subtitle'))
+const formTitle = computed(() =>
+  editingAssignmentId.value
+    ? `${t('common.edit')} assignment`
+    : t('sportCoachTeamManagement.assignments.formTitle'),
+)
 
 function tone(status) {
   const value = String(status || '').toLowerCase()
   if (value === 'active') return 'success'
   if (value === 'inactive') return 'danger'
   return 'info'
+}
+
+function normalizeAssignmentUserId(row = {}) {
+  return String(row?.coachUserId || row?.coach_user_id || row?.coach?.id || '').trim()
+}
+
+function normalizeAssignmentTeamId(row = {}) {
+  return String(row?.teamId || row?.team_id || row?.team?.id || '').trim()
+}
+
+function resetForm() {
+  editingAssignmentId.value = ''
+  form.coachUserId = ''
+  form.teamId = ''
+  form.status = 'active'
+}
+
+function startEdit(row = {}) {
+  editingAssignmentId.value = String(row?.id || row?.assignmentId || '').trim()
+  form.coachUserId = normalizeAssignmentUserId(row)
+  form.teamId = normalizeAssignmentTeamId(row)
+  form.status = String(row?.status || 'active').trim() || 'active'
+}
+
+function hasDuplicateActiveAssignment(coachUserId, teamId) {
+  const targetCoachUserId = String(coachUserId || '').trim()
+  const targetTeamId = String(teamId || '').trim()
+  const currentId = String(editingAssignmentId.value || '').trim()
+
+  if (!targetCoachUserId || !targetTeamId) return false
+
+  return assignments.value.some((row) => {
+    const rowId = String(row?.id || row?.assignmentId || '').trim()
+    if (currentId && rowId === currentId) return false
+
+    return (
+      String(row?.status || '').toLowerCase() === 'active' &&
+      normalizeAssignmentUserId(row) === targetCoachUserId &&
+      normalizeAssignmentTeamId(row) === targetTeamId
+    )
+  })
 }
 
 async function refresh() {
@@ -65,14 +112,29 @@ async function refresh() {
 }
 
 async function submit() {
+  const coachUserId = String(form.coachUserId || '').trim()
+  const teamId = String(form.teamId || '').trim()
+
+  if (hasDuplicateActiveAssignment(coachUserId, teamId)) {
+    error.value = 'An active assignment already exists for this coach and team.'
+    return
+  }
+
   loading.value = true
   error.value = ''
   try {
-    await saveCoachTeamAssignment({
-      coach_user_id: form.coachUserId,
-      team_id: form.teamId,
+    const payload = {
+      coach_user_id: coachUserId,
+      team_id: teamId,
       status: form.status,
-    })
+    }
+
+    if (editingAssignmentId.value) {
+      payload.id = editingAssignmentId.value
+    }
+
+    await saveCoachTeamAssignment(payload)
+    resetForm()
     await refresh()
   } catch (exception) {
     error.value = resolveAssignmentErrorMessage(exception, t)
@@ -108,7 +170,7 @@ onMounted(() => {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <Card class="sport-coach-page__panel">
-        <template #title>{{ t('sportCoachTeamManagement.assignments.formTitle') }}</template>
+        <template #title>{{ formTitle }}</template>
         <template #content>
           <div class="grid gap-4 md:grid-cols-3">
             <Select v-model="form.coachUserId" :options="coaches" option-label="fullName" option-value="id" :placeholder="t('sportCoachTeamManagement.common.selectCoach')" />
@@ -143,7 +205,10 @@ onMounted(() => {
             </Column>
             <Column :header="t('sportCoachTeamManagement.common.actions')">
               <template #body="{ data }">
-                <Button size="small" text :label="t('sportCoachTeamManagement.actions.deactivate')" @click="deactivate(data)" />
+                <div class="flex flex-wrap gap-2">
+                  <Button size="small" outlined :label="t('common.edit')" @click="startEdit(data)" />
+                  <Button size="small" text :label="t('sportCoachTeamManagement.actions.deactivate')" @click="deactivate(data)" />
+                </div>
               </template>
             </Column>
           </DataTable>

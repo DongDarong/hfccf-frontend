@@ -10,6 +10,8 @@ import CoachTeamAssignments from '@/modules/sport/admin/pages/approval/CoachTeam
 const {
   loadTeams,
   loadRequests,
+  fetchSportCoaches,
+  fetchSportTeams,
   fetchCoachOpponentTeams,
   listCoachTeamAssignments,
   saveCoachTeamAssignment,
@@ -17,6 +19,8 @@ const {
 } = vi.hoisted(() => ({
   loadTeams: vi.fn(),
   loadRequests: vi.fn(),
+  fetchSportCoaches: vi.fn(),
+  fetchSportTeams: vi.fn(),
   fetchCoachOpponentTeams: vi.fn(),
   listCoachTeamAssignments: vi.fn(),
   saveCoachTeamAssignment: vi.fn(),
@@ -46,6 +50,11 @@ vi.mock('@/modules/sport/coach/composables/useCoachRequests', () => ({
   }),
 }))
 
+vi.mock('@/modules/sport/services/sportApi', () => ({
+  fetchSportCoaches,
+  fetchSportTeams,
+}))
+
 vi.mock('@/modules/sport/services/api/sportCoachTeamsApi', () => ({
   fetchCoachOpponentTeams,
 }))
@@ -68,6 +77,14 @@ vi.mock('@/modules/sport/admin/composables/useSportApprovals', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  fetchSportCoaches.mockResolvedValue({
+    items: [{ id: 'coach-1', fullName: 'Alex Coach' }],
+    pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+  })
+  fetchSportTeams.mockResolvedValue({
+    items: [{ id: 'team-1', name: 'Lions FC' }],
+    pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+  })
   if (typeof window !== 'undefined' && !window.matchMedia) {
     window.matchMedia = () => ({
       matches: false,
@@ -272,5 +289,150 @@ describe('sport coach pages', () => {
     expect(wrapper.text()).toContain('Current assignments')
     expect(saveCoachTeamAssignment).toBeDefined()
     expect(deactivateCoachTeamAssignment).toBeDefined()
+  })
+
+  it('patches an existing assignment when editing and can reactivate it', async () => {
+    listCoachTeamAssignments.mockResolvedValueOnce({
+      items: [
+        {
+          id: 'assignment-1',
+          status: 'inactive',
+          coachUserId: 'coach-1',
+          teamId: 'team-1',
+          coach: {
+            id: 'coach-1',
+            firstName: 'Alex',
+            lastName: 'Coach',
+          },
+          team: {
+            id: 'team-1',
+            name: 'Lions FC',
+          },
+        },
+      ],
+      pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+    })
+
+    const wrapper = mountWithPlugins(CoachTeamAssignments, {
+      messages: {
+        en: {
+          common: { edit: 'Edit' },
+          sportCoachTeamManagement: {
+            assignments: {
+              title: 'Coach Team Assignments',
+              subtitle: 'Assign teams to coaches.',
+              formTitle: 'New assignment',
+              listTitle: 'Current assignments',
+            },
+            common: {
+              active: 'Active',
+              inactive: 'Inactive',
+              coach: 'Coach',
+              team: 'Team',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
+          Button: { template: '<button @click="$emit(\'click\')"><slot /></button>' },
+          Select: { template: '<div />' },
+          StatusBadge: { template: '<span><slot /></span>' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    wrapper.vm.startEdit({
+      id: 'assignment-1',
+      status: 'inactive',
+      coach: { id: 'coach-1', firstName: 'Alex', lastName: 'Coach' },
+      team: { id: 'team-1', name: 'Lions FC' },
+    })
+    wrapper.vm.form.status = 'active'
+
+    saveCoachTeamAssignment.mockResolvedValueOnce({ assignment: { id: 'assignment-1' } })
+
+    await wrapper.vm.submit()
+    await flushPromises()
+
+    expect(saveCoachTeamAssignment).toHaveBeenCalledWith({
+      id: 'assignment-1',
+      coach_user_id: 'coach-1',
+      team_id: 'team-1',
+      status: 'active',
+    })
+  })
+
+  it('blocks creating a duplicate active assignment', async () => {
+    listCoachTeamAssignments.mockResolvedValueOnce({
+      items: [
+        {
+          id: 'assignment-1',
+          status: 'active',
+          coachUserId: 'coach-1',
+          teamId: 'team-1',
+          coach: { id: 'coach-1', firstName: 'Alex', lastName: 'Coach' },
+          team: { id: 'team-1', name: 'Lions FC' },
+        },
+      ],
+      pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+    })
+
+    const wrapper = mountWithPlugins(CoachTeamAssignments, {
+      messages: {
+        en: {
+          common: { edit: 'Edit' },
+          sportCoachTeamManagement: {
+            assignments: {
+              title: 'Coach Team Assignments',
+              subtitle: 'Assign teams to coaches.',
+              formTitle: 'New assignment',
+              listTitle: 'Current assignments',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
+          Button: { template: '<button @click="$emit(\'click\')"><slot /></button>' },
+          Select: { template: '<div />' },
+          StatusBadge: { template: '<span><slot /></span>' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    wrapper.vm.form.coachUserId = 'coach-1'
+    wrapper.vm.form.teamId = 'team-1'
+    wrapper.vm.form.status = 'active'
+
+    await wrapper.vm.submit()
+    await flushPromises()
+
+    expect(saveCoachTeamAssignment).not.toHaveBeenCalled()
+    expect(wrapper.vm.error).toBe('An active assignment already exists for this coach and team.')
   })
 })
