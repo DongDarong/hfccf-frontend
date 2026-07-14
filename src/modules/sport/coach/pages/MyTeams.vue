@@ -41,12 +41,6 @@ function goToPlayerRequest(team) {
   router.push({ name: 'dashboard-sport-coach-player-request', query: { teamId: id } })
 }
 
-function goToAttendance(team) {
-  const id = String(team?.id || '').trim()
-  if (!id) return
-  router.push({ name: 'dashboard-sport-coach-attendance', query: { teamId: id } })
-}
-
 function goToMatchRequest(team) {
   const id = String(team?.id || '').trim()
   if (!id) return
@@ -92,7 +86,6 @@ onMounted(() => {
               <template #body="{ data }">
                 <div class="flex flex-wrap gap-2">
                   <Button size="small" :label="t('sportCoachTeamManagement.actions.viewPlayers')" @click="goToTeam(data)" />
-                  <Button size="small" outlined :label="t('nav.items.attendanceCoaches')" @click="goToAttendance(data)" />
                   <Button size="small" outlined :label="t('sportCoachTeamManagement.actions.addPlayer')" @click="goToPlayerRequest(data)" />
                   <Button size="small" text :label="t('sportCoachTeamManagement.actions.requestMatch')" @click="goToMatchRequest(data)" />
                 </div>

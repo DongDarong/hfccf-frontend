@@ -21,7 +21,7 @@ defineOptions({
   name: 'SportAdminAttendancePlayersPage',
 })
 
-const { t } = useLanguage()
+const { t, language } = useLanguage()
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
@@ -37,6 +37,28 @@ const teamsLoading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
 
+const pageTitle = computed(() => (
+  isCoachAttendanceRoute.value
+    ? t('nav.items.attendancePlayers')
+    : t('sportAdminPlayerAttendancePage.title')
+))
+
+const pageSubtitle = computed(() => (
+  isCoachAttendanceRoute.value
+    ? t('sportCoachPlayerAttendancePage.subtitle')
+    : t('sportAdminPlayerAttendancePage.subtitle')
+))
+
+const selectTeamMessage = computed(() => (
+  t('sportAdminPlayerAttendancePage.messages.selectTeam')
+))
+
+const noAssignedTeamsMessage = computed(() => (
+  isCoachAttendanceRoute.value
+    ? t('sportCoachPlayerAttendancePage.messages.noTeams')
+    : t('sportAdminPlayerAttendancePage.messages.selectTeam')
+))
+
 const statusOptions = computed(() => [
   { value: 'present', label: t('sportAttendanceStatus.present'), short: t('sportAttendanceStatus.presentShort'), active: 'border-emerald-300 bg-emerald-50 text-emerald-700', ring: 'ring-emerald-200' },
   { value: 'absent', label: t('sportAttendanceStatus.absent'), short: t('sportAttendanceStatus.absentShort'), active: 'border-rose-300 bg-rose-50 text-rose-700', ring: 'ring-rose-200' },
@@ -47,6 +69,21 @@ const statusOptions = computed(() => [
 const markedCount = computed(() => Object.values(attendanceMap.value).filter((entry) => entry.status).length)
 const summary = computed(() => t('sportAdminPlayerAttendancePage.summary', { marked: markedCount.value, total: players.value.length }))
 const selectedTeamLabel = computed(() => teamOptions.value.find((option) => String(option.value) === String(selectedTeamId.value))?.label || t('sportAdminPlayerAttendancePage.placeholders.team'))
+const selectedDateLabel = computed(() => {
+  const value = selectedDate.value
+
+  if (!value) return ''
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat(language.value === 'KH' ? 'km-KH' : 'en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+})
 const heroStats = computed(() => [
   {
     key: 'team',
@@ -56,7 +93,8 @@ const heroStats = computed(() => [
   {
     key: 'date',
     label: t('sportAdminPlayerAttendancePage.filters.date'),
-    value: selectedDate.value,
+    value: selectedDateLabel.value,
+    nowrap: true,
   },
   {
     key: 'marked',
@@ -73,6 +111,31 @@ function shiftDate(days) {
   const date = new Date(selectedDate.value)
   date.setDate(date.getDate() + days)
   selectedDate.value = date.toISOString().slice(0, 10)
+}
+
+function syncCoachRouteTeamId(teamId) {
+  if (!isCoachAttendanceRoute.value || !route.name) return
+
+  const nextQuery = { ...route.query }
+
+  if (teamId) {
+    nextQuery.teamId = teamId
+  } else {
+    delete nextQuery.teamId
+  }
+
+  const currentTeamId = String(route.query.teamId || '').trim()
+  if (currentTeamId === String(teamId || '').trim()) return
+
+  router.replace({ name: route.name, query: nextQuery }).catch(() => {})
+}
+
+function setSelectedTeamId(teamId, { syncRoute = false } = {}) {
+  selectedTeamId.value = String(teamId || '').trim()
+
+  if (syncRoute) {
+    syncCoachRouteTeamId(selectedTeamId.value)
+  }
 }
 
 function buildMap(playerList, existingRecords) {
@@ -100,17 +163,28 @@ async function loadTeams() {
     }))
 
     const routeTeamId = String(route.query.teamId || '').trim()
-    const initialTeamId = routeTeamId && teamOptions.value.some((option) => String(option.value) === routeTeamId)
-      ? routeTeamId
-      : String(selectedTeamId.value || teamOptions.value[0]?.value || '')
+    if (isCoachAttendanceRoute.value) {
+      if (routeTeamId) {
+        setSelectedTeamId(routeTeamId)
+      } else if (teamOptions.value.length === 1) {
+        setSelectedTeamId(teamOptions.value[0].value, { syncRoute: true })
+      } else {
+        setSelectedTeamId('')
+      }
+    } else {
+      const initialTeamId = routeTeamId && teamOptions.value.some((option) => String(option.value) === routeTeamId)
+        ? routeTeamId
+        : String(selectedTeamId.value || teamOptions.value[0]?.value || '')
 
-    if (initialTeamId) {
-      selectedTeamId.value = initialTeamId
-    } else if (!selectedTeamId.value && teamOptions.value.length) {
-      selectedTeamId.value = String(teamOptions.value[0].value)
+      if (initialTeamId) {
+        setSelectedTeamId(initialTeamId)
+      } else if (!selectedTeamId.value && teamOptions.value.length) {
+        setSelectedTeamId(teamOptions.value[0].value)
+      }
     }
   } catch {
     teamOptions.value = []
+    errorMessage.value = t('sportAdminPlayerAttendancePage.messages.loadFailed')
   } finally {
     teamsLoading.value = false
   }
@@ -213,15 +287,14 @@ onMounted(() => {
     <Toast />
     <section class="sport-attendance-sheet">
       <HeaderSection
-        :title="t('sportAdminPlayerAttendancePage.title')"
-        :subtitle="t('sportAdminPlayerAttendancePage.subtitle')"
+        :title="pageTitle"
+        :subtitle="pageSubtitle"
       />
 
       <AttendanceHero :stats="heroStats">
         <template #copy>
           <p class="hero-eyebrow">{{ t('sportAttendanceShared.playersEyebrow') }}</p>
-          <h2 class="hero-title">{{ t('sportAdminPlayerAttendancePage.title') }}</h2>
-          <p class="hero-text">{{ t('sportAdminPlayerAttendancePage.subtitle') }}</p>
+          <p class="hero-text">{{ pageSubtitle }}</p>
         </template>
       </AttendanceHero>
 
@@ -231,23 +304,28 @@ onMounted(() => {
         :team-options="teamOptions"
         :loading="loading"
         :teams-loading="teamsLoading"
-        @update:team-id="selectedTeamId = $event"
+        :show-back="!isCoachAttendanceRoute"
+        @update:team-id="setSelectedTeamId($event, { syncRoute: isCoachAttendanceRoute })"
         @update:date="selectedDate = $event"
         @shift-date="shiftDate"
         @go-today="selectedDate = todayIso()"
-        @go-back="router.push({ name: isCoachAttendanceRoute ? 'dashboard-sport-coach-teams' : 'dashboard-sport-admin-attendance' })"
+        @go-back="router.push({ name: 'dashboard-sport-admin-attendance' })"
       />
 
-      <div v-if="!selectedTeamId" class="state-empty">
-        {{ t('sportAdminPlayerAttendancePage.messages.selectTeam') }}
+      <div v-if="loading || teamsLoading" class="state-empty">
+        {{ t('common.loading') }}
       </div>
 
       <div v-else-if="errorMessage" class="state-error">
         {{ errorMessage }}
       </div>
 
-      <div v-else-if="loading" class="state-empty">
-        {{ t('loading') }}
+      <div v-else-if="!selectedTeamId && !teamOptions.length" class="state-empty">
+        {{ noAssignedTeamsMessage }}
+      </div>
+
+      <div v-else-if="!selectedTeamId" class="state-empty">
+        {{ selectTeamMessage }}
       </div>
 
       <div v-else-if="!players.length" class="state-empty">
@@ -288,14 +366,6 @@ onMounted(() => {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-}
-
-.hero-title {
-  margin: 0 0 0.35rem;
-  color: #0f172a;
-  font-size: clamp(1.35rem, 2vw, 1.8rem);
-  font-weight: 800;
-  line-height: 1.1;
 }
 
 .hero-text {

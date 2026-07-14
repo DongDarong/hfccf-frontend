@@ -167,4 +167,42 @@ describe('Breadcrumb', () => {
     expect(wrapper.text()).toBe('')
     expect(wrapper.find('nav').exists()).toBe(false)
   })
+
+  it('renders the coach attendance breadcrumb trail in English', async () => {
+    const wrapper = await mountAtRoute('dashboard-sport-coach-attendance', [
+      {
+        path: '/module/sport-coach',
+        name: 'dashboard-sport-coach',
+        component: { template: '<div />' },
+      },
+      {
+        path: '/module/sport-coach/attendance',
+        name: 'dashboard-sport-coach-attendance',
+        component: { template: '<div />' },
+      },
+    ])
+
+    expect(wrapper.text()).toContain('Coach Dashboard')
+    expect(wrapper.text()).toContain('Player Attendance')
+    expect(wrapper.findAll('a')).toHaveLength(1)
+  })
+
+  it('renders the coach attendance breadcrumb trail in Khmer', async () => {
+    const wrapper = await mountAtRoute('dashboard-sport-coach-attendance', [
+      {
+        path: '/module/sport-coach',
+        name: 'dashboard-sport-coach',
+        component: { template: '<div />' },
+      },
+      {
+        path: '/module/sport-coach/attendance',
+        name: 'dashboard-sport-coach-attendance',
+        component: { template: '<div />' },
+      },
+    ], 'kh')
+
+    expect(wrapper.text()).toContain('ផ្ទាំងគ្រប់គ្រងគ្រូបង្វឹក')
+    expect(wrapper.text()).toContain('វត្តមានកីឡាករ')
+    expect(wrapper.findAll('a')).toHaveLength(1)
+  })
 })

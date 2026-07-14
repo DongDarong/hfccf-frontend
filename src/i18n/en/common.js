@@ -5,6 +5,7 @@ import states from './common/states'
 
 export default {
   loading: 'Loading',
+  today: 'Today',
   refresh: 'Refresh',
   logout: 'Logout',
   logoutConfirm: 'Are you sure you want to log out?',

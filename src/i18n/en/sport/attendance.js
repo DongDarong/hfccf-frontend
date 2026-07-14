@@ -68,6 +68,13 @@ export default {
       skippedNote: 'Only players with a selected status will be saved.',
     },
   },
+  sportCoachPlayerAttendancePage: {
+    title: 'Player Attendance',
+    subtitle: 'Choose one of your assigned teams and mark each player for the selected date.',
+    messages: {
+      noTeams: 'No active team assignments were found for your account.',
+    },
+  },
   sportAdminAttendanceHistoryPage: {
     title: 'Attendance History',
     subtitle: 'Search player attendance records by team and date range.',

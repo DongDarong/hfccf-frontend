@@ -131,6 +131,54 @@ describe('sport coach pages', () => {
     expect(loadTeams).toHaveBeenCalled()
   })
 
+  it('does not render a coach attendance row action in my teams', async () => {
+    const wrapper = mountWithPlugins(MyTeams, {
+      messages: {
+        en: {
+          sportCoachTeamManagement: {
+            myTeams: { title: 'My Teams', subtitle: 'Assigned teams', panelTitle: 'Assigned teams', panelText: 'Only active assignments are shown here.' },
+            actions: {
+              viewPlayers: 'View players',
+              addPlayer: 'Add player',
+              requestMatch: 'Request match',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
+          DataTable: { template: '<div><slot /></div>' },
+          Column: {
+            template:
+              '<div>' +
+              '<slot name="body" :data="{ id: \'team-1\', status: \'active\' }" />' +
+              '<slot />' +
+              '</div>',
+          },
+          Button: { props: ['label'], template: '<button>{{ label }}</button>' },
+          StatusBadge: { template: '<span><slot /></span>' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    expect(wrapper.text()).toContain('View players')
+    expect(wrapper.text()).toContain('Add player')
+    expect(wrapper.text()).toContain('Request match')
+    expect(wrapper.text()).not.toContain('Player Attendance')
+  })
+
   it('renders the my requests page with coach-safe data', async () => {
     const wrapper = mountWithPlugins(MyRequests, {
       messages: {

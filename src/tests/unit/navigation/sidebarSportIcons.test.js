@@ -24,6 +24,7 @@ const sportSection = sportSidebar.sections[0]
 const mainSection = mainSidebar.sections[0]
 const coachItemIds = [
   'sport-coach-dashboard',
+  'sport-player-attendance',
   'sport-training-schedule',
   'sport-my-teams',
   'sport-team-roster',
@@ -60,6 +61,7 @@ const expectedIconRefs = {
 
 const expectedCoachIconRefs = {
   'sport-coach-dashboard': IconHomeBolt,
+  'sport-player-attendance': IconClipboardCheck,
   'sport-training-schedule': IconCalendarTime,
   'sport-my-teams': IconUsersGroup,
   'sport-team-roster': IconClipboardList,
@@ -73,6 +75,11 @@ describe('sport sidebar icon family', () => {
 
   it('removes redundant item-level admin badges from the sport section', () => {
     expect(sportSection.items.every((item) => !Object.prototype.hasOwnProperty.call(item, 'badgeKey'))).toBe(true)
+  })
+
+  it('removes redundant item-level staff badges from the coach sidebar items', () => {
+    expect(mainSection.items.filter((item) => coachItemIds.includes(item.id))
+      .every((item) => !Object.prototype.hasOwnProperty.call(item, 'badgeKey'))).toBe(true)
   })
 
   it('resolves a concrete component for every sport sidebar icon key', () => {
