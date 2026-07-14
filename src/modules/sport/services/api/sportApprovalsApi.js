@@ -68,8 +68,12 @@ export async function rejectPendingMatch(matchId, payload = {}) {
 export async function listCoachTeamAssignments(options = {}) {
   const response = await http.get('/sport/admin/coach-team-assignments', {
     params: buildQueryParams({
+      page: options.page || 1,
+      per_page: options.perPage || 100,
       search: options.search || '',
       status: options.status || '',
+      coach_user_id: options.coachUserId || options.coach_user_id || '',
+      team_id: options.teamId || options.team_id || '',
     }),
     signal: options.signal,
   })

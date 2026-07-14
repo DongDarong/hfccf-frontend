@@ -218,7 +218,24 @@ describe('sport coach pages', () => {
   })
 
   it('renders the coach assignments page shell', async () => {
-    listCoachTeamAssignments.mockResolvedValueOnce({ items: [] })
+    listCoachTeamAssignments.mockResolvedValueOnce({
+      items: [
+        {
+          id: 'assignment-1',
+          status: 'active',
+          coach: {
+            firstName: 'Alex',
+            lastName: 'Coach',
+            username: 'Alex Coach',
+            email: 'alex.coach@hfccf.org',
+          },
+          team: {
+            name: 'Lions FC',
+          },
+        },
+      ],
+      pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+    })
     const wrapper = mountWithPlugins(CoachTeamAssignments, {
       messages: {
         en: {
@@ -242,9 +259,7 @@ describe('sport coach pages', () => {
           MainLayout: { template: '<div><slot /></div>' },
           HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
           Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
-          DataTable: { template: '<div><slot /></div>' },
-          Column: { template: '<div><slot /></div>' },
-          Button: { template: '<button><slot /></button>' },
+          Button: { template: '<button @click="$emit(\'click\')"><slot /></button>' },
           Select: { template: '<div />' },
           StatusBadge: { template: '<span><slot /></span>' },
         },
@@ -253,6 +268,7 @@ describe('sport coach pages', () => {
         },
       },
     })
+    await flushPromises()
     expect(wrapper.text()).toContain('Current assignments')
     expect(saveCoachTeamAssignment).toBeDefined()
     expect(deactivateCoachTeamAssignment).toBeDefined()

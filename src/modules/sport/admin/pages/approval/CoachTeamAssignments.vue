@@ -11,6 +11,11 @@ import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchSportCoaches, fetchSportTeams } from '@/modules/sport/services/sportApi'
 import { useSportApprovals } from '@/modules/sport/admin/composables/useSportApprovals'
+import {
+  coachDisplayName,
+  resolveAssignmentErrorMessage,
+  teamDisplayName,
+} from './utils/coachTeamAssignmentsHelpers'
 
 defineOptions({ name: 'SportCoachTeamAssignmentsPage' })
 
@@ -60,19 +65,36 @@ async function refresh() {
 }
 
 async function submit() {
-  await saveCoachTeamAssignment({
-    coach_user_id: form.coachUserId,
-    team_id: form.teamId,
-    status: form.status,
-  })
-  await refresh()
+  loading.value = true
+  error.value = ''
+  try {
+    await saveCoachTeamAssignment({
+      coach_user_id: form.coachUserId,
+      team_id: form.teamId,
+      status: form.status,
+    })
+    await refresh()
+  } catch (exception) {
+    error.value = resolveAssignmentErrorMessage(exception, t)
+  } finally {
+    loading.value = false
+  }
 }
 
 async function deactivate(row) {
   const id = String(row?.id || '').trim()
   if (!id) return
-  await deactivateCoachTeamAssignment(id)
-  await refresh()
+
+  loading.value = true
+  error.value = ''
+  try {
+    await deactivateCoachTeamAssignment(id)
+    await refresh()
+  } catch (exception) {
+    error.value = resolveAssignmentErrorMessage(exception, t)
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(() => {
@@ -104,8 +126,16 @@ onMounted(() => {
         <template #title>{{ t('sportCoachTeamManagement.assignments.listTitle') }}</template>
         <template #content>
           <DataTable :value="assignments" :loading="loading" data-key="id" striped-rows>
-            <Column field="coach.name" :header="t('sportCoachTeamManagement.common.coach')" />
-            <Column field="team.name" :header="t('sportCoachTeamManagement.common.team')" />
+            <Column :header="t('sportCoachTeamManagement.common.coach')">
+              <template #body="{ data }">
+                {{ coachDisplayName(data) }}
+              </template>
+            </Column>
+            <Column :header="t('sportCoachTeamManagement.common.team')">
+              <template #body="{ data }">
+                {{ teamDisplayName(data) }}
+              </template>
+            </Column>
             <Column field="status" :header="t('sportCoachTeamManagement.common.status')">
               <template #body="{ data }">
                 <StatusBadge :status="tone(data.status)" :label="data.status" size="sm" />
