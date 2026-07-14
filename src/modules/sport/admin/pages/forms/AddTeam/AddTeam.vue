@@ -11,9 +11,10 @@ import AddAdminProfileImageField from '@/modules/super-admin/components/admin-ma
 import {
   createSportTeam,
   fetchSportTeam,
-  fetchSportTeams,
   updateSportTeam,
-} from '@/modules/sport/services/sportApi'
+} from '@/modules/sport/services/api/sportTeamsApi'
+import { fetchSportDivisions } from '@/modules/sport/services/api/sportDivisionApi'
+import { fetchSportCoaches } from '@/modules/sport/services/api/sportCoachesApi'
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
@@ -47,32 +48,36 @@ const {
   setLogoPreview,
 } = useTeamLogo(t)
 
-const teamRows = ref([])
 const divisions = ref([])
 const coaches = ref([])
 
 const divisionOptions = computed(() => {
   if (!Array.isArray(divisions.value)) return []
   return divisions.value
-    .filter((div) => div?.status === 'active' && div?.name)
-    .map((div) => div.name)
-    .filter(Boolean)
-    .sort()
+    .filter((division) => division?.status === 'active' && division?.name)
+    .map((division) => ({
+      label: division.name,
+      value: division.name,
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label))
 })
 
 const coachOptions = computed(() => {
   if (!Array.isArray(coaches.value)) return []
   return coaches.value
-    .filter((coach) => coach?.status === 'active' && coach?.user)
-    .map((coach) => coach.user)
-    .filter(Boolean)
-    .sort()
+    .filter((coach) => coach?.status === 'active' && coach?.id && coach?.fullName)
+    .map((coach) => ({
+      label: coach.fullName,
+      value: coach.id,
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label))
 })
 
 const form = reactive({
   name: '',
   division: '',
   coach: '',
+  coachDisplayName: '',
   captain: '',
   players: 0,
   matches: 0,
@@ -124,6 +129,10 @@ const pageSubtitle = computed(() => {
 })
 
 const selectedDivisionLabel = computed(() => form.division || t('sportAddTeam.noDivisionSelected'))
+const selectedCoach = computed(() => coaches.value.find((coach) => String(coach.id) === String(form.coach)) || null)
+const selectedDivision = computed(
+  () => divisions.value.find((division) => String(division.name) === String(form.division)) || null,
+)
 
 const formSummaryCards = computed(() => [
   {
@@ -195,6 +204,11 @@ function removeLogo() {
   removeLogoComposable(form, isFormLocked.value)
 }
 
+function handleCoachChange(value) {
+  form.coach = value
+  form.coachDisplayName = coachOptions.value.find((option) => String(option.value) === String(value))?.label || ''
+}
+
 async function goBackToTeams() {
   await router.push(TEAMS_DIRECTORY_PATH)
 }
@@ -218,7 +232,10 @@ async function onSubmit() {
 
   isSubmitting.value = true
   try {
-    const payload = getFormPayload(form)
+    const payload = getFormPayload(form, {
+      selectedCoach: selectedCoach.value,
+      selectedDivision: selectedDivision.value,
+    })
 
     if (isEditMode.value && route.query.id) {
       await updateSportTeam(route.query.id, payload)
@@ -247,14 +264,13 @@ async function onSuccessClose() {
 
 onMounted(async () => {
   try {
-    // TODO: API endpoints not yet implemented on backend
-    // Temporarily using empty data for UI testing
-    const teamsResponse = await fetchSportTeams({ perPage: 100 })
-    teamRows.value = teamsResponse.items || []
-    divisions.value = []
-    coaches.value = []
+    const [divisionResponse, coachResponse] = await Promise.all([
+      fetchSportDivisions({ perPage: 100, status: 'active' }),
+      fetchSportCoaches({ perPage: 100, status: 'active' }),
+    ])
+    divisions.value = divisionResponse.items || []
+    coaches.value = coachResponse.items || []
   } catch {
-    teamRows.value = []
     divisions.value = []
     coaches.value = []
   }
@@ -267,7 +283,7 @@ onMounted(async () => {
   try {
     const found = await fetchSportTeam(id)
     if (!found?.id) return
-    initializeFormFromTeam(found, form, statusOptions, divisionOptions.value)
+    initializeFormFromTeam(found, form, statusOptions, divisionOptions.value, coachOptions.value)
     setLogoPreview(getLogoPreview(found))
   } catch {
     // Handle error silently
@@ -328,7 +344,7 @@ onMounted(async () => {
             :status-label="getStatusLabel"
             @update:name="form.name = $event"
             @update:division="form.division = $event"
-            @update:coach="form.coach = $event"
+            @update:coach="handleCoachChange"
             @update:captain="form.captain = $event"
             @update:players="form.players = $event"
             @update:matches="form.matches = $event"

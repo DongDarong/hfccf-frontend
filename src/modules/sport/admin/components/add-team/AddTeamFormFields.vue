@@ -120,25 +120,29 @@ const placeholders = computed(() => ({
   venue: t('sportAddTeam.venuePlaceholder'),
 }))
 
-const divisionSelectOptions = computed(() => {
-  if (!Array.isArray(props.divisionOptions)) return []
-  return props.divisionOptions
-    .filter(Boolean)
-    .map((value) => ({
-      label: value || '',
-      value: value || '',
-    }))
-})
+function toSelectOptions(values) {
+  if (!Array.isArray(values)) return []
 
-const coachSelectOptions = computed(() => {
-  if (!Array.isArray(props.coachOptions)) return []
-  return props.coachOptions
+  return values
     .filter(Boolean)
-    .map((value) => ({
-      label: value || '',
-      value: value || '',
-    }))
-})
+    .map((value) => {
+      if (value && typeof value === 'object') {
+        return {
+          label: value.label || value.name || value.value || '',
+          value: value.value ?? value.id ?? value.name ?? '',
+        }
+      }
+
+      return {
+        label: value || '',
+        value: value || '',
+      }
+    })
+}
+
+const divisionSelectOptions = computed(() => toSelectOptions(props.divisionOptions))
+
+const coachSelectOptions = computed(() => toSelectOptions(props.coachOptions))
 
 const statusSelectOptions = computed(() => {
   if (!Array.isArray(props.statusOptions)) return []
