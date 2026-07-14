@@ -78,6 +78,47 @@ describe('PlayerTable', () => {
 
     const avatar = wrapper.findComponent({ name: 'Avatar' })
     expect(avatar.props('image')).toBe('https://cdn.example.com/sport/players/player-1.jpg')
-    expect(avatar.props('label')).toBe('PO')
+    expect(avatar.props('label')).toBe(null)
+  })
+
+  it('renders a real avatar image element when the player photo is present', () => {
+    const wrapper = mountWithPlugins(PlayerTable, {
+      props: {
+        players: [
+          {
+            id: 'player-28',
+            name: 'ដូង ដារ៉ុង',
+            photo: 'https://pub-04c60dfb58ea4e43969c54044749b899.r2.dev/sport/players/CsS4RRcCf79LjUDtAlPABXLuPmBnoRmcts4FFiR8.jpg',
+            position: 'Forward',
+            team: 'ABC FC',
+            division: 'U11',
+            matchesPlayed: 0,
+            jerseyNumber: 15,
+            age: 12,
+            goalsScored: 0,
+            status: 'active',
+          },
+        ],
+        t: (key) => key,
+        emptyText: 'No players',
+        currentPage: 1,
+        totalPages: 1,
+      },
+      global: {
+        stubs: {
+          DataTable: DataTableStub,
+          Column: ColumnStub,
+          StatusBadge: { template: '<span class="status-stub" />' },
+          Pagination: { template: '<div class="pagination-stub" />' },
+          ActionsButton: { template: '<div class="actions-stub" />' },
+        },
+      },
+    })
+
+    const img = wrapper.find('img')
+    expect(img.exists()).toBe(true)
+    expect(img.attributes('src')).toBe(
+      'https://pub-04c60dfb58ea4e43969c54044749b899.r2.dev/sport/players/CsS4RRcCf79LjUDtAlPABXLuPmBnoRmcts4FFiR8.jpg',
+    )
   })
 })

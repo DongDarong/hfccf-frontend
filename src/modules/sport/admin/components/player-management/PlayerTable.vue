@@ -136,7 +136,7 @@ function onPageChange(newPage) {
           <div class="flex items-center gap-3">
             <Avatar
               :image="data.photo || ''"
-              :label="initials(data.name)"
+              :label="data.photo ? null : initials(data.name)"
               shape="circle"
               class="player-table__avatar"
             />
