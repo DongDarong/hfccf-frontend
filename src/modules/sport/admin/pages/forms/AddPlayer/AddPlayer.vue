@@ -129,6 +129,7 @@ const positionOptions = POSITION_OPTIONS
 const preferredFootOptions = PREFERRED_FOOT_OPTIONS
 const bloodTypeOptions = BLOOD_TYPE_OPTIONS
 const statusOptions = STATUS_OPTIONS
+const registrationStatusOptions = REGISTRATION_STATUS_OPTIONS
 
 const checklistItems = computed(() => [
   {

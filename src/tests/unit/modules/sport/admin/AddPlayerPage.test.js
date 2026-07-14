@@ -40,7 +40,10 @@ function mountPage() {
         Form: { props: ['title', 'description', 'loading', 'disabled', 'showCancel', 'cancelText'], template: '<div><slot /><slot name="actions" /></div>' },
         AlertSuccess: { props: ['show', 'title', 'message', 'buttonText'], template: '<div v-if="show" class="success">{{ message }}</div>' },
         AlertError: { props: ['show', 'title', 'message', 'buttonText'], template: '<div v-if="show" class="error">{{ message }}</div>' },
-        AddPlayerFormFields: { props: ['registrationStatus'], template: '<div class="fields" />' },
+        AddPlayerFormFields: {
+          props: ['registrationStatus', 'registrationStatusOptions'],
+          template: '<div class="fields" />',
+        },
         AddPlayerFormActions: { props: ['isViewMode', 'isEditMode'], template: '<div class="actions" />' },
         PlayerChecklist: {
           props: ['items'],
@@ -53,6 +56,8 @@ function mountPage() {
 
 describe('AddPlayer page', () => {
   it('localizes the default registration status label in the checklist', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
     fetchSportTeams.mockResolvedValueOnce({
       items: [{ id: 'team-1', name: 'Lions FC', status: 'active' }],
       pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
@@ -68,6 +73,9 @@ describe('AddPlayer page', () => {
     expect(fetchSportTeams).toHaveBeenCalledWith({ perPage: 100 })
     expect(wrapper.text()).toContain('Registered')
     expect(wrapper.text()).not.toContain('registered /')
+    expect(warnSpy.mock.calls.flat().join(' ')).not.toContain('registrationStatusOptions')
+
+    warnSpy.mockRestore()
   })
 
   it('shows a load error when the player reference data cannot be loaded', async () => {
