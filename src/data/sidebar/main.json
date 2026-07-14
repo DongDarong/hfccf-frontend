@@ -29,19 +29,39 @@
           }
         },
         {
+          "id": "sport-coach-dashboard",
+          "labelKey": "nav.dashboard",
+          "icon": "sport-coach-dashboard",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          },
+          "exactActive": true,
+          "routeName": "dashboard-sport-coach"
+        },
+        {
           "id": "staff-dashboard",
           "labelKey": "nav.dashboard",
           "icon": "home",
           "access": {
             "scopes": [
               "staff"
+            ],
+            "domains": [
+              "english",
+              "preschool",
+              "scholarship"
             ]
           },
           "exactActive": true,
           "routeNameByDomain": {
             "english": "dashboard-english-teacher",
             "preschool": "dashboard-preschool-teacher",
-            "sport": "dashboard-sport-coach",
+            "scholarship": "dashboard-scholarship-teacher",
             "default": "dashboard"
           }
         },
@@ -49,7 +69,7 @@
           "id": "sport-training-schedule",
           "routeName": "dashboard-sport-coach-training",
           "labelKey": "nav.items.trainingSchedule",
-          "icon": "reports",
+          "icon": "sport-coach-training",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -64,7 +84,7 @@
           "id": "sport-my-teams",
           "routeName": "dashboard-sport-coach-teams",
           "labelKey": "nav.items.myTeams",
-          "icon": "users",
+          "icon": "sport-coach-teams",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -79,7 +99,7 @@
           "id": "sport-team-roster",
           "routeName": "dashboard-sport-coach-roster",
           "labelKey": "nav.items.teamRoster",
-          "icon": "users",
+          "icon": "sport-coach-roster",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -94,7 +114,7 @@
           "id": "sport-my-requests",
           "routeName": "dashboard-sport-coach-requests",
           "labelKey": "nav.items.myRequests",
-          "icon": "reports",
+          "icon": "sport-coach-requests",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [

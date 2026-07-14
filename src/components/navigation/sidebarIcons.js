@@ -18,8 +18,12 @@ import BallIcon from '@/assets/icons/Ball.vue'
 import TeamIcon from '@/assets/icons/Team.vue'
 import PlayersIcon from '@/assets/icons/Players.vue'
 import {
+  IconCalendarTime,
   IconCalendarCheck,
   IconClipboardCheck,
+  IconClipboardList,
+  IconFileDescription,
+  IconHomeBolt,
   IconLayoutDashboard,
   IconScoreboard,
   IconShirtSport,
@@ -63,6 +67,11 @@ export const sidebarIconByName = {
   'sport-player-approval': IconUserCheck,
   'sport-match-approval': IconCalendarCheck,
   'sport-lifecycle': IconTimelineEvent,
+  'sport-coach-dashboard': IconHomeBolt,
+  'sport-coach-training': IconCalendarTime,
+  'sport-coach-teams': IconUsersGroup,
+  'sport-coach-roster': IconClipboardList,
+  'sport-coach-requests': IconFileDescription,
 }
 
 export function resolveSidebarIconComponent(iconKey) {
