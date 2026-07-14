@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -11,10 +11,11 @@ import AttendanceToolbar from '@/modules/sport/admin/components/AttendanceToolba
 import AttendanceTable from '@/modules/sport/admin/components/AttendanceTable.vue'
 import {
   fetchSportAttendance,
-  fetchSportPlayers,
   fetchSportTeams,
   saveSportPlayerAttendance,
+  fetchCoachTeams,
 } from '@/modules/sport/services/sportApi'
+import { fetchTeamRoster } from '@/modules/sport/services/api/teamRosterApi'
 
 defineOptions({
   name: 'SportAdminAttendancePlayersPage',
@@ -22,7 +23,9 @@ defineOptions({
 
 const { t } = useLanguage()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
+const isCoachAttendanceRoute = computed(() => route.name === 'dashboard-sport-coach-attendance')
 
 const selectedTeamId = ref('')
 const selectedDate = ref(new Date().toISOString().slice(0, 10))
@@ -88,13 +91,22 @@ function buildMap(playerList, existingRecords) {
 async function loadTeams() {
   teamsLoading.value = true
   try {
-    const response = await fetchSportTeams({ page: 1, perPage: 100, status: 'active' })
+    const response = isCoachAttendanceRoute.value
+      ? await fetchCoachTeams({ page: 1, perPage: 100, status: 'active' })
+      : await fetchSportTeams({ page: 1, perPage: 100, status: 'active' })
     teamOptions.value = (response.items || []).map((team) => ({
       label: team.name || team.shortName || team.teamCode || `Team ${team.id}`,
       value: String(team.id),
     }))
 
-    if (!selectedTeamId.value && teamOptions.value.length) {
+    const routeTeamId = String(route.query.teamId || '').trim()
+    const initialTeamId = routeTeamId && teamOptions.value.some((option) => String(option.value) === routeTeamId)
+      ? routeTeamId
+      : String(selectedTeamId.value || teamOptions.value[0]?.value || '')
+
+    if (initialTeamId) {
+      selectedTeamId.value = initialTeamId
+    } else if (!selectedTeamId.value && teamOptions.value.length) {
       selectedTeamId.value = String(teamOptions.value[0].value)
     }
   } catch {
@@ -112,7 +124,7 @@ async function loadDay() {
 
   try {
     const [playersResponse, attendanceResponse] = await Promise.all([
-      fetchSportPlayers({ teamId: selectedTeamId.value, page: 1, perPage: 100 }),
+      fetchTeamRoster(selectedTeamId.value),
       fetchSportAttendance({
         attendanceType: 'player',
         teamId: selectedTeamId.value,
@@ -122,7 +134,7 @@ async function loadDay() {
       }),
     ])
 
-    players.value = playersResponse.items || []
+    players.value = playersResponse.players || []
     attendanceMap.value = buildMap(players.value, attendanceResponse.items || [])
   } catch (error) {
     errorMessage.value = error?.message || t('sportAdminPlayerAttendancePage.messages.loadFailed')
@@ -223,7 +235,7 @@ onMounted(() => {
         @update:date="selectedDate = $event"
         @shift-date="shiftDate"
         @go-today="selectedDate = todayIso()"
-        @go-back="router.push({ name: 'dashboard-sport-admin-attendance' })"
+        @go-back="router.push({ name: isCoachAttendanceRoute ? 'dashboard-sport-coach-teams' : 'dashboard-sport-admin-attendance' })"
       />
 
       <div v-if="!selectedTeamId" class="state-empty">

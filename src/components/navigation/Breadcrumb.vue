@@ -139,6 +139,10 @@ const SPORT_CRUMB_MAP = {
     { labelKey: 'breadcrumb.coachDashboard', to: { name: 'dashboard-sport-coach' } },
     { labelKey: 'breadcrumb.myTeams' },
   ],
+  'dashboard-sport-coach-attendance': [
+    { labelKey: 'breadcrumb.coachDashboard', to: { name: 'dashboard-sport-coach' } },
+    { labelKey: 'breadcrumb.attendanceCoaches' },
+  ],
   'dashboard-sport-coach-roster': [
     { labelKey: 'breadcrumb.coachDashboard', to: { name: 'dashboard-sport-coach' } },
     { labelKey: 'breadcrumb.myTeams', to: { name: 'dashboard-sport-coach-teams' } },
