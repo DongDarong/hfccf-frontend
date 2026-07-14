@@ -52,6 +52,12 @@
           "icon": "sport-assignment"
         },
         {
+          "id": "sport-equipment",
+          "routeName": "dashboard-sport-admin-equipment",
+          "labelKey": "nav.items.equipment",
+          "icon": "inventory"
+        },
+        {
           "id": "sport-matches",
           "routeName": "dashboard-sport-admin-matches",
           "labelKey": "nav.items.matches",

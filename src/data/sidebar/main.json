@@ -122,6 +122,20 @@
           }
         },
         {
+          "id": "sport-equipment",
+          "routeName": "dashboard-sport-coach-equipment",
+          "labelKey": "nav.items.equipment",
+          "icon": "inventory",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "sport"
+            ]
+          }
+        },
+        {
           "id": "sport-my-requests",
           "routeName": "dashboard-sport-coach-requests",
           "labelKey": "nav.items.myRequests",

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import mainSidebar from '@/data/sidebar/main.json'
 import sportSidebar from '@/data/sidebar/sport.json'
 import { resolveSidebarIconComponent, sidebarIconByName } from '@/components/navigation/sidebarIcons'
+import InventoryIcon from '@/assets/icons/Inventory.vue'
 import {
   IconCalendarTime,
   IconCalendarCheck,
@@ -28,6 +29,7 @@ const coachItemIds = [
   'sport-training-schedule',
   'sport-my-teams',
   'sport-team-roster',
+  'sport-equipment',
   'sport-my-requests',
 ]
 
@@ -38,6 +40,7 @@ const expectedItemOrder = [
   'sport-teams',
   'sport-players',
   'sport-coach-team-assignments',
+  'sport-equipment',
   'sport-matches',
   'sport-tournaments',
   'sport-pending-player-approvals',
@@ -52,6 +55,7 @@ const expectedIconRefs = {
   'sport-teams': IconUsersGroup,
   'sport-players': IconShirtSport,
   'sport-coach-team-assignments': IconUserShare,
+  'sport-equipment': InventoryIcon,
   'sport-matches': IconScoreboard,
   'sport-tournaments': IconTrophy,
   'sport-pending-player-approvals': IconUserCheck,
@@ -65,6 +69,7 @@ const expectedCoachIconRefs = {
   'sport-training-schedule': IconCalendarTime,
   'sport-my-teams': IconUsersGroup,
   'sport-team-roster': IconClipboardList,
+  'sport-equipment': InventoryIcon,
   'sport-my-requests': IconFileDescription,
 }
 

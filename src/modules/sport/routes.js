@@ -50,6 +50,15 @@ export const sportRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/sport-admin/equipment',
+    name: 'dashboard-sport-admin-equipment',
+    component: () => import('@/modules/sport/shared/pages/EquipmentManagement/EquipmentManagement.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+  defineAppRoute({
     path: '/module/sport-admin/users',
     name: 'dashboard-sport-admin-users',
     component: () => import('@/modules/sport/admin/pages/list/CoachManagement/CoachManagement.vue'),
@@ -206,6 +215,15 @@ export const sportRoutes = [
     path: '/module/sport-admin/coach',
     name: 'dashboard-sport-coach',
     component: () => import('@/modules/sport/coach/pages/Dashboard.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/sport-coach/equipment',
+    name: 'dashboard-sport-coach-equipment',
+    component: () => import('@/modules/sport/shared/pages/EquipmentManagement/EquipmentManagement.vue'),
     access: {
       domains: [DOMAINS.SPORT],
       scopes: [ACCESS_SCOPES.STAFF],

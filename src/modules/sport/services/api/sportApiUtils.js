@@ -417,6 +417,106 @@ export function normalizeMatchRow(row = {}) {
   }
 }
 
+export function normalizeEquipmentItemRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    equipmentCode: normalizeText(row.equipmentCode || row.equipment_code),
+    name: normalizeText(row.name),
+    category: normalizeText(row.category),
+    description: normalizeText(row.description),
+    unit: normalizeText(row.unit),
+    totalQuantity: Number(row.totalQuantity ?? row.total_quantity ?? 0),
+    availableQuantity: Number(row.availableQuantity ?? row.available_quantity ?? 0),
+    minimumStockLevel: Number(row.minimumStockLevel ?? row.minimum_stock_level ?? 0),
+    storageLocation: normalizeText(row.storageLocation || row.storage_location),
+    status: normalizeText(row.status || 'active'),
+    isLowStock: Boolean(row.isLowStock ?? row.is_low_stock ?? false),
+    isOutOfStock: Boolean(row.isOutOfStock ?? row.is_out_of_stock ?? false),
+    createdByUserId: row.createdByUserId ?? row.created_by_user_id ?? '',
+    updatedByUserId: row.updatedByUserId ?? row.updated_by_user_id ?? '',
+    createdBy: row.createdBy || null,
+    updatedBy: row.updatedBy || null,
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
+export function normalizeEquipmentRequestRow(row = {}) {
+  const item = row.item || row.equipmentItem || {}
+  const team = row.team || {}
+  const coach = row.coach || {}
+  const reviewedBy = row.reviewedBy || {}
+  const issuedBy = row.issuedBy || {}
+  const returnedBy = row.returnedBy || {}
+
+  return {
+    id: row.id ?? '',
+    requestCode: normalizeText(row.requestCode || row.request_code),
+    equipmentItemId: row.equipmentItemId ?? row.equipment_item_id ?? '',
+    coachUserId: row.coachUserId ?? row.coach_user_id ?? '',
+    teamId: row.teamId ?? row.team_id ?? '',
+    requestedQuantity: Number(row.requestedQuantity ?? row.requested_quantity ?? 0),
+    approvedQuantity: row.approvedQuantity ?? row.approved_quantity ?? null,
+    issuedQuantity: Number(row.issuedQuantity ?? row.issued_quantity ?? 0),
+    returnedQuantity: Number(row.returnedQuantity ?? row.returned_quantity ?? 0),
+    damagedQuantity: Number(row.damagedQuantity ?? row.damaged_quantity ?? 0),
+    missingQuantity: Number(row.missingQuantity ?? row.missing_quantity ?? 0),
+    purpose: normalizeText(row.purpose),
+    requiredDate: row.requiredDate || row.required_date || '',
+    expectedReturnDate: row.expectedReturnDate || row.expected_return_date || '',
+    status: normalizeText(row.status || 'pending'),
+    adminNote: normalizeText(row.adminNote || row.admin_note),
+    rejectionReason: normalizeText(row.rejectedReason || row.rejectionReason || row.rejected_reason),
+    reviewedByUserId: row.reviewedByUserId ?? row.reviewed_by_user_id ?? '',
+    reviewedAt: row.reviewedAt || row.reviewed_at || '',
+    issuedByUserId: row.issuedByUserId ?? row.issued_by_user_id ?? '',
+    issuedAt: row.issuedAt || row.issued_at || '',
+    returnedByUserId: row.returnedByUserId ?? row.returned_by_user_id ?? '',
+    returnedAt: row.returnedAt || row.returned_at || '',
+    item: item && (item.id || item.name || item.equipmentCode || item.equipment_code) ? normalizeEquipmentItemRow(item) : null,
+    coach: coach && (coach.id || coach.username || coach.firstName || coach.first_name) ? {
+      id: coach.id ?? '',
+      firstName: normalizeText(coach.firstName || coach.first_name),
+      lastName: normalizeText(coach.lastName || coach.last_name),
+      username: normalizeText(coach.username),
+      email: normalizeText(coach.email),
+    } : null,
+    team: team && (team.id || team.name || team.teamCode || team.team_code) ? {
+      id: team.id ?? '',
+      teamCode: normalizeText(team.teamCode || team.team_code),
+      name: normalizeText(team.name),
+      shortName: normalizeText(team.shortName || team.short_name),
+    } : null,
+    reviewedBy: reviewedBy && (reviewedBy.id || reviewedBy.username || reviewedBy.firstName || reviewedBy.first_name) ? {
+      id: reviewedBy.id ?? '',
+      firstName: normalizeText(reviewedBy.firstName || reviewedBy.first_name),
+      lastName: normalizeText(reviewedBy.lastName || reviewedBy.last_name),
+      username: normalizeText(reviewedBy.username),
+      email: normalizeText(reviewedBy.email),
+    } : null,
+    issuedBy: issuedBy && (issuedBy.id || issuedBy.username || issuedBy.firstName || issuedBy.first_name) ? {
+      id: issuedBy.id ?? '',
+      firstName: normalizeText(issuedBy.firstName || issuedBy.first_name),
+      lastName: normalizeText(issuedBy.lastName || issuedBy.last_name),
+      username: normalizeText(issuedBy.username),
+      email: normalizeText(issuedBy.email),
+    } : null,
+    returnedBy: returnedBy && (returnedBy.id || returnedBy.username || returnedBy.firstName || returnedBy.first_name) ? {
+      id: returnedBy.id ?? '',
+      firstName: normalizeText(returnedBy.firstName || returnedBy.first_name),
+      lastName: normalizeText(returnedBy.lastName || returnedBy.last_name),
+      username: normalizeText(returnedBy.username),
+      email: normalizeText(returnedBy.email),
+    } : null,
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
 export function normalizeCoachListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
   const items = unwrapApiItems(response)
 
@@ -450,6 +550,26 @@ export function normalizeMatchListResponse(response, fallbackPage = 1, fallbackP
   return {
     items: items.map(normalizeMatchRow),
     pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+export function normalizeEquipmentItemListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+
+  return {
+    items: items.map(normalizeEquipmentItemRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+    summary: unwrapApiData(response)?.summary || {},
+  }
+}
+
+export function normalizeEquipmentRequestListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+
+  return {
+    items: items.map(normalizeEquipmentRequestRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+    summary: unwrapApiData(response)?.summary || {},
   }
 }
 

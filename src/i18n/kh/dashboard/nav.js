@@ -99,6 +99,7 @@ export default {
     preschoolProgressSummary: 'របាយការណ៍វាយតម្លៃ',
     myTeams: 'ក្រុមរបស់ខ្ញុំ',
     myRequests: 'សំណើរបស់ខ្ញុំ',
+    equipment: 'ឧបករណ៍',
     teamRoster: 'បញ្ជីសមាជិកក្រុម',
     matchSquadSelection: 'ជ្រើសរើសក្រុមប្រកួត',
     matchSquadReview: 'ត្រួតពិនិត្យក្រុមប្រកួត',

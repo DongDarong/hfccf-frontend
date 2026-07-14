@@ -13,6 +13,7 @@ const t = (key) => ({
   'nav.items.trainingSchedule': 'Training Schedule',
   'nav.items.myTeams': 'My Teams',
   'nav.items.teamRoster': 'Team Roster',
+  'nav.items.equipment': 'Equipment',
   'nav.items.myRequests': 'My Requests',
   'nav.dashboard': 'Dashboard',
 }[key] || key)
@@ -37,9 +38,10 @@ describe('sidebar route targets', () => {
       'sport-coaches',
       'sport-teams',
       'sport-players',
+      'sport-coach-team-assignments',
+      'sport-equipment',
       'sport-matches',
       'sport-tournaments',
-      'sport-coach-team-assignments',
       'sport-pending-player-approvals',
       'sport-pending-match-approvals',
       'sport-player-lifecycle',
@@ -82,13 +84,18 @@ describe('sidebar route targets', () => {
       'sport-training-schedule',
       'sport-my-teams',
       'sport-team-roster',
+      'sport-equipment',
       'sport-my-requests',
     ])
 
     const attendanceItem = mainSection.items.find((item) => item.id === 'sport-player-attendance')
+    const equipmentItem = mainSection.items.find((item) => item.id === 'sport-equipment')
     expect(attendanceItem.routeName).toBe('dashboard-sport-coach-attendance')
     expect(attendanceItem.routePath).toBe('/module/sport-coach/attendance')
     expect(attendanceItem.label).toBe('Attendance')
+    expect(equipmentItem.routeName).toBe('dashboard-sport-coach-equipment')
+    expect(equipmentItem.routePath).toBe('/module/sport-coach/equipment')
+    expect(equipmentItem.label).toBe('Equipment')
     expect(mainSection.items.every((item) => !Object.prototype.hasOwnProperty.call(item, 'badgeKey'))).toBe(true)
     expect(mainSection.items.map((item) => item.routeName)).not.toContain('dashboard-sport-admin-attendance')
   })

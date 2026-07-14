@@ -99,6 +99,7 @@ export default {
     preschoolProgressSummary: 'Assessment Reports',
     myTeams: 'My Teams',
     myRequests: 'My Requests',
+    equipment: 'Equipment',
     teamRoster: 'Team Roster',
     matchSquadSelection: 'Match Squad',
     matchSquadReview: 'Squad Review',

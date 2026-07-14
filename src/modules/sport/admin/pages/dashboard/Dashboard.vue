@@ -46,7 +46,7 @@ const cards = computed(() => [
   },
   {
     title: t('sportAdminDashboard.cards.lowStockItems.title'),
-    value: dashboard.value.summary.liveMatches ?? 0,
+    value: dashboard.value.summary.lowStockItems ?? 0,
     label: t('sportAdminDashboard.cards.lowStockItems.label'),
     status: 'error',
   },
