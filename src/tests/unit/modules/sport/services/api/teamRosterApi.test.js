@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import http from '@/services/http'
 import {
   addTeamRosterPlayer,
+  fetchAdminRosterCandidates,
   fetchPlayerHistory,
   fetchRosterCandidates,
   fetchTeamRoster,
@@ -102,5 +103,22 @@ describe('team roster api', () => {
       params: {},
     }))
     expect(result.items[0]).toMatchObject({ id: 8, name: 'Player Eight', approvalStatus: 'approved' })
+  })
+
+  it('loads admin roster candidates from the admin-safe lookup', async () => {
+    http.get.mockResolvedValueOnce(
+      stubResponse({
+        team: null,
+        items: [{ id: 9, name: 'Player Nine', approval_status: 'approved' }],
+        pagination: { page: 1, per_page: 10, total: 1, total_pages: 1 },
+      }),
+    )
+
+    const result = await fetchAdminRosterCandidates()
+
+    expect(http.get).toHaveBeenCalledWith('/sport/admin/teams/roster-candidates', expect.objectContaining({
+      params: {},
+    }))
+    expect(result.items[0]).toMatchObject({ id: 9, name: 'Player Nine', approvalStatus: 'approved' })
   })
 })

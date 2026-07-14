@@ -77,3 +77,27 @@ export async function fetchRosterCandidates(teamId, options = {}) {
     raw: payload,
   }
 }
+
+export async function fetchAdminRosterCandidates(teamId = null, options = {}) {
+  const id = resolveId(teamId)
+  const endpoint = id
+    ? `/sport/admin/teams/${encodeURIComponent(id)}/roster-candidates`
+    : '/sport/admin/teams/roster-candidates'
+
+  const response = await http.get(endpoint, {
+    params: buildQueryParams({
+      search: options.search || '',
+    }),
+    signal: options.signal,
+  })
+
+  const payload = unwrapApiData(response) || {}
+  const normalized = normalizePlayerListResponse(response)
+
+  return {
+    team: payload.team || null,
+    items: normalized.items,
+    pagination: normalized.pagination,
+    raw: payload,
+  }
+}

@@ -496,6 +496,7 @@ export function buildTeamPayload(payload = {}, options = {}) {
       captain_name: payload.captainName || payload.captain_name || payload.captain,
       players_count: payload.playersCount ?? payload.players_count ?? payload.players,
       matches_count: payload.matchesCount ?? payload.matches_count ?? payload.matches,
+      player_ids: JSON.stringify(payload.selectedPlayerIds ?? payload.playerIds ?? payload.player_ids ?? []),
       wins: payload.wins,
       draws: payload.draws,
       losses: payload.losses,

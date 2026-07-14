@@ -10,11 +10,11 @@ import { useLanguage } from '@/composables/useLanguage'
 import AddAdminProfileImageField from '@/modules/super-admin/components/admin-management/AddAdminProfileImageField.vue'
 import {
   createSportTeam,
-  fetchSportTeam,
   updateSportTeam,
 } from '@/modules/sport/services/api/sportTeamsApi'
 import { fetchSportDivisions } from '@/modules/sport/services/api/sportDivisionApi'
 import { fetchSportCoaches } from '@/modules/sport/services/api/sportCoachesApi'
+import { fetchAdminRosterCandidates, fetchTeamRoster } from '@/modules/sport/services/api/teamRosterApi'
 import AddTeamIntro from '@/modules/sport/admin/components/add-team/AddTeamIntro.vue'
 import AddTeamFormFields from '@/modules/sport/admin/components/add-team/AddTeamFormFields.vue'
 import AddTeamFormActions from '@/modules/sport/admin/components/add-team/AddTeamFormActions.vue'
@@ -79,7 +79,6 @@ const form = reactive({
   coach: '',
   coachDisplayName: '',
   captain: '',
-  players: 0,
   matches: 0,
   venue: '',
   status: STATUS_OPTIONS[0],
@@ -88,6 +87,14 @@ const form = reactive({
   losses: 0,
   logo: null,
 })
+
+const selectedPlayers = ref([])
+const playerCandidates = ref([])
+const playerSearch = ref('')
+const playerLoading = ref(false)
+const playerError = ref('')
+const rosterLoading = ref(false)
+const rosterError = ref('')
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
@@ -105,6 +112,7 @@ const isAddMode = computed(() => mode.value === 'add')
 const isFormLocked = computed(() => isSubmitting.value || isViewMode.value)
 const isKh = computed(() => language.value === 'KH')
 const points = computed(() => Math.max(form.wins, 0) * 3 + Math.max(form.draws, 0))
+const selectedPlayerCount = computed(() => selectedPlayers.value.length)
 const statusOptions = STATUS_OPTIONS
 
 function getStatusLabel(status) {
@@ -114,6 +122,63 @@ function getStatusLabel(status) {
 function resetFeedback() {
   errorMessage.value = ''
   showError.value = false
+}
+
+function getTeamIdFromRoute() {
+  return String(route.query.id || '').trim()
+}
+
+function setSelectedPlayers(players = []) {
+  if (!Array.isArray(players)) {
+    selectedPlayers.value = []
+    return
+  }
+
+  const seen = new Set()
+  selectedPlayers.value = players.filter((player) => {
+    const key = String(player?.id || '').trim()
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+async function loadPlayerCandidates(teamId = null) {
+  playerLoading.value = true
+  playerError.value = ''
+
+  try {
+    const response = await fetchAdminRosterCandidates(teamId)
+    playerCandidates.value = response.items || []
+    return response
+  } catch {
+    playerCandidates.value = []
+    playerError.value = t('sportAddTeam.validation.failedToLoadPlayers')
+    return { team: null, items: [], pagination: { page: 1, perPage: 10, total: 0, totalPages: 1 }, raw: null }
+  } finally {
+    playerLoading.value = false
+  }
+}
+
+async function loadTeamRoster(teamId) {
+  rosterLoading.value = true
+  rosterError.value = ''
+
+  try {
+    const response = await fetchTeamRoster(teamId)
+    if (response.team) {
+      initializeFormFromTeam(response.team, form, statusOptions, divisionOptions.value, coachOptions.value)
+      setLogoPreview(getLogoPreview(response.team))
+    }
+
+    setSelectedPlayers(response.players || [])
+    return response
+  } catch {
+    rosterError.value = t('sportAddTeam.validation.loadFailed')
+    throw new Error(rosterError.value)
+  } finally {
+    rosterLoading.value = false
+  }
 }
 
 const pageTitle = computed(() => {
@@ -147,10 +212,10 @@ const formSummaryCards = computed(() => [
   {
     id: 'team-roster',
     title: t('sportAddTeam.players'),
-    value: form.players,
-    label: form.players ? t('sportAddTeam.rosterReady') : t('sportAddTeam.rosterPending'),
-    status: form.players ? 'success' : 'warning',
-    statusLabel: getStatusLabel(form.players ? 'success' : 'warning'),
+    value: selectedPlayerCount.value,
+    label: selectedPlayerCount.value ? t('sportAddTeam.rosterReady') : t('sportAddTeam.rosterPending'),
+    status: selectedPlayerCount.value ? 'success' : 'warning',
+    statusLabel: getStatusLabel(selectedPlayerCount.value ? 'success' : 'warning'),
     surfaceClass: 'bg-lime-50/80 border-lime-200',
   },
   {
@@ -235,6 +300,7 @@ async function onSubmit() {
     const payload = getFormPayload(form, {
       selectedCoach: selectedCoach.value,
       selectedDivision: selectedDivision.value,
+      selectedPlayerIds: selectedPlayers.value.map((player) => player.id),
     })
 
     if (isEditMode.value && route.query.id) {
@@ -243,10 +309,18 @@ async function onSubmit() {
       await createSportTeam(payload)
     }
     showSuccess.value = true
-  } catch {
-    errorMessage.value = isEditMode.value
-      ? t('sportAddTeam.validation.updateFailed')
-      : t('sportAddTeam.validation.createFailed')
+  } catch (cause) {
+    const message = String(cause?.message || '').toLowerCase()
+
+    if (message.includes('another active team') || message.includes('already belongs')) {
+      errorMessage.value = t('sportAddTeam.validation.playerAlreadyAssigned')
+    } else if (message.includes('selected players') || message.includes('eligible for this team') || message.includes('cannot join')) {
+      errorMessage.value = t('sportAddTeam.validation.rosterUpdateFailed')
+    } else {
+      errorMessage.value = isEditMode.value
+        ? t('sportAddTeam.validation.updateFailed')
+        : t('sportAddTeam.validation.createFailed')
+    }
     showError.value = true
   } finally {
     isSubmitting.value = false
@@ -275,18 +349,30 @@ onMounted(async () => {
     coaches.value = []
   }
 
-  if (isAddMode.value) return
-
-  const id = String(route.query.id || '').trim()
-  if (!id) return
-
   try {
-    const found = await fetchSportTeam(id)
-    if (!found?.id) return
-    initializeFormFromTeam(found, form, statusOptions, divisionOptions.value, coachOptions.value)
-    setLogoPreview(getLogoPreview(found))
+    if (isAddMode.value) {
+      await loadPlayerCandidates()
+      return
+    }
+
+    const id = getTeamIdFromRoute()
+    if (!id) return
+
+    const results = await Promise.allSettled([
+      loadTeamRoster(id),
+      loadPlayerCandidates(id),
+    ])
+
+    if (results[0].status === 'rejected') {
+      errorMessage.value = rosterError.value || t('sportAddTeam.validation.loadFailed')
+      showError.value = true
+    }
   } catch {
-    // Handle error silently
+    if (!rosterError.value) {
+      rosterError.value = t('sportAddTeam.validation.loadFailed')
+    }
+    errorMessage.value = rosterError.value
+    showError.value = true
   }
 })
 </script>
@@ -329,7 +415,6 @@ onMounted(async () => {
             :division="form.division"
             :coach="form.coach"
             :captain="form.captain"
-            :players="form.players"
             :matches="form.matches"
             :venue="form.venue"
             :status="form.status"
@@ -340,19 +425,25 @@ onMounted(async () => {
             :division-options="divisionOptions"
             :coach-options="coachOptions"
             :status-options="statusOptions"
+            :selected-players="selectedPlayers"
+            :player-candidates="playerCandidates"
+            :player-search="playerSearch"
+            :player-loading="playerLoading"
+            :player-error="playerError"
             :is-locked="isFormLocked"
             :status-label="getStatusLabel"
             @update:name="form.name = $event"
             @update:division="form.division = $event"
             @update:coach="handleCoachChange"
             @update:captain="form.captain = $event"
-            @update:players="form.players = $event"
             @update:matches="form.matches = $event"
             @update:venue="form.venue = $event"
             @update:status="form.status = $event"
             @update:wins="form.wins = $event"
             @update:draws="form.draws = $event"
             @update:losses="form.losses = $event"
+            @update:selected-players="setSelectedPlayers"
+            @update:player-search="playerSearch = $event"
           />
 
           <template #actions>
