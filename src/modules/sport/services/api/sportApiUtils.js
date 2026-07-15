@@ -37,6 +37,54 @@ export function splitName(fullName) {
   }
 }
 
+function parseMatchDateTime(value) {
+  const raw = normalizeText(value)
+  if (!raw) return null
+
+  const normalized = raw.includes(' ') && !raw.includes('T') ? raw.replace(' ', 'T') : raw
+  const parsed = new Date(normalized)
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+export function formatMatchDateTimeForInput(value) {
+  const parsed = parseMatchDateTime(value)
+  if (!parsed) return normalizeText(value)
+
+  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
+export function formatMatchDateTimeForDisplay(value) {
+  const raw = normalizeText(value)
+  if (!raw) return '-'
+
+  const parsed = parseMatchDateTime(raw)
+  if (!parsed) return raw
+
+  return parsed.toLocaleString()
+}
+
+export function formatMatchDateTimeParts(value) {
+  const parsed = parseMatchDateTime(value)
+
+  if (!parsed) {
+    const raw = normalizeText(value)
+    if (!raw) return { date: '-', time: '-' }
+
+    const [date = raw, time = '-'] = raw.split(/\s+/)
+    return {
+      date,
+      time: time === '-' ? '-' : time.slice(0, 5),
+    }
+  }
+
+  return {
+    date: parsed.toLocaleDateString(),
+    time: parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  }
+}
+
 export function resolveId(payloadOrId) {
   if (typeof payloadOrId === 'string' || typeof payloadOrId === 'number') {
     return normalizeText(payloadOrId)
@@ -709,6 +757,25 @@ export function buildMatchPayload(payload = {}, options = {}) {
       scheduled_at: payload.scheduledAt || payload.scheduled_at || payload.dateTime,
       status: payload.status,
       current_period: payload.currentPeriod || payload.current_period,
+      notes: payload.notes,
+    },
+    options,
+  )
+}
+
+export function buildCoachMatchPayload(payload = {}, options = {}) {
+  const scheduledAt = normalizeText(payload.scheduledAt || payload.scheduled_at || payload.dateTime)
+
+  return buildFormData(
+    {
+      match_code: payload.matchCode || payload.match_code,
+      team_id: payload.teamId || payload.team_id,
+      opponent_team_id: payload.opponentTeamId || payload.opponent_team_id,
+      match_type: payload.matchType || payload.match_type,
+      competition_type: payload.competitionType || payload.competition_type,
+      tournament_name: payload.tournamentName || payload.tournament_name,
+      venue: payload.venue,
+      scheduled_at: scheduledAt ? formatMatchDateTimeForInput(scheduledAt) : undefined,
       notes: payload.notes,
     },
     options,

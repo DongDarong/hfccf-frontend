@@ -66,9 +66,15 @@ describe('sport coach teams api', () => {
 
     http.post.mockResolvedValueOnce(stubResponse({ match: { id: 44, home_team_id: 22, away_team_id: 23 } }))
     await expect(
-      createCoachMatchRequest({ team_id: 22, opponent_team_id: 23, match_type: 'training' }),
+      createCoachMatchRequest({
+        team_id: 22,
+        opponent_team_id: 23,
+        match_type: 'training',
+        scheduledAt: '2026-05-20 15:00:00',
+      }),
     ).resolves.toMatchObject({ id: 44 })
     expect(http.post).toHaveBeenCalledWith('/sport/coach/matches', expect.any(FormData))
+    expect(http.post.mock.calls[1][1].get('scheduled_at')).toBe('2026-05-20T15:00')
 
     http.get.mockResolvedValueOnce(stubResponse({
       playerRequests: [{ id: 55, name: 'Request Player', approval_status: 'pending' }],
@@ -80,5 +86,21 @@ describe('sport coach teams api', () => {
       matchRequests: [{ id: 66, approvalStatus: 'pending' }],
     })
     expect(http.get).toHaveBeenCalledWith('/sport/coach/requests', { signal: undefined })
+  })
+
+  it('omits blank scheduled_at from coach match requests', async () => {
+    http.post.mockResolvedValueOnce(stubResponse({ match: { id: 45, home_team_id: 22, away_team_id: 23 } }))
+
+    await expect(
+      createCoachMatchRequest({
+        team_id: 22,
+        opponent_team_id: 23,
+        match_type: 'friendly',
+        scheduledAt: '',
+      }),
+    ).resolves.toMatchObject({ id: 45 })
+
+    const [, formData] = http.post.mock.calls[0]
+    expect(formData.get('scheduled_at')).toBe(null)
   })
 })

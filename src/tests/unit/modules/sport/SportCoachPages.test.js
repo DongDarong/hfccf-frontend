@@ -282,6 +282,60 @@ describe('sport coach pages', () => {
     expect(fetchCoachOpponentTeams).toHaveBeenCalled()
   })
 
+  it('renders the coach match schedule field as datetime-local', async () => {
+    fetchCoachOpponentTeams.mockResolvedValueOnce({
+      items: [{ id: 'team-2', name: 'Opponent FC' }],
+      pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
+    })
+
+    const wrapper = mountWithPlugins(MatchRequest, {
+      messages: {
+        en: {
+          sportCoachTeamManagement: {
+            common: {
+              selectTeam: 'Select a team',
+              selectOpponent: 'Select an opponent',
+              matchType: 'Match type',
+              trainingMatch: 'Training match',
+              friendlyMatch: 'Friendly match',
+              scheduledAt: 'Scheduled time',
+              notes: 'Notes',
+              venue: 'Venue',
+              loadError: 'Unable to load data right now.',
+            },
+            matchRequest: {
+              title: 'Training / Friendly Match Request',
+              subtitle: 'Request a training or friendly match for one of your assigned teams.',
+              panelTitle: 'New match request',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { props: ['title', 'subtitle'], template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Card: { template: '<div><slot name="title" /><slot name="content" /><slot /></div>' },
+          Button: { template: '<button><slot /></button>' },
+          Select: { template: '<div />' },
+          InputText: { inheritAttrs: true, template: '<input v-bind="$attrs" />' },
+          Textarea: { inheritAttrs: true, template: '<textarea v-bind="$attrs"></textarea>' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    expect(wrapper.find('input[type="datetime-local"]').exists()).toBe(true)
+  })
+
   it('renders the coach assignments page shell', async () => {
     listCoachTeamAssignments.mockResolvedValueOnce({
       items: [

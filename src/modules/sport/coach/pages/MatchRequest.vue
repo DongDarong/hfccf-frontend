@@ -88,7 +88,7 @@ onMounted(async () => {
               :loading="opponentLoading"
             />
             <Select v-model="form.matchType" :options="[{ label: t('sportCoachTeamManagement.common.trainingMatch'), value: 'training' }, { label: t('sportCoachTeamManagement.common.friendlyMatch'), value: 'friendly' }]" option-label="label" option-value="value" :placeholder="t('sportCoachTeamManagement.common.matchType')" />
-            <InputText v-model="form.scheduledAt" :placeholder="t('sportCoachTeamManagement.common.scheduledAt')" />
+            <InputText v-model="form.scheduledAt" type="datetime-local" :placeholder="t('sportCoachTeamManagement.common.scheduledAt')" />
           </div>
           <p v-if="opponentError" class="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {{ opponentError }}

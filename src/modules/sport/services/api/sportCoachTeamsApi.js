@@ -1,5 +1,6 @@
 import http from '@/services/http'
 import {
+  buildCoachMatchPayload,
   buildFormData,
   buildQueryParams,
   normalizeMatchRow,
@@ -84,7 +85,7 @@ export async function createCoachPlayerRequest(teamId, payload = {}, options = {
 }
 
 export async function createCoachMatchRequest(payload = {}, options = {}) {
-  const response = await http.post('/sport/coach/matches', buildFormData(payload, options))
+  const response = await http.post('/sport/coach/matches', buildCoachMatchPayload(payload, options))
   const data = unwrapApiData(response) || {}
   return normalizeMatchRow(data.match || data)
 }
