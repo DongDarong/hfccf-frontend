@@ -6,11 +6,11 @@ import Card from 'primevue/card'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Toast from 'primevue/toast'
 import Textarea from 'primevue/textarea'
+import Select from 'primevue/select'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -81,6 +81,19 @@ function createEquipmentForm() {
     storageLocation: '',
     status: 'active',
   }
+}
+
+function padEquipmentSegment(value) {
+  return String(value).padStart(2, '0')
+}
+
+function generateEquipmentCode() {
+  const now = new Date()
+  const datePart = `${now.getFullYear()}${padEquipmentSegment(now.getMonth() + 1)}${padEquipmentSegment(now.getDate())}`
+  const timePart = `${padEquipmentSegment(now.getHours())}${padEquipmentSegment(now.getMinutes())}`
+  const randomPart = String(Math.floor(Math.random() * 9000) + 1000)
+
+  return `EQ-${datePart}-${timePart}-${randomPart}`
 }
 
 function createCoachRequestForm() {
@@ -168,8 +181,32 @@ const requestActionDialogVisible = ref(false)
 const requestActionMode = ref('approve')
 const requestActionSaving = ref(false)
 const requestActionDialogError = ref('')
+const requestActionFieldErrors = ref({})
 const selectedRequest = ref(null)
 const requestActionForm = reactive(createRequestActionForm())
+
+function normalizeValidationMessages(error) {
+  const responseErrors = error?.validationErrors || error?.details?.data?.errors || error?.details?.errors || {}
+  const mapped = {}
+
+  Object.entries(responseErrors).forEach(([field, messages]) => {
+    const message = Array.isArray(messages) ? messages[0] : messages
+    const text = String(message || '').trim()
+
+    if (!text) return
+
+    mapped[field] = text
+    mapped[field.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())] = text
+  })
+
+  return mapped
+}
+
+const requestActionApprovedQuantityError = computed(() => (
+  requestActionFieldErrors.value.approved_quantity
+  || requestActionFieldErrors.value.approvedQuantity
+  || ''
+))
 
 const currentTableError = computed(() => {
   if (isCoachRoute.value) {
@@ -329,7 +366,9 @@ function openEquipmentDialog(mode, item = null) {
   equipmentDialogError.value = ''
   resetReactive(equipmentForm, createEquipmentForm())
 
-  if (item) {
+  if (mode === 'create') {
+    equipmentForm.equipmentCode = generateEquipmentCode()
+  } else if (item) {
     resetReactive(equipmentForm, {
       equipmentCode: item.equipmentCode || '',
       name: item.name || '',
@@ -366,10 +405,12 @@ function openRequestActionDialog(mode, request) {
   selectedRequest.value = request
   requestActionMode.value = mode
   requestActionDialogError.value = ''
+  requestActionFieldErrors.value = {}
   resetReactive(requestActionForm, createRequestActionForm())
 
   if (mode === 'approve') {
-    requestActionForm.approvedQuantity = Number(request.requestedQuantity ?? 1)
+    const requestedQuantity = Number(request.requestedQuantity ?? 1)
+    requestActionForm.approvedQuantity = Number.isFinite(requestedQuantity) && requestedQuantity > 0 ? requestedQuantity : 1
   } else if (mode === 'issue') {
     requestActionForm.issuedQuantity = Number(request.approvedQuantity ?? request.requestedQuantity ?? 1)
   } else if (mode === 'return') {
@@ -394,6 +435,8 @@ function closeCoachRequestDialog() {
 function closeRequestActionDialog() {
   requestActionDialogVisible.value = false
   selectedRequest.value = null
+  requestActionDialogError.value = ''
+  requestActionFieldErrors.value = {}
 }
 
 async function loadCoachTeams() {
@@ -632,6 +675,7 @@ async function saveCoachRequest() {
 async function saveRequestAction() {
   requestActionSaving.value = true
   requestActionDialogError.value = ''
+  requestActionFieldErrors.value = {}
 
   try {
     const requestId = selectedRequest.value?.id
@@ -639,8 +683,8 @@ async function saveRequestAction() {
 
     if (requestActionMode.value === 'approve') {
       await approveSportEquipmentRequest(requestId, {
-        approvedQuantity: Number(requestActionForm.approvedQuantity || 0),
-        adminNote: requestActionForm.adminNote || undefined,
+        approved_quantity: Number(requestActionForm.approvedQuantity || 0),
+        admin_note: requestActionForm.adminNote || undefined,
       })
       toast.add({ severity: 'success', summary: t('sportEquipment.messages.approved'), life: 3000 })
     } else if (requestActionMode.value === 'reject') {
@@ -668,7 +712,13 @@ async function saveRequestAction() {
     closeRequestActionDialog()
     await loadEquipmentRequests()
   } catch (error) {
-    requestActionDialogError.value = getApiErrorMessage(error, t('sportEquipment.messages.loadFailed'))
+    if (error?.validationErrors || error?.details?.data?.errors || error?.details?.errors) {
+      requestActionFieldErrors.value = normalizeValidationMessages(error)
+      requestActionDialogError.value =
+        requestActionMode.value === 'approve' ? '' : getApiErrorMessage(error, t('sportEquipment.messages.saveFailed'))
+    } else {
+      requestActionDialogError.value = getApiErrorMessage(error, t('sportEquipment.messages.saveFailed'))
+    }
   } finally {
     requestActionSaving.value = false
   }
@@ -742,9 +792,9 @@ watch(
         <template #content>
           <div class="sport-equipment-page__filters">
             <InputText v-model="equipmentSearch" :placeholder="t('sportEquipment.fields.name')" class="sport-equipment-page__field" />
-            <Dropdown v-model="equipmentCategory" :options="equipmentCategoryOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.category')" class="sport-equipment-page__field" />
-            <Dropdown v-model="equipmentStatusFilter" :options="itemStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
-            <Dropdown v-model="equipmentStockFilter" :options="stockOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.statuses.lowStock')" class="sport-equipment-page__field" />
+            <Select v-model="equipmentCategory" :options="equipmentCategoryOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.category')" class="sport-equipment-page__field" />
+            <Select v-model="equipmentStatusFilter" :options="itemStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
+            <Select v-model="equipmentStockFilter" :options="stockOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.statuses.lowStock')" class="sport-equipment-page__field" />
             <Button :label="t('sportEquipment.buttons.search')" @click="loadInventory" />
             <Button :label="t('sportEquipment.buttons.addEquipment')" @click="openEquipmentDialog('create')" />
           </div>
@@ -775,7 +825,7 @@ watch(
                 <StatusBadge :status="resolveItemState(data).tone" :label="resolveItemState(data).label" size="sm" />
               </template>
             </Column>
-            <Column :header="t('common.actions')">
+            <Column :header="t('common.table.actions')">
               <template #body="{ data }">
                 <div class="flex flex-wrap gap-2">
                   <Button size="small" text :label="t('common.actions.view')" @click="openEquipmentDialog('view', data)" />
@@ -802,7 +852,7 @@ watch(
         <template #content>
           <div class="sport-equipment-page__filters">
             <InputText v-model="equipmentRequestSearch" :placeholder="t('sportEquipment.fields.purpose')" class="sport-equipment-page__field" />
-            <Dropdown v-model="equipmentRequestStatusFilter" :options="requestStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
+            <Select v-model="equipmentRequestStatusFilter" :options="requestStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
             <Button :label="t('sportEquipment.buttons.search')" @click="loadEquipmentRequests" />
           </div>
 
@@ -842,7 +892,7 @@ watch(
                 <StatusBadge :status="statusTone(data.status)" :label="t(`sportEquipment.statuses.${String(data.status || '').toLowerCase()}`) || data.status" size="sm" />
               </template>
             </Column>
-            <Column :header="t('common.actions')">
+            <Column :header="t('common.table.actions')">
               <template #body="{ data }">
                 <div class="flex flex-wrap gap-2">
                   <Button
@@ -889,8 +939,8 @@ watch(
         <template #content>
           <div class="sport-equipment-page__filters">
             <InputText v-model="coachItemSearch" :placeholder="t('sportEquipment.fields.name')" class="sport-equipment-page__field" />
-            <Dropdown v-model="coachItemCategory" :options="coachCategoryOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.category')" class="sport-equipment-page__field" />
-            <Dropdown v-model="coachItemStockFilter" :options="stockOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.statuses.lowStock')" class="sport-equipment-page__field" />
+            <Select v-model="coachItemCategory" :options="coachCategoryOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.category')" class="sport-equipment-page__field" />
+            <Select v-model="coachItemStockFilter" :options="stockOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.statuses.lowStock')" class="sport-equipment-page__field" />
             <Button :label="t('sportEquipment.buttons.search')" @click="loadCoachEquipment" />
           </div>
 
@@ -919,7 +969,7 @@ watch(
                 <StatusBadge :status="resolveItemState(data).tone" :label="resolveItemState(data).label" size="sm" />
               </template>
             </Column>
-            <Column :header="t('common.actions')">
+            <Column :header="t('common.table.actions')">
               <template #body="{ data }">
                 <Button
                   size="small"
@@ -942,7 +992,7 @@ watch(
         <template #content>
           <div class="sport-equipment-page__filters">
             <InputText v-model="coachRequestSearch" :placeholder="t('sportEquipment.fields.purpose')" class="sport-equipment-page__field" />
-            <Dropdown v-model="coachRequestStatusFilter" :options="requestStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
+            <Select v-model="coachRequestStatusFilter" :options="requestStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
             <Button :label="t('sportEquipment.buttons.search')" @click="loadCoachRequests" />
           </div>
 
@@ -1010,53 +1060,106 @@ watch(
       class="sport-equipment-dialog"
       :style="{ width: 'min(42rem, 94vw)' }"
     >
-      <div class="space-y-3">
+      <div class="sport-equipment-form">
+        <div v-if="equipmentDialogMode === 'create'" class="sport-equipment-form__hero">
+          <div class="sport-equipment-form__hero-icon">
+            <i class="pi pi-box" />
+          </div>
+          <div>
+            <p class="sport-equipment-form__eyebrow">{{ t('sportEquipment.form.create.eyebrow') }}</p>
+            <h3 class="sport-equipment-form__title">{{ t('sportEquipment.form.create.title') }}</h3>
+            <p class="sport-equipment-form__subtitle">{{ t('sportEquipment.form.create.subtitle') }}</p>
+          </div>
+        </div>
+
         <p v-if="equipmentDialogError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ equipmentDialogError }}
         </p>
 
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.equipmentCode') }}</span>
-          <InputText v-model="equipmentForm.equipmentCode" :disabled="equipmentDialogMode === 'view'" />
-        </label>
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.name') }}</span>
-          <InputText v-model="equipmentForm.name" :disabled="equipmentDialogMode === 'view'" />
-        </label>
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.category') }}</span>
-          <InputText v-model="equipmentForm.category" :disabled="equipmentDialogMode === 'view'" />
-        </label>
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.unit') }}</span>
-          <InputText v-model="equipmentForm.unit" :disabled="equipmentDialogMode === 'view'" />
-        </label>
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <section class="sport-equipment-form__section">
+          <div class="sport-equipment-form__section-head">
+            <h4>{{ t('sportEquipment.form.create.sections.basic.title') }}</h4>
+            <p>{{ t('sportEquipment.form.create.sections.basic.subtitle') }}</p>
+          </div>
+
+          <div
+            class="sport-equipment-form__code-preview"
+            :class="{ 'sport-equipment-form__code-preview--create': equipmentDialogMode === 'create' }"
+            data-testid="equipment-code-preview"
+          >
+            <div>
+              <span class="sport-equipment-form__code-label">{{ t('sportEquipment.fields.equipmentCode') }}</span>
+              <strong class="sport-equipment-form__code-value">{{ equipmentForm.equipmentCode || '—' }}</strong>
+            </div>
+            <p class="sport-equipment-form__code-hint">
+              {{
+                equipmentDialogMode === 'create'
+                  ? t('sportEquipment.form.create.codeHint')
+                  : t('sportEquipment.form.edit.codeHint')
+              }}
+            </p>
+          </div>
+
+          <div class="sport-equipment-form__grid sport-equipment-form__grid--three">
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.name') }}</span>
+              <InputText v-model="equipmentForm.name" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.category') }}</span>
+              <InputText v-model="equipmentForm.category" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.unit') }}</span>
+              <InputText v-model="equipmentForm.unit" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+          </div>
+        </section>
+
+        <section class="sport-equipment-form__section">
+          <div class="sport-equipment-form__section-head">
+            <h4>{{ t('sportEquipment.form.create.sections.stock.title') }}</h4>
+            <p>{{ t('sportEquipment.form.create.sections.stock.subtitle') }}</p>
+          </div>
+
+          <div class="sport-equipment-form__grid sport-equipment-form__grid--three">
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.totalQuantity') }}</span>
+              <InputNumber v-model="equipmentForm.totalQuantity" :min="0" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.availableQuantity') }}</span>
+              <InputNumber v-model="equipmentForm.availableQuantity" :min="0" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.minimumStock') }}</span>
+              <InputNumber v-model="equipmentForm.minimumStockLevel" :min="0" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+          </div>
+
+          <div class="sport-equipment-form__grid sport-equipment-form__grid--two">
+            <label class="sport-equipment-page__label sport-equipment-page__label--wide">
+              <span>{{ t('sportEquipment.fields.storageLocation') }}</span>
+              <InputText v-model="equipmentForm.storageLocation" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+            <label class="sport-equipment-page__label">
+              <span>{{ t('sportEquipment.fields.status') }}</span>
+              <Select v-model="equipmentForm.status" :options="itemStatusOptions" option-label="label" option-value="value" :disabled="equipmentDialogMode === 'view'" />
+            </label>
+          </div>
+        </section>
+
+        <section class="sport-equipment-form__section">
+          <div class="sport-equipment-form__section-head">
+            <h4>{{ t('sportEquipment.form.create.sections.description.title') }}</h4>
+            <p>{{ t('sportEquipment.form.create.sections.description.subtitle') }}</p>
+          </div>
+
           <label class="sport-equipment-page__label">
-            <span>{{ t('sportEquipment.fields.totalQuantity') }}</span>
-            <InputNumber v-model="equipmentForm.totalQuantity" :min="0" :disabled="equipmentDialogMode === 'view'" />
+            <span>{{ t('sportEquipment.fields.description') }}</span>
+            <Textarea v-model="equipmentForm.description" rows="4" auto-resize :disabled="equipmentDialogMode === 'view'" />
           </label>
-          <label class="sport-equipment-page__label">
-            <span>{{ t('sportEquipment.fields.availableQuantity') }}</span>
-            <InputNumber v-model="equipmentForm.availableQuantity" :min="0" :disabled="equipmentDialogMode === 'view'" />
-          </label>
-          <label class="sport-equipment-page__label">
-            <span>{{ t('sportEquipment.fields.minimumStock') }}</span>
-            <InputNumber v-model="equipmentForm.minimumStockLevel" :min="0" :disabled="equipmentDialogMode === 'view'" />
-          </label>
-        </div>
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.storageLocation') }}</span>
-          <InputText v-model="equipmentForm.storageLocation" :disabled="equipmentDialogMode === 'view'" />
-        </label>
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.status') }}</span>
-          <Dropdown v-model="equipmentForm.status" :options="itemStatusOptions" option-label="label" option-value="value" :disabled="equipmentDialogMode === 'view'" />
-        </label>
-        <label class="sport-equipment-page__label">
-          <span>{{ t('sportEquipment.fields.description') }}</span>
-          <Textarea v-model="equipmentForm.description" rows="3" auto-resize :disabled="equipmentDialogMode === 'view'" />
-        </label>
+        </section>
       </div>
 
       <template #footer>
@@ -1085,7 +1188,7 @@ watch(
         </p>
         <label class="sport-equipment-page__label">
           <span>{{ t('sportEquipment.fields.team') }}</span>
-          <Dropdown v-model="coachRequestForm.teamId" :options="coachTeamOptions" option-label="label" option-value="value" :disabled="coachTeamsLoading" />
+          <Select v-model="coachRequestForm.teamId" :options="coachTeamOptions" option-label="label" option-value="value" :disabled="coachTeamsLoading" />
         </label>
         <label class="sport-equipment-page__label">
           <span>{{ t('sportEquipment.fields.name') }}</span>
@@ -1141,6 +1244,9 @@ watch(
           <label class="sport-equipment-page__label">
             <span>{{ t('sportEquipment.fields.approvedQuantity') }}</span>
             <InputNumber v-model="requestActionForm.approvedQuantity" :min="1" />
+            <small v-if="requestActionApprovedQuantityError" class="text-xs font-medium text-rose-600">
+              {{ requestActionApprovedQuantityError }}
+            </small>
           </label>
         </template>
 
@@ -1251,5 +1357,166 @@ watch(
   gap: 0.35rem;
   font-size: 0.9rem;
   color: #334155;
+}
+
+.sport-equipment-page__label :deep(.p-inputtext),
+.sport-equipment-page__label :deep(.p-select),
+.sport-equipment-page__label :deep(.p-inputnumber),
+.sport-equipment-page__label :deep(.p-textarea) {
+  width: 100%;
+}
+
+.sport-equipment-page__label--wide {
+  grid-column: 1 / -1;
+}
+
+.sport-equipment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sport-equipment-form__hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(59, 130, 246, 0.06)),
+    #f8fafc;
+  border: 1px solid #dbeafe;
+}
+
+.sport-equipment-form__hero-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  display: grid;
+  place-items: center;
+  background: #0f172a;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+.sport-equipment-form__hero-icon i {
+  font-size: 1.1rem;
+}
+
+.sport-equipment-form__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0284c7;
+}
+
+.sport-equipment-form__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sport-equipment-form__subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.sport-equipment-form__section {
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.sport-equipment-form__section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.9rem;
+}
+
+.sport-equipment-form__section-head h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sport-equipment-form__section-head p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sport-equipment-form__code-preview {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(59, 130, 246, 0.03));
+  margin-bottom: 0.9rem;
+}
+
+.sport-equipment-form__code-preview--create {
+  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.08);
+}
+
+.sport-equipment-form__code-label {
+  display: block;
+  margin-bottom: 0.18rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0284c7;
+}
+
+.sport-equipment-form__code-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+}
+
+.sport-equipment-form__code-hint {
+  margin: 0.18rem 0 0;
+  font-size: 0.82rem;
+  color: #475569;
+  text-align: right;
+  max-width: 18rem;
+}
+
+.sport-equipment-form__grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.sport-equipment-form__grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sport-equipment-form__grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .sport-equipment-form__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .sport-equipment-form__grid--two,
+  .sport-equipment-form__grid--three {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

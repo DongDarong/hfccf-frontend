@@ -129,7 +129,7 @@ describe('sportEquipmentApi', () => {
     const adminRequest = await fetchSportEquipmentRequest('req-2')
     await createSportEquipmentItem({ name: 'Cones' })
     await updateSportEquipmentItem('item-1', { name: 'Cones 2' })
-    await approveSportEquipmentRequest('req-3', { approvedQuantity: 2 })
+    await approveSportEquipmentRequest('req-3', { approved_quantity: 2 })
     await rejectSportEquipmentRequest('req-3', { rejectedReason: 'No stock' })
     await issueSportEquipmentRequest('req-3', { issuedQuantity: 1 })
     await returnSportEquipmentRequest('req-3', { returnedQuantity: 1, damagedQuantity: 0, missingQuantity: 0 })
@@ -145,7 +145,11 @@ describe('sportEquipmentApi', () => {
     expect(httpGet).toHaveBeenCalledWith('/sport/admin/equipment-requests/req-2', expect.any(Object))
     expect(httpPost).toHaveBeenCalledWith('/sport/admin/equipment', expect.any(Object))
     expect(httpPost).toHaveBeenCalledWith('/sport/admin/equipment/item-1', expect.any(Object))
-    expect(httpPatch).toHaveBeenCalledWith('/sport/admin/equipment-requests/req-3/approve', expect.any(Object))
+    expect(httpPatch).toHaveBeenCalledWith(
+      '/sport/admin/equipment-requests/req-3/approve',
+      { approved_quantity: 2, admin_note: null },
+      {},
+    )
     expect(httpPatch).toHaveBeenCalledWith('/sport/admin/equipment-requests/req-3/reject', expect.any(Object))
     expect(httpPatch).toHaveBeenCalledWith('/sport/admin/equipment-requests/req-3/issue', expect.any(Object))
     expect(buildFormData).toHaveBeenCalled()

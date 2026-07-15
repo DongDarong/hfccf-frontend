@@ -13,12 +13,14 @@ const routeState = reactive({ name: 'dashboard-sport-admin-equipment' })
 const toastAdd = vi.fn()
 
 const {
+  approveSportEquipmentRequest,
   fetchCoachTeams,
   fetchCoachEquipmentItems,
   fetchCoachEquipmentRequests,
   fetchSportEquipmentItems,
   fetchSportEquipmentRequests,
 } = vi.hoisted(() => ({
+  approveSportEquipmentRequest: vi.fn(),
   fetchCoachTeams: vi.fn(),
   fetchCoachEquipmentItems: vi.fn(),
   fetchCoachEquipmentRequests: vi.fn(),
@@ -44,7 +46,7 @@ vi.mock('@/modules/sport/services/api/sportCoachTeamsApi', () => ({
 }))
 
 vi.mock('@/modules/sport/services/sportApi', () => ({
-  approveSportEquipmentRequest: vi.fn(),
+  approveSportEquipmentRequest,
   createCoachEquipmentRequest: vi.fn(),
   createSportEquipmentItem: vi.fn(),
   fetchCoachEquipmentItems,
@@ -73,7 +75,7 @@ const baseStubs = {
   DataTable: { props: ['value'], template: '<div data-test="datatable"><slot /></div>' },
   Column: { template: '<div><slot /></div>' },
   Dialog: { props: ['visible'], template: '<div v-if="visible"><slot /><slot name="footer" /></div>' },
-  Dropdown: { props: ['modelValue', 'options'], emits: ['update:modelValue'], template: '<select />' },
+  Select: { props: ['modelValue', 'options'], emits: ['update:modelValue'], template: '<select />' },
   InputText: { props: ['modelValue'], emits: ['update:modelValue'], template: '<input />' },
   InputNumber: { props: ['modelValue'], emits: ['update:modelValue'], template: '<input type="number" />' },
   Textarea: { props: ['modelValue'], emits: ['update:modelValue'], template: '<textarea />' },
@@ -205,5 +207,76 @@ describe('EquipmentManagement page', () => {
     expect(wrapper.text()).toContain('ឧបករណ៍មាន')
     expect(wrapper.text()).toContain('សំណើរបស់ខ្ញុំ')
     expect(wrapper.text()).not.toContain('sportEquipment.')
+  })
+
+  it('auto-generates the equipment code when opening the create dialog', async () => {
+    const wrapper = mountPage('en')
+    await flushPromises()
+
+    await wrapper.findAll('button').find((button) => button.text() === 'Add Equipment')?.trigger('click')
+    await flushPromises()
+
+    const codePreview = wrapper.get('[data-testid="equipment-code-preview"]').text()
+    expect(codePreview).toContain('EQ-')
+    expect(codePreview).toContain('Generated automatically')
+  })
+
+  it('initializes the approval quantity from the requested quantity and falls back to 1', async () => {
+    const wrapper = mountPage('en')
+    await flushPromises()
+
+    wrapper.vm.openRequestActionDialog('approve', { id: 'request-1', requestedQuantity: 4 })
+    expect(wrapper.vm.requestActionForm.approvedQuantity).toBe(4)
+
+    wrapper.vm.closeRequestActionDialog()
+    wrapper.vm.openRequestActionDialog('approve', { id: 'request-2' })
+    expect(wrapper.vm.requestActionForm.approvedQuantity).toBe(1)
+  })
+
+  it('submits approval using approved_quantity and only shows success after the backend resolves', async () => {
+    const wrapper = mountPage('en')
+    await flushPromises()
+
+    approveSportEquipmentRequest.mockResolvedValueOnce({
+      request: {
+        id: 'request-1',
+        status: 'approved',
+      },
+    })
+
+    wrapper.vm.openRequestActionDialog('approve', { id: 'request-1', requestedQuantity: 3 })
+    wrapper.vm.requestActionForm.approvedQuantity = 2
+    wrapper.vm.requestActionForm.adminNote = 'Approved'
+
+    await wrapper.vm.saveRequestAction()
+    await flushPromises()
+
+    expect(approveSportEquipmentRequest).toHaveBeenCalledWith('request-1', {
+      approved_quantity: 2,
+      admin_note: 'Approved',
+    })
+    expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success' }))
+  })
+
+  it('surfaces approved quantity validation errors in the approve dialog', async () => {
+    const wrapper = mountPage('en')
+    await flushPromises()
+
+    approveSportEquipmentRequest.mockRejectedValueOnce({
+      validationErrors: {
+        approved_quantity: ['Approved quantity must be greater than zero.'],
+      },
+    })
+
+    wrapper.vm.openRequestActionDialog('approve', { id: 'request-1', requestedQuantity: 3 })
+    wrapper.vm.requestActionForm.approvedQuantity = 0
+
+    await wrapper.vm.saveRequestAction()
+    await flushPromises()
+
+    expect(wrapper.vm.requestActionFieldErrors.approved_quantity).toBe('Approved quantity must be greater than zero.')
+    expect(wrapper.vm.requestActionDialogError).toBe('')
+    expect(wrapper.text()).toContain('Approved quantity must be greater than zero.')
+    expect(toastAdd).not.toHaveBeenCalledWith(expect.objectContaining({ severity: 'success' }))
   })
 })

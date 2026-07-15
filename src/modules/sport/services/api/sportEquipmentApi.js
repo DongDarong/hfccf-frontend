@@ -79,7 +79,11 @@ export async function fetchSportEquipmentRequest(id, options = {}) {
 export async function approveSportEquipmentRequest(id, payload = {}, options = {}) {
   const response = await http.patch(
     `/sport/admin/equipment-requests/${encodeURIComponent(id)}/approve`,
-    buildFormData(payload, options),
+    {
+      approved_quantity: payload.approved_quantity ?? payload.approvedQuantity ?? null,
+      admin_note: payload.admin_note ?? payload.adminNote ?? null,
+    },
+    options,
   )
 
   const data = unwrapApiData(response) || {}

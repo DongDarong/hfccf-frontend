@@ -9,6 +9,31 @@ export default {
       admin: 'Manage stock, review coach requests, and keep equipment flowing.',
       coach: 'Request equipment for your assigned teams and track the request lifecycle.',
     },
+    form: {
+      create: {
+        eyebrow: 'Add Equipment',
+        title: 'Training Equipment Management',
+        subtitle: 'Capture stock, status, and storage details in one place.',
+        codeHint: 'Generated automatically when you open the create form.',
+        sections: {
+          basic: {
+            title: 'Basic details',
+            subtitle: 'Identify the item and its unit of measure.',
+          },
+          stock: {
+            title: 'Stock details',
+            subtitle: 'Set inventory values and storage information.',
+          },
+          description: {
+            title: 'Description',
+            subtitle: 'Add any context useful for handlers or inventory staff.',
+          },
+        },
+      },
+      edit: {
+        codeHint: 'Read-only code used to track this equipment item.',
+      },
+    },
     tabs: {
       inventory: 'Inventory',
       requests: 'Requests',
@@ -20,6 +45,7 @@ export default {
       availableItems: 'Available items',
       lowStockItems: 'Low stock items',
       outOfStockItems: 'Out of stock items',
+      totalRequests: 'Total Requests',
       pendingRequests: 'Pending requests',
       approvedRequests: 'Approved requests',
       issuedRequests: 'Issued requests',
