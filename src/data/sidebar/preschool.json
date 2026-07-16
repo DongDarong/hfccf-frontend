@@ -63,6 +63,13 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-invoices",
+          "routeName": "dashboard-preschool-admin-invoices",
+          "labelKey": "nav.items.invoices",
+          "icon": "invoice",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-payments",
           "routeName": "dashboard-preschool-admin-payment",
           "labelKey": "nav.items.payments",

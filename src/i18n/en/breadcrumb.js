@@ -54,6 +54,7 @@ export default {
     classDetails: 'Class Details',
     payment: 'Payment',
     invoiceDetail: 'Invoice Detail',
+    invoices: 'Invoices',
     attendance: 'Attendance',
     attendanceStudents: 'Student Attendance',
     attendanceTeachers: 'Teacher Attendance',

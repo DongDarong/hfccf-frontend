@@ -266,6 +266,7 @@ function normalizePaymentRow(row = {}) {
     paymentStatus: normalizeText(row.paymentStatus || row.payment_status),
     paidAt: row.paidAt || row.paid_at || '',
     dueDate: row.dueDate || row.due_date || '',
+    description: normalizeText(row.description || row.payment_description),
     note: normalizeText(row.note),
     receiptCount: Number(row.receiptCount ?? row.receipt_count ?? 0),
     createdAt: row.createdAt || row.created_at || '',

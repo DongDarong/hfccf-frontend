@@ -87,6 +87,7 @@ export default {
     tasks: 'ភារកិច្ច',
     applications: 'ពាក្យស្នើសុំ',
     payments: 'ការទូទាត់',
+    invoices: 'វិក្កយបត្រ',
     trainingSchedule: 'កាលវិភាគបណ្តុះបណ្តាល',
     forms: 'ទម្រង់',
     reports: 'របាយការណ៍',

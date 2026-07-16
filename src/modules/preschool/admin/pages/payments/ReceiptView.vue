@@ -53,7 +53,7 @@ function goBack() {
     router.push({ name: 'dashboard-preschool-admin-invoice-detail', params: { id: receipt.value.invoiceId } })
     return
   }
-  router.push({ name: 'dashboard-preschool-admin-payment' })
+  router.push({ name: 'dashboard-preschool-admin-invoices' })
 }
 
 async function onPrintReceipt() {

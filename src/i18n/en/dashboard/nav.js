@@ -87,6 +87,7 @@ export default {
     tasks: 'Tasks',
     applications: 'Applications',
     payments: 'Payments',
+    invoices: 'Invoices',
     trainingSchedule: 'Training Schedule',
     forms: 'Forms',
     reports: 'Reports',

@@ -7,7 +7,7 @@ import Button from '@/components/buttons/Button.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { formatDate } from '@/utils/date'
-import { createPreschoolReceiptFromPayment, fetchPreschoolInvoice, issuePreschoolInvoice, deletePreschoolInvoice, cancelPreschoolInvoice, printPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
+import { createPreschoolReceiptFromPayment, downloadPreschoolInvoiceExport, fetchPreschoolInvoice, issuePreschoolInvoice, deletePreschoolInvoice, cancelPreschoolInvoice, printPreschoolInvoice } from '@/modules/preschool/services/api/preschoolPaymentApi'
 
 defineOptions({
   name: 'PreschoolAdminInvoiceDetailPage',
@@ -21,12 +21,19 @@ const loading = ref(false)
 const errorMessage = ref('')
 const invoice = ref(null)
 const actionLoading = ref(false)
+const exportLoading = ref(false)
+const exportFormat = ref('')
 const showSuccess = ref(false)
 const successMessage = ref('')
 
 const itemRows = computed(() => invoice.value?.items || [])
 const paymentRows = computed(() => invoice.value?.payments || [])
 const receiptRows = computed(() => invoice.value?.receipts || [])
+const canAddPayment = computed(() => {
+  const status = String(invoice.value?.status || '').trim().toLowerCase()
+  const balanceDue = Number(invoice.value?.balanceDue ?? invoice.value?.balance_due ?? 0)
+  return !!invoice.value?.id && balanceDue > 0 && !['cancelled', 'paid'].includes(status)
+})
 
 async function loadInvoice() {
   const invoiceId = String(route.params.id || '').trim()
@@ -57,7 +64,12 @@ async function loadInvoice() {
 }
 
 function goBack() {
-  router.push({ name: 'dashboard-preschool-admin-payment' })
+  router.push({ name: 'dashboard-preschool-admin-invoices' })
+}
+
+function onAddPayment() {
+  if (!canAddPayment.value || !invoice.value?.id) return
+  router.push({ name: 'dashboard-preschool-admin-payment', query: { invoiceId: invoice.value.id } })
 }
 
 async function reloadAfterAction(action) {
@@ -68,6 +80,17 @@ async function reloadAfterAction(action) {
   } finally {
     actionLoading.value = false
   }
+}
+
+function triggerDownload(blob, filename) {
+  const url = window.URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  window.URL.revokeObjectURL(url)
 }
 
 async function onIssueInvoice() {
@@ -107,6 +130,25 @@ async function onPrintInvoice() {
   }
 }
 
+async function onDownloadInvoice(format) {
+  if (!invoice.value?.id) return
+
+  exportLoading.value = true
+  exportFormat.value = format
+
+  try {
+    const file = await downloadPreschoolInvoiceExport(invoice.value.id, format)
+    if (file?.blob) {
+      triggerDownload(file.blob, file.filename)
+    }
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.exportFailed')
+  } finally {
+    exportLoading.value = false
+    exportFormat.value = ''
+  }
+}
+
 async function onGenerateReceipt(payment) {
   if (!payment?.id) return
   const receipt = await createPreschoolReceiptFromPayment(payment.id)
@@ -138,6 +180,15 @@ onMounted(loadInvoice)
             {{ t('preschoolPaymentManagementPage.actions.back') }}
           </Button>
           <Button
+            v-if="canAddPayment"
+            type="button"
+            variant="primary"
+            rounded="xl"
+            @click="onAddPayment"
+          >
+            {{ t('preschoolPaymentManagementPage.actions.addPayment') }}
+          </Button>
+          <Button
             type="button"
             variant="secondary"
             rounded="xl"
@@ -157,6 +208,26 @@ onMounted(loadInvoice)
           </Button>
           <Button type="button" variant="primary" rounded="xl" @click="onPrintInvoice">
             {{ t('preschoolPaymentManagementPage.actions.printInvoice') }}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            rounded="xl"
+            :loading="exportLoading && exportFormat === 'pdf'"
+            :disabled="exportLoading"
+            @click="onDownloadInvoice('pdf')"
+          >
+            {{ t('preschoolPaymentManagementPage.actions.downloadPdf') }}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            rounded="xl"
+            :loading="exportLoading && exportFormat === 'xlsx'"
+            :disabled="exportLoading"
+            @click="onDownloadInvoice('xlsx')"
+          >
+            {{ t('preschoolPaymentManagementPage.actions.downloadExcel') }}
           </Button>
         </div>
 

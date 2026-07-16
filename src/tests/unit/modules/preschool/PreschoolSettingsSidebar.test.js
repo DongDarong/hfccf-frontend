@@ -22,6 +22,7 @@ describe('preschool settings sidebar', () => {
     const routeNames = sections.flatMap((section) => section.items.map((item) => item.routeName))
 
     expect(routeNames).toContain('dashboard-preschool-admin-settings')
+    expect(routeNames).toContain('dashboard-preschool-admin-invoices')
   })
 
   it('shows the settings route in the super-admin Preschool section', () => {
@@ -30,6 +31,7 @@ describe('preschool settings sidebar', () => {
     const routeNames = preschoolSection.items.map((item) => item.routeName)
 
     expect(routeNames).toContain('dashboard-preschool-admin-settings')
+    expect(routeNames).toContain('dashboard-preschool-admin-invoices')
   })
 
   it('keeps the settings route out of the teacher workspace', () => {

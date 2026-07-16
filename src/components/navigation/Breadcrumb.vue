@@ -310,7 +310,7 @@ const CRUMB_MAP = {
   ],
   'dashboard-preschool-admin-invoice-detail': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'breadcrumb.payment', to: { name: 'dashboard-preschool-admin-payment' } },
+    { labelKey: 'breadcrumb.invoices', to: { name: 'dashboard-preschool-admin-invoices' } },
     { labelKey: 'breadcrumb.invoiceDetail' },
   ],
 
