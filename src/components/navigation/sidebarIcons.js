@@ -18,6 +18,11 @@ import BallIcon from '@/assets/icons/Ball.vue'
 import TeamIcon from '@/assets/icons/Team.vue'
 import PlayersIcon from '@/assets/icons/Players.vue'
 import {
+  IconBooks,
+  IconCalendarEvent,
+  IconChalkboard,
+  IconChalkboardTeacher,
+  IconClipboardText,
   IconCalendarTime,
   IconCalendarCheck,
   IconClipboardCheck,
@@ -25,13 +30,19 @@ import {
   IconFileDescription,
   IconHomeBolt,
   IconLayoutDashboard,
+  IconReceipt2,
+  IconReportAnalytics,
   IconScoreboard,
   IconShirtSport,
+  IconShieldCheck,
+  IconSettings as IconSettingsOutline,
+  IconStethoscope,
   IconTimelineEvent,
   IconTrophy,
   IconUserCheck,
   IconUserCog,
   IconUserShare,
+  IconUsers,
   IconUsersGroup,
 } from '@tabler/icons-vue'
 
@@ -56,6 +67,7 @@ export const sidebarIconByName = {
   tournaments: TournamentsIcon,
   team: TeamIcon,
   players: PlayersIcon,
+  invoice: IconFileDescription,
   'sport-dashboard': IconLayoutDashboard,
   'sport-attendance': IconClipboardCheck,
   'sport-coach': IconUserCog,
@@ -72,6 +84,97 @@ export const sidebarIconByName = {
   'sport-coach-teams': IconUsersGroup,
   'sport-coach-roster': IconClipboardList,
   'sport-coach-requests': IconFileDescription,
+}
+
+const preschoolSidebarIconMap = new Map([
+  ['preschool-dashboard', IconLayoutDashboard],
+  ['dashboard-preschool-admin', IconLayoutDashboard],
+  ['dashboard-preschool-teacher-students', IconUsers],
+  ['dashboard-preschool-teacher-schedule', IconCalendarEvent],
+  ['dashboard-preschool-teacher-attendance', IconClipboardCheck],
+  ['preschool-assessment-dashboard', IconClipboardList],
+  ['dashboard-preschool-admin-settings', IconSettingsOutline],
+  ['preschool-settings', IconSettingsOutline],
+  ['dashboard-preschool-admin-users', IconChalkboardTeacher],
+  ['preschool-teachers', IconChalkboardTeacher],
+  ['dashboard-preschool-admin-students', IconUsers],
+  ['preschool-students', IconUsers],
+  ['dashboard-preschool-admin-guardians', IconUsers],
+  ['preschool-guardians', IconUsers],
+  ['dashboard-preschool-admin-student-guardians', IconUsers],
+  ['preschool-student-guardians', IconUsers],
+  ['dashboard-preschool-admin-classes', IconChalkboard],
+  ['preschool-classes', IconChalkboard],
+  ['dashboard-preschool-admin-schedules', IconCalendarEvent],
+  ['preschool-schedules', IconCalendarEvent],
+  ['dashboard-preschool-admin-attendance', IconClipboardCheck],
+  ['preschool-attendance', IconClipboardCheck],
+  ['dashboard-preschool-admin-payment', IconReceipt2],
+  ['preschool-payments', IconReceipt2],
+  ['dashboard-preschool-admin-invoices', IconFileDescription],
+  ['preschool-invoices', IconFileDescription],
+  ['dashboard-preschool-admin-health', IconStethoscope],
+  ['preschool-health-records', IconStethoscope],
+  ['dashboard-preschool-admin-classroom-resources', IconBooks],
+  ['preschool-classroom-resources', IconBooks],
+  ['dashboard-preschool-admin-reports', IconReportAnalytics],
+  ['preschool-reports', IconReportAnalytics],
+  ['dashboard-preschool-admin-assignments', IconClipboardText],
+  ['preschool-assignments', IconClipboardText],
+  ['dashboard-preschool-admin-lifecycle-audit', IconTimelineEvent],
+  ['preschool-lifecycle-audit', IconTimelineEvent],
+  ['dashboard-preschool-admin-report-snapshots', IconReportAnalytics],
+  ['preschool-report-snapshots', IconReportAnalytics],
+  ['dashboard-preschool-admin-export-governance', IconFileDescription],
+  ['preschool-export-governance', IconFileDescription],
+  ['dashboard-preschool-admin-governance-review', IconShieldCheck],
+  ['preschool-governance-review', IconShieldCheck],
+  ['dashboard-preschool-admin-reconstruction', IconFileDescription],
+  ['preschool-institutional-reconstruction', IconFileDescription],
+  ['dashboard-preschool-admin-governance-diff', IconClipboardList],
+  ['preschool-governance-diff', IconClipboardList],
+  ['dashboard-preschool-admin-governance-cases', IconClipboardList],
+  ['preschool-governance-cases', IconClipboardList],
+  ['dashboard-preschool-admin-guardian-integrity', IconShieldCheck],
+  ['preschool-guardian-integrity', IconShieldCheck],
+  ['dashboard-preschool-teacher-report', IconReportAnalytics],
+  ['preschool-teacher-report', IconReportAnalytics],
+  ['dashboard-preschool-teacher-healthy', IconStethoscope],
+  ['preschool-teacher-healthy', IconStethoscope],
+  ['dashboard-preschool-teacher-classroomresources', IconBooks],
+  ['preschool-teacher-classroomresources', IconBooks],
+  ['dashboard-super-admin-command-center-preschool-analytics', IconReportAnalytics],
+  ['command-center-preschool-analytics', IconReportAnalytics],
+])
+
+function normalizePreschoolSidebarKey(item) {
+  return String(item?.routeName || item?.route_name || item?.id || item?.key || '').toLowerCase()
+}
+
+export function resolvePreschoolSidebarIconComponent(item) {
+  const key = normalizePreschoolSidebarKey(item)
+  if (preschoolSidebarIconMap.has(key)) {
+    return preschoolSidebarIconMap.get(key)
+  }
+
+  const haystack = `${String(item?.id || '')} ${String(item?.routeName || '')} ${String(item?.labelKey || '')}`.toLowerCase()
+
+  if (haystack.includes('teacher')) return IconChalkboardTeacher
+  if (haystack.includes('student') || haystack.includes('guardian') || haystack.includes('users')) return IconUsers
+  if (haystack.includes('schedule')) return IconCalendarEvent
+  if (haystack.includes('attendance')) return IconClipboardCheck
+  if (haystack.includes('assessment') || haystack.includes('report') || haystack.includes('analytics')) return IconReportAnalytics
+  if (haystack.includes('settings')) return IconSettingsOutline
+  if (haystack.includes('governance') || haystack.includes('integrity')) return IconShieldCheck
+  if (haystack.includes('lifecycle') || haystack.includes('timeline') || haystack.includes('audit')) return IconTimelineEvent
+  if (haystack.includes('payment')) return IconReceipt2
+  if (haystack.includes('health')) return IconStethoscope
+  if (haystack.includes('resource')) return IconBooks
+  if (haystack.includes('class')) return IconChalkboard
+  if (haystack.includes('assignment') || haystack.includes('form')) return IconClipboardText
+  if (haystack.includes('dashboard') || haystack.includes('overview')) return IconLayoutDashboard
+
+  return null
 }
 
 export function resolveSidebarIconComponent(iconKey) {

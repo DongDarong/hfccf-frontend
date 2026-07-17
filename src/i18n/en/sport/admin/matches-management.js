@@ -189,6 +189,7 @@ export default {
         teamPlaceholder: 'Select team',
         eventType: 'Event Type',
         typePlaceholder: 'Select event type',
+        period: 'Period',
         player: 'Player',
         playerPlaceholder: 'Select squad player',
         assistPlayer: 'Assist Player',
@@ -244,6 +245,7 @@ export default {
       defaultTeam: 'this team',
     },
     status: {
+      draft: 'Draft',
       scheduled: 'Scheduled',
       live: 'Live',
       completed: 'Completed',

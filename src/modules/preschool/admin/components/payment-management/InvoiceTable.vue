@@ -40,10 +40,10 @@ defineProps({
       <InvoiceRowActionsMenu
         :row="data"
         @view="$emit('view', $event)"
-        @edit="$emit('edit', $event)"
         @add-payment="$emit('add-payment', $event)"
         @delete="$emit('delete', $event)"
         @cancel="$emit('cancel', $event)"
+        @print="$emit('print', $event)"
         @download-pdf="$emit('download-pdf', $event)"
         @download-excel="$emit('download-excel', $event)"
       />

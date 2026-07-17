@@ -26,6 +26,7 @@ const props = defineProps({
       'down',
       'success',
       'info',
+      'danger',
       'error',
       'high',
       'medium',
@@ -72,7 +73,7 @@ function normalizeStatus(value) {
   const key = String(value || 'neutral').trim().toLowerCase()
   if (['healthy', 'stable', 'success', 'active', 'resolved', 'up'].includes(key)) return 'success'
   if (['warning', 'watch', 'medium', 'pending'].includes(key)) return 'warning'
-  if (['critical', 'error', 'high', 'urgent', 'overdue', 'suspended', 'down'].includes(key)) return 'error'
+  if (['critical', 'danger', 'error', 'high', 'urgent', 'overdue', 'suspended', 'down'].includes(key)) return 'error'
   if (['info'].includes(key)) return 'info'
   if (['inactive', 'neutral', 'pending_review', 'draft'].includes(key)) return 'neutral'
   return 'neutral'

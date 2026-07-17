@@ -41,13 +41,6 @@ export function useDashboardActions() {
       iconClass: 'pi pi-cog',
       click: () => router.push({ name: 'dashboard-preschool-admin-settings' }),
     },
-    {
-      label: t('preschoolDashboardPage.operations.shortcuts.enrollments'),
-      description: t('preschoolDashboardPage.operations.shortcuts.enrollmentsDescription'),
-      actionLabel: t('preschoolDashboardPage.operations.shortcuts.enrollmentsAction'),
-      iconClass: 'pi pi-users',
-      click: () => router.push({ name: 'dashboard-preschool-admin-enrollments' }),
-    },
   ])
 
   function goToScheduleManagement() {

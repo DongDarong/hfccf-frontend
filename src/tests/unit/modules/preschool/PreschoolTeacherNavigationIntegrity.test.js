@@ -23,10 +23,10 @@ describe('preschool teacher navigation integrity', () => {
     expect(routeNames).toContain('dashboard-preschool-teacher-students')
     expect(routeNames).toContain('dashboard-preschool-teacher-schedule')
     expect(routeNames).toContain('dashboard-preschool-teacher-attendance')
-    expect(routeNames).toContain('dashboard-preschool-assessments')
     expect(routeNames).toContain('dashboard-preschool-teacher-report')
     expect(routeNames).toContain('dashboard-preschool-teacher-healthy')
     expect(routeNames).not.toContain('dashboard-preschool-teacher-emergency-contacts')
+    expect(routeNames).not.toContain('dashboard-preschool-assessments')
     expect(routeNames).not.toContain('dashboard-preschool-admin-settings')
 
     routeNames.forEach((routeName) => {
@@ -41,6 +41,8 @@ describe('preschool teacher navigation integrity', () => {
     expect(routeNames).not.toContain('dashboard-preschool-admin-classroom-resources')
     expect(routeNames).not.toContain('dashboard-preschool-admin-settings')
     expect(routeNames).not.toContain('dashboard-preschool-admin-assignments')
+    expect(routeNames).not.toContain('dashboard-preschool-admin-payment')
+    expect(routeNames).not.toContain('dashboard-preschool-admin-invoices')
   })
 
   it('keeps teacher routes out of the Preschool admin sidebar', () => {

@@ -40,4 +40,18 @@ describe('preschool settings sidebar', () => {
 
     expect(routeNames).not.toContain('dashboard-preschool-admin-settings')
   })
+
+  it('hides the enrollments route from the Preschool sidebar', () => {
+    const preschoolSection = preschoolSidebar.sections.find((section) => section.id === 'preschool')
+    const routeNames = preschoolSection.items.map((item) => item.routeName)
+
+    expect(routeNames).not.toContain('dashboard-preschool-admin-enrollments')
+  })
+
+  it('hides the forms route from the built Preschool sidebar', () => {
+    const sections = buildFor(makeAdminPreschool())
+    const routeNames = sections.flatMap((section) => section.items.map((item) => item.routeName))
+
+    expect(routeNames).not.toContain('dashboard-preschool-admin-forms')
+  })
 })

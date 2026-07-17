@@ -1,7 +1,6 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Dialog from 'primevue/dialog'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
@@ -11,25 +10,18 @@ import PaymentFilters from '@/modules/preschool/admin/components/payment-managem
 import PaymentSummaryCards from '@/modules/preschool/admin/components/payment-management/PaymentSummaryCards.vue'
 import InvoiceTable from '@/modules/preschool/admin/components/payment-management/InvoiceTable.vue'
 import PaymentToolbar from '@/modules/preschool/admin/components/payment-management/PaymentToolbar.vue'
-import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { normalizeDateForInput } from '@/utils/date'
 import {
   fetchPreschoolClasses,
   fetchPreschoolStudents,
 } from '@/modules/preschool/services/preschoolApi'
 import {
   cancelPreschoolInvoice,
-  createPreschoolInvoice,
   deletePreschoolInvoice,
   downloadPreschoolInvoiceExport,
   fetchPreschoolInvoices,
-  updatePreschoolInvoice,
+  printPreschoolInvoice,
 } from '@/modules/preschool/services/api/preschoolPaymentApi'
-import {
-  fetchFeeTypes as fetchConfiguredFeeTypes,
-  fetchPaymentSettings as fetchConfiguredPaymentSettings,
-} from '@/modules/preschool/services/api/preschoolPaymentConfigurationApi'
 import { PAGE_SIZE, DEFAULT_PAGINATION } from './constants/paymentManagementConstants'
 import {
   buildClassOptions,
@@ -37,11 +29,8 @@ import {
   normalize,
 } from './utils/paymentManagementHelpers'
 import {
-  DEFAULT_INVOICE_FORM,
-  DEFAULT_INVOICE_ITEM,
   buildInvoiceColumns,
   mapInvoice,
-  normalizeInvoicePayload,
 } from './utils/invoiceManagementHelpers'
 
 defineOptions({
@@ -66,17 +55,8 @@ const errorMessage = ref('')
 const pagination = ref({ ...DEFAULT_PAGINATION })
 const classOptions = ref([])
 const studentOptions = ref([])
-const invoiceModalOpen = ref(false)
-const invoiceModalMode = ref('create')
-const invoiceSaving = ref(false)
-const invoiceItems = ref([DEFAULT_INVOICE_ITEM()])
-const configuredFeeTypes = ref([])
-const configuredPaymentSettings = ref({ invoicePrefix: 'INV', nextInvoiceNumber: 1 })
 const exportLoading = ref(false)
 const exportFormat = ref('')
-const invoiceErrorMessage = ref('')
-
-const invoiceForm = reactive({ ...DEFAULT_INVOICE_FORM() })
 
 const invoiceColumns = computed(() => buildInvoiceColumns(t))
 
@@ -94,22 +74,26 @@ const studentOptionLabelMap = computed(() =>
   }, {}),
 )
 
+const mappedInvoiceRows = computed(() =>
+  invoiceRows.value.map((row) => mapInvoice(row, classOptionLabelMap.value, studentOptionLabelMap.value)),
+)
+
 const totalInvoiceAmount = computed(() =>
-  invoiceRows.value.reduce((sum, row) => sum + Number(row.totalAmount || 0), 0),
+  mappedInvoiceRows.value.reduce((sum, row) => sum + Number(row.totalAmount || 0), 0),
 )
 
 const totalInvoiceBalance = computed(() =>
-  invoiceRows.value.reduce((sum, row) => sum + Number(row.balanceDue || 0), 0),
+  mappedInvoiceRows.value.reduce((sum, row) => sum + Number(row.balanceDue || 0), 0),
 )
 
-const totalInvoiceCount = computed(() => Number(pagination.value.total || invoiceRows.value.length || 0))
+const totalInvoiceCount = computed(() => Number(pagination.value.total || mappedInvoiceRows.value.length || 0))
 
 const draftInvoiceCount = computed(
-  () => invoiceRows.value.filter((row) => normalize(row.status) === 'draft').length,
+  () => mappedInvoiceRows.value.filter((row) => normalize(row.status) === 'draft').length,
 )
 
 const overdueInvoiceCount = computed(
-  () => invoiceRows.value.filter((row) => normalize(row.status) === 'overdue').length,
+  () => mappedInvoiceRows.value.filter((row) => normalize(row.status) === 'overdue').length,
 )
 
 const invoiceSummaryCards = computed(() => [
@@ -186,21 +170,6 @@ async function loadStudents() {
   }
 }
 
-async function loadPaymentConfiguration() {
-  try {
-    const [settings, feeTypesResponse] = await Promise.all([
-      fetchConfiguredPaymentSettings(),
-      fetchConfiguredFeeTypes(),
-    ])
-
-    configuredPaymentSettings.value = settings || { invoicePrefix: 'INV', nextInvoiceNumber: 1 }
-    configuredFeeTypes.value = Array.isArray(feeTypesResponse?.items) ? feeTypesResponse.items : []
-  } catch {
-    configuredPaymentSettings.value = { invoicePrefix: 'INV', nextInvoiceNumber: 1 }
-    configuredFeeTypes.value = []
-  }
-}
-
 async function loadInvoices() {
   loading.value = true
   errorMessage.value = ''
@@ -214,7 +183,7 @@ async function loadInvoices() {
       status: statusFilter.value,
     })
 
-    invoiceRows.value = (response.items || []).map((row) => mapInvoice(row, classOptionLabelMap.value, studentOptionLabelMap.value))
+    invoiceRows.value = response.items || []
     pagination.value = response.pagination || pagination.value
   } catch (error) {
     invoiceRows.value = []
@@ -241,115 +210,8 @@ function clearFilters() {
   statusFilter.value = ''
 }
 
-function openCreateInvoiceModal() {
-  invoiceModalMode.value = 'create'
-  selectedInvoice.value = null
-
-  const prefix = String(configuredPaymentSettings.value.invoicePrefix || 'INV').trim() || 'INV'
-  const nextNumber = Number(configuredPaymentSettings.value.nextInvoiceNumber || 1)
-  const invoiceNumber = `${prefix}-${new Date().getFullYear()}-${String(nextNumber).padStart(5, '0')}`
-  const defaultFeeType = configuredFeeTypes.value[0]
-
-  Object.assign(invoiceForm, {
-    ...DEFAULT_INVOICE_FORM(),
-    invoice_number: invoiceNumber,
-  })
-
-  invoiceItems.value = [
-    defaultFeeType
-      ? {
-        description: defaultFeeType.name || '',
-        quantity: 1,
-        unit_price: Number(defaultFeeType.defaultAmount || 0),
-        sort_order: 1,
-      }
-      : DEFAULT_INVOICE_ITEM(),
-  ]
-
-  invoiceModalOpen.value = true
-}
-
-function openEditInvoiceModal(row) {
-  invoiceModalMode.value = 'edit'
-  selectedInvoice.value = row
-  Object.assign(invoiceForm, {
-    student_id: row.studentId || '',
-    class_id: row.classId || '',
-    academic_year_id: row.academicYearId || '',
-    term_id: row.termId || '',
-    invoice_number: row.invoiceNumber || '',
-    issue_date: normalizeDateForInput(row.issueDate || row.issue_date || ''),
-    due_date: normalizeDateForInput(row.dueDate || row.due_date || ''),
-    discount_amount: row.discountAmount || 0,
-  })
-  invoiceItems.value = Array.isArray(row.items) && row.items.length
-    ? row.items.map((item, index) => ({
-      description: item.description || '',
-      quantity: item.quantity || 1,
-      unit_price: item.unitPrice || 0,
-      sort_order: item.sortOrder || index + 1,
-    }))
-    : [DEFAULT_INVOICE_ITEM()]
-  invoiceModalOpen.value = true
-}
-
-function addInvoiceItem() {
-  invoiceItems.value.push({
-    ...DEFAULT_INVOICE_ITEM(),
-    sort_order: invoiceItems.value.length + 1,
-  })
-}
-
-function removeInvoiceItem(index) {
-  invoiceItems.value.splice(index, 1)
-  if (!invoiceItems.value.length) {
-    invoiceItems.value = [DEFAULT_INVOICE_ITEM()]
-  }
-  invoiceItems.value = invoiceItems.value.map((item, itemIndex) => ({
-    ...item,
-    sort_order: itemIndex + 1,
-  }))
-}
-
-function closeInvoiceModal() {
-  invoiceModalOpen.value = false
-  invoiceSaving.value = false
-}
-
-async function onSaveInvoice() {
-  invoiceSaving.value = true
-  invoiceErrorMessage.value = ''
-
-  try {
-    const payload = normalizeInvoicePayload(invoiceForm, invoiceItems.value)
-    if (invoiceModalMode.value === 'edit' && selectedInvoice.value?.id) {
-      await updatePreschoolInvoice(selectedInvoice.value.id, payload)
-      successMessage.value = t('preschoolInvoiceManagementPage.messages.updateSuccess')
-    } else {
-      await createPreschoolInvoice(payload)
-      successMessage.value = t('preschoolInvoiceManagementPage.messages.createSuccess')
-    }
-
-    showSuccess.value = true
-    closeInvoiceModal()
-    await loadInvoices()
-  } catch (error) {
-    invoiceErrorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.saveFailed')
-  } finally {
-    invoiceSaving.value = false
-  }
-}
-
 function onViewInvoice(row) {
   router.push({ name: 'dashboard-preschool-admin-invoice-detail', params: { id: row.id } })
-}
-
-function onEditInvoice(row) {
-  if (normalize(row.status) !== 'draft') {
-    invoiceErrorMessage.value = t('preschoolInvoiceManagementPage.messages.saveFailed')
-    return
-  }
-  openEditInvoiceModal(row)
 }
 
 function onAddPayment(row) {
@@ -385,7 +247,7 @@ async function onConfirmDeleteInvoice() {
     onCloseDelete()
     await loadInvoices()
   } catch (error) {
-    invoiceErrorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.saveFailed')
+    errorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.saveFailed')
   }
 }
 
@@ -397,7 +259,30 @@ async function onConfirmCancelInvoice() {
     onCloseCancel()
     await loadInvoices()
   } catch (error) {
-    invoiceErrorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.saveFailed')
+    errorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.saveFailed')
+  }
+}
+
+async function onPrintInvoice(row) {
+  const invoiceId = row?.id
+  if (!invoiceId) return
+
+  try {
+    const html = await printPreschoolInvoice(invoiceId)
+    if (!html) return
+
+    const win = window.open('', '_blank')
+    if (!win) {
+      errorMessage.value = t('preschoolInvoiceManagementPage.messages.exportFailed')
+      return
+    }
+
+    win.document.open()
+    win.document.write(html)
+    win.document.close()
+    win.focus()
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.exportFailed')
   }
 }
 
@@ -407,7 +292,7 @@ async function onDownloadInvoice(row, format = 'pdf') {
 
   exportLoading.value = true
   exportFormat.value = format
-  invoiceErrorMessage.value = ''
+  errorMessage.value = ''
 
   try {
     const file = await downloadPreschoolInvoiceExport(invoiceId, format)
@@ -415,7 +300,7 @@ async function onDownloadInvoice(row, format = 'pdf') {
       triggerDownload(file.blob, file.filename)
     }
   } catch (error) {
-    invoiceErrorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.exportFailed')
+    errorMessage.value = error?.message || t('preschoolInvoiceManagementPage.messages.exportFailed')
   } finally {
     exportLoading.value = false
     exportFormat.value = ''
@@ -432,7 +317,7 @@ watch(currentPage, () => {
 })
 
 onMounted(async () => {
-  await Promise.all([loadClasses(), loadStudents(), loadPaymentConfiguration(), loadInvoices()])
+  await Promise.all([loadClasses(), loadStudents(), loadInvoices()])
 })
 </script>
 
@@ -451,9 +336,7 @@ onMounted(async () => {
           :eyebrow="t('preschoolInvoiceManagementPage.toolbar.eyebrow')"
           :title="invoiceVisibleRangeLabel"
           :clear-label="t('preschoolInvoiceManagementPage.toolbar.clear')"
-          :add-label="t('preschoolInvoiceManagementPage.toolbar.add')"
           @clear="clearFilters"
-          @add="openCreateInvoiceModal"
         />
 
         <PaymentFilters
@@ -479,14 +362,14 @@ onMounted(async () => {
         </div>
 
         <InvoiceTable
-          :invoices="invoiceRows"
+          :invoices="mappedInvoiceRows"
           :columns="invoiceColumns"
           :loading="loading"
           :empty-text="t('preschoolInvoiceManagementPage.messages.noResults')"
           @view="onViewInvoice"
-          @edit="onEditInvoice"
           @delete="onDeleteInvoice"
           @cancel="onCancelInvoice"
+          @print="onPrintInvoice"
           @download-pdf="onDownloadInvoice($event, 'pdf')"
           @download-excel="onDownloadInvoice($event, 'xlsx')"
           @add-payment="onAddPayment"
@@ -497,98 +380,6 @@ onMounted(async () => {
         </div>
       </div>
     </section>
-
-    <Dialog
-      v-model:visible="invoiceModalOpen"
-      :header="invoiceModalMode === 'edit' ? t('preschoolPaymentManagementPage.actions.editInvoice') : t('preschoolPaymentManagementPage.actions.createInvoice')"
-      modal
-      class="payment-management-page__dialog payment-management-page__dialog--wide"
-    >
-      <div class="payment-management-page__dialog-grid">
-        <div class="payment-management-page__field">
-          <label for="invoice-student-id" class="form-label">{{ t('preschoolPaymentManagementPage.dialog.formLabels.student') }}</label>
-          <select id="invoice-student-id" v-model="invoiceForm.student_id" class="payment-management-page__input">
-            <option value="">{{ t('preschoolPaymentManagementPage.dialog.student') }}</option>
-            <option v-for="option in studentOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        <div class="payment-management-page__field">
-          <label for="invoice-class-id" class="form-label">{{ t('preschoolPaymentManagementPage.dialog.formLabels.class') }}</label>
-          <select id="invoice-class-id" v-model="invoiceForm.class_id" class="payment-management-page__input">
-            <option value="">{{ t('preschoolPaymentManagementPage.dialog.class') }}</option>
-            <option v-for="option in classOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        <div class="payment-management-page__field">
-          <label for="invoice-number" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.number') }}</label>
-          <input id="invoice-number" v-model="invoiceForm.invoice_number" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.number')" />
-        </div>
-        <div class="payment-management-page__field">
-          <label for="invoice-issue-date" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.issueDate') }}</label>
-          <input id="invoice-issue-date" v-model="invoiceForm.issue_date" class="payment-management-page__input" type="date" />
-        </div>
-        <div class="payment-management-page__field">
-          <label for="invoice-due-date" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.dueDate') }}</label>
-          <input id="invoice-due-date" v-model="invoiceForm.due_date" class="payment-management-page__input" type="date" />
-        </div>
-        <div class="payment-management-page__field">
-          <label for="invoice-total-amount" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.total') }}</label>
-          <input id="invoice-total-amount" v-model="invoiceForm.discount_amount" class="payment-management-page__input" type="number" step="0.01" min="0" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.balance')" />
-        </div>
-      </div>
-
-      <div class="payment-management-page__invoice-items">
-        <div class="payment-management-page__invoice-items-header">
-          <h3>{{ t('preschoolPaymentManagementPage.invoiceSection.items') }}</h3>
-          <Button type="button" variant="secondary" size="sm" rounded="xl" @click="addInvoiceItem">
-            {{ t('preschoolPaymentManagementPage.actions.addInvoiceItem') }}
-          </Button>
-        </div>
-
-        <div v-for="(item, index) in invoiceItems" :key="`${item.sort_order}-${index}`" class="payment-management-page__invoice-item">
-          <div class="payment-management-page__field">
-            <label :for="`invoice-item-${index}-description`" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.description') }}</label>
-            <input :id="`invoice-item-${index}-description`" v-model="item.description" class="payment-management-page__input" type="text" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.description')" />
-          </div>
-          <div class="payment-management-page__field">
-            <label :for="`invoice-item-${index}-quantity`" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.quantity') }}</label>
-            <input :id="`invoice-item-${index}-quantity`" v-model="item.quantity" class="payment-management-page__input" type="number" min="0" step="0.01" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.quantity')" />
-          </div>
-          <div class="payment-management-page__field">
-            <label :for="`invoice-item-${index}-unit-price`" class="form-label">{{ t('preschoolPaymentManagementPage.invoiceLabels.unitPrice') }}</label>
-            <input :id="`invoice-item-${index}-unit-price`" v-model="item.unit_price" class="payment-management-page__input" type="number" min="0" step="0.01" :placeholder="t('preschoolPaymentManagementPage.invoiceLabels.unitPrice')" />
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            rounded="xl"
-            :disabled="invoiceItems.length === 1"
-            @click="removeInvoiceItem(index)"
-          >
-            {{ t('preschoolPaymentManagementPage.actions.removeInvoiceItem') }}
-          </Button>
-        </div>
-      </div>
-
-      <div
-        v-if="invoiceErrorMessage"
-        class="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-      >
-        {{ invoiceErrorMessage }}
-      </div>
-
-      <template #footer>
-        <Button type="button" variant="outline" rounded="xl" @click="closeInvoiceModal">{{ t('preschoolPaymentManagementPage.dialog.cancel') }}</Button>
-        <Button type="button" variant="primary" rounded="xl" :loading="invoiceSaving" :disabled="invoiceSaving" @click="onSaveInvoice">
-          {{ t('preschoolPaymentManagementPage.dialog.save') }}
-        </Button>
-      </template>
-    </Dialog>
 
     <AlertQuestion
       :show="isDeleteOpen"
@@ -621,3 +412,38 @@ onMounted(async () => {
     />
   </MainLayout>
 </template>
+
+<style scoped>
+.payment-management-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.payment-management-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid #dce6f2;
+  background:
+    radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+  box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
+}
+
+.payment-management-page__inline-help {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .payment-management-page__panel {
+    padding: 1.1rem;
+  }
+}
+</style>

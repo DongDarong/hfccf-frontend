@@ -21,13 +21,6 @@
           "badgeKey": "nav.badges.admin"
         },
         {
-          "id": "preschool-enrollments",
-          "routeName": "dashboard-preschool-admin-enrollments",
-          "labelKey": "nav.items.preschoolEnrollments",
-          "icon": "enrollments",
-          "badgeKey": "nav.badges.admin"
-        },
-        {
           "id": "preschool-students",
           "routeName": "dashboard-preschool-admin-students",
           "labelKey": "nav.items.students",
@@ -63,13 +56,6 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-invoices",
-          "routeName": "dashboard-preschool-admin-invoices",
-          "labelKey": "nav.items.invoices",
-          "icon": "invoice",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
           "id": "preschool-payments",
           "routeName": "dashboard-preschool-admin-payment",
           "labelKey": "nav.items.payments",
@@ -77,17 +63,10 @@
           "badgeKey": "nav.badges.staff"
         },
         {
-          "id": "preschool-assessments",
-          "routeName": "preschool-assessment-dashboard",
-          "labelKey": "nav.items.preschoolAssessments",
-          "icon": "performance",
-          "badgeKey": "nav.badges.staff"
-        },
-        {
-          "id": "preschool-forms",
-          "routeName": "dashboard-preschool-admin-forms",
-          "labelKey": "nav.items.forms",
-          "icon": "forms",
+          "id": "preschool-invoices",
+          "routeName": "dashboard-preschool-admin-invoices",
+          "labelKey": "nav.items.invoices",
+          "icon": "invoice",
           "badgeKey": "nav.badges.staff"
         },
         {

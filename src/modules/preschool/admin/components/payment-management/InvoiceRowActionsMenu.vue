@@ -19,13 +19,14 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['view', 'edit', 'delete', 'cancel', 'add-payment', 'download-pdf', 'download-excel'])
+const emit = defineEmits(['view', 'delete', 'cancel', 'add-payment', 'print', 'download-pdf', 'download-excel'])
 
 const { t } = useLanguage()
 const menu = ref(null)
 const menuId = `invoice-actions-menu-${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)}`
 
 const isDraft = computed(() => String(props.row?.status || '').trim().toLowerCase() === 'draft')
+const canCancel = computed(() => ['issued', 'partial', 'overdue'].includes(String(props.row?.status || '').trim().toLowerCase()))
 const isOutstanding = computed(() => {
   const status = String(props.row?.status || '').trim().toLowerCase()
   const balanceDue = Number(props.row?.balanceDue ?? props.row?.balance_due ?? 0)
@@ -40,6 +41,11 @@ const menuItems = computed(() => {
       command: () => emit('view', props.row),
     },
     {
+      label: t('preschoolPaymentManagementPage.actions.printInvoice'),
+      icon: 'pi pi-print',
+      command: () => emit('print', props.row),
+    },
+    {
       label: t('preschoolPaymentManagementPage.actions.downloadPdf'),
       icon: 'pi pi-file-pdf',
       command: () => emit('download-pdf', props.row),
@@ -52,12 +58,6 @@ const menuItems = computed(() => {
   ]
 
   if (isDraft.value) {
-    items.splice(1, 0, {
-      label: t('common.edit'),
-      icon: 'pi pi-pencil',
-      command: () => emit('edit', props.row),
-    })
-
     items.push({
       label: t('common.delete'),
       icon: 'pi pi-trash',
@@ -75,12 +75,14 @@ const menuItems = computed(() => {
     })
   }
 
-  items.push({
-    label: t('preschoolPaymentManagementPage.actions.cancelInvoice'),
-    icon: 'pi pi-ban',
-    class: 'text-rose-600',
-    command: () => emit('cancel', props.row),
-  })
+  if (canCancel.value) {
+    items.push({
+      label: t('preschoolPaymentManagementPage.actions.cancelInvoice'),
+      icon: 'pi pi-ban',
+      class: 'text-rose-600',
+      command: () => emit('cancel', props.row),
+    })
+  }
 
   return items
 })

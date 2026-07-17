@@ -104,7 +104,9 @@ export default {
     invoiceManagementPage: {
       title: 'Invoice Management',
       subtitle: 'Review, print, export, and manage preschool invoices.',
-      summary: 'Invoices',
+      summary: {
+        total: 'Total Invoices',
+      },
       toolbar: {
         eyebrow: 'Preschool Invoices',
         clear: 'Clear',
@@ -196,6 +198,11 @@ export default {
   preschoolInvoiceDetailPage: {
     title: 'Invoice Detail',
     subtitle: 'Review invoice items, payment history, and receipt records.',
+    sections: {
+      information: 'Invoice Information',
+      paymentSummary: 'Payment Summary',
+      receiptSummary: 'Receipt Summary',
+    },
     messages: {
       loading: 'Loading invoice...',
       loadFailed: 'Failed to load invoice.',
@@ -214,7 +221,9 @@ export default {
   preschoolInvoiceManagementPage: {
     title: 'Invoice Management',
     subtitle: 'Review, print, export, and manage preschool invoices.',
-    summary: 'Invoices',
+    summary: {
+      total: 'Total Invoices',
+    },
     toolbar: {
       eyebrow: 'Preschool Invoices',
       clear: 'Clear',

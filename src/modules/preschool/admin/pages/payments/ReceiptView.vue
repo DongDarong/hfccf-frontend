@@ -58,14 +58,23 @@ function goBack() {
 
 async function onPrintReceipt() {
   if (!receipt.value?.id) return
-  const html = await printPreschoolReceipt(receipt.value.id)
-  if (!html) return
-  const win = window.open('', '_blank', 'noopener,noreferrer')
-  if (win) {
+
+  try {
+    const html = await printPreschoolReceipt(receipt.value.id)
+    if (!html) return
+
+    const win = window.open('', '_blank')
+    if (!win) {
+      errorMessage.value = t('preschoolPaymentManagementPage.messages.exportFailed')
+      return
+    }
+
     win.document.open()
     win.document.write(html)
     win.document.close()
     win.focus()
+  } catch (error) {
+    errorMessage.value = error?.message || t('preschoolPaymentManagementPage.messages.exportFailed')
   }
 }
 

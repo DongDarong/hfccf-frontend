@@ -104,7 +104,9 @@ export default {
     invoiceManagementPage: {
       title: 'ការគ្រប់គ្រងវិក្កយបត្រ',
       subtitle: 'ពិនិត្យ បោះពុម្ព នាំចេញ និងគ្រប់គ្រងវិក្កយបត្រមត្តេយ្យសិក្សា។',
-      summary: 'វិក្កយបត្រ',
+      summary: {
+        total: 'វិក្កយបត្រសរុប',
+      },
       toolbar: {
         eyebrow: 'វិក្កយបត្រមត្តេយ្យសិក្សា',
         clear: 'សម្អាត',
@@ -196,6 +198,11 @@ export default {
   preschoolInvoiceDetailPage: {
     title: 'ព័ត៌មានលម្អិតវិក្កយបត្រ',
     subtitle: 'មើលធាតុវិក្កយបត្រ ប្រវត្តិបង់ប្រាក់ និងបង្កាន់ដៃ។',
+    sections: {
+      information: 'ព័ត៌មានវិក្កយបត្រ',
+      paymentSummary: 'សេចក្តីសង្ខេបការបង់ប្រាក់',
+      receiptSummary: 'សេចក្តីសង្ខេបបង្កាន់ដៃ',
+    },
     messages: {
       loading: 'កំពុងផ្ទុកវិក្កយបត្រ...',
       loadFailed: 'មិនអាចផ្ទុកវិក្កយបត្របាន។',
@@ -214,7 +221,9 @@ export default {
   preschoolInvoiceManagementPage: {
     title: 'ការគ្រប់គ្រងវិក្កយបត្រ',
     subtitle: 'ពិនិត្យ បោះពុម្ព នាំចេញ និងគ្រប់គ្រងវិក្កយបត្រមត្តេយ្យសិក្សា។',
-    summary: 'វិក្កយបត្រ',
+    summary: {
+      total: 'វិក្កយបត្រសរុប',
+    },
     toolbar: {
       eyebrow: 'វិក្កយបត្រមត្តេយ្យសិក្សា',
       clear: 'សម្អាត',
