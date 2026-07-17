@@ -218,6 +218,8 @@ Also review:
 
 - Preschool enrollment management now uses the standard module shell, breadcrumb trail, and locale-driven sidebar labels.
 - Preschool governance pages are intentionally kept backend-driven so the UI stays aligned with the shared API contract.
+- Preschool invoice downloads are served by the backend as standards-compliant XLSX workbooks via `/api/preschool/invoices/{invoice}/download?format=xlsx`.
+- The XLSX export is generated server-side with branded layout, Khmer text support, and Excel-compatible print settings; PDF export remains unchanged.
 
 ## Security Notes
 
