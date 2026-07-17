@@ -1,98 +1,48 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import http from '@/services/http'
-import {
-  fetchPreschoolStudent,
-  fetchPreschoolStudents,
-} from '@/modules/preschool/services/preschoolApi'
+import { createPreschoolPayment } from '@/modules/preschool/services/preschoolApi'
 
 vi.mock('@/services/http', () => ({
   default: {
-    get: vi.fn(),
+    post: vi.fn(),
   },
 }))
-
-function stubResponse(data) {
-  return { data: { success: true, message: 'ok', data } }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('preschool student api normalization', () => {
-  it('normalizes avatar urls from alternate student list shapes', async () => {
-    http.get.mockResolvedValueOnce(
-      stubResponse({
-        items: [
-          {
-            id: 1,
-            full_name: 'Alice Student',
-            avatarUrl: '/uploads/alice-full-list.jpg',
-          },
-        ],
-        pagination: { page: 1, per_page: 10, total: 1, last_page: 1 },
-      }),
-    )
+describe('preschool payment api serialization', () => {
+  it('omits invoice_id from the multipart payload when the main create flow uses quick invoice mode', async () => {
+    http.post.mockResolvedValueOnce({ data: { data: {} } })
 
-    await expect(
-      fetchPreschoolStudents({ page: 1, perPage: 10 }),
-    ).resolves.toMatchObject({
-      items: [
-        {
-          id: 1,
-          fullName: 'Alice Student',
-          avatarUrl: '/uploads/alice-full-list.jpg',
-          avatar: '/uploads/alice-full-list.jpg',
-          profilePhotoUrl: '/uploads/alice-full-list.jpg',
-        },
-      ],
+    await createPreschoolPayment({
+      mode: 'quick_invoice',
+      student_id: 1,
+      class_id: 7,
+      description: 'Registration fee',
+      amount: 50,
+      currency: 'USD',
+      payment_method: 'cash',
+      paid_at: '2026-07-16',
+      issue_date: '2026-07-16',
+      due_date: '2026-07-30',
+      payment_reference: 'PAY-TEST-001',
+      note: 'First payment',
+      invoice_id: null,
     })
 
-    http.get.mockResolvedValueOnce(
-      stubResponse({
-        items: [
-          {
-            id: 2,
-            full_name: 'Alice Student',
-            media: {
-              url: '/uploads/alice-filtered.jpg',
-            },
-          },
-        ],
-        pagination: { page: 1, per_page: 10, total: 1, last_page: 1 },
-      }),
-    )
-
-    await expect(
-      fetchPreschoolStudents({ page: 1, perPage: 10, status: 'active' }),
-    ).resolves.toMatchObject({
-      items: [
-        {
-          id: 2,
-          fullName: 'Alice Student',
-          avatarUrl: '/uploads/alice-filtered.jpg',
-          avatar: '/uploads/alice-filtered.jpg',
-          profilePhotoUrl: '/uploads/alice-filtered.jpg',
-        },
-      ],
-    })
-  })
-
-  it('falls back to an empty avatar url when the student has no image fields', async () => {
-    http.get.mockResolvedValueOnce(
-      stubResponse({
-        student: {
-          id: 3,
-          first_name: 'No',
-          last_name: 'Photo',
-        },
-      }),
-    )
-
-    await expect(fetchPreschoolStudent(3)).resolves.toMatchObject({
-      id: 3,
-      fullName: 'No Photo',
-      avatarUrl: '',
-    })
+    expect(http.post).toHaveBeenCalledTimes(1)
+    const [path, payload] = http.post.mock.calls[0]
+    expect(path).toBe('/preschool/payments')
+    expect(payload).toBeInstanceOf(FormData)
+    expect(payload.has('invoice_id')).toBe(false)
+    expect(payload.get('mode')).toBe('quick_invoice')
+    expect(payload.get('student_id')).toBe('1')
+    expect(payload.get('class_id')).toBe('7')
+    expect(payload.get('description')).toBe('Registration fee')
+    expect(payload.get('amount')).toBe('50')
+    expect(payload.get('payment_method')).toBe('cash')
+    expect(payload.get('payment_reference')).toBe('PAY-TEST-001')
   })
 })

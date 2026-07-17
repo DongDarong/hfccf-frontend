@@ -37,6 +37,54 @@ export function splitName(fullName) {
   }
 }
 
+function parseMatchDateTime(value) {
+  const raw = normalizeText(value)
+  if (!raw) return null
+
+  const normalized = raw.includes(' ') && !raw.includes('T') ? raw.replace(' ', 'T') : raw
+  const parsed = new Date(normalized)
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+export function formatMatchDateTimeForInput(value) {
+  const parsed = parseMatchDateTime(value)
+  if (!parsed) return normalizeText(value)
+
+  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
+export function formatMatchDateTimeForDisplay(value) {
+  const raw = normalizeText(value)
+  if (!raw) return '-'
+
+  const parsed = parseMatchDateTime(raw)
+  if (!parsed) return raw
+
+  return parsed.toLocaleString()
+}
+
+export function formatMatchDateTimeParts(value) {
+  const parsed = parseMatchDateTime(value)
+
+  if (!parsed) {
+    const raw = normalizeText(value)
+    if (!raw) return { date: '-', time: '-' }
+
+    const [date = raw, time = '-'] = raw.split(/\s+/)
+    return {
+      date,
+      time: time === '-' ? '-' : time.slice(0, 5),
+    }
+  }
+
+  return {
+    date: parsed.toLocaleDateString(),
+    time: parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  }
+}
+
 export function resolveId(payloadOrId) {
   if (typeof payloadOrId === 'string' || typeof payloadOrId === 'number') {
     return normalizeText(payloadOrId)
@@ -156,6 +204,9 @@ export function normalizeTeamRow(row = {}) {
     coachUserId: row.coachUserId ?? row.coach_user_id ?? '',
     coachDisplayName: coachName,
     coach: coachName,
+    divisionId: row.divisionId ?? row.division_id ?? '',
+    playingStyleId: row.playingStyleId ?? row.playing_style_id ?? '',
+    playingStyleName: normalizeText(row.playingStyleName || row.playing_style_name),
     division: normalizeText(row.division),
     captainName: normalizeText(row.captainName || row.captain_name),
     playersCount: Number(row.playersCount ?? row.players_count ?? row.players ?? 0),
@@ -414,6 +465,106 @@ export function normalizeMatchRow(row = {}) {
   }
 }
 
+export function normalizeEquipmentItemRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    equipmentCode: normalizeText(row.equipmentCode || row.equipment_code),
+    name: normalizeText(row.name),
+    category: normalizeText(row.category),
+    description: normalizeText(row.description),
+    unit: normalizeText(row.unit),
+    totalQuantity: Number(row.totalQuantity ?? row.total_quantity ?? 0),
+    availableQuantity: Number(row.availableQuantity ?? row.available_quantity ?? 0),
+    minimumStockLevel: Number(row.minimumStockLevel ?? row.minimum_stock_level ?? 0),
+    storageLocation: normalizeText(row.storageLocation || row.storage_location),
+    status: normalizeText(row.status || 'active'),
+    isLowStock: Boolean(row.isLowStock ?? row.is_low_stock ?? false),
+    isOutOfStock: Boolean(row.isOutOfStock ?? row.is_out_of_stock ?? false),
+    createdByUserId: row.createdByUserId ?? row.created_by_user_id ?? '',
+    updatedByUserId: row.updatedByUserId ?? row.updated_by_user_id ?? '',
+    createdBy: row.createdBy || null,
+    updatedBy: row.updatedBy || null,
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
+export function normalizeEquipmentRequestRow(row = {}) {
+  const item = row.item || row.equipmentItem || {}
+  const team = row.team || {}
+  const coach = row.coach || {}
+  const reviewedBy = row.reviewedBy || {}
+  const issuedBy = row.issuedBy || {}
+  const returnedBy = row.returnedBy || {}
+
+  return {
+    id: row.id ?? '',
+    requestCode: normalizeText(row.requestCode || row.request_code),
+    equipmentItemId: row.equipmentItemId ?? row.equipment_item_id ?? '',
+    coachUserId: row.coachUserId ?? row.coach_user_id ?? '',
+    teamId: row.teamId ?? row.team_id ?? '',
+    requestedQuantity: Number(row.requestedQuantity ?? row.requested_quantity ?? 0),
+    approvedQuantity: row.approvedQuantity ?? row.approved_quantity ?? null,
+    issuedQuantity: Number(row.issuedQuantity ?? row.issued_quantity ?? 0),
+    returnedQuantity: Number(row.returnedQuantity ?? row.returned_quantity ?? 0),
+    damagedQuantity: Number(row.damagedQuantity ?? row.damaged_quantity ?? 0),
+    missingQuantity: Number(row.missingQuantity ?? row.missing_quantity ?? 0),
+    purpose: normalizeText(row.purpose),
+    requiredDate: row.requiredDate || row.required_date || '',
+    expectedReturnDate: row.expectedReturnDate || row.expected_return_date || '',
+    status: normalizeText(row.status || 'pending'),
+    adminNote: normalizeText(row.adminNote || row.admin_note),
+    rejectionReason: normalizeText(row.rejectedReason || row.rejectionReason || row.rejected_reason),
+    reviewedByUserId: row.reviewedByUserId ?? row.reviewed_by_user_id ?? '',
+    reviewedAt: row.reviewedAt || row.reviewed_at || '',
+    issuedByUserId: row.issuedByUserId ?? row.issued_by_user_id ?? '',
+    issuedAt: row.issuedAt || row.issued_at || '',
+    returnedByUserId: row.returnedByUserId ?? row.returned_by_user_id ?? '',
+    returnedAt: row.returnedAt || row.returned_at || '',
+    item: item && (item.id || item.name || item.equipmentCode || item.equipment_code) ? normalizeEquipmentItemRow(item) : null,
+    coach: coach && (coach.id || coach.username || coach.firstName || coach.first_name) ? {
+      id: coach.id ?? '',
+      firstName: normalizeText(coach.firstName || coach.first_name),
+      lastName: normalizeText(coach.lastName || coach.last_name),
+      username: normalizeText(coach.username),
+      email: normalizeText(coach.email),
+    } : null,
+    team: team && (team.id || team.name || team.teamCode || team.team_code) ? {
+      id: team.id ?? '',
+      teamCode: normalizeText(team.teamCode || team.team_code),
+      name: normalizeText(team.name),
+      shortName: normalizeText(team.shortName || team.short_name),
+    } : null,
+    reviewedBy: reviewedBy && (reviewedBy.id || reviewedBy.username || reviewedBy.firstName || reviewedBy.first_name) ? {
+      id: reviewedBy.id ?? '',
+      firstName: normalizeText(reviewedBy.firstName || reviewedBy.first_name),
+      lastName: normalizeText(reviewedBy.lastName || reviewedBy.last_name),
+      username: normalizeText(reviewedBy.username),
+      email: normalizeText(reviewedBy.email),
+    } : null,
+    issuedBy: issuedBy && (issuedBy.id || issuedBy.username || issuedBy.firstName || issuedBy.first_name) ? {
+      id: issuedBy.id ?? '',
+      firstName: normalizeText(issuedBy.firstName || issuedBy.first_name),
+      lastName: normalizeText(issuedBy.lastName || issuedBy.last_name),
+      username: normalizeText(issuedBy.username),
+      email: normalizeText(issuedBy.email),
+    } : null,
+    returnedBy: returnedBy && (returnedBy.id || returnedBy.username || returnedBy.firstName || returnedBy.first_name) ? {
+      id: returnedBy.id ?? '',
+      firstName: normalizeText(returnedBy.firstName || returnedBy.first_name),
+      lastName: normalizeText(returnedBy.lastName || returnedBy.last_name),
+      username: normalizeText(returnedBy.username),
+      email: normalizeText(returnedBy.email),
+    } : null,
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
 export function normalizeCoachListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
   const items = unwrapApiItems(response)
 
@@ -447,6 +598,26 @@ export function normalizeMatchListResponse(response, fallbackPage = 1, fallbackP
   return {
     items: items.map(normalizeMatchRow),
     pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+export function normalizeEquipmentItemListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+
+  return {
+    items: items.map(normalizeEquipmentItemRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+    summary: unwrapApiData(response)?.summary || {},
+  }
+}
+
+export function normalizeEquipmentRequestListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+
+  return {
+    items: items.map(normalizeEquipmentRequestRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+    summary: unwrapApiData(response)?.summary || {},
   }
 }
 
@@ -488,9 +659,12 @@ export function buildTeamPayload(payload = {}, options = {}) {
       coach_user_id: payload.coachUserId || payload.coach_user_id || '',
       coach_display_name: payload.coachDisplayName || payload.coach_display_name || payload.coach,
       division: payload.division,
+      division_id: payload.divisionId || payload.division_id,
+      playing_style_id: payload.playingStyleId || payload.playing_style_id,
       captain_name: payload.captainName || payload.captain_name || payload.captain,
       players_count: payload.playersCount ?? payload.players_count ?? payload.players,
       matches_count: payload.matchesCount ?? payload.matches_count ?? payload.matches,
+      player_ids: JSON.stringify(payload.selectedPlayerIds ?? payload.playerIds ?? payload.player_ids ?? []),
       wins: payload.wins,
       draws: payload.draws,
       losses: payload.losses,
@@ -583,6 +757,25 @@ export function buildMatchPayload(payload = {}, options = {}) {
       scheduled_at: payload.scheduledAt || payload.scheduled_at || payload.dateTime,
       status: payload.status,
       current_period: payload.currentPeriod || payload.current_period,
+      notes: payload.notes,
+    },
+    options,
+  )
+}
+
+export function buildCoachMatchPayload(payload = {}, options = {}) {
+  const scheduledAt = normalizeText(payload.scheduledAt || payload.scheduled_at || payload.dateTime)
+
+  return buildFormData(
+    {
+      match_code: payload.matchCode || payload.match_code,
+      team_id: payload.teamId || payload.team_id,
+      opponent_team_id: payload.opponentTeamId || payload.opponent_team_id,
+      match_type: payload.matchType || payload.match_type,
+      competition_type: payload.competitionType || payload.competition_type,
+      tournament_name: payload.tournamentName || payload.tournament_name,
+      venue: payload.venue,
+      scheduled_at: scheduledAt ? formatMatchDateTimeForInput(scheduledAt) : undefined,
       notes: payload.notes,
     },
     options,

@@ -866,8 +866,6 @@ export function useDashboardData() {
         priority: 'high',
         priorityLabel: t('preschoolDashboardPage.priority.levels.high'),
         tone: resolvePriorityTone('high'),
-        actionLabel: t('preschoolDashboardPage.priority.review'),
-        actionTo: { name: 'dashboard-preschool-admin-enrollments' },
       })
     }
 

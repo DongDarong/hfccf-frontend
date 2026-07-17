@@ -118,9 +118,29 @@ describe('sportMatchesApi', () => {
         data: { match: { id: 'new-m', homeTeamId: 't1', awayTeamId: 't2' } },
       })
 
-      const result = await createSportMatch({ homeTeamId: 't1', awayTeamId: 't2' })
+      const result = await createSportMatch({
+        matchCode: 'MATCH-900',
+        homeTeam: 'Home FC',
+        awayTeam: 'Away FC',
+        competitionType: 'tournament',
+        tournamentId: '7',
+        scheduledAt: '2026-05-14T15:00',
+        venue: 'Main Stadium',
+        status: 'scheduled',
+      })
 
       expect(mockHttpPost).toHaveBeenCalledWith('/sport/matches', expect.any(Object))
+      const [, formData] = mockHttpPost.mock.calls[0]
+
+      expect(formData).toBeInstanceOf(FormData)
+      expect(formData.get('match_code')).toBe('MATCH-900')
+      expect(formData.get('home_team')).toBe('Home FC')
+      expect(formData.get('away_team')).toBe('Away FC')
+      expect(formData.get('competition_type')).toBe('tournament')
+      expect(formData.get('tournament_id')).toBe('7')
+      expect(formData.get('scheduled_at')).toBe('2026-05-14T15:00')
+      expect(formData.get('venue')).toBe('Main Stadium')
+      expect(formData.get('status')).toBe('scheduled')
       expect(result.id).toBe('new-m')
     })
   })

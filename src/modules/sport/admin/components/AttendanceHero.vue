@@ -15,7 +15,12 @@ defineProps({
 
     <div class="att-hero__stats">
       <div v-for="stat in stats" :key="stat.key" class="att-stat">
-        <p class="att-stat__value">{{ stat.value }}</p>
+        <p
+          class="att-stat__value"
+          :class="{ 'att-stat__value--nowrap': stat.nowrap }"
+        >
+          {{ stat.value }}
+        </p>
         <p class="att-stat__label">{{ stat.label }}</p>
       </div>
     </div>
@@ -65,6 +70,10 @@ defineProps({
   font-weight: 800;
   line-height: 1.1;
   word-break: break-word;
+}
+
+.att-stat__value--nowrap {
+  white-space: nowrap;
 }
 
 .att-stat__label {

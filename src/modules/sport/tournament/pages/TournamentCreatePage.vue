@@ -7,7 +7,6 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import MainLayout from '@/layouts/MainLayout.vue'
-import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Form from '@/components/forms/Form.vue'
 import AlertError from '@/components/alerts/AlertError.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
@@ -94,6 +93,46 @@ const registrationStatusOptions = computed(() =>
     value,
   })),
 )
+
+function resolveOptionLabel(options, value) {
+  const normalizedValue = String(value || '').trim()
+  const match = options.find((option) => String(option?.value || '').trim() === normalizedValue)
+
+  return match?.label || normalizedValue || '—'
+}
+
+function formatDisplayValue(value) {
+  const normalizedValue = String(value || '').trim()
+
+  if (!normalizedValue) return '—'
+
+  return normalizedValue
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+}
+
+const heroSummaryCards = computed(() => [
+  {
+    label: t('sportTournament.create.fields.state'),
+    value: formatDisplayValue(form.state),
+  },
+  {
+    label: t('sportTournament.create.fields.season'),
+    value: String(form.season || '—').trim() || '—',
+  },
+  {
+    label: t('sportTournament.create.fields.sportType'),
+    value: resolveOptionLabel(sportTypeOptions.value, form.sportType),
+  },
+  {
+    label: t('sportTournament.create.fields.registrationStatus'),
+    value: resolveOptionLabel(registrationStatusOptions.value, form.registrationStatus),
+  },
+  {
+    label: t('sportTournament.create.fields.visibility'),
+    value: resolveOptionLabel(visibilityOptions.value, form.visibility),
+  },
+])
 
 function cleanupObjectUrl(refValue) {
   if (!refValue.value) return
@@ -323,8 +362,6 @@ onBeforeUnmount(() => {
 <template>
   <MainLayout>
     <section class="sport-tournament-form">
-      <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
-
       <div v-if="loadingTournament" class="sport-tournament-form__empty">
         <div class="sport-tournament-form__empty-card">
           <h3>{{ t('common.loading') }}</h3>
@@ -346,6 +383,7 @@ onBeforeUnmount(() => {
 
       <Form
         v-else
+        id="tournament-create-form"
         class="sport-tournament-form__shell"
         :title="pageTitle"
         :description="t('sportTournament.create.formDescription')"
@@ -354,222 +392,281 @@ onBeforeUnmount(() => {
       >
         <template #header>
           <div class="sport-tournament-form__header-copy">
-            <div>
+            <div class="sport-tournament-form__header-main">
+              <p class="sport-tournament-form__eyebrow">{{ t('sportTournament.create.heroEyebrow') }}</p>
               <h3 class="sport-tournament-form__heading">{{ pageTitle }}</h3>
               <p class="sport-tournament-form__description">{{ pageSubtitle }}</p>
             </div>
 
-            <TournamentStatusBadge :state="form.state" />
-          </div>
-        </template>
-
-        <TournamentFormSection
-          :title="t('sportTournament.create.sections.basicInformation')"
-          :subtitle="t('sportTournament.create.summary')"
-        >
-          <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.name') }}</span>
-              <InputText v-model="form.name" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.season') }}</span>
-              <InputText v-model="form.season" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.sportType') }}</span>
-              <Select
-                v-model="form.sportType"
-                :options="sportTypeOptions"
-                option-label="label"
-                option-value="value"
-                append-to="self"
-                :disabled="isReadOnly"
-                class="sport-tournament-form__input"
-              />
-            </label>
-
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.organizer') }}</span>
-              <InputText v-model="form.organizer" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-
-            <label class="sport-tournament-form__field sport-tournament-form__field--full">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.description') }}</span>
-              <Textarea
-                v-model="form.description"
-                auto-resize
-                rows="4"
-                :disabled="isReadOnly"
-                class="sport-tournament-form__input"
-              />
-            </label>
-
-            <label class="sport-tournament-form__field sport-tournament-form__field--full">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.location') }}</span>
-              <InputText v-model="form.location" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-          </div>
-
-          <div class="sport-tournament-form__media-grid">
-            <TournamentMediaField
-              :title="t('sportTournament.create.fields.logo')"
-              :subtitle="t('sportTournament.create.upload.placeholder')"
-              :preview="logoPreview"
-              :disabled="isReadOnly"
-              @change="handleImageChange('logo', $event)"
-              @remove="handleImageRemove('logo')"
-            />
-
-            <TournamentMediaField
-              :title="t('sportTournament.create.fields.banner')"
-              :subtitle="t('sportTournament.create.upload.placeholder')"
-              :preview="bannerPreview"
-              :disabled="isReadOnly"
-              @change="handleImageChange('banner', $event, { maxWidth: 1600, maxHeight: 720, quality: 0.82 })"
-              @remove="handleImageRemove('banner')"
-            />
-          </div>
-        </TournamentFormSection>
-
-        <TournamentFormSection
-          :title="t('sportTournament.create.sections.dates')"
-          :subtitle="t('sportTournament.create.summary')"
-        >
-          <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.registrationOpenAt') }}</span>
-              <input v-model="form.registrationOpenAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.registrationCloseAt') }}</span>
-              <input v-model="form.registrationCloseAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.startAt') }}</span>
-              <input v-model="form.startAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.endAt') }}</span>
-              <input v-model="form.endAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
-            </label>
-          </div>
-        </TournamentFormSection>
-
-        <TournamentFormSection
-          :title="t('sportTournament.create.sections.rules')"
-          :subtitle="t('sportTournament.create.formDescription')"
-        >
-          <div class="sport-tournament-form__grid sport-tournament-form__grid--three">
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.groupCount') }}</span>
-              <InputNumber v-model="form.rules.groupCount" :min="1" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.teamsPerGroup') }}</span>
-              <InputNumber v-model="form.rules.teamsPerGroup" :min="1" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.pointsWin') }}</span>
-              <InputNumber v-model="form.rules.pointsWin" :min="0" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.pointsDraw') }}</span>
-              <InputNumber v-model="form.rules.pointsDraw" :min="0" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.pointsLoss') }}</span>
-              <InputNumber v-model="form.rules.pointsLoss" :min="0" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
-            </label>
-          </div>
-
-          <div class="sport-tournament-form__switch-grid">
-            <label class="sport-tournament-form__switch">
-              <input v-model="form.rules.knockoutEnabled" type="checkbox" :disabled="isReadOnly">
-              <span>{{ t('sportTournament.create.fields.knockoutEnabled') }}</span>
-            </label>
-            <label class="sport-tournament-form__switch">
-              <input v-model="form.rules.homeAwayEnabled" type="checkbox" :disabled="isReadOnly">
-              <span>{{ t('sportTournament.create.fields.homeAwayEnabled') }}</span>
-            </label>
-            <label class="sport-tournament-form__switch">
-              <input v-model="form.rules.extraTimeEnabled" type="checkbox" :disabled="isReadOnly">
-              <span>{{ t('sportTournament.create.fields.extraTimeEnabled') }}</span>
-            </label>
-            <label class="sport-tournament-form__switch">
-              <input v-model="form.rules.penaltyEnabled" type="checkbox" :disabled="isReadOnly">
-              <span>{{ t('sportTournament.create.fields.penaltyEnabled') }}</span>
-            </label>
-          </div>
-        </TournamentFormSection>
-
-        <TournamentFormSection
-          :title="t('sportTournament.create.sections.status')"
-          :subtitle="t('sportTournament.create.statusNotice')"
-        >
-          <div class="sport-tournament-form__status-grid">
-            <div class="sport-tournament-form__status-card">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.state') }}</span>
-              <TournamentStatusBadge :state="form.state" />
-              <p class="sport-tournament-form__note">{{ t('sportTournament.create.statusNotice') }}</p>
+            <div class="sport-tournament-form__summary-grid" aria-label="Tournament summary">
+              <article
+                v-for="card in heroSummaryCards"
+                :key="card.label"
+                class="sport-tournament-form__summary-card"
+              >
+                <span>{{ card.label }}</span>
+                <strong>{{ card.value }}</strong>
+              </article>
             </div>
-
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.registrationStatus') }}</span>
-              <Select
-                v-model="form.registrationStatus"
-                :options="registrationStatusOptions"
-                option-label="label"
-                option-value="value"
-                append-to="self"
-                :disabled="isReadOnly"
-                class="sport-tournament-form__input"
-              />
-            </label>
-
-            <label class="sport-tournament-form__field">
-              <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.visibility') }}</span>
-              <Select
-                v-model="form.visibility"
-                :options="visibilityOptions"
-                option-label="label"
-                option-value="value"
-                append-to="self"
-                :disabled="isReadOnly"
-                class="sport-tournament-form__input"
-              />
-            </label>
-          </div>
-
-          <div v-if="isLockedState" class="sport-tournament-form__lock-note">
-            <strong>{{ t('sportTournament.create.validation.lockedTitle') }}</strong>
-            <p>{{ t('sportTournament.create.validation.lockedMessage') }}</p>
-          </div>
-        </TournamentFormSection>
-
-        <template #actions>
-          <div class="sport-tournament-form__actions">
-            <Button
-              type="button"
-              outlined
-              class="rounded-xl"
-              :label="t('common.cancel')"
-              :disabled="isSubmitting"
-              @click="goBack"
-            />
-
-            <Button
-              type="submit"
-              class="rounded-xl"
-              :label="isEditMode ? t('sportTournament.create.actions.saveChanges') : t('sportTournament.create.actions.saveTournament')"
-              :loading="isSubmitting"
-              :disabled="isReadOnly"
-            />
           </div>
         </template>
+
+        <div class="sport-tournament-form__layout">
+          <div class="sport-tournament-form__main-column">
+            <TournamentFormSection
+              :title="t('sportTournament.create.sections.basicInformation')"
+              :subtitle="t('sportTournament.create.summary')"
+            >
+              <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
+                <label class="sport-tournament-form__field">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.name') }}</span>
+                  <InputText v-model="form.name" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                </label>
+
+                <label class="sport-tournament-form__field">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.season') }}</span>
+                  <InputText v-model="form.season" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                </label>
+
+                <label class="sport-tournament-form__field">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.sportType') }}</span>
+                  <Select
+                    v-model="form.sportType"
+                    :options="sportTypeOptions"
+                    option-label="label"
+                    option-value="value"
+                    append-to="self"
+                    :disabled="isReadOnly"
+                    class="sport-tournament-form__input"
+                  />
+                </label>
+
+                <label class="sport-tournament-form__field">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.organizer') }}</span>
+                  <InputText v-model="form.organizer" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                </label>
+
+                <label class="sport-tournament-form__field sport-tournament-form__field--full">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.description') }}</span>
+                  <Textarea
+                    v-model="form.description"
+                    auto-resize
+                    rows="4"
+                    :disabled="isReadOnly"
+                    class="sport-tournament-form__input"
+                  />
+                </label>
+
+                <label class="sport-tournament-form__field sport-tournament-form__field--full">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.location') }}</span>
+                  <InputText v-model="form.location" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                </label>
+              </div>
+            </TournamentFormSection>
+
+            <TournamentFormSection
+              :title="t('sportTournament.create.sections.schedule')"
+              :subtitle="t('sportTournament.create.summary')"
+            >
+              <div class="sport-tournament-form__section-stack">
+                <article class="sport-tournament-form__mini-panel">
+                  <div class="sport-tournament-form__mini-panel-head">
+                    <span>{{ t('sportTournament.create.schedule.registration') }}</span>
+                  </div>
+
+                  <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.registrationOpenAt') }}</span>
+                      <input v-model="form.registrationOpenAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
+                    </label>
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.registrationCloseAt') }}</span>
+                      <input v-model="form.registrationCloseAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
+                    </label>
+                  </div>
+                </article>
+
+                <article class="sport-tournament-form__mini-panel">
+                  <div class="sport-tournament-form__mini-panel-head">
+                    <span>{{ t('sportTournament.create.schedule.tournament') }}</span>
+                  </div>
+
+                  <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.startAt') }}</span>
+                      <input v-model="form.startAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
+                    </label>
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.endAt') }}</span>
+                      <input v-model="form.endAt" type="date" class="sport-tournament-form__native" :disabled="isReadOnly">
+                    </label>
+                  </div>
+                </article>
+              </div>
+            </TournamentFormSection>
+
+            <TournamentFormSection
+              :title="t('sportTournament.create.sections.rules')"
+              :subtitle="t('sportTournament.create.formDescription')"
+            >
+              <div class="sport-tournament-form__section-stack">
+                <article class="sport-tournament-form__mini-panel">
+                  <div class="sport-tournament-form__mini-panel-head">
+                    <span>{{ t('sportTournament.create.rules.structure') }}</span>
+                  </div>
+
+                  <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.groupCount') }}</span>
+                      <InputNumber v-model="form.rules.groupCount" :min="1" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                    </label>
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.teamsPerGroup') }}</span>
+                      <InputNumber v-model="form.rules.teamsPerGroup" :min="1" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                    </label>
+                  </div>
+                </article>
+
+                <article class="sport-tournament-form__mini-panel">
+                  <div class="sport-tournament-form__mini-panel-head">
+                    <span>{{ t('sportTournament.create.rules.points') }}</span>
+                  </div>
+
+                  <div class="sport-tournament-form__grid sport-tournament-form__grid--three">
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.pointsWin') }}</span>
+                      <InputNumber v-model="form.rules.pointsWin" :min="0" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                    </label>
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.pointsDraw') }}</span>
+                      <InputNumber v-model="form.rules.pointsDraw" :min="0" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                    </label>
+                    <label class="sport-tournament-form__field">
+                      <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.pointsLoss') }}</span>
+                      <InputNumber v-model="form.rules.pointsLoss" :min="0" :use-grouping="false" :disabled="isReadOnly" class="sport-tournament-form__input" />
+                    </label>
+                  </div>
+                </article>
+
+                <div class="sport-tournament-form__switch-grid">
+                  <label class="sport-tournament-form__switch">
+                    <input v-model="form.rules.knockoutEnabled" type="checkbox" :disabled="isReadOnly">
+                    <span>{{ t('sportTournament.create.fields.knockoutEnabled') }}</span>
+                  </label>
+                  <label class="sport-tournament-form__switch">
+                    <input v-model="form.rules.homeAwayEnabled" type="checkbox" :disabled="isReadOnly">
+                    <span>{{ t('sportTournament.create.fields.homeAwayEnabled') }}</span>
+                  </label>
+                  <label class="sport-tournament-form__switch">
+                    <input v-model="form.rules.extraTimeEnabled" type="checkbox" :disabled="isReadOnly">
+                    <span>{{ t('sportTournament.create.fields.extraTimeEnabled') }}</span>
+                  </label>
+                  <label class="sport-tournament-form__switch">
+                    <input v-model="form.rules.penaltyEnabled" type="checkbox" :disabled="isReadOnly">
+                    <span>{{ t('sportTournament.create.fields.penaltyEnabled') }}</span>
+                  </label>
+                </div>
+              </div>
+            </TournamentFormSection>
+          </div>
+
+          <div class="sport-tournament-form__aside">
+            <TournamentFormSection
+              :title="t('sportTournament.create.sections.registration')"
+              :subtitle="t('sportTournament.create.registrationSummary')"
+            >
+              <div class="sport-tournament-form__grid sport-tournament-form__grid--two">
+                <label class="sport-tournament-form__field">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.registrationStatus') }}</span>
+                  <Select
+                    v-model="form.registrationStatus"
+                    :options="registrationStatusOptions"
+                    option-label="label"
+                    option-value="value"
+                    append-to="self"
+                    :disabled="isReadOnly"
+                    class="sport-tournament-form__input"
+                  />
+                </label>
+
+                <label class="sport-tournament-form__field">
+                  <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.visibility') }}</span>
+                  <Select
+                    v-model="form.visibility"
+                    :options="visibilityOptions"
+                    option-label="label"
+                    option-value="value"
+                    append-to="self"
+                    :disabled="isReadOnly"
+                    class="sport-tournament-form__input"
+                  />
+                </label>
+              </div>
+            </TournamentFormSection>
+
+            <TournamentFormSection
+              :title="t('sportTournament.create.sections.media')"
+              :subtitle="t('sportTournament.create.upload.helper')"
+            >
+              <div class="sport-tournament-form__media-grid">
+                <TournamentMediaField
+                  :title="t('sportTournament.create.fields.logo')"
+                  :subtitle="t('sportTournament.create.upload.helper')"
+                  :preview="logoPreview"
+                  :disabled="isReadOnly"
+                  @change="handleImageChange('logo', $event)"
+                  @remove="handleImageRemove('logo')"
+                />
+
+                <TournamentMediaField
+                  :title="t('sportTournament.create.fields.banner')"
+                  :subtitle="t('sportTournament.create.upload.helper')"
+                  :preview="bannerPreview"
+                  :disabled="isReadOnly"
+                  @change="handleImageChange('banner', $event, { maxWidth: 1600, maxHeight: 720, quality: 0.82 })"
+                  @remove="handleImageRemove('banner')"
+                />
+              </div>
+            </TournamentFormSection>
+
+            <TournamentFormSection
+              :title="t('sportTournament.create.sections.status')"
+              :subtitle="t('sportTournament.create.statusNotice')"
+            >
+              <div class="sport-tournament-form__status-card sport-tournament-form__status-card--compact">
+                <span class="sport-tournament-form__label">{{ t('sportTournament.create.fields.state') }}</span>
+                <TournamentStatusBadge :state="form.state" />
+                <p class="sport-tournament-form__note">{{ t('sportTournament.create.statusNotice') }}</p>
+              </div>
+
+              <div v-if="isLockedState" class="sport-tournament-form__lock-note">
+                <strong>{{ t('sportTournament.create.validation.lockedTitle') }}</strong>
+                <p>{{ t('sportTournament.create.validation.lockedMessage') }}</p>
+              </div>
+            </TournamentFormSection>
+          </div>
+        </div>
       </Form>
+
+      <div class="sport-tournament-form__actions">
+        <Button
+          type="button"
+          outlined
+          class="rounded-xl"
+          :label="t('common.cancel')"
+          :disabled="isSubmitting"
+          @click="goBack"
+        />
+
+        <Button
+          type="submit"
+          form="tournament-create-form"
+          class="rounded-xl"
+          :label="isEditMode ? t('sportTournament.create.actions.saveChanges') : t('sportTournament.create.actions.saveTournament')"
+          :loading="isSubmitting"
+          :disabled="isReadOnly"
+        />
+      </div>
     </section>
 
     <AlertError
@@ -594,13 +691,14 @@ onBeforeUnmount(() => {
 .sport-tournament-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.15rem;
+  padding-bottom: 6.75rem;
 }
 
 .sport-tournament-form__shell {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
 .sport-tournament-form__empty {
@@ -631,25 +729,114 @@ onBeforeUnmount(() => {
 }
 
 .sport-tournament-form__header-copy {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.sport-tournament-form__header-main {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.sport-tournament-form__eyebrow {
+  margin: 0;
+  color: #0284c7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .sport-tournament-form__heading {
   margin: 0;
   color: #0f172a;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   line-height: 1.2;
   font-weight: 800;
 }
 
 .sport-tournament-form__description {
-  margin: 0.45rem 0 0;
+  margin: 0;
   color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.sport-tournament-form__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.65rem;
+}
+
+.sport-tournament-form__summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.8rem 0.85rem;
+  border-radius: 1rem;
+  border: 1px solid #dbe7f3;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(244, 248, 252, 0.97) 100%);
+  box-shadow: 0 14px 34px -30px rgba(15, 23, 42, 0.45);
+}
+
+.sport-tournament-form__summary-card span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sport-tournament-form__summary-card strong {
+  color: #0f172a;
   font-size: 0.92rem;
-  line-height: 1.6;
+  line-height: 1.4;
+}
+
+.sport-tournament-form__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.sport-tournament-form__main-column,
+.sport-tournament-form__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.sport-tournament-form__section-stack {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.sport-tournament-form__mini-panel {
+  padding: 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid #dce6f2;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 250, 253, 0.98) 100%);
+}
+
+.sport-tournament-form__mini-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.sport-tournament-form__mini-panel-head span {
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .sport-tournament-form__grid,
@@ -657,7 +844,7 @@ onBeforeUnmount(() => {
 .sport-tournament-form__switch-grid,
 .sport-tournament-form__status-grid {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.8rem;
 }
 
 .sport-tournament-form__grid--two {
@@ -677,7 +864,7 @@ onBeforeUnmount(() => {
 }
 
 .sport-tournament-form__status-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
 }
 
@@ -726,7 +913,7 @@ onBeforeUnmount(() => {
 }
 
 .sport-tournament-form__status-card {
-  padding: 1rem;
+  padding: 0.95rem;
   border-radius: 1rem;
   border: 1px solid #dce6f2;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%);
@@ -758,14 +945,37 @@ onBeforeUnmount(() => {
 }
 
 .sport-tournament-form__actions {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 30;
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
+  gap: 0.65rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(219, 231, 243, 0.96);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(14px);
+}
+
+.sport-tournament-form__actions :deep(button) {
+  min-width: 8.75rem;
 }
 
 @media (max-width: 1024px) {
   .sport-tournament-form__grid--three,
   .sport-tournament-form__status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sport-tournament-form__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sport-tournament-form__aside {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -779,8 +989,25 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 
-  .sport-tournament-form__header-copy {
-    flex-direction: column;
+  .sport-tournament-form__aside {
+    grid-template-columns: 1fr;
+  }
+
+  .sport-tournament-form__actions {
+    left: 1rem;
+    justify-content: stretch;
+  }
+
+  .sport-tournament-form__actions :deep(button) {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .sport-tournament-form__actions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
   }
 }
 </style>

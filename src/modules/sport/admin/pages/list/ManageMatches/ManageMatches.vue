@@ -10,6 +10,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import AlertQuestion from '@/components/alerts/AlertQuestion.vue'
 import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import Button from '@/components/buttons/Button.vue'
 import MatchesSearchFilterBar from '@/modules/sport/admin/components/matches-management/MatchesSearchFilterBar.vue'
@@ -47,7 +48,11 @@ const currentPage = ref(1)
 const isDeleteOpen = ref(false)
 const isDeleting = ref(false)
 const showDeleteSuccess = ref(false)
+const showDeleteError = ref(false)
+const showLoadError = ref(false)
 const deleteSuccessMessage = ref('')
+const deleteErrorMessage = ref('')
+const loadErrorMessage = ref('')
 const selectedMatch = ref(null)
 
 const pageSize = 8
@@ -66,7 +71,7 @@ const filteredMatches = computed(() => {
 
     if (query) {
       const haystack = normalize(
-        `${match.id} ${match.homeTeam} ${match.awayTeam} ${match.venue} ${matchTournamentLabel(match)} ${match.competitionType || match.competition || ''}`,
+        `${match.id} ${match.matchCode || match.match_code || ''} ${match.homeTeam} ${match.awayTeam} ${match.venue} ${matchTournamentLabel(match)} ${match.competitionType || match.competition || ''} ${match.status || ''} ${match.currentPeriod || match.current_period || ''}`,
       )
       isMatch = haystack.includes(query)
     }
@@ -80,7 +85,7 @@ const filteredMatches = computed(() => {
     }
 
     if (isMatch && matchDateInput.value) {
-      isMatch = String(match.schedule || '').startsWith(matchDateInput.value)
+      isMatch = String(match.schedule || match.scheduledAt || match.scheduled_at || '').startsWith(matchDateInput.value)
     }
 
     return isMatch
@@ -193,6 +198,17 @@ async function goToAddMatch() {
   await router.push({ name: 'dashboard-sport-admin-matches-add' })
 }
 
+async function loadMatches() {
+  try {
+    const response = await fetchSportMatches({ perPage: 100 })
+    matches.value = response.items || []
+  } catch {
+    loadErrorMessage.value = t('common.errorTryAgain')
+    showLoadError.value = true
+    matches.value = []
+  }
+}
+
 function onCancelDelete() {
   isDeleteOpen.value = false
   selectedMatch.value = null
@@ -210,23 +226,29 @@ async function onConfirmDelete() {
 
   const homeTeam = String(selectedMatch.value?.homeTeam || '').trim()
   const awayTeam = String(selectedMatch.value?.awayTeam || '').trim()
-  await deleteSportMatch(id).catch(() => null)
-  matches.value = matches.value.filter((item) => item.id !== id)
 
-  deleteSuccessMessage.value = t('sportMatchesManagement.confirm.deletedMessage', {
-    homeTeam: homeTeam || t('sportMatchesManagement.confirm.defaultTeam'),
-    awayTeam: awayTeam || t('sportMatchesManagement.confirm.defaultTeam'),
-  })
-  showDeleteSuccess.value = true
+  try {
+    await deleteSportMatch(id)
+    matches.value = matches.value.filter((item) => item.id !== id)
 
-  onCancelDelete()
-  isDeleting.value = false
+    deleteSuccessMessage.value = t('sportMatchesManagement.confirm.deletedMessage', {
+      homeTeam: homeTeam || t('sportMatchesManagement.confirm.defaultTeam'),
+      awayTeam: awayTeam || t('sportMatchesManagement.confirm.defaultTeam'),
+    })
+    showDeleteError.value = false
+    showDeleteSuccess.value = true
+  } catch {
+    showDeleteSuccess.value = false
+    deleteErrorMessage.value = t('common.errorTryAgain')
+    showDeleteError.value = true
+  } finally {
+    onCancelDelete()
+    isDeleting.value = false
+  }
 }
 
 onMounted(() => {
-  void fetchSportMatches({ perPage: 100 }).then((response) => {
-    matches.value = response.items || []
-  })
+  void loadMatches()
 })
 </script>
 
@@ -304,6 +326,22 @@ onMounted(() => {
     :message="deleteSuccessMessage || t('common.actionCompleted')"
     :button-text="t('common.close')"
     @close="showDeleteSuccess = false"
+  />
+
+  <AlertError
+    :show="showDeleteError"
+    :title="t('common.errorOccurred')"
+    :message="deleteErrorMessage || t('common.errorTryAgain')"
+    :button-text="t('common.close')"
+    @close="showDeleteError = false"
+  />
+
+  <AlertError
+    :show="showLoadError"
+    :title="t('common.errorOccurred')"
+    :message="loadErrorMessage || t('common.errorTryAgain')"
+    :button-text="t('common.close')"
+    @close="showLoadError = false"
   />
 </template>
 

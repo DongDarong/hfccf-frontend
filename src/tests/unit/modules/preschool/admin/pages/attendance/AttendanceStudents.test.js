@@ -191,6 +191,11 @@ describe('AttendanceStudents', () => {
       attendance_session_id: 'session-1',
     })
 
+    const saveButtons = wrapper.findAll('button').filter((button) => button.text().includes('Save Attendance'))
+    const completeButtons = wrapper.findAll('button').filter((button) => button.text().includes('Complete Session'))
+
+    expect(saveButtons).toHaveLength(1)
+    expect(completeButtons).toHaveLength(1)
     expect(mockFetchAttendanceSession).toHaveBeenCalledWith('session-1')
     expect(mockSaveAttendanceSessionRecords).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('Morning Stars')
@@ -205,6 +210,15 @@ describe('AttendanceStudents', () => {
       date: '2026-05-19',
     })
 
+    const saveButtons = wrapper.findAll('button').filter((button) => button.text().includes('Save Attendance'))
+    const completeButtons = wrapper.findAll('button').filter((button) => button.text().includes('Complete Session'))
+
+    expect(saveButtons).toHaveLength(1)
+    expect(completeButtons).toHaveLength(1)
+
+    wrapper.vm.attendanceMap['student-1'].status = 'present'
+    await flushPromises()
+
     const saveButton = wrapper.findAll('button').find((button) => button.text().includes('Save Attendance'))
     if (saveButton) {
       await saveButton.trigger('click')
@@ -213,6 +227,8 @@ describe('AttendanceStudents', () => {
 
     expect(mockFetchAttendanceSession).not.toHaveBeenCalled()
     expect(mockSavePreschoolAttendance).toHaveBeenCalled()
+    expect(mockSavePreschoolAttendance).toHaveBeenCalledTimes(1)
+    expect(mockSaveAttendanceSessionRecords).not.toHaveBeenCalled()
   })
 
   it('uses teacher-scoped class and student endpoints in the teacher workspace', async () => {

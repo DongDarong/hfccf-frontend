@@ -30,7 +30,8 @@ const {
   statusLabel,
   statusClass,
   infoCards,
-  addressDisplay,
+  birthLocationDisplay,
+  currentResidenceDisplay,
 } = useStudentProfileData()
 const {
   goBack,
@@ -95,7 +96,8 @@ const {
             :student="student"
             :profile-classes="profileClasses"
             :status-label="statusLabel"
-            :address-display="addressDisplay"
+            :birth-location-display="birthLocationDisplay"
+            :current-residence-display="currentResidenceDisplay"
           />
         </template>
       </div>

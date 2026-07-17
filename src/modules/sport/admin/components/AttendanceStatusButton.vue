@@ -43,6 +43,8 @@ const emit = defineEmits(['click'])
     class="att-status-btn"
     :class="isActive ? `${activeClass} ${ringClass}` : ''"
     :disabled="disabled"
+    :aria-label="label"
+    :aria-pressed="isActive ? 'true' : 'false'"
     :title="label"
     @click="emit('click')"
   >

@@ -44,11 +44,6 @@ const SPORT_CRUMB_MAP = {
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-sport-admin-attendance' } },
     { labelKey: 'breadcrumb.attendancePlayers' },
   ],
-  'dashboard-sport-admin-attendance-coaches': [
-    { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
-    { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-sport-admin-attendance' } },
-    { labelKey: 'breadcrumb.attendanceCoaches' },
-  ],
   'dashboard-sport-admin-attendance-idcard': [
     { labelKey: 'breadcrumb.sportDashboard', to: { name: 'dashboard-sport-admin' } },
     { labelKey: 'breadcrumb.attendance', to: { name: 'dashboard-sport-admin-attendance' } },
@@ -143,6 +138,10 @@ const SPORT_CRUMB_MAP = {
   'dashboard-sport-coach-teams': [
     { labelKey: 'breadcrumb.coachDashboard', to: { name: 'dashboard-sport-coach' } },
     { labelKey: 'breadcrumb.myTeams' },
+  ],
+  'dashboard-sport-coach-attendance': [
+    { labelKey: 'breadcrumb.coachDashboard', to: { name: 'dashboard-sport-coach' } },
+    { labelKey: 'breadcrumb.attendancePlayers' },
   ],
   'dashboard-sport-coach-roster': [
     { labelKey: 'breadcrumb.coachDashboard', to: { name: 'dashboard-sport-coach' } },
@@ -309,9 +308,13 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.payment' },
   ],
+  'dashboard-preschool-admin-invoices': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
+    { labelKey: 'breadcrumb.invoices' },
+  ],
   'dashboard-preschool-admin-invoice-detail': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
-    { labelKey: 'breadcrumb.payment', to: { name: 'dashboard-preschool-admin-payment' } },
+    { labelKey: 'breadcrumb.invoices', to: { name: 'dashboard-preschool-admin-invoices' } },
     { labelKey: 'breadcrumb.invoiceDetail' },
   ],
 
@@ -514,66 +517,6 @@ const CRUMB_MAP = {
   'dashboard-preschool-teacher-healthy': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
     { labelKey: 'breadcrumb.health' },
-  ],
-
-  // ── Assessment Module ────────────────────────────────────────────────────────
-  'assessment-dashboard': [
-    { labelKey: 'breadcrumb.assessment' },
-  ],
-  'assessment-form-list': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.forms' },
-  ],
-  'assessment-form-create': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.forms', to: { name: 'assessment-form-list' } },
-    { labelKey: 'breadcrumb.newForm' },
-  ],
-  'assessment-form-edit': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.forms', to: { name: 'assessment-form-list' } },
-    { labelKey: 'breadcrumb.editForm' },
-  ],
-  'assessment-form-builder': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.forms', to: { name: 'assessment-form-list' } },
-    { labelKey: 'breadcrumb.formBuilder' },
-  ],
-  'assessment-submission-list': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.submissions' },
-  ],
-  'assessment-submission-detail': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.submissions', to: { name: 'assessment-submission-list' } },
-    { labelKey: 'breadcrumb.submissionDetail' },
-  ],
-  'assessment-reports': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.reports' },
-  ],
-  'assessment-wizard': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.wizard' },
-  ],
-  'assessment-scoring-manager': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.scoring' },
-  ],
-  'assessment-print-designer': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.printDesigner' },
-  ],
-  'assessment-audit-logs': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.auditLogs' },
-  ],
-  'assessment-tracker': [
-    { labelKey: 'breadcrumb.assessment' },
-  ],
-  'assessment-scoring': [
-    { labelKey: 'breadcrumb.assessment', to: { name: 'assessment-dashboard' } },
-    { labelKey: 'breadcrumb.scoring' },
   ],
 
   'preschool-assessment-dashboard': [

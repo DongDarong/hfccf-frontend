@@ -193,6 +193,8 @@ describe('Tournament pages', () => {
     const combined = [...warnSpy.mock.calls, ...errorSpy.mock.calls].flat().join(' ')
     expect(combined).not.toContain('Invalid prop: type check failed for prop "rounded"')
     expect(wrapper.find('.sport-tournament-form').exists()).toBe(true)
+    expect(wrapper.text()).toContain(tournamentMessages.sportTournament.create.heroEyebrow)
+    expect(wrapper.text()).toContain(tournamentMessages.sportTournament.create.title)
 
     warnSpy.mockRestore()
     errorSpy.mockRestore()

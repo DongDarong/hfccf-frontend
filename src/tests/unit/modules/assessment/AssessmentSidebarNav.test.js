@@ -11,27 +11,26 @@ function getSections(user) {
 }
 
 describe('preschool assessment sidebar navigation', () => {
-  it('preschool admin sees the assessment item in the preschool section', () => {
+  it('preschool admin no longer sees the assessment item in the preschool section', () => {
     const sections = getSections(makeAdminPreschool())
     const preschoolSection = sections.find((s) => s.id === 'preschool')
     expect(preschoolSection).toBeDefined()
-    expect(preschoolSection?.items.some((item) => item.id === 'preschool-assessments')).toBe(true)
+    expect(preschoolSection?.items.some((item) => item.id === 'preschool-assessments')).toBe(false)
   })
 
-  it('assessment item points to the preschool assessment dashboard route', () => {
+  it('assessment item is absent from the preschool section', () => {
     const sections = getSections(makeAdminPreschool())
     const preschoolSection = sections.find((s) => s.id === 'preschool')
     const assessmentItem = preschoolSection?.items.find((item) => item.id === 'preschool-assessments')
 
-    expect(assessmentItem?.routeName).toBe('preschool-assessment-dashboard')
-    expect(router.hasRoute('preschool-assessment-dashboard')).toBe(true)
+    expect(assessmentItem).toBeUndefined()
   })
 
-  it('assessment item route has no dynamic parameters', () => {
+  it('assessment item route no longer appears in the preschool sidebar', () => {
     const sections = getSections(makeAdminPreschool())
     const preschoolSection = sections.find((s) => s.id === 'preschool')
     const assessmentItem = preschoolSection?.items.find((item) => item.id === 'preschool-assessments')
-    expect(String(assessmentItem?.routePath || '')).not.toContain(':')
+    expect(assessmentItem).toBeUndefined()
   })
 
   it('teacher does not see assessment admin-only items via the preschool sidebar', () => {

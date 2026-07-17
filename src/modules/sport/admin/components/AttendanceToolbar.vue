@@ -26,6 +26,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  showBack: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['update:teamId', 'update:date', 'shift-date', 'go-today', 'go-back'])
@@ -97,10 +101,10 @@ function handleGoBack() {
     </label>
 
     <Button type="button" variant="ghost" size="md" rounded="xl" :disabled="loading" @click="handleGoToday">
-      Today
+      {{ t('common.today') }}
     </Button>
 
-    <Button type="button" variant="ghost" size="md" rounded="xl" @click="handleGoBack">
+    <Button v-if="showBack" type="button" variant="ghost" size="md" rounded="xl" @click="handleGoBack">
       {{ t('sportAdminPlayerAttendancePage.actions.back') }}
     </Button>
   </div>

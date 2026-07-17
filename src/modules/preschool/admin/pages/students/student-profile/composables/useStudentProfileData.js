@@ -36,10 +36,30 @@ export function useStudentProfileData() {
   const statusLabel = computed(() => getStatusLabel(t, student.value))
   const statusClass = computed(() => getStatusClass(student.value?.status))
   const infoCards = computed(() => buildInfoCards(t, student.value, profileClasses.value))
-  const addressDisplay = computed(() => {
+  const birthLocationDisplay = computed(() => {
     const resolvedLocale = String(locale.value || 'en').toLowerCase().startsWith('kh') ? 'kh' : 'en'
-    return buildLocationAddress(student.value?.raw || student.value || {}, resolvedLocale)
+    return student.value?.birthLocationDisplay
+      || student.value?.placeOfBirth
+      || student.value?.place_of_birth
+      || buildLocationAddress({
+        province: student.value?.birthProvince,
+        district: student.value?.birthDistrict,
+        commune: student.value?.birthCommune,
+        village: student.value?.birthVillage,
+      }, resolvedLocale)
   })
+  const currentResidenceDisplay = computed(() => {
+    const resolvedLocale = String(locale.value || 'en').toLowerCase().startsWith('kh') ? 'kh' : 'en'
+    return student.value?.currentResidenceDisplay
+      || student.value?.address
+      || buildLocationAddress({
+        province: student.value?.residenceProvince,
+        district: student.value?.residenceDistrict,
+        commune: student.value?.residenceCommune,
+        village: student.value?.residenceVillage,
+      }, resolvedLocale)
+  })
+  const addressDisplay = currentResidenceDisplay
 
   async function loadStudent() {
     const studentId = String(route.params.id || '').trim()
@@ -109,6 +129,8 @@ export function useStudentProfileData() {
     statusLabel,
     statusClass,
     infoCards,
+    birthLocationDisplay,
+    currentResidenceDisplay,
     addressDisplay,
     loadStudent,
   }

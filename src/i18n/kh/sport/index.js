@@ -20,6 +20,7 @@ import coachDashboard from './coach-dashboard'
 import coachTeamManagement from './coach-team-management'
 import playerLifecycle from './player-lifecycle'
 import matchSquad from './match-squad'
+import equipment from './equipment'
 
 export default {
   ...dashboard,
@@ -44,4 +45,5 @@ export default {
   ...coachTeamManagement,
   ...playerLifecycle,
   ...matchSquad,
+  ...equipment,
 }

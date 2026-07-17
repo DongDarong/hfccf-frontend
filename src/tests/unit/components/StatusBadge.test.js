@@ -66,6 +66,10 @@ describe('AppStatusChip', () => {
     expect(mount({ status: 'critical' }).attributes('aria-label')).toBe('Error')
   })
 
+  it('"danger" normalizes to error', () => {
+    expect(mount({ status: 'danger' }).attributes('aria-label')).toBe('Error')
+  })
+
   it('"pending" normalizes to warning', () => {
     expect(mount({ status: 'pending' }).attributes('aria-label')).toBe('Warning')
   })

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -31,7 +32,6 @@ import {
   buildSuccessQuery,
 } from './utils/studentFormHelpers'
 import {
-  buildLocationAddress,
   getLocationDisplayName,
   fetchProvinces,
   fetchDistricts,
@@ -44,8 +44,10 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const currentLocale = computed(() => (String(locale.value || 'en').toLowerCase().startsWith('kh') ? 'kh' : 'en'))
 
 const loading = ref(false)
 const saving = ref(false)
@@ -55,13 +57,9 @@ const showSuccess = ref(false)
 const successMessage = ref('')
 const classOptions = ref([])
 const provinceItems = ref([])
-const districtItems = ref([])
-const communeItems = ref([])
-const villageItems = ref([])
 const avatarFileInput = ref(null)
 const avatarPreview = ref('')
 const loadedStudent = ref(null)
-const isSyncingLocation = ref(false)
 
 const form = reactive({ ...DEFAULT_FORM })
 
@@ -88,232 +86,323 @@ function normalizeText(value) {
   return String(value ?? '').trim()
 }
 
+function normalizeIdValue(value) {
+  const text = normalizeText(value)
+  if (!text) return ''
+
+  const numeric = Number(text)
+  return Number.isFinite(numeric) ? String(numeric) : text
+}
+
 function displayLocationName(item = {}) {
-  return getLocationDisplayName(item, 'kh')
+  return getLocationDisplayName(item, currentLocale.value)
 }
 
 function buildLocationOptions(items = []) {
-  return items.map((item) => {
-    const label = displayLocationName(item)
-
-    return {
-      label,
-      value: label,
-    }
-  })
+  return items
+    .filter(Boolean)
+    .map((item) => ({
+      label: displayLocationName(item),
+      value: String(item.id ?? item.code ?? item.nameKh ?? item.nameEn ?? ''),
+    }))
 }
 
 function findLocationItem(items = [], selectedValue = '') {
   const normalized = normalizeText(selectedValue)
   if (!normalized) return null
 
-  return items.find((item) => (
-    [item.code, item.nameEn, item.nameKh].some((candidate) => normalizeText(candidate) === normalized)
+  return items.filter(Boolean).find((item) => (
+    [
+      item.id,
+      item.code,
+      item.nameEn,
+      item.nameKh,
+      displayLocationName(item),
+    ].some((candidate) => normalizeText(candidate) === normalized)
   )) || null
 }
 
-const provinceOptions = computed(() => buildLocationOptions(provinceItems.value))
-const districtOptions = computed(() => buildLocationOptions(districtItems.value))
-const communeOptions = computed(() => buildLocationOptions(communeItems.value))
-const villageOptions = computed(() => buildLocationOptions(villageItems.value))
 const guardianContactProvided = computed(() =>
   Boolean(form.guardian_name.trim() || form.guardian_phone.trim()),
 )
 const guardianTypeRequired = computed(() => guardianContactProvided.value)
-const addressPreview = computed(() => buildLocationAddress(form, 'kh'))
 
 const avatarSrc = computed(() => avatarPreview.value)
-
-function setLocationError(message = '') {
-  locationErrorMessage.value = normalizeText(message)
-}
-
-function syncLocationFields(apply) {
-  isSyncingLocation.value = true
-  try {
-    apply()
-  } finally {
-    queueMicrotask(() => {
-      isSyncingLocation.value = false
-    })
-  }
-}
-
-function resetLocationOptions() {
-  provinceItems.value = []
-  districtItems.value = []
-  communeItems.value = []
-  villageItems.value = []
-  setLocationError('')
-}
-
-function clearLocationChildren(level = 'province') {
-  if (level === 'province') {
-    form.district = ''
-    form.commune = ''
-    form.village = ''
-    districtItems.value = []
-    communeItems.value = []
-    villageItems.value = []
-    return
-  }
-
-  if (level === 'district') {
-    form.commune = ''
-    form.village = ''
-    communeItems.value = []
-    villageItems.value = []
-    return
-  }
-
-  if (level === 'commune') {
-    form.village = ''
-    villageItems.value = []
-  }
-}
 
 async function loadProvinceOptions() {
   try {
     provinceItems.value = await fetchProvinces()
-    setLocationError('')
+    locationErrorMessage.value = ''
   } catch (error) {
     provinceItems.value = []
-    districtItems.value = []
-    communeItems.value = []
-    villageItems.value = []
-    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+    locationErrorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed')
   }
 }
 
-async function loadDistrictOptionsForProvince(provinceValue) {
-  const province = findLocationItem(provinceItems.value, provinceValue)
-  if (!province) {
-    districtItems.value = []
-    communeItems.value = []
-    villageItems.value = []
-    return null
+function createStructuredLocationState(prefix) {
+  const state = reactive({
+    districtItems: [],
+    communeItems: [],
+    villageItems: [],
+    errorMessage: '',
+    loading: false,
+    syncing: false,
+  })
+  let requestSequence = 0
+
+  const keys = {
+    province: `${prefix}_province_id`,
+    district: `${prefix}_district_id`,
+    commune: `${prefix}_commune_id`,
+    village: `${prefix}_village_id`,
   }
 
-  try {
-    districtItems.value = await fetchDistricts(province.code)
-    setLocationError('')
-    return province
-  } catch (error) {
-    districtItems.value = []
-    communeItems.value = []
-    villageItems.value = []
-    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
-    return null
-  }
-}
+  const districtOptions = computed(() => buildLocationOptions(state.districtItems))
+  const communeOptions = computed(() => buildLocationOptions(state.communeItems))
+  const villageOptions = computed(() => buildLocationOptions(state.villageItems))
 
-async function loadCommuneOptionsForDistrict(districtValue) {
-  const district = findLocationItem(districtItems.value, districtValue)
-  if (!district) {
-    communeItems.value = []
-    villageItems.value = []
-    return null
+  function setError(message = '') {
+    state.errorMessage = normalizeText(message)
   }
 
-  try {
-    communeItems.value = await fetchCommunes(district.code)
-    setLocationError('')
-    return district
-  } catch (error) {
-    communeItems.value = []
-    villageItems.value = []
-    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
-    return null
-  }
-}
-
-async function loadVillageOptionsForCommune(communeValue) {
-  const commune = findLocationItem(communeItems.value, communeValue)
-  if (!commune) {
-    villageItems.value = []
-    return null
-  }
-
-  try {
-    villageItems.value = await fetchVillages(commune.code)
-    setLocationError('')
-    return commune
-  } catch (error) {
-    villageItems.value = []
-    setLocationError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
-    return null
-  }
-}
-
-async function hydrateLocationHierarchy() {
-  isSyncingLocation.value = true
-  try {
-    const province = await loadDistrictOptionsForProvince(form.province)
-    if (province) {
-      form.province = displayLocationName(province)
-    }
-
-    if (!form.province || !form.district) return
-
-    const district = await loadCommuneOptionsForDistrict(form.district)
-    if (district) {
-      form.district = displayLocationName(district)
-    }
-
-    if (!form.district || !form.commune) return
-
-    const commune = await loadVillageOptionsForCommune(form.commune)
-    if (commune) {
-      form.commune = displayLocationName(commune)
-    }
-
-    const village = findLocationItem(villageItems.value, form.village)
-    if (village) {
-      form.village = displayLocationName(village)
-    }
-  } finally {
-    queueMicrotask(() => {
-      isSyncingLocation.value = false
-    })
-  }
-}
-
-watch(
-  () => form.province,
-  async (value) => {
-    if (isSyncingLocation.value) return
-    clearLocationChildren('province')
-    if (!value) {
+  function clearChildren(level = 'province') {
+    if (level === 'province') {
+      form[keys.district] = ''
+      form[keys.commune] = ''
+      form[keys.village] = ''
+      state.districtItems = []
+      state.communeItems = []
+      state.villageItems = []
+      setError('')
       return
     }
 
-    await loadDistrictOptionsForProvince(value)
+    if (level === 'district') {
+      form[keys.commune] = ''
+      form[keys.village] = ''
+      state.communeItems = []
+      state.villageItems = []
+      setError('')
+      return
+    }
+
+    if (level === 'commune') {
+      form[keys.village] = ''
+      state.villageItems = []
+      setError('')
+    }
+  }
+
+  async function loadDistrictOptionsForProvince(provinceValue) {
+    const province = findLocationItem(provinceItems.value, provinceValue)
+    if (!province) {
+      state.districtItems = []
+      state.communeItems = []
+      state.villageItems = []
+      return null
+    }
+
+    const requestId = ++requestSequence
+    state.loading = true
+    try {
+      const items = await fetchDistricts(province.code)
+      if (requestId !== requestSequence) return province
+
+      state.districtItems = items
+      setError('')
+      return province
+    } catch (error) {
+      if (requestId !== requestSequence) return null
+
+      state.districtItems = []
+      state.communeItems = []
+      state.villageItems = []
+      setError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+      return null
+    } finally {
+      if (requestId === requestSequence) {
+        state.loading = false
+      }
+    }
+  }
+
+  async function loadCommuneOptionsForDistrict(districtValue) {
+    const district = findLocationItem(state.districtItems, districtValue)
+    if (!district) {
+      state.communeItems = []
+      state.villageItems = []
+      return null
+    }
+
+    const requestId = ++requestSequence
+    state.loading = true
+    try {
+      const items = await fetchCommunes(district.code)
+      if (requestId !== requestSequence) return district
+
+      state.communeItems = items
+      setError('')
+      return district
+    } catch (error) {
+      if (requestId !== requestSequence) return null
+
+      state.communeItems = []
+      state.villageItems = []
+      setError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+      return null
+    } finally {
+      if (requestId === requestSequence) {
+        state.loading = false
+      }
+    }
+  }
+
+  async function loadVillageOptionsForCommune(communeValue) {
+    const commune = findLocationItem(state.communeItems, communeValue)
+    if (!commune) {
+      state.villageItems = []
+      return null
+    }
+
+    const requestId = ++requestSequence
+    state.loading = true
+    try {
+      const items = await fetchVillages(commune.code)
+      if (requestId !== requestSequence) return commune
+
+      state.villageItems = items
+      setError('')
+      return commune
+    } catch (error) {
+      if (requestId !== requestSequence) return null
+
+      state.villageItems = []
+      setError(error?.message || t('preschoolStudentInfoPage.messages.locationLoadFailed'))
+      return null
+    } finally {
+      if (requestId === requestSequence) {
+        state.loading = false
+      }
+    }
+  }
+
+  async function hydrate() {
+    const provinceValue = normalizeText(form[keys.province])
+    if (!provinceValue) return
+
+    state.syncing = true
+    try {
+      const province = await loadDistrictOptionsForProvince(provinceValue)
+      if (province) {
+        form[keys.province] = normalizeIdValue(province.id || province.code || provinceValue)
+      }
+
+      if (!form[keys.province] || !form[keys.district]) return
+
+      const district = await loadCommuneOptionsForDistrict(form[keys.district])
+      if (district) {
+        form[keys.district] = normalizeIdValue(district.id || district.code || form[keys.district])
+      }
+
+      if (!form[keys.district] || !form[keys.commune]) return
+
+      const commune = await loadVillageOptionsForCommune(form[keys.commune])
+      if (commune) {
+        form[keys.commune] = normalizeIdValue(commune.id || commune.code || form[keys.commune])
+      }
+
+      const village = findLocationItem(state.villageItems, form[keys.village])
+      if (village) {
+        form[keys.village] = normalizeIdValue(village.id || village.code || form[keys.village])
+      }
+    } finally {
+      queueMicrotask(() => {
+        state.syncing = false
+      })
+    }
+  }
+
+  return Object.assign(state, {
+    keys,
+    districtOptions,
+    communeOptions,
+    villageOptions,
+    clearChildren,
+    loadDistrictOptionsForProvince,
+    loadCommuneOptionsForDistrict,
+    loadVillageOptionsForCommune,
+    hydrate,
+  })
+}
+
+const birthLocation = createStructuredLocationState('birth')
+const residenceLocation = createStructuredLocationState('residence')
+const birthProvinceOptions = computed(() => buildLocationOptions(provinceItems.value))
+const residenceProvinceOptions = computed(() => buildLocationOptions(provinceItems.value))
+
+watch(
+  () => form.birth_province_id,
+  async (value) => {
+    if (birthLocation.syncing) return
+    birthLocation.clearChildren('province')
+    if (!value) return
+
+    await birthLocation.loadDistrictOptionsForProvince(value)
   },
 )
 
 watch(
-  () => form.district,
+  () => form.birth_district_id,
   async (value) => {
-    if (isSyncingLocation.value) return
-    clearLocationChildren('district')
-    if (!value) {
-      return
-    }
+    if (birthLocation.syncing) return
+    birthLocation.clearChildren('district')
+    if (!value) return
 
-    await loadCommuneOptionsForDistrict(value)
+    await birthLocation.loadCommuneOptionsForDistrict(value)
   },
 )
 
 watch(
-  () => form.commune,
+  () => form.birth_commune_id,
   async (value) => {
-    if (isSyncingLocation.value) return
-    clearLocationChildren('commune')
-    if (!value) {
-      return
-    }
+    if (birthLocation.syncing) return
+    birthLocation.clearChildren('commune')
+    if (!value) return
 
-    await loadVillageOptionsForCommune(value)
+    await birthLocation.loadVillageOptionsForCommune(value)
+  },
+)
+
+watch(
+  () => form.residence_province_id,
+  async (value) => {
+    if (residenceLocation.syncing) return
+    residenceLocation.clearChildren('province')
+    if (!value) return
+
+    await residenceLocation.loadDistrictOptionsForProvince(value)
+  },
+)
+
+watch(
+  () => form.residence_district_id,
+  async (value) => {
+    if (residenceLocation.syncing) return
+    residenceLocation.clearChildren('district')
+    if (!value) return
+
+    await residenceLocation.loadCommuneOptionsForDistrict(value)
+  },
+)
+
+watch(
+  () => form.residence_commune_id,
+  async (value) => {
+    if (residenceLocation.syncing) return
+    residenceLocation.clearChildren('commune')
+    if (!value) return
+
+    await residenceLocation.loadVillageOptionsForCommune(value)
   },
 )
 
@@ -324,13 +413,14 @@ function clearAvatarPreview() {
 
 function resetForm() {
   const resetData = createResetForm(DEFAULT_FORM)
-  syncLocationFields(() => {
-    Object.assign(form, resetData)
-  })
+  Object.assign(form, resetData)
   clearAvatarPreview()
   if (avatarFileInput.value) avatarFileInput.value.value = ''
   loadedStudent.value = null
-  resetLocationOptions()
+  provinceItems.value = []
+  locationErrorMessage.value = ''
+  birthLocation.clearChildren('province')
+  residenceLocation.clearChildren('province')
 }
 
 async function loadClasses() {
@@ -360,15 +450,20 @@ async function loadStudent() {
     }
 
     loadedStudent.value = student
-    syncLocationFields(() => {
-      loadStudentIntoForm(student, form)
-    })
+    birthLocation.syncing = true
+    residenceLocation.syncing = true
+    loadStudentIntoForm(student, form)
     clearAvatarPreview()
     avatarPreview.value = student.avatarUrl ? String(student.avatarUrl) : ''
-    await hydrateLocationHierarchy()
+    await Promise.allSettled([
+      birthLocation.hydrate(),
+      residenceLocation.hydrate(),
+    ])
   } catch (error) {
     errorMessage.value = error?.message || t('preschoolStudentInfoPage.messages.loadFailed')
   } finally {
+    birthLocation.syncing = false
+    residenceLocation.syncing = false
     loading.value = false
   }
 }
@@ -600,6 +695,11 @@ onUnmounted(clearAvatarPreview)
                   </label>
 
                   <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.latinName') }}</span>
+                    <input v-model="form.latin_name" class="student-form-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.latinName')" />
+                  </label>
+
+                  <label class="student-form-page__field">
                     <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.gender') }}</span>
                     <select v-model="form.gender" class="student-form-page__input">
                       <option value="">{{ t('preschoolStudentInfoPage.dialog.gender') }}</option>
@@ -610,6 +710,112 @@ onUnmounted(clearAvatarPreview)
                   <label class="student-form-page__field">
                     <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.dateOfBirth') }}</span>
                     <input v-model="form.date_of_birth" class="student-form-page__input" type="date" />
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.nationality') }}</span>
+                    <input v-model="form.nationality" class="student-form-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.nationality')" />
+                  </label>
+
+                  <label class="student-form-page__field student-form-page__field--full">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.ethnicity') }}</span>
+                    <input v-model="form.ethnicity" class="student-form-page__input" type="text" :placeholder="t('preschoolStudentInfoPage.dialog.ethnicity')" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="student-form-page__panel">
+                <p class="student-form-page__panel-title">{{ t('preschoolStudentInfoPage.dialog.birthLocation') }}</p>
+                <div v-if="birthLocation.errorMessage" class="student-form-page__state student-form-page__state--error">
+                  {{ birthLocation.errorMessage }}
+                </div>
+                <div class="student-form-page__fields">
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.province') }}</span>
+                    <select v-model="form.birth_province_id" class="student-form-page__input">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectProvince') }}</option>
+                      <option v-for="opt in birthProvinceOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.district') }}</span>
+                    <select v-model="form.birth_district_id" class="student-form-page__input" :disabled="!form.birth_province_id || birthLocation.loading">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectDistrict') }}</option>
+                      <option v-for="opt in birthLocation.districtOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.commune') }}</span>
+                    <select v-model="form.birth_commune_id" class="student-form-page__input" :disabled="!form.birth_district_id || birthLocation.loading">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectCommune') }}</option>
+                      <option v-for="opt in birthLocation.communeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.village') }}</span>
+                    <select v-model="form.birth_village_id" class="student-form-page__input" :disabled="!form.birth_commune_id || birthLocation.loading">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectVillage') }}</option>
+                      <option v-for="opt in birthLocation.villageOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+              </section>
+
+              <section class="student-form-page__panel">
+                <p class="student-form-page__panel-title">{{ t('preschoolStudentInfoPage.dialog.currentResidence') }}</p>
+                <div v-if="residenceLocation.errorMessage" class="student-form-page__state student-form-page__state--error">
+                  {{ residenceLocation.errorMessage }}
+                </div>
+                <div class="student-form-page__fields">
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.province') }}</span>
+                    <select v-model="form.residence_province_id" class="student-form-page__input">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectProvince') }}</option>
+                      <option v-for="opt in residenceProvinceOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.district') }}</span>
+                    <select v-model="form.residence_district_id" class="student-form-page__input" :disabled="!form.residence_province_id || residenceLocation.loading">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectDistrict') }}</option>
+                      <option v-for="opt in residenceLocation.districtOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.commune') }}</span>
+                    <select v-model="form.residence_commune_id" class="student-form-page__input" :disabled="!form.residence_district_id || residenceLocation.loading">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectCommune') }}</option>
+                      <option v-for="opt in residenceLocation.communeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="student-form-page__field">
+                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.village') }}</span>
+                    <select v-model="form.residence_village_id" class="student-form-page__input" :disabled="!form.residence_commune_id || residenceLocation.loading">
+                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectVillage') }}</option>
+                      <option v-for="opt in residenceLocation.villageOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </option>
+                    </select>
                   </label>
                 </div>
               </section>
@@ -642,56 +848,6 @@ onUnmounted(clearAvatarPreview)
                       </option>
                     </select>
                   </label>
-
-                  <label class="student-form-page__field">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.province') }}</span>
-                    <select v-model="form.province" class="student-form-page__input">
-                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectProvince') }}</option>
-                      <option v-for="opt in provinceOptions" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
-                      </option>
-                    </select>
-                  </label>
-
-                  <label class="student-form-page__field">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.district') }}</span>
-                    <select v-model="form.district" class="student-form-page__input" :disabled="!form.province">
-                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectDistrict') }}</option>
-                      <option v-for="opt in districtOptions" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
-                      </option>
-                    </select>
-                  </label>
-
-                  <label class="student-form-page__field">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.commune') }}</span>
-                    <select v-model="form.commune" class="student-form-page__input" :disabled="!form.district">
-                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectCommune') }}</option>
-                      <option v-for="opt in communeOptions" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
-                      </option>
-                    </select>
-                  </label>
-
-                  <label class="student-form-page__field">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.village') }}</span>
-                    <select v-model="form.village" class="student-form-page__input" :disabled="!form.commune">
-                      <option value="">{{ t('preschoolStudentInfoPage.dialog.selectVillage') }}</option>
-                      <option v-for="opt in villageOptions" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
-                      </option>
-                    </select>
-                  </label>
-
-                  <div class="student-form-page__field student-form-page__field--full">
-                    <span class="student-form-page__label">{{ t('preschoolStudentInfoPage.dialog.addressPreview') }}</span>
-                    <div class="student-form-page__readonly student-form-page__readonly--address">
-                      <span class="student-form-page__readonly-label">
-                        {{ t('preschoolStudentInfoPage.dialog.fullAddress') }}
-                      </span>
-                      <span class="student-form-page__readonly-value">{{ addressPreview || '-' }}</span>
-                    </div>
-                  </div>
                 </div>
               </section>
 
