@@ -14,6 +14,8 @@ const {
   fetchSportTeams,
   fetchCoachOpponentTeams,
   listCoachTeamAssignments,
+  createCoachTeamAssignment,
+  updateCoachTeamAssignment,
   saveCoachTeamAssignment,
   deactivateCoachTeamAssignment,
 } = vi.hoisted(() => ({
@@ -23,6 +25,8 @@ const {
   fetchSportTeams: vi.fn(),
   fetchCoachOpponentTeams: vi.fn(),
   listCoachTeamAssignments: vi.fn(),
+  createCoachTeamAssignment: vi.fn(),
+  updateCoachTeamAssignment: vi.fn(),
   saveCoachTeamAssignment: vi.fn(),
   deactivateCoachTeamAssignment: vi.fn(),
 }))
@@ -66,6 +70,8 @@ vi.mock('@/modules/sport/admin/composables/useSportApprovals', () => ({
     loadPendingPlayers: vi.fn(),
     loadPendingMatches: vi.fn(),
     listCoachTeamAssignments,
+    createCoachTeamAssignment,
+    updateCoachTeamAssignment,
     saveCoachTeamAssignment,
     deactivateCoachTeamAssignment,
     approvePendingPlayer: vi.fn(),
@@ -393,6 +399,147 @@ describe('sport coach pages', () => {
     expect(deactivateCoachTeamAssignment).toBeDefined()
   })
 
+  it('opens the existing inline edit form from the rendered Edit button', async () => {
+    listCoachTeamAssignments.mockResolvedValueOnce({
+      items: [
+        {
+          id: 'assignment-1',
+          status: 'active',
+          coachUserId: 'coach-1',
+          teamId: 'team-1',
+          coach: { id: 'coach-1', firstName: 'Alex', lastName: 'Coach' },
+          team: { id: 'team-1', name: 'Lions FC' },
+        },
+      ],
+      pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+    })
+
+    const wrapper = mountWithPlugins(CoachTeamAssignments, {
+      messages: {
+        en: {
+          common: { edit: 'Edit' },
+          sportCoachTeamManagement: {
+            assignments: {
+              title: 'Coach Team Assignments',
+              subtitle: 'Assign teams to coaches.',
+              formTitle: 'New assignment',
+              listTitle: 'Current assignments',
+            },
+            common: {
+              active: 'Active',
+              inactive: 'Inactive',
+              coach: 'Coach',
+              team: 'Team',
+            },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Button: { props: ['label'], template: '<button @click="$emit(\'click\')">{{ label }}</button>' },
+          Select: { template: '<div />' },
+          StatusBadge: { template: '<span><slot /></span>' },
+        },
+        mocks: {
+          $primevue: { config: {} },
+        },
+      },
+    })
+
+    await flushPromises()
+    const editButton = wrapper.findAll('button').find((button) => button.text() === 'Edit')
+
+    expect(editButton).toBeDefined()
+    await editButton.trigger('click')
+
+    expect(wrapper.vm.editingAssignmentId).toBe('assignment-1')
+    expect(wrapper.vm.form.coachUserId).toBe('coach-1')
+    expect(wrapper.vm.form.teamId).toBe('team-1')
+    expect(wrapper.text()).toContain('Edit assignment')
+  })
+
+  it('hydrates numeric team option ids and supports cancelling edit mode', async () => {
+    listCoachTeamAssignments.mockResolvedValueOnce({
+      items: [{
+        id: 9,
+        status: 'inactive',
+        coachUserId: 'coach-1',
+        teamId: 42,
+        coach: { id: 'coach-1', firstName: 'Alex', lastName: 'Coach' },
+        team: { id: 42, name: 'Lions FC' },
+      }],
+      pagination: { page: 1, perPage: 100, total: 1, totalPages: 1 },
+    })
+    fetchSportTeams.mockResolvedValueOnce({ items: [{ id: 42, name: 'Lions FC' }] })
+
+    const wrapper = mountWithPlugins(CoachTeamAssignments, {
+      messages: {
+        en: {
+          common: { edit: 'Edit' },
+          sportCoachTeamManagement: {
+            assignments: {
+              title: 'Coach Team Assignments',
+              subtitle: 'Assign teams to coaches.',
+              formTitle: 'New assignment',
+              listTitle: 'Current assignments',
+            },
+            common: { active: 'Active', inactive: 'Inactive', coach: 'Coach', team: 'Team' },
+            actions: { updateAssignment: 'Update assignment', cancel: 'Cancel' },
+          },
+        },
+      },
+      routes: [
+        { path: '/dashboard', name: 'dashboard', component: { template: '<div />' } },
+        { path: '/profile-settings', name: 'profile-settings', component: { template: '<div />' } },
+      ],
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          MainLayout: { template: '<div><slot /></div>' },
+          HeaderSection: { template: '<div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>' },
+          Button: { props: ['label'], template: '<button @click="$emit(\'click\')">{{ label }}</button>' },
+          Select: { template: '<div />' },
+          StatusBadge: { template: '<span><slot /></span>' },
+        },
+        mocks: { $primevue: { config: {} } },
+      },
+    })
+
+    await flushPromises()
+    wrapper.vm.startEdit(wrapper.vm.assignments[0])
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.teams[0].id).toBe('42')
+    expect(wrapper.vm.form.teamId).toBe('42')
+    expect(wrapper.text()).toContain('Update assignment')
+
+    wrapper.vm.cancelEdit()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.editingAssignmentId).toBe('')
+    expect(wrapper.vm.form.teamId).toBe('')
+    expect(wrapper.text()).toContain('New assignment')
+
+    wrapper.vm.form.coachUserId = 'coach-1'
+    wrapper.vm.form.teamId = '42'
+    createCoachTeamAssignment.mockResolvedValueOnce({ assignment: { id: 10 } })
+    await wrapper.vm.submit()
+
+    expect(createCoachTeamAssignment).toHaveBeenCalledWith({
+      coach_user_id: 'coach-1',
+      team_id: '42',
+      status: 'active',
+    })
+    expect(updateCoachTeamAssignment).not.toHaveBeenCalled()
+  })
+
   it('patches an existing assignment when editing and can reactivate it', async () => {
     listCoachTeamAssignments.mockResolvedValueOnce({
       items: [
@@ -464,13 +611,12 @@ describe('sport coach pages', () => {
     })
     wrapper.vm.form.status = 'active'
 
-    saveCoachTeamAssignment.mockResolvedValueOnce({ assignment: { id: 'assignment-1' } })
+    updateCoachTeamAssignment.mockResolvedValueOnce({ assignment: { id: 'assignment-1' } })
 
     await wrapper.vm.submit()
     await flushPromises()
 
-    expect(saveCoachTeamAssignment).toHaveBeenCalledWith({
-      id: 'assignment-1',
+    expect(updateCoachTeamAssignment).toHaveBeenCalledWith('assignment-1', {
       coach_user_id: 'coach-1',
       team_id: 'team-1',
       status: 'active',

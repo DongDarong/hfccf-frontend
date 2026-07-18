@@ -20,7 +20,12 @@ import {
 defineOptions({ name: 'SportCoachTeamAssignmentsPage' })
 
 const { t, language } = useLanguage()
-const { listCoachTeamAssignments, saveCoachTeamAssignment, deactivateCoachTeamAssignment } = useSportApprovals()
+const {
+  createCoachTeamAssignment,
+  listCoachTeamAssignments,
+  updateCoachTeamAssignment,
+  deactivateCoachTeamAssignment,
+} = useSportApprovals()
 const assignments = ref([])
 const coaches = ref([])
 const teams = ref([])
@@ -41,6 +46,11 @@ const formTitle = computed(() =>
   editingAssignmentId.value
     ? `${t('common.edit')} assignment`
     : t('sportCoachTeamManagement.assignments.formTitle'),
+)
+const submitLabel = computed(() =>
+  editingAssignmentId.value
+    ? t('sportCoachTeamManagement.actions.updateAssignment')
+    : t('sportCoachTeamManagement.actions.saveAssignment'),
 )
 
 function tone(status) {
@@ -70,6 +80,11 @@ function startEdit(row = {}) {
   form.coachUserId = normalizeAssignmentUserId(row)
   form.teamId = normalizeAssignmentTeamId(row)
   form.status = String(row?.status || 'active').trim() || 'active'
+}
+
+function cancelEdit() {
+  resetForm()
+  error.value = ''
 }
 
 function hasDuplicateActiveAssignment(coachUserId, teamId) {
@@ -102,8 +117,14 @@ async function refresh() {
     ])
 
     assignments.value = assignmentResponse.items || assignmentResponse.data || []
-    coaches.value = coachResponse.items || []
-    teams.value = teamResponse.items || []
+    coaches.value = (coachResponse.items || []).map((coach) => ({
+      ...coach,
+      id: String(coach?.id ?? '').trim(),
+    }))
+    teams.value = (teamResponse.items || []).map((team) => ({
+      ...team,
+      id: String(team?.id ?? '').trim(),
+    }))
   } catch (exception) {
     error.value = exception?.message || t('sportCoachTeamManagement.common.loadError')
   } finally {
@@ -130,10 +151,10 @@ async function submit() {
     }
 
     if (editingAssignmentId.value) {
-      payload.id = editingAssignmentId.value
+      await updateCoachTeamAssignment(editingAssignmentId.value, payload)
+    } else {
+      await createCoachTeamAssignment(payload)
     }
-
-    await saveCoachTeamAssignment(payload)
     resetForm()
     await refresh()
   } catch (exception) {
@@ -179,7 +200,16 @@ onMounted(() => {
           </div>
           <div class="mt-4 flex items-center justify-between gap-3">
             <p class="m-0 text-sm text-red-600">{{ error }}</p>
-            <Button :label="t('sportCoachTeamManagement.actions.saveAssignment')" :loading="loading" @click="submit" />
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                v-if="editingAssignmentId"
+                outlined
+                :label="t('sportCoachTeamManagement.actions.cancel')"
+                :disabled="loading"
+                @click="cancelEdit"
+              />
+              <Button :label="submitLabel" :loading="loading" @click="submit" />
+            </div>
           </div>
         </template>
       </Card>

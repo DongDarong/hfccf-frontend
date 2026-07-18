@@ -38,6 +38,8 @@ export default {
       approve: 'អនុម័ត',
       reject: 'បដិសេធ',
       saveAssignment: 'រក្សាទុកការចាត់តាំង',
+      updateAssignment: 'ធ្វើបច្ចុប្បន្នភាពការចាត់តាំង',
+      cancel: 'បោះបង់',
       deactivate: 'បិទសកម្មភាព',
     },
     myTeams: {
