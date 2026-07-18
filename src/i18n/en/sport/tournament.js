@@ -3,6 +3,8 @@ export default {
     list: {
       title: 'Tournament management',
       subtitle: 'Create, organize, and monitor competition lifecycles from one dashboard.',
+      sectionTitle: 'Tournaments',
+      resultSummary: 'Showing {count} of {total} tournaments',
       searchPlaceholder: 'Search tournaments by name, season, organizer, or location',
       empty: 'No tournaments match the current filters.',
       createButton: 'Create tournament',
@@ -11,19 +13,19 @@ export default {
       stats: {
         total: {
           title: 'Total tournaments',
-          label: 'All active records in the catalog',
+          label: 'In catalog',
         },
         active: {
           title: 'Active tournaments',
-          label: 'Competition currently in play',
+          label: 'In progress',
         },
         registrationOpen: {
           title: 'Registration open',
-          label: 'Tournaments accepting team entries',
+          label: 'Accepting entries',
         },
         completed: {
           title: 'Completed tournaments',
-          label: 'Archived tournament records',
+          label: 'Finished',
         },
       },
       table: {

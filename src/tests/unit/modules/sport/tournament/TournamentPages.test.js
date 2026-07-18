@@ -96,7 +96,7 @@ const messages = {
 
 const stubs = {
   MainLayout: { template: '<slot />' },
-  HeaderSection: { props: ['title', 'subtitle'], template: '<header />' },
+  HeaderSection: { props: ['title', 'subtitle'], template: '<header><span>{{ title }}</span><span>{{ subtitle }}</span></header>' },
   Form: {
     props: ['title', 'description', 'showCancel'],
     emits: ['submit'],
@@ -110,7 +110,7 @@ const stubs = {
     props: ['show', 'title', 'message', 'buttonText'],
     template: '<div v-if="show" data-testid="alert-success" />',
   },
-  StatsCards: { props: ['cards'], template: '<div />' },
+  StatsCards: { props: ['cards', 'compact'], template: '<div data-testid="stats-cards" />' },
   TournamentFormSection: { props: ['title', 'subtitle'], template: '<section><slot /></section>' },
   TournamentMediaField: {
     props: ['title', 'subtitle', 'preview', 'disabled', 'accept'],
@@ -173,6 +173,8 @@ describe('Tournament pages', () => {
     expect(combined).not.toContain('Invalid prop: type check failed for prop "rounded"')
     expect(loadTournaments).toHaveBeenCalled()
     expect(wrapper.find('.sport-tournament-page').exists()).toBe(true)
+    expect(wrapper.text().match(/Tournament management/g)).toHaveLength(1)
+    expect(wrapper.findComponent(stubs.StatsCards).exists()).toBe(true)
 
     warnSpy.mockRestore()
     errorSpy.mockRestore()

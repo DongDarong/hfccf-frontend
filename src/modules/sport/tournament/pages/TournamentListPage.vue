@@ -21,7 +21,7 @@ defineOptions({
 
 const router = useRouter()
 const { t } = useLanguage()
-const { tournaments, getTournamentById, loadTournaments } = useTournamentCrudCatalog()
+const { tournaments, getTournamentById, loadTournaments, isLoading } = useTournamentCrudCatalog()
 
 const searchQuery = ref('')
 const seasonFilter = ref('')
@@ -30,6 +30,10 @@ const stateFilter = ref('')
 const pageTitle = computed(() => t('sportTournament.list.title'))
 const pageSubtitle = computed(() => t('sportTournament.list.subtitle'))
 const createButtonLabel = computed(() => t('sportTournament.list.createButton'))
+const resultSummary = computed(() => t('sportTournament.list.resultSummary', {
+  count: filteredTournaments.value.length,
+  total: tournaments.value.length,
+}))
 
 const sortedTournaments = computed(() =>
   [...tournaments.value].sort((left, right) => {
@@ -152,15 +156,13 @@ function goToTournamentEdit(tournament) {
       <HeaderSection :title="pageTitle" :subtitle="pageSubtitle" />
 
       <div class="sport-tournament-page__hero">
-        <StatsCards :cards="summaryCards" />
+        <StatsCards :cards="summaryCards" compact />
       </div>
 
       <div class="sport-tournament-page__shell">
         <div class="sport-tournament-page__toolbar">
           <div class="sport-tournament-page__toolbar-copy">
-            <p class="sport-tournament-page__eyebrow">{{ t('sportTournament.filters.season') }}</p>
-            <h2 class="sport-tournament-page__title">{{ t('sportTournament.list.title') }}</h2>
-            <p class="sport-tournament-page__subtitle">{{ t('sportTournament.list.subtitle') }}</p>
+            <h2 class="sport-tournament-page__title">{{ t('sportTournament.list.sectionTitle') }}</h2>
           </div>
 
           <div class="sport-tournament-page__toolbar-actions">
@@ -182,8 +184,13 @@ function goToTournamentEdit(tournament) {
           :state-options="TOURNAMENT_STATES"
         />
 
+        <div class="sport-tournament-page__results" role="status" aria-live="polite">
+          {{ resultSummary }}
+        </div>
+
         <TournamentTable
           :tournaments="filteredTournaments"
+          :loading="isLoading"
           :empty-text="t('sportTournament.list.empty')"
           @view="goToTournamentDetail"
           @edit="goToTournamentEdit"
@@ -197,19 +204,19 @@ function goToTournamentEdit(tournament) {
 .sport-tournament-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .sport-tournament-page__hero,
 .sport-tournament-page__shell {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .sport-tournament-page__shell {
-  padding: 1.5rem;
-  border-radius: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 1.25rem;
   border: 1px solid #dce6f2;
   background:
     radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
@@ -229,28 +236,12 @@ function goToTournamentEdit(tournament) {
   min-width: 0;
 }
 
-.sport-tournament-page__eyebrow {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .sport-tournament-page__title {
-  margin: 0.35rem 0 0;
+  margin: 0;
   color: #0f172a;
   font-size: 1.4rem;
   line-height: 1.2;
   font-weight: 800;
-}
-
-.sport-tournament-page__subtitle {
-  margin: 0.45rem 0 0;
-  color: #475569;
-  font-size: 0.92rem;
-  line-height: 1.6;
 }
 
 .sport-tournament-page__toolbar-actions {
@@ -265,6 +256,13 @@ function goToTournamentEdit(tournament) {
   min-height: 2.8rem;
   border-radius: 0.9rem;
   font-weight: 800;
+}
+
+.sport-tournament-page__results {
+  padding: 0.1rem 0.15rem 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {
