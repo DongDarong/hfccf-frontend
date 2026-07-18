@@ -125,7 +125,7 @@
           "id": "sport-equipment",
           "routeName": "dashboard-sport-coach-equipment",
           "labelKey": "nav.items.equipment",
-          "icon": "inventory",
+          "icon": "sport-equipment",
           "access": {
             "scopes": [
               "staff"
@@ -649,7 +649,7 @@
           "id": "sport-coaches",
           "routeName": "dashboard-sport-admin-users",
           "labelKey": "nav.items.coaches",
-          "icon": "users",
+          "icon": "sport-coach",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -664,7 +664,7 @@
           "id": "sport-teams",
           "routeName": "dashboard-sport-admin-teams",
           "labelKey": "nav.items.teams",
-          "icon": "users",
+          "icon": "sport-team",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -679,7 +679,7 @@
           "id": "sport-players",
           "routeName": "dashboard-sport-admin-players",
           "labelKey": "nav.items.players",
-          "icon": "users",
+          "icon": "sport-player",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -694,7 +694,7 @@
           "id": "sport-matches",
           "routeName": "dashboard-sport-admin-matches",
           "labelKey": "nav.items.matches",
-          "icon": "reports",
+          "icon": "sport-match",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -709,7 +709,7 @@
           "id": "sport-tournaments",
           "routeName": "dashboard-sport-admin-tournaments",
           "labelKey": "nav.items.tournaments",
-          "icon": "tournaments",
+          "icon": "sport-tournament",
           "badgeKey": "nav.badges.staff",
           "access": {
             "scopes": [
@@ -724,7 +724,7 @@
           "id": "sport-training-schedule-admin",
           "routeName": "dashboard-sport-admin-training",
           "labelKey": "nav.items.trainingSchedule",
-          "icon": "reports",
+          "icon": "sport-coach-training",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [
@@ -739,7 +739,7 @@
           "id": "sport-coach-team-assignments",
           "routeName": "dashboard-sport-admin-coach-team-assignments",
           "labelKey": "nav.items.coachTeamAssignments",
-          "icon": "users",
+          "icon": "sport-assignment",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [
@@ -754,7 +754,7 @@
           "id": "sport-pending-player-approvals",
           "routeName": "dashboard-sport-admin-pending-player-approvals",
           "labelKey": "nav.items.pendingPlayerApprovals",
-          "icon": "users",
+          "icon": "sport-player-approval",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [
@@ -769,7 +769,7 @@
           "id": "sport-pending-match-approvals",
           "routeName": "dashboard-sport-admin-pending-match-approvals",
           "labelKey": "nav.items.pendingMatchApprovals",
-          "icon": "reports",
+          "icon": "sport-match-approval",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [
@@ -784,7 +784,7 @@
           "id": "sport-player-lifecycle",
           "routeName": "dashboard-sport-admin-player-lifecycle",
           "labelKey": "nav.items.playerLifecycle",
-          "icon": "users",
+          "icon": "sport-lifecycle",
           "badgeKey": "nav.badges.admin",
           "access": {
             "scopes": [

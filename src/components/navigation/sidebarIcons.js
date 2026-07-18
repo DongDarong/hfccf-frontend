@@ -24,9 +24,9 @@ import {
   IconChalkboardTeacher,
   IconClipboardText,
   IconCalendarTime,
-  IconCalendarCheck,
   IconClipboardCheck,
   IconClipboardList,
+  IconFileCheck,
   IconFileDescription,
   IconHomeBolt,
   IconLayoutDashboard,
@@ -36,14 +36,15 @@ import {
   IconShirtSport,
   IconShieldCheck,
   IconSettings as IconSettingsOutline,
+  IconPackage,
   IconStethoscope,
   IconTimelineEvent,
   IconTrophy,
   IconUserCheck,
   IconUserCog,
-  IconUserShare,
   IconUsers,
   IconUsersGroup,
+  IconUsersPlus,
 } from '@tabler/icons-vue'
 
 export const sidebarIconByName = {
@@ -73,12 +74,13 @@ export const sidebarIconByName = {
   'sport-coach': IconUserCog,
   'sport-team': IconUsersGroup,
   'sport-player': IconShirtSport,
-  'sport-assignment': IconUserShare,
+  'sport-assignment': IconUsersPlus,
   'sport-match': IconScoreboard,
   'sport-tournament': IconTrophy,
   'sport-player-approval': IconUserCheck,
-  'sport-match-approval': IconCalendarCheck,
+  'sport-match-approval': IconFileCheck,
   'sport-lifecycle': IconTimelineEvent,
+  'sport-equipment': IconPackage,
   'sport-coach-dashboard': IconHomeBolt,
   'sport-coach-training': IconCalendarTime,
   'sport-coach-teams': IconUsersGroup,
@@ -175,6 +177,10 @@ export function resolvePreschoolSidebarIconComponent(item) {
   if (haystack.includes('dashboard') || haystack.includes('overview')) return IconLayoutDashboard
 
   return null
+}
+
+export function resolveSidebarNavigationIconComponent(item) {
+  return resolveSidebarIconComponent(item?.icon) || resolvePreschoolSidebarIconComponent(item)
 }
 
 export function resolveSidebarIconComponent(iconKey) {

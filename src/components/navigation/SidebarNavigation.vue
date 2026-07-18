@@ -6,7 +6,7 @@ import AppBadge from '@/components/ui/AppBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import sidebarNavData from '@/data/sidebar'
 import { buildSidebarSections } from '@/components/navigation/sidebarNavigation'
-import { resolvePreschoolSidebarIconComponent, resolveSidebarIconComponent } from '@/components/navigation/sidebarIcons'
+import { resolveSidebarNavigationIconComponent } from '@/components/navigation/sidebarIcons'
 import { useUserStore } from '@/store/userStore'
 
 defineOptions({
@@ -71,7 +71,7 @@ loadSectionState()
 function decorateNavItem(item) {
   return {
     ...item,
-    iconComponent: resolvePreschoolSidebarIconComponent(item) || resolveSidebarIconComponent(item.icon),
+    iconComponent: resolveSidebarNavigationIconComponent(item),
     children: (item.children || []).map((child) => decorateNavItem(child)),
   }
 }
