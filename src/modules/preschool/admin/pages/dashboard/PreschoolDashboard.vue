@@ -36,7 +36,7 @@ const {
   loadDashboard,
 } = useDashboardData()
 
-const { toolbarMenuItems, shortcutActions, goToScheduleManagement } = useDashboardActions()
+const { toolbarMenuItems, goToScheduleManagement } = useDashboardActions()
 
 onMounted(loadDashboard)
 </script>

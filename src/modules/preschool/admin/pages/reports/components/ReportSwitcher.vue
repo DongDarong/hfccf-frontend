@@ -37,10 +37,6 @@ const currentReport = computed(() => {
   return REPORTS.find(r => r.routeName === routeName)?.key || ''
 })
 
-const currentReportData = computed(() => {
-  return reportOptions.value.find(r => r.key === currentReport.value)
-})
-
 function switchReport(reportKey) {
   const report = REPORTS.find(r => r.key === reportKey)
   if (report?.routeName) {

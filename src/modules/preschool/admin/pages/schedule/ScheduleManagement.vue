@@ -2,7 +2,7 @@
 // Keep schedule management on a dedicated page so conflict handling, archive
 // actions, and weekly timetable filtering do not turn the Preschool dashboard
 // into a monolithic CRUD screen.
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -22,7 +22,6 @@ import {
   getScheduleSessionActionKey,
   getScheduleSessionActionTone,
   normalizeScheduleSessionStatus,
-  buildScheduleSessionIndex,
   resolveScheduleSession,
 } from '@/modules/preschool/shared/components/schedule/scheduleSessionOverlay'
 import {

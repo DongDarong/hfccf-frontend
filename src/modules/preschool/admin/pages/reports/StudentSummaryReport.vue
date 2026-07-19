@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -25,7 +24,6 @@ defineOptions({
 })
 
 const { t } = useLanguage()
-const router = useRouter()
 
 const loading = ref(false)
 const reportGenerated = ref(false)
@@ -200,10 +198,6 @@ function resetFilters() {
     attendance: null,
     classStudents: [],
   }
-}
-
-function backToReports() {
-  router.push({ name: 'dashboard-preschool-admin-reports' })
 }
 
 async function exportReport(format) {

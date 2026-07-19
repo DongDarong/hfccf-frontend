@@ -1,7 +1,5 @@
 <script setup>
-import { ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
-import { useLanguage } from '@/composables/useLanguage'
 
 defineProps({
   loading: {
@@ -11,9 +9,6 @@ defineProps({
 })
 
 const emit = defineEmits(['export'])
-
-const { t } = useLanguage()
-const isOpen = ref(false)
 
 const exportOptions = [
   {
@@ -48,14 +43,6 @@ const exportOptions = [
 
 function handleExport(format) {
   emit('export', format)
-  isOpen.value = false
-}
-
-const colorMap = {
-  rose: 'hover:bg-rose-50',
-  emerald: 'hover:bg-emerald-50',
-  blue: 'hover:bg-blue-50',
-  slate: 'hover:bg-slate-50',
 }
 </script>
 

@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -27,7 +26,6 @@ defineOptions({
 })
 
 const { t } = useLanguage()
-const router = useRouter()
 
 const loading = ref(false)
 const reportGenerated = ref(false)
@@ -186,10 +184,6 @@ function changeReportPeriod() {
   reportGenerated.value = false
 }
 
-function backToReports() {
-  router.push({ name: 'dashboard-preschool-admin-reports' })
-}
-
 async function exportReport(format) {
   try {
     exportLoading.value = true
@@ -299,13 +293,6 @@ function exportToCsv(filename) {
   link.download = `${filename}.csv`
   link.click()
   window.URL.revokeObjectURL(url)
-}
-
-function scrollToFilters() {
-  const filtersElement = document.querySelector('.preschool-attendance-report-filters')
-  if (filtersElement) {
-    filtersElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 }
 
 onMounted(() => {

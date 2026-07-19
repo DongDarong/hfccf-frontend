@@ -1,8 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { useLanguage } from '@/composables/useLanguage'
 
-defineProps({
+const props = defineProps({
   students: {
     type: Array,
     default: () => [],
@@ -16,8 +15,6 @@ defineProps({
     default: '',
   },
 })
-
-const { t } = useLanguage()
 
 const statistics = computed(() => {
   const totalStudents = props.students.length

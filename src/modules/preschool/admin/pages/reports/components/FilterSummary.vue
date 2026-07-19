@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
-defineProps({
+const props = defineProps({
   academicYearLabel: {
     type: String,
     default: '',
