@@ -13,6 +13,7 @@ import {
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import MonthlyAttendanceReport from './components/MonthlyAttendanceReport.vue'
 import YearlyAttendanceReport from './components/YearlyAttendanceReport.vue'
+import { fetchAllPages } from './reportPaginationHelper'
 
 defineOptions({
   name: 'AttendanceReportPage',
@@ -121,16 +122,15 @@ async function generateReport() {
   try {
     const dateRange = getDateRange()
 
+    // Fetch all pages to ensure complete dataset
     const [attendanceData, studentsData] = await Promise.all([
-      fetchPreschoolAttendance({
+      fetchAllPages(fetchPreschoolAttendance, {
         classId: classId.value,
         dateFrom: dateRange.from,
         dateTo: dateRange.to,
-        perPage: 1000,
       }),
-      fetchPreschoolStudents({
+      fetchAllPages(fetchPreschoolStudents, {
         classId: classId.value,
-        perPage: 1000,
       }),
     ])
 
