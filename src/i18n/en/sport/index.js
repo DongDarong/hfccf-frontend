@@ -21,6 +21,8 @@ import coachTeamManagement from './coach-team-management'
 import playerLifecycle from './player-lifecycle'
 import matchSquad from './match-squad'
 import equipment from './equipment'
+import sportAdminReports from './admin/reports'
+import sportAdminSharedMessages from './admin/shared-messages'
 
 export default {
   ...dashboard,
@@ -46,4 +48,6 @@ export default {
   ...playerLifecycle,
   ...matchSquad,
   ...equipment,
+  sportAdminReports,
+  sportAdminSharedMessages,
 }

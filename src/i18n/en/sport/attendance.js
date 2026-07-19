@@ -44,9 +44,12 @@ export default {
     placeholders: {
       team: 'Select a team',
       note: 'Add a note',
+      reason: 'Reason (optional)',
     },
     columns: {
       player: 'Player',
+      dateOfBirth: 'Date of Birth',
+      gender: 'Gender',
       status: 'Status',
       note: 'Note',
     },

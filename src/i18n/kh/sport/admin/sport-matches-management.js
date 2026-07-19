@@ -49,7 +49,7 @@ export default {
     },
     toolbarEyebrow: 'ការគ្រប់គ្រងការប្រកួត',
     toolbarSummary: 'ការប្រកួត ({count})',
-    visibleRange: 'កំពុងបង្ហាញ {shown} នៃការប្រកួត {total}',
+    visibleRange: 'កំពុងបង្ហាញ {start}–{end} នៃការប្រកួត {total}',
     noResults: 'រកមិនឃើញការប្រកួតទេ។',
     spotlightLabel: 'កំពុងលេងផ្ទាល់',
     summary: {
@@ -76,7 +76,7 @@ export default {
     },
     filters: {
       searchLabel: 'ស្វែងរក',
-      searchPlaceholder: 'ស្វែងរកតាមក្រុម ទីតាំង ឬលេខការប្រកួត',
+      searchPlaceholder: 'ស្វែងរកការប្រកួត...',
       competitionLabel: 'ការប្រកួត',
       competitionPlaceholder: 'ការប្រកួតទាំងអស់',
       tournamentLabel: 'ពានរង្វាន់',
@@ -85,7 +85,7 @@ export default {
       matchDatePlaceholder: '',
     },
     table: {
-      id: 'លេខ',
+      number: 'ល.រ.',
       homeTeam: 'ក្រុមម្ចាស់ផ្ទះ',
       score: 'ពិន្ទុ',
       awayTeam: 'ក្រុមភ្ញៀវ',

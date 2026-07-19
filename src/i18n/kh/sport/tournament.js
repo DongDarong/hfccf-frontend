@@ -4,7 +4,7 @@ export default {
       title: 'ការគ្រប់គ្រងការប្រកួត',
       subtitle: 'បង្កើត រៀបចំ និងតាមដានវដ្តការប្រកួតទាំងមូលពីផ្ទាំងតែមួយ។',
       sectionTitle: 'ការប្រកួត',
-      resultSummary: 'បង្ហាញ {count} ក្នុងចំណោម {total} ការប្រកួត',
+      resultSummary: 'បង្ហាញ {start}–{end} ក្នុងចំណោម {total} ការប្រកួត',
       searchPlaceholder: 'ស្វែងរកការប្រកួតតាមឈ្មោះ រដូវកាល អ្នករៀបចំ ឬទីតាំង',
       empty: 'មិនមានការប្រកួតដែលត្រូវនឹងតម្រងបច្ចុប្បន្នទេ។',
       createButton: 'បង្កើតការប្រកួត',
@@ -29,6 +29,7 @@ export default {
         },
       },
       table: {
+        number: 'ល.រ.',
         name: 'ការប្រកួត',
         state: 'ស្ថានភាព',
         season: 'រដូវកាល',
@@ -187,6 +188,14 @@ export default {
       manageStandings: 'គ្រប់គ្រងតារាងចំណាត់ថ្នាក់',
       manageResults: 'គ្រប់គ្រងលទ្ធផល',
       manageKnockout: 'គ្រប់គ្រង Knockout',
+      teams: {
+        eyebrow: 'ក្រុមក្នុងការប្រកួត',
+        title: 'ក្រុមដែលបានភ្ជាប់',
+        select: 'ជ្រើសរើសក្រុមកីឡា',
+        attach: 'ភ្ជាប់ក្រុម',
+        remove: 'ដកចេញ',
+        empty: 'មិនទាន់មានក្រុមភ្ជាប់ជាមួយការប្រកួតនេះទេ។',
+      },
     },
     groups: {
       title: 'ចែកពូល',
@@ -402,6 +411,8 @@ export default {
       backToDetail: 'ត្រឡប់ទៅព័ត៌មានលម្អិត',
       goToFixtures: 'មើលប្រកួត',
       goToResults: 'មើលលទ្ធផល',
+      recalculate: 'គណនាតារាងចំណាត់ថ្នាក់ឡើងវិញ',
+      recalculated: 'តារាងចំណាត់ថ្នាក់ត្រូវបានគណនាឡើងវិញដោយជោគជ័យ។',
       notFoundTitle: 'រកមិនឃើញតារាងចំណាត់ថ្នាក់',
       notFoundMessage: 'ការប្រកួតដែលបានជ្រើសរើសមិនមាននៅក្នុងកាតាឡុកបច្ចុប្បន្នទេ។',
       labels: {
