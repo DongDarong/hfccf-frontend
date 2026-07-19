@@ -42,6 +42,470 @@ Prompt Note:
 codex resume 019e82a2-dfd7-77d2-b5b8-110b6f27b188
 
 
-claude --resume 77ac123e-fab8-473e-b922-9543ceb867c6
+
+claude --resume b3c7e7f5-f7c9-4fe6-8024-771f11c158fd
 
 Noted: backend location is C:\laragon\www\hfccf-backend\.
+
+--------------------------------------------------
+PHASE R5 — REPORT EXPORT IMPLEMENTATION
+--------------------------------------------------
+
+Start Date: 2026-07-19
+Status: IN PROGRESS
+
+Primary Objective
+-----------------
+
+Implement production-ready report exports for the Preschool Reporting module,
+supporting PDF, Excel, and Print formats for:
+
+• Student Summary Report
+• Attendance Report (Monthly and Yearly modes)
+• Assessment Report (Individual Student and Entire Class modes)
+
+Reports must be generation complete, thesis-demonstration ready, with
+consistent styling across all three report types.
+
+Do not add new report scopes.
+Do not redesign the reporting system.
+Do not create non-canonical export formats.
+Do not commit unless explicitly requested.
+
+--------------------------------------------------
+Task 1 — Audit Current Export Architecture
+--------------------------------------------------
+
+Inspect existing export implementations in the codebase:
+
+• Search for PDF export components
+• Search for Excel export utilities
+• Search for print stylesheets
+• Identify established patterns (libraries, services, naming)
+• Document the canonical export approach
+
+Questions to answer:
+
+• Which PDF library is used? (pdfkit, html2pdf, print.css only, etc.)
+• Which Excel library is used? (xlsx, csv, json2csv, etc.)
+• Are there existing export services?
+• Do existing exports follow a pattern?
+• What is the HTML-to-PDF strategy?
+• What paper sizes and margins are standard?
+• Are print stylesheets already in place?
+
+--------------------------------------------------
+Task 2 — Design Export Architecture
+--------------------------------------------------
+
+Design the export system for the Reporting module:
+
+Requirements:
+
+• One export service for all three report types
+• Reusable export functions (PDF, Excel, Print)
+• Consistent styling across all exports
+• Paper size: A4 (standard)
+• Orientation: Portrait (default) with landscape option for tables
+• Margins: 1 inch (25.4mm) or project standard
+• Header/footer: Optional (school name, date, student name)
+• Page breaks: Automatic for long tables
+• Print preview: Browser print dialog
+
+Export Specifications:
+
+PDF:
+  - Format: Single-page summaries + multi-page tables
+  - Styling: Preserved from web (colors, spacing)
+  - Images: Embedded (student photos, badges)
+  - Font: System default (no custom fonts)
+  - File naming: [ReportType]-[StudentName]-[Date].pdf
+  - Size limit: < 5MB per report
+
+Excel:
+  - Format: Multiple sheets (one per report section)
+  - Styling: Minimal (borders, headers bold, freezed panes)
+  - Data only (no images or badges)
+  - File naming: [ReportType]-[StudentName]-[Date].xlsx
+  - Columns: Auto-width
+  - Formulas: None (values only)
+
+Print:
+  - Format: Browser print dialog
+  - Styling: Print-optimized (less color, no animations)
+  - Page breaks: Automatic before large tables
+  - Margins: Respect browser print settings
+  - Headers/footers: Optional
+
+--------------------------------------------------
+Task 3 — Implement Export Service
+--------------------------------------------------
+
+Create: src/modules/preschool/services/reportExportService.js
+
+Functions to implement:
+
+exportToPDF(reportType, reportData, options = {})
+  - Input: report type (assessment, attendance, summary), data object
+  - Output: PDF blob or download trigger
+  - Options: filename, paper size, orientation
+
+exportToExcel(reportType, reportData, options = {})
+  - Input: report type, data object
+  - Output: Excel blob or download trigger
+  - Options: filename, sheet names
+
+exportToPrint(reportType, reportData)
+  - Input: report type, data object
+  - Output: Open print dialog with formatted HTML
+
+Do not implement exports until architectural decision is confirmed.
+
+--------------------------------------------------
+Task 4 — Create Export Components
+--------------------------------------------------
+
+Create reusable export toolbar component:
+
+File: src/modules/preschool/admin/pages/reports/components/ReportExportToolbar.vue
+
+Component features:
+
+• Three buttons: PDF, Excel, Print
+• Loading state during export generation
+• Error handling (show error message)
+• Success notification (file downloaded)
+• Disabled state before report generation
+• Responsive layout (vertical on mobile)
+• Tooltip hints on hover
+
+Props:
+  - reportType: string (assessment, attendance, summary)
+  - reportData: object
+  - reportName: string (for filename)
+  - disabled: boolean (default: false)
+
+Events:
+  - @export:start
+  - @export:success
+  - @export:error
+  - @export:download
+
+--------------------------------------------------
+Task 5 — Export Student Summary Report
+--------------------------------------------------
+
+Implement exports for: StudentSummaryReport.vue
+
+Export contents:
+
+PDF:
+  - Report header (school name, student identity card section)
+  - Summary cards (latest assessment, attendance rate, overall progress)
+  - Latest assessment details
+  - Attendance history table (compact)
+  - Generated date and footer
+
+Excel:
+  - Sheet 1: Student Info (basic identity + enrollment)
+  - Sheet 2: Assessment Summary (scores, ratings, dates)
+  - Sheet 3: Attendance Summary (by month)
+
+Print:
+  - Single-page layout (optimized for A4)
+  - Minimal images (student photo only)
+  - Page break after attendance table if needed
+
+--------------------------------------------------
+Task 6 — Export Attendance Report
+--------------------------------------------------
+
+Implement exports for: AttendanceReport.vue (Monthly & Yearly modes)
+
+Export contents:
+
+Monthly Attendance PDF:
+  - Report header (month, year, class, academic year)
+  - Summary cards (present, absent, late, excused, percentage)
+  - Student attendance table
+  - Footer with note: "Generated from monthly records"
+
+Yearly Attendance PDF:
+  - Report header (year, class)
+  - Summary cards (full-year totals)
+  - Monthly breakdown table (12 months)
+  - Student yearly attendance table
+  - Footer with legend
+
+Attendance Excel:
+  - Sheet 1: Summary (cards values)
+  - Sheet 2: Monthly (monthly breakdown table)
+  - Sheet 3: Students (attendance table)
+
+--------------------------------------------------
+Task 7 — Export Assessment Report
+--------------------------------------------------
+
+Implement exports for: AssessmentReport.vue (Individual & Class modes)
+
+Export contents:
+
+Individual Assessment PDF:
+  - Report header (student identity card)
+  - Summary cards (assessment metrics)
+  - Latest assessment section
+  - Assessment history table
+  - Footer with teacher signature line (optional)
+
+Class Assessment PDF:
+  - Report header (class name, academic year)
+  - Class summary cards (aggregate metrics)
+  - Student assessment table
+  - Footer with generated date
+
+Assessment Excel:
+  - Individual mode:
+    - Sheet 1: Student Info
+    - Sheet 2: Summary Metrics
+    - Sheet 3: Assessment History
+  - Class mode:
+    - Sheet 1: Class Summary
+    - Sheet 2: Student Assessment Results
+
+--------------------------------------------------
+Task 8 — Print Stylesheet Implementation
+--------------------------------------------------
+
+Create: src/assets/styles/print.css
+
+Styles:
+
+• Page size: A4, Portrait
+• Margins: 1 inch (as per project standard or custom)
+• Font size: 10-12pt for body, 14-16pt for headers
+• Colors: Preserved (inkjet-friendly)
+• Backgrounds: No background colors (print-safe)
+• Page breaks: Before .page-break elements
+• Avoid: Animations, gradients (optional)
+• Images: Embed or remove based on design
+• Tables: Auto-resize to page width
+• Headers/footers: Browser defaults (optional custom)
+
+Media queries:
+
+@media print {
+  /* Hide non-printable elements */
+  .no-print { display: none; }
+
+  /* Force page breaks */
+  .page-break { page-break-before: always; }
+
+  /* Optimize spacing */
+  body { margin: 0; padding: 0; }
+
+  /* Preserve layout */
+  .report-content { width: 100%; }
+}
+
+--------------------------------------------------
+Task 9 — Testing Export Functionality
+--------------------------------------------------
+
+Create focused tests:
+
+Files to create:
+
+• src/tests/unit/modules/preschool/ReportExportToolbar.test.js
+• src/tests/unit/modules/preschool/reportExportService.test.js
+• src/tests/unit/modules/preschool/exports/AssessmentExport.test.js
+• src/tests/unit/modules/preschool/exports/AttendanceExport.test.js
+• src/tests/unit/modules/preschool/exports/SummaryExport.test.js
+
+Test coverage:
+
+Export Service:
+  - PDF generation with valid data
+  - Excel generation with valid data
+  - Print function opens dialog
+  - Error handling (invalid data, missing fields)
+  - File naming convention
+  - Null/empty data handling
+
+Export Toolbar:
+  - Renders buttons
+  - Disabled state
+  - Loading state
+  - Success message
+  - Error message
+  - Events fire correctly
+
+Export Content:
+  - All required fields present
+  - No sensitive data leaks
+  - Styling preserved
+  - Tables paginated correctly
+  - Calculations match report display
+
+--------------------------------------------------
+Task 10 — Browser Smoke Test
+--------------------------------------------------
+
+Where an interactive browser environment is available, verify:
+
+For each report (Assessment, Attendance, Summary):
+
+1. Navigate to report page
+2. Generate individual/class report (as applicable)
+3. Verify export buttons are enabled
+4. Click PDF export
+   - File downloads with correct name
+   - PDF opens in new tab
+   - Content matches on-screen display
+   - Images/colors preserved
+5. Click Excel export
+   - File downloads with correct name
+   - Opens in Excel (or LibreOffice)
+   - Data matches on-screen values
+   - Multiple sheets present (if applicable)
+6. Click Print
+   - Print dialog opens
+   - Preview shows correct layout
+   - Page breaks in correct places
+7. Test both English and Khmer locales
+   - Translations appear in exports
+   - Layout adjusts for text length
+8. Test responsive sizes
+   - Mobile print: portrait only
+   - Tablet print: landscape option
+   - Desktop print: standard
+
+If browser execution unavailable:
+
+  Browser smoke test: NOT EXECUTED
+  (Do not replace with placeholder unit test)
+
+--------------------------------------------------
+Task 11 — Localization & Translations
+--------------------------------------------------
+
+Add export-related i18n keys:
+
+Files to update:
+
+• src/i18n/en/preschool/attendance.js
+• src/i18n/kh/preschool/attendance.js
+
+Keys to add:
+
+preschoolReportsExport: {
+  title: 'Export Report',
+  pdf: 'Download as PDF',
+  excel: 'Download as Excel',
+  print: 'Print Report',
+  exporting: 'Generating export...',
+  success: 'File downloaded successfully',
+  error: 'Export failed. Please try again.',
+  dialogTitle: 'Print Report',
+  fileName: '[ReportType]-[StudentName]-[Date]',
+  pageSize: 'A4',
+  orientation: 'Portrait',
+}
+
+--------------------------------------------------
+Task 12 — Authorization & Security
+--------------------------------------------------
+
+Verify:
+
+• Export toolbar only visible to ADMIN users
+• Export routes require ADMIN scope
+• No sensitive data in exports (PHI handling)
+• No export APIs needed (client-side only)
+• File downloads use secure headers
+• No exposure of raw API data
+
+--------------------------------------------------
+Task 13 — Performance Optimization
+--------------------------------------------------
+
+Considerations:
+
+• PDF generation: < 2 seconds for typical report
+• Excel generation: < 1 second
+• File size: PDF < 5MB, Excel < 2MB
+• Memory usage: No memory leaks (test with devtools)
+• Avoid blocking UI during export
+• Show loading indicator during generation
+
+--------------------------------------------------
+Task 14 — Lint & Final Checks
+--------------------------------------------------
+
+Run before marking complete:
+
+• npm run lint (0 errors)
+• npm run test -- preschool (all tests pass)
+• No console errors in browser
+• No unused imports
+• No hardcoded strings (all i18n)
+• Responsive design verified (mobile/tablet/desktop)
+
+--------------------------------------------------
+Out of Scope
+--------------------------------------------------
+
+Do not:
+
+• Create cloud-based export service
+• Implement export scheduling/batch processing
+• Create export history/audit logs
+• Modify assessment data for exports
+• Create new grading formulas for exports
+• Add export to other modules (Sport, English, etc.)
+• Implement digital signatures
+• Create encrypted exports
+
+--------------------------------------------------
+Final Deliverables
+--------------------------------------------------
+
+Phase R5 completion requires:
+
+1. Export service (reportExportService.js)
+2. Export toolbar component (ReportExportToolbar.vue)
+3. Integrated exports in:
+   - StudentSummaryReport.vue
+   - AttendanceReport.vue
+   - AssessmentReport.vue
+4. Print stylesheet (print.css)
+5. Focused tests (5+ test files)
+6. i18n translations (English + Khmer)
+7. All tests passing
+8. Linting clean (0 errors)
+9. Browser smoke test completed
+10. Commit with comprehensive message
+
+Target Readiness: 90+/100 for thesis demonstration
+
+--------------------------------------------------
+Decision Points
+--------------------------------------------------
+
+Before starting implementation, confirm:
+
+1. PDF Library: Which library to use?
+   Options: html2pdf.js, pdfkit, jsPDF, print.css only
+
+2. Excel Library: Which library to use?
+   Options: xlsx, csv only, json2csv
+
+3. Print Strategy: Client-side print only, or server-side?
+   Recommendation: Client-side (no backend changes)
+
+4. File Naming: Include timestamp? Custom format?
+   Recommendation: [ReportType]-[StudentName]-[Date].format
+
+5. Localization: Export dates/numbers in locale?
+   Recommendation: Yes (respect user locale)
+
+--------------------------------------------------

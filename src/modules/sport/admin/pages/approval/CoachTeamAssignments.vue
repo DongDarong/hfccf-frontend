@@ -5,6 +5,7 @@ import Card from 'primevue/card'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Select from 'primevue/select'
+import Pagination from '@/components/data-display/Pagination.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import StatusBadge from '@/components/badges/StatusBadge.vue'
@@ -20,14 +21,23 @@ import {
 defineOptions({ name: 'SportCoachTeamAssignmentsPage' })
 
 const { t, language } = useLanguage()
-const { listCoachTeamAssignments, saveCoachTeamAssignment, deactivateCoachTeamAssignment } = useSportApprovals()
+const {
+  createCoachTeamAssignment,
+  listCoachTeamAssignments,
+  updateCoachTeamAssignment,
+  deactivateCoachTeamAssignment,
+} = useSportApprovals()
 const assignments = ref([])
+const currentPage = ref(1)
+const pageSize = 5
 const coaches = ref([])
 const teams = ref([])
 const loading = ref(false)
 const error = ref('')
 const editingAssignmentId = ref('')
 const isKh = computed(() => language.value === 'KH')
+const totalPages = computed(() => Math.max(Math.ceil(assignments.value.length / pageSize), 1))
+const paginatedAssignments = computed(() => assignments.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
 
 const form = reactive({
   coachUserId: '',
@@ -41,6 +51,11 @@ const formTitle = computed(() =>
   editingAssignmentId.value
     ? `${t('common.edit')} assignment`
     : t('sportCoachTeamManagement.assignments.formTitle'),
+)
+const submitLabel = computed(() =>
+  editingAssignmentId.value
+    ? t('sportCoachTeamManagement.actions.updateAssignment')
+    : t('sportCoachTeamManagement.actions.saveAssignment'),
 )
 
 function tone(status) {
@@ -70,6 +85,11 @@ function startEdit(row = {}) {
   form.coachUserId = normalizeAssignmentUserId(row)
   form.teamId = normalizeAssignmentTeamId(row)
   form.status = String(row?.status || 'active').trim() || 'active'
+}
+
+function cancelEdit() {
+  resetForm()
+  error.value = ''
 }
 
 function hasDuplicateActiveAssignment(coachUserId, teamId) {
@@ -102,8 +122,15 @@ async function refresh() {
     ])
 
     assignments.value = assignmentResponse.items || assignmentResponse.data || []
-    coaches.value = coachResponse.items || []
-    teams.value = teamResponse.items || []
+    currentPage.value = 1
+    coaches.value = (coachResponse.items || []).map((coach) => ({
+      ...coach,
+      id: String(coach?.id ?? '').trim(),
+    }))
+    teams.value = (teamResponse.items || []).map((team) => ({
+      ...team,
+      id: String(team?.id ?? '').trim(),
+    }))
   } catch (exception) {
     error.value = exception?.message || t('sportCoachTeamManagement.common.loadError')
   } finally {
@@ -116,7 +143,7 @@ async function submit() {
   const teamId = String(form.teamId || '').trim()
 
   if (hasDuplicateActiveAssignment(coachUserId, teamId)) {
-    error.value = 'An active assignment already exists for this coach and team.'
+    error.value = t('sportAdminSharedMessages.errors.assignmentExists')
     return
   }
 
@@ -130,10 +157,10 @@ async function submit() {
     }
 
     if (editingAssignmentId.value) {
-      payload.id = editingAssignmentId.value
+      await updateCoachTeamAssignment(editingAssignmentId.value, payload)
+    } else {
+      await createCoachTeamAssignment(payload)
     }
-
-    await saveCoachTeamAssignment(payload)
     resetForm()
     await refresh()
   } catch (exception) {
@@ -179,7 +206,16 @@ onMounted(() => {
           </div>
           <div class="mt-4 flex items-center justify-between gap-3">
             <p class="m-0 text-sm text-red-600">{{ error }}</p>
-            <Button :label="t('sportCoachTeamManagement.actions.saveAssignment')" :loading="loading" @click="submit" />
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                v-if="editingAssignmentId"
+                outlined
+                :label="t('sportCoachTeamManagement.actions.cancel')"
+                :disabled="loading"
+                @click="cancelEdit"
+              />
+              <Button :label="submitLabel" :loading="loading" @click="submit" />
+            </div>
           </div>
         </template>
       </Card>
@@ -187,7 +223,7 @@ onMounted(() => {
       <Card class="sport-coach-page__panel">
         <template #title>{{ t('sportCoachTeamManagement.assignments.listTitle') }}</template>
         <template #content>
-          <DataTable :value="assignments" :loading="loading" data-key="id" striped-rows>
+          <DataTable :value="paginatedAssignments" :loading="loading" data-key="id" striped-rows>
             <Column :header="t('sportCoachTeamManagement.common.coach')">
               <template #body="{ data }">
                 {{ coachDisplayName(data) }}
@@ -212,6 +248,9 @@ onMounted(() => {
               </template>
             </Column>
           </DataTable>
+          <div v-if="totalPages > 1" class="mt-4 flex justify-end">
+            <Pagination v-model="currentPage" :total-pages="totalPages" />
+          </div>
         </template>
       </Card>
     </section>

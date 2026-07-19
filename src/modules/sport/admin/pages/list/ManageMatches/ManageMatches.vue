@@ -55,7 +55,7 @@ const deleteErrorMessage = ref('')
 const loadErrorMessage = ref('')
 const selectedMatch = ref(null)
 
-const pageSize = 8
+const pageSize = 5
 const matches = ref([])
 
 const competitionOptions = computed(() => getCompetitionOptions(matches.value))
@@ -95,13 +95,23 @@ const filteredMatches = computed(() => {
 const totalPages = computed(() => Math.max(Math.ceil(filteredMatches.value.length / pageSize), 1))
 const paginatedMatches = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return filteredMatches.value.slice(start, start + pageSize).map((match) => toTableMatch(match))
+  return filteredMatches.value.slice(start, start + pageSize).map((match, index) => ({
+    ...toTableMatch(match),
+    rowNumber: start + index + 1,
+  }))
 })
 
 watch(
   () => filteredMatches.value.length,
   () => {
     if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+  },
+)
+
+watch(
+  [searchQuery, competition, tournament, matchDateInput],
+  () => {
+    currentPage.value = 1
   },
 )
 
@@ -122,11 +132,20 @@ const toolbarSummary = computed(() =>
 
 const visibleRangeLabel = computed(() => {
   if (!filteredMatches.value.length) return t('sportMatchesManagement.noResults')
+
+  const start = (currentPage.value - 1) * pageSize + 1
+  const end = Math.min(currentPage.value * pageSize, filteredMatches.value.length)
+
   return t('sportMatchesManagement.visibleRange', {
-    shown: filteredMatches.value.length,
-    total: totalMatches.value,
+    start,
+    end,
+    total: filteredMatches.value.length,
   })
 })
+
+function onFiltersCleared() {
+  currentPage.value = 1
+}
 
 const spotlightLabel = computed(() => t('sportMatchesManagement.spotlightLabel'))
 
@@ -285,6 +304,7 @@ onMounted(() => {
           v-model:matchDateInput="matchDateInput"
           :competition-options="competitionOptions"
           :tournament-options="tournamentOptions"
+          @clear="onFiltersCleared"
         />
 
         <div class="mt-5">

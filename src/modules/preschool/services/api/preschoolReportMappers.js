@@ -1,6 +1,5 @@
 // Keep Preschool report mapping isolated so the report pages can stay focused
 // on rendering stable summary data instead of chasing backend payload changes.
-import { normalizeAssessment, normalizeAssessmentCategory } from './preschoolAssessmentMappers'
 
 function normalizeText(value) {
   return String(value ?? '').trim()
@@ -139,7 +138,6 @@ function normalizeAttendanceSummary(row = {}) {
 
 function normalizeCategorySummary(row = {}) {
   return {
-    category: row.category ? normalizeAssessmentCategory(row.category) : null,
     count: normalizeNumber(row.count),
     averageScore: row.averageScore ?? row.average_score ?? null,
     latestAssessmentDate: row.latestAssessmentDate || row.latest_assessment_date || '',
@@ -154,7 +152,6 @@ function normalizeObservation(row = {}) {
     studentId: row.studentId ?? row.student_id ?? '',
     studentName: normalizeText(row.studentName || row.student_name),
     assessmentDate: row.assessmentDate || row.assessment_date || '',
-    category: row.category ? normalizeAssessmentCategory(row.category) : null,
     observation: normalizeText(row.observation),
     teacherComment: normalizeText(row.teacherComment || row.teacher_comment),
     assessedByName: normalizeText(row.assessedByName || row.assessed_by_name),
@@ -181,7 +178,6 @@ function normalizeReportPayload(row = {}) {
   const sourceAttendance = row.attendanceSummary || row.attendance_summary || {}
   const sourceCategories = row.categorySummaries || row.category_summaries || []
   const sourceObservations = row.observations || row.data?.observations || []
-  const sourceAssessments = row.assessments || row.data?.assessments || []
   const sourceStudentSummaries = row.studentSummaries || row.student_summaries || []
 
   return {
@@ -208,7 +204,6 @@ function normalizeReportPayload(row = {}) {
     categorySummaries: Array.isArray(sourceCategories) ? sourceCategories.map(normalizeCategorySummary) : [],
     observations: Array.isArray(sourceObservations) ? sourceObservations.map(normalizeObservation) : [],
     studentSummaries: Array.isArray(sourceStudentSummaries) ? sourceStudentSummaries.map(normalizeStudentSummary) : [],
-    assessments: Array.isArray(sourceAssessments) ? sourceAssessments.map(normalizeAssessment) : [],
     generatedAt: row.generatedAt || row.generated_at || '',
     source: normalizeText(row.source || row.data?.source || 'live') || 'live',
     snapshot: normalizeReportSnapshot(row.snapshot || row.data?.snapshot || null),

@@ -39,6 +39,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  pending: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:visible', 'close', 'apply'])
@@ -93,7 +97,7 @@ const dialogVisible = computed({
           class="rounded-xl"
           severity="success"
           :label="t('sportTournament.groups.preview.apply')"
-          :disabled="!canApply"
+          :disabled="pending || !canApply"
           @click="emit('apply')"
         />
       </div>

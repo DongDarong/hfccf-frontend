@@ -7,7 +7,7 @@ import TournamentBanner from '@/modules/sport/admin/components/admin-dashboard/T
 import TournamentList from '@/modules/sport/admin/components/admin-dashboard/TournamentList.vue'
 import StandingsPanel from '@/modules/sport/admin/components/admin-dashboard/StandingsPanel.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { fetchSportDashboard, fetchTournamentStandings } from '@/modules/sport/services/sportApi'
+import { fetchSportDashboard } from '@/modules/sport/services/sportApi'
 
 const { t } = useLanguage()
 
@@ -56,12 +56,6 @@ const cards = computed(() => [
     label: t('sportAdminDashboard.cards.totalCoaches.label'),
     status: 'info',
   },
-  {
-    title: t('sportAdminDashboard.cards.coachesRequests.title'),
-    value: dashboard.value.summary.completedMatches ?? 0,
-    label: t('sportAdminDashboard.cards.coachesRequests.label'),
-    status: 'warning',
-  },
 ])
 
 const featuredTournament = computed(() => dashboard.value.featuredTournament || dashboard.value.tournaments?.[0] || null)
@@ -105,15 +99,6 @@ async function loadDashboard() {
 
   dashboard.value = payload
 
-  const targetTournament = payload.featuredTournament || payload.tournaments?.[0] || null
-
-  if (targetTournament?.id) {
-    const standingsResponse = await fetchTournamentStandings(targetTournament.id).catch(() => ({ items: [] }))
-    dashboard.value = {
-      ...payload,
-      standings: standingsResponse.items || [],
-    }
-  }
 }
 
 onMounted(() => {
@@ -130,6 +115,7 @@ onMounted(() => {
           <StatsCards :cards="cards" />
         </div>
         <TournamentBanner
+          v-if="featuredTournament"
           :tournamentTitle="tournament.title"
           :tournamentSubtitle="tournament.subtitle"
           :tournamentLocation="tournament.location"
@@ -152,19 +138,19 @@ onMounted(() => {
 .sport-dashboard {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .sport-dashboard__content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.2rem;
 }
 
 .sport-dashboard__cards {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.9rem;
 }
 
 .sport-dashboard__quick-panels {

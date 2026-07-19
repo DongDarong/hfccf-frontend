@@ -71,7 +71,6 @@ const cards = computed(() => {
       value: assessments.summary?.pending ?? assessments.summary?.pendingReviews ?? assessments.rows?.length ?? '—',
       caption: t('preschoolOperationsPage.assessmentOperations'),
       tone: 'slate',
-      to: resolveOperationsRoute(router, 'preschool-assessment-dashboard'),
       detailsLabel: t('preschoolOperationsPage.viewDetails'),
     },
     {

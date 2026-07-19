@@ -38,6 +38,8 @@ export default {
       approve: 'Approve',
       reject: 'Reject',
       saveAssignment: 'Save assignment',
+      updateAssignment: 'Update assignment',
+      cancel: 'Cancel',
       deactivate: 'Deactivate',
     },
     myTeams: {

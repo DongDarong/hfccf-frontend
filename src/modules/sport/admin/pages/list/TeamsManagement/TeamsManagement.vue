@@ -23,7 +23,7 @@ const searchQuery = ref('')
 const statusFilter = ref('')
 const currentPage = ref(1)
 
-const pageSize = 8
+const pageSize = 5
 const isKh = computed(() => language.value === 'KH')
 const statusOptions = ['active', 'pending', 'inactive']
 

@@ -24,6 +24,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  pending: {
+    type: Boolean,
+    default: false,
+  },
   previewCount: {
     type: Number,
     default: 0,
@@ -132,7 +136,7 @@ function updateSetting(key, value) {
         type="button"
         class="rounded-xl"
         severity="info"
-        :disabled="!canGenerate"
+        :disabled="!canGenerate || pending"
         :label="t('sportTournament.fixtures.actions.previewFixtures')"
         @click="emit('preview')"
       />
@@ -140,7 +144,7 @@ function updateSetting(key, value) {
         type="button"
         class="rounded-xl"
         severity="success"
-        :disabled="!canGenerate || !previewCount"
+        :disabled="!canGenerate || !previewCount || pending"
         :label="t('sportTournament.fixtures.actions.applyPreview')"
         @click="emit('apply')"
       />
@@ -148,7 +152,7 @@ function updateSetting(key, value) {
         type="button"
         class="rounded-xl"
         outlined
-        :disabled="!canReset"
+        :disabled="!canReset || pending"
         :label="t('sportTournament.fixtures.actions.resetFixtures')"
         @click="emit('reset')"
       />

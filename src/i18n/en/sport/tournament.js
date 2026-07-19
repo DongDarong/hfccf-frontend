@@ -3,6 +3,8 @@ export default {
     list: {
       title: 'Tournament management',
       subtitle: 'Create, organize, and monitor competition lifecycles from one dashboard.',
+      sectionTitle: 'Tournaments',
+      resultSummary: 'Showing {start}–{end} of {total} tournaments',
       searchPlaceholder: 'Search tournaments by name, season, organizer, or location',
       empty: 'No tournaments match the current filters.',
       createButton: 'Create tournament',
@@ -11,22 +13,23 @@ export default {
       stats: {
         total: {
           title: 'Total tournaments',
-          label: 'All active records in the catalog',
+          label: 'In catalog',
         },
         active: {
           title: 'Active tournaments',
-          label: 'Competition currently in play',
+          label: 'In progress',
         },
         registrationOpen: {
           title: 'Registration open',
-          label: 'Tournaments accepting team entries',
+          label: 'Accepting entries',
         },
         completed: {
           title: 'Completed tournaments',
-          label: 'Archived tournament records',
+          label: 'Finished',
         },
       },
       table: {
+        number: 'No.',
         name: 'Tournament',
         state: 'State',
         season: 'Season',
@@ -185,6 +188,14 @@ export default {
       manageStandings: 'Manage standings',
       manageResults: 'Manage results',
       manageKnockout: 'Manage knockout',
+      teams: {
+        eyebrow: 'Tournament teams',
+        title: 'Attached teams',
+        select: 'Select a Sport team',
+        attach: 'Attach team',
+        remove: 'Remove',
+        empty: 'No teams are attached to this tournament.',
+      },
     },
     groups: {
       title: 'Group draw',
@@ -400,6 +411,8 @@ export default {
       backToDetail: 'Back to detail',
       goToFixtures: 'View fixtures',
       goToResults: 'View results',
+      recalculate: 'Recalculate standings',
+      recalculated: 'Standings recalculated successfully.',
       notFoundTitle: 'Standings not found',
       notFoundMessage: 'The selected tournament does not exist in the current catalog.',
       labels: {

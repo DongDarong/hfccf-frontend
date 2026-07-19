@@ -33,6 +33,14 @@ defineOptions({
   name: 'NotificationsPage',
 })
 
+const SUPPORTED_TABS_BY_ROLE = {
+  superadmin: ['notifications', 'tasks', 'alerts', 'approvals'],
+  adminpreschool: ['notifications', 'tasks', 'alerts', 'approvals'],
+  'teacher-preschool': ['notifications', 'tasks', 'alerts'],
+  adminsport: ['notifications'],
+  coach: ['notifications'],
+}
+
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
@@ -41,9 +49,7 @@ const globalNotifications = useNotifications({ defaultPerPage: 8 })
 const unreadNotifications = useUnreadNotifications()
 
 const currentRole = computed(() => String(userStore.currentUser?.role_code ?? userStore.currentUser?.role ?? ''))
-const canViewTasks = computed(() => ['superadmin', 'adminpreschool', 'teacher-preschool', 'adminsport', 'coach'].includes(currentRole.value))
-const canViewAlerts = computed(() => ['superadmin', 'adminpreschool', 'teacher-preschool', 'adminsport', 'coach'].includes(currentRole.value))
-const canViewApprovals = computed(() => ['superadmin', 'adminpreschool'].includes(currentRole.value))
+const supportedTabs = computed(() => new Set(SUPPORTED_TABS_BY_ROLE[currentRole.value] || ['notifications']))
 
 const alertsLoading = ref(false)
 const alertsError = ref('')
@@ -103,19 +109,19 @@ const tabDefinitions = computed(() => [
     value: 'tasks',
     label: t('notifications.tabs.tasks'),
     count: taskSummary.value.open || taskSummary.value.total || taskItems.value.length || 0,
-    visible: canViewTasks.value,
+    visible: supportedTabs.value.has('tasks'),
   },
   {
     value: 'alerts',
     label: t('notifications.tabs.alerts'),
     count: alertSummary.value.unread || alertSummary.value.total || alertItems.value.length || 0,
-    visible: canViewAlerts.value,
+    visible: supportedTabs.value.has('alerts'),
   },
   {
     value: 'approvals',
     label: t('notifications.tabs.approvals'),
     count: approvalSummary.value.pendingApprovals || approvalSummary.value.total || approvalItems.value.length || 0,
-    visible: canViewApprovals.value,
+    visible: supportedTabs.value.has('approvals'),
   },
 ])
 
@@ -174,7 +180,15 @@ function setActiveTab(tab) {
 watch(
   () => route.query.tab,
   (value) => {
-    activeTab.value = resolveTab(value)
+    const resolved = resolveTab(value)
+    const normalized = String(value || '').trim().toLowerCase()
+    const requested = tabAliases[normalized] || normalized
+
+    activeTab.value = resolved
+
+    if (requested && requested !== resolved && normalized !== 'my-notifications') {
+      syncRoute(resolved)
+    }
   },
   { immediate: true },
 )
@@ -285,20 +299,6 @@ async function loadTasksSection() {
 }
 
 async function loadApprovalsSection() {
-  if (!canViewApprovals.value) {
-    approvalItems.value = []
-    approvalSummary.value = {
-      total: 0,
-      pendingApprovals: 0,
-      approved: 0,
-      rejected: 0,
-      returned: 0,
-      cancelled: 0,
-      overdue: 0,
-    }
-    return
-  }
-
   approvalsLoading.value = true
   approvalsError.value = ''
 
@@ -314,12 +314,16 @@ async function loadApprovalsSection() {
 }
 
 async function refreshAll() {
-  await Promise.allSettled([
-    loadNotificationsSection(),
-    loadAlertsSection(),
-    loadTasksSection(),
-    loadApprovalsSection(),
-  ])
+  const sectionLoaders = {
+    notifications: loadNotificationsSection,
+    alerts: loadAlertsSection,
+    tasks: loadTasksSection,
+    approvals: loadApprovalsSection,
+  }
+
+  await Promise.allSettled(
+    visibleTabs.value.map(({ value }) => sectionLoaders[value]()),
+  )
 }
 
 async function handleNotificationRead(item) {
@@ -405,7 +409,7 @@ async function handleApprovalCancel(item) {
 }
 
 function approvalCanAct(item) {
-  return canViewApprovals.value && Boolean(item?.canAct)
+  return supportedTabs.value.has('approvals') && Boolean(item?.canAct)
 }
 
 function approvalWorkflowId(item) {

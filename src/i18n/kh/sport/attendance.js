@@ -40,9 +40,12 @@ export default {
     placeholders: {
       team: 'ជ្រើសរើសក្រុម',
       note: 'បន្ថែមកំណត់សម្គាល់',
+      reason: 'មូលហេតុ (ឯកស្ថម)',
     },
     columns: {
       player: 'កីឡាករ',
+      dateOfBirth: 'ថ្ងៃកំណើត',
+      gender: 'ភេទ',
       status: 'ស្ថានភាព',
       note: 'កំណត់សម្គាល់',
     },

@@ -8,7 +8,6 @@ import StudentProfileHeader from './student-profile/sections/StudentProfileHeade
 import StudentSummaryCardsSection from './student-profile/sections/StudentSummaryCardsSection.vue'
 import StudentHealthSummarySection from './student-profile/sections/StudentHealthSummarySection.vue'
 import StudentPaymentSummarySection from './student-profile/sections/StudentPaymentSummarySection.vue'
-import StudentCommunicationSection from './student-profile/sections/StudentCommunicationSection.vue'
 import StudentDetailsGridSection from './student-profile/sections/StudentDetailsGridSection.vue'
 import './student-profile/student-profile.css'
 
@@ -23,8 +22,6 @@ const {
   student,
   healthSummary,
   paymentSummary,
-  communicationTimeline,
-  profileClasses,
   avatarSrc,
   initials,
   statusLabel,
@@ -37,7 +34,6 @@ const {
   goBack,
   goToHealthRecords,
   goToPayments,
-  goToCommunications,
 } = useStudentProfileActions()
 </script>
 
@@ -58,10 +54,8 @@ const {
             :status-class="statusClass"
             :back-label="t('preschoolStudentProfilePage.actions.back')"
             :health-label="t('preschoolStudentProfilePage.actions.health')"
-            :communications-label="t('preschoolGuardianCommunicationPage.profile.viewFullContactHistory')"
             @back="goBack"
             @health="goToHealthRecords"
-            @communications="goToCommunications"
           />
 
         <div v-if="loading" class="student-profile-page__state">
@@ -87,14 +81,8 @@ const {
             @open-payments="goToPayments"
           />
 
-          <StudentCommunicationSection
-            v-if="communicationTimeline"
-            :communication-timeline="communicationTimeline"
-          />
-
           <StudentDetailsGridSection
             :student="student"
-            :profile-classes="profileClasses"
             :status-label="statusLabel"
             :birth-location-display="birthLocationDisplay"
             :current-residence-display="currentResidenceDisplay"

@@ -26,6 +26,7 @@ export default {
   actions: {
     view: 'View',
     edit: 'Edit',
+    add: 'Add',
     delete: 'Delete',
     back: 'Back',
     save: 'Save',
@@ -75,6 +76,7 @@ export default {
     suspended: 'Suspended',
     closed: 'Closed',
     archived: 'Archived',
+    locked: 'Locked',
   },
   role: {
     // Keep Preschool level labels under the shared role namespace so class
@@ -171,11 +173,27 @@ export default {
     permission: 'Permission',
     status: 'Status',
     phone: 'Phone',
+    gender: 'Gender',
+    dateOfBirth: 'Date of Birth',
     actions: 'Actions',
   },
   pagination: {
     previous: 'Previous',
     next: 'Next',
+  },
+  months: {
+    1: 'January',
+    2: 'February',
+    3: 'March',
+    4: 'April',
+    5: 'May',
+    6: 'June',
+    7: 'July',
+    8: 'August',
+    9: 'September',
+    10: 'October',
+    11: 'November',
+    12: 'December',
   },
   shell,
   navigation,

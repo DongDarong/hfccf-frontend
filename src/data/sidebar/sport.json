@@ -55,7 +55,7 @@
           "id": "sport-equipment",
           "routeName": "dashboard-sport-admin-equipment",
           "labelKey": "nav.items.equipment",
-          "icon": "inventory"
+          "icon": "sport-equipment"
         },
         {
           "id": "sport-matches",
@@ -68,6 +68,12 @@
           "routeName": "dashboard-sport-admin-tournaments",
           "labelKey": "nav.items.tournaments",
           "icon": "sport-tournament"
+        },
+        {
+          "id": "sport-reports",
+          "routeName": "dashboard-sport-admin-reports",
+          "labelKey": "nav.items.sportReports",
+          "icon": "sport-reports"
         },
         {
           "id": "sport-pending-player-approvals",

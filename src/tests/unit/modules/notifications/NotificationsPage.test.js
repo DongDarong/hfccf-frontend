@@ -27,6 +27,7 @@ const approveUnifiedWorkflowApproval = vi.fn()
 const rejectUnifiedWorkflowApproval = vi.fn()
 const returnUnifiedWorkflowApproval = vi.fn()
 const cancelUnifiedWorkflowApproval = vi.fn()
+const testUser = reactive({ role_code: 'superadmin' })
 
 vi.mock('@/modules/notifications/composables/useNotifications', () => ({
   useNotifications: () => ({
@@ -84,9 +85,7 @@ vi.mock('@/modules/notifications/services/notificationCenterApi', () => ({
 }))
 
 vi.mock('@/store/userStore', () => ({
-  useUserStore: () => ({
-    currentUser: { role_code: 'superadmin' },
-  }),
+  useUserStore: () => ({ currentUser: testUser }),
 }))
 
 function createRoute(name, path, component = { template: '<div />' }) {
@@ -170,6 +169,7 @@ function findActionButton(wrapper, label) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  testUser.role_code = 'superadmin'
 
   loadUnifiedAlerts.mockResolvedValue({
     items: [
@@ -327,6 +327,47 @@ describe('NotificationsPage', () => {
     expect(wrapper.text()).toContain('Global notice')
     expect(wrapper.text()).not.toContain('Follow up')
     expect(wrapper.text()).not.toContain('Approve intake')
+  })
+
+  it.each(['adminsport', 'coach'])('shows only My Notifications for %s', async (role) => {
+    testUser.role_code = role
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.text()).toContain('My Notifications')
+    expect(wrapper.text()).not.toContain('Tasks')
+    expect(wrapper.text()).not.toContain('Alerts')
+    expect(wrapper.text()).not.toContain('Approvals')
+    expect(loadUnifiedTasks).not.toHaveBeenCalled()
+    expect(loadUnifiedAlerts).not.toHaveBeenCalled()
+    expect(loadUnifiedApprovals).not.toHaveBeenCalled()
+  })
+
+  it('falls back to My Notifications and skips unsupported loaders for Sport query tabs', async () => {
+    testUser.role_code = 'adminsport'
+
+    const wrapper = await mountPage({ tab: 'tasks' })
+
+    expect(wrapper.text()).toContain('My Notifications')
+    expect(wrapper.text()).not.toContain('Tasks')
+    expect(wrapper.vm.$router.currentRoute.value.query.tab).toBeUndefined()
+    expect(loadUnifiedTasks).not.toHaveBeenCalled()
+    expect(loadUnifiedAlerts).not.toHaveBeenCalled()
+    expect(loadUnifiedApprovals).not.toHaveBeenCalled()
+  })
+
+  it('keeps all notification sections for an Admin Preschool user', async () => {
+    testUser.role_code = 'adminpreschool'
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.text()).toContain('My Notifications')
+    expect(wrapper.text()).toContain('Tasks')
+    expect(wrapper.text()).toContain('Alerts')
+    expect(wrapper.text()).toContain('Approvals')
+    expect(loadUnifiedTasks).toHaveBeenCalled()
+    expect(loadUnifiedAlerts).toHaveBeenCalled()
+    expect(loadUnifiedApprovals).toHaveBeenCalled()
   })
 
   it('switches tabs and exposes task and approval actions', async () => {

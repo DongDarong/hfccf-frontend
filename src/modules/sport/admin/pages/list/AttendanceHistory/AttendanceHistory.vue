@@ -26,7 +26,7 @@ const dateTo = ref('')
 const teamOptions = ref([])
 const records = ref([])
 const currentPage = ref(1)
-const pageSize = 20
+const pageSize = 5
 const pagination = ref({
   page: 1,
   perPage: pageSize,

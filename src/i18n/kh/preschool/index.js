@@ -8,8 +8,6 @@ import communications from './communications'
 import scaffold from './scaffold'
 import attendance from './attendance'
 import adminDashboard from './admin-dashboard'
-import assessment from './assessment'
-import assessmentExtra from './assessment.extra'
 import progress from './progress'
 import reports from './reports'
 import analytics from './analytics'
@@ -32,6 +30,7 @@ import enrollment from './enrollment'
 import reviewWorkflow from './review-workflow'
 import notifications from './notifications'
 import workflows from './workflows'
+import gradeEntry from './grade-entry'
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -79,8 +78,6 @@ export default {
   ...scaffold,
   ...attendance,
   ...adminDashboard,
-  ...assessment,
-  ...assessmentExtra,
   ...progress,
   ...reports,
   ...analytics,
@@ -103,4 +100,5 @@ export default {
   ...reviewWorkflow,
   ...notifications,
   ...workflows,
+  ...gradeEntry,
 }

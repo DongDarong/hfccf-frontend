@@ -1,24 +1,28 @@
 import { describe, expect, it } from 'vitest'
 import mainSidebar from '@/data/sidebar/main.json'
 import sportSidebar from '@/data/sidebar/sport.json'
-import { resolveSidebarIconComponent, sidebarIconByName } from '@/components/navigation/sidebarIcons'
-import InventoryIcon from '@/assets/icons/Inventory.vue'
+import {
+  resolvePreschoolSidebarIconComponent,
+  resolveSidebarNavigationIconComponent,
+  sidebarIconByName,
+} from '@/components/navigation/sidebarIcons'
 import {
   IconCalendarTime,
-  IconCalendarCheck,
   IconClipboardCheck,
   IconClipboardList,
+  IconFileCheck,
   IconFileDescription,
   IconHomeBolt,
   IconLayoutDashboard,
+  IconPackage,
   IconScoreboard,
   IconShirtSport,
   IconTimelineEvent,
   IconTrophy,
   IconUserCheck,
   IconUserCog,
-  IconUserShare,
   IconUsersGroup,
+  IconUsersPlus,
 } from '@tabler/icons-vue'
 
 const sportSection = sportSidebar.sections[0]
@@ -54,12 +58,12 @@ const expectedIconRefs = {
   'sport-coaches': IconUserCog,
   'sport-teams': IconUsersGroup,
   'sport-players': IconShirtSport,
-  'sport-coach-team-assignments': IconUserShare,
-  'sport-equipment': InventoryIcon,
+  'sport-coach-team-assignments': IconUsersPlus,
+  'sport-equipment': IconPackage,
   'sport-matches': IconScoreboard,
   'sport-tournaments': IconTrophy,
   'sport-pending-player-approvals': IconUserCheck,
-  'sport-pending-match-approvals': IconCalendarCheck,
+  'sport-pending-match-approvals': IconFileCheck,
   'sport-player-lifecycle': IconTimelineEvent,
 }
 
@@ -69,8 +73,21 @@ const expectedCoachIconRefs = {
   'sport-training-schedule': IconCalendarTime,
   'sport-my-teams': IconUsersGroup,
   'sport-team-roster': IconClipboardList,
-  'sport-equipment': InventoryIcon,
+  'sport-equipment': IconPackage,
   'sport-my-requests': IconFileDescription,
+}
+
+const expectedMainSportAdminIconRefs = {
+  'sport-coaches': IconUserCog,
+  'sport-teams': IconUsersGroup,
+  'sport-players': IconShirtSport,
+  'sport-matches': IconScoreboard,
+  'sport-tournaments': IconTrophy,
+  'sport-training-schedule-admin': IconCalendarTime,
+  'sport-coach-team-assignments': IconUsersPlus,
+  'sport-pending-player-approvals': IconUserCheck,
+  'sport-pending-match-approvals': IconFileCheck,
+  'sport-player-lifecycle': IconTimelineEvent,
 }
 
 describe('sport sidebar icon family', () => {
@@ -89,8 +106,32 @@ describe('sport sidebar icon family', () => {
 
   it('resolves a concrete component for every sport sidebar icon key', () => {
     sportSection.items.forEach((item) => {
-      const resolved = resolveSidebarIconComponent(item.icon)
+      const resolved = resolveSidebarNavigationIconComponent(item)
       expect(resolved).toBe(expectedIconRefs[item.id])
+      expect(sidebarIconByName[item.icon]).toBe(resolved)
+      expect(resolved).not.toBeNull()
+    })
+  })
+
+  it('resolves the sport admin items in the main sidebar to the standardized Tabler icons', () => {
+    const sportAdminItems = mainSection.items.filter((item) => Object.prototype.hasOwnProperty.call(expectedMainSportAdminIconRefs, item.id))
+
+    expect(sportAdminItems.map((item) => item.id)).toEqual([
+      'sport-coaches',
+      'sport-teams',
+      'sport-players',
+      'sport-matches',
+      'sport-tournaments',
+      'sport-training-schedule-admin',
+      'sport-coach-team-assignments',
+      'sport-pending-player-approvals',
+      'sport-pending-match-approvals',
+      'sport-player-lifecycle',
+    ])
+
+    sportAdminItems.forEach((item) => {
+      const resolved = resolveSidebarNavigationIconComponent(item)
+      expect(resolved).toBe(expectedMainSportAdminIconRefs[item.id])
       expect(sidebarIconByName[item.icon]).toBe(resolved)
       expect(resolved).not.toBeNull()
     })
@@ -110,11 +151,41 @@ describe('sport sidebar icon family', () => {
     expect(coachItems.map((item) => item.id)).toEqual(coachItemIds)
 
     coachItems.forEach((item) => {
-      const resolved = resolveSidebarIconComponent(item.icon)
+      const resolved = resolveSidebarNavigationIconComponent(item)
       expect(resolved).toBe(expectedCoachIconRefs[item.id])
       expect(sidebarIconByName[item.icon]).toBe(resolved)
       expect(resolved).not.toBeNull()
     })
+  })
+
+  it('keeps explicit Sport Tabler icons ahead of the dashboard fallback heuristic', () => {
+    expect(
+      resolveSidebarNavigationIconComponent({
+        id: 'sport-teams',
+        routeName: 'dashboard-sport-admin-teams',
+        labelKey: 'nav.items.teams',
+        icon: 'sport-team',
+      }),
+    ).toBe(IconUsersGroup)
+
+    expect(
+      resolveSidebarNavigationIconComponent({
+        id: 'sport-pending-match-approvals',
+        routeName: 'dashboard-sport-admin-pending-match-approvals',
+        labelKey: 'nav.items.pendingMatchApprovals',
+        icon: 'sport-match-approval',
+      }),
+    ).toBe(IconFileCheck)
+  })
+
+  it('still allows the preschool heuristic to act as a fallback for unkeyed items', () => {
+    expect(
+      resolvePreschoolSidebarIconComponent({
+        id: 'dashboard-preschool-admin-unknown',
+        routeName: 'dashboard-preschool-admin-unknown',
+        labelKey: 'nav.items.unknown',
+      }),
+    ).toBe(IconLayoutDashboard)
   })
 
   it('keeps Coach operations visually distinct from Sport Admin approvals and assignments', () => {

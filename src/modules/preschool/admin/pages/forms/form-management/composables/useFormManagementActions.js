@@ -20,7 +20,6 @@ export function useFormManagementActions() {
   }
 
   function goToReports() {
-    return navigateTo('preschool-assessment-reports')
   }
 
   function goToAuditLog() {

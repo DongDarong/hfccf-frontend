@@ -7,7 +7,6 @@ const QUICK_ACTION_LABEL_KEYS = {
   'dashboard-preschool-admin-students': 'viewDetails',
   'dashboard-preschool-admin-guardian-communications': 'viewDetails',
   'dashboard-preschool-admin-health': 'viewDetails',
-  'dashboard-preschool-admin-reports-assessments': 'reviewAssessment',
   'dashboard-preschool-admin-payment': 'viewInvoice',
   'dashboard-preschool-admin-reports': 'viewReports',
 }

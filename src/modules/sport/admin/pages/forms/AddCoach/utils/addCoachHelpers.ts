@@ -55,7 +55,7 @@ export function getFormPayload(form: any, isAddMode = true): Record<string, any>
     phone: form.phone,
     status: form.status,
     avatar: form.profileImage,
-    removeAvatar: !form.profileImage ? false : false,
+    removeAvatar: !form.profileImage,
   }
 
   if (isAddMode) {

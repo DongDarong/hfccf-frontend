@@ -33,10 +33,46 @@ import {
 
 defineOptions({ name: 'PreschoolAdminAttendanceStudentsPage' })
 
-const { t } = useLanguage()
+const { t, language } = useLanguage()
 const toast = useToast()
 const router = useRouter()
 const route = useRoute()
+
+function formatDateOfBirth(dateString) {
+  if (!dateString || typeof dateString !== 'string') {
+    return '—'
+  }
+
+  try {
+    const date = new Date(dateString)
+    if (Number.isNaN(date.getTime())) {
+      return '—'
+    }
+
+    return new Intl.DateTimeFormat(language.value === 'KH' ? 'km-KH' : 'en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(date)
+  } catch {
+    return '—'
+  }
+}
+
+function formatGender(genderValue) {
+  if (!genderValue) {
+    return '—'
+  }
+
+  const key = String(genderValue).trim().toLowerCase()
+  const translationKey = `preschoolEnrollment.genderOptions.${key}`
+
+  if (t(translationKey) !== translationKey) {
+    return t(translationKey)
+  }
+
+  return String(genderValue).trim()
+}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
@@ -634,6 +670,8 @@ watch(visibleStudents, (studentList) => {
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendancePage.columns.student') }}</th>
+                <th class="px-4 py-3 font-semibold text-center">{{ t('preschoolAdminAttendancePage.columns.dateOfBirth') }}</th>
+                <th class="px-4 py-3 font-semibold text-center">{{ t('preschoolAdminAttendancePage.columns.gender') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendancePage.columns.status') }}</th>
                 <th class="px-4 py-3 font-semibold">{{ t('preschoolAdminAttendancePage.columns.note') }}</th>
               </tr>
@@ -646,6 +684,8 @@ watch(visibleStudents, (studentList) => {
                     {{ student.publicId || student.studentCode }}
                   </p>
                 </td>
+                <td class="px-4 py-3 text-center text-xs text-slate-600">{{ formatDateOfBirth(student.dateOfBirth) }}</td>
+                <td class="px-4 py-3 text-center text-xs text-slate-600">{{ formatGender(student.gender) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex gap-1">
                     <button
