@@ -39,29 +39,26 @@ const hasFilters = computed(() => activeFiltersCount.value > 0)
 </script>
 
 <template>
-  <div v-if="hasFilters" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-    <div class="flex items-center justify-between gap-4">
+  <div v-if="hasFilters" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-semibold text-slate-600">Filters:</span>
-        <div class="flex flex-wrap gap-2">
-          <span v-if="academicYearLabel" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-            {{ academicYearLabel }}
-          </span>
-          <span v-if="classLabel" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-            {{ classLabel }}
-          </span>
-          <span v-if="reportPeriod === 'monthly' && monthLabel" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-            {{ monthLabel }}
-          </span>
-          <span v-if="year" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-            {{ year }}
-          </span>
-        </div>
+        <span v-if="academicYearLabel" class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          {{ academicYearLabel }}
+        </span>
+        <span v-if="classLabel" class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          {{ classLabel }}
+        </span>
+        <span v-if="reportPeriod === 'monthly' && monthLabel" class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          {{ monthLabel }}
+        </span>
+        <span v-if="year" class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          {{ year }}
+        </span>
       </div>
       <button
         type="button"
         @click="emit('clear-filters')"
-        class="flex-shrink-0 text-xs font-semibold text-slate-600 hover:text-slate-900"
+        class="text-xs font-semibold text-slate-600 hover:text-slate-900"
       >
         Clear
       </button>

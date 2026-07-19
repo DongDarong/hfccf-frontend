@@ -80,46 +80,25 @@ const stats = [
   },
 ]
 
-const colorMap = {
-  blue: 'bg-blue-50 text-blue-700 border-blue-200',
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  rose: 'bg-rose-50 text-rose-700 border-rose-200',
-  amber: 'bg-amber-50 text-amber-700 border-amber-200',
-}
 </script>
 
 <template>
-  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-    <h3 class="mb-6 text-sm font-bold uppercase tracking-wide text-slate-900">
-      📊 Statistics
-    </h3>
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-900">Statistics</h3>
 
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div
         v-for="stat in stats"
         :key="stat.label"
-        :class="[
-          'rounded-xl border p-3 transition-all',
-          colorMap[stat.color],
-        ]"
+        class="rounded-lg border border-slate-200 bg-slate-50 p-3"
       >
-        <div class="flex items-center gap-2">
-          <div :class="[
-            'text-lg flex-shrink-0',
-            {
-              'text-emerald-600': stat.color === 'emerald',
-              'text-rose-600': stat.color === 'rose',
-              'text-amber-600': stat.color === 'amber',
-              'text-blue-600': stat.color === 'blue',
-            }
-          ]">
-            <i :class="`pi ${stat.icon}`" />
-          </div>
+        <div class="flex items-start gap-2">
+          <i :class="[`pi ${stat.icon}`, 'text-slate-400 text-sm flex-shrink-0 mt-0.5']" />
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-slate-600 truncate">
+            <p class="text-xs font-semibold text-slate-600">
               {{ stat.label }}
             </p>
-            <p class="text-sm font-bold text-slate-900">
+            <p class="text-sm font-bold text-slate-900 mt-1">
               {{ stat.value() }}
             </p>
           </div>

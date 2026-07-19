@@ -9,6 +9,7 @@ export default {
     selectReportType: 'Select Report Type',
     chooseReport: 'Select a report to view and analyze data.',
     backToReports: 'Back to Reports',
+    viewReport: 'View Report',
     filters: 'Filters',
     scope: 'Scope',
     individual: 'Individual Student',

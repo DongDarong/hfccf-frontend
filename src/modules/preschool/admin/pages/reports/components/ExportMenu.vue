@@ -65,12 +65,11 @@ const colorMap = {
       v-for="option in exportOptions"
       :key="option.format"
       type="button"
-      :variant="option.format === 'pdf' ? 'primary' : 'ghost'"
-      size="md"
+      :variant="option.format === 'pdf' ? 'primary' : 'secondary'"
+      size="sm"
       rounded="lg"
       :loading="loading"
       @click="handleExport(option.format)"
-      class="flex items-center gap-2"
     >
       <i :class="`pi ${option.icon}`" />
       {{ option.label }}

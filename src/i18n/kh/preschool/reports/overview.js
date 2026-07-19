@@ -9,6 +9,7 @@ export default {
     selectReportType: 'ជ្រើសរើសប្រភេទរបាយការណ៍',
     chooseReport: 'ជ្រើសរើសរបាយការណ៍ដើម្បីមើល និងវិश្លេષណ៍ទិន្នន័យ។',
     backToReports: 'ត្រឡប់ទៅរបាយការណ៍',
+    viewReport: 'មើលរបាយការណ៍',
     filters: 'តម្រង',
     scope: 'ពិសัលភាព',
     individual: 'សិស្សម្នាក់',
