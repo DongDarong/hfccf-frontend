@@ -22,7 +22,6 @@ const REPORTS = [
   {
     key: 'assessment',
     label: 'Assessment',
-    routeName: 'dashboard-preschool-admin-reports-assessments',
   },
 ]
 

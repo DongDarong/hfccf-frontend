@@ -3,7 +3,6 @@ export const FORM_MANAGEMENT_ROUTE_NAMES = Object.freeze({
   manage: 'dashboard-preschool-admin-forms-manage',
   build: 'dashboard-preschool-admin-forms-build',
   review: 'dashboard-preschool-admin-forms-review',
-  reports: 'preschool-assessment-reports',
   auditLog: 'dashboard-preschool-admin-lifecycle-audit',
 })
 

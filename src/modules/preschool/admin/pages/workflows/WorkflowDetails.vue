@@ -128,10 +128,6 @@ function resolveSourceRoute(workflowItem) {
     return { name: 'dashboard-preschool-admin-invoice-detail', params: { id: sourceId } }
   }
 
-  if (sourceType.includes('assessment') && router.hasRoute('preschool-assessment-dashboard')) {
-    return { name: 'preschool-assessment-dashboard', params: {} }
-  }
-
   if ((sourceType.includes('attendance') || sourceType.includes('follow')) && sourceId && router.hasRoute('dashboard-preschool-admin-attendance-session-details')) {
     return { name: 'dashboard-preschool-admin-attendance-session-details', params: { id: sourceId } }
   }

@@ -94,7 +94,6 @@ const preschoolSidebarIconMap = new Map([
   ['dashboard-preschool-teacher-students', IconUsers],
   ['dashboard-preschool-teacher-schedule', IconCalendarEvent],
   ['dashboard-preschool-teacher-attendance', IconClipboardCheck],
-  ['preschool-assessment-dashboard', IconClipboardList],
   ['dashboard-preschool-admin-settings', IconSettingsOutline],
   ['preschool-settings', IconSettingsOutline],
   ['dashboard-preschool-admin-users', IconChalkboardTeacher],

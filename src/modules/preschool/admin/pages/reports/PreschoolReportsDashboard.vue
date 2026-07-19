@@ -31,7 +31,6 @@ const REPORT_TYPES = [
     key: 'assessment',
     label: 'Assessment',
     icon: 'pi-chart-bar',
-    routeName: 'dashboard-preschool-admin-reports-assessments',
     description: 'Individual and class assessment results',
   },
 ]
