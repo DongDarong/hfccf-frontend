@@ -39,33 +39,30 @@ const hasFilters = computed(() => activeFiltersCount.value > 0)
 </script>
 
 <template>
-  <div v-if="hasFilters" class="rounded-xl border border-blue-200 bg-blue-50 p-4">
-    <div class="flex items-center justify-between">
+  <div v-if="hasFilters" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-semibold uppercase tracking-wide text-blue-700">
-          {{ activeFiltersCount }} Active Filter{{ activeFiltersCount !== 1 ? 's' : '' }}
-        </span>
+        <span class="text-xs font-semibold text-slate-600">Filters:</span>
         <div class="flex flex-wrap gap-2">
-          <span v-if="academicYearLabel" class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-            📚 {{ academicYearLabel }}
+          <span v-if="academicYearLabel" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {{ academicYearLabel }}
           </span>
-          <span v-if="classLabel" class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
-            🏫 {{ classLabel }}
+          <span v-if="classLabel" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {{ classLabel }}
           </span>
-          <span v-if="reportPeriod === 'monthly' && monthLabel" class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-            📅 {{ monthLabel }}
+          <span v-if="reportPeriod === 'monthly' && monthLabel" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {{ monthLabel }}
           </span>
-          <span v-if="year" class="inline-flex items-center gap-1 rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">
-            📆 {{ year }}
+          <span v-if="year" class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {{ year }}
           </span>
         </div>
       </div>
       <button
         type="button"
         @click="emit('clear-filters')"
-        class="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800"
+        class="flex-shrink-0 text-xs font-semibold text-slate-600 hover:text-slate-900"
       >
-        <i class="pi pi-times text-xs" />
         Clear
       </button>
     </div>

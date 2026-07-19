@@ -89,34 +89,37 @@ const colorMap = {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          {{ t('preschoolReportsPage.statistics') || 'Report Statistics' }}
-        </h3>
-        <p class="mt-1 text-sm text-slate-600">{{ classLabel }}</p>
-      </div>
-    </div>
+  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <h3 class="mb-6 text-sm font-bold uppercase tracking-wide text-slate-900">
+      📊 Statistics
+    </h3>
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div
         v-for="stat in stats"
         :key="stat.label"
         :class="[
-          'rounded-xl border-2 p-4 transition-all',
+          'rounded-xl border p-3 transition-all',
           colorMap[stat.color],
         ]"
       >
-        <div class="flex items-center gap-3">
-          <div class="text-2xl opacity-80">
+        <div class="flex items-center gap-2">
+          <div :class="[
+            'text-lg flex-shrink-0',
+            {
+              'text-emerald-600': stat.color === 'emerald',
+              'text-rose-600': stat.color === 'rose',
+              'text-amber-600': stat.color === 'amber',
+              'text-blue-600': stat.color === 'blue',
+            }
+          ]">
             <i :class="`pi ${stat.icon}`" />
           </div>
-          <div class="flex-1">
-            <p class="text-xs font-semibold uppercase tracking-wide opacity-75">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-slate-600 truncate">
               {{ stat.label }}
             </p>
-            <p class="mt-1 text-lg font-bold">
+            <p class="text-sm font-bold text-slate-900">
               {{ stat.value() }}
             </p>
           </div>

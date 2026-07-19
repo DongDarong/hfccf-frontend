@@ -56,31 +56,28 @@ const colorMap = {
 </script>
 
 <template>
-  <!-- Desktop: Enhanced Horizontal Tabs -->
-  <div class="hidden gap-2 md:flex">
+  <div class="hidden gap-1 md:flex border-b border-slate-200">
     <button
       v-for="report in reportOptions"
       :key="report.key"
       type="button"
       @click="switchReport(report.key)"
       :class="[
-        'group flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200',
+        'px-4 py-3 text-sm font-semibold transition-all relative',
         currentReport === report.key
-          ? `border-2 ${colorMap[report.color]} shadow-sm`
-          : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
+          ? 'text-slate-900'
+          : 'text-slate-600 hover:text-slate-900',
       ]"
     >
-      <i :class="`pi ${report.icon}`" />
-      <span>{{ report.label }}</span>
+      {{ report.label }}
+      <div
+        v-if="currentReport === report.key"
+        class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
+      />
     </button>
   </div>
 
-  <!-- Mobile: Dropdown Select with Icon -->
   <div class="md:hidden">
-    <div v-if="currentReportData" class="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <i :class="`pi ${currentReportData.icon} text-lg`" />
-      <span class="text-sm font-semibold text-slate-900">{{ currentReportData.label }}</span>
-    </div>
     <Select
       :model-value="currentReport"
       :options="reportOptions"

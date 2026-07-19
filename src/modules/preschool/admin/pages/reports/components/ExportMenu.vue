@@ -60,73 +60,20 @@ const colorMap = {
 </script>
 
 <template>
-  <div class="relative">
-    <!-- Export Button -->
+  <div class="flex flex-wrap gap-2">
     <Button
+      v-for="option in exportOptions"
+      :key="option.format"
       type="button"
-      variant="primary"
+      :variant="option.format === 'pdf' ? 'primary' : 'ghost'"
       size="md"
-      rounded="xl"
+      rounded="lg"
       :loading="loading"
-      @click="isOpen = !isOpen"
+      @click="handleExport(option.format)"
       class="flex items-center gap-2"
     >
-      <i class="pi pi-download" />
-      {{ t('preschoolReportsCenterPage.exports.export') || 'Export Report' }}
+      <i :class="`pi ${option.icon}`" />
+      {{ option.label }}
     </Button>
-
-    <!-- Export Dropdown Menu -->
-    <transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="translate-y-1 opacity-0"
-      enter-to-class="translate-y-0 opacity-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="translate-y-0 opacity-100"
-      leave-to-class="translate-y-1 opacity-0"
-    >
-      <div
-        v-if="isOpen"
-        class="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg"
-      >
-        <div class="space-y-1 p-2">
-          <button
-            v-for="option in exportOptions"
-            :key="option.format"
-            type="button"
-            @click="handleExport(option.format)"
-            :disabled="loading"
-            :class="[
-              'w-full rounded-lg px-4 py-3 text-left transition-colors',
-              colorMap[option.color],
-              loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-            ]"
-          >
-            <div class="flex items-start gap-3">
-              <i :class="`pi ${option.icon} text-lg text-slate-600 mt-0.5`" />
-              <div class="flex-1">
-                <p class="font-semibold text-slate-900">{{ option.label }}</p>
-                <p class="text-xs text-slate-500">{{ option.description }}</p>
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-    </transition>
-
-    <!-- Backdrop -->
-    <transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="isOpen"
-        @click="isOpen = false"
-        class="fixed inset-0 z-40"
-      />
-    </transition>
   </div>
 </template>
