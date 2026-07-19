@@ -5,6 +5,8 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
+import html2pdf from 'html2pdf.js'
+import * as XLSX from 'xlsx'
 import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchPreschoolClasses,
@@ -28,6 +30,7 @@ const router = useRouter()
 const loading = ref(false)
 const reportGenerated = ref(false)
 const errorMessage = ref('')
+const exportLoading = ref(false)
 const scopeType = ref('individual')
 const academicYearId = ref('')
 const classId = ref('')
@@ -263,6 +266,95 @@ function backToReports() {
   router.push({ name: 'dashboard-preschool-admin-reports' })
 }
 
+async function exportReport(format) {
+  try {
+    exportLoading.value = true
+
+    const timestamp = new Date().toISOString().split('T')[0]
+    const reportTypeLabel = scopeType.value === 'individual' ? 'Individual' : 'Class'
+    const filename = `AssessmentReport_${reportTypeLabel}_${timestamp}`
+
+    if (format === 'pdf') {
+      await exportToPdf(filename)
+    } else if (format === 'excel') {
+      exportToExcel(filename)
+    } else if (format === 'print') {
+      window.print()
+    }
+  } catch (error) {
+    errorMessage.value = 'Failed to export report'
+    console.error('Error exporting report:', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
+
+async function exportToPdf(filename) {
+  const element = document.querySelector('.preschool-assessment-report-content')
+  if (!element) {
+    throw new Error('Report content not found')
+  }
+
+  const options = {
+    margin: 10,
+    filename: `${filename}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+  }
+
+  await html2pdf().set(options).from(element).save()
+}
+
+function exportToExcel(filename) {
+  const workbook = XLSX.utils.book_new()
+
+  // Metadata
+  const metaData = [
+    ['Assessment Report'],
+    ['Type', scopeType.value === 'individual' ? 'Individual' : 'Class'],
+    ['Generated On', new Date().toLocaleString()],
+    ['Academic Year', filterOptions.value.academicYears.find(y => y.value === academicYearId.value)?.label || 'All'],
+  ]
+
+  if (scopeType.value === 'individual') {
+    metaData.push(['Student', reportData.value.student?.firstName + ' ' + reportData.value.student?.lastName || 'N/A'])
+  } else {
+    metaData.push(['Class', filterOptions.value.classes.find(c => c.value === classId.value)?.label || 'All Classes'])
+  }
+
+  const metaSheet = XLSX.utils.aoa_to_sheet(metaData)
+  XLSX.utils.book_append_sheet(workbook, metaSheet, 'Report Info')
+
+  // Assessments
+  if (reportData.value.assessments.length > 0) {
+    const assessmentData = reportData.value.assessments.map(a => [
+      a.title || '',
+      a.category || '',
+      a.status || '',
+      a.date || '',
+      a.score !== undefined ? a.score : '',
+    ])
+    assessmentData.unshift(['Title', 'Category', 'Status', 'Date', 'Score'])
+    const assessmentSheet = XLSX.utils.aoa_to_sheet(assessmentData)
+    XLSX.utils.book_append_sheet(workbook, assessmentSheet, 'Assessments')
+  }
+
+  // Class students (if class-level report)
+  if (scopeType.value === 'class' && reportData.value.classStudents.length > 0) {
+    const studentData = reportData.value.classStudents.map(s => [
+      s.firstName || '',
+      s.lastName || '',
+      s.enrollmentNumber || '',
+    ])
+    studentData.unshift(['First Name', 'Last Name', 'Enrollment Number'])
+    const studentSheet = XLSX.utils.aoa_to_sheet(studentData)
+    XLSX.utils.book_append_sheet(workbook, studentSheet, 'Students')
+  }
+
+  XLSX.writeFile(workbook, `${filename}.xlsx`)
+}
+
 onMounted(() => {
   loadFilterOptions()
 })
@@ -428,24 +520,26 @@ onMounted(() => {
 
       <!-- Individual Student Report -->
       <template v-if="reportGenerated && scopeType === 'individual' && reportData.student">
-        <StudentAssessmentDetails
-          :student="reportData.student"
-          :assessments="reportData.assessments"
-        />
+        <div class="preschool-assessment-report-content">
+          <StudentAssessmentDetails
+            :student="reportData.student"
+            :assessments="reportData.assessments"
+          />
+        </div>
 
-        <!-- Export Toolbar (Placeholder) -->
+        <!-- Export Toolbar -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
             {{ t('preschoolReportsCenterPage.exports.title') || 'Export' }}
           </h2>
           <div class="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
+            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
               <i class="pi pi-file-pdf mr-2" /> PDF
             </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
+            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
               <i class="pi pi-file-excel mr-2" /> Excel
             </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
+            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
               <i class="pi pi-print mr-2" /> Print
             </Button>
           </div>
@@ -454,21 +548,23 @@ onMounted(() => {
 
       <!-- Class Report -->
       <template v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length > 0">
-        <ClassAssessmentTable :students="reportData.classStudents" />
+        <div class="preschool-assessment-report-content">
+          <ClassAssessmentTable :students="reportData.classStudents" />
+        </div>
 
-        <!-- Export Toolbar (Placeholder) -->
+        <!-- Export Toolbar -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
             {{ t('preschoolReportsCenterPage.exports.title') || 'Export' }}
           </h2>
           <div class="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
+            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
               <i class="pi pi-file-pdf mr-2" /> PDF
             </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
+            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
               <i class="pi pi-file-excel mr-2" /> Excel
             </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
+            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
               <i class="pi pi-print mr-2" /> Print
             </Button>
           </div>
