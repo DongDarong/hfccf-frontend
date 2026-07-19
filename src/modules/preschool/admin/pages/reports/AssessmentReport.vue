@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -15,12 +16,14 @@ import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/prescho
 import { fetchAllPages } from './reportPaginationHelper'
 import StudentAssessmentDetails from './components/StudentAssessmentDetails.vue'
 import ClassAssessmentTable from './components/ClassAssessmentTable.vue'
+import ReportSwitcher from './components/ReportSwitcher.vue'
 
 defineOptions({
   name: 'AssessmentReportPage',
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 
 const loading = ref(false)
 const reportGenerated = ref(false)
@@ -256,6 +259,10 @@ function resetFilters() {
   }
 }
 
+function backToReports() {
+  router.push({ name: 'dashboard-preschool-admin-reports' })
+}
+
 onMounted(() => {
   loadFilterOptions()
 })
@@ -265,10 +272,26 @@ onMounted(() => {
   <MainLayout>
     <section class="space-y-6">
       <!-- Header -->
-      <HeaderSection
-        :title="t('preschoolAssessmentReportPage.title') || 'Assessment Report'"
-        :subtitle="t('preschoolAssessmentReportPage.subtitle') || 'Individual and class assessment reports'"
-      />
+      <div class="flex items-center justify-between">
+        <HeaderSection
+          :title="t('preschoolAssessmentReportPage.title') || 'Assessment Report'"
+          :subtitle="t('preschoolAssessmentReportPage.subtitle') || 'Individual and class assessment reports'"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="md"
+          rounded="lg"
+          @click="backToReports"
+          class="flex items-center gap-2"
+        >
+          <i class="pi pi-chevron-left" />
+          {{ t('preschoolReportsPage.backToReports') || 'Back to Reports' }}
+        </Button>
+      </div>
+
+      <!-- Report Switcher -->
+      <ReportSwitcher />
 
       <!-- Filters -->
       <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -883,6 +883,10 @@ const EXTRA_CRUMB_MAP = {
     { labelKey: 'nav.items.preschoolAnalytics', to: { name: 'dashboard-preschool-admin-analytics' } },
     { labelKey: 'preschoolAnalyticsPage.guardianAnalytics' },
   ],
+  'dashboard-preschool-admin-reports-student-summary': [
+    { labelKey: 'preschoolReportsCenterPage.pageTitle', to: { name: 'dashboard-preschool-admin-reports' } },
+    { labelKey: 'breadcrumb.studentReports' },
+  ],
   'dashboard-preschool-admin-reports-attendance': [
     { labelKey: 'preschoolReportsCenterPage.pageTitle', to: { name: 'dashboard-preschool-admin-reports' } },
     { labelKey: 'preschoolReportsCenterPage.sections.attendance.title' },

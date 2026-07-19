@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -13,6 +14,7 @@ import {
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import MonthlyAttendanceReport from './components/MonthlyAttendanceReport.vue'
 import YearlyAttendanceReport from './components/YearlyAttendanceReport.vue'
+import ReportSwitcher from './components/ReportSwitcher.vue'
 import { fetchAllPages } from './reportPaginationHelper'
 
 defineOptions({
@@ -20,6 +22,7 @@ defineOptions({
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 
 const loading = ref(false)
 const reportGenerated = ref(false)
@@ -165,6 +168,10 @@ function changeReportPeriod() {
   reportGenerated.value = false
 }
 
+function backToReports() {
+  router.push({ name: 'dashboard-preschool-admin-reports' })
+}
+
 onMounted(() => {
   loadFilterOptions()
 })
@@ -174,10 +181,26 @@ onMounted(() => {
   <MainLayout>
     <section class="space-y-6">
       <!-- Header -->
-      <HeaderSection
-        :title="t('preschoolAttendanceReportPage.title') || 'Attendance Report'"
-        :subtitle="t('preschoolAttendanceReportPage.subtitle') || 'Monthly and yearly attendance reports by class'"
-      />
+      <div class="flex items-center justify-between">
+        <HeaderSection
+          :title="t('preschoolAttendanceReportPage.title') || 'Attendance Report'"
+          :subtitle="t('preschoolAttendanceReportPage.subtitle') || 'Monthly and yearly attendance reports by class'"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="md"
+          rounded="lg"
+          @click="backToReports"
+          class="flex items-center gap-2"
+        >
+          <i class="pi pi-chevron-left" />
+          {{ t('preschoolReportsPage.backToReports') || 'Back to Reports' }}
+        </Button>
+      </div>
+
+      <!-- Report Switcher -->
+      <ReportSwitcher />
 
       <!-- Filters -->
       <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

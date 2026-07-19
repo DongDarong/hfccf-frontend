@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -17,12 +18,14 @@ import StudentIdentityCard from './components/StudentIdentityCard.vue'
 import StudentAttendanceSummary from './components/StudentAttendanceSummary.vue'
 import StudentAssessmentSummary from './components/StudentAssessmentSummary.vue'
 import ClassSummaryTable from './components/ClassSummaryTable.vue'
+import ReportSwitcher from './components/ReportSwitcher.vue'
 
 defineOptions({
   name: 'StudentSummaryReportPage',
 })
 
 const { t } = useLanguage()
+const router = useRouter()
 
 const loading = ref(false)
 const reportGenerated = ref(false)
@@ -212,6 +215,10 @@ function resetFilters() {
   }
 }
 
+function backToReports() {
+  router.push({ name: 'dashboard-preschool-admin-reports' })
+}
+
 onMounted(() => {
   loadFilterOptions()
 })
@@ -221,10 +228,26 @@ onMounted(() => {
   <MainLayout>
     <section class="space-y-6">
       <!-- Header -->
-      <HeaderSection
-        :title="t('preschoolReportsPage.reportTypes.student-summary')"
-        :subtitle="t('preschoolReportsPage.reportTypeDesc.student-summary')"
-      />
+      <div class="flex items-center justify-between">
+        <HeaderSection
+          :title="t('preschoolReportsPage.reportTypes.student-summary')"
+          :subtitle="t('preschoolReportsPage.reportTypeDesc.student-summary')"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="md"
+          rounded="lg"
+          @click="backToReports"
+          class="flex items-center gap-2"
+        >
+          <i class="pi pi-chevron-left" />
+          {{ t('preschoolReportsPage.backToReports') || 'Back to Reports' }}
+        </Button>
+      </div>
+
+      <!-- Report Switcher -->
+      <ReportSwitcher />
 
       <!-- Filters -->
       <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

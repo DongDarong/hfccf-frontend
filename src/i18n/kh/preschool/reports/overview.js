@@ -3,9 +3,31 @@
 export default {
   preschoolReportsPage: {
     title: 'របាយការណ៍ Preschool',
-    subtitle: 'ពិនិត្យទិន្នន័យវាយតម្លៃ និង attendance ដែលបានបញ្ចប់តាមរយៈ reporting period។',
+    subtitle: 'បង្កើតរបាយការណ៍ពីប្រវត្តិសិស្ស ការឹកចូល និងលទ្ធផលវាយតម្លៃ។',
     loading: 'កំពុងផ្ទុករយៈពេលរបាយការណ៍...',
     emptyOverview: 'មិនទាន់មាន report period ដែលបានបញ្ចប់នៅឡើយទេ។',
+    selectReportType: 'ជ្រើសរើសប្រភេទរបាយការណ៍',
+    chooseReport: 'ជ្រើសរើសរបាយការណ៍ដើម្បីមើល និងវិश្លេષណ៍ទិន្នន័យ។',
+    backToReports: 'ត្រឡប់ទៅរបាយការណ៍',
+    filters: 'តម្រង',
+    scope: 'ពិសัលភាព',
+    individual: 'សិស្សម្នាក់',
+    entireClass: 'ថ្នាក់ទាំងមូល',
+    reportMonth: 'ខែ',
+    reportYear: 'ឆ្នាំ',
+    generateReport: 'បង្កើតរបាយការណ៍',
+    reset: 'កំណត់ឡើងវិញ',
+    emptyState: 'ជ្រើសរើសប្រភេទរបាយការណ៍ និងតម្រង រួចចុច "បង្កើតរបាយការណ៍" ដើម្បីមើលលទ្ធផល។',
+    reportTypes: {
+      'student-summary': 'ឆ្លើយសង្ខេបសិស្ស',
+      attendance: 'ការឹកចូល',
+      assessment: 'វាយតម្លៃ',
+    },
+    reportTypeDesc: {
+      'student-summary': 'សង្ខេបព័ត៌មានសិស្ស ការឹកចូល និងលទ្ធផលវាយតម្លៃ។',
+      attendance: 'ពិនិត្យកំណត់ត្រាការឹកចូលតាមថ្នាក់ និងរយៈពេល។',
+      assessment: 'វិश្លේષណ៍លទ្ធផលវាយតម្លៃ និងឯកសារទៅកាន់ការស៊ីលគ្នា។',
+    },
     actions: {
       openStudentReports: 'របាយការណ៍សិស្ស',
       openClassroomReports: 'របាយការណ៍ថ្នាក់',
