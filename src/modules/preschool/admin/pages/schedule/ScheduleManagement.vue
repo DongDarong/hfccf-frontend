@@ -26,8 +26,6 @@ import {
   resolveScheduleSession,
 } from '@/modules/preschool/shared/components/schedule/scheduleSessionOverlay'
 import {
-  fetchTodayAttendanceSessions,
-  generateAttendanceSessions,
   openAttendanceSession,
 } from '@/modules/preschool/services/api/preschoolAttendanceSessionApi'
 
@@ -67,9 +65,6 @@ const {
   lockMessage,
   loading,
 } = usePreschoolSchedules()
-const todaySessions = ref([])
-const sessionLoading = ref(false)
-const generationMessage = ref('')
 
 function todayIso() {
   const now = new Date()
@@ -101,10 +96,9 @@ const statusOptions = computed(() => [
 ])
 
 const visibleSchedules = computed(() => schedules.value || [])
-const todaySessionIndex = computed(() => buildScheduleSessionIndex(todaySessions.value))
 const scheduleEntries = computed(() =>
   visibleSchedules.value.map((entry) => {
-    const session = resolveScheduleSession(entry, todaySessionIndex.value, todayIso())
+    const session = resolveScheduleSession(entry, {}, todayIso())
 
     return {
       ...entry,
@@ -141,32 +135,6 @@ const selectedDayLabel = computed(() => {
 
   return option?.label || t('preschoolSchedulesPage.classView.title')
 })
-const todaySessionCounts = computed(() =>
-  todaySessions.value.reduce((counts, session) => {
-    const status = normalizeScheduleSessionStatus(session.status)
-    if (status === 'scheduled') counts.scheduled += 1
-    else if (status === 'open') counts.open += 1
-    else if (status === 'completed') counts.completed += 1
-    else if (status === 'locked') counts.locked += 1
-    else if (status === 'cancelled') counts.cancelled += 1
-    return counts
-  }, {
-    scheduled: 0,
-    open: 0,
-    completed: 0,
-    locked: 0,
-    cancelled: 0,
-  }),
-)
-
-const operationalSummaryCards = computed(() => [
-  { label: t('preschoolAttendanceDashboardPage.operationalSummary.todaySessions'), value: todaySessions.value.length, tone: 'info' },
-  { label: t('preschoolAttendanceDashboardPage.operationalSummary.scheduled'), value: todaySessionCounts.value.scheduled, tone: 'info' },
-  { label: t('preschoolAttendanceDashboardPage.operationalSummary.open'), value: todaySessionCounts.value.open, tone: 'warning' },
-  { label: t('preschoolAttendanceDashboardPage.operationalSummary.completed'), value: todaySessionCounts.value.completed, tone: 'success' },
-  { label: t('preschoolAttendanceDashboardPage.operationalSummary.locked'), value: todaySessionCounts.value.locked, tone: 'neutral' },
-  { label: t('preschoolAttendanceDashboardPage.operationalSummary.cancelled'), value: todaySessionCounts.value.cancelled, tone: 'danger' },
-])
 
 async function applyFilters() {
   await loadSchedules({
@@ -186,20 +154,6 @@ async function resetFilters() {
   setSelectedTeacherId('')
   setSelectedDayOfWeek('')
   await loadSchedules({ page: 1, search: '', status: '', classId: '', teacherUserId: '', dayOfWeek: '' })
-}
-
-async function loadTodaySessions() {
-  sessionLoading.value = true
-  generationMessage.value = ''
-
-  try {
-    const response = await fetchTodayAttendanceSessions()
-    todaySessions.value = response.items || []
-  } catch {
-    todaySessions.value = []
-  } finally {
-    sessionLoading.value = false
-  }
 }
 
 async function handleSave(payload) {
@@ -286,28 +240,10 @@ function handleSessionView(entry) {
   })
 }
 
-async function generateTodaySessions() {
-  sessionLoading.value = true
-  generationMessage.value = ''
-
-  try {
-    const generated = await generateAttendanceSessions({ date: todayIso() })
-    generationMessage.value = generated.length > 0
-      ? t('preschoolSchedulesPage.sessions.generatedCount', { count: generated.length })
-      : t('preschoolSchedulesPage.sessions.alreadyGenerated')
-    await loadTodaySessions()
-  } catch (error) {
-    generationMessage.value = error?.message || t('preschoolSchedulesPage.sessions.generateFailed')
-  } finally {
-    sessionLoading.value = false
-  }
-}
-
 onMounted(async () => {
   await loadLookups()
   setSelectedDayOfWeek(todayDayOfWeek())
   await loadSchedules()
-  await loadTodaySessions()
 })
 </script>
 
@@ -386,37 +322,7 @@ onMounted(async () => {
               <Button type="button" variant="ghost" size="md" rounded="xl" @click="resetFilters">
                 {{ t('preschoolSchedulesPage.filters.reset') }}
               </Button>
-              <Button type="button" variant="primary" size="md" rounded="xl" :loading="sessionLoading" @click="generateTodaySessions">
-                {{ t('preschoolSchedulesPage.sessions.generateToday') }}
-              </Button>
             </div>
-            <div v-if="generationMessage" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              {{ generationMessage }}
-            </div>
-          </div>
-
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <article
-              v-for="card in operationalSummaryCards"
-              :key="card.label"
-              class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-            >
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                {{ card.label }}
-              </p>
-              <p
-                class="mt-2 text-3xl font-bold"
-                :class="{
-                  'text-sky-700': card.tone === 'info',
-                  'text-amber-700': card.tone === 'warning',
-                  'text-emerald-700': card.tone === 'success',
-                  'text-slate-700': card.tone === 'neutral',
-                  'text-rose-700': card.tone === 'danger',
-                }"
-              >
-                {{ card.value }}
-              </p>
-            </article>
           </div>
 
           <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

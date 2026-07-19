@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
@@ -13,6 +13,8 @@ import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchPreschoolClasses,
   fetchPreschoolStudents,
+  fetchMyPreschoolClasses,
+  fetchMyPreschoolStudents,
   fetchAcademicLifecycle,
 } from '@/modules/preschool/services/preschoolApi'
 import { useGradeData } from '@/modules/preschool/composables/useGradeData'
@@ -24,9 +26,10 @@ defineOptions({
 
 const { t } = useLanguage()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
 
-const { gradeOptions, errorMessage, loadGradeScale, loadMonthlyEntry } = useGradeData()
+const { errorMessage, loadMonthlyEntry } = useGradeData()
 const { isSubmitting, saveBatchGrades } = useGradeMutations()
 
 const academicYearId = ref('')
@@ -34,99 +37,160 @@ const classId = ref('')
 const month = ref(new Date().getMonth() + 1)
 const year = ref(new Date().getFullYear())
 const filterOptions = ref({
-  academicYears: [],
   classes: [],
 })
 const students = ref([])
 const gradesMap = ref({})
+const submissionStatus = ref('')
+const submissionContext = ref({
+  academicYear: '',
+  month: '',
+  year: '',
+})
 const isDetailDialogOpen = ref(false)
 const selectedStudent = ref(null)
-const editingGrade = reactive({ grade: '', notes: '' })
+const editingGrade = reactive({ grade: '', score: '', notes: '' })
 const exportLoading = ref(false)
+const isTeacherView = computed(() => route.name === 'dashboard-preschool-teacher-grades')
+const isEditable = computed(() => {
+  const status = String(submissionStatus.value || '').toUpperCase()
+  // No draft exists until the first score is saved.
+  return !status || ['DRAFT', 'RETURNED'].includes(status)
+})
 
-const monthOptions = computed(() =>
-  Array.from({ length: 12 }, (_, i) => ({
-    label: t(`common.months.${i + 1}`, `Month ${i + 1}`),
-    value: i + 1,
-  })),
-)
-
-const yearOptions = computed(() =>
-  Array.from({ length: 5 }, (_, i) => {
-    const y = new Date().getFullYear() - 2 + i
-    return { label: String(y), value: y }
-  }),
-)
 
 async function loadFilterOptions() {
   try {
     const [lifecycleRes, classesRes] = await Promise.all([
       fetchAcademicLifecycle(),
-      fetchPreschoolClasses(),
+      isTeacherView.value
+        ? fetchMyPreschoolClasses({ page: 1, perPage: 100 })
+        : fetchPreschoolClasses({ page: 1, perPage: 100 }),
     ])
 
-    filterOptions.value.academicYears = (lifecycleRes.academicYears || []).map(ay => ({
-      label: ay.label || ay.code,
-      value: ay.id,
-    }))
+    const activeAcademicYear = (lifecycleRes.academicYears || []).find(item => item.isCurrent)
+      || (lifecycleRes.academicYears || []).find(item => String(item.status || '').toLowerCase() === 'active')
+    academicYearId.value = activeAcademicYear?.id || ''
 
     filterOptions.value.classes = (classesRes.items || []).map(c => ({
       label: c.name,
       value: c.id,
     }))
 
-    if (filterOptions.value.academicYears.length > 0) {
-      academicYearId.value = filterOptions.value.academicYears[0].value
-    }
-
-    if (filterOptions.value.classes.length > 0) {
-      classId.value = filterOptions.value.classes[0].value
-      await loadStudents()
+    if (isTeacherView.value) {
+      if (filterOptions.value.classes.length === 0) {
+        errorMessage.value = 'No active classes are assigned to your account.'
+      }
     }
   } catch (error) {
     console.error('Failed to load filter options:', error)
+    errorMessage.value = error?.message || 'Failed to load classes'
   }
 }
 
 async function loadStudents() {
   if (!classId.value) {
     students.value = []
+    submissionContext.value = { academicYear: '', month: '', year: '' }
+    errorMessage.value = 'Please select a class.'
     return
   }
 
   try {
-    const response = await fetchPreschoolStudents({ classId: classId.value, perPage: 500 })
-    students.value = (response.items || []).map(s => ({
+    const response = isTeacherView.value
+      ? await fetchMyPreschoolStudents({ page: 1, perPage: 500 })
+      : await fetchPreschoolStudents({ classId: classId.value, perPage: 500 })
+    students.value = (response.items || [])
+      .filter(s => {
+        if (!isTeacherView.value) return true
+        const assignedClasses = [...(s.classes || []), ...(s.classAssignments || [])]
+        return assignedClasses.some(c => String(c.id || c.classId || c.class_id) === String(classId.value))
+      })
+      .map(s => ({
       id: s.id,
       name: s.fullName || s.firstName + ' ' + s.lastName,
       code: s.studentCode || s.publicId,
-    }))
+      }))
 
-    await loadMonthlyEntry(classId.value, month.value, year.value)
+    if (students.value.length === 0) {
+      errorMessage.value = 'No students are assigned to this class.'
+    }
+
+    await refreshGrades()
   } catch (error) {
     console.error('Failed to load students:', error)
     students.value = []
+    errorMessage.value = error?.message || 'Failed to load students.'
   }
 }
 
 async function refreshGrades() {
-  if (!classId.value) return
-  await loadMonthlyEntry(classId.value, month.value, year.value)
+  if (!classId.value) {
+    errorMessage.value = 'Please select a class.'
+    submissionContext.value = { academicYear: '', month: '', year: '' }
+    students.value = []
+    gradesMap.value = {}
+    return
+  }
+
+  try {
+    errorMessage.value = ''
+    const response = await loadMonthlyEntry(classId.value, new Date().getMonth() + 1, new Date().getFullYear())
+
+    // Capture submission context
+    submissionContext.value = {
+      academicYear: response?.academic_year || '',
+      month: response?.month || '',
+      year: response?.year || '',
+    }
+
+    submissionStatus.value = response?.status || ''
+
+    // Handle both old array format and new {status, assessments} format
+    const monthlyGrades = response?.assessments || response || []
+
+    // A monthly submission is created when the first score is saved. An empty
+    // result is therefore a normal, editable state rather than an error.
+
+    gradesMap.value = (monthlyGrades || []).reduce((grades, row) => {
+      if (row.student_id) {
+        grades[row.student_id] = {
+          score: row.grade ?? '',
+          grade: row.rating || '',
+          notes: '',
+          studentId: row.student_id,
+        }
+
+        // Enrich student info with gender, dateOfBirth, and className
+        const student = students.value.find(s => s.id === row.student_id)
+        if (student) {
+          student.gender = row.student_gender || null
+          student.dateOfBirth = row.student_date_of_birth || null
+          student.className = row.class_name || null
+        }
+      }
+      return grades
+    }, {})
+  } catch (error) {
+    submissionContext.value = { academicYear: '', month: '', year: '' }
+    errorMessage.value = error?.message || 'Failed to load grade submission.'
+  }
 }
 
 function getStudentGrade(studentId) {
-  return gradesMap.value[studentId] || { grade: '', notes: '' }
+  return gradesMap.value[studentId] || { score: '', grade: '', notes: '' }
 }
 
-function updateStudentGrade(studentId, grade, notes = '') {
-  gradesMap.value[studentId] = { grade, notes, studentId }
+function updateStudentGrade(studentId, score, grade = '', notes = '') {
+  gradesMap.value[studentId] = { score, grade, notes, studentId }
 }
 
 function openStudentGradeDialog(student) {
   selectedStudent.value = student
   const existing = getStudentGrade(student.id)
-  editingGrade.grade = existing.grade || ''
-  editingGrade.notes = existing.notes || ''
+  editingGrade.score = existing.score ?? ''
+  editingGrade.grade = existing.grade ?? ''
+  editingGrade.notes = ''
   isDetailDialogOpen.value = true
 }
 
@@ -134,32 +198,32 @@ function closeStudentGradeDialog() {
   isDetailDialogOpen.value = false
   selectedStudent.value = null
   editingGrade.grade = ''
+  editingGrade.score = ''
   editingGrade.notes = ''
 }
 
 function saveStudentGrade() {
   if (!selectedStudent.value) return
-  updateStudentGrade(selectedStudent.value.id, editingGrade.grade, editingGrade.notes)
+  updateStudentGrade(selectedStudent.value.id, editingGrade.score)
   closeStudentGradeDialog()
 }
 
 async function submitAllGrades() {
   const gradesToSubmit = students.value
-    .filter(s => gradesMap.value[s.id]?.grade)
+    .filter(s => gradesMap.value[s.id]?.score !== '' && gradesMap.value[s.id]?.score !== null)
     .map(s => ({
       studentId: s.id,
       classId: classId.value,
       academicYearId: academicYearId.value,
       month: month.value,
       year: year.value,
-      grade: gradesMap.value[s.id].grade,
-      notes: gradesMap.value[s.id].notes || '',
+      score: Number(gradesMap.value[s.id].score),
     }))
 
   if (gradesToSubmit.length === 0) {
     toast.add({
       severity: 'warn',
-      summary: t('common.warning'),
+      summary: t('common.status.warning'),
       detail: t('preschoolGradeEntry.messages.noGradesToSubmit', 'Please enter at least one grade'),
       life: 3000,
     })
@@ -224,12 +288,12 @@ function exportToExcel() {
       ['Year', year.value],
       ['Class', filterOptions.value.classes.find(c => c.value === classId.value)?.label || 'All'],
       [],
-      ['Student Name', 'Student Code', 'Grade', 'Notes'],
+      ['Student Name', 'Student Code', 'Score'],
     ]
 
     const data = students.value.map(s => {
       const studentGrade = getStudentGrade(s.id)
-      return [s.name, s.code, studentGrade.grade || '', studentGrade.notes || '']
+      return [s.name, s.code, studentGrade.score || '']
     })
 
     const sheet = XLSX.utils.aoa_to_sheet([...metadata, ...data])
@@ -247,13 +311,12 @@ function exportToExcel() {
   }
 }
 
-watch([classId, month, year], async () => {
+watch(classId, async () => {
   await refreshGrades()
 })
 
 onMounted(async () => {
   await loadFilterOptions()
-  await loadGradeScale()
 })
 </script>
 
@@ -272,20 +335,7 @@ onMounted(async () => {
           {{ t('preschoolGradeEntry.filters') }}
         </h3>
 
-        <div class="grid gap-4 md:grid-cols-4">
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolGradeEntry.academicYear') }}
-            </span>
-            <Select
-              v-model="academicYearId"
-              :options="filterOptions.academicYears"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
-
+        <div class="grid gap-4 md:grid-cols-1 md:w-64">
           <label class="space-y-2">
             <span class="text-sm font-medium text-slate-700">
               {{ t('preschoolGradeEntry.class') }}
@@ -296,35 +346,28 @@ onMounted(async () => {
               option-label="label"
               option-value="value"
               class="w-full"
+              placeholder="Select assigned class"
               @update:model-value="loadStudents"
             />
           </label>
+        </div>
 
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolGradeEntry.month') }}
-            </span>
-            <Select
-              v-model="month"
-              :options="monthOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
-
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolGradeEntry.year') }}
-            </span>
-            <Select
-              v-model="year"
-              :options="yearOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
+        <!-- Read-only Submission Context -->
+        <div v-if="classId && submissionContext.academicYear" class="mt-6 space-y-2 border-t border-slate-200 pt-6">
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <span class="block text-xs font-medium uppercase tracking-wide text-slate-500">{{ t('preschoolGradeEntry.academicYear') }}</span>
+              <span class="mt-1 block font-medium text-slate-900">{{ submissionContext.academicYear }}</span>
+            </div>
+            <div>
+              <span class="block text-xs font-medium uppercase tracking-wide text-slate-500">{{ t('preschoolGradeEntry.month') }}</span>
+              <span class="mt-1 block font-medium text-slate-900">{{ submissionContext.month }}</span>
+            </div>
+            <div>
+              <span class="block text-xs font-medium uppercase tracking-wide text-slate-500">{{ t('preschoolGradeEntry.status') }}</span>
+              <span class="mt-1 block font-medium text-slate-900">{{ submissionStatus }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -339,18 +382,24 @@ onMounted(async () => {
           <table class="min-w-full divide-y divide-slate-200 text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
+                <th class="px-4 py-3 w-12">{{ t('common.table.number') }}</th>
                 <th class="px-4 py-3">{{ t('preschoolGradeEntry.studentName') }}</th>
-                <th class="px-4 py-3">{{ t('preschoolGradeEntry.studentCode') }}</th>
-                <th class="px-4 py-3 text-center">{{ t('preschoolGradeEntry.grade') }}</th>
-                <th class="px-4 py-3">{{ t('preschoolGradeEntry.notes') }}</th>
-                <th class="px-4 py-3">{{ t('common.actions') }}</th>
+                <th class="px-4 py-3">{{ t('common.table.gender') }}</th>
+                <th class="px-4 py-3">{{ t('common.table.dateOfBirth') }}</th>
+                <th class="px-4 py-3">{{ t('preschoolGradeEntry.class') }}</th>
+                <th v-if="!isTeacherView" class="px-4 py-3 text-center">{{ t('preschoolGradeEntry.grade') }}</th>
+                <th class="px-4 py-3 text-center">{{ t('preschoolGradeEntry.score') }}</th>
+                <th class="px-4 py-3">{{ t('common.actions.menu') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
-              <tr v-for="student in students" :key="student.id">
+              <tr v-for="(student, index) in students" :key="student.id">
+                <td class="px-4 py-3 font-medium text-slate-900">{{ index + 1 }}</td>
                 <td class="px-4 py-3 font-medium text-slate-900">{{ student.name }}</td>
-                <td class="px-4 py-3 text-slate-600">{{ student.code }}</td>
-                <td class="px-4 py-3 text-center">
+                <td class="px-4 py-3 text-slate-600">{{ student.gender || '—' }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ student.dateOfBirth || '—' }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ student.className || '—' }}</td>
+                <td v-if="!isTeacherView" class="px-4 py-3 text-center">
                   <span
                     v-if="getStudentGrade(student.id).grade"
                     class="inline-flex items-center justify-center rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800"
@@ -359,19 +408,28 @@ onMounted(async () => {
                   </span>
                   <span v-else class="text-slate-400">—</span>
                 </td>
-                <td class="px-4 py-3 text-xs text-slate-500">
-                  {{ getStudentGrade(student.id).notes || '—' }}
+                <td class="px-4 py-3 text-center">
+                  <span v-if="getStudentGrade(student.id).score === 0 || getStudentGrade(student.id).score" class="font-semibold text-slate-800">
+                    {{ getStudentGrade(student.id).score }}
+                  </span>
+                  <span v-else class="text-slate-400">—</span>
                 </td>
                 <td class="px-4 py-3">
                   <Button
+                    v-if="isEditable"
                     type="button"
                     variant="secondary"
                     size="sm"
                     rounded="md"
                     @click="openStudentGradeDialog(student)"
                   >
-                    {{ getStudentGrade(student.id).grade ? t('common.edit') : t('common.add') }}
+                    {{
+                      getStudentGrade(student.id).score !== ''
+                        ? t('common.actions.edit')
+                        : t('common.actions.add')
+                    }}
                   </Button>
+                  <span v-else class="text-sm text-slate-500">{{ t('common.status.locked') }}</span>
                 </td>
               </tr>
             </tbody>
@@ -391,6 +449,7 @@ onMounted(async () => {
           size="lg"
           rounded="xl"
           :loading="isSubmitting"
+          :disabled="!isEditable"
           @click="submitAllGrades"
           class="px-8"
         >
@@ -398,6 +457,7 @@ onMounted(async () => {
         </Button>
 
         <Button
+          v-if="!isTeacherView"
           type="button"
           variant="secondary"
           size="lg"
@@ -409,6 +469,7 @@ onMounted(async () => {
         </Button>
 
         <Button
+          v-if="!isTeacherView"
           type="button"
           variant="secondary"
           size="lg"
@@ -432,34 +493,23 @@ onMounted(async () => {
         class="grade-entry-dialog"
       >
         <div class="space-y-4">
-          <div class="space-y-2">
-            <label class="text-sm font-medium text-slate-700">{{ t('preschoolGradeEntry.grade') }}</label>
-            <Select
-              v-model="editingGrade.grade"
-              :options="gradeOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-              :placeholder="t('preschoolGradeEntry.selectGrade')"
-            >
-              <template #option="slotProps">
-                <div class="flex flex-col gap-1">
-                  <div class="font-medium">{{ slotProps.option.label }}</div>
-                  <div v-if="slotProps.option.description" class="text-xs text-slate-500">
-                    {{ slotProps.option.description }}
-                  </div>
-                </div>
-              </template>
-            </Select>
+          <div class="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            {{ t('preschoolGradeEntry.calculatedGrade') }}:
+            <span class="font-semibold text-slate-900">
+              {{ editingGrade.grade || t('preschoolGradeEntry.calculatedAfterSave') }}
+            </span>
           </div>
 
           <div class="space-y-2">
-            <label class="text-sm font-medium text-slate-700">{{ t('preschoolGradeEntry.notes') }}</label>
-            <textarea
-              v-model="editingGrade.notes"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              rows="3"
-              :placeholder="t('preschoolGradeEntry.notesPlaceholder', 'Add any notes about this grade')"
+            <label class="text-sm font-medium text-slate-700">Score</label>
+            <input
+              v-model.number="editingGrade.score"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="Enter score"
             />
           </div>
         </div>

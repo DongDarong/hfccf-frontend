@@ -195,6 +195,21 @@
           }
         },
         {
+          "id": "preschool-teacher-grades",
+          "routeName": "dashboard-preschool-teacher-grades",
+          "labelKey": "nav.items.grades",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
           "id": "preschool-settings",
           "routeName": "dashboard-preschool-admin-settings",
           "labelKey": "nav.items.preschoolSettings",

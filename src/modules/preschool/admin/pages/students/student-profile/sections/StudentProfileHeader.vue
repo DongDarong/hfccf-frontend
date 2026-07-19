@@ -35,13 +35,9 @@ defineProps({
     type: String,
     default: '',
   },
-  communicationsLabel: {
-    type: String,
-    default: '',
-  },
 })
 
-const emit = defineEmits(['back', 'health', 'communications'])
+const emit = defineEmits(['back', 'health'])
 
 const { t } = useLanguage()
 </script>
@@ -53,9 +49,6 @@ const { t } = useLanguage()
     </Button>
     <Button type="button" variant="secondary" rounded="xl" @click="emit('health')">
       {{ healthLabel || t('preschoolStudentProfilePage.actions.health') }}
-    </Button>
-    <Button type="button" variant="secondary" rounded="xl" @click="emit('communications')">
-      {{ communicationsLabel || t('preschoolGuardianCommunicationPage.title') }}
     </Button>
   </div>
 

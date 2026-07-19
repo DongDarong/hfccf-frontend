@@ -115,6 +115,7 @@ function handleSave() {
         v-for="option in statusOptions"
         :key="option.value"
         class="att-panel__legend-item"
+        :data-status="option.value"
       >
         <span class="att-panel__legend-short">{{ option.short }}</span>
         <span class="att-panel__legend-label">{{ option.label }}</span>
@@ -305,6 +306,27 @@ function handleSave() {
   line-height: 1;
 }
 
+/* Status-specific legend styling to match button colors */
+.att-panel__legend-item[data-status="present"] .att-panel__legend-short {
+  background: #10b981;
+  color: white;
+}
+
+.att-panel__legend-item[data-status="absent"] .att-panel__legend-short {
+  background: #e11d48;
+  color: white;
+}
+
+.att-panel__legend-item[data-status="late"] .att-panel__legend-short {
+  background: #d97706;
+  color: white;
+}
+
+.att-panel__legend-item[data-status="excused"] .att-panel__legend-short {
+  background: #2563eb;
+  color: white;
+}
+
 .att-panel__legend-short {
   display: inline-flex;
   align-items: center;
@@ -316,6 +338,7 @@ function handleSave() {
   color: #0f172a;
   font-size: 0.65rem;
   font-weight: 800;
+  transition: all 150ms ease-in-out;
 }
 
 .att-panel__legend-label {

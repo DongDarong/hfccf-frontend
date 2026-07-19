@@ -12,10 +12,6 @@ defineProps({
     type: Object,
     default: null,
   },
-  profileClasses: {
-    type: Array,
-    default: () => [],
-  },
   statusLabel: {
     type: String,
     default: '',
@@ -166,19 +162,6 @@ function resolveValue(value) {
           <dd>{{ student?.guardianPhone || '-' }}</dd>
         </div>
       </dl>
-    </section>
-
-    <section class="student-profile-page__panel student-profile-page__panel--wide">
-      <h3 class="student-profile-page__panel-title">{{ t('preschoolStudentProfilePage.sections.enrollment') }}</h3>
-      <div v-if="profileClasses.length" class="student-profile-page__class-list">
-        <div v-for="classItem in profileClasses" :key="classItem.id" class="student-profile-page__class-chip">
-          <p class="student-profile-page__class-name">{{ classItem.name || classItem.code || '-' }}</p>
-          <p class="student-profile-page__class-meta">{{ classItem.level || classItem.code || '-' }}</p>
-        </div>
-      </div>
-      <div v-else class="student-profile-page__empty-inline">
-        {{ t('preschoolStudentProfilePage.messages.noClasses') }}
-      </div>
     </section>
 
     <section class="student-profile-page__panel student-profile-page__panel--wide">

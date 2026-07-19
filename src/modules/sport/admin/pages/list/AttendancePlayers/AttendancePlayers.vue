@@ -63,10 +63,10 @@ const noAssignedTeamsMessage = computed(() => (
 ))
 
 const statusOptions = computed(() => [
-  { value: 'present', label: t('sportAttendanceStatus.present'), short: t('sportAttendanceStatus.presentShort'), active: 'border-emerald-300 bg-emerald-50 text-emerald-700', ring: 'ring-emerald-200' },
-  { value: 'absent', label: t('sportAttendanceStatus.absent'), short: t('sportAttendanceStatus.absentShort'), active: 'border-rose-300 bg-rose-50 text-rose-700', ring: 'ring-rose-200' },
-  { value: 'late', label: t('sportAttendanceStatus.late'), short: t('sportAttendanceStatus.lateShort'), active: 'border-amber-300 bg-amber-50 text-amber-700', ring: 'ring-amber-200' },
-  { value: 'excused', label: t('sportAttendanceStatus.excused'), short: t('sportAttendanceStatus.excusedShort'), active: 'border-sky-300 bg-sky-50 text-sky-700', ring: 'ring-sky-200' },
+  { value: 'present', label: t('sportAttendanceStatus.present'), short: t('sportAttendanceStatus.presentShort'), active: 'border-emerald-600 bg-emerald-600 text-white font-bold', ring: 'ring-2 ring-emerald-300' },
+  { value: 'absent', label: t('sportAttendanceStatus.absent'), short: t('sportAttendanceStatus.absentShort'), active: 'border-rose-600 bg-rose-600 text-white font-bold', ring: 'ring-2 ring-rose-300' },
+  { value: 'late', label: t('sportAttendanceStatus.late'), short: t('sportAttendanceStatus.lateShort'), active: 'border-amber-600 bg-amber-500 text-white font-bold', ring: 'ring-2 ring-amber-300' },
+  { value: 'excused', label: t('sportAttendanceStatus.excused'), short: t('sportAttendanceStatus.excusedShort'), active: 'border-blue-600 bg-blue-600 text-white font-bold', ring: 'ring-2 ring-blue-300' },
 ])
 
 const markedCount = computed(() => Object.values(attendanceMap.value).filter((entry) => entry.status).length)

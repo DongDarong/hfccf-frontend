@@ -59,6 +59,7 @@ const emit = defineEmits(['click'])
   font-size: 0.8rem;
   font-weight: 700;
   transition: all 150ms ease-in-out;
+  border-width: 2px;
 }
 
 .att-status-btn:hover:not(:disabled) {
@@ -67,7 +68,19 @@ const emit = defineEmits(['click'])
 }
 
 .att-status-btn:focus-visible {
-  outline: 2px solid #0f766e;
+  outline: 3px solid currentColor;
   outline-offset: 2px;
+}
+
+/* Enhanced keyboard focus for active state */
+.att-status-btn[aria-pressed="true"]:focus-visible {
+  outline-width: 3px;
+  outline-offset: 3px;
+}
+
+/* Disabled state styling */
+.att-status-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

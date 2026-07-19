@@ -77,6 +77,7 @@ export default {
     suspended: 'ផ្អាក',
     closed: 'បានបិទ',
     archived: 'បានទុកក្នុងបណ្ណសារ',
+    locked: 'បានចាក់សោ',
   },
   role: {
     superadmin: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ',
@@ -173,6 +174,8 @@ export default {
     permission: 'សិទ្ធិ',
     status: 'ស្ថានភាព',
     phone: 'លេខទូរស័ព្ទ',
+    gender: 'ភេទ',
+    dateOfBirth: 'កាលបរិច្ឆេទកំណើត',
     actions: 'សកម្មភាព',
   },
   pagination: {

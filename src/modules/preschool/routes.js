@@ -267,25 +267,6 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
-  defineAppRoute({
-    path: '/module/preschool-admin/guardians',
-    component: () => import('@/modules/preschool/admin/layouts/PreschoolAdminShell.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-    children: [
-      defineAppRoute({
-        path: 'communications',
-        name: 'dashboard-preschool-admin-guardian-communications',
-        component: () => import('@/modules/preschool/admin/pages/guardian/GuardianCommunicationDashboard.vue'),
-        access: {
-          domains: [DOMAINS.PRESCHOOL],
-          scopes: [ACCESS_SCOPES.ADMIN],
-        },
-      }),
-    ],
-  }),
   // Settings stays in the admin Preschool route tree so the configuration
   // surface remains discoverable without creating a second dashboard shell.
   defineAppRoute({
@@ -747,6 +728,15 @@ export const preschoolRoutes = [
     path: '/module/preschool-admin/teacher/attendance/sessions/:id',
     name: 'dashboard-preschool-teacher-attendance-session-details',
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceSessionDetails.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/grades',
+    name: 'dashboard-preschool-teacher-grades',
+    component: () => import('@/modules/preschool/admin/pages/grades/GradeEntry.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.STAFF],

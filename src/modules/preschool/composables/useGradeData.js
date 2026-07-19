@@ -1,16 +1,13 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import {
   fetchPreschoolGrades,
   fetchGradeMonthlyEntry,
   fetchStudentGrades,
-  fetchGradeScale,
   normalizeGrade,
-  normalizeGradeScale,
 } from '@/modules/preschool/services/api/preschoolGradeApi'
 
 export function useGradeData() {
   const grades = ref([])
-  const gradeScale = ref([])
   const loading = ref(false)
   const errorMessage = ref('')
   const pagination = ref({
@@ -19,18 +16,6 @@ export function useGradeData() {
     total: 0,
     totalPages: 0,
   })
-
-  async function loadGradeScale() {
-    try {
-      const response = await fetchGradeScale()
-      gradeScale.value = Array.isArray(response.items || response)
-        ? (response.items || response).map(normalizeGradeScale)
-        : []
-    } catch (error) {
-      console.error('Error loading grade scale:', error)
-      gradeScale.value = []
-    }
-  }
 
   async function loadGrades(filters = {}) {
     loading.value = true
@@ -89,23 +74,12 @@ export function useGradeData() {
     }
   }
 
-  const gradeOptions = computed(() =>
-    gradeScale.value.map(g => ({
-      label: g.code,
-      value: g.code,
-      description: g.description,
-    })),
-  )
-
   return {
     grades,
-    gradeScale,
-    gradeOptions,
     loading,
     errorMessage,
     pagination,
     loadGrades,
-    loadGradeScale,
     loadMonthlyEntry,
     loadStudentGrades,
   }

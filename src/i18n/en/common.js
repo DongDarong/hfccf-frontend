@@ -76,6 +76,7 @@ export default {
     suspended: 'Suspended',
     closed: 'Closed',
     archived: 'Archived',
+    locked: 'Locked',
   },
   role: {
     // Keep Preschool level labels under the shared role namespace so class
@@ -172,6 +173,8 @@ export default {
     permission: 'Permission',
     status: 'Status',
     phone: 'Phone',
+    gender: 'Gender',
+    dateOfBirth: 'Date of Birth',
     actions: 'Actions',
   },
   pagination: {
