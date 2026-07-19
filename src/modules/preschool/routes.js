@@ -662,15 +662,6 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
-    path: '/module/preschool-admin/forms/build',
-    name: 'dashboard-preschool-admin-forms-build',
-    component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentFormBuilderPage.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.ADMIN],
-    },
-  }),
-  defineAppRoute({
     path: '/module/preschool-admin/forms/review',
     name: 'dashboard-preschool-admin-forms-review',
     component: () => import('@/modules/preschool/admin/pages/forms/FormManagementReview.vue'),
