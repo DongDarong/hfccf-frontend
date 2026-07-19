@@ -15,6 +15,7 @@ export default {
     individual: 'សិស្សម្នាក់',
     entireClass: 'ថ្នាក់ទាំងមូល',
     reportMonth: 'ខែ',
+    reportClass: 'ថ្នាក់',
     reportYear: 'ឆ្នាំ',
     generateReport: 'បង្កើតរបាយការណ៍',
     reset: 'កំណត់ឡើងវិញ',

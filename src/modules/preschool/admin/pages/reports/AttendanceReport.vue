@@ -366,7 +366,7 @@ onMounted(() => {
 
           <!-- Class -->
           <label class="block">
-            <span class="mb-2 block text-xs font-semibold text-slate-700">{{ t('preschoolReportsPage.reportMonth') || 'Class' }}</span>
+            <span class="mb-2 block text-xs font-semibold text-slate-700">{{ t('preschoolReportsPage.reportClass') || 'Class' }}</span>
             <Select
               v-model="classId"
               :options="filterOptions.classes"
@@ -461,7 +461,7 @@ onMounted(() => {
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-900">{{ t('preschoolReportsPage.actions.openStudentReports') || 'Export' }}</h3>
+          <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-900">Export</h3>
           <ExportMenu :loading="exportLoading" @export="exportReport" />
         </div>
       </template>

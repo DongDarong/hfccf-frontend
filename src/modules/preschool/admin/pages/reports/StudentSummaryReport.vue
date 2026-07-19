@@ -332,7 +332,7 @@ onMounted(() => {
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <label class="block">
             <span class="mb-2 block text-xs font-semibold text-slate-700">
-              {{ t('preschoolReportsCenterPage.filters.academicYear') }}
+              {{ t('preschoolReportsPage.reportYear') }}
             </span>
             <Select
               v-model="academicYearId"
@@ -340,13 +340,13 @@ onMounted(() => {
               option-label="label"
               option-value="value"
               class="w-full"
-              :placeholder="t('preschoolReportsCenterPage.filters.academicYear')"
+              :placeholder="t('preschoolReportsPage.reportYear')"
             />
           </label>
 
           <label class="space-y-2">
             <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolReportsCenterPage.filters.class') }}
+              {{ t('preschoolReportsPage.reportClass') }}
             </span>
             <Select
               v-model="classId"
@@ -354,14 +354,14 @@ onMounted(() => {
               option-label="label"
               option-value="value"
               class="w-full"
-              :placeholder="t('preschoolReportsCenterPage.filters.class')"
+              :placeholder="t('preschoolReportsPage.reportClass')"
               @update:model-value="loadStudents"
             />
           </label>
 
           <label v-show="scopeType === 'individual'" class="space-y-2">
             <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolReportsCenterPage.filters.student') }}
+              {{ t('preschoolReportsPage.individual') }}
             </span>
             <Select
               v-model="studentId"
@@ -369,7 +369,7 @@ onMounted(() => {
               option-label="label"
               option-value="value"
               class="w-full"
-              :placeholder="t('preschoolReportsCenterPage.filters.student')"
+              :placeholder="t('preschoolReportsPage.individual')"
             />
           </label>
 
@@ -438,7 +438,7 @@ onMounted(() => {
 
         <!-- Export Toolbar -->
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolReportsCenterPage.exports.title') }}</h2>
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Export</h2>
           <div class="flex flex-wrap items-center gap-3">
             <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
               <i class="pi pi-file-pdf mr-2" /> PDF
@@ -461,7 +461,7 @@ onMounted(() => {
 
         <!-- Export Toolbar -->
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolReportsCenterPage.exports.title') }}</h2>
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Export</h2>
           <div class="flex flex-wrap items-center gap-3">
             <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
               <i class="pi pi-file-pdf mr-2" /> PDF

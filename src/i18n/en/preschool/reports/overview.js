@@ -15,6 +15,7 @@ export default {
     individual: 'Individual Student',
     entireClass: 'Entire Class',
     reportMonth: 'Month',
+    reportClass: 'Class',
     reportYear: 'Year',
     generateReport: 'Generate Report',
     reset: 'Reset',
