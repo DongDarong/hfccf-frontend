@@ -27,13 +27,13 @@ export default {
   actions: {
     view: 'មើល',
     edit: 'កែប្រែ',
+    add: 'បន្ថែម',
     delete: 'លុប',
     back: 'ត្រឡប់ក្រោយ',
     save: 'រក្សាទុក',
     cancel: 'បោះបង់',
     refresh: 'ធ្វើឱ្យស្រស់',
     viewAll: 'មើលទាំងអស់',
-
     menu: 'សកម្មភាព',
   },
   success: 'ជោគជ័យ',

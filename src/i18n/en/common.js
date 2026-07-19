@@ -26,6 +26,7 @@ export default {
   actions: {
     view: 'View',
     edit: 'Edit',
+    add: 'Add',
     delete: 'Delete',
     back: 'Back',
     save: 'Save',

@@ -3,13 +3,13 @@ import { buildQueryParams } from '@/services/api'
 
 export async function fetchPreschoolGrades(filters = {}) {
   const params = buildQueryParams({
-    academicYearId: filters.academicYearId,
-    classId: filters.classId,
+    academic_year_id: filters.academicYearId,
+    class_id: filters.classId,
     month: filters.month,
     year: filters.year,
-    studentId: filters.studentId,
-    teacherId: filters.teacherId,
-    perPage: filters.perPage,
+    student_id: filters.studentId,
+    teacher_id: filters.teacherId,
+    per_page: filters.perPage,
     page: filters.page,
   })
 
@@ -19,7 +19,7 @@ export async function fetchPreschoolGrades(filters = {}) {
 
 export async function fetchGradeMonthlyEntry(classId, month, year) {
   const response = await http.get('/preschool/grades/monthly-entry', {
-    params: { classId, month, year },
+    params: { class_id: classId, month, year },
   })
   return response.data
 }
