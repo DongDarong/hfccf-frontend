@@ -27,12 +27,6 @@ const REPORT_TYPES = [
     routeName: 'dashboard-preschool-admin-reports-attendance',
     description: 'Monthly and yearly attendance records',
   },
-  {
-    key: 'assessment',
-    label: 'Assessment',
-    icon: 'pi-chart-bar',
-    description: 'Individual and class assessment results',
-  },
 ]
 
 const reportTypeOptions = computed(() =>

@@ -23,12 +23,6 @@ const REPORTS = [
     icon: 'pi-calendar-check',
     color: 'emerald',
   },
-  {
-    key: 'assessment',
-    label: 'Assessment',
-    icon: 'pi-chart-bar',
-    color: 'violet',
-  },
 ]
 
 const reportOptions = computed(() =>
