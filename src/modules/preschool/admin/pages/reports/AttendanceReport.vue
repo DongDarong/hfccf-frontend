@@ -17,6 +17,9 @@ import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/prescho
 import MonthlyAttendanceReport from './components/MonthlyAttendanceReport.vue'
 import YearlyAttendanceReport from './components/YearlyAttendanceReport.vue'
 import ReportSwitcher from './components/ReportSwitcher.vue'
+import FilterSummary from './components/FilterSummary.vue'
+import ExportMenu from './components/ExportMenu.vue'
+import ReportStatistics from './components/ReportStatistics.vue'
 import { fetchAllPages } from './reportPaginationHelper'
 
 defineOptions({
@@ -77,6 +80,18 @@ const canGenerate = computed(() => {
   return academicYearId.value && classId.value && (
     reportPeriod.value === 'yearly' ? selectedYear.value : (selectedMonth.value && selectedYear.value)
   )
+})
+
+const selectedAcademicYearLabel = computed(() => {
+  return filterOptions.value.academicYears.find(y => y.value === academicYearId.value)?.label || ''
+})
+
+const selectedClassLabel = computed(() => {
+  return filterOptions.value.classes.find(c => c.value === classId.value)?.label || ''
+})
+
+const selectedMonthLabel = computed(() => {
+  return months.value.find(m => m.value === selectedMonth.value)?.label || ''
 })
 
 async function loadFilterOptions() {
@@ -187,6 +202,8 @@ async function exportReport(format) {
       await exportToPdf(filename)
     } else if (format === 'excel') {
       exportToExcel(filename)
+    } else if (format === 'csv') {
+      exportToCsv(filename)
     } else if (format === 'print') {
       window.print()
     }
@@ -259,6 +276,38 @@ function exportToExcel(filename) {
   XLSX.writeFile(workbook, `${filename}.xlsx`)
 }
 
+function exportToCsv(filename) {
+  const records = reportPeriod.value === 'monthly'
+    ? reportData.value.monthlyAttendance
+    : reportData.value.yearlyAttendance
+
+  if (records.length === 0) return
+
+  const headers = Object.keys(records[0])
+  const csvContent = [
+    headers.join(','),
+    ...records.map(record => headers.map(h => {
+      const value = record[h]
+      return typeof value === 'string' && value.includes(',') ? `"${value}"` : value
+    }).join(',')),
+  ].join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${filename}.csv`
+  link.click()
+  window.URL.revokeObjectURL(url)
+}
+
+function scrollToFilters() {
+  const filtersElement = document.querySelector('.preschool-attendance-report-filters')
+  if (filtersElement) {
+    filtersElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
 onMounted(() => {
   loadFilterOptions()
 })
@@ -267,161 +316,192 @@ onMounted(() => {
 <template>
   <MainLayout>
     <section class="space-y-6">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <HeaderSection
-          :title="t('preschoolAttendanceReportPage.title') || 'Attendance Report'"
-          :subtitle="t('preschoolAttendanceReportPage.subtitle') || 'Monthly and yearly attendance reports by class'"
-        />
-        <Button
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-sm text-slate-600">
+        <button
           type="button"
-          variant="ghost"
-          size="md"
-          rounded="lg"
           @click="backToReports"
-          class="flex items-center gap-2"
+          class="flex items-center gap-1 hover:text-slate-900"
         >
           <i class="pi pi-chevron-left" />
-          {{ t('preschoolReportsPage.backToReports') || 'Back to Reports' }}
-        </Button>
-      </div>
+          Reports
+        </button>
+        <span class="text-slate-300">/</span>
+        <span class="font-semibold text-slate-900">Attendance</span>
+      </nav>
 
-      <!-- Report Switcher -->
+      <!-- Header -->
+      <HeaderSection
+        :title="t('preschoolAttendanceReportPage.title') || 'Attendance Report'"
+        :subtitle="t('preschoolAttendanceReportPage.subtitle') || 'Monthly and yearly attendance reports by class'"
+      />
+
+      <!-- Report Switcher - Enhanced -->
       <ReportSwitcher />
 
-      <!-- Filters -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          {{ t('preschoolAttendanceReportPage.filters') || 'Filters' }}
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-exclamation-triangle" />
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <!-- Filters Panel - Enhanced -->
+      <div class="preschool-attendance-report-filters rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="mb-6 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <i class="pi pi-sliders-h mr-2" />
+          Report Filters
         </h3>
 
-        <div class="grid gap-4 md:grid-cols-3">
-          <!-- Academic Year -->
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolReportsCenterPage.filters.academicYear') || 'Academic Year' }}
-            </span>
-            <Select
-              v-model="academicYearId"
-              :options="filterOptions.academicYears"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-              :placeholder="t('preschoolReportsCenterPage.filters.academicYear')"
-            />
-          </label>
+        <!-- Filter Groups -->
+        <div class="space-y-6">
+          <!-- Primary Filters -->
+          <div class="grid gap-4 md:grid-cols-3">
+            <!-- Academic Year -->
+            <label class="space-y-2">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ t('preschoolReportsCenterPage.filters.academicYear') || 'Academic Year' }}
+              </span>
+              <Select
+                v-model="academicYearId"
+                :options="filterOptions.academicYears"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+                :placeholder="t('preschoolReportsCenterPage.filters.academicYear')"
+              />
+            </label>
 
-          <!-- Class -->
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolReportsCenterPage.filters.class') || 'Class' }}
-            </span>
-            <Select
-              v-model="classId"
-              :options="filterOptions.classes"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-              :placeholder="t('preschoolReportsCenterPage.filters.class')"
-            />
-          </label>
+            <!-- Class -->
+            <label class="space-y-2">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ t('preschoolReportsCenterPage.filters.class') || 'Class' }}
+              </span>
+              <Select
+                v-model="classId"
+                :options="filterOptions.classes"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+                :placeholder="t('preschoolReportsCenterPage.filters.class')"
+              />
+            </label>
 
-          <!-- Report Period -->
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolAttendanceReportPage.reportPeriod') || 'Report Period' }}
-            </span>
-            <Select
-              v-model="reportPeriod"
-              :options="[
-                { label: t('preschoolAttendanceReportPage.monthly') || 'Monthly', value: 'monthly' },
-                { label: t('preschoolAttendanceReportPage.yearly') || 'Yearly', value: 'yearly' },
-              ]"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-              @update:model-value="changeReportPeriod"
-            />
-          </label>
+            <!-- Report Period -->
+            <label class="space-y-2">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ t('preschoolAttendanceReportPage.reportPeriod') || 'Report Period' }}
+              </span>
+              <Select
+                v-model="reportPeriod"
+                :options="[
+                  { label: t('preschoolAttendanceReportPage.monthly') || 'Monthly', value: 'monthly' },
+                  { label: t('preschoolAttendanceReportPage.yearly') || 'Yearly', value: 'yearly' },
+                ]"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+                @update:model-value="changeReportPeriod"
+              />
+            </label>
+          </div>
+
+          <!-- Dynamic Filters -->
+          <div v-if="reportPeriod === 'monthly'" class="grid gap-4 md:grid-cols-2 border-t border-slate-200 pt-6">
+            <label class="space-y-2">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ t('preschoolAttendanceReportPage.month') || 'Month' }}
+              </span>
+              <Select
+                v-model="selectedMonth"
+                :options="months"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+              />
+            </label>
+
+            <label class="space-y-2">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ t('preschoolAttendanceReportPage.year') || 'Year' }}
+              </span>
+              <Select
+                v-model="selectedYear"
+                :options="yearOptions"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+              />
+            </label>
+          </div>
+
+          <div v-else class="grid gap-4 md:grid-cols-1 border-t border-slate-200 pt-6">
+            <label class="space-y-2">
+              <span class="text-sm font-semibold text-slate-700">
+                {{ t('preschoolAttendanceReportPage.year') || 'Year' }}
+              </span>
+              <Select
+                v-model="selectedYear"
+                :options="yearOptions"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+              />
+            </label>
+          </div>
         </div>
 
-        <!-- Month/Year Filters (shown only in monthly mode) -->
-        <div v-if="reportPeriod === 'monthly'" class="mt-4 grid gap-4 md:grid-cols-2">
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolAttendanceReportPage.month') || 'Month' }}
-            </span>
-            <Select
-              v-model="selectedMonth"
-              :options="months"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
-
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolAttendanceReportPage.year') || 'Year' }}
-            </span>
-            <Select
-              v-model="selectedYear"
-              :options="yearOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
-        </div>
-
-        <!-- Year Filter (shown only in yearly mode) -->
-        <div v-else class="mt-4 grid gap-4 md:grid-cols-1">
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
-              {{ t('preschoolAttendanceReportPage.year') || 'Year' }}
-            </span>
-            <Select
-              v-model="selectedYear"
-              :options="yearOptions"
-              option-label="label"
-              option-value="value"
-              class="w-full"
-            />
-          </label>
+        <!-- Action Buttons -->
+        <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-6">
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            rounded="xl"
+            :loading="loading"
+            :disabled="!canGenerate"
+            @click="generateReport"
+            class="flex items-center gap-2"
+          >
+            <i class="pi pi-chart-line" />
+            {{ t('preschoolAttendanceReportPage.generateReport') || 'Generate Report' }}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            rounded="xl"
+            @click="resetFilters"
+            class="flex items-center gap-2"
+          >
+            <i class="pi pi-refresh" />
+            {{ t('preschoolAttendanceReportPage.reset') || 'Reset' }}
+          </Button>
         </div>
       </div>
 
-      <!-- Generate & Reset Buttons -->
-      <div class="flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!canGenerate"
-          @click="generateReport"
-          class="px-8"
-        >
-          {{ t('preschoolAttendanceReportPage.generateReport') || 'Generate Report' }}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="lg"
-          rounded="xl"
-          @click="resetFilters"
-        >
-          {{ t('preschoolAttendanceReportPage.reset') || 'Reset' }}
-        </Button>
-      </div>
+      <!-- Filter Summary -->
+      <FilterSummary
+        v-if="reportGenerated"
+        :academic-year-label="selectedAcademicYearLabel"
+        :class-label="selectedClassLabel"
+        :report-period="reportPeriod"
+        :month-label="selectedMonthLabel"
+        :year="selectedYear"
+        @clear-filters="resetFilters"
+      />
 
-      <!-- Error Message -->
-      <div v-if="errorMessage" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-        {{ errorMessage }}
-      </div>
+      <!-- Report Statistics -->
+      <template v-if="reportGenerated">
+        <ReportStatistics
+          :students="reportData.students"
+          :attendance-records="reportPeriod === 'monthly' ? reportData.monthlyAttendance : reportData.yearlyAttendance"
+          :class-label="selectedClassLabel"
+        />
+      </template>
 
-      <!-- Monthly Report -->
+      <!-- Report Content -->
       <template v-if="reportGenerated && reportPeriod === 'monthly'">
         <div class="preschool-attendance-report-content">
           <MonthlyAttendanceReport
@@ -432,22 +512,13 @@ onMounted(() => {
           />
         </div>
 
-        <!-- Export Toolbar -->
+        <!-- Unified Export Toolbar -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-            {{ t('preschoolReportsCenterPage.exports.title') || 'Export' }}
+            <i class="pi pi-download mr-2" />
+            {{ t('preschoolReportsCenterPage.exports.title') || 'Export Options' }}
           </h2>
-          <div class="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
-              <i class="pi pi-file-pdf mr-2" /> PDF
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
-              <i class="pi pi-file-excel mr-2" /> Excel
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
-              <i class="pi pi-print mr-2" /> Print
-            </Button>
-          </div>
+          <ExportMenu :loading="exportLoading" @export="exportReport" />
         </div>
       </template>
 
@@ -461,31 +532,42 @@ onMounted(() => {
           />
         </div>
 
-        <!-- Export Toolbar -->
+        <!-- Unified Export Toolbar -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-            {{ t('preschoolReportsCenterPage.exports.title') || 'Export' }}
+            <i class="pi pi-download mr-2" />
+            {{ t('preschoolReportsCenterPage.exports.title') || 'Export Options' }}
           </h2>
-          <div class="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
-              <i class="pi pi-file-pdf mr-2" /> PDF
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
-              <i class="pi pi-file-excel mr-2" /> Excel
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
-              <i class="pi pi-print mr-2" /> Print
-            </Button>
-          </div>
+          <ExportMenu :loading="exportLoading" @export="exportReport" />
         </div>
       </template>
 
-      <!-- Empty State -->
-      <div v-if="!reportGenerated" class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
-        <i class="pi pi-inbox text-4xl text-slate-300" />
-        <p class="mt-4 text-slate-600">
-          {{ t('preschoolAttendanceReportPage.emptyState') || 'Select filters and click Generate Report to view attendance data' }}
-        </p>
+      <!-- Empty State - Enhanced -->
+      <div v-if="!reportGenerated" class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+        <div class="mx-auto w-full max-w-sm">
+          <div class="mx-auto w-20 rounded-full bg-slate-200 p-4 text-center">
+            <i class="pi pi-chart-bar text-3xl text-slate-400" />
+          </div>
+          <h3 class="mt-4 text-lg font-semibold text-slate-900">
+            {{ t('preschoolAttendanceReportPage.noReport') || 'No Report Generated' }}
+          </h3>
+          <p class="mt-2 text-slate-600">
+            {{ t('preschoolAttendanceReportPage.emptyState') || 'Configure your filters above and click Generate Report to view attendance data and statistics.' }}
+          </p>
+          <div class="mt-6">
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              rounded="xl"
+              @click="scrollToFilters"
+              class="inline-flex items-center gap-2"
+            >
+              <i class="pi pi-arrow-up" />
+              {{ t('preschoolAttendanceReportPage.configureReport') || 'Configure Report' }}
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   </MainLayout>
