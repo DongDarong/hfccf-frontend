@@ -91,6 +91,7 @@ export default {
     trainingSchedule: 'Training Schedule',
     forms: 'Forms',
     reports: 'Reports',
+    grades: 'Grade Entry',
     auditLogs: 'Audit Logs',
     classroomResources: 'Classroom Resources',
     healthy: 'Health',

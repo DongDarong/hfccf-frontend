@@ -91,6 +91,7 @@ export default {
     trainingSchedule: 'កាលវិភាគបណ្តុះបណ្តាល',
     forms: 'ទម្រង់',
     reports: 'របាយការណ៍',
+    grades: 'ការបញ្ចូលពិន្ទុ',
     auditLogs: 'កំណត់ហេតុសវនកម្ម',
     classroomResources: 'ធនធានថ្នាក់រៀន',
     healthy: 'សុខភាព',

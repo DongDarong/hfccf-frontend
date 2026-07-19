@@ -91,6 +91,13 @@
           "badgeKey": "nav.badges.staff"
         },
         {
+          "id": "preschool-grades",
+          "routeName": "dashboard-preschool-admin-grades",
+          "labelKey": "nav.items.grades",
+          "icon": "reports",
+          "badgeKey": "nav.badges.staff"
+        },
+        {
           "id": "preschool-settings",
           "routeName": "dashboard-preschool-admin-settings",
           "labelKey": "nav.items.preschoolSettings",

@@ -511,6 +511,16 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/preschool/grades',
+    alias: '/module/preschool-admin/grades',
+    name: 'dashboard-preschool-admin-grades',
+    component: () => import('@/modules/preschool/admin/pages/grades/GradeEntry.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/reports/audit',
     name: 'dashboard-preschool-admin-lifecycle-audit',
     component: () => import('@/modules/preschool/admin/pages/reports/LifecycleAudit.vue'),
