@@ -57,6 +57,12 @@ const resolvedEmptyText = computed(() =>
       </div>
     </template>
 
+    <Column field="rowNumber" :header="t('sportTournament.list.table.number')">
+      <template #body="{ data }">
+        <span class="text-sm font-semibold text-surface-700">{{ data.rowNumber }}</span>
+      </template>
+    </Column>
+
     <Column :header="t('sportTournament.list.table.name')" field="name" sortable>
       <template #body="{ data }">
         <div class="min-w-0">
@@ -145,12 +151,13 @@ const resolvedEmptyText = computed(() =>
 
 @media (min-width: 768px) {
   .tournament-table :deep(.p-datatable-table) { table-layout: fixed; }
-  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(1)) { width: 32%; }
-  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(2)) { width: 12%; }
-  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(3)) { width: 10%; }
-  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(4)) { width: 23%; }
-  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(5)) { width: 10%; }
-  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(6)) { width: 13%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(1)) { width: 7%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(2)) { width: 29%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(3)) { width: 12%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(4)) { width: 10%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(5)) { width: 21%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(6)) { width: 9%; }
+  .tournament-table :deep(.p-datatable-thead > tr > th:nth-child(7)) { width: 12%; }
 }
 </style>
 

@@ -5,6 +5,7 @@ import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import AttendanceHero from '@/modules/sport/admin/components/AttendanceHero.vue'
 import AttendanceToolbar from '@/modules/sport/admin/components/AttendanceToolbar.vue'
@@ -31,6 +32,8 @@ const selectedTeamId = ref('')
 const selectedDate = ref(new Date().toISOString().slice(0, 10))
 const teamOptions = ref([])
 const players = ref([])
+const currentPage = ref(1)
+const pageSize = 5
 const attendanceMap = ref({})
 const loading = ref(false)
 const teamsLoading = ref(false)
@@ -67,6 +70,8 @@ const statusOptions = computed(() => [
 ])
 
 const markedCount = computed(() => Object.values(attendanceMap.value).filter((entry) => entry.status).length)
+const totalPages = computed(() => Math.max(Math.ceil(players.value.length / pageSize), 1))
+const paginatedPlayers = computed(() => players.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
 const summary = computed(() => t('sportAdminPlayerAttendancePage.summary', { marked: markedCount.value, total: players.value.length }))
 const selectedTeamLabel = computed(() => teamOptions.value.find((option) => String(option.value) === String(selectedTeamId.value))?.label || t('sportAdminPlayerAttendancePage.placeholders.team'))
 const selectedDateLabel = computed(() => {
@@ -209,6 +214,7 @@ async function loadDay() {
     ])
 
     players.value = playersResponse.players || []
+    currentPage.value = 1
     attendanceMap.value = buildMap(players.value, attendanceResponse.items || [])
   } catch (error) {
     errorMessage.value = error?.message || t('sportAdminPlayerAttendancePage.messages.loadFailed')
@@ -334,7 +340,7 @@ onMounted(() => {
 
       <AttendanceTable
         v-else
-        :players="players"
+        :players="paginatedPlayers"
         :attendance-map="attendanceMap"
         :status-options="statusOptions"
         :summary="summary"
@@ -347,6 +353,9 @@ onMounted(() => {
         @clear-all="clearAll"
         @save="saveAll"
       />
+      <div v-if="selectedTeamId && totalPages > 1" class="flex justify-end">
+        <Pagination v-model="currentPage" :total-pages="totalPages" />
+      </div>
     </section>
   </MainLayout>
 </template>

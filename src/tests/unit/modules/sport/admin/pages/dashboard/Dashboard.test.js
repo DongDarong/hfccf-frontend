@@ -87,7 +87,24 @@ describe('Sport dashboard', () => {
     expect(fetchSportDashboard).toHaveBeenCalled()
     expect(fetchTournamentStandings).not.toHaveBeenCalled()
     expect(lowStockCard.value).toBe(7)
+    expect(cards.find((card) => card.title === 'Coach Requests')).toBeUndefined()
+    expect(wrapper.find('[data-test="banner"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('Sport Program Dashboard')
+  })
+
+  it('uses dashboard-provided standings without a duplicate standings request', async () => {
+    fetchSportDashboard.mockResolvedValueOnce({
+      summary: { teams: 1, players: 1, scheduledMatches: 0, lowStockItems: 0, coaches: 1 },
+      tournaments: [{ id: 'tournament-1', name: 'Active Cup', status: 'active', matchesCount: 2 }],
+      featuredTournament: { id: 'tournament-1', name: 'Active Cup', status: 'active', matchesCount: 2 },
+      standings: [{ rankPosition: 1, team: { name: 'Team A' }, points: 3 }],
+    })
+
+    const wrapper = mountDashboard('en')
+    await flushPromises()
+
+    expect(fetchTournamentStandings).not.toHaveBeenCalled()
+    expect(wrapper.find('[data-test="banner"]').exists()).toBe(true)
   })
 
   it('keeps Khmer labels available for the dashboard shell', async () => {

@@ -494,6 +494,16 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/preschool/reports/student-summary',
+    alias: '/module/preschool-admin/reports/student-summary',
+    name: 'dashboard-preschool-admin-reports-student-summary',
+    component: () => import('@/modules/preschool/admin/pages/reports/StudentSummaryReport.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN, ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/preschool/reports/attendance',
     alias: '/module/preschool-admin/reports/attendance',
     name: 'dashboard-preschool-admin-reports-attendance',
@@ -830,6 +840,15 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/assessments',
+    name: 'dashboard-preschool-teacher-assessments',
+    component: () => import('@/modules/preschool/teacher/pages/MonthlyAssessmentWorkflow.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
 
   // Assessment Module Routes
   defineAppRoute({
@@ -866,6 +885,27 @@ export const preschoolRoutes = [
     path: '/module/preschool-admin/assessments/settings',
     name: 'preschool-assessment-settings',
     component: () => import('@/modules/preschool/admin/pages/assessments/AssessmentSettingsPage.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+
+  // Monthly Assessment Review Routes (Admin)
+  defineAppRoute({
+    path: '/module/preschool-admin/monthly-assessments',
+    name: 'preschool-admin-monthly-assessments',
+    component: () => import('@/modules/preschool/admin/pages/MonthlyAssessmentReviewList.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
+
+  defineAppRoute({
+    path: '/module/preschool-admin/monthly-assessments/:submissionId',
+    name: 'preschool-admin-monthly-assessment-detail',
+    component: () => import('@/modules/preschool/admin/pages/MonthlyAssessmentReviewDetail.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],

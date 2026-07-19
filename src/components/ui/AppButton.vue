@@ -46,6 +46,10 @@ const props = defineProps({
     default: 'lg',
     validator: (value) => ['sm', 'md', 'lg', 'xl', 'full'].includes(value),
   },
+  badge: {
+    type: String,
+    default: undefined,
+  },
 })
 
 const emit = defineEmits(['click'])
@@ -254,6 +258,7 @@ function handleClick(event) {
     :type="type"
     :loading="loading"
     :disabled="disabled || loading"
+    :badge="badge"
     :pt="pt"
     :aria-busy="loading ? 'true' : undefined"
     @click="handleClick"

@@ -25,7 +25,6 @@ import {
   normalizeTournamentState,
 } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
 import { useTournamentCrudCatalog } from '@/modules/sport/tournament/composables/useTournamentCrudCatalog'
-import { createTournamentDraft } from '@/modules/sport/tournament/mocks/tournaments.mock'
 
 defineOptions({
   name: 'SportTournamentCreatePage',
@@ -36,7 +35,11 @@ const route = useRoute()
 const { t } = useLanguage()
 const { getTournamentById, loadTournament, createTournament, updateTournament, isLoading } = useTournamentCrudCatalog()
 
-const draftFactory = () => createTournamentDraft()
+const draftFactory = () => ({
+  id: '', name: '', season: '', sportType: 'football', description: '', logo: '', banner: '', location: '', organizer: '',
+  registrationOpenAt: '', registrationCloseAt: '', startAt: '', endAt: '', state: 'draft', registrationStatus: 'closed', visibility: 'private',
+  rules: {}, settings: {}, statistics: {}, teams: [],
+})
 const form = reactive(draftFactory())
 const tournamentId = computed(() => String(route.params.id || '').trim())
 const isEditMode = computed(() => route.name === 'dashboard-sport-admin-tournaments-edit')
@@ -398,7 +401,7 @@ onBeforeUnmount(() => {
               <p class="sport-tournament-form__description">{{ pageSubtitle }}</p>
             </div>
 
-            <div class="sport-tournament-form__summary-grid" aria-label="Tournament summary">
+            <div class="sport-tournament-form__summary-grid" :aria-label="t('sportTournament.create.summary')">
               <article
                 v-for="card in heroSummaryCards"
                 :key="card.label"

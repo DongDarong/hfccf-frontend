@@ -11,6 +11,7 @@ import khSport from '@/i18n/kh/sport/index.js'
 
 const routeState = reactive({ name: 'dashboard-sport-admin-equipment' })
 const toastAdd = vi.fn()
+const httpGet = vi.hoisted(() => vi.fn())
 
 const {
   approveSportEquipmentRequest,
@@ -43,6 +44,10 @@ vi.mock('primevue/usetoast', () => ({
 
 vi.mock('@/modules/sport/services/api/sportCoachTeamsApi', () => ({
   fetchCoachTeams,
+}))
+
+vi.mock('@/services/http', () => ({
+  default: { get: httpGet },
 }))
 
 vi.mock('@/modules/sport/services/sportApi', () => ({
@@ -172,6 +177,8 @@ describe('EquipmentManagement page', () => {
     expect(wrapper.text()).toContain('Inventory')
     expect(wrapper.text()).toContain('Requests')
     expect(wrapper.text()).toContain('Add Equipment')
+    expect(wrapper.vm.assignmentState).toBeDefined()
+    expect(wrapper.vm.assignmentState.fetchAssignments).toBeTypeOf('function')
 
     await wrapper.findAll('button').find((button) => button.text() === 'Requests')?.trigger('click')
     await flushPromises()
@@ -191,11 +198,109 @@ describe('EquipmentManagement page', () => {
     expect(wrapper.text()).toContain('Available Equipment')
     expect(wrapper.text()).toContain('My Requests')
     expect(wrapper.text()).not.toContain('Add Equipment')
+    expect(wrapper.vm.assignmentState).toBeDefined()
 
     await wrapper.findAll('button').find((button) => button.text() === 'My Requests')?.trigger('click')
     await flushPromises()
 
     expect(fetchCoachEquipmentRequests).toHaveBeenCalled()
+  })
+
+  it('loads the Admin Assignments tab and opens read-only detail', async () => {
+    httpGet
+      .mockResolvedValueOnce({
+        data: {
+          data: {
+            items: [{
+              id: 'assignment-1',
+              assignmentCode: 'EQUIP-ASGN-1',
+              equipmentName: 'Training Cones',
+              equipmentCode: 'EQ-001',
+              teamName: 'Team One',
+              coachName: 'Coach User',
+              assignedQuantity: 5,
+              returnedQuantity: 2,
+              damagedQuantity: 1,
+              missingQuantity: 0,
+              remainingQuantity: 2,
+              status: 'assigned',
+              assignedAt: '2026-07-18T08:00:00Z',
+              notes: '',
+            }],
+            pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: {
+            assignment: {
+              id: 'assignment-1',
+              assignmentCode: 'EQUIP-ASGN-1',
+              equipmentName: 'Training Cones',
+              equipmentCode: 'EQ-001',
+              teamName: 'Team One',
+              coachName: 'Coach User',
+              assignedQuantity: 5,
+              returnedQuantity: 2,
+              damagedQuantity: 1,
+              missingQuantity: 0,
+              remainingQuantity: 2,
+              status: 'returned',
+              assignedAt: '2026-07-18T08:00:00Z',
+              returnedAt: '2026-07-19T08:00:00Z',
+              notes: null,
+            },
+          },
+        },
+      })
+
+    const wrapper = mountPage('en')
+    await flushPromises()
+
+    await wrapper.findAll('button').find((button) => button.text() === 'Assignments')?.trigger('click')
+    await flushPromises()
+
+    expect(httpGet).toHaveBeenCalledWith('/sport/admin/equipment-assignments', expect.any(Object))
+    expect(wrapper.vm.assignmentState.assignments.value).toHaveLength(1)
+    expect(wrapper.vm.assignmentState.assignments.value[0].remainingQuantity).toBe(2)
+
+    await wrapper.vm.openAssignmentDetail(wrapper.vm.assignmentState.assignments.value[0])
+    await flushPromises()
+
+    expect(httpGet).toHaveBeenCalledWith('/sport/admin/equipment-assignments/assignment-1', expect.any(Object))
+    expect(wrapper.text()).toContain('No notes available.')
+    expect(wrapper.text()).not.toContain('Edit Assignment')
+  })
+
+  it('loads Coach My Assignments through the Coach endpoint without mutation actions', async () => {
+    httpGet.mockResolvedValueOnce({
+      data: { data: { items: [], pagination: { page: 1, perPage: 10, total: 0, totalPages: 1 } } },
+    })
+
+    routeState.name = 'dashboard-sport-coach-equipment'
+    const wrapper = mountPage('en')
+    await flushPromises()
+
+    await wrapper.findAll('button').find((button) => button.text() === 'My Assignments')?.trigger('click')
+    await flushPromises()
+
+    expect(httpGet).toHaveBeenCalledWith('/sport/coach/equipment/assignments', expect.any(Object))
+    expect(wrapper.text()).toContain('No assignments found.')
+    expect(wrapper.text()).not.toContain('Issue')
+    expect(wrapper.text()).not.toContain('Return')
+    expect(wrapper.text()).not.toContain('Approve')
+  })
+
+  it('renders the localized assignment load error', async () => {
+    httpGet.mockRejectedValueOnce(new Error('Assignment API unavailable'))
+
+    const wrapper = mountPage('en')
+    await flushPromises()
+    await wrapper.findAll('button').find((button) => button.text() === 'Assignments')?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Assignment API unavailable')
   })
 
   it('renders Khmer labels without raw translation keys', async () => {

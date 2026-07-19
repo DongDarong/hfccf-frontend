@@ -6,6 +6,8 @@ import {
   normalizeEquipmentRequestListResponse,
   normalizeEquipmentItemRow,
   normalizeEquipmentRequestRow,
+  normalizeEquipmentAssignmentListResponse,
+  normalizeEquipmentAssignmentRow,
   unwrapApiData,
 } from './sportApiUtils'
 
@@ -168,4 +170,67 @@ export async function createCoachEquipmentRequest(payload = {}, options = {}) {
   const response = await http.post('/sport/coach/equipment/requests', buildFormData(payload, options))
   const data = unwrapApiData(response) || {}
   return normalizeEquipmentRequestRow(data.request || data)
+}
+
+function buildAssignmentQuery(options = {}) {
+  return buildQueryParams({
+    page: options.page ?? 1,
+    per_page: options.perPage ?? 10,
+    search: options.search || '',
+    equipment_item_id: options.equipmentItemId || '',
+    team_id: options.teamId || '',
+    coach_user_id: options.coachUserId || '',
+    status: options.status || '',
+    sort_by: options.sortBy || '',
+    sort_direction: options.sortDirection || '',
+  })
+}
+
+function assignmentListOptions(options = {}) {
+  return {
+    params: buildAssignmentQuery(options),
+    signal: options.signal,
+  }
+}
+
+export async function fetchEquipmentAssignments(options = {}) {
+  const response = await http.get('/sport/admin/equipment-assignments', assignmentListOptions(options))
+  return normalizeEquipmentAssignmentListResponse(response, options.page ?? 1, options.perPage ?? 10)
+}
+
+export async function fetchEquipmentAssignment(id, options = {}) {
+  const response = await http.get(`/sport/admin/equipment-assignments/${encodeURIComponent(id)}`, {
+    signal: options.signal,
+  })
+  const payload = unwrapApiData(response) || {}
+  return normalizeEquipmentAssignmentRow(payload.assignment || payload)
+}
+
+export async function fetchEquipmentItemAssignments(equipmentItemId, options = {}) {
+  const response = await http.get(
+    `/sport/admin/equipment/${encodeURIComponent(equipmentItemId)}/assignments`,
+    assignmentListOptions({ ...options, equipmentItemId: undefined }),
+  )
+  return normalizeEquipmentAssignmentListResponse(response, options.page ?? 1, options.perPage ?? 10)
+}
+
+export async function fetchTeamEquipmentAssignments(teamId, options = {}) {
+  const response = await http.get(
+    `/sport/admin/teams/${encodeURIComponent(teamId)}/equipment-assignments`,
+    assignmentListOptions({ ...options, teamId: undefined }),
+  )
+  return normalizeEquipmentAssignmentListResponse(response, options.page ?? 1, options.perPage ?? 10)
+}
+
+export async function fetchCoachEquipmentAssignments(options = {}) {
+  const response = await http.get('/sport/coach/equipment/assignments', assignmentListOptions(options))
+  return normalizeEquipmentAssignmentListResponse(response, options.page ?? 1, options.perPage ?? 10)
+}
+
+export async function fetchCoachEquipmentAssignment(id, options = {}) {
+  const response = await http.get(`/sport/coach/equipment/assignments/${encodeURIComponent(id)}`, {
+    signal: options.signal,
+  })
+  const payload = unwrapApiData(response) || {}
+  return normalizeEquipmentAssignmentRow(payload.assignment || payload)
 }

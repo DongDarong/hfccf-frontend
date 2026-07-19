@@ -114,13 +114,13 @@ function handleGoBack() {
 .att-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.9rem;
+  gap: 0.75rem;
   align-items: end;
-  padding: 1rem 1.15rem;
-  border-radius: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 1.2rem;
   border: 1px solid #dce6f2;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
-  box-shadow: 0 20px 54px -42px rgba(15, 23, 42, 0.45);
+  box-shadow: 0 18px 48px -40px rgba(15, 23, 42, 0.4);
 }
 
 .att-toolbar__field {

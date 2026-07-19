@@ -20,6 +20,7 @@ import StatusBadge from '@/components/badges/StatusBadge.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { getApiErrorMessage } from '@/services/api'
 import { fetchCoachTeams } from '@/modules/sport/services/api/sportCoachTeamsApi'
+import { useSportEquipmentAssignments } from '@/modules/sport/composables/useSportEquipmentAssignments'
 import {
   approveSportEquipmentRequest,
   createCoachEquipmentRequest,
@@ -45,15 +46,20 @@ const { t, language } = useLanguage()
 const isCoachRoute = computed(() => route.name === 'dashboard-sport-coach-equipment')
 const isAdminRoute = computed(() => route.name === 'dashboard-sport-admin-equipment')
 const isKh = computed(() => language.value === 'KH')
+const assignmentState = useSportEquipmentAssignments({
+  role: computed(() => (isCoachRoute.value ? 'coach' : 'admin')),
+})
 
 const tabs = computed(() => (isCoachRoute.value
   ? [
       { id: 'available', label: t('sportEquipment.tabs.available') },
       { id: 'my-requests', label: t('sportEquipment.tabs.myRequests') },
+      { id: 'my-assignments', label: t('sportEquipment.tabs.myAssignments') },
     ]
   : [
       { id: 'inventory', label: t('sportEquipment.tabs.inventory') },
       { id: 'requests', label: t('sportEquipment.tabs.requests') },
+      { id: 'assignments', label: t('sportEquipment.tabs.assignments') },
     ]))
 
 const pageTitle = computed(() => (isCoachRoute.value ? t('sportEquipment.titles.coach') : t('sportEquipment.titles.admin')))
@@ -62,7 +68,7 @@ const pageSubtitle = computed(() => (isCoachRoute.value ? t('sportEquipment.subt
 function createPagination() {
   return {
     page: 1,
-    perPage: 10,
+    perPage: 5,
     total: 0,
     totalPages: 1,
   }
@@ -158,11 +164,30 @@ const coachRequestSearch = ref('')
 const coachRequestStatusFilter = ref('')
 const coachRequestPage = ref(1)
 
+const assignmentItems = assignmentState.assignments
+const selectedAssignment = assignmentState.selectedAssignment
+const assignmentPagination = assignmentState.pagination
+const assignmentLoading = assignmentState.loading
+const assignmentDetailLoading = assignmentState.detailLoading
+const assignmentSearch = ref('')
+const assignmentEquipmentItemFilter = ref('')
+const assignmentTeamFilter = ref('')
+const assignmentStatusFilter = ref('')
+const assignmentPage = ref(1)
+const assignmentError = ref('')
+const assignmentDetailError = ref('')
+const assignmentDetailDialogVisible = ref(false)
+
 const coachTeams = ref([])
 const coachTeamsLoading = ref(false)
 const coachTeamsError = ref('')
 
 const activeTab = ref(isCoachRoute.value ? 'available' : 'inventory')
+
+defineExpose({
+  assignmentState,
+  loadEquipmentAssignments: assignmentState.fetchAssignments,
+})
 
 const equipmentDialogVisible = ref(false)
 const equipmentDialogMode = ref('create')
@@ -209,6 +234,8 @@ const requestActionApprovedQuantityError = computed(() => (
 ))
 
 const currentTableError = computed(() => {
+  if (activeTab.value === 'assignments' || activeTab.value === 'my-assignments') return assignmentError.value
+
   if (isCoachRoute.value) {
     return activeTab.value === 'available' ? coachItemError.value : coachRequestError.value
   }
@@ -217,6 +244,8 @@ const currentTableError = computed(() => {
 })
 
 const currentTableLoading = computed(() => {
+  if (activeTab.value === 'assignments' || activeTab.value === 'my-assignments') return assignmentLoading.value
+
   if (isCoachRoute.value) {
     return activeTab.value === 'available' ? coachItemLoading.value : coachRequestLoading.value
   }
@@ -233,6 +262,8 @@ const currentSummary = computed(() => {
 })
 
 const currentSummaryCards = computed(() => {
+  if (activeTab.value === 'assignments' || activeTab.value === 'my-assignments') return []
+
   if (isCoachRoute.value && activeTab.value === 'available') {
     return [
       { id: 'active', title: t('sportEquipment.summary.activeItems'), value: currentSummary.value.totalActiveItems ?? 0, label: t('sportEquipment.summary.activeItems'), status: 'info' },
@@ -295,6 +326,41 @@ const coachTeamOptions = computed(() => coachTeams.value.map((team) => ({
   value: String(team.id),
 })))
 
+const assignmentEquipmentOptions = computed(() => {
+  const source = [...equipmentItems.value, ...assignmentItems.value.map((assignment) => assignment.equipmentItem).filter(Boolean)]
+  const unique = new Map()
+
+  source.forEach((item) => {
+    if (!item?.id) return
+    unique.set(String(item.id), {
+      label: item.name || item.equipmentCode || String(item.id),
+      value: String(item.id),
+    })
+  })
+
+  return [{ label: t('common.all'), value: '' }, ...unique.values()]
+})
+
+const assignmentTeamOptions = computed(() => {
+  const unique = new Map()
+
+  assignmentItems.value.forEach((assignment) => {
+    if (!assignment?.teamId) return
+    unique.set(String(assignment.teamId), {
+      label: assignment.teamName || assignment.team?.name || String(assignment.teamId),
+      value: String(assignment.teamId),
+    })
+  })
+
+  return [{ label: t('common.all'), value: '' }, ...unique.values()]
+})
+
+const assignmentStatusOptions = computed(() => [
+  { label: t('common.all'), value: '' },
+  { label: t('sportEquipment.statuses.assigned'), value: 'assigned' },
+  { label: t('sportEquipment.statuses.returned'), value: 'returned' },
+])
+
 const equipmentCategoryOptions = computed(() => {
   const source = isCoachRoute.value ? coachItems.value : equipmentItems.value
   const categories = Array.from(new Set(source.map((item) => String(item.category || '').trim()).filter(Boolean)))
@@ -317,7 +383,7 @@ const coachCategoryOptions = computed(() => {
 function statusTone(status) {
   const value = String(status || '').toLowerCase()
 
-  if (['active', 'approved', 'issued', 'returned', 'available'].includes(value)) return 'success'
+  if (['active', 'approved', 'issued', 'returned', 'available', 'assigned'].includes(value)) return 'success'
   if (['pending', 'low', 'watch'].includes(value)) return 'warning'
   if (['rejected', 'inactive', 'out', 'out_of_stock'].includes(value)) return 'danger'
   return 'info'
@@ -562,10 +628,57 @@ async function loadCoachRequests() {
   }
 }
 
+async function loadAssignments() {
+  assignmentLoading.value = true
+  assignmentError.value = ''
+
+  try {
+    await assignmentState.fetchAssignments({
+      page: assignmentPage.value,
+      perPage: assignmentPagination.value.perPage,
+      search: assignmentSearch.value,
+      equipmentItemId: assignmentEquipmentItemFilter.value,
+      teamId: assignmentTeamFilter.value,
+      status: assignmentStatusFilter.value,
+    })
+  } catch (error) {
+    assignmentError.value = getApiErrorMessage(error, t('sportEquipment.messages.assignmentLoadError'))
+  } finally {
+    assignmentLoading.value = false
+  }
+}
+
+async function searchAssignments() {
+  assignmentPage.value = 1
+  await loadAssignments()
+}
+
+async function openAssignmentDetail(assignment) {
+  assignmentDetailDialogVisible.value = true
+  assignmentDetailError.value = ''
+
+  try {
+    await assignmentState.fetchAssignment(assignment.id)
+  } catch (error) {
+    assignmentDetailError.value = getApiErrorMessage(error, t('sportEquipment.messages.assignmentDetailLoadError'))
+  }
+}
+
+function closeAssignmentDetail() {
+  assignmentDetailDialogVisible.value = false
+  assignmentDetailError.value = ''
+  assignmentState.clearSelectedAssignment()
+}
+
 async function loadCurrentTab() {
   if (isCoachRoute.value) {
     if (activeTab.value === 'available') {
       await loadCoachEquipment()
+      return
+    }
+
+    if (activeTab.value === 'my-assignments') {
+      await loadAssignments()
       return
     }
 
@@ -578,6 +691,11 @@ async function loadCurrentTab() {
     return
   }
 
+  if (activeTab.value === 'assignments') {
+    await loadAssignments()
+    return
+  }
+
   await loadEquipmentRequests()
 }
 
@@ -587,6 +705,13 @@ async function initializePage() {
   equipmentRequestPage.value = 1
   coachItemPage.value = 1
   coachRequestPage.value = 1
+  assignmentPage.value = 1
+  assignmentSearch.value = ''
+  assignmentEquipmentItemFilter.value = ''
+  assignmentTeamFilter.value = ''
+  assignmentStatusFilter.value = ''
+  assignmentError.value = ''
+  assignmentState.resetFilters()
 
   if (isCoachRoute.value) {
     await loadCoachTeams()
@@ -934,6 +1059,63 @@ watch(
         </template>
       </Card>
 
+      <Card v-else-if="isAdminRoute && activeTab === 'assignments'" class="sport-equipment-card">
+        <template #title>{{ t('sportEquipment.tabs.assignments') }}</template>
+        <template #content>
+          <div class="sport-equipment-page__filters">
+            <InputText v-model="assignmentSearch" :placeholder="t('sportEquipment.fields.assignment')" class="sport-equipment-page__field" />
+            <Select v-model="assignmentEquipmentItemFilter" :options="assignmentEquipmentOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.name')" class="sport-equipment-page__field" />
+            <Select v-model="assignmentTeamFilter" :options="assignmentTeamOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.team')" class="sport-equipment-page__field" />
+            <Select v-model="assignmentStatusFilter" :options="assignmentStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
+            <Button :label="t('sportEquipment.buttons.search')" @click="searchAssignments" />
+          </div>
+
+          <div v-if="!assignmentLoading && !assignmentError && !assignmentItems.length" class="sport-equipment-page__empty">
+            {{ t('sportEquipment.messages.noAssignments') }}
+          </div>
+
+          <DataTable v-else-if="!assignmentError" :value="assignmentItems" data-key="id" striped-rows :loading="assignmentLoading">
+            <Column :header="t('sportEquipment.fields.assignment')">
+              <template #body="{ data }">
+                <div class="font-medium text-slate-900">{{ data.assignmentCode }}</div>
+              </template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.name')">
+              <template #body="{ data }">
+                <div class="font-medium text-slate-900">{{ data.equipmentName || data.equipmentItemId }}</div>
+                <div class="text-xs text-slate-500">{{ data.equipmentCode }}</div>
+              </template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.team')">
+              <template #body="{ data }">{{ data.teamName || data.teamId }}</template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.coach')">
+              <template #body="{ data }">{{ data.coachName || data.coachUserId }}</template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.assignedQuantity')" field="assignedQuantity" />
+            <Column :header="t('sportEquipment.fields.returnedQuantity')" field="returnedQuantity" />
+            <Column :header="t('sportEquipment.fields.remainingQuantity')" field="remainingQuantity" />
+            <Column :header="t('sportEquipment.fields.status')">
+              <template #body="{ data }">
+                <StatusBadge :status="statusTone(data.status)" :label="t(`sportEquipment.statuses.${String(data.status || '').toLowerCase()}`)" size="sm" />
+              </template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.assignedAt')">
+              <template #body="{ data }">{{ formatDate(data.assignedAt) }}</template>
+            </Column>
+            <Column :header="t('common.table.actions')">
+              <template #body="{ data }">
+                <Button size="small" text :label="t('common.actions.view')" @click="openAssignmentDetail(data)" />
+              </template>
+            </Column>
+          </DataTable>
+
+          <div v-if="assignmentPagination.totalPages > 1" class="mt-4">
+            <Pagination v-model="assignmentPage" :total-pages="assignmentPagination.totalPages" @change="loadAssignments" />
+          </div>
+        </template>
+      </Card>
+
       <Card v-else-if="isCoachRoute && activeTab === 'available'" class="sport-equipment-card">
         <template #title>{{ t('sportEquipment.tabs.available') }}</template>
         <template #content>
@@ -1047,7 +1229,132 @@ watch(
           </div>
         </template>
       </Card>
+
+      <Card v-else-if="isCoachRoute && activeTab === 'my-assignments'" class="sport-equipment-card">
+        <template #title>{{ t('sportEquipment.tabs.myAssignments') }}</template>
+        <template #content>
+          <div class="sport-equipment-page__filters">
+            <InputText v-model="assignmentSearch" :placeholder="t('sportEquipment.fields.assignment')" class="sport-equipment-page__field" />
+            <Select v-model="assignmentStatusFilter" :options="assignmentStatusOptions" option-label="label" option-value="value" :placeholder="t('sportEquipment.fields.status')" class="sport-equipment-page__field" />
+            <Button :label="t('sportEquipment.buttons.search')" @click="searchAssignments" />
+          </div>
+
+          <div v-if="!assignmentLoading && !assignmentError && !assignmentItems.length" class="sport-equipment-page__empty">
+            {{ t('sportEquipment.messages.noAssignments') }}
+          </div>
+
+          <DataTable v-else-if="!assignmentError" :value="assignmentItems" data-key="id" striped-rows :loading="assignmentLoading">
+            <Column :header="t('sportEquipment.fields.assignment')" field="assignmentCode" />
+            <Column :header="t('sportEquipment.fields.name')">
+              <template #body="{ data }">{{ data.equipmentName || data.equipmentItemId }}</template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.team')">
+              <template #body="{ data }">{{ data.teamName || data.teamId }}</template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.assignedQuantity')" field="assignedQuantity" />
+            <Column :header="t('sportEquipment.fields.returnedQuantity')" field="returnedQuantity" />
+            <Column :header="t('sportEquipment.fields.remainingQuantity')" field="remainingQuantity" />
+            <Column :header="t('sportEquipment.fields.status')">
+              <template #body="{ data }">
+                <StatusBadge :status="statusTone(data.status)" :label="t(`sportEquipment.statuses.${String(data.status || '').toLowerCase()}`)" size="sm" />
+              </template>
+            </Column>
+            <Column :header="t('sportEquipment.fields.assignedAt')">
+              <template #body="{ data }">{{ formatDate(data.assignedAt) }}</template>
+            </Column>
+            <Column :header="t('common.table.actions')">
+              <template #body="{ data }">
+                <Button size="small" text :label="t('common.actions.view')" @click="openAssignmentDetail(data)" />
+              </template>
+            </Column>
+          </DataTable>
+
+          <div v-if="assignmentPagination.totalPages > 1" class="mt-4">
+            <Pagination v-model="assignmentPage" :total-pages="assignmentPagination.totalPages" @change="loadAssignments" />
+          </div>
+        </template>
+      </Card>
     </section>
+
+    <Dialog
+      v-model:visible="assignmentDetailDialogVisible"
+      modal
+      :header="t('sportEquipment.messages.assignmentDetails')"
+      class="sport-equipment-dialog"
+      :style="{ width: 'min(42rem, 94vw)' }"
+      @hide="closeAssignmentDetail"
+    >
+      <div class="space-y-4">
+        <p v-if="assignmentDetailError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ assignmentDetailError }}
+        </p>
+
+        <p v-if="assignmentDetailLoading" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          {{ t('common.loading') }}
+        </p>
+
+        <p v-else-if="!selectedAssignment" class="sport-equipment-page__empty">
+          {{ t('sportEquipment.messages.noAssignmentSelected') }}
+        </p>
+
+        <template v-else>
+          <section class="sport-equipment-detail__section">
+            <h3>{{ t('sportEquipment.detail.general') }}</h3>
+            <div class="sport-equipment-detail__grid">
+              <div><span>{{ t('sportEquipment.fields.assignment') }}</span><strong>{{ selectedAssignment.assignmentCode || '—' }}</strong></div>
+              <div><span>{{ t('sportEquipment.fields.status') }}</span><StatusBadge :status="statusTone(selectedAssignment.status)" :label="t(`sportEquipment.statuses.${String(selectedAssignment.status || '').toLowerCase()}`)" size="sm" /></div>
+              <div><span>{{ t('sportEquipment.fields.assignedAt') }}</span><strong>{{ formatDate(selectedAssignment.assignedAt) || '—' }}</strong></div>
+              <div v-if="selectedAssignment.expectedReturnAt"><span>{{ t('sportEquipment.fields.expectedReturnAt') }}</span><strong>{{ formatDate(selectedAssignment.expectedReturnAt) }}</strong></div>
+              <div v-if="selectedAssignment.returnedAt"><span>{{ t('sportEquipment.fields.returnedAt') }}</span><strong>{{ formatDate(selectedAssignment.returnedAt) }}</strong></div>
+            </div>
+          </section>
+
+          <section class="sport-equipment-detail__section">
+            <h3>{{ t('sportEquipment.detail.equipment') }}</h3>
+            <div class="sport-equipment-detail__grid">
+              <div><span>{{ t('sportEquipment.fields.name') }}</span><strong>{{ selectedAssignment.equipmentName || '—' }}</strong></div>
+              <div><span>{{ t('sportEquipment.fields.equipmentCode') }}</span><strong>{{ selectedAssignment.equipmentCode || '—' }}</strong></div>
+              <div><span>{{ t('sportEquipment.fields.assignedQuantity') }}</span><strong>{{ selectedAssignment.assignedQuantity }}</strong></div>
+            </div>
+          </section>
+
+          <section class="sport-equipment-detail__section">
+            <h3>{{ t('sportEquipment.detail.team') }}</h3>
+            <div class="sport-equipment-detail__grid">
+              <div><span>{{ t('sportEquipment.fields.team') }}</span><strong>{{ selectedAssignment.teamName || selectedAssignment.teamId || '—' }}</strong></div>
+            </div>
+          </section>
+
+          <section class="sport-equipment-detail__section">
+            <h3>{{ t('sportEquipment.detail.coach') }}</h3>
+            <div class="sport-equipment-detail__grid">
+              <div><span>{{ t('sportEquipment.fields.responsibleCoach') }}</span><strong>{{ selectedAssignment.coachName || selectedAssignment.coachUserId || '—' }}</strong></div>
+            </div>
+          </section>
+
+          <section class="sport-equipment-detail__section">
+            <h3>{{ t('sportEquipment.detail.returnSummary') }}</h3>
+            <div class="sport-equipment-detail__grid sport-equipment-detail__grid--four">
+              <div><span>{{ t('sportEquipment.fields.returnedQuantity') }}</span><strong>{{ selectedAssignment.returnedQuantity }}</strong></div>
+              <div><span>{{ t('sportEquipment.fields.damagedQuantity') }}</span><strong>{{ selectedAssignment.damagedQuantity }}</strong></div>
+              <div><span>{{ t('sportEquipment.fields.missingQuantity') }}</span><strong>{{ selectedAssignment.missingQuantity }}</strong></div>
+              <div><span>{{ t('sportEquipment.fields.remainingQuantity') }}</span><strong>{{ selectedAssignment.remainingQuantity }}</strong></div>
+            </div>
+          </section>
+
+          <section class="sport-equipment-detail__section">
+            <h3>{{ t('sportEquipment.detail.notes') }}</h3>
+            <p class="sport-equipment-detail__notes">{{ selectedAssignment.notes || t('sportEquipment.messages.noNotes') }}</p>
+          </section>
+        </template>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button text :label="t('sportEquipment.buttons.cancel')" @click="closeAssignmentDetail" />
+        </div>
+      </template>
+    </Dialog>
 
     <Dialog
       v-model:visible="equipmentDialogVisible"
@@ -1509,6 +1816,56 @@ watch(
   margin-bottom: 0.9rem;
 }
 
+.sport-equipment-detail__section {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.sport-equipment-detail__section h3 {
+  margin: 0 0 0.8rem;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.sport-equipment-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.sport-equipment-detail__grid--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sport-equipment-detail__grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.sport-equipment-detail__grid span {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.sport-equipment-detail__grid strong {
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sport-equipment-detail__notes {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 768px) {
   .sport-equipment-form__hero {
     grid-template-columns: 1fr;
@@ -1516,6 +1873,11 @@ watch(
 
   .sport-equipment-form__grid--two,
   .sport-equipment-form__grid--three {
+    grid-template-columns: 1fr;
+  }
+
+  .sport-equipment-detail__grid,
+  .sport-equipment-detail__grid--four {
     grid-template-columns: 1fr;
   }
 }

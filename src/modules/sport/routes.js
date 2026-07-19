@@ -355,4 +355,13 @@ export const sportRoutes = [
       scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
+  defineAppRoute({
+    path: '/module/sport-admin/reports',
+    name: 'dashboard-sport-admin-reports',
+    component: () => import('@/modules/sport/admin/pages/reports/SportAdminReports.vue'),
+    access: {
+      domains: [DOMAINS.SPORT],
+      scopes: [ACCESS_SCOPES.ADMIN],
+    },
+  }),
 ]

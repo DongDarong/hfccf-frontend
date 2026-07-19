@@ -9,6 +9,7 @@ import AlertError from '@/components/alerts/AlertError.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import TournamentQuickActions from '@/modules/sport/tournament/components/shared/TournamentQuickActions.vue'
 import TournamentSettingsSummary from '@/modules/sport/tournament/components/detail/TournamentSettingsSummary.vue'
+import TournamentTeamManagement from '@/modules/sport/tournament/components/detail/TournamentTeamManagement.vue'
 import TournamentStateTimeline from '@/modules/sport/tournament/components/shared/TournamentStateTimeline.vue'
 import TournamentStatusBadge from '@/modules/sport/tournament/components/shared/TournamentStatusBadge.vue'
 import TournamentStatisticsPanel from '@/modules/sport/tournament/components/statistics/TournamentStatisticsPanel.vue'
@@ -18,6 +19,7 @@ import {
 } from '@/modules/sport/tournament/composables/useTournamentStateMachine'
 import { useTournamentCrudCatalog } from '@/modules/sport/tournament/composables/useTournamentCrudCatalog'
 import { useTournamentStatistics } from '@/modules/sport/tournament/composables/useTournamentStatistics'
+import { useTournamentTeams } from '@/modules/sport/tournament/composables/useTournamentTeams'
 
 defineOptions({
   name: 'SportTournamentDetailPage',
@@ -26,7 +28,7 @@ defineOptions({
 const router = useRouter()
 const route = useRoute()
 const { t } = useLanguage()
-const { getTournamentById, loadTournament, transitionTournament, isLoading } = useTournamentCrudCatalog()
+const { getTournamentById, loadTournament, updateTournament, isLoading } = useTournamentCrudCatalog()
 
 const showError = ref(false)
 const errorMessage = ref('')
@@ -38,6 +40,7 @@ const stateMeta = computed(() => getTournamentStateMeta(tournament.value?.state)
 const canEdit = computed(() => Boolean(tournament.value?.id) && canEditTournamentConfiguration(tournament.value.state))
 const canUseKnockout = computed(() => Boolean(tournament.value?.rules?.knockoutEnabled ?? true))
 const tournamentStatistics = useTournamentStatistics(tournament)
+const tournamentTeams = useTournamentTeams(tournament, { reload: () => loadTournament(tournamentId.value) })
 const loadingTournament = computed(() => isLoading.value && !hasLoadedTournament.value)
 
 const pageTitle = computed(() => tournament.value?.name || t('sportTournament.detail.notFoundTitle'))
@@ -129,10 +132,10 @@ function goToKnockout() {
   router.push({ name: 'dashboard-sport-admin-tournaments-knockout', params: { id } })
 }
 
-function onWorkflowAction(action) {
+async function onWorkflowAction(action) {
   if (!tournament.value?.id || !action?.isAllowed || action.disabled) return
 
-  const updated = transitionTournament(tournament.value.id, action.nextState)
+  const updated = await updateTournament(tournament.value.id, { status: action.nextState })
   if (!updated?.id) {
     errorMessage.value = t('sportTournament.create.validation.saveFailed')
     showError.value = true
@@ -148,6 +151,8 @@ onMounted(async () => {
 
   try {
     await loadTournament(tournamentId.value)
+    await tournamentStatistics.loadStatistics()
+    await tournamentTeams.loadTeams()
   } catch {
     errorMessage.value = t('sportTournament.create.validation.saveFailed')
     showError.value = true
@@ -155,6 +160,14 @@ onMounted(async () => {
     hasLoadedTournament.value = true
   }
 })
+
+async function handleAttachTeam(teamId) {
+  try { await tournamentTeams.attachTeam(teamId) } catch { showError.value = true; errorMessage.value = tournamentTeams.error.value }
+}
+
+async function handleRemoveTeam(teamId) {
+  try { await tournamentTeams.removeTeam(teamId) } catch { showError.value = true; errorMessage.value = tournamentTeams.error.value }
+}
 </script>
 
 <template>
@@ -274,6 +287,15 @@ onMounted(async () => {
 
         <TournamentStatisticsPanel
           :statistics="tournamentStatistics.statistics"
+        />
+
+        <TournamentTeamManagement
+          :teams="tournamentTeams.attachedTeams"
+          :available-teams="tournamentTeams.selectableTeams"
+          :removing-team-id="tournamentTeams.removingTeamId"
+          :pending="tournamentTeams.isLoading || tournamentTeams.isAttaching || Boolean(tournamentTeams.removingTeamId)"
+          @attach="handleAttachTeam"
+          @remove="handleRemoveTeam"
         />
 
         <TournamentSettingsSummary :tournament="tournament" />

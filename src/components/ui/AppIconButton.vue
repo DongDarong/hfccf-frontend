@@ -43,6 +43,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  badge: {
+    type: [String, Number],
+    default: '',
+  },
 })
 
 const emit = defineEmits(['click'])
@@ -161,6 +165,7 @@ function handleClick(event) {
     :loading="loading"
     :disabled="disabled || loading"
     :active="active"
+    :badge="badge ? String(badge) : undefined"
     rounded="full"
     :class="rootClass"
     :aria-label="ariaLabel"

@@ -54,9 +54,20 @@ const emit = defineEmits(['click'])
 
 <style scoped>
 .att-status-btn {
-  min-width: 2.15rem;
-  font-size: 0.75rem;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.8rem;
   font-weight: 700;
+  transition: all 150ms ease-in-out;
 }
 
+.att-status-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.att-status-btn:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
 </style>

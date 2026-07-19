@@ -565,6 +565,120 @@ export function normalizeEquipmentRequestRow(row = {}) {
   }
 }
 
+function normalizeAssignmentRelation(value, fallback = {}) {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return {
+      id: '',
+      name: normalizeText(value),
+      fullName: normalizeText(value),
+      teamCode: '',
+      equipmentCode: '',
+      firstName: '',
+      lastName: '',
+      username: '',
+      email: '',
+    }
+  }
+
+  if (!value || typeof value !== 'object') return null
+
+  return {
+    id: value.id ?? fallback.id ?? '',
+    name: normalizeText(value.name || value.fullName || value.full_name || fallback.name),
+    fullName: normalizeText(value.fullName || value.full_name || value.name || fallback.fullName),
+    teamCode: normalizeText(value.teamCode || value.team_code || fallback.teamCode),
+    equipmentCode: normalizeText(value.equipmentCode || value.equipment_code || fallback.equipmentCode),
+    firstName: normalizeText(value.firstName || value.first_name || fallback.firstName),
+    lastName: normalizeText(value.lastName || value.last_name || fallback.lastName),
+    username: normalizeText(value.username || fallback.username),
+    email: normalizeText(value.email || fallback.email),
+  }
+}
+
+function normalizeAssignmentQuantity(value) {
+  const quantity = Number(value)
+  return Number.isFinite(quantity) ? quantity : 0
+}
+
+export function normalizeEquipmentAssignmentRow(row = {}) {
+  const itemValue = row.item ?? row.equipmentItem ?? row.equipment_item ?? null
+  const teamValue = row.team ?? null
+  const coachValue = row.coach ?? null
+  const assignedByValue = row.assignedBy ?? row.assigned_by ?? null
+  const returnedByValue = row.returnedBy ?? row.returned_by ?? null
+  const item = normalizeAssignmentRelation(itemValue)
+  const team = normalizeAssignmentRelation(teamValue)
+  const coach = normalizeAssignmentRelation(coachValue)
+  const assignedByUser = normalizeAssignmentRelation(assignedByValue)
+  const returnedByUser = normalizeAssignmentRelation(returnedByValue)
+  const normalizedItem = itemValue && typeof itemValue === 'object'
+    ? normalizeEquipmentItemRow(itemValue)
+    : item
+  const assignedQuantity = normalizeAssignmentQuantity(row.assignedQuantity ?? row.assigned_quantity)
+  const returnedQuantity = normalizeAssignmentQuantity(row.returnedQuantity ?? row.returned_quantity)
+  const damagedQuantity = normalizeAssignmentQuantity(row.damagedQuantity ?? row.damaged_quantity)
+  const missingQuantity = normalizeAssignmentQuantity(row.missingQuantity ?? row.missing_quantity)
+
+  return {
+    id: row.id ?? '',
+    assignmentCode: normalizeText(row.assignmentCode || row.assignment_code),
+    equipmentRequestId: row.equipmentRequestId ?? row.equipment_request_id ?? '',
+    equipmentItemId: row.equipmentItemId ?? row.equipment_item_id ?? item?.id ?? '',
+    equipmentItem: normalizedItem,
+    equipmentName: normalizeText(row.equipmentName || row.equipment_name || normalizedItem?.name || itemValue),
+    equipmentCode: normalizeText(row.equipmentCode || row.equipment_code || normalizedItem?.equipmentCode),
+    teamId: row.teamId ?? row.team_id ?? team?.id ?? '',
+    team,
+    teamName: normalizeText(row.teamName || row.team_name || team?.name || teamValue),
+    coachUserId: row.coachUserId ?? row.coach_user_id ?? coach?.id ?? '',
+    coach,
+    coachName: normalizeText(
+      row.coachName
+      || row.coach_name
+      || coach?.fullName
+      || coach?.name
+      || [coach?.firstName, coach?.lastName].filter(Boolean).join(' ')
+      || coachValue,
+    ),
+    assignedQuantity,
+    returnedQuantity,
+    damagedQuantity,
+    missingQuantity,
+    remainingQuantity: normalizeAssignmentQuantity(
+      row.remainingQuantity
+      ?? row.remaining_quantity
+      ?? assignedQuantity - returnedQuantity - damagedQuantity - missingQuantity,
+    ),
+    status: normalizeText(row.status || 'assigned'),
+    assignedAt: row.assignedAt || row.assigned_at || '',
+    expectedReturnAt: row.expectedReturnAt || row.expected_return_at || '',
+    returnedAt: row.returnedAt || row.returned_at || '',
+    assignedByUserId: row.assignedByUserId ?? row.assigned_by_user_id ?? assignedByUser?.id ?? '',
+    returnedByUserId: row.returnedByUserId ?? row.returned_by_user_id ?? returnedByUser?.id ?? '',
+    assignedByUser,
+    returnedByUser,
+    notes: normalizeText(row.notes),
+    request: row.request && typeof row.request === 'object' ? {
+      id: row.request.id ?? '',
+      requestCode: normalizeText(row.request.requestCode || row.request.request_code),
+      status: normalizeText(row.request.status),
+    } : null,
+    createdAt: row.createdAt || row.created_at || '',
+    updatedAt: row.updatedAt || row.updated_at || '',
+    deletedAt: row.deletedAt || row.deleted_at || '',
+    raw: row,
+  }
+}
+
+export function normalizeEquipmentAssignmentListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
+  const items = unwrapApiItems(response)
+
+  return {
+    items: items.map(normalizeEquipmentAssignmentRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
 export function normalizeCoachListResponse(response, fallbackPage = 1, fallbackPerPage = 10) {
   const items = unwrapApiItems(response)
 

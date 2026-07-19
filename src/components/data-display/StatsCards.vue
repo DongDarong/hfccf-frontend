@@ -217,7 +217,7 @@ function iconPath(status) {
     <!-- Cards / empty state -->
     <div
       v-else
-      class="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-3 max-sm:grid-cols-1 max-sm:gap-2.5"
+      class="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-2.5 max-sm:grid-cols-1 max-sm:gap-2"
     >
       <template v-if="hasCards">
         <article

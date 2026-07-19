@@ -31,8 +31,8 @@ defineProps({
     default: false,
   },
   badge: {
-    type: Number,
-    default: 0,
+    type: [String, Number],
+    default: '',
   },
   type: {
     type: String,

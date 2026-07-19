@@ -1,10 +1,11 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '@/components/buttons/Button.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import StatsCards from '@/components/data-display/StatsCards.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { TOURNAMENT_STATES } from '@/modules/sport/tournament/constants/tournamentStates'
 import TournamentListFilters from '@/modules/sport/tournament/components/list/TournamentListFilters.vue'
@@ -26,15 +27,12 @@ const { tournaments, getTournamentById, loadTournaments, isLoading } = useTourna
 const searchQuery = ref('')
 const seasonFilter = ref('')
 const stateFilter = ref('')
+const currentPage = ref(1)
+const pageSize = 5
 
 const pageTitle = computed(() => t('sportTournament.list.title'))
 const pageSubtitle = computed(() => t('sportTournament.list.subtitle'))
 const createButtonLabel = computed(() => t('sportTournament.list.createButton'))
-const resultSummary = computed(() => t('sportTournament.list.resultSummary', {
-  count: filteredTournaments.value.length,
-  total: tournaments.value.length,
-}))
-
 const sortedTournaments = computed(() =>
   [...tournaments.value].sort((left, right) => {
     const leftName = String(left?.name || '').toLowerCase()
@@ -82,6 +80,38 @@ const filteredTournaments = computed(() => {
 
     return matchesQuery
   })
+})
+
+const totalPages = computed(() => Math.max(Math.ceil(filteredTournaments.value.length / pageSize), 1))
+const paginatedTournaments = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+
+  return filteredTournaments.value.slice(start, start + pageSize).map((tournament, index) => ({
+    ...tournament,
+    rowNumber: start + index + 1,
+  }))
+})
+
+watch(
+  [searchQuery, seasonFilter, stateFilter],
+  () => {
+    currentPage.value = 1
+  },
+)
+
+watch(
+  () => filteredTournaments.value.length,
+  () => {
+    if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+  },
+)
+
+const resultSummary = computed(() => {
+  const total = filteredTournaments.value.length
+  const start = total ? (currentPage.value - 1) * pageSize + 1 : 0
+  const end = total ? Math.min(currentPage.value * pageSize, total) : 0
+
+  return t('sportTournament.list.resultSummary', { start, end, total })
 })
 
 const summaryCards = computed(() => [
@@ -189,12 +219,16 @@ function goToTournamentEdit(tournament) {
         </div>
 
         <TournamentTable
-          :tournaments="filteredTournaments"
+          :tournaments="paginatedTournaments"
           :loading="isLoading"
           :empty-text="t('sportTournament.list.empty')"
           @view="goToTournamentDetail"
           @edit="goToTournamentEdit"
         />
+
+        <div v-if="totalPages > 1" class="mt-4 flex justify-end">
+          <Pagination v-model="currentPage" :total-pages="totalPages" />
+        </div>
       </div>
     </section>
   </MainLayout>

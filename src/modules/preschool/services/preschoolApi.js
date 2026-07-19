@@ -1256,3 +1256,128 @@ export async function deleteClassroomResource(id) {
   await http.delete(`/preschool/classroom-resources/${encodeURIComponent(resourceId)}`)
   return true
 }
+
+// ── Monthly Assessment Submissions ────────────────────────────────────────────
+
+function normalizeMonthlySubmissionRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    academic_year_id: row.academic_year_id ?? '',
+    class_id: row.class_id ?? '',
+    assessment_category_id: row.assessment_category_id ?? '',
+    submission_month: row.submission_month || '',
+    status: normalizeText(row.status || 'draft'),
+    student_assessments: Array.isArray(row.student_assessments) ? row.student_assessments : [],
+    academicYear: row.academic_year || row.academicYear || null,
+    class: row.class || null,
+    category: row.assessment_category || row.category || null,
+    submitted_at: row.submitted_at || '',
+    submitted_by_user_id: row.submitted_by_user_id || '',
+    reviewed_at: row.reviewed_at || '',
+    reviewed_by_user_id: row.reviewed_by_user_id || '',
+    returned_at: row.returned_at || '',
+    returned_by_user_id: row.returned_by_user_id || '',
+    return_reason: normalizeText(row.return_reason || ''),
+    review_comment: normalizeText(row.review_comment || ''),
+    finalized_at: row.finalized_at || '',
+    finalized_by_user_id: row.finalized_by_user_id || '',
+    created_at: row.created_at || '',
+    updated_at: row.updated_at || '',
+    raw: row,
+  }
+}
+
+function normalizeMonthlySubmissionListResponse(response, fallbackPage = 1, fallbackPerPage = 20) {
+  const items = unwrapApiItems(response)
+  return {
+    items: items.map(normalizeMonthlySubmissionRow),
+    pagination: unwrapApiPagination(response, fallbackPage, fallbackPerPage, items.length),
+  }
+}
+
+export async function fetchMonthlySubmissions(
+  { page = 1, perPage = 20, status = '', academicYearId = '' } = {},
+  options = {},
+) {
+  const normalizedPerPage = normalizePerPage(perPage, 10, 100)
+  const response = await http.get('/api/preschool/monthly-submissions', {
+    params: buildQueryParams({
+      page,
+      per_page: normalizedPerPage,
+      status,
+      academic_year_id: academicYearId,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeMonthlySubmissionListResponse(response, page, normalizedPerPage)
+}
+
+export async function fetchMonthlySubmission(id, options = {}) {
+  const submissionId = resolveId(id)
+  if (!submissionId) return null
+
+  const response = await http.get(`/api/preschool/monthly-submissions/${encodeURIComponent(submissionId)}`, {
+    signal: options.signal,
+  })
+
+  const responsePayload = unwrapApiData(response) || {}
+  return normalizeMonthlySubmissionRow(responsePayload.submission || responsePayload)
+}
+
+export async function createMonthlySubmission(payload = {}) {
+  const response = await http.post('/api/preschool/monthly-submissions', payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeMonthlySubmissionRow(data.submission || data)
+}
+
+export async function updateMonthlySubmissionScore(submissionId, studentId, payload = {}) {
+  const response = await http.put(
+    `/api/preschool/monthly-submissions/${encodeURIComponent(submissionId)}/students/${encodeURIComponent(studentId)}/score`,
+    payload
+  )
+  const data = unwrapApiData(response) || {}
+  return data.assessment || data
+}
+
+export async function submitMonthlySubmission(id) {
+  const submissionId = resolveId(id)
+  if (!submissionId) throw new Error('Submission id is required.')
+
+  const response = await http.post(`/api/preschool/monthly-submissions/${encodeURIComponent(submissionId)}/submit`)
+  const data = unwrapApiData(response) || {}
+  return normalizeMonthlySubmissionRow(data.submission || data)
+}
+
+export async function returnMonthlySubmission(id, payload = {}) {
+  const submissionId = resolveId(id)
+  if (!submissionId) throw new Error('Submission id is required.')
+
+  const response = await http.post(
+    `/api/preschool/monthly-submissions/${encodeURIComponent(submissionId)}/return`,
+    payload
+  )
+  const data = unwrapApiData(response) || {}
+  return normalizeMonthlySubmissionRow(data.submission || data)
+}
+
+export async function finalizeMonthlySubmission(id, payload = {}) {
+  const submissionId = resolveId(id)
+  if (!submissionId) throw new Error('Submission id is required.')
+
+  const response = await http.post(
+    `/api/preschool/monthly-submissions/${encodeURIComponent(submissionId)}/finalize`,
+    payload
+  )
+  const data = unwrapApiData(response) || {}
+  return normalizeMonthlySubmissionRow(data.submission || data)
+}
+
+export async function archiveMonthlySubmission(id) {
+  const submissionId = resolveId(id)
+  if (!submissionId) throw new Error('Submission id is required.')
+
+  const response = await http.post(`/api/preschool/monthly-submissions/${encodeURIComponent(submissionId)}/archive`)
+  const data = unwrapApiData(response) || {}
+  return normalizeMonthlySubmissionRow(data.submission || data)
+}

@@ -66,6 +66,7 @@ const {
   finalizeGroups,
   lastGeneratedAt,
   isLoading: groupsLoading,
+  isSaving: groupsSaving,
 } = useTournamentGroups(tournament, {
   loadTournament,
   transitionTournament,
@@ -130,33 +131,45 @@ function closePreview() {
 }
 
 async function handleApplyPreview() {
-  const record = await applyPreview()
-  if (!record?.id) {
-    showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
-    return
-  }
+  try {
+    const record = await applyPreview()
+    if (!record?.id) {
+      showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
+      return
+    }
 
-  showSuccessAlert(t('sportTournament.groups.success.previewApplied'))
+    showSuccessAlert(t('sportTournament.groups.success.previewApplied'))
+  } catch {
+    showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
+  }
 }
 
 async function handleSaveDraft() {
-  const record = await saveDraft()
-  if (!record?.id) {
-    showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
-    return
-  }
+  try {
+    const record = await saveDraft()
+    if (!record?.id) {
+      showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
+      return
+    }
 
-  showSuccessAlert(t('sportTournament.groups.success.draftSaved'))
+    showSuccessAlert(t('sportTournament.groups.success.draftSaved'))
+  } catch {
+    showErrorAlert(t('sportTournament.groups.validation.saveFailed'))
+  }
 }
 
 async function handleFinalize() {
-  const record = await finalizeGroups()
-  if (!record?.id) {
-    showErrorAlert(t('sportTournament.groups.validation.finalizeFailed'))
-    return
-  }
+  try {
+    const record = await finalizeGroups()
+    if (!record?.id) {
+      showErrorAlert(t('sportTournament.groups.validation.finalizeFailed'))
+      return
+    }
 
-  showSuccessAlert(t('sportTournament.groups.success.finalized'))
+    showSuccessAlert(t('sportTournament.groups.success.finalized'))
+  } catch {
+    showErrorAlert(t('sportTournament.groups.validation.finalizeFailed'))
+  }
 }
 
 function handleReset() {
@@ -281,6 +294,7 @@ onMounted(async () => {
             :locked="isViewOnly"
             :issue-count="groupWarningItems.length"
             :last-generated-at="lastGeneratedAt"
+            :pending="groupsSaving"
             @update:mode="handleModeUpdate"
             @preview="handlePreview"
             @save="handleSaveDraft"
@@ -341,6 +355,7 @@ onMounted(async () => {
       :summary="previewSummary || summary"
       :warnings="previewWarnings"
       :can-apply="canEdit"
+      :pending="groupsSaving"
       @close="closePreview"
       @apply="handleApplyPreview"
     />

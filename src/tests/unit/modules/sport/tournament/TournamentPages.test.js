@@ -111,6 +111,15 @@ const stubs = {
     template: '<div v-if="show" data-testid="alert-success" />',
   },
   StatsCards: { props: ['cards', 'compact'], template: '<div data-testid="stats-cards" />' },
+  TournamentListFilters: {
+    props: ['searchQuery', 'seasonFilter', 'stateFilter'],
+    template: '<div data-testid="tournament-filters"><input data-testid="search" :value="searchQuery" @input="$emit(\'update:searchQuery\', $event.target.value)" /></div>',
+  },
+  TournamentTable: {
+    props: ['tournaments', 'loading', 'emptyText'],
+    template: '<div data-testid="tournament-table"><span data-testid="row-numbers">{{ tournaments.map((item) => item.rowNumber).join(\',\') }}</span><span data-testid="tournament-ids">{{ tournaments.map((item) => item.id).join(\',\') }}</span></div>',
+  },
+  Pagination: { props: ['totalPages'], template: '<div data-testid="pagination" :data-total-pages="totalPages"><button data-testid="next-page" @click="$emit(\'update:modelValue\', 2)">next</button></div>' },
   TournamentFormSection: { props: ['title', 'subtitle'], template: '<section><slot /></section>' },
   TournamentMediaField: {
     props: ['title', 'subtitle', 'preview', 'disabled', 'accept'],
@@ -178,6 +187,52 @@ describe('Tournament pages', () => {
 
     warnSpy.mockRestore()
     errorSpy.mockRestore()
+  })
+
+  it('numbers tournament rows by page while preserving real tournament IDs', async () => {
+    tournamentsState.value = Array.from({ length: 8 }, (_, index) => ({
+      ...tournamentRecord,
+      id: `backend-${index + 1}`,
+      name: `Tournament ${index + 1}`,
+    }))
+
+    const wrapper = await mountPage(
+      TournamentListPage,
+      'dashboard-sport-admin-tournaments',
+      '/module/sport-admin/tournaments',
+    )
+
+    await nextTick()
+
+    expect(wrapper.find('[data-testid="row-numbers"]').text()).toBe('1,2,3,4,5')
+    expect(wrapper.find('[data-testid="tournament-ids"]').text()).toBe('backend-1,backend-2,backend-3,backend-4,backend-5')
+    expect(wrapper.find('[data-testid="pagination"]').attributes('data-total-pages')).toBe('2')
+    expect(wrapper.text()).toContain('Showing 1–5 of 8 tournaments')
+
+    await wrapper.find('[data-testid="next-page"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="row-numbers"]').text()).toBe('6,7,8')
+    expect(wrapper.find('[data-testid="tournament-ids"]').text()).toBe('backend-6,backend-7,backend-8')
+    expect(wrapper.text()).toContain('Showing 6–8 of 8 tournaments')
+  })
+
+  it('hides pagination when exactly five tournaments are available', async () => {
+    tournamentsState.value = Array.from({ length: 5 }, (_, index) => ({
+      ...tournamentRecord,
+      id: `backend-${index + 1}`,
+    }))
+
+    const wrapper = await mountPage(
+      TournamentListPage,
+      'dashboard-sport-admin-tournaments',
+      '/module/sport-admin/tournaments',
+    )
+
+    await nextTick()
+
+    expect(wrapper.find('[data-testid="row-numbers"]').text()).toBe('1,2,3,4,5')
+    expect(wrapper.find('[data-testid="pagination"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Showing 1–5 of 5 tournaments')
   })
 
   it('mounts the create page without invalid rounded prop warnings', async () => {
