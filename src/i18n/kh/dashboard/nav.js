@@ -109,6 +109,7 @@ export default {
     sportPlayerApproval: 'ការអនុម័តកីឡាករ',
     sportMatchApproval: 'ការអនុម័តប្រកួត',
     sportPlayerLifecycle: 'វដ្តជីវិត',
+    sportReports: 'របាយការណ៍',
     pendingPlayerApprovals: 'ការអនុម័តកីឡាកររង់ចាំ',
     pendingMatchApprovals: 'ការអនុម័តការប្រកួតរង់ចាំ',
     playerLifecycle: 'វដ្តជីវិតកីឡាករ',

@@ -70,6 +70,12 @@
           "icon": "sport-tournament"
         },
         {
+          "id": "sport-reports",
+          "routeName": "dashboard-sport-admin-reports",
+          "labelKey": "nav.items.sportReports",
+          "icon": "sport-reports"
+        },
+        {
           "id": "sport-pending-player-approvals",
           "routeName": "dashboard-sport-admin-pending-player-approvals",
           "labelKey": "nav.items.sportPlayerApproval",

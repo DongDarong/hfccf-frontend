@@ -109,6 +109,7 @@ export default {
     sportPlayerApproval: 'Player Approval',
     sportMatchApproval: 'Match Approval',
     sportPlayerLifecycle: 'Lifecycle',
+    sportReports: 'Reports',
     pendingPlayerApprovals: 'Player Approvals',
     pendingMatchApprovals: 'Match Approvals',
     playerLifecycle: 'Player Lifecycle',
