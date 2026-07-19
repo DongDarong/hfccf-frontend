@@ -140,27 +140,39 @@ async function generateClassReport() {
 
   try {
     const studentsData = await fetchPreschoolStudents({ classId: classId.value, perPage: 1000 })
+    const students = studentsData.items || []
 
+    const batchSize = 5
     const classStudents = []
-    for (const student of (studentsData.items || [])) {
-      const attendance = await fetchPreschoolAttendance({
-        studentId: student.id,
-        classId: classId.value,
-        perPage: 1000,
-      })
 
-      const assessments = await fetchStudentAssessments(student.id, { perPage: 10 })
+    for (let i = 0; i < students.length; i += batchSize) {
+      const batch = students.slice(i, i + batchSize)
 
-      const attendancePercentage = calculateAttendancePercentage(attendance)
-      const latestAssessment = assessments.items && assessments.items.length > 0
-        ? assessments.items[0]
-        : null
+      const batchResults = await Promise.all(
+        batch.map(async (student) => {
+          const [attendance, assessments] = await Promise.all([
+            fetchPreschoolAttendance({
+              studentId: student.id,
+              classId: classId.value,
+              perPage: 1000,
+            }),
+            fetchStudentAssessments(student.id, { perPage: 10 }),
+          ])
 
-      classStudents.push({
-        student,
-        attendancePercentage,
-        latestAssessment,
-      })
+          const attendancePercentage = calculateAttendancePercentage(attendance)
+          const latestAssessment = assessments.items && assessments.items.length > 0
+            ? assessments.items[0]
+            : null
+
+          return {
+            student,
+            attendancePercentage,
+            latestAssessment,
+          }
+        }),
+      )
+
+      classStudents.push(...batchResults)
     }
 
     reportData.value = {
@@ -328,9 +340,9 @@ onMounted(() => {
         <StudentAssessmentSummary :assessments="reportData.assessments" />
 
         <!-- Export Toolbar (Placeholder) -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolReportsCenterPage.exports.title') }}</h2>
           <div class="flex flex-wrap items-center gap-3">
-            <span class="text-sm font-semibold text-slate-700">{{ t('preschoolReportsCenterPage.exports.title') }}:</span>
             <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
               <i class="pi pi-file-pdf mr-2" /> PDF
             </Button>
@@ -349,9 +361,9 @@ onMounted(() => {
         <ClassSummaryTable :students="reportData.classStudents" />
 
         <!-- Export Toolbar (Placeholder) -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolReportsCenterPage.exports.title') }}</h2>
           <div class="flex flex-wrap items-center gap-3">
-            <span class="text-sm font-semibold text-slate-700">{{ t('preschoolReportsCenterPage.exports.title') }}:</span>
             <Button type="button" variant="secondary" size="md" rounded="lg" disabled class="opacity-50">
               <i class="pi pi-file-pdf mr-2" /> PDF
             </Button>
@@ -365,7 +377,13 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- Empty State -->
+      <!-- Class Report Empty State -->
+      <div v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length === 0" class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+        <i class="pi pi-user-minus text-4xl text-slate-300" />
+        <p class="mt-4 text-slate-600">No students found in this class.</p>
+      </div>
+
+      <!-- Initial Empty State -->
       <div v-if="!reportGenerated" class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
         <i class="pi pi-inbox text-4xl text-slate-300" />
         <p class="mt-4 text-slate-600">
