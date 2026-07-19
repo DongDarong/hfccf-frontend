@@ -1,14 +1,11 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
+import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
-import { fetchReportsDashboard } from '@/modules/preschool/services/api/preschoolReportingApi'
-import ReportFilterBar from '@/modules/preschool/shared/components/report/ReportFilterBar.vue'
-import ReportSummaryCards from '@/modules/preschool/shared/components/report/ReportSummaryCards.vue'
-import EmptyReportState from '@/modules/preschool/shared/components/report/EmptyReportState.vue'
 
 defineOptions({
   name: 'PreschoolReportsDashboardPage',
@@ -17,180 +14,461 @@ defineOptions({
 const { t } = useLanguage()
 const router = useRouter()
 
-const loading = ref(false)
-const errorMessage = ref('')
-const filterOptions = ref({})
+const REPORT_TYPES = [
+  { key: 'student-summary', label: 'Student Summary', icon: 'pi-user', routeName: 'dashboard-preschool-admin-reports-student-summary' },
+  { key: 'attendance', label: 'Attendance', icon: 'pi-calendar', routeName: 'dashboard-preschool-admin-reports-attendance' },
+  { key: 'assessment', label: 'Assessment', icon: 'pi-chart-bar', routeName: 'dashboard-preschool-admin-reports-assessments' },
+]
+
+const selectedReportType = ref('student-summary')
+const reportGenerated = ref(false)
+
 const filters = ref({
   academicYearId: '',
-  termId: '',
-  reportPeriodId: '',
-  dateFrom: '',
-  dateTo: '',
   classId: '',
   studentId: '',
-  teacherId: '',
-  status: '',
-})
-const dashboard = ref({
-  kpis: {},
-  cards: [],
-  modules: {},
-  risk: {},
+  termId: '',
+  reportPeriodId: '',
+  reportMonth: '',
+  reportYear: new Date().getFullYear(),
+  scopeType: 'individual',
 })
 
-async function loadDashboard() {
-  loading.value = true
-  errorMessage.value = ''
+const filterOptions = ref({
+  academicYears: [],
+  classes: [],
+  students: [],
+  terms: [],
+  periods: [],
+})
 
-  try {
-    const payload = await fetchReportsDashboard(filters.value)
-    dashboard.value = payload.dashboard || dashboard.value
-    filterOptions.value = payload.filters || {}
-  } catch (error) {
-    errorMessage.value = error?.message || t('preschoolReportsCenterPage.messages.loadFailed')
-  } finally {
-    loading.value = false
+const reportTypeOptions = computed(() =>
+  REPORT_TYPES.map(type => ({
+    ...type,
+    label: t(`preschoolReportsPage.reportTypes.${type.key}`) || type.label,
+  })),
+)
+
+function selectReportType(typeKey) {
+  const reportType = REPORT_TYPES.find(rt => rt.key === typeKey)
+  if (reportType?.routeName) {
+    router.push({ name: reportType.routeName })
   }
+  selectedReportType.value = typeKey
+  reportGenerated.value = false
+  resetFilters()
 }
 
-async function resetDashboardFilters() {
+function resetFilters() {
   filters.value = {
     academicYearId: '',
-    termId: '',
-    reportPeriodId: '',
-    dateFrom: '',
-    dateTo: '',
     classId: '',
     studentId: '',
-    teacherId: '',
-    status: '',
+    termId: '',
+    reportPeriodId: '',
+    reportMonth: '',
+    reportYear: new Date().getFullYear(),
+    scopeType: 'individual',
   }
-
-  await loadDashboard()
 }
 
-const kpiCards = computed(() => [
-  { title: t('preschoolReportsCenterPage.dashboard.cards.attendanceRate'), value: `${dashboard.value.kpis.attendanceRate || 0}%`, caption: t('preschoolReportsCenterPage.dashboard.summaryCards.totalStudents'), tone: 'success' },
-  { title: t('preschoolReportsCenterPage.dashboard.cards.revenue'), value: dashboard.value.kpis.revenue || 0, caption: t('preschoolReportsCenterPage.dashboard.summaryCards.activeStudents'), tone: 'info' },
-  { title: t('preschoolReportsCenterPage.dashboard.cards.openHealthAlerts'), value: dashboard.value.kpis.openHealthAlerts || 0, caption: t('preschoolReportsCenterPage.dashboard.summaryCards.atRiskStudents'), tone: 'error' },
-  { title: t('preschoolReportsCenterPage.dashboard.cards.assessmentCompletion'), value: `${dashboard.value.kpis.assessmentCompletion || 0}%`, caption: t('preschoolReportsCenterPage.dashboard.summaryCards.newEnrollments'), tone: 'warning' },
-])
-
-const moduleCards = computed(() => [
-  { title: t('preschoolReportsCenterPage.dashboard.moduleCards.attendance'), value: dashboard.value.modules?.attendance?.attendance_rate || 0, caption: t('preschoolReportsCenterPage.dashboard.actions.attendance') },
-  { title: t('preschoolReportsCenterPage.dashboard.moduleCards.assessments'), value: dashboard.value.modules?.assessments?.completion_rate || 0, caption: t('preschoolReportsCenterPage.dashboard.actions.assessments') },
-  { title: t('preschoolReportsCenterPage.dashboard.moduleCards.health'), value: dashboard.value.modules?.health?.open_alerts || 0, caption: t('preschoolReportsCenterPage.dashboard.actions.health') },
-  { title: t('preschoolReportsCenterPage.dashboard.moduleCards.payments'), value: dashboard.value.modules?.payments?.revenue || 0, caption: t('preschoolReportsCenterPage.dashboard.actions.payments') },
-  { title: t('preschoolReportsCenterPage.dashboard.moduleCards.enrollments'), value: dashboard.value.modules?.enrollments?.new_enrollments || 0, caption: t('preschoolReportsCenterPage.dashboard.actions.enrollments') },
-  { title: t('preschoolReportsCenterPage.dashboard.moduleCards.guardians'), value: dashboard.value.modules?.guardians?.open_issues || 0, caption: t('preschoolReportsCenterPage.dashboard.actions.guardians') },
-])
-
-function goToReport(name) {
-  router.push({ name })
+function generateReport() {
+  reportGenerated.value = true
 }
-
-function openAttendance() {
-  goToReport('dashboard-preschool-admin-reports-attendance')
-}
-
-function openAssessments() {
-  goToReport('dashboard-preschool-admin-reports-assessments')
-}
-
-function openHealth() {
-  goToReport('dashboard-preschool-admin-reports-health')
-}
-
-function openPayments() {
-  goToReport('dashboard-preschool-admin-reports-payments')
-}
-
-function openEnrollments() {
-  goToReport('dashboard-preschool-admin-reports-enrollments')
-}
-
-function openGuardians() {
-  goToReport('dashboard-preschool-admin-reports-guardians')
-}
-
-onMounted(() => {
-  loadDashboard()
-})
 </script>
 
 <template>
   <MainLayout>
-    <section class="space-y-4">
+    <section class="space-y-6">
+      <!-- Section 1: Page Header -->
       <HeaderSection
-        :title="t('preschoolReportsCenterPage.pageTitle')"
-        :subtitle="t('preschoolReportsCenterPage.pageSubtitle')"
+        :title="t('preschoolReportsPage.title')"
+        :subtitle="t('preschoolReportsPage.subtitle')"
       />
 
-      <ReportFilterBar
-        v-model="filters"
-        :loading="loading"
-        :visible-filters="['academicYear', 'term', 'reportPeriod', 'dateRange', 'class', 'student', 'teacher', 'status']"
-        :labels="{
-          academicYear: t('preschoolReportsCenterPage.filters.academicYear'),
-          term: t('preschoolReportsCenterPage.filters.term'),
-          reportPeriod: t('preschoolReportsCenterPage.filters.reportPeriod'),
-          dateFrom: t('preschoolReportsCenterPage.filters.dateFrom'),
-          dateTo: t('preschoolReportsCenterPage.filters.dateTo'),
-          class: t('preschoolReportsCenterPage.filters.class'),
-          student: t('preschoolReportsCenterPage.filters.student'),
-          teacher: t('preschoolReportsCenterPage.filters.teacher'),
-          status: t('preschoolReportsCenterPage.filters.status'),
-          apply: t('preschoolReportsCenterPage.filters.apply'),
-          reset: t('preschoolReportsCenterPage.filters.reset'),
-        }"
-        :options="filterOptions"
-        @apply="loadDashboard"
-        @reset="resetDashboardFilters"
-      />
+      <!-- Section 2: Report Type Selector -->
+      <div class="space-y-3">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          {{ t('preschoolReportsPage.selectReportType') || 'Select Report Type' }}
+        </h2>
+        <div class="grid gap-3 md:grid-cols-3">
+          <button
+            v-for="reportType in reportTypeOptions"
+            :key="reportType.key"
+            type="button"
+            @click="selectReportType(reportType.key)"
+            :class="[
+              'rounded-2xl border-2 p-6 text-left transition-all duration-200',
+              selectedReportType === reportType.key
+                ? 'border-blue-500 bg-blue-50 shadow-md'
+                : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm',
+            ]"
+          >
+            <div class="flex items-start justify-between">
+              <div>
+                <h3 class="font-semibold text-slate-900">{{ reportType.label }}</h3>
+                <p class="mt-1 text-xs text-slate-500">
+                  {{ t(`preschoolReportsPage.reportTypeDesc.${reportType.key}`) || '' }}
+                </p>
+              </div>
+              <div
+                v-if="selectedReportType === reportType.key"
+                class="rounded-full bg-blue-500 p-1.5"
+              >
+                <i class="pi pi-check text-sm text-white" />
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
 
-      <ReportSummaryCards :cards="kpiCards" />
+      <!-- Section 3: Dynamic Filters -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          {{ t('preschoolReportsPage.filters') || 'Filters' }}
+        </h3>
 
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <article
-          v-for="card in moduleCards"
-          :key="card.title"
-          class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+        <!-- Student Summary Filters -->
+        <div v-if="selectedReportType === 'student-summary'" class="grid gap-4 md:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.academicYear') }}
+            </span>
+            <Select
+              v-model="filters.academicYearId"
+              :options="filterOptions.academicYears"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.academicYear')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.class') }}
+            </span>
+            <Select
+              v-model="filters.classId"
+              :options="filterOptions.classes"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.class')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.student') }}
+            </span>
+            <Select
+              v-model="filters.studentId"
+              :options="filterOptions.students"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.student')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsPage.scope') || 'Scope' }}
+            </span>
+            <div class="flex items-center gap-4 pt-2">
+              <label class="flex items-center gap-2">
+                <input
+                  v-model="filters.scopeType"
+                  type="radio"
+                  value="individual"
+                  class="rounded"
+                />
+                <span class="text-sm text-slate-700">{{ t('preschoolReportsPage.individual') || 'Individual Student' }}</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  v-model="filters.scopeType"
+                  type="radio"
+                  value="class"
+                  class="rounded"
+                />
+                <span class="text-sm text-slate-700">{{ t('preschoolReportsPage.entireClass') || 'Entire Class' }}</span>
+              </label>
+            </div>
+          </label>
+        </div>
+
+        <!-- Attendance Report Filters -->
+        <div v-if="selectedReportType === 'attendance'" class="grid gap-4 md:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.academicYear') }}
+            </span>
+            <Select
+              v-model="filters.academicYearId"
+              :options="filterOptions.academicYears"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.academicYear')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.class') }}
+            </span>
+            <Select
+              v-model="filters.classId"
+              :options="filterOptions.classes"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.class')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsPage.reportMonth') || 'Month' }}
+            </span>
+            <Select
+              v-model="filters.reportMonth"
+              :options="[
+                { label: 'January', value: '01' },
+                { label: 'February', value: '02' },
+                { label: 'March', value: '03' },
+                { label: 'April', value: '04' },
+                { label: 'May', value: '05' },
+                { label: 'June', value: '06' },
+                { label: 'July', value: '07' },
+                { label: 'August', value: '08' },
+                { label: 'September', value: '09' },
+                { label: 'October', value: '10' },
+                { label: 'November', value: '11' },
+                { label: 'December', value: '12' },
+              ]"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsPage.reportMonth')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsPage.reportYear') || 'Year' }}
+            </span>
+            <Select
+              v-model="filters.reportYear"
+              :options="[
+                { label: '2024', value: 2024 },
+                { label: '2025', value: 2025 },
+                { label: '2026', value: 2026 },
+              ]"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsPage.reportYear')"
+            />
+          </label>
+        </div>
+
+        <!-- Assessment Report Filters -->
+        <div v-if="selectedReportType === 'assessment'" class="grid gap-4 md:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.academicYear') }}
+            </span>
+            <Select
+              v-model="filters.academicYearId"
+              :options="filterOptions.academicYears"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.academicYear')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.term') }}
+            </span>
+            <Select
+              v-model="filters.termId"
+              :options="filterOptions.terms"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.term')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.class') }}
+            </span>
+            <Select
+              v-model="filters.classId"
+              :options="filterOptions.classes"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.class')"
+            />
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsCenterPage.filters.student') }}
+            </span>
+            <Select
+              v-model="filters.studentId"
+              :options="filterOptions.students"
+              option-label="label"
+              option-value="value"
+              class="w-full"
+              :placeholder="t('preschoolReportsCenterPage.filters.student')"
+            />
+          </label>
+
+          <label class="space-y-2 md:col-span-2">
+            <span class="text-sm font-medium text-slate-700">
+              {{ t('preschoolReportsPage.scope') || 'Scope' }}
+            </span>
+            <div class="flex items-center gap-4 pt-2">
+              <label class="flex items-center gap-2">
+                <input
+                  v-model="filters.scopeType"
+                  type="radio"
+                  value="individual"
+                  class="rounded"
+                />
+                <span class="text-sm text-slate-700">{{ t('preschoolReportsPage.individual') || 'Individual Student' }}</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  v-model="filters.scopeType"
+                  type="radio"
+                  value="class"
+                  class="rounded"
+                />
+                <span class="text-sm text-slate-700">{{ t('preschoolReportsPage.entireClass') || 'Entire Class' }}</span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 4: Generate & Reset Buttons -->
+      <div class="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          rounded="xl"
+          @click="generateReport"
+          class="px-8"
         >
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ card.title }}</p>
-          <div class="mt-2 text-3xl font-semibold text-slate-900">{{ card.value }}</div>
-          <p class="mt-2 text-sm text-slate-500">{{ card.caption }}</p>
-        </article>
-      </div>
-
-      <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <Button type="button" variant="primary" size="md" rounded="xl" @click="openAttendance">
-          {{ t('preschoolReportsCenterPage.sections.attendance.title') }}
+          {{ t('preschoolReportsPage.generateReport') || 'Generate Report' }}
         </Button>
-        <Button type="button" variant="secondary" size="md" rounded="xl" @click="openAssessments">
-          {{ t('preschoolReportsCenterPage.sections.assessments.title') }}
-        </Button>
-        <Button type="button" variant="secondary" size="md" rounded="xl" @click="openHealth">
-          {{ t('preschoolReportsCenterPage.sections.health.title') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="openPayments">
-          {{ t('preschoolReportsCenterPage.sections.payments.title') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="openEnrollments">
-          {{ t('preschoolReportsCenterPage.sections.enrollments.title') }}
-        </Button>
-        <Button type="button" variant="ghost" size="md" rounded="xl" @click="openGuardians">
-          {{ t('preschoolReportsCenterPage.sections.guardians.title') }}
+        <Button
+          type="button"
+          variant="ghost"
+          size="lg"
+          rounded="xl"
+          @click="resetFilters"
+        >
+          {{ t('preschoolReportsPage.reset') || 'Reset' }}
         </Button>
       </div>
 
-      <EmptyReportState
-        v-if="!loading && !moduleCards.length"
-        :title="t('preschoolReportsCenterPage.emptyStates.dashboard')"
-        :subtitle="t('preschoolReportsCenterPage.dashboard.emptyState')"
-      />
+      <!-- Section 5: Report Result Placeholder -->
+      <div v-if="reportGenerated" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="space-y-4">
+          <div class="grid gap-4 md:grid-cols-4">
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-semibold uppercase text-slate-500">Metric 1</p>
+              <p class="mt-2 text-2xl font-semibold text-slate-900">—</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-semibold uppercase text-slate-500">Metric 2</p>
+              <p class="mt-2 text-2xl font-semibold text-slate-900">—</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-semibold uppercase text-slate-500">Metric 3</p>
+              <p class="mt-2 text-2xl font-semibold text-slate-900">—</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-semibold uppercase text-slate-500">Metric 4</p>
+              <p class="mt-2 text-2xl font-semibold text-slate-900">—</p>
+            </div>
+          </div>
 
-      <div v-if="errorMessage" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-        {{ errorMessage }}
+          <div class="grid gap-4 lg:grid-cols-3">
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 lg:col-span-2">
+              <p class="text-sm font-semibold text-slate-700">Report Table</p>
+              <div class="mt-4 space-y-2">
+                <div class="h-8 w-full rounded bg-slate-200" />
+                <div class="h-8 w-full rounded bg-slate-200" />
+                <div class="h-8 w-full rounded bg-slate-200" />
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-sm font-semibold text-slate-700">Chart</p>
+              <div class="mt-4 space-y-2">
+                <div class="h-24 w-full rounded bg-slate-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6: Export Toolbar Placeholder -->
+      <div v-if="reportGenerated" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm font-semibold text-slate-700">{{ t('preschoolReportsCenterPage.exports.title') || 'Export' }}:</span>
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            disabled
+            class="opacity-50"
+          >
+            <i class="pi pi-file-pdf mr-2" /> PDF
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            disabled
+            class="opacity-50"
+          >
+            <i class="pi pi-file-excel mr-2" /> Excel
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            disabled
+            class="opacity-50"
+          >
+            <i class="pi pi-print mr-2" /> Print
+          </Button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-if="!reportGenerated" class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+        <i class="pi pi-inbox text-4xl text-slate-300" />
+        <p class="mt-4 text-slate-600">
+          {{ t('preschoolReportsPage.emptyState') || 'Select a report type and filters, then click "Generate Report" to view results.' }}
+        </p>
       </div>
     </section>
   </MainLayout>
