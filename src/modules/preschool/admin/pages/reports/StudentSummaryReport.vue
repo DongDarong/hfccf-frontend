@@ -315,36 +315,23 @@ onMounted(() => {
   <MainLayout>
     <section class="space-y-6">
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <HeaderSection
-          :title="t('preschoolReportsPage.reportTypes.student-summary')"
-          :subtitle="t('preschoolReportsPage.reportTypeDesc.student-summary')"
-        />
-        <Button
-          type="button"
-          variant="ghost"
-          size="md"
-          rounded="lg"
-          @click="backToReports"
-          class="flex items-center gap-2"
-        >
-          <i class="pi pi-chevron-left" />
-          {{ t('preschoolReportsPage.backToReports') || 'Back to Reports' }}
-        </Button>
-      </div>
+      <HeaderSection
+        :title="t('preschoolReportsPage.reportTypes.student-summary')"
+        :subtitle="t('preschoolReportsPage.reportTypeDesc.student-summary')"
+      />
 
       <!-- Report Switcher -->
       <ReportSwitcher />
 
       <!-- Filters -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="mb-6 text-sm font-bold uppercase tracking-wide text-slate-900">
           {{ t('preschoolReportsPage.filters') }}
         </h3>
 
-        <div class="grid gap-4 md:grid-cols-2">
-          <label class="space-y-2">
-            <span class="text-sm font-medium text-slate-700">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <label class="block">
+            <span class="mb-2 block text-xs font-semibold text-slate-700">
               {{ t('preschoolReportsCenterPage.filters.academicYear') }}
             </span>
             <Select
@@ -419,19 +406,18 @@ onMounted(() => {
         <Button
           type="button"
           variant="primary"
-          size="lg"
-          rounded="xl"
+          size="md"
+          rounded="lg"
           :loading="loading"
           @click="generateReport"
-          class="px-8"
         >
           {{ t('preschoolReportsPage.generateReport') }}
         </Button>
         <Button
           type="button"
           variant="ghost"
-          size="lg"
-          rounded="xl"
+          size="md"
+          rounded="lg"
           @click="resetFilters"
         >
           {{ t('preschoolReportsPage.reset') }}
@@ -439,7 +425,7 @@ onMounted(() => {
       </div>
 
       <!-- Error Message -->
-      <div v-if="errorMessage" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+      <div v-if="errorMessage" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
         {{ errorMessage }}
       </div>
 
@@ -451,7 +437,7 @@ onMounted(() => {
         </div>
 
         <!-- Export Toolbar -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolReportsCenterPage.exports.title') }}</h2>
           <div class="flex flex-wrap items-center gap-3">
             <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
@@ -474,7 +460,7 @@ onMounted(() => {
         </div>
 
         <!-- Export Toolbar -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ t('preschoolReportsCenterPage.exports.title') }}</h2>
           <div class="flex flex-wrap items-center gap-3">
             <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
@@ -491,13 +477,13 @@ onMounted(() => {
       </template>
 
       <!-- Class Report Empty State -->
-      <div v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length === 0" class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+      <div v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length === 0" class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
         <i class="pi pi-user-minus text-4xl text-slate-300" />
         <p class="mt-4 text-slate-600">No students found in this class.</p>
       </div>
 
       <!-- Initial Empty State -->
-      <div v-if="!reportGenerated" class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+      <div v-if="!reportGenerated" class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
         <i class="pi pi-inbox text-4xl text-slate-300" />
         <p class="mt-4 text-slate-600">
           {{ t('preschoolReportsPage.emptyState') }}
