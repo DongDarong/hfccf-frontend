@@ -778,14 +778,4 @@ export const preschoolRoutes = [
       scopes: [ACCESS_SCOPES.STAFF],
     },
   }),
-  defineAppRoute({
-    path: '/module/preschool-admin/teacher/assessments',
-    name: 'dashboard-preschool-teacher-assessments',
-    component: () => import('@/modules/preschool/teacher/pages/MonthlyAssessmentWorkflow.vue'),
-    access: {
-      domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.STAFF],
-    },
-  }),
-
 ]
