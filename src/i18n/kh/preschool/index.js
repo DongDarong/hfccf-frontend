@@ -8,8 +8,6 @@ import communications from './communications'
 import scaffold from './scaffold'
 import attendance from './attendance'
 import adminDashboard from './admin-dashboard'
-import assessment from './assessment'
-import assessmentExtra from './assessment.extra'
 import progress from './progress'
 import reports from './reports'
 import analytics from './analytics'
@@ -79,8 +77,6 @@ export default {
   ...scaffold,
   ...attendance,
   ...adminDashboard,
-  ...assessment,
-  ...assessmentExtra,
   ...progress,
   ...reports,
   ...analytics,
