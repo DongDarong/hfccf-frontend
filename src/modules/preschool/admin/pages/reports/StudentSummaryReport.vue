@@ -14,11 +14,9 @@ import {
   fetchPreschoolStudent,
   fetchPreschoolAttendance,
 } from '@/modules/preschool/services/preschoolApi'
-import { fetchStudentAssessments } from '@/modules/preschool/services/api/preschoolAssessmentApi'
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
 import StudentIdentityCard from './components/StudentIdentityCard.vue'
 import StudentAttendanceSummary from './components/StudentAttendanceSummary.vue'
-import StudentAssessmentSummary from './components/StudentAssessmentSummary.vue'
 import ClassSummaryTable from './components/ClassSummaryTable.vue'
 import ReportSwitcher from './components/ReportSwitcher.vue'
 
@@ -47,7 +45,6 @@ const filterOptions = ref({
 const reportData = ref({
   student: null,
   attendance: null,
-  assessments: [],
   classStudents: [],
 })
 
@@ -117,14 +114,9 @@ async function generateIndividualReport() {
       perPage: 1000,
     })
 
-    const assessmentsData = await fetchStudentAssessments(studentId.value, {
-      perPage: 1000,
-    })
-
     reportData.value = {
       student: studentData,
       attendance: attendanceData,
-      assessments: assessmentsData.items || [],
     }
 
     reportGenerated.value = true
@@ -156,24 +148,17 @@ async function generateClassReport() {
 
       const batchResults = await Promise.all(
         batch.map(async (student) => {
-          const [attendance, assessments] = await Promise.all([
-            fetchPreschoolAttendance({
-              studentId: student.id,
-              classId: classId.value,
-              perPage: 1000,
-            }),
-            fetchStudentAssessments(student.id, { perPage: 10 }),
-          ])
+          const attendance = await fetchPreschoolAttendance({
+            studentId: student.id,
+            classId: classId.value,
+            perPage: 1000,
+          })
 
           const attendancePercentage = calculateAttendancePercentage(attendance)
-          const latestAssessment = assessments.items && assessments.items.length > 0
-            ? assessments.items[0]
-            : null
 
           return {
             student,
             attendancePercentage,
-            latestAssessment,
           }
         }),
       )
@@ -213,7 +198,6 @@ function resetFilters() {
   reportData.value = {
     student: null,
     attendance: null,
-    assessments: [],
     classStudents: [],
   }
 }
@@ -464,7 +448,6 @@ onMounted(() => {
         <div class="preschool-student-summary-report-content">
           <StudentIdentityCard :student="reportData.student" />
           <StudentAttendanceSummary :attendance="reportData.attendance" />
-          <StudentAssessmentSummary :assessments="reportData.assessments" />
         </div>
 
         <!-- Export Toolbar -->

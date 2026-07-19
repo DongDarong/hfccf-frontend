@@ -14,7 +14,6 @@ import AttendanceOperationsSection from './sections/AttendanceOperationsSection.
 import GuardianOperationsSection from './sections/GuardianOperationsSection.vue'
 import HealthOperationsSection from './sections/HealthOperationsSection.vue'
 import PaymentOperationsSection from './sections/PaymentOperationsSection.vue'
-import AssessmentOperationsSection from './sections/AssessmentOperationsSection.vue'
 import TeacherOperationsSection from './sections/TeacherOperationsSection.vue'
 import OperationalRisksSection from './sections/OperationalRisksSection.vue'
 import OperationsTimelineSection from './sections/OperationsTimelineSection.vue'
@@ -110,7 +109,6 @@ onMounted(refreshOperations)
       <GuardianOperationsSection :guardian-communications="operations.guardianCommunications" />
       <HealthOperationsSection :health="operations.health" />
       <PaymentOperationsSection :payments="operations.payments" />
-      <AssessmentOperationsSection :assessments="operations.assessments" />
       <TeacherOperationsSection :teachers="operations.teachers" />
       <OperationalRisksSection :risks="operations.risks" />
       <OperationsTimelineSection :timeline="operations.timeline" />
