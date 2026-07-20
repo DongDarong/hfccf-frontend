@@ -15,40 +15,32 @@ export default {
 
   // ── Admin hub ──────────────────────────────────────────────────────────────
   preschoolAttendanceHubPage: {
-    title: 'Attendance Management',
-    subtitle: 'Record, review, and analyse attendance for students and teachers.',
+    title: "Attendance Management",
+    subtitle: "Record, review, and analyse attendance for students and teachers.",
     cards: {
       students: {
-        title: 'Daily Student Attendance',
-        description: 'Mark attendance for students in a class on a selected date.',
+        title: "Daily Student Attendance",
+        description: "Mark attendance for students in a class on a selected date.",
       },
       teachers: {
-        title: 'Daily Teacher Attendance',
-        description: 'Record attendance for teaching staff on a selected date.',
+        title: "Daily Teacher Attendance",
+        description: "Record attendance for teaching staff on a selected date.",
       },
       history: {
-        title: 'Attendance History',
-        description: 'Browse all past attendance records with date and status filters.',
-      },
-      dashboard: {
-        title: 'Attendance Dashboard',
-        description: 'Today’s sessions, attendance rates, class breakdowns, and monthly trends.',
+        title: "Attendance History",
+        description: "Browse all past attendance records with date and status filters.",
       },
       alerts: {
-        title: 'Attendance Alerts',
-        description: 'View backend-issued repeated absence alerts from attendance records.',
-      },
-      calendar: {
-        title: 'Calendar View',
-        description: 'Month-by-month attendance overview for a class.',
+        title: "Attendance Alerts",
+        description: "View backend-issued repeated absence alerts from attendance records.",
       },
       profile: {
-        title: 'Student Profile',
-        description: 'Full attendance history and rate breakdown for a single student.',
+        title: "Student Profile",
+        description: "Full attendance history and rate breakdown for a single student.",
       },
       idCard: {
-        title: 'Generate ID Card',
-        description: 'Generate and download student ID cards as a PDF file.',
+        title: "Generate ID Card",
+        description: "Generate and download student ID cards as a PDF file.",
       },
     },
   },
@@ -108,6 +100,7 @@ export default {
       missing: 'Missing',
     },
     actions: {
+      openSession: 'Open Session',
       continueAttendance: 'Continue Attendance',
       viewSession: 'View Session',
       view: 'View',

@@ -97,7 +97,7 @@ const statusOptions = computed(() => [
 const visibleSchedules = computed(() => schedules.value || [])
 const scheduleEntries = computed(() =>
   visibleSchedules.value.map((entry) => {
-    const session = resolveScheduleSession(entry, {}, todayIso())
+    const session = resolveScheduleSession(entry, undefined, todayIso())
 
     return {
       ...entry,

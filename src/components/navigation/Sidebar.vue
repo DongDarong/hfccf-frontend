@@ -21,6 +21,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  isMobile: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const slots = useSlots()

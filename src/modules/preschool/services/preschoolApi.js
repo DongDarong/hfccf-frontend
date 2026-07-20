@@ -1269,6 +1269,82 @@ export async function deleteClassroomResource(id) {
   return true
 }
 
+export async function fetchClassroomResourceRequests(
+  { page = 1, perPage = 100, status = '', sortBy = 'created_at', sortDirection = 'desc' } = {},
+  options = {},
+) {
+  const response = await http.get('/preschool/classroom-resource-requests', {
+    params: buildQueryParams({
+      page,
+      per_page: perPage,
+      status,
+      sort_by: sortBy,
+      sort_direction: sortDirection,
+    }),
+    signal: options.signal,
+  })
+
+  return normalizeResourceRequestListResponse(response, page, perPage)
+}
+
+export async function createClassroomResourceRequest(payload = {}) {
+  const response = await http.post('/preschool/classroom-resource-requests', payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeResourceRequestRow(data.request || data)
+}
+
+export async function approveClassroomResourceRequest(id, payload = {}) {
+  const requestId = resolveId(id)
+  if (!requestId) throw new Error('Request id is required.')
+
+  const response = await http.put(`/preschool/classroom-resource-requests/${encodeURIComponent(requestId)}/approve`, payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeResourceRequestRow(data.request || data)
+}
+
+export async function rejectClassroomResourceRequest(id, payload = {}) {
+  const requestId = resolveId(id)
+  if (!requestId) throw new Error('Request id is required.')
+
+  const response = await http.put(`/preschool/classroom-resource-requests/${encodeURIComponent(requestId)}/reject`, payload)
+  const data = unwrapApiData(response) || {}
+  return normalizeResourceRequestRow(data.request || data)
+}
+
+function normalizeResourceRequestRow(row = {}) {
+  return {
+    id: row.id ?? '',
+    resource_id: row.resource_id ?? '',
+    resource_name: row.resource_name ?? '',
+    teacher_id: row.teacher_id ?? '',
+    teacher_name: row.teacher_name ?? '',
+    class_id: row.class_id ?? '',
+    class_name: row.class_name ?? '',
+    status: row.status ?? 'pending',
+    notes: row.notes ?? '',
+    rejection_reason: row.rejection_reason ?? '',
+    requested_at: row.requested_at ?? '',
+    approved_at: row.approved_at ?? '',
+    approved_by: row.approved_by ?? '',
+  }
+}
+
+function normalizeResourceRequestListResponse(response = {}, page = 1, perPage = 100) {
+  const data = unwrapApiData(response) || {}
+  const items = Array.isArray(data.requests) ? data.requests.map(normalizeResourceRequestRow) : []
+  const pagination = data.pagination || {}
+
+  return {
+    items,
+    pagination: {
+      page: pagination.page ?? page,
+      perPage: pagination.per_page ?? perPage,
+      total: pagination.total ?? items.length,
+      totalPages: pagination.total_pages ?? Math.ceil(items.length / perPage),
+    },
+  }
+}
+
 // ── Monthly Assessment Submissions ────────────────────────────────────────────
 
 function normalizeMonthlySubmissionRow(row = {}) {
