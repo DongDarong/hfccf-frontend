@@ -13,6 +13,7 @@ import {
   fetchClassroomResources,
   fetchClassroomResourceRequests,
   createClassroomResourceRequest,
+  fetchMyPreschoolClasses,
 } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
@@ -55,6 +56,7 @@ const tableColumns = computed(() => [
   { key: 'quantity', label: t('preschoolClassroomResources.columns.quantity'), align: 'left' },
   { key: 'conditionLabel', label: t('preschoolClassroomResources.columns.condition'), align: 'left' },
   { key: 'notes', label: t('preschoolClassroomResources.columns.notes'), align: 'left' },
+  { key: 'actions', label: t('preschoolClassroomResources.columns.actions'), align: 'left' },
 ])
 
 const mappedResources = computed(() =>
@@ -105,6 +107,7 @@ watch(currentPage, () => {
 onMounted(async () => {
   await loadResources()
   await loadRequests()
+  await loadMyClasses()
 })
 
 // Request-related state
@@ -115,6 +118,16 @@ const requestActionDialogOpen = ref(false)
 const requestActionMode = ref(null) // 'approve' | 'reject' | null
 const requestActionNotes = ref('')
 const selectedRequestId = ref(null)
+
+// Request submission state
+const myClasses = ref([])
+const classesLoading = ref(false)
+const requestDialogOpen = ref(false)
+const selectedResource = ref(null)
+const selectedClassId = ref('')
+const requestSubmitting = ref(false)
+const requestSuccess = ref(false)
+const requestSuccessMessage = ref('')
 
 const requestTableColumns = computed(() => [
   { key: 'resourceName', label: t('preschoolResourceRequests.columns.resource'), align: 'left' },
@@ -151,6 +164,52 @@ async function loadRequests() {
 watch(requestStatusFilter, () => {
   // computed already handles filtering, no need to reload
 })
+
+async function loadMyClasses() {
+  classesLoading.value = true
+  try {
+    const response = await fetchMyPreschoolClasses()
+    myClasses.value = Array.isArray(response) ? response : response.items || []
+  } catch (error) {
+    myClasses.value = []
+  } finally {
+    classesLoading.value = false
+  }
+}
+
+function openRequestDialog(resource) {
+  selectedResource.value = resource
+  selectedClassId.value = ''
+  requestDialogOpen.value = true
+}
+
+async function submitRequest() {
+  if (!selectedResource.value || !selectedClassId.value) {
+    requestSuccessMessage.value = t('preschoolResourceRequests.messages.selectClassRequired')
+    return
+  }
+
+  requestSubmitting.value = true
+  try {
+    await createClassroomResourceRequest({
+      resource_id: selectedResource.value.id,
+      class_id: selectedClassId.value,
+    })
+    requestSuccessMessage.value = t('preschoolResourceRequests.messages.requestSubmitSuccess')
+    requestSuccess.value = true
+    requestDialogOpen.value = false
+
+    setTimeout(() => {
+      requestSuccess.value = false
+    }, 3000)
+
+    await loadRequests()
+  } catch (error) {
+    requestSuccessMessage.value = error?.message || t('preschoolResourceRequests.messages.actionFailed')
+  } finally {
+    requestSubmitting.value = false
+  }
+}
 </script>
 
 <template>
@@ -236,7 +295,15 @@ watch(requestStatusFilter, () => {
           :empty-text="searchQuery || categoryFilter || conditionFilter
             ? t('preschoolClassroomResources.messages.noResults')
             : t('preschoolClassroomResources.messages.empty')"
-        />
+        >
+          <template #actions="{ row }">
+            <Button
+              size="sm"
+              :label="t('preschoolResourceRequests.actions.request')"
+              @click="openRequestDialog(row)"
+            />
+          </template>
+        </Table>
 
         <div v-if="pagination.totalPages > 1" class="flex justify-end">
           <Pagination v-model="currentPage" :total-pages="pagination.totalPages" class="mt-2" />
@@ -261,6 +328,48 @@ watch(requestStatusFilter, () => {
           :empty-text="t('preschoolResourceRequests.messages.empty')"
         />
       </div>
+
+      <!-- Success Message -->
+      <AlertSuccess v-if="requestSuccess" class="mb-4">
+        {{ requestSuccessMessage }}
+      </AlertSuccess>
+
+      <!-- Request Dialog -->
+      <Dialog
+        v-model:visible="requestDialogOpen"
+        :header="`${t('preschoolResourceRequests.actions.request')}: ${selectedResource?.name || ''}`"
+        modal
+        @update:visible="(val) => { if (!val) selectedResource = null; selectedClassId = '' }"
+      >
+        <div class="flex flex-col gap-4">
+          <div v-if="requestSuccessMessage && !requestSuccess" class="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            {{ requestSuccessMessage }}
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-medium text-sm">{{ t('preschoolClassroomResources.columns.class') }}</label>
+            <select v-model="selectedClassId" class="border border-gray-300 rounded px-3 py-2">
+              <option value="">-- Select Class --</option>
+              <option v-for="cls in myClasses" :key="cls.id" :value="cls.id">
+                {{ cls.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex gap-2 justify-end">
+            <Button
+              label="Cancel"
+              variant="secondary"
+              @click="requestDialogOpen = false"
+            />
+            <Button
+              :label="t('preschoolResourceRequests.actions.request')"
+              :loading="requestSubmitting"
+              @click="submitRequest"
+            />
+          </div>
+        </div>
+      </Dialog>
     </section>
   </MainLayout>
 </template>
