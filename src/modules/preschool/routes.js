@@ -252,7 +252,7 @@ export const preschoolRoutes = [
   defineAppRoute({
     path: '/module/preschool-admin/health',
     name: 'dashboard-preschool-admin-health',
-    component: () => import('@/modules/preschool/admin/pages/health/HealthRecordsDashboard.vue'),
+    component: () => import('@/modules/preschool/admin/pages/health/HealthRecordsPage.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
       scopes: [ACCESS_SCOPES.ADMIN],
