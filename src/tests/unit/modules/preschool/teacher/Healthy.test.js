@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ref } from 'vue'
 import { mountWithPlugins } from '@/tests/helpers/mount'
 import Healthy from '@/modules/preschool/teacher/pages/Healthy.vue'
 
@@ -12,7 +11,6 @@ vi.mock('@/modules/preschool/services/api/preschoolHealthApi', () => ({
 }))
 
 import { fetchMyPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
-import { fetchStudentHealthSummary } from '@/modules/preschool/services/api/preschoolHealthApi'
 
 describe('Preschool Teacher Health Page - Read-Only', () => {
   beforeEach(() => {

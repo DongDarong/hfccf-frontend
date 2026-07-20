@@ -125,6 +125,7 @@ const classesLoading = ref(false)
 const requestDialogOpen = ref(false)
 const selectedResource = ref(null)
 const selectedClassId = ref('')
+const requestedQuantity = ref(1)
 const requestSubmitting = ref(false)
 const requestSuccess = ref(false)
 const requestSuccessMessage = ref('')
@@ -189,11 +190,17 @@ async function submitRequest() {
     return
   }
 
+  if (!requestedQuantity.value || requestedQuantity.value < 1) {
+    requestSuccessMessage.value = 'Please enter a valid quantity'
+    return
+  }
+
   requestSubmitting.value = true
   try {
     await createClassroomResourceRequest({
       resource_id: selectedResource.value.id,
       class_id: selectedClassId.value,
+      quantity: requestedQuantity.value,
     })
     requestSuccessMessage.value = t('preschoolResourceRequests.messages.requestSubmitSuccess')
     requestSuccess.value = true
@@ -354,6 +361,17 @@ async function submitRequest() {
                 {{ cls.name }}
               </option>
             </select>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-medium text-sm">Quantity</label>
+            <input
+              v-model.number="requestedQuantity"
+              type="number"
+              min="1"
+              class="border border-gray-300 rounded px-3 py-2"
+              placeholder="Enter quantity needed"
+            />
           </div>
 
           <div class="flex gap-2 justify-end">

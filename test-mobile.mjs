@@ -25,7 +25,7 @@ import { chromium } from 'playwright';
       'button[aria-label*="toggle"]',
       'button[aria-label*="Sidebar"]',
       'button[aria-label*="sidebar"]',
-      '.min\[769px\]:hidden button',
+      '.min[769px]:hidden button',
     ];
     
     let clicked = false;

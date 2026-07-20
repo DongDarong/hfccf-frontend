@@ -418,44 +418,6 @@ export function useDashboardData() {
     todayScheduleItems.value.filter((item) => !item.session).length,
   )
 
-  const operationalSummaryCards = computed(() => [
-    {
-      title: t('preschoolDashboardPage.operationalSummary.todaySchedule.title'),
-      value: todayScheduleItems.value.length,
-      label: t('preschoolDashboardPage.operationalSummary.todaySchedule.label'),
-      status: 'info',
-    },
-    {
-      title: t('preschoolDashboardPage.operationalSummary.todaySessions.title'),
-      value: todayOperationalSessions.value.length,
-      label: t('preschoolDashboardPage.operationalSummary.todaySessions.label'),
-      status: 'info',
-    },
-    {
-      title: t('preschoolDashboardPage.operationalSummary.scheduled.title'),
-      value: todaySessionCounts.value.scheduled,
-      label: t('preschoolDashboardPage.operationalSummary.scheduled.label'),
-      status: 'info',
-    },
-    {
-      title: t('preschoolDashboardPage.operationalSummary.open.title'),
-      value: todaySessionCounts.value.open,
-      label: t('preschoolDashboardPage.operationalSummary.open.label'),
-      status: 'warning',
-    },
-    {
-      title: t('preschoolDashboardPage.operationalSummary.completed.title'),
-      value: todaySessionCounts.value.completed,
-      label: t('preschoolDashboardPage.operationalSummary.completed.label'),
-      status: 'success',
-    },
-    {
-      title: t('preschoolDashboardPage.operationalSummary.missing.title'),
-      value: todayMissingSessionCount.value,
-      label: t('preschoolDashboardPage.operationalSummary.missing.label'),
-      status: 'error',
-    },
-  ])
 
   const todayScheduleItemsForView = computed(() =>
     todayScheduleItems.value.map((item) => ({
@@ -473,24 +435,6 @@ export function useDashboardData() {
     })),
   )
 
-  const todayAttendanceSessionItems = computed(() =>
-    (todayOperationalSessions.value || []).slice(0, 6).map((session) => {
-      const status = normalizeScheduleSessionStatus(session.status)
-
-      return {
-        id: session.id,
-        title: session.className || session.scheduleLabel || t('preschoolDashboardPage.operations.classFallback'),
-        text: joinParts([
-          [session.startTime, session.endTime].filter(Boolean).join(' - '),
-          session.teacherName || '',
-          session.roomName || '',
-        ]),
-        status,
-        statusLabel: t(`preschoolAttendanceSessionsPage.statuses.${status}`) || status,
-        actionLabel: resolveSessionActionLabel(t, status),
-      }
-    }),
-  )
 
   const attendanceProgressCards = computed(() => {
     const total = todayScheduleItems.value.length || todayOperationalSessions.value.length
@@ -636,52 +580,7 @@ export function useDashboardData() {
 
   const attendanceAlertSummary = computed(() => dashboard.value.attendanceAlerts || defaultDashboard.attendanceAlerts)
 
-  const attendanceAlertSummaryCards = computed(() => {
-    const summary = attendanceAlertSummary.value
-    const recentAlerts = Array.isArray(dashboard.value.recentAttendanceAlerts) ? dashboard.value.recentAttendanceAlerts : []
 
-    return [
-      {
-        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.title'),
-        value: formatCount(summary.open),
-        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.label'),
-        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.open.caption'),
-      },
-      {
-        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.title'),
-        value: formatCount(summary.acknowledged),
-        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.label'),
-        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.acknowledged.caption'),
-      },
-      {
-        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.title'),
-        value: formatCount(summary.overdue),
-        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.label'),
-        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.overdue.caption'),
-      },
-      {
-        title: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.title'),
-        value: formatCount(recentAlerts.length),
-        label: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.label'),
-        caption: t('preschoolAttendanceDashboardPage.alertSummary.cards.recent.caption'),
-      },
-    ]
-  })
-
-  const recentAttendanceAlertItems = computed(() => {
-    const recentAlerts = Array.isArray(dashboard.value.recentAttendanceAlerts) ? dashboard.value.recentAttendanceAlerts : []
-
-    return recentAlerts.map((alert) => ({
-      title: alert.studentName || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert'),
-      text: joinParts([
-        alert.className || '',
-        alert.guardianName || '',
-        alert.followUpStatus ? t(`preschoolGuardianCommunicationPage.followUpStatuses.${alert.followUpStatus}`) : '',
-      ]),
-      status: alert.status,
-      label: alert.alertLabel || t('preschoolAttendanceDashboardPage.alertSummary.latestAttendanceAlert'),
-    }))
-  })
 
   const systemHealthItems = computed(() => {
     const health = reportsDashboard.value.executiveHealth || {}
