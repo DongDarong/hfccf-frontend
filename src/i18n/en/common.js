@@ -13,6 +13,7 @@ export default {
   save: 'Save',
   clear: 'Clear',
   confirm: 'Confirm',
+  none: 'None',
   submit: 'Submit',
   close: 'Close',
   continue: 'Continue',

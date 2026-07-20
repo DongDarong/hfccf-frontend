@@ -13,6 +13,7 @@ export default {
   save: 'រក្សាទុក',
   clear: 'ជម្រះ',
   confirm: 'បញ្ជាក់',
+  none: 'គ្មាន',
   submit: 'ដាក់ស្នើ',
   close: 'បិទ',
   continue: 'បន្ត',
