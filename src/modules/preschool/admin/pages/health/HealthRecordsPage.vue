@@ -10,6 +10,11 @@ import {
   fetchStudentMedicalProfile,
   saveStudentMedicalProfile,
   deleteStudentMedicalProfile,
+  saveStudentHealthAllergy,
+  saveStudentHealthMedication,
+  saveStudentHealthVaccination,
+  saveStudentHealthContact,
+  saveStudentHealthIncident,
 } from '@/modules/preschool/services/api/preschoolHealthApi'
 import { resolveAvatarSource } from '@/utils/avatar'
 import HealthRecordForm from './components/HealthRecordForm.vue'
@@ -160,7 +165,63 @@ async function handleFormSave(payload) {
 
   formLoading.value = true
   try {
-    await saveStudentMedicalProfile(selectedStudent.value.id, payload)
+    const studentId = selectedStudent.value.id
+
+    // Save basic health information to medical profile
+    if (payload.basicInfo) {
+      await saveStudentMedicalProfile(studentId, payload.basicInfo)
+    }
+
+    // Save medical conditions (using incidents endpoint)
+    if (Array.isArray(payload.conditions)) {
+      for (const condition of payload.conditions) {
+        if (condition.condition_name) {
+          await saveStudentHealthIncident(studentId, {
+            title: condition.condition_name,
+            description: condition.notes || '',
+            incident_date: condition.diagnosis_date || new Date().toISOString().split('T')[0],
+            status: condition.status || 'active',
+          })
+        }
+      }
+    }
+
+    // Save allergies
+    if (Array.isArray(payload.allergies)) {
+      for (const allergy of payload.allergies) {
+        if (allergy.allergy_name) {
+          await saveStudentHealthAllergy(studentId, allergy)
+        }
+      }
+    }
+
+    // Save medications
+    if (Array.isArray(payload.medications)) {
+      for (const medication of payload.medications) {
+        if (medication.medication_name) {
+          await saveStudentHealthMedication(studentId, medication)
+        }
+      }
+    }
+
+    // Save vaccinations
+    if (Array.isArray(payload.vaccinations)) {
+      for (const vaccination of payload.vaccinations) {
+        if (vaccination.vaccine_name) {
+          await saveStudentHealthVaccination(studentId, vaccination)
+        }
+      }
+    }
+
+    // Save emergency contacts
+    if (Array.isArray(payload.emergencyContacts)) {
+      for (const contact of payload.emergencyContacts) {
+        if (contact.contact_name) {
+          await saveStudentHealthContact(studentId, contact)
+        }
+      }
+    }
+
     formDialogOpen.value = false
     await loadStudents()
     if (detailDialogOpen.value) {
