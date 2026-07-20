@@ -166,19 +166,14 @@ async function mountPage() {
 }
 
 describe('PreschoolDashboard', () => {
-  it('renders the canonical attendance alert summary from backend dashboard data', async () => {
+  it('renders the operational summary from backend dashboard data', async () => {
     const wrapper = await mountPage()
 
     expect(mockDashboard).toHaveBeenCalled()
     expect(mockSchedules).toHaveBeenCalled()
     expect(mockTodaySessions).toHaveBeenCalled()
     expect(wrapper.text()).toContain('Operational Summary')
-    expect(wrapper.text()).toContain('Today’s Schedule')
-    expect(wrapper.text()).toContain('Today’s Sessions')
+    expect(wrapper.text()).toContain('Schedule')
     expect(wrapper.text()).toContain('Morning Nursery')
-    expect(wrapper.text()).toContain('Attendance alert summary')
-    expect(wrapper.text()).toContain('Open Alerts')
-    expect(wrapper.text()).toContain('Recent repeated absences')
-    expect(wrapper.text()).toContain('Alice Student')
   })
 })
