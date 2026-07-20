@@ -97,6 +97,8 @@ export default {
     settings: 'Settings',
     teacherDashboard: 'My Dashboard',
     myStudents: 'My Students',
+    myClasses: 'My Classes',
+    classDetail: 'Class Detail',
     mySchedule: 'My Schedule',
     health: 'Health',
     healthRecords: 'Health Records',

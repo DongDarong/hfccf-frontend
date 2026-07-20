@@ -96,6 +96,8 @@ export default {
     settings: 'ការកំណត់',
     teacherDashboard: 'ផ្ទាំងរបស់ខ្ញុំ',
     myStudents: 'សិស្សរបស់ខ្ញុំ',
+    myClasses: 'ថ្នាក់របស់ខ្ញុំ',
+    classDetail: 'ព័ត៌មានលម្អិតថ្នាក់',
     mySchedule: 'កាលវិភាគរបស់ខ្ញុំ',
     health: 'សុខភាព',
     healthRecords: 'កំណត់ត្រាសុខភាព',

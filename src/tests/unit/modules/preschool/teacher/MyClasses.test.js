@@ -44,7 +44,7 @@ beforeEach(() => {
         id: '1',
         name: 'Kindergarten 1',
         code: 'KG1',
-        students_count: 20,
+        studentsCount: 20,
         academic_year: '2025-2026',
         status: 'active',
         teacher_id: 'teacher-1',
@@ -53,7 +53,7 @@ beforeEach(() => {
         id: '2',
         name: 'Kindergarten 2',
         code: 'KG2',
-        students_count: 18,
+        studentsCount: 18,
         academic_year: '2025-2026',
         status: 'active',
         teacher_id: 'teacher-1',
@@ -106,6 +106,48 @@ describe('PreschoolTeacherMyClassesPage', () => {
     expect(wrapper.text()).toContain('KG1')
     expect(wrapper.text()).toContain('20')
     expect(wrapper.text()).toContain('2025-2026')
+  })
+
+  it('displays correct student counts for each class', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows).toHaveLength(2)
+
+    // First class should show 20 students
+    expect(rows[0].text()).toContain('20')
+
+    // Second class should show 18 students
+    expect(rows[1].text()).toContain('18')
+  })
+
+  it('displays zero when class has no students', async () => {
+    mockFetchMyPreschoolClasses.mockResolvedValueOnce({
+      items: [
+        {
+          id: '3',
+          name: 'Empty Class',
+          code: 'EC1',
+          studentsCount: 0,
+          academic_year: '2025-2026',
+          status: 'active',
+          teacher_id: 'teacher-1',
+        },
+      ],
+      pagination: {
+        page: 1,
+        perPage: 10,
+        total: 1,
+        totalPages: 1,
+      },
+    })
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Empty Class')
+    expect(wrapper.findAll('tbody tr')[0].text()).toContain('0')
   })
 
   it('filters classes by search term', async () => {

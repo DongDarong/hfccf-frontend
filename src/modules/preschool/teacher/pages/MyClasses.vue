@@ -109,7 +109,7 @@ onMounted(() => {
             variant="secondary"
             size="sm"
             rounded="lg"
-            :label="t('common.search')"
+            label="Search"
             :icon="`pi ${!loading ? 'pi-search' : 'pi-spin pi-spinner'}`"
             :loading="loading"
             @click="handleSearch"
@@ -129,13 +129,13 @@ onMounted(() => {
         <table class="classes-table">
           <thead>
             <tr>
-              <th class="col-no">{{ t('common.no') }}</th>
+              <th class="col-no">{{ t('common.table.number') }}</th>
               <th class="col-class">{{ t('preschoolTeacherPage.classes.columns.class') }}</th>
               <th class="col-code">{{ t('preschoolTeacherPage.classes.columns.code') }}</th>
               <th class="col-students">{{ t('preschoolTeacherPage.classes.columns.students') }}</th>
               <th class="col-year">{{ t('preschoolTeacherPage.classes.columns.year') }}</th>
               <th class="col-status">{{ t('preschoolTeacherPage.classes.columns.status') }}</th>
-              <th class="col-actions">{{ t('common.actions') }}</th>
+              <th class="col-actions">{{ t('common.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -145,7 +145,7 @@ onMounted(() => {
                 <span class="class-name">{{ cls.name || '-' }}</span>
               </td>
               <td class="col-code">{{ cls.code || '-' }}</td>
-              <td class="col-students">{{ cls.students_count || 0 }}</td>
+              <td class="col-students">{{ cls.studentsCount ?? 0 }}</td>
               <td class="col-year">{{ cls.academic_year || '-' }}</td>
               <td class="col-status">
                 <span :class="['status-badge', `status-${cls.status}`]">
@@ -155,10 +155,10 @@ onMounted(() => {
               <td class="col-actions">
                 <Button
                   type="button"
-                  variant="tertiary"
+                  variant="secondary"
                   size="sm"
                   rounded="md"
-                  :label="t('common.view')"
+                  :label="t('common.actions.view')"
                   @click="viewClass(cls.id)"
                 />
               </td>
