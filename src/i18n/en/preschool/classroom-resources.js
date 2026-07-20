@@ -69,4 +69,39 @@ export default {
       needsAttention: 'Needs attention',
     },
   },
+  preschoolResourceRequests: {
+    title: 'Resource Requests',
+    columns: {
+      resource: 'Resource',
+      teacher: 'Teacher',
+      class: 'Class',
+      status: 'Status',
+      requestedDate: 'Requested Date',
+      action: 'Action',
+    },
+    statuses: {
+      pending: 'Pending',
+      approved: 'Approved',
+      rejected: 'Rejected',
+    },
+    actions: {
+      approve: 'Approve',
+      reject: 'Reject',
+      request: 'Request',
+    },
+    dialogs: {
+      approveTitle: 'Approve Resource Request',
+      rejectTitle: 'Reject Resource Request',
+      approvalNotes: 'Approval Notes (Optional)',
+      rejectionReason: 'Rejection Reason',
+    },
+    messages: {
+      empty: 'No resource requests found.',
+      approvedSuccess: 'Request approved successfully.',
+      rejectedSuccess: 'Request rejected successfully.',
+      requestSubmitSuccess: 'Resource request submitted successfully. Waiting for admin approval.',
+      selectClassRequired: 'Please select a class to request the resource for.',
+      actionFailed: 'Failed to process request.',
+    },
+  },
 }

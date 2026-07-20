@@ -5,19 +5,29 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { fetchClassroomResources } from '@/modules/preschool/services/preschoolApi'
+import Dialog from 'primevue/dialog'
+import Button from '@/components/buttons/Button.vue'
+import AlertSuccess from '@/components/alerts/AlertSuccess.vue'
+import { useUserStore } from '@/store/userStore'
+import {
+  fetchClassroomResources,
+  fetchClassroomResourceRequests,
+  createClassroomResourceRequest,
+} from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolTeacherClassroomResourcesPage',
 })
 
 const { t } = useLanguage()
+const userStore = useUserStore()
 
 const searchQuery = ref('')
 const categoryFilter = ref('')
 const conditionFilter = ref('')
 const currentPage = ref(1)
 const pageSize = 20
+const activeTab = ref('resources')
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -92,7 +102,55 @@ watch(currentPage, () => {
   loadResources()
 })
 
-onMounted(loadResources)
+onMounted(async () => {
+  await loadResources()
+  await loadRequests()
+})
+
+// Request-related state
+const requests = ref([])
+const requestsLoading = ref(false)
+const requestStatusFilter = ref('')
+const requestActionDialogOpen = ref(false)
+const requestActionMode = ref(null) // 'approve' | 'reject' | null
+const requestActionNotes = ref('')
+const selectedRequestId = ref(null)
+
+const requestTableColumns = computed(() => [
+  { key: 'resourceName', label: t('preschoolResourceRequests.columns.resource'), align: 'left' },
+  { key: 'className', label: t('preschoolResourceRequests.columns.class'), align: 'left' },
+  { key: 'statusLabel', label: t('preschoolResourceRequests.columns.status'), align: 'left' },
+  { key: 'requestedDateFormatted', label: t('preschoolResourceRequests.columns.requestedDate'), align: 'left' },
+])
+
+const mappedRequests = computed(() =>
+  requests.value
+    .filter((r) => !requestStatusFilter.value || r.status === requestStatusFilter.value)
+    .map((r) => ({
+      ...r,
+      statusLabel: t(`preschoolResourceRequests.statuses.${r.status}`),
+      requestedDateFormatted: new Date(r.requestedDate).toLocaleDateString(),
+    })),
+)
+
+async function loadRequests() {
+  requestsLoading.value = true
+  try {
+    const response = await fetchClassroomResourceRequests({
+      page: 1,
+      perPage: 100,
+    })
+    requests.value = response.items || []
+  } catch (error) {
+    requests.value = []
+  } finally {
+    requestsLoading.value = false
+  }
+}
+
+watch(requestStatusFilter, () => {
+  // computed already handles filtering, no need to reload
+})
 </script>
 
 <template>
@@ -119,8 +177,26 @@ onMounted(loadResources)
         </div>
       </div>
 
+      <!-- Tab Switcher -->
+      <div class="teacher-resources__tabs">
+        <button
+          class="teacher-resources__tab"
+          :class="{ 'teacher-resources__tab--active': activeTab === 'resources' }"
+          @click="activeTab = 'resources'"
+        >
+          {{ t('preschoolClassroomResources.title') }}
+        </button>
+        <button
+          class="teacher-resources__tab"
+          :class="{ 'teacher-resources__tab--active': activeTab === 'requests' }"
+          @click="activeTab = 'requests'"
+        >
+          {{ t('preschoolResourceRequests.title') }}
+        </button>
+      </div>
+
       <!-- main panel -->
-      <div class="teacher-resources__panel">
+      <div class="teacher-resources__panel" v-if="activeTab === 'resources'">
 
         <!-- filters -->
         <div class="teacher-resources__filters">
@@ -165,6 +241,25 @@ onMounted(loadResources)
         <div v-if="pagination.totalPages > 1" class="flex justify-end">
           <Pagination v-model="currentPage" :total-pages="pagination.totalPages" class="mt-2" />
         </div>
+      </div>
+
+      <!-- Requests Panel -->
+      <div class="teacher-resources__panel" v-if="activeTab === 'requests'">
+        <div class="teacher-resources__filters">
+          <select v-model="requestStatusFilter" class="teacher-resources__input">
+            <option value="">All Statuses</option>
+            <option value="pending">{{ t('preschoolResourceRequests.statuses.pending') }}</option>
+            <option value="approved">{{ t('preschoolResourceRequests.statuses.approved') }}</option>
+            <option value="rejected">{{ t('preschoolResourceRequests.statuses.rejected') }}</option>
+          </select>
+        </div>
+
+        <Table
+          :rows="mappedRequests"
+          :columns="requestTableColumns"
+          :loading="requestsLoading"
+          :empty-text="t('preschoolResourceRequests.messages.empty')"
+        />
       </div>
     </section>
   </MainLayout>
@@ -283,6 +378,33 @@ onMounted(loadResources)
 .teacher-resources__input:focus {
   border-color: #7c3aed;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.teacher-resources__tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #dce6f2;
+}
+
+.teacher-resources__tab {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: none;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.teacher-resources__tab:hover {
+  color: #0f172a;
+}
+
+.teacher-resources__tab--active {
+  color: #7c3aed;
+  border-bottom-color: #7c3aed;
 }
 
 @media (max-width: 768px) {
