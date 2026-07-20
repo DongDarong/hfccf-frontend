@@ -14,6 +14,8 @@ defineOptions({
 
 const router = useRouter()
 
+defineEmits(['toggle-sidebar'])
+
 const {
   t,
   currentLocale,
@@ -71,6 +73,21 @@ function goToRoute(name) {
     </div>
 
     <div class="flex shrink-0 items-center gap-2 max-[768px]:gap-1.5 max-[480px]:gap-1">
+      <AppIconButton
+        type="button"
+        variant="ghost"
+        size="md"
+        class="min-[769px]:hidden"
+        :aria-label="t('common.navigation.toggleSidebar')"
+        @click="$emit('toggle-sidebar')"
+      >
+        <template #icon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </template>
+      </AppIconButton>
+
       <AppIconButton
         type="button"
         variant="ghost"
