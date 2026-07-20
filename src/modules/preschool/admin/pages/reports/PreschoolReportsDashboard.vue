@@ -1,26 +1,26 @@
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import AttendanceReportPanel from './components/AttendanceReportPanel.vue'
+import StudentSummaryReportPanel from './components/StudentSummaryReportPanel.vue'
 
 defineOptions({ name: 'PreschoolReportsDashboardPage' })
 
 const { t } = useLanguage()
-const router = useRouter()
+
+const selectedReport = ref(null)
 
 const REPORT_TYPES = [
   {
     key: 'attendance',
     icon: 'pi-calendar-check',
-    routeName: 'dashboard-preschool-admin-reports-attendance',
     accent: 'card--emerald',
   },
   {
     key: 'student-summary',
     icon: 'pi-user-check',
-    routeName: 'dashboard-preschool-admin-reports-student-summary',
     accent: 'card--blue',
   },
 ]
@@ -33,8 +33,8 @@ const reportTypeOptions = computed(() =>
   })),
 )
 
-function navigateToReport(routeName) {
-  router.push({ name: routeName })
+function selectReport(reportKey) {
+  selectedReport.value = selectedReport.value === reportKey ? null : reportKey
 }
 </script>
 
@@ -52,8 +52,8 @@ function navigateToReport(routeName) {
           :key="reportType.key"
           type="button"
           class="report-card"
-          :class="reportType.accent"
-          @click="navigateToReport(reportType.routeName)"
+          :class="[reportType.accent, { 'report-card--active': selectedReport === reportType.key }]"
+          @click="selectReport(reportType.key)"
         >
           <div class="report-card__icon-wrap">
             <i :class="['pi', reportType.icon]" aria-hidden="true" />
@@ -65,6 +65,10 @@ function navigateToReport(routeName) {
           <i class="pi pi-arrow-right report-card__arrow" aria-hidden="true" />
         </button>
       </div>
+
+      <!-- Report Panels -->
+      <AttendanceReportPanel v-if="selectedReport === 'attendance'" />
+      <StudentSummaryReportPanel v-if="selectedReport === 'student-summary'" />
     </section>
   </MainLayout>
 </template>
@@ -81,11 +85,18 @@ function navigateToReport(routeName) {
   text-align: left;
   width: 100%;
   box-shadow: 0 12px 32px -24px rgba(15, 23, 42, 0.3);
-  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease, background 0.14s ease;
   cursor: pointer;
 }
 
 .report-card:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.38); }
+
+.report-card--active {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.38);
+  transform: translateY(-2px);
+}
 
 .report-card__icon-wrap {
   display: inline-flex;
@@ -106,6 +117,8 @@ function navigateToReport(routeName) {
 
 .card--emerald .report-card__icon-wrap { background: #d1fae5; color: #065f46; }
 .card--emerald:hover { border-color: #6ee7b7; }
+.card--emerald.report-card--active { border-color: #6ee7b7; }
 .card--blue .report-card__icon-wrap { background: #dbeafe; color: #1e40af; }
 .card--blue:hover { border-color: #93c5fd; }
+.card--blue.report-card--active { border-color: #93c5fd; }
 </style>

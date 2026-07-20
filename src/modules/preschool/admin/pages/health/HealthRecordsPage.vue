@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
@@ -7,24 +8,14 @@ import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
-import {
-  fetchStudentMedicalProfile,
-  saveStudentMedicalProfile,
-  deleteStudentMedicalProfile,
-  saveStudentHealthAllergy,
-  saveStudentHealthMedication,
-  saveStudentHealthVaccination,
-  saveStudentHealthContact,
-  saveStudentHealthIncident,
-} from '@/modules/preschool/services/api/preschoolHealthApi'
+import { deleteStudentMedicalProfile } from '@/modules/preschool/services/api/preschoolHealthApi'
 import { resolveAvatarSource } from '@/utils/avatar'
-import HealthRecordForm from './components/HealthRecordForm.vue'
-import HealthRecordDetail from './components/HealthRecordDetail.vue'
 
 defineOptions({
   name: 'PreschoolHealthRecordsPage',
 })
 
+const router = useRouter()
 const { t } = useLanguage()
 
 const students = ref([])
@@ -43,15 +34,9 @@ const pagination = ref({
 const loading = ref(false)
 const errorMessage = ref('')
 
-const formDialogOpen = ref(false)
-const detailDialogOpen = ref(false)
 const confirmDeleteDialogOpen = ref(false)
-
 const selectedStudent = ref(null)
-const selectedStudentProfile = ref(null)
-const formMode = ref('add') // 'add' or 'edit'
-const formLoading = ref(false)
-const profileLoading = ref(false)
+const deleteLoading = ref(false)
 
 const filteredClasses = computed(() => {
   const classSet = new Set()
@@ -123,117 +108,27 @@ async function loadStudents() {
   }
 }
 
-async function loadStudentProfile(studentId) {
-  if (!studentId) {
-    selectedStudentProfile.value = null
-    return
-  }
-
-  profileLoading.value = true
-  try {
-    const response = await fetchStudentMedicalProfile(studentId)
-    selectedStudentProfile.value = response?.medicalProfile || null
-  } catch (error) {
-    selectedStudentProfile.value = null
-  } finally {
-    profileLoading.value = false
-  }
+function openAddPage(student) {
+  router.push({
+    name: 'preschool-health-records-create',
+    params: { studentId: student.id },
+  })
 }
 
-function openAddDialog(student) {
-  selectedStudent.value = student
-  selectedStudentProfile.value = null
-  formMode.value = 'add'
-  formDialogOpen.value = true
+function openDetailPage(student) {
+  router.push({
+    name: 'preschool-health-records-detail',
+    params: { studentId: student.id },
+  })
 }
 
-function openViewDialog(student) {
-  selectedStudent.value = student
-  formMode.value = 'view'
-  detailDialogOpen.value = true
-  loadStudentProfile(student.id)
+function openEditPage(student) {
+  router.push({
+    name: 'preschool-health-records-edit',
+    params: { studentId: student.id },
+  })
 }
 
-function openEditDialog(student) {
-  selectedStudent.value = student
-  formMode.value = 'edit'
-  formDialogOpen.value = true
-  loadStudentProfile(student.id)
-}
-
-async function handleFormSave(payload) {
-  if (!selectedStudent.value?.id) return
-
-  formLoading.value = true
-  try {
-    const studentId = selectedStudent.value.id
-
-    // Save basic health information to medical profile
-    if (payload.basicInfo) {
-      await saveStudentMedicalProfile(studentId, payload.basicInfo)
-    }
-
-    // Save medical conditions (using incidents endpoint)
-    if (Array.isArray(payload.conditions)) {
-      for (const condition of payload.conditions) {
-        if (condition.condition_name) {
-          await saveStudentHealthIncident(studentId, {
-            title: condition.condition_name,
-            description: condition.notes || '',
-            incident_date: condition.diagnosis_date || new Date().toISOString().split('T')[0],
-            status: condition.status || 'active',
-          })
-        }
-      }
-    }
-
-    // Save allergies
-    if (Array.isArray(payload.allergies)) {
-      for (const allergy of payload.allergies) {
-        if (allergy.allergy_name) {
-          await saveStudentHealthAllergy(studentId, allergy)
-        }
-      }
-    }
-
-    // Save medications
-    if (Array.isArray(payload.medications)) {
-      for (const medication of payload.medications) {
-        if (medication.medication_name) {
-          await saveStudentHealthMedication(studentId, medication)
-        }
-      }
-    }
-
-    // Save vaccinations
-    if (Array.isArray(payload.vaccinations)) {
-      for (const vaccination of payload.vaccinations) {
-        if (vaccination.vaccine_name) {
-          await saveStudentHealthVaccination(studentId, vaccination)
-        }
-      }
-    }
-
-    // Save emergency contacts
-    if (Array.isArray(payload.emergencyContacts)) {
-      for (const contact of payload.emergencyContacts) {
-        if (contact.contact_name) {
-          await saveStudentHealthContact(studentId, contact)
-        }
-      }
-    }
-
-    formDialogOpen.value = false
-    await loadStudents()
-    if (detailDialogOpen.value) {
-      await loadStudentProfile(selectedStudent.value.id)
-    }
-  } catch (error) {
-    throw error
-  } finally {
-    formLoading.value = false
-  }
-}
 
 function openDeleteDialog(student) {
   selectedStudent.value = student
@@ -243,16 +138,15 @@ function openDeleteDialog(student) {
 async function handleDeleteConfirm() {
   if (!selectedStudent.value?.id) return
 
-  formLoading.value = true
+  deleteLoading.value = true
   try {
     await deleteStudentMedicalProfile(selectedStudent.value.id)
     confirmDeleteDialogOpen.value = false
-    detailDialogOpen.value = false
     await loadStudents()
   } catch (error) {
     throw error
   } finally {
-    formLoading.value = false
+    deleteLoading.value = false
   }
 }
 
@@ -372,7 +266,7 @@ onMounted(() => {
                       size="sm"
                       rounded="lg"
                       :label="`+ ${t('preschoolHealthPage.records.add')}`"
-                      @click="openAddDialog(student)"
+                      @click="openAddPage(student)"
                     />
                     <ActionsButton
                       v-else
@@ -380,8 +274,8 @@ onMounted(() => {
                       :show-view="true"
                       :show-edit="true"
                       :show-delete="true"
-                      @view="openViewDialog(student)"
-                      @edit="openEditDialog(student)"
+                      @view="openDetailPage(student)"
+                      @edit="openEditPage(student)"
                       @delete="openDeleteDialog(student)"
                     />
                   </td>
@@ -402,28 +296,6 @@ onMounted(() => {
           </div>
         </template>
       </div>
-
-      <!-- Add/Edit Form Dialog -->
-      <HealthRecordForm
-        v-if="formDialogOpen"
-        :student="selectedStudent"
-        :profile="formMode === 'edit' ? selectedStudentProfile : null"
-        :mode="formMode"
-        :loading="formLoading"
-        @save="handleFormSave"
-        @close="formDialogOpen = false"
-      />
-
-      <!-- View Detail Dialog -->
-      <HealthRecordDetail
-        v-if="detailDialogOpen"
-        :student="selectedStudent"
-        :profile="selectedStudentProfile"
-        :loading="profileLoading"
-        @close="detailDialogOpen = false"
-        @edit="openEditDialog(selectedStudent)"
-        @delete="openDeleteDialog(selectedStudent)"
-      />
 
       <!-- Delete Confirmation Dialog -->
       <div v-if="confirmDeleteDialogOpen" class="health-records-page__delete-overlay" @click="confirmDeleteDialogOpen = false">
@@ -453,7 +325,7 @@ onMounted(() => {
               size="md"
               rounded="lg"
               :label="t('common.delete')"
-              :loading="formLoading"
+              :loading="deleteLoading"
               @click="handleDeleteConfirm"
             />
           </div>

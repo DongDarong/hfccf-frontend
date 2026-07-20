@@ -28,7 +28,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['save', 'close'])
+const emit = defineEmits(['save', 'cancel'])
 
 const { t } = useLanguage()
 
@@ -92,9 +92,8 @@ function resetForm() {
   submitError.value = ''
 }
 
-function closeDialog() {
-  resetForm()
-  emit('close')
+function handleCancel() {
+  emit('cancel')
 }
 
 // Collection handlers
@@ -207,325 +206,237 @@ async function submitForm() {
 </script>
 
 <template>
-  <div class="health-record-form-overlay" @click="closeDialog">
-    <div class="health-record-form-dialog" @click.stop>
-      <div class="health-record-form-header">
-        <h3>{{ mode === 'add' ? t('preschoolHealthPage.records.addHealth') : t('preschoolHealthPage.records.editHealth') }}</h3>
-        <button class="health-record-form-close" @click="closeDialog">&times;</button>
+  <div class="health-record-form">
+    <!-- Student Information Card -->
+    <div class="student-info-card">
+      <div class="student-info-item">
+        <span class="student-info-label">{{ t('preschoolHealthPage.records.student') }}</span>
+        <span class="student-info-value">{{ student?.fullName || '-' }}</span>
       </div>
+      <div class="student-info-divider" />
+      <div class="student-info-item">
+        <span class="student-info-label">{{ t('preschoolHealthPage.records.gender') }}</span>
+        <span class="student-info-value">{{ student?.gender || '-' }}</span>
+      </div>
+      <div class="student-info-divider" />
+      <div class="student-info-item">
+        <span class="student-info-label">{{ t('preschoolHealthPage.records.class') }}</span>
+        <span class="student-info-value">{{ student?.className || '-' }}</span>
+      </div>
+    </div>
 
-      <div class="health-record-form-body">
-        <!-- Student Information Card -->
-        <div class="student-info-card">
-          <div class="student-info-item">
-            <span class="student-info-label">{{ t('preschoolHealthPage.records.student') }}</span>
-            <span class="student-info-value">{{ student?.fullName || '-' }}</span>
+    <!-- Error Messages -->
+    <div v-if="submitError" class="health-record-form-error">
+      {{ submitError }}
+    </div>
+
+    <!-- Section 1: Basic Health Information -->
+    <div class="collapsible-section">
+      <button class="section-header" @click="toggleSection('basic')">
+        <div class="section-header-content">
+          <span class="section-title">{{ t('preschoolHealthPage.records.healthInformation') }}</span>
+          <span class="section-description">Height, weight, blood type, and medical notes</span>
+        </div>
+        <span class="section-icon" :class="{ collapsed: collapsedSections.basic }">▼</span>
+      </button>
+
+      <div v-if="!collapsedSections.basic" class="section-content">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="health-record-form-label">{{ t('preschoolHealthPage.records.bloodType') }}</label>
+            <select v-model="bloodType" class="health-record-form-input">
+              <option value="">{{ t('common.none') }}</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
           </div>
-          <div class="student-info-divider" />
-          <div class="student-info-item">
-            <span class="student-info-label">{{ t('preschoolHealthPage.records.gender') }}</span>
-            <span class="student-info-value">{{ student?.gender || '-' }}</span>
+
+          <div class="form-group">
+            <label class="health-record-form-label">{{ t('preschoolHealthPage.records.height') }}</label>
+            <input
+              v-model="height"
+              type="number"
+              class="health-record-form-input"
+              placeholder="Height in cm"
+              min="0"
+              max="300"
+            />
           </div>
-          <div class="student-info-divider" />
-          <div class="student-info-item">
-            <span class="student-info-label">{{ t('preschoolHealthPage.records.class') }}</span>
-            <span class="student-info-value">{{ student?.className || '-' }}</span>
+
+          <div class="form-group">
+            <label class="health-record-form-label">{{ t('preschoolHealthPage.records.weight') }}</label>
+            <input
+              v-model="weight"
+              type="number"
+              class="health-record-form-input"
+              placeholder="Weight in kg"
+              min="0"
+              max="200"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="health-record-form-label">{{ t('preschoolHealthPage.records.specialNeeds') }}</label>
+            <input
+              v-model="specialNeeds"
+              type="text"
+              class="health-record-form-input"
+              :placeholder="t('common.none')"
+            />
           </div>
         </div>
 
-        <!-- Error Messages -->
-        <div v-if="submitError" class="health-record-form-error">
-          {{ submitError }}
-        </div>
-
-        <!-- Section 1: Basic Health Information -->
-        <div class="collapsible-section">
-          <button class="section-header" @click="toggleSection('basic')">
-            <div class="section-header-content">
-              <span class="section-title">{{ t('preschoolHealthPage.records.healthInformation') }}</span>
-              <span class="section-description">Height, weight, blood type, and medical notes</span>
-            </div>
-            <span class="section-icon" :class="{ collapsed: collapsedSections.basic }">▼</span>
-          </button>
-
-          <div v-if="!collapsedSections.basic" class="section-content">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="health-record-form-label">{{ t('preschoolHealthPage.records.bloodType') }}</label>
-                <select v-model="bloodType" class="health-record-form-input">
-                  <option value="">{{ t('common.none') }}</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="health-record-form-label">{{ t('preschoolHealthPage.records.height') }}</label>
-                <input
-                  v-model="height"
-                  type="number"
-                  class="health-record-form-input"
-                  placeholder="Height in cm"
-                  min="0"
-                  max="300"
-                />
-              </div>
-
-              <div class="form-group">
-                <label class="health-record-form-label">{{ t('preschoolHealthPage.records.weight') }}</label>
-                <input
-                  v-model="weight"
-                  type="number"
-                  class="health-record-form-input"
-                  placeholder="Weight in kg"
-                  min="0"
-                  max="200"
-                />
-              </div>
-
-              <div class="form-group">
-                <label class="health-record-form-label">{{ t('preschoolHealthPage.records.specialNeeds') }}</label>
-                <input
-                  v-model="specialNeeds"
-                  type="text"
-                  class="health-record-form-input"
-                  :placeholder="t('common.none')"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="health-record-form-label">{{ t('preschoolHealthPage.records.medicalNotes') }}</label>
-              <textarea
-                v-model="medicalNotes"
-                class="health-record-form-textarea"
-                :placeholder="t('preschoolHealthPage.records.notesPlaceholder')"
-                rows="3"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 2: Medical Conditions -->
-        <div class="collapsible-section">
-          <button class="section-header" @click="toggleSection('conditions')">
-            <div class="section-header-content">
-              <span class="section-title">{{ t('preschoolHealthPage.records.conditions') }}</span>
-              <span class="section-description">Chronic conditions, diagnosis dates, and status</span>
-            </div>
-            <span class="section-icon" :class="{ collapsed: collapsedSections.conditions }">▼</span>
-          </button>
-
-          <div v-if="!collapsedSections.conditions" class="section-content">
-            <DynamicCollection
-              :items="conditions"
-              :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
-              :addButtonLabel="t('preschoolHealthPage.records.conditions')"
-              @add="addCondition"
-              @remove="removeCondition"
-            >
-              <template #item="{ item, index, onRemove }">
-                <ConditionCard :condition="item" :index="index" @remove="onRemove" @update="updateCondition" />
-              </template>
-            </DynamicCollection>
-          </div>
-        </div>
-
-        <!-- Section 3: Allergies -->
-        <div class="collapsible-section">
-          <button class="section-header" @click="toggleSection('allergies')">
-            <div class="section-header-content">
-              <span class="section-title">{{ t('preschoolHealthPage.records.allergies') }}</span>
-              <span class="section-description">Known allergies, severity levels, and reactions</span>
-            </div>
-            <span class="section-icon" :class="{ collapsed: collapsedSections.allergies }">▼</span>
-          </button>
-
-          <div v-if="!collapsedSections.allergies" class="section-content">
-            <DynamicCollection
-              :items="allergies"
-              :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
-              :addButtonLabel="t('preschoolHealthPage.records.allergies')"
-              @add="addAllergy"
-              @remove="removeAllergy"
-            >
-              <template #item="{ item, index, onRemove }">
-                <AllergyCard :allergy="item" :index="index" @remove="onRemove" @update="updateAllergy" />
-              </template>
-            </DynamicCollection>
-          </div>
-        </div>
-
-        <!-- Section 4: Medications -->
-        <div class="collapsible-section">
-          <button class="section-header" @click="toggleSection('medications')">
-            <div class="section-header-content">
-              <span class="section-title">{{ t('preschoolHealthPage.records.medications') }}</span>
-              <span class="section-description">Current and past medications with dosages</span>
-            </div>
-            <span class="section-icon" :class="{ collapsed: collapsedSections.medications }">▼</span>
-          </button>
-
-          <div v-if="!collapsedSections.medications" class="section-content">
-            <DynamicCollection
-              :items="medications"
-              :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
-              :addButtonLabel="t('preschoolHealthPage.records.medications')"
-              @add="addMedication"
-              @remove="removeMedication"
-            >
-              <template #item="{ item, index, onRemove }">
-                <MedicationCard :medication="item" :index="index" @remove="onRemove" @update="updateMedication" />
-              </template>
-            </DynamicCollection>
-          </div>
-        </div>
-
-        <!-- Section 5: Vaccinations -->
-        <div class="collapsible-section">
-          <button class="section-header" @click="toggleSection('vaccinations')">
-            <div class="section-header-content">
-              <span class="section-title">{{ t('preschoolHealthPage.records.vaccinations') }}</span>
-              <span class="section-description">Vaccination history and completion status</span>
-            </div>
-            <span class="section-icon" :class="{ collapsed: collapsedSections.vaccinations }">▼</span>
-          </button>
-
-          <div v-if="!collapsedSections.vaccinations" class="section-content">
-            <DynamicCollection
-              :items="vaccinations"
-              :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
-              :addButtonLabel="t('preschoolHealthPage.records.vaccinations')"
-              @add="addVaccination"
-              @remove="removeVaccination"
-            >
-              <template #item="{ item, index, onRemove }">
-                <VaccinationCard :vaccination="item" :index="index" @remove="onRemove" @update="updateVaccination" />
-              </template>
-            </DynamicCollection>
-          </div>
-        </div>
-
-        <!-- Section 6: Emergency Contacts -->
-        <div class="collapsible-section">
-          <button class="section-header" @click="toggleSection('emergencyContacts')">
-            <div class="section-header-content">
-              <span class="section-title">{{ t('preschoolHealthPage.records.emergencyContacts') }}</span>
-              <span class="section-description">Guardian contacts and emergency phone numbers</span>
-            </div>
-            <span class="section-icon" :class="{ collapsed: collapsedSections.emergencyContacts }">▼</span>
-          </button>
-
-          <div v-if="!collapsedSections.emergencyContacts" class="section-content">
-            <DynamicCollection
-              :items="emergencyContacts"
-              :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
-              :addButtonLabel="t('preschoolHealthPage.records.emergencyContacts')"
-              @add="addEmergencyContact"
-              @remove="removeEmergencyContact"
-            >
-              <template #item="{ item, index, onRemove }">
-                <EmergencyContactCard :contact="item" :index="index" @remove="onRemove" @update="updateEmergencyContact" />
-              </template>
-            </DynamicCollection>
-          </div>
+        <div class="form-group">
+          <label class="health-record-form-label">{{ t('preschoolHealthPage.records.medicalNotes') }}</label>
+          <textarea
+            v-model="medicalNotes"
+            class="health-record-form-textarea"
+            :placeholder="t('preschoolHealthPage.records.notesPlaceholder')"
+            rows="3"
+          />
         </div>
       </div>
+    </div>
 
-      <div class="health-record-form-footer">
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          rounded="lg"
-          :label="t('common.cancel')"
-          :disabled="loading"
-          @click="closeDialog"
-        />
-        <Button
-          type="button"
-          variant="primary"
-          size="md"
-          rounded="lg"
-          :label="t('common.save')"
-          :loading="loading"
-          @click="submitForm"
-        />
+    <!-- Section 2: Medical Conditions -->
+    <div class="collapsible-section">
+      <button class="section-header" @click="toggleSection('conditions')">
+        <div class="section-header-content">
+          <span class="section-title">{{ t('preschoolHealthPage.records.conditions') }}</span>
+          <span class="section-description">Chronic conditions, diagnosis dates, and status</span>
+        </div>
+        <span class="section-icon" :class="{ collapsed: collapsedSections.conditions }">▼</span>
+      </button>
+
+      <div v-if="!collapsedSections.conditions" class="section-content">
+        <DynamicCollection
+          :items="conditions"
+          :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
+          :addButtonLabel="t('preschoolHealthPage.records.conditions')"
+          @add="addCondition"
+          @remove="removeCondition"
+        >
+          <template #item="{ item, index, onRemove }">
+            <ConditionCard :condition="item" :index="index" @remove="onRemove" @update="updateCondition" />
+          </template>
+        </DynamicCollection>
+      </div>
+    </div>
+
+    <!-- Section 3: Allergies -->
+    <div class="collapsible-section">
+      <button class="section-header" @click="toggleSection('allergies')">
+        <div class="section-header-content">
+          <span class="section-title">{{ t('preschoolHealthPage.records.allergies') }}</span>
+          <span class="section-description">Known allergies, severity levels, and reactions</span>
+        </div>
+        <span class="section-icon" :class="{ collapsed: collapsedSections.allergies }">▼</span>
+      </button>
+
+      <div v-if="!collapsedSections.allergies" class="section-content">
+        <DynamicCollection
+          :items="allergies"
+          :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
+          :addButtonLabel="t('preschoolHealthPage.records.allergies')"
+          @add="addAllergy"
+          @remove="removeAllergy"
+        >
+          <template #item="{ item, index, onRemove }">
+            <AllergyCard :allergy="item" :index="index" @remove="onRemove" @update="updateAllergy" />
+          </template>
+        </DynamicCollection>
+      </div>
+    </div>
+
+    <!-- Section 4: Medications -->
+    <div class="collapsible-section">
+      <button class="section-header" @click="toggleSection('medications')">
+        <div class="section-header-content">
+          <span class="section-title">{{ t('preschoolHealthPage.records.medications') }}</span>
+          <span class="section-description">Current and past medications with dosages</span>
+        </div>
+        <span class="section-icon" :class="{ collapsed: collapsedSections.medications }">▼</span>
+      </button>
+
+      <div v-if="!collapsedSections.medications" class="section-content">
+        <DynamicCollection
+          :items="medications"
+          :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
+          :addButtonLabel="t('preschoolHealthPage.records.medications')"
+          @add="addMedication"
+          @remove="removeMedication"
+        >
+          <template #item="{ item, index, onRemove }">
+            <MedicationCard :medication="item" :index="index" @remove="onRemove" @update="updateMedication" />
+          </template>
+        </DynamicCollection>
+      </div>
+    </div>
+
+    <!-- Section 5: Vaccinations -->
+    <div class="collapsible-section">
+      <button class="section-header" @click="toggleSection('vaccinations')">
+        <div class="section-header-content">
+          <span class="section-title">{{ t('preschoolHealthPage.records.vaccinations') }}</span>
+          <span class="section-description">Vaccination history and completion status</span>
+        </div>
+        <span class="section-icon" :class="{ collapsed: collapsedSections.vaccinations }">▼</span>
+      </button>
+
+      <div v-if="!collapsedSections.vaccinations" class="section-content">
+        <DynamicCollection
+          :items="vaccinations"
+          :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
+          :addButtonLabel="t('preschoolHealthPage.records.vaccinations')"
+          @add="addVaccination"
+          @remove="removeVaccination"
+        >
+          <template #item="{ item, index, onRemove }">
+            <VaccinationCard :vaccination="item" :index="index" @remove="onRemove" @update="updateVaccination" />
+          </template>
+        </DynamicCollection>
+      </div>
+    </div>
+
+    <!-- Section 6: Emergency Contacts -->
+    <div class="collapsible-section">
+      <button class="section-header" @click="toggleSection('emergencyContacts')">
+        <div class="section-header-content">
+          <span class="section-title">{{ t('preschoolHealthPage.records.emergencyContacts') }}</span>
+          <span class="section-description">Guardian contacts and emergency phone numbers</span>
+        </div>
+        <span class="section-icon" :class="{ collapsed: collapsedSections.emergencyContacts }">▼</span>
+      </button>
+
+      <div v-if="!collapsedSections.emergencyContacts" class="section-content">
+        <DynamicCollection
+          :items="emergencyContacts"
+          :emptyMessage="t('preschoolHealthPage.records.noRecords') || 'No records added.'"
+          :addButtonLabel="t('preschoolHealthPage.records.emergencyContacts')"
+          @add="addEmergencyContact"
+          @remove="removeEmergencyContact"
+        >
+          <template #item="{ item, index, onRemove }">
+            <EmergencyContactCard :contact="item" :index="index" @remove="onRemove" @update="updateEmergencyContact" />
+          </template>
+        </DynamicCollection>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.health-record-form-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  z-index: 40;
-  padding: 2rem 0;
-  overflow-y: auto;
-}
-
-.health-record-form-dialog {
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.3);
-  max-width: 56rem;
-  width: 90%;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.health-record-form-header {
-  padding: 2rem;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.health-record-form-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.health-record-form-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #64748b;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.2s;
-}
-
-.health-record-form-close:hover {
-  color: #0f172a;
-}
-
-.health-record-form-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
+.health-record-form {
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  width: 100%;
 }
 
 /* Student Information Card */
@@ -695,36 +606,7 @@ async function submitForm() {
   line-height: 1.5;
 }
 
-.health-record-form-footer {
-  padding: 1.5rem 2rem;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  background: #fafbfc;
-}
-
 @media (max-width: 640px) {
-  .health-record-form-overlay {
-    padding: 0;
-  }
-
-  .health-record-form-dialog {
-    max-width: 100%;
-    width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-  }
-
-  .health-record-form-header {
-    padding: 1.5rem;
-  }
-
-  .health-record-form-body {
-    padding: 1.5rem;
-    gap: 2rem;
-  }
-
   .student-info-card {
     flex-direction: column;
   }
@@ -741,12 +623,6 @@ async function submitForm() {
 
   .section-content {
     padding: 1.25rem;
-  }
-
-  .health-record-form-footer {
-    padding: 1rem;
-    gap: 0.75rem;
-    flex-direction: column-reverse;
   }
 }
 </style>
