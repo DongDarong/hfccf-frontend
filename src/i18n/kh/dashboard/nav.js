@@ -77,6 +77,7 @@ export default {
     coaches: 'គ្រូបង្វឹក',
     students: 'សិស្ស',
     myStudents: 'សិស្សរបស់ខ្ញុំ',
+    myClasses: 'ថ្នាក់របស់ខ្ញុំ',
     attendance: 'វត្តមាន',
     homework: 'កិច្ចការផ្ទះ',
     teams: 'ក្រុម',

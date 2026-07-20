@@ -91,6 +91,7 @@ export const sidebarIconByName = {
 const preschoolSidebarIconMap = new Map([
   ['preschool-dashboard', IconLayoutDashboard],
   ['dashboard-preschool-admin', IconLayoutDashboard],
+  ['dashboard-preschool-teacher-classes', IconChalkboard],
   ['dashboard-preschool-teacher-students', IconUsers],
   ['dashboard-preschool-teacher-schedule', IconCalendarEvent],
   ['dashboard-preschool-teacher-attendance', IconClipboardCheck],

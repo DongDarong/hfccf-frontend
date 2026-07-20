@@ -29,6 +29,7 @@ import reviewWorkflow from './review-workflow'
 import notifications from './notifications'
 import workflows from './workflows'
 import gradeEntry from './grade-entry'
+import teacher from './teacher'
 
 export default {
   // Keep Preschool copy split by concern so real pages can resolve stable keys
@@ -64,4 +65,5 @@ export default {
   ...notifications,
   ...workflows,
   ...gradeEntry,
+  ...teacher,
 }

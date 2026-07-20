@@ -165,6 +165,21 @@
           }
         },
         {
+          "id": "preschool-teacher-classes",
+          "routeName": "dashboard-preschool-teacher-classes",
+          "labelKey": "nav.items.myClasses",
+          "icon": "class",
+          "badgeKey": "nav.badges.staff",
+          "access": {
+            "scopes": [
+              "staff"
+            ],
+            "domains": [
+              "preschool"
+            ]
+          }
+        },
+        {
           "id": "preschool-teacher-schedule",
           "routeName": "dashboard-preschool-teacher-schedule",
           "labelKey": "nav.items.schedules",

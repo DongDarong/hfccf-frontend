@@ -367,6 +367,22 @@ const CRUMB_MAP = {
     { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
     { labelKey: 'breadcrumb.studentHealthProfile' },
   ],
+  'preschool-health-records-create': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.addHealth' },
+  ],
+  'preschool-health-records-detail': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.healthDetail' },
+  ],
+  'preschool-health-records-edit': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.healthRecords', to: { name: 'dashboard-preschool-admin-health' } },
+    { labelKey: 'breadcrumb.healthDetail', to: { name: 'preschool-health-records-detail' } },
+    { labelKey: 'breadcrumb.edit' },
+  ],
   'dashboard-preschool-admin-guardian-communications': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-admin' } },
     { labelKey: 'breadcrumb.guardianContactLog' },
@@ -485,6 +501,15 @@ const CRUMB_MAP = {
   'dashboard-preschool-teacher-students': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
     { labelKey: 'breadcrumb.myStudents' },
+  ],
+  'dashboard-preschool-teacher-classes': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.myClasses' },
+  ],
+  'dashboard-preschool-teacher-class-detail': [
+    { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
+    { labelKey: 'breadcrumb.myClasses', to: { name: 'dashboard-preschool-teacher-classes' } },
+    { labelKey: 'breadcrumb.classDetail' },
   ],
   'dashboard-preschool-teacher-schedule': [
     { labelKey: 'breadcrumb.preschool', to: { name: 'dashboard-preschool-teacher' } },
