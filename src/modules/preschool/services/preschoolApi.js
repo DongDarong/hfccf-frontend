@@ -1190,18 +1190,6 @@ export async function fetchMyPreschoolClasses(
   return normalizeClassListResponse(response, page, perPage)
 }
 
-export async function fetchMyPreschoolClass(id, options = {}) {
-  const classId = resolveId(id)
-  if (!classId) return null
-
-  const response = await http.get(`/preschool/teacher/my-classes/${encodeURIComponent(classId)}`, {
-    signal: options.signal,
-  })
-
-  const responsePayload = unwrapApiData(response) || {}
-  return normalizeClassRow(responsePayload.class || responsePayload)
-}
-
 // ── Classroom Resources ───────────────────────────────────────────────────────
 
 function normalizeResourceRow(row = {}) {

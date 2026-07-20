@@ -5,7 +5,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
-import { fetchMyPreschoolClass, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
+import { fetchPreschoolClass, fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
 
 defineOptions({
   name: 'PreschoolTeacherMyClassDetailPage',
@@ -33,7 +33,7 @@ async function loadData() {
 
   try {
     const [classResponse, studentsResponse] = await Promise.all([
-      fetchMyPreschoolClass(classId.value),
+      fetchPreschoolClass(classId.value),
       fetchPreschoolStudents({ classId: classId.value, perPage: 1000 }),
     ])
 
