@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
+import ActionsButton from '@/components/buttons/ActionsButton.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
@@ -364,35 +365,25 @@ onMounted(() => {
                     </span>
                   </td>
                   <td class="health-records-page__td health-records-page__td--actions">
-                    <div class="health-records-page__actions">
-                      <Button
-                        v-if="!student.hasHealthProfile"
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        rounded="lg"
-                        :label="t('preschoolHealthPage.records.add')"
-                        @click="openAddDialog(student)"
-                      />
-                      <template v-else>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          rounded="lg"
-                          :label="t('preschoolHealthPage.records.view')"
-                          @click="openViewDialog(student)"
-                        />
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          rounded="lg"
-                          :label="t('preschoolHealthPage.records.edit')"
-                          @click="openEditDialog(student)"
-                        />
-                      </template>
-                    </div>
+                    <Button
+                      v-if="!student.hasHealthProfile"
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      rounded="lg"
+                      :label="`+ ${t('preschoolHealthPage.records.add')}`"
+                      @click="openAddDialog(student)"
+                    />
+                    <ActionsButton
+                      v-else
+                      :item="student"
+                      :show-view="true"
+                      :show-edit="true"
+                      :show-delete="true"
+                      @view="openViewDialog(student)"
+                      @edit="openEditDialog(student)"
+                      @delete="openDeleteDialog(student)"
+                    />
                   </td>
                 </tr>
               </tbody>

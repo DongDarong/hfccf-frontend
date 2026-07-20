@@ -107,6 +107,12 @@ export default {
       phoneNumber: 'Phone Number',
       hospital: 'Hospital / Clinic (Optional)',
       status: 'Status',
+      noRecords: 'No records added',
+      conditions: 'Medical Conditions',
+      allergies: 'Allergies',
+      medications: 'Medications',
+      vaccinations: 'Vaccinations',
+      emergencyContacts: 'Emergency Contacts',
     },
     profile: {
       title: 'Student Health Profile',

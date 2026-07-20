@@ -107,6 +107,12 @@ export default {
       phoneNumber: 'លេខទូរស័ព្ទ',
       hospital: 'មន្ទីរពេទ្យ / គ្លីនីក (ច្រើនន)',
       status: 'ស្ថានភាព',
+      noRecords: 'មិនបានដាក់បញ្ចូលកំណត់ត្រាទេ',
+      conditions: 'លក្ខខណ្ឌវេជ្ជសាស្ត្រ',
+      allergies: 'អាល្លែស៊ី',
+      medications: 'ថ្នាំ',
+      vaccinations: 'វ៉ាក់សាំង',
+      emergencyContacts: 'ទំនាក់ទំនងបន្ទាន់',
     },
     profile: {
       title: 'ប្រវត្តិរូបសុខភាពសិស្ស',

@@ -37,7 +37,9 @@ function handleItemChange(index, key, value) {
 <template>
   <div class="dynamic-collection">
     <div v-if="!hasItems" class="dynamic-collection__empty">
-      {{ emptyMessage }}
+      <div class="empty-icon">📋</div>
+      <div class="empty-message">{{ emptyMessage }}</div>
+      <div class="empty-hint">Click the button below to add your first {{ addButtonLabel.toLowerCase() }}</div>
     </div>
 
     <div v-else class="dynamic-collection__items">
@@ -50,7 +52,7 @@ function handleItemChange(index, key, value) {
         variant="secondary"
         size="sm"
         rounded="lg"
-        :label="`+ ${addButtonLabel}`"
+        :label="`+ Add ${addButtonLabel}`"
         @click="handleAdd"
       />
     </div>
@@ -65,19 +67,38 @@ function handleItemChange(index, key, value) {
 }
 
 .dynamic-collection__empty {
-  padding: 1rem;
+  padding: 2rem;
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
   border-radius: 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.6;
+}
+
+.empty-message {
   color: #64748b;
   font-size: 0.9rem;
-  text-align: center;
+  font-weight: 500;
+}
+
+.empty-hint {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
 .dynamic-collection__items {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.875rem;
 }
 
 .dynamic-collection__actions {

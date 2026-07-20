@@ -14,6 +14,7 @@ export default {
   clear: 'Clear',
   confirm: 'Confirm',
   none: 'None',
+  add: 'Add',
   submit: 'Submit',
   close: 'Close',
   continue: 'Continue',

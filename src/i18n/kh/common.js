@@ -14,6 +14,7 @@ export default {
   clear: 'ជម្រះ',
   confirm: 'បញ្ជាក់',
   none: 'គ្មាន',
+  add: 'បន្ថែម',
   submit: 'ដាក់ស្នើ',
   close: 'បិទ',
   continue: 'បន្ត',
