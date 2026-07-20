@@ -262,13 +262,13 @@ onMounted(() => {
             <table class="health-records-page__table">
               <thead>
                 <tr>
-                  <th class="health-records-page__th health-records-page__th--number">{{ t('common.number') }}</th>
+                  <th class="health-records-page__th health-records-page__th--number">{{ t('common.table.number') }}</th>
                   <th class="health-records-page__th">{{ t('preschoolHealthPage.records.student') }}</th>
                   <th class="health-records-page__th">{{ t('preschoolHealthPage.records.gender') }}</th>
                   <th class="health-records-page__th">{{ t('preschoolHealthPage.records.dateOfBirth') }}</th>
                   <th class="health-records-page__th">{{ t('preschoolHealthPage.records.class') }}</th>
                   <th class="health-records-page__th">{{ t('preschoolHealthPage.records.healthRecord') }}</th>
-                  <th class="health-records-page__th health-records-page__th--actions">{{ t('common.actions') }}</th>
+                  <th class="health-records-page__th health-records-page__th--actions">{{ t('common.table.actions') }}</th>
                 </tr>
               </thead>
               <tbody>

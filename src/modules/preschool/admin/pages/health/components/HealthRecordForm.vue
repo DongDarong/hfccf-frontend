@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import { useLanguage } from '@/composables/useLanguage'
 
-defineProps({
+const props = defineProps({
   student: {
     type: Object,
     default: null,
@@ -33,7 +33,7 @@ const validationErrors = ref({})
 const submitError = ref('')
 
 watch(
-  (props) => props.profile,
+  () => props.profile,
   (profile) => {
     if (profile) {
       bloodType.value = profile.blood_type || ''
