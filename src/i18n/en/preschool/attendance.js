@@ -38,10 +38,6 @@ export default {
         title: 'Attendance Alerts',
         description: 'View backend-issued repeated absence alerts from attendance records.',
       },
-      calendar: {
-        title: 'Calendar View',
-        description: 'Month-by-month attendance overview for a class.',
-      },
       profile: {
         title: 'Student Profile',
         description: 'Full attendance history and rate breakdown for a single student.',

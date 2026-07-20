@@ -229,12 +229,6 @@ export const preschoolRoutes = [
     access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
   }),
   defineAppRoute({
-    path: '/module/preschool-admin/attendance/calendar',
-    name: 'dashboard-preschool-admin-attendance-calendar',
-    component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceCalendar.vue'),
-    access: { domains: [DOMAINS.PRESCHOOL], scopes: [ACCESS_SCOPES.ADMIN] },
-  }),
-  defineAppRoute({
     path: '/module/preschool-admin/attendance/profile',
     name: 'dashboard-preschool-admin-attendance-profile',
     component: () => import('@/modules/preschool/admin/pages/attendance/AttendanceProfile.vue'),
