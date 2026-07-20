@@ -18,6 +18,7 @@ export default {
       condition: 'លក្ខខណ្ឌ',
       notes: 'កំណត់ចំណាំ',
       actions: 'សកម្មភាព',
+      class: 'ថ្នាក់',
     },
     categories: {
       books: 'សៀវភៅ',

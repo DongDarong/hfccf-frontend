@@ -18,6 +18,7 @@ export default {
       condition: 'Condition',
       notes: 'Notes',
       actions: 'Actions',
+      class: 'Class',
     },
     categories: {
       books: 'Books',
