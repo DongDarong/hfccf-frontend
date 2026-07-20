@@ -360,21 +360,6 @@
           }
         },
          {
-          "id": "preschool-teacher-report",
-          "routeName": "dashboard-preschool-teacher-report",
-          "labelKey": "nav.items.reports",
-          "icon": "reports",
-          "badgeKey": "nav.badges.staff",
-          "access": {
-            "scopes": [
-              "staff"
-            ],
-            "domains": [
-              "preschool"
-            ]
-          }
-        },
-         {
           "id": "preschool-teacher-healthy",
           "routeName": "dashboard-preschool-teacher-healthy",
           "labelKey": "nav.items.health",

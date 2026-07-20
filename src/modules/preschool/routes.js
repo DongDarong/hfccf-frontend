@@ -803,7 +803,7 @@ export const preschoolRoutes = [
     component: () => import('@/modules/preschool/admin/pages/reports/StudentReports.vue'),
     access: {
       domains: [DOMAINS.PRESCHOOL],
-      scopes: [ACCESS_SCOPES.STAFF],
+      scopes: [ACCESS_SCOPES.ADMIN],
     },
   }),
   defineAppRoute({
