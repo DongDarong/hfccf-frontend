@@ -105,6 +105,26 @@
           "badgeKey": "nav.badges.admin"
         }
       ]
+    },
+    {
+      "id": "preschool-teacher",
+      "labelKey": "nav.sections.preschool",
+      "captionKey": "nav.sectionCaptions.preschool",
+      "className": "sidebar-section--preschool",
+      "collapsible": true,
+      "access": {
+        "scopes": [
+          "staff"
+        ]
+      },
+      "items": [
+        {
+          "id": "preschool-teacher-classes",
+          "routeName": "dashboard-preschool-teacher-classes",
+          "labelKey": "nav.items.myClasses",
+          "icon": "class"
+        }
+      ]
     }
   ]
 }

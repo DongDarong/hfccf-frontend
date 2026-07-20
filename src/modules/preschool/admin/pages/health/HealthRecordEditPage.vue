@@ -137,8 +137,6 @@ async function handleFormSave(payload) {
       name: 'preschool-health-records-detail',
       params: { studentId: studentIdValue },
     })
-  } catch (error) {
-    throw error
   } finally {
     formLoading.value = false
   }

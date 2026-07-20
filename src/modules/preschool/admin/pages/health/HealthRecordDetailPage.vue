@@ -76,8 +76,6 @@ async function handleDelete() {
     await deleteStudentMedicalProfile(studentId.value)
     confirmDeleteOpen.value = false
     await router.push({ name: 'dashboard-preschool-admin-health' })
-  } catch (error) {
-    throw error
   } finally {
     deleteLoading.value = false
   }

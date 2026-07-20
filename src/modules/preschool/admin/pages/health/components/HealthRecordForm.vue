@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch } from 'vue'
-import Button from '@/components/buttons/Button.vue'
 import DynamicCollection from './DynamicCollection.vue'
 import ConditionCard from './ConditionCard.vue'
 import AllergyCard from './AllergyCard.vue'
@@ -203,6 +202,12 @@ async function submitForm() {
     throw error
   }
 }
+
+defineExpose({
+  submitForm,
+  resetForm,
+  handleCancel,
+})
 </script>
 
 <template>

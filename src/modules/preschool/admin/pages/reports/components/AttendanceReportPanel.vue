@@ -226,7 +226,7 @@ async function exportToPdf(filename) {
 
   try {
     await html2pdf().set(options).from(element).save()
-  } catch (error) {
+  } catch {
     // Fallback: use print dialog if PDF export fails
     window.print()
   }

@@ -726,6 +726,24 @@ export const preschoolRoutes = [
     },
   }),
   defineAppRoute({
+    path: '/module/preschool-admin/teacher/classes',
+    name: 'dashboard-preschool-teacher-classes',
+    component: () => import('@/modules/preschool/teacher/pages/MyClasses.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
+    path: '/module/preschool-admin/teacher/classes/:classId',
+    name: 'dashboard-preschool-teacher-class-detail',
+    component: () => import('@/modules/preschool/teacher/pages/MyClassDetail.vue'),
+    access: {
+      domains: [DOMAINS.PRESCHOOL],
+      scopes: [ACCESS_SCOPES.STAFF],
+    },
+  }),
+  defineAppRoute({
     path: '/module/preschool-admin/teacher/students',
     name: 'dashboard-preschool-teacher-students',
     component: () => import('@/modules/preschool/teacher/pages/MyStudents.vue'),

@@ -31,6 +31,7 @@ import reviewWorkflow from './review-workflow'
 import notifications from './notifications'
 import workflows from './workflows'
 import gradeEntry from './grade-entry'
+import teacher from './teacher'
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -101,4 +102,5 @@ export default {
   ...notifications,
   ...workflows,
   ...gradeEntry,
+  ...teacher,
 }

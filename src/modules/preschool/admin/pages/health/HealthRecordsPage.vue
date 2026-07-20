@@ -143,8 +143,6 @@ async function handleDeleteConfirm() {
     await deleteStudentMedicalProfile(selectedStudent.value.id)
     confirmDeleteDialogOpen.value = false
     await loadStudents()
-  } catch (error) {
-    throw error
   } finally {
     deleteLoading.value = false
   }

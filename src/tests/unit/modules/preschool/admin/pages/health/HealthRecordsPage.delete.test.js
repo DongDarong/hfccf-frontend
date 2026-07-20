@@ -80,7 +80,7 @@ beforeEach(() => {
 
 describe('HealthRecordsPage - Delete Functionality', () => {
   it('loads students on mount', async () => {
-    const wrapper = mountPage()
+    const _wrapper = mountPage()
     await flushPromises()
 
     expect(mockFetchPreschoolStudents).toHaveBeenCalledWith(

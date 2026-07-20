@@ -58,7 +58,7 @@ async function loadStudent() {
           params: { studentId: studentId.value },
         })
       }
-    } catch (error) {
+    } catch {
       // No existing profile - that's fine for create page
       existingProfile.value = null
     }
@@ -140,8 +140,6 @@ async function handleFormSave(payload) {
       name: 'preschool-health-records-detail',
       params: { studentId: studentIdValue },
     })
-  } catch (error) {
-    throw error
   } finally {
     formLoading.value = false
   }
