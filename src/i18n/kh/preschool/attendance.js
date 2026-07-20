@@ -104,6 +104,7 @@ export default {
       missing: 'ខ្វះ',
     },
     actions: {
+      openSession: 'បើកវគ្គ',
       continueAttendance: 'បន្តកត់ត្រាវត្តមាន',
       viewSession: 'មើលវគ្គ',
       view: 'មើល',

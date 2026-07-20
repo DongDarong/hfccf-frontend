@@ -108,6 +108,7 @@ export default {
       missing: 'Missing',
     },
     actions: {
+      openSession: 'Open Session',
       continueAttendance: 'Continue Attendance',
       viewSession: 'View Session',
       view: 'View',
