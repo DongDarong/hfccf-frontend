@@ -71,15 +71,18 @@ export function buildScheduleSessionIndex(sessions = []) {
 }
 
 export function resolveScheduleSession(entry = {}, sessionIndex = new Map(), referenceDate = '') {
+  // Handle cases where sessionIndex is not a Map (e.g., empty object)
+  const index = sessionIndex instanceof Map ? sessionIndex : new Map()
+
   const scheduleId = normalizeText(entry?.id || entry?.scheduleId)
-  if (scheduleId && sessionIndex.has(`schedule:${scheduleId}`)) {
-    return sessionIndex.get(`schedule:${scheduleId}`)
+  if (scheduleId && index.has(`schedule:${scheduleId}`)) {
+    return index.get(`schedule:${scheduleId}`)
   }
 
   const classId = normalizeText(entry?.classId)
   const attendanceDate = normalizeText(referenceDate)
-  if (classId && attendanceDate && sessionIndex.has(`class-date:${classId}:${attendanceDate}`)) {
-    return sessionIndex.get(`class-date:${classId}:${attendanceDate}`)
+  if (classId && attendanceDate && index.has(`class-date:${classId}:${attendanceDate}`)) {
+    return index.get(`class-date:${classId}:${attendanceDate}`)
   }
 
   return null
