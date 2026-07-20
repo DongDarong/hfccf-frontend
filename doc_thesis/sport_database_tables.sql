@@ -1,6 +1,6 @@
 
 -- HFCCF schema reference synchronized from live backend database `hfccf_backend`.
--- Schema-only export generated on 2026-07-05. No application data included.
+-- Schema-only export generated on 2026-07-20. No application data included.
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -36,7 +36,7 @@ CREATE TABLE `audit_logs` (
   KEY `audit_logs_entity_id_index` (`entity_id`),
   KEY `audit_logs_created_at_index` (`created_at`),
   CONSTRAINT `audit_logs_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `coach_team_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -149,7 +149,7 @@ CREATE TABLE `jobs` (
   `created_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `jobs_queue_index` (`queue`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notification_recipients`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -169,7 +169,7 @@ CREATE TABLE `notification_recipients` (
   KEY `notification_recipients_created_at_index` (`created_at`),
   CONSTRAINT `notification_recipients_notification_id_foreign` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `notification_recipients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notification_targets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -184,7 +184,7 @@ CREATE TABLE `notification_targets` (
   KEY `notification_targets_target_type_index` (`target_type`),
   KEY `notification_targets_target_value_index` (`target_value`),
   CONSTRAINT `notification_targets_notification_id_foreign` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notifications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -205,7 +205,7 @@ CREATE TABLE `notifications` (
   KEY `notifications_created_by_index` (`created_by`),
   KEY `notifications_created_at_index` (`created_at`),
   CONSTRAINT `notifications_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `organizations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -294,7 +294,7 @@ CREATE TABLE `personal_access_tokens` (
   KEY `personal_access_tokens_tokenable_index` (`tokenable_type`,`tokenable_id`),
   KEY `fk_personal_access_tokens_user` (`tokenable_id`),
   CONSTRAINT `fk_personal_access_tokens_user` FOREIGN KEY (`tokenable_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -389,6 +389,134 @@ CREATE TABLE `sport_divisions` (
   UNIQUE KEY `sport_divisions_name_unique` (`name`),
   KEY `sport_divisions_status_index` (`status`),
   KEY `sport_divisions_created_at_index` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `sport_equipment_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_equipment_assignments` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `assignment_code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_request_id` bigint unsigned NOT NULL,
+  `equipment_item_id` bigint unsigned NOT NULL,
+  `team_id` bigint unsigned NOT NULL,
+  `coach_user_id` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `assigned_quantity` int unsigned NOT NULL,
+  `returned_quantity` int unsigned NOT NULL DEFAULT '0',
+  `damaged_quantity` int unsigned NOT NULL DEFAULT '0',
+  `missing_quantity` int unsigned NOT NULL DEFAULT '0',
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'assigned',
+  `assigned_at` datetime NOT NULL,
+  `expected_return_at` datetime DEFAULT NULL,
+  `returned_at` datetime DEFAULT NULL,
+  `assigned_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `returned_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sport_equipment_assignments_assignment_code_unique` (`assignment_code`),
+  UNIQUE KEY `sport_equipment_assignments_equipment_request_id_unique` (`equipment_request_id`),
+  KEY `sport_equipment_assignments_team_id_status_index` (`team_id`,`status`),
+  KEY `sport_equipment_assignments_equipment_item_id_status_index` (`equipment_item_id`,`status`),
+  KEY `sport_equipment_assignments_coach_user_id_status_index` (`coach_user_id`,`status`),
+  KEY `sport_equipment_assignments_coach_user_id_index` (`coach_user_id`),
+  KEY `sport_equipment_assignments_status_index` (`status`),
+  KEY `sport_equipment_assignments_assigned_at_index` (`assigned_at`),
+  KEY `sport_equipment_assignments_expected_return_at_index` (`expected_return_at`),
+  KEY `sport_equipment_assignments_returned_at_index` (`returned_at`),
+  KEY `sport_equipment_assignments_assigned_by_user_id_index` (`assigned_by_user_id`),
+  KEY `sport_equipment_assignments_returned_by_user_id_index` (`returned_by_user_id`),
+  CONSTRAINT `sport_equipment_assignments_assigned_by_user_id_foreign` FOREIGN KEY (`assigned_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_equipment_assignments_coach_user_id_foreign` FOREIGN KEY (`coach_user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `sport_equipment_assignments_equipment_item_id_foreign` FOREIGN KEY (`equipment_item_id`) REFERENCES `sport_equipment_items` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `sport_equipment_assignments_equipment_request_id_foreign` FOREIGN KEY (`equipment_request_id`) REFERENCES `sport_equipment_requests` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `sport_equipment_assignments_returned_by_user_id_foreign` FOREIGN KEY (`returned_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_equipment_assignments_team_id_foreign` FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `sport_equipment_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_equipment_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `equipment_code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `unit` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total_quantity` int unsigned NOT NULL DEFAULT '0',
+  `available_quantity` int unsigned NOT NULL DEFAULT '0',
+  `minimum_stock_level` int unsigned NOT NULL DEFAULT '0',
+  `storage_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `created_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sport_equipment_items_equipment_code_unique` (`equipment_code`),
+  KEY `sport_equipment_items_category_index` (`category`),
+  KEY `sport_equipment_items_minimum_stock_level_index` (`minimum_stock_level`),
+  KEY `sport_equipment_items_status_index` (`status`),
+  KEY `sport_equipment_items_created_by_user_id_index` (`created_by_user_id`),
+  KEY `sport_equipment_items_updated_by_user_id_index` (`updated_by_user_id`),
+  CONSTRAINT `sport_equipment_items_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_equipment_items_updated_by_user_id_foreign` FOREIGN KEY (`updated_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `sport_equipment_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_equipment_requests` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `request_code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_item_id` bigint unsigned NOT NULL,
+  `coach_user_id` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `team_id` bigint unsigned NOT NULL,
+  `requested_quantity` int unsigned NOT NULL,
+  `approved_quantity` int unsigned DEFAULT NULL,
+  `issued_quantity` int unsigned NOT NULL DEFAULT '0',
+  `returned_quantity` int unsigned NOT NULL DEFAULT '0',
+  `damaged_quantity` int unsigned NOT NULL DEFAULT '0',
+  `missing_quantity` int unsigned NOT NULL DEFAULT '0',
+  `purpose` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `required_date` date NOT NULL,
+  `expected_return_date` date NOT NULL,
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `admin_note` text COLLATE utf8mb4_unicode_ci,
+  `rejected_reason` text COLLATE utf8mb4_unicode_ci,
+  `reviewed_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
+  `issued_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `issued_at` datetime DEFAULT NULL,
+  `returned_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `returned_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sport_equipment_requests_request_code_unique` (`request_code`),
+  KEY `sport_equipment_requests_equipment_item_id_foreign` (`equipment_item_id`),
+  KEY `sport_equipment_requests_team_id_foreign` (`team_id`),
+  KEY `sport_equipment_requests_coach_user_id_index` (`coach_user_id`),
+  KEY `sport_equipment_requests_required_date_index` (`required_date`),
+  KEY `sport_equipment_requests_expected_return_date_index` (`expected_return_date`),
+  KEY `sport_equipment_requests_status_index` (`status`),
+  KEY `sport_equipment_requests_reviewed_by_user_id_index` (`reviewed_by_user_id`),
+  KEY `sport_equipment_requests_reviewed_at_index` (`reviewed_at`),
+  KEY `sport_equipment_requests_issued_by_user_id_index` (`issued_by_user_id`),
+  KEY `sport_equipment_requests_issued_at_index` (`issued_at`),
+  KEY `sport_equipment_requests_returned_by_user_id_index` (`returned_by_user_id`),
+  KEY `sport_equipment_requests_returned_at_index` (`returned_at`),
+  CONSTRAINT `sport_equipment_requests_coach_user_id_foreign` FOREIGN KEY (`coach_user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `sport_equipment_requests_equipment_item_id_foreign` FOREIGN KEY (`equipment_item_id`) REFERENCES `sport_equipment_items` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `sport_equipment_requests_issued_by_user_id_foreign` FOREIGN KEY (`issued_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_equipment_requests_returned_by_user_id_foreign` FOREIGN KEY (`returned_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_equipment_requests_reviewed_by_user_id_foreign` FOREIGN KEY (`reviewed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_equipment_requests_team_id_foreign` FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `sport_match_events`;
@@ -856,6 +984,41 @@ CREATE TABLE `sport_tournaments` (
   UNIQUE KEY `sport_tournaments_slug_unique` (`slug`),
   KEY `sport_tournaments_created_by_user_id_index` (`created_by_user_id`),
   CONSTRAINT `sport_tournaments_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `sport_training_sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sport_training_sessions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `session_code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `team_id` bigint unsigned NOT NULL,
+  `coach_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `training_type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'technical',
+  `focus` text COLLATE utf8mb4_unicode_ci,
+  `venue` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime NOT NULL,
+  `intensity` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'medium',
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'scheduled',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_by_user_id` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sport_training_sessions_session_code_unique` (`session_code`),
+  KEY `sport_training_sessions_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `sport_training_sessions_updated_by_user_id_foreign` (`updated_by_user_id`),
+  KEY `sport_training_sessions_team_id_starts_at_index` (`team_id`,`starts_at`),
+  KEY `sport_training_sessions_coach_user_id_starts_at_index` (`coach_user_id`,`starts_at`),
+  KEY `sport_training_sessions_status_starts_at_index` (`status`,`starts_at`),
+  CONSTRAINT `sport_training_sessions_coach_user_id_foreign` FOREIGN KEY (`coach_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_training_sessions_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `sport_training_sessions_team_id_foreign` FOREIGN KEY (`team_id`) REFERENCES `sport_teams` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `sport_training_sessions_updated_by_user_id_foreign` FOREIGN KEY (`updated_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_permissions`;

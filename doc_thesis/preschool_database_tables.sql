@@ -1,6 +1,6 @@
 
 -- HFCCF schema reference synchronized from live backend database `hfccf_backend`.
--- Schema-only export generated on 2026-07-05. No application data included.
+-- Schema-only export generated on 2026-07-20. No application data included.
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -54,7 +54,7 @@ CREATE TABLE `audit_logs` (
   KEY `audit_logs_entity_id_index` (`entity_id`),
   KEY `audit_logs_created_at_index` (`created_at`),
   CONSTRAINT `audit_logs_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cambodia_communes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -74,7 +74,7 @@ CREATE TABLE `cambodia_communes` (
   KEY `cambodia_communes_parent_code_index` (`province_id`,`district_id`,`code`),
   CONSTRAINT `cambodia_communes_district_id_foreign` FOREIGN KEY (`district_id`) REFERENCES `cambodia_districts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `cambodia_communes_province_id_foreign` FOREIGN KEY (`province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4824 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cambodia_districts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -91,7 +91,7 @@ CREATE TABLE `cambodia_districts` (
   UNIQUE KEY `cambodia_districts_code_unique` (`code`),
   KEY `cambodia_districts_province_code_index` (`province_id`,`code`),
   CONSTRAINT `cambodia_districts_province_id_foreign` FOREIGN KEY (`province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=422 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cambodia_provinces`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -105,7 +105,7 @@ CREATE TABLE `cambodia_provinces` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cambodia_provinces_code_unique` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cambodia_villages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -128,7 +128,7 @@ CREATE TABLE `cambodia_villages` (
   CONSTRAINT `cambodia_villages_commune_id_foreign` FOREIGN KEY (`commune_id`) REFERENCES `cambodia_communes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `cambodia_villages_district_id_foreign` FOREIGN KEY (`district_id`) REFERENCES `cambodia_districts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `cambodia_villages_province_id_foreign` FOREIGN KEY (`province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=43729 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `deleted_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -217,7 +217,7 @@ CREATE TABLE `jobs` (
   `created_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `jobs_queue_index` (`queue`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notification_recipients`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -237,7 +237,7 @@ CREATE TABLE `notification_recipients` (
   KEY `notification_recipients_created_at_index` (`created_at`),
   CONSTRAINT `notification_recipients_notification_id_foreign` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `notification_recipients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notification_targets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -252,7 +252,7 @@ CREATE TABLE `notification_targets` (
   KEY `notification_targets_target_type_index` (`target_type`),
   KEY `notification_targets_target_value_index` (`target_value`),
   CONSTRAINT `notification_targets_notification_id_foreign` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notifications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -273,7 +273,7 @@ CREATE TABLE `notifications` (
   KEY `notifications_created_by_index` (`created_by`),
   KEY `notifications_created_at_index` (`created_at`),
   CONSTRAINT `notifications_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `organizations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -362,7 +362,7 @@ CREATE TABLE `personal_access_tokens` (
   KEY `personal_access_tokens_tokenable_index` (`tokenable_type`,`tokenable_id`),
   KEY `fk_personal_access_tokens_user` (`tokenable_id`),
   CONSTRAINT `fk_personal_access_tokens_user` FOREIGN KEY (`tokenable_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_academic_years`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -414,7 +414,7 @@ CREATE TABLE `preschool_assessment_categories` (
   KEY `preschool_assessment_categories_updated_by_foreign` (`updated_by`),
   CONSTRAINT `preschool_assessment_categories_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_assessment_categories_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_assessment_grading_scales`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -439,7 +439,7 @@ CREATE TABLE `preschool_assessment_grading_scales` (
   KEY `preschool_assessment_grading_scales_updated_by_foreign` (`updated_by`),
   CONSTRAINT `preschool_assessment_grading_scales_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_assessment_grading_scales_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_assessment_report_periods`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -447,6 +447,7 @@ DROP TABLE IF EXISTS `preschool_assessment_report_periods`;
 CREATE TABLE `preschool_assessment_report_periods` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `academic_year_id` bigint unsigned NOT NULL,
+  `period_type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'term',
   `term_id` bigint unsigned DEFAULT NULL,
   `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `start_date` date NOT NULL,
@@ -463,6 +464,7 @@ CREATE TABLE `preschool_assessment_report_periods` (
   KEY `preschool_assessment_report_periods_dates_index` (`start_date`,`end_date`),
   KEY `preschool_assessment_report_periods_created_by_foreign` (`created_by`),
   KEY `preschool_assessment_report_periods_updated_by_foreign` (`updated_by`),
+  KEY `preschool_assessment_report_periods_type_context_active_index` (`period_type`,`academic_year_id`,`term_id`,`is_active`),
   CONSTRAINT `preschool_assessment_report_periods_academic_year_id_foreign` FOREIGN KEY (`academic_year_id`) REFERENCES `preschool_academic_years` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_assessment_report_periods_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_assessment_report_periods_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -525,6 +527,7 @@ CREATE TABLE `preschool_attendance_records` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `attendance_session_id` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `preschool_attendance_session_student_unique` (`attendance_session_id`,`student_id`),
   KEY `preschool_attendance_records_class_id_foreign` (`class_id`),
   KEY `preschool_attendance_records_student_id_foreign` (`student_id`),
   KEY `preschool_attendance_date_status_index` (`attendance_date`,`status`),
@@ -538,14 +541,16 @@ CREATE TABLE `preschool_attendance_records` (
   CONSTRAINT `preschool_attendance_records_recorded_by_user_id_foreign` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_attendance_records_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_attendance_records_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_attendance_sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `preschool_attendance_sessions` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `session_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `preschool_class_id` bigint unsigned NOT NULL,
+  `preschool_schedule_entry_id` bigint unsigned DEFAULT NULL,
   `schedule_id` bigint unsigned DEFAULT NULL,
   `attendance_date` date NOT NULL,
   `start_time` time DEFAULT NULL,
@@ -570,12 +575,36 @@ CREATE TABLE `preschool_attendance_sessions` (
   `closed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `teacher_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `opens_at` datetime DEFAULT NULL,
+  `closes_at` datetime DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source_occurrence_key` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `opened_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `closed_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `locked_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cancelled_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_reopened_by_user_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_reopened_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `preschool_attendance_sessions_session_key_unique` (`session_key`),
   KEY `preschool_attendance_sessions_class_date_index` (`preschool_class_id`,`attendance_date`),
   KEY `preschool_attendance_sessions_schedule_date_index` (`schedule_id`,`attendance_date`),
   KEY `preschool_attendance_sessions_created_by_foreign` (`created_by`),
   KEY `preschool_attendance_sessions_closed_by_foreign` (`closed_by`),
+  KEY `preschool_attendance_sessions_teacher_user_id_index` (`teacher_user_id`),
+  KEY `preschool_attendance_sessions_opens_at_index` (`opens_at`),
+  KEY `preschool_attendance_sessions_closes_at_index` (`closes_at`),
+  KEY `preschool_attendance_sessions_source_occurrence_key_index` (`source_occurrence_key`),
+  KEY `preschool_attendance_sessions_created_by_user_id_index` (`created_by_user_id`),
+  KEY `preschool_attendance_sessions_updated_by_user_id_index` (`updated_by_user_id`),
+  KEY `preschool_attendance_sessions_opened_by_user_id_index` (`opened_by_user_id`),
+  KEY `preschool_attendance_sessions_closed_by_user_id_index` (`closed_by_user_id`),
+  KEY `preschool_attendance_sessions_locked_by_user_id_index` (`locked_by_user_id`),
+  KEY `preschool_attendance_sessions_cancelled_by_user_id_index` (`cancelled_by_user_id`),
+  KEY `preschool_attendance_sessions_last_reopened_by_user_id_index` (`last_reopened_by_user_id`),
   CONSTRAINT `preschool_attendance_sessions_closed_by_foreign` FOREIGN KEY (`closed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `preschool_attendance_sessions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `preschool_attendance_sessions_preschool_class_id_foreign` FOREIGN KEY (`preschool_class_id`) REFERENCES `preschool_classes` (`id`) ON DELETE CASCADE,
@@ -675,7 +704,7 @@ CREATE TABLE `preschool_class_levels` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `preschool_class_levels_code_unique` (`code`),
   KEY `preschool_class_levels_active_sort_index` (`is_active`,`sort_order`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_class_students`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -732,7 +761,7 @@ CREATE TABLE `preschool_class_teacher_assignments` (
   CONSTRAINT `preschool_class_teacher_assignments_academic_year_id_foreign` FOREIGN KEY (`academic_year_id`) REFERENCES `preschool_academic_years` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_class_teacher_assignments_class_id_foreign` FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `preschool_class_teacher_assignments_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_classes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -761,7 +790,7 @@ CREATE TABLE `preschool_classes` (
   KEY `preschool_classes_class_level_id_index` (`class_level_id`),
   CONSTRAINT `preschool_classes_class_level_id_foreign` FOREIGN KEY (`class_level_id`) REFERENCES `preschool_class_levels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_classes_teacher_user_id_foreign` FOREIGN KEY (`teacher_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_classroom_resources`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -789,10 +818,20 @@ CREATE TABLE `preschool_enrollment_applications` (
   `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `khmer_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `latin_name` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `gender` enum('male','female','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
   `place_of_birth` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `nationality` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Cambodian',
+  `ethnicity` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `birth_province_id` bigint unsigned DEFAULT NULL,
+  `birth_district_id` bigint unsigned DEFAULT NULL,
+  `birth_commune_id` bigint unsigned DEFAULT NULL,
+  `birth_village_id` bigint unsigned DEFAULT NULL,
+  `residence_province_id` bigint unsigned DEFAULT NULL,
+  `residence_district_id` bigint unsigned DEFAULT NULL,
+  `residence_commune_id` bigint unsigned DEFAULT NULL,
+  `residence_village_id` bigint unsigned DEFAULT NULL,
   `avatar` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `requested_academic_year_id` bigint unsigned DEFAULT NULL,
   `requested_term_id` bigint unsigned DEFAULT NULL,
@@ -837,6 +876,14 @@ CREATE TABLE `preschool_enrollment_applications` (
   KEY `pea_enrolled_by_fk` (`enrolled_by_user_id`),
   KEY `pea_created_by_fk` (`created_by_user_id`),
   KEY `pea_updated_by_fk` (`updated_by_user_id`),
+  KEY `preschool_enrollment_applications_birth_province_id_foreign` (`birth_province_id`),
+  KEY `preschool_enrollment_applications_birth_district_id_foreign` (`birth_district_id`),
+  KEY `preschool_enrollment_applications_birth_commune_id_foreign` (`birth_commune_id`),
+  KEY `preschool_enrollment_applications_birth_village_id_foreign` (`birth_village_id`),
+  KEY `preschool_enrollment_applications_residence_province_id_foreign` (`residence_province_id`),
+  KEY `preschool_enrollment_applications_residence_district_id_foreign` (`residence_district_id`),
+  KEY `preschool_enrollment_applications_residence_commune_id_foreign` (`residence_commune_id`),
+  KEY `preschool_enrollment_applications_residence_village_id_foreign` (`residence_village_id`),
   CONSTRAINT `pea_approved_by_fk` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `pea_created_by_fk` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `pea_enrolled_by_fk` FOREIGN KEY (`enrolled_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -845,7 +892,15 @@ CREATE TABLE `preschool_enrollment_applications` (
   CONSTRAINT `pea_req_ay_fk` FOREIGN KEY (`requested_academic_year_id`) REFERENCES `preschool_academic_years` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `pea_req_term_fk` FOREIGN KEY (`requested_term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `pea_reviewed_by_fk` FOREIGN KEY (`reviewed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `pea_updated_by_fk` FOREIGN KEY (`updated_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `pea_updated_by_fk` FOREIGN KEY (`updated_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `preschool_enrollment_applications_birth_commune_id_foreign` FOREIGN KEY (`birth_commune_id`) REFERENCES `cambodia_communes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_birth_district_id_foreign` FOREIGN KEY (`birth_district_id`) REFERENCES `cambodia_districts` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_birth_province_id_foreign` FOREIGN KEY (`birth_province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_birth_village_id_foreign` FOREIGN KEY (`birth_village_id`) REFERENCES `cambodia_villages` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_residence_commune_id_foreign` FOREIGN KEY (`residence_commune_id`) REFERENCES `cambodia_communes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_residence_district_id_foreign` FOREIGN KEY (`residence_district_id`) REFERENCES `cambodia_districts` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_residence_province_id_foreign` FOREIGN KEY (`residence_province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_enrollment_applications_residence_village_id_foreign` FOREIGN KEY (`residence_village_id`) REFERENCES `cambodia_villages` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_enrollment_decision_logs`;
@@ -1031,7 +1086,7 @@ CREATE TABLE `preschool_guardian_communications` (
   KEY `preschool_guardian_communications_source_index` (`source_type`,`source_id`),
   CONSTRAINT `preschool_guardian_communications_guardian_id_foreign` FOREIGN KEY (`guardian_id`) REFERENCES `preschool_guardians` (`id`) ON DELETE SET NULL,
   CONSTRAINT `preschool_guardian_communications_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_guardian_governance_issues`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1225,7 +1280,7 @@ CREATE TABLE `preschool_invoice_items` (
   PRIMARY KEY (`id`),
   KEY `preschool_invoice_items_invoice_sort_index` (`invoice_id`,`sort_order`),
   CONSTRAINT `preschool_invoice_items_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `preschool_invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_invoices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1261,7 +1316,7 @@ CREATE TABLE `preschool_invoices` (
   CONSTRAINT `preschool_invoices_class_id_foreign` FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_invoices_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_invoices_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_lifecycle_audit_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1297,7 +1352,51 @@ CREATE TABLE `preschool_lifecycle_audit_logs` (
   CONSTRAINT `preschool_lifecycle_audit_logs_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_lifecycle_audit_logs_report_period_id_foreign` FOREIGN KEY (`report_period_id`) REFERENCES `preschool_report_periods` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_lifecycle_audit_logs_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=253 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `preschool_monthly_submissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `preschool_monthly_submissions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `academic_year_id` bigint unsigned NOT NULL,
+  `class_id` bigint unsigned NOT NULL,
+  `assessment_category_id` bigint unsigned NOT NULL,
+  `submission_month` date NOT NULL COMMENT 'First day of the month, e.g., 2026-07-01',
+  `submitted_at` timestamp NULL DEFAULT NULL COMMENT 'When teacher clicked Submit',
+  `submitted_by_user_id` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Teacher who submitted (usually same as creator)',
+  `reviewed_at` timestamp NULL DEFAULT NULL COMMENT 'When admin opened for review',
+  `reviewed_by_user_id` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Admin who reviewed',
+  `review_comment` text COLLATE utf8mb4_unicode_ci COMMENT 'Admin notes during review',
+  `returned_at` timestamp NULL DEFAULT NULL COMMENT 'When admin returned for revision',
+  `returned_by_user_id` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Admin who returned',
+  `return_reason` text COLLATE utf8mb4_unicode_ci COMMENT 'Why submission was returned',
+  `finalized_at` timestamp NULL DEFAULT NULL COMMENT 'When locked as official',
+  `finalized_by_user_id` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Admin who finalized',
+  `status` enum('draft','submitted','returned','finalized','archived') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `locked_at` timestamp NULL DEFAULT NULL COMMENT 'When no further edits allowed (= finalized_at)',
+  `grading_scale_snapshot` json DEFAULT NULL COMMENT 'JSON snapshot of grading scales at finalization',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_monthly_submission` (`academic_year_id`,`class_id`,`assessment_category_id`,`submission_month`),
+  KEY `idx_class_month` (`class_id`,`submission_month`),
+  KEY `idx_status_submitted` (`status`,`submitted_at`),
+  KEY `idx_category_status` (`assessment_category_id`,`status`),
+  KEY `idx_year_status` (`academic_year_id`,`status`),
+  KEY `idx_submitted_by_status` (`submitted_by_user_id`,`status`),
+  KEY `idx_reviewed_by_status` (`reviewed_by_user_id`,`status`),
+  KEY `preschool_monthly_submissions_returned_by_user_id_foreign` (`returned_by_user_id`),
+  KEY `preschool_monthly_submissions_finalized_by_user_id_foreign` (`finalized_by_user_id`),
+  CONSTRAINT `preschool_monthly_submissions_academic_year_id_foreign` FOREIGN KEY (`academic_year_id`) REFERENCES `preschool_academic_years` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `preschool_monthly_submissions_assessment_category_id_foreign` FOREIGN KEY (`assessment_category_id`) REFERENCES `preschool_assessment_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `preschool_monthly_submissions_class_id_foreign` FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `preschool_monthly_submissions_finalized_by_user_id_foreign` FOREIGN KEY (`finalized_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `preschool_monthly_submissions_returned_by_user_id_foreign` FOREIGN KEY (`returned_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `preschool_monthly_submissions_reviewed_by_user_id_foreign` FOREIGN KEY (`reviewed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `preschool_monthly_submissions_submitted_by_user_id_foreign` FOREIGN KEY (`submitted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_notifications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1375,7 +1474,7 @@ CREATE TABLE `preschool_payments` (
   CONSTRAINT `preschool_payments_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `preschool_invoices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_payments_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_payments_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_receipts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1438,7 +1537,7 @@ CREATE TABLE `preschool_report_export_records` (
   CONSTRAINT `preschool_report_export_records_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `preschool_report_export_records_report_period_id_foreign` FOREIGN KEY (`report_period_id`) REFERENCES `preschool_report_periods` (`id`) ON DELETE SET NULL,
   CONSTRAINT `preschool_report_export_records_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_report_periods`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1446,6 +1545,7 @@ DROP TABLE IF EXISTS `preschool_report_periods`;
 CREATE TABLE `preschool_report_periods` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `period_label` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `period_type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'term',
   `academic_year_id` bigint unsigned DEFAULT NULL,
   `term_id` bigint unsigned DEFAULT NULL,
   `from_date` date DEFAULT NULL,
@@ -1463,7 +1563,7 @@ CREATE TABLE `preschool_report_periods` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `preschool_report_periods_period_context_unique` (`period_label`,`academic_year_id`,`term_id`),
+  UNIQUE KEY `preschool_report_periods_period_context_unique` (`period_label`,`period_type`,`academic_year_id`,`term_id`),
   KEY `preschool_report_periods_period_label_index` (`period_label`),
   KEY `preschool_report_periods_academic_year_id_index` (`academic_year_id`),
   KEY `preschool_report_periods_term_id_index` (`term_id`),
@@ -1471,6 +1571,7 @@ CREATE TABLE `preschool_report_periods` (
   KEY `preschool_report_periods_locked_by_foreign` (`locked_by`),
   KEY `preschool_report_periods_finalized_by_foreign` (`finalized_by`),
   KEY `preschool_report_periods_archived_by_foreign` (`archived_by`),
+  KEY `preschool_report_periods_type_context_status_index` (`period_type`,`academic_year_id`,`term_id`,`status`),
   CONSTRAINT `preschool_report_periods_academic_year_id_foreign` FOREIGN KEY (`academic_year_id`) REFERENCES `preschool_academic_years` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_report_periods_archived_by_foreign` FOREIGN KEY (`archived_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_report_periods_finalized_by_foreign` FOREIGN KEY (`finalized_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -1557,7 +1658,7 @@ CREATE TABLE `preschool_schedule_entries` (
   CONSTRAINT `preschool_schedule_entries_teacher_user_id_foreign` FOREIGN KEY (`teacher_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `preschool_schedule_entries_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_schedule_entries_updated_by_user_id_foreign` FOREIGN KEY (`updated_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_school_calendar_events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1633,6 +1734,7 @@ DROP TABLE IF EXISTS `preschool_student_assessments`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `preschool_student_assessments` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `monthly_submission_id` bigint unsigned DEFAULT NULL,
   `student_id` bigint unsigned NOT NULL,
   `class_id` bigint unsigned DEFAULT NULL,
   `category_id` bigint unsigned NOT NULL,
@@ -1652,6 +1754,7 @@ CREATE TABLE `preschool_student_assessments` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_student_per_monthly_submission` (`monthly_submission_id`,`student_id`),
   KEY `preschool_student_assessments_student_date_index` (`student_id`,`assessment_date`),
   KEY `preschool_student_assessments_class_date_index` (`class_id`,`assessment_date`),
   KEY `preschool_student_assessments_category_status_index` (`category_id`,`status`),
@@ -1660,11 +1763,13 @@ CREATE TABLE `preschool_student_assessments` (
   KEY `preschool_student_assessments_finalized_by_index` (`finalized_by_user_id`),
   KEY `preschool_student_assessments_academic_year_id_foreign` (`academic_year_id`),
   KEY `preschool_student_assessments_term_id_foreign` (`term_id`),
+  KEY `idx_submission_status` (`monthly_submission_id`,`status`),
   CONSTRAINT `preschool_student_assessments_academic_year_id_foreign` FOREIGN KEY (`academic_year_id`) REFERENCES `preschool_academic_years` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_student_assessments_assessed_by_user_id_foreign` FOREIGN KEY (`assessed_by_user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `preschool_student_assessments_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `preschool_assessment_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `preschool_student_assessments_class_id_foreign` FOREIGN KEY (`class_id`) REFERENCES `preschool_classes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `preschool_student_assessments_finalized_by_user_id_foreign` FOREIGN KEY (`finalized_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `preschool_student_assessments_monthly_submission_id_foreign` FOREIGN KEY (`monthly_submission_id`) REFERENCES `preschool_monthly_submissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `preschool_student_assessments_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `preschool_students` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `preschool_student_assessments_term_id_foreign` FOREIGN KEY (`term_id`) REFERENCES `preschool_terms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1914,8 +2019,20 @@ CREATE TABLE `preschool_students` (
   `student_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `latin_name` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `gender` enum('male','female','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
+  `place_of_birth` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nationality` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'Cambodian',
+  `ethnicity` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `birth_province_id` bigint unsigned DEFAULT NULL,
+  `birth_district_id` bigint unsigned DEFAULT NULL,
+  `birth_commune_id` bigint unsigned DEFAULT NULL,
+  `birth_village_id` bigint unsigned DEFAULT NULL,
+  `residence_province_id` bigint unsigned DEFAULT NULL,
+  `residence_district_id` bigint unsigned DEFAULT NULL,
+  `residence_commune_id` bigint unsigned DEFAULT NULL,
+  `residence_village_id` bigint unsigned DEFAULT NULL,
   `guardian_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `guardian_phone` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1928,8 +2045,24 @@ CREATE TABLE `preschool_students` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `preschool_students_student_code_unique` (`student_code`),
   UNIQUE KEY `preschool_students_public_id_unique` (`public_id`),
-  KEY `preschool_students_status_last_name_index` (`status`,`last_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `preschool_students_status_last_name_index` (`status`,`last_name`),
+  KEY `preschool_students_birth_province_id_foreign` (`birth_province_id`),
+  KEY `preschool_students_birth_district_id_foreign` (`birth_district_id`),
+  KEY `preschool_students_birth_commune_id_foreign` (`birth_commune_id`),
+  KEY `preschool_students_birth_village_id_foreign` (`birth_village_id`),
+  KEY `preschool_students_residence_province_id_foreign` (`residence_province_id`),
+  KEY `preschool_students_residence_district_id_foreign` (`residence_district_id`),
+  KEY `preschool_students_residence_commune_id_foreign` (`residence_commune_id`),
+  KEY `preschool_students_residence_village_id_foreign` (`residence_village_id`),
+  CONSTRAINT `preschool_students_birth_commune_id_foreign` FOREIGN KEY (`birth_commune_id`) REFERENCES `cambodia_communes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_birth_district_id_foreign` FOREIGN KEY (`birth_district_id`) REFERENCES `cambodia_districts` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_birth_province_id_foreign` FOREIGN KEY (`birth_province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_birth_village_id_foreign` FOREIGN KEY (`birth_village_id`) REFERENCES `cambodia_villages` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_residence_commune_id_foreign` FOREIGN KEY (`residence_commune_id`) REFERENCES `cambodia_communes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_residence_district_id_foreign` FOREIGN KEY (`residence_district_id`) REFERENCES `cambodia_districts` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_residence_province_id_foreign` FOREIGN KEY (`residence_province_id`) REFERENCES `cambodia_provinces` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `preschool_students_residence_village_id_foreign` FOREIGN KEY (`residence_village_id`) REFERENCES `cambodia_villages` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_terms`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2013,7 +2146,7 @@ CREATE TABLE `preschool_workflow_definitions` (
   UNIQUE KEY `preschool_workflow_definitions_key_unique` (`key`),
   KEY `preschool_workflow_definitions_domain_index` (`domain`),
   KEY `preschool_workflow_definitions_is_active_index` (`is_active`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_workflow_events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2103,7 +2236,7 @@ CREATE TABLE `preschool_workflow_steps` (
   KEY `preschool_workflow_steps_definition_sort_index` (`workflow_definition_id`,`sort_order`),
   KEY `preschool_workflow_steps_type_index` (`step_type`),
   CONSTRAINT `preschool_workflow_steps_workflow_definition_id_foreign` FOREIGN KEY (`workflow_definition_id`) REFERENCES `preschool_workflow_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `preschool_workflow_sync_run_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
