@@ -1,8 +1,10 @@
 <script setup>
 // Keep the weekly timetable rendering isolated so management and read-only
 // pages can reuse the same layout and empty-state behavior.
+import { computed, ref } from 'vue'
 import ScheduleStatusBadge from './ScheduleStatusBadge.vue'
 import AppStatusChip from '@/components/ui/AppStatusChip.vue'
+import Pagination from '@/components/data-display/Pagination.vue'
 import { getScheduleSessionStatusTone, normalizeScheduleSessionStatus } from './scheduleSessionOverlay'
 
 const getStatusTone = (status) => getScheduleSessionStatusTone(status)
@@ -20,14 +22,17 @@ const dayNames = {
 
 const getDayName = (dayOfWeek) => dayNames[dayOfWeek] || '-'
 
-defineProps({
-  dayLabel: {
-    type: String,
-    default: '',
-  },
+const currentPage = ref(1)
+const itemsPerPage = 10
+
+const props = defineProps({
   entries: {
     type: Array,
     default: () => [],
+  },
+  dayLabel: {
+    type: String,
+    default: '',
   },
   loading: {
     type: Boolean,
@@ -72,6 +77,14 @@ defineProps({
 })
 
 const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
+
+const totalPages = computed(() => Math.ceil(props.entries.length / itemsPerPage))
+
+const paginatedEntries = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return props.entries.slice(start, end)
+})
 </script>
 
 <template>
@@ -87,22 +100,23 @@ const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
       {{ emptyLabel }}
     </div>
 
-    <div v-else class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-slate-200 bg-slate-50">
-            <th class="px-4 py-3 text-center text-sm font-semibold text-slate-900 w-12">No.</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Day</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Class</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Time</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Teacher</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Room</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Status</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Session</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(entry, index) in entries" :key="entry.id" class="border-b border-slate-200 transition-colors hover:bg-slate-50">
+    <div v-else class="space-y-4">
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50">
+              <th class="px-4 py-3 text-center text-sm font-semibold text-slate-900 w-12">No.</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Day</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Class</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Time</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Teacher</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Room</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Status</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Session</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(entry, index) in paginatedEntries" :key="entry.id" class="border-b border-slate-200 transition-colors hover:bg-slate-50">
             <td class="px-4 py-3 text-center text-sm text-slate-600 font-semibold">{{ index + 1 }}</td>
             <td class="px-4 py-3 text-sm text-slate-600">{{ getDayName(entry.dayOfWeek) }}</td>
             <td class="px-4 py-3 text-sm text-slate-900 font-semibold">{{ entry.activityLabel }}</td>
@@ -125,8 +139,13 @@ const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
               </span>
             </td>
           </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-center">
+        <Pagination v-model="currentPage" :total-pages="totalPages" class="mt-2" />
+      </div>
     </div>
   </div>
 </template>
