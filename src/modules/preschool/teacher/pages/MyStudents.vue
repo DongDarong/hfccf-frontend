@@ -175,7 +175,7 @@ onMounted(() => {
           :empty-text="t('preschoolTeacherStudentsPage.messages.noResults')"
         />
 
-        <div v-if="pagination.totalPages > 1" class="flex justify-end">
+        <div class="flex justify-end">
           <Pagination v-model="currentPage" :total-pages="pagination.totalPages" class="mt-2" />
         </div>
       </div>
