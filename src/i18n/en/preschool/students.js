@@ -174,6 +174,8 @@ export default {
     title: 'My Preschool Students',
     subtitle: 'Students assigned to your preschool classes.',
     searchPlaceholder: 'Search students',
+    filterByClass: 'Filter by Class',
+    selectClass: 'Select a class',
     columns: {
       no: 'No.',
       student: 'Student',
