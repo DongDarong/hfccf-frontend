@@ -1,7 +1,7 @@
 export default {
   preschoolTeacherPage: {
     classes: {
-      title: 'ថ្នាក់របស់ខ្ញុំ',
+      title: 'ថ្នាក់',
       subtitle: 'មើលថ្នាក់មត្តេយ្យដែលបានចាត់តាំងឱ្យអ្នក។',
       loading: 'កំពុងផ្ទុកថ្នាក់របស់អ្នក...',
       searchPlaceholder: 'ស្វែងរកលេខកូដឬឈ្មោះថ្នាក់...',
@@ -39,6 +39,8 @@ export default {
       studentName: 'ឈ្មោះសិស្ស',
       gender: 'ភេទ',
       dob: 'ថ្ងៃខែឆ្នាំកំណើត',
+      students: 'សិស្ស',
+      totalStudents: 'សិស្សសរុប',
     },
   },
 }

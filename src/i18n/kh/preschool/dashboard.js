@@ -88,11 +88,11 @@ const overrides = {
     quickStats: 'ស្ថិតិរហ័ស',
     cards: {
       students: {
-        title: 'សិស្សរបស់ខ្ញុំ',
+        title: 'សិស្ស',
         label: 'សិស្សក្នុងថ្នាក់របស់អ្នក',
       },
       classes: {
-        title: 'ថ្នាក់របស់ខ្ញុំ',
+        title: 'ថ្នាក់',
         label: 'ថ្នាក់ដែលបានចាត់តាំង',
       },
       attendance: {
