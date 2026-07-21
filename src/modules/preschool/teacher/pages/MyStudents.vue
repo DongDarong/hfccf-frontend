@@ -44,12 +44,13 @@ const mappedStudents = computed(() =>
       student.name ||
       '-'
     const dob = student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : '-'
+    const classNames = student.classes?.map((c) => c.name).join(', ') || '-'
     return {
       ...student,
       name: fullName,
       avatarUrl: resolveAvatarSource(student.avatarUrl || ''),
       dateOfBirth: dob,
-      classesCount: student.classesCount || student.classes?.length || 0,
+      classesCount: classNames,
     }
   }),
 )
