@@ -8,7 +8,6 @@ import Button from '@/components/buttons/Button.vue'
 import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolTeacherSchedule } from '@/modules/preschool/composables/usePreschoolTeacherSchedule'
-import ScheduleDayTabs from '@/modules/preschool/shared/components/schedule/ScheduleDayTabs.vue'
 import WeeklyTimetableGrid from '@/modules/preschool/shared/components/schedule/WeeklyTimetableGrid.vue'
 import { PreschoolScheduleDay } from '@/modules/preschool/services/scheduleConstants'
 import {
@@ -202,12 +201,6 @@ onMounted(() => {
           </Button>
         </div>
       </div>
-
-      <ScheduleDayTabs
-        :days="dayOptions"
-        :model-value="selectedDayOfWeek"
-        @update:model-value="selectedDayOfWeek = $event"
-      />
 
       <WeeklyTimetableGrid
         :loading="loading"
