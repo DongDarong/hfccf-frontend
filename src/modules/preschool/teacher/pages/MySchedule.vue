@@ -5,6 +5,7 @@ import { computed, onMounted, ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
+import Select from 'primevue/select'
 import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { usePreschoolTeacherSchedule } from '@/modules/preschool/composables/usePreschoolTeacherSchedule'
@@ -51,6 +52,7 @@ const dayOptions = computed(() => [
 ])
 
 const selectedDayOfWeek = ref('')
+const searchQuery = ref('')
 const todaySessions = ref([])
 function todayIso() {
   const now = new Date()
@@ -60,11 +62,23 @@ function todayIso() {
   return `${year}-${month}-${day}`
 }
 const sessionIndex = computed(() => buildScheduleSessionIndex(todaySessions.value))
-const visibleEntries = computed(() =>
-  selectedDayOfWeek.value
-    ? schedules.value.filter((entry) => String(entry.dayOfWeek) === String(selectedDayOfWeek.value))
-    : schedules.value,
-)
+const visibleEntries = computed(() => {
+  let result = schedules.value
+
+  // Filter by day
+  if (selectedDayOfWeek.value) {
+    result = result.filter((entry) => String(entry.dayOfWeek) === String(selectedDayOfWeek.value))
+  }
+
+  // Filter by search query
+  const q = searchQuery.value.toLowerCase()
+  if (!q) return result
+  return result.filter((entry) =>
+    entry.activityLabel?.toLowerCase().includes(q) ||
+    entry.className?.toLowerCase().includes(q) ||
+    entry.teacherName?.toLowerCase().includes(q),
+  )
+})
 const scheduleEntries = computed(() =>
   visibleEntries.value.map((entry) => {
     const session = resolveScheduleSession(entry, sessionIndex.value, todayIso())
@@ -188,6 +202,39 @@ onMounted(() => {
         <Button type="button" variant="primary" size="md" rounded="xl" @click="refreshSchedule">
           {{ t('preschoolSchedulesPage.actions.refresh') }}
         </Button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex gap-3 items-end">
+        <!-- Day Filter -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-600">Day</label>
+          <Select
+            v-model="selectedDayOfWeek"
+            :options="dayOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="All Days"
+            class="w-40"
+            show-clear
+          />
+        </div>
+
+        <!-- Search -->
+        <div class="flex-1 relative">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-600 block mb-1.5">Search</label>
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="Search class, teacher..."
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        </div>
       </div>
 
       <WeeklyTimetableGrid
