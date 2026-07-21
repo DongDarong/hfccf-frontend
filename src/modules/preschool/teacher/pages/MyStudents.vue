@@ -5,7 +5,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Table from '@/components/data-display/Table.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchMyPreschoolStudents, fetchMyPreschoolClasses } from '@/modules/preschool/services/preschoolApi'
 
@@ -139,7 +139,7 @@ onMounted(() => {
           <!-- class selector -->
           <div class="my-students-page__filter-item">
             <label class="my-students-page__filter-label">{{ t('preschoolTeacherStudentsPage.filterByClass') || 'Class' }}</label>
-            <Dropdown
+            <Select
               v-model="selectedClass"
               :options="classes"
               option-label="name"
