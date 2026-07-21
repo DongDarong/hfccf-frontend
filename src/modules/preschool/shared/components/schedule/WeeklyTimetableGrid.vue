@@ -64,11 +64,6 @@ const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <h3 class="text-lg font-semibold text-slate-900">{{ dayLabel }}</h3>
-      <span class="text-sm text-slate-500">{{ entries.length }}</span>
-    </div>
-
     <div
       v-if="loading"
       class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
