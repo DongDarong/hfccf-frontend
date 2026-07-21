@@ -87,10 +87,6 @@ const selectedDayLabel = computed(() => {
   return option?.label || t('preschoolSchedulesPage.myView.title')
 })
 
-function goBack() {
-  router.push({ name: 'dashboard-preschool-teacher' })
-}
-
 async function loadScheduleTodaySessions() {
   try {
     const response = await fetchTodayAttendanceSessions()
@@ -188,10 +184,7 @@ onMounted(() => {
         {{ lockMessage }}
       </div>
 
-      <div class="flex items-end justify-between gap-2">
-        <div class="text-sm text-slate-600">
-          {{ teacherSummary?.name || t('preschoolSchedulesPage.myView.title') }}
-        </div>
+      <div class="flex justify-end">
         <Button type="button" variant="primary" size="md" rounded="xl" @click="refreshSchedule">
           {{ t('preschoolSchedulesPage.actions.refresh') }}
         </Button>
