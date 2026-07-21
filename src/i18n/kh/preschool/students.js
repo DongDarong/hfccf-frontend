@@ -181,6 +181,7 @@ export default {
       student: 'សិស្ស',
       code: 'លេខកូដ',
       gender: 'ភេទ',
+      dob: 'ថ្ងៃខែឆ្នាំកំណើត',
       status: 'ស្ថានភាព',
       classes: 'ថ្នាក់',
     },

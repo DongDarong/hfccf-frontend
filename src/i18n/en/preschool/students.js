@@ -181,6 +181,7 @@ export default {
       student: 'Student',
       code: 'ID',
       gender: 'Gender',
+      dob: 'Date of Birth',
       status: 'Status',
       classes: 'Classes',
     },

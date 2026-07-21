@@ -31,6 +31,7 @@ const tableColumns = computed(() => [
   { key: 'number', label: t('preschoolTeacherStudentsPage.columns.no'), align: 'left' },
   { key: 'student', label: t('preschoolTeacherStudentsPage.columns.student'), align: 'left' },
   { key: 'gender', label: t('preschoolTeacherStudentsPage.columns.gender'), align: 'left' },
+  { key: 'dateOfBirth', label: t('preschoolTeacherStudentsPage.columns.dob'), align: 'left' },
   { key: 'status', label: t('preschoolTeacherStudentsPage.columns.status'), align: 'left' },
   { key: 'classesCount', label: t('preschoolTeacherStudentsPage.columns.classes'), align: 'left' },
 ])
@@ -42,10 +43,12 @@ const mappedStudents = computed(() =>
       `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
       student.name ||
       '-'
+    const dob = student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : '-'
     return {
       ...student,
       name: fullName,
       avatarUrl: resolveAvatarSource(student.avatarUrl || ''),
+      dateOfBirth: dob,
       classesCount: student.classesCount || student.classes?.length || 0,
     }
   }),
