@@ -44,7 +44,9 @@ const mappedStudents = computed(() =>
       student.name ||
       '-'
     const dob = student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : '-'
-    const classNames = student.classes?.map((c) => c.name).join(', ') || '-'
+    const allClassNames = student.classes?.map((c) => c.name) || []
+    const displayedClasses = allClassNames.slice(0, 3)
+    const classNames = displayedClasses.length === 0 ? '-' : displayedClasses.join(', ') + (allClassNames.length > 3 ? '...' : '')
     return {
       ...student,
       name: fullName,
