@@ -192,14 +192,9 @@ onMounted(() => {
         <div class="text-sm text-slate-600">
           {{ teacherSummary?.name || t('preschoolSchedulesPage.myView.title') }}
         </div>
-        <div class="flex gap-2">
-          <Button type="button" variant="ghost" size="md" rounded="xl" @click="goBack">
-            {{ t('preschoolSchedulesPage.actions.back') }}
-          </Button>
-          <Button type="button" variant="primary" size="md" rounded="xl" @click="refreshSchedule">
-            {{ t('preschoolSchedulesPage.actions.refresh') }}
-          </Button>
-        </div>
+        <Button type="button" variant="primary" size="md" rounded="xl" @click="refreshSchedule">
+          {{ t('preschoolSchedulesPage.actions.refresh') }}
+        </Button>
       </div>
 
       <WeeklyTimetableGrid
