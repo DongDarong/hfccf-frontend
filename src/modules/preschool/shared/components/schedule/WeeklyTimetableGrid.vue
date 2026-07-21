@@ -88,7 +88,7 @@ const paginatedEntries = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="schedule-card">
     <div
       v-if="loading"
       class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
@@ -101,7 +101,7 @@ const paginatedEntries = computed(() => {
     </div>
 
     <div v-else class="space-y-4">
-      <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
         <table class="w-full">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50">
@@ -149,3 +149,18 @@ const paginatedEntries = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.schedule-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid #dce6f2;
+  background:
+    radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+  box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
+}
+</style>
