@@ -8,6 +8,18 @@ import { getScheduleSessionStatusTone, normalizeScheduleSessionStatus } from './
 const getStatusTone = (status) => getScheduleSessionStatusTone(status)
 const normalizeSessionStatus = (status) => normalizeScheduleSessionStatus(status)
 
+const dayNames = {
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
+  7: 'Sunday',
+}
+
+const getDayName = (dayOfWeek) => dayNames[dayOfWeek] || '-'
+
 defineProps({
   dayLabel: {
     type: String,
@@ -80,6 +92,7 @@ const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
         <thead>
           <tr class="border-b border-slate-200 bg-slate-50">
             <th class="px-4 py-3 text-center text-sm font-semibold text-slate-900 w-12">No.</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Day</th>
             <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Class</th>
             <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Time</th>
             <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Teacher</th>
@@ -91,6 +104,7 @@ const emit = defineEmits(['edit', 'archive', 'session-action', 'session-view'])
         <tbody>
           <tr v-for="(entry, index) in entries" :key="entry.id" class="border-b border-slate-200 transition-colors hover:bg-slate-50">
             <td class="px-4 py-3 text-center text-sm text-slate-600 font-semibold">{{ index + 1 }}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ getDayName(entry.dayOfWeek) }}</td>
             <td class="px-4 py-3 text-sm text-slate-900 font-semibold">{{ entry.activityLabel }}</td>
             <td class="px-4 py-3 text-sm text-slate-600">{{ entry.startTime }} - {{ entry.endTime }}</td>
             <td class="px-4 py-3 text-sm text-slate-600">{{ entry.teacherName }}</td>
