@@ -205,34 +205,36 @@ onMounted(() => {
       </div>
 
       <!-- Filters -->
-      <div class="flex gap-3 items-end">
-        <!-- Day Filter -->
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold uppercase tracking-wide text-slate-600">Day</label>
-          <Select
-            v-model="selectedDayOfWeek"
-            :options="dayOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="All Days"
-            class="w-40"
-            show-clear
-          />
-        </div>
-
-        <!-- Search -->
-        <div class="flex-1 relative">
-          <label class="text-xs font-semibold uppercase tracking-wide text-slate-600 block mb-1.5">Search</label>
-          <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Search class, teacher..."
-              class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+      <div class="schedule-filters">
+        <div class="flex gap-3 items-end">
+          <!-- Day Filter -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-600">Day</label>
+            <Select
+              v-model="selectedDayOfWeek"
+              :options="dayOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="All Days"
+              class="w-40"
+              show-clear
             />
+          </div>
+
+          <!-- Search -->
+          <div class="flex-1 relative">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-600 block mb-1.5">Search</label>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                v-model="searchQuery"
+                type="search"
+                placeholder="Search class, teacher..."
+                class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -252,3 +254,18 @@ onMounted(() => {
     </section>
   </MainLayout>
 </template>
+
+<style scoped>
+.schedule-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid #dce6f2;
+  background:
+    radial-gradient(circle at top left, rgba(186, 230, 253, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+  box-shadow: 0 25px 60px -40px rgba(15, 23, 42, 0.5);
+}
+</style>
