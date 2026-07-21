@@ -109,7 +109,6 @@ const paginatedEntries = computed(() => {
               <th class="border-r border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-900">Day</th>
               <th class="border-r border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-900">Class</th>
               <th class="border-r border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-900">Time</th>
-              <th class="border-r border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-900">Teacher</th>
               <th class="border-r border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-900">Room</th>
               <th class="border-r border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-900">Status</th>
               <th class="px-4 py-3 text-left text-sm font-semibold text-slate-900">Session</th>
@@ -121,7 +120,6 @@ const paginatedEntries = computed(() => {
             <td class="border-r border-slate-200 px-4 py-3 text-sm text-slate-600">{{ getDayName(entry.dayOfWeek) }}</td>
             <td class="border-r border-slate-200 px-4 py-3 text-sm text-slate-900 font-semibold">{{ entry.activityLabel }}</td>
             <td class="border-r border-slate-200 px-4 py-3 text-sm text-slate-600">{{ entry.startTime }} - {{ entry.endTime }}</td>
-            <td class="border-r border-slate-200 px-4 py-3 text-sm text-slate-600">{{ entry.teacherName }}</td>
             <td class="border-r border-slate-200 px-4 py-3 text-sm text-slate-600">{{ entry.room || '-' }}</td>
             <td class="border-r border-slate-200 px-4 py-3 text-sm">
               <ScheduleStatusBadge :status="entry.status" :label="entry.status" />
