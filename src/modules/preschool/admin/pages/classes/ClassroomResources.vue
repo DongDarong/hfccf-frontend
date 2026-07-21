@@ -146,7 +146,13 @@ async function loadRequests() {
     requests.value = response.items || []
   } catch (error) {
     requests.value = []
-    requestsErrorMessage.value = error?.message || t('preschoolResourceRequests.messages.actionFailed')
+    console.error('Failed to load classroom resource requests:', error)
+    if (error?.response?.status === 500) {
+      console.error('Server error - the resource requests endpoint may have a configuration issue')
+      requestsErrorMessage.value = 'Server error loading requests. Please check the server logs.'
+    } else {
+      requestsErrorMessage.value = error?.message || t('preschoolResourceRequests.messages.actionFailed')
+    }
   } finally {
     requestsLoading.value = false
   }

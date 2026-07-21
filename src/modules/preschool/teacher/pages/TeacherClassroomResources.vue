@@ -157,6 +157,10 @@ async function loadRequests() {
     requests.value = response.items || []
   } catch (error) {
     requests.value = []
+    console.error('Failed to load classroom resource requests:', error)
+    if (error?.response?.status === 500) {
+      console.error('Server error - the resource requests endpoint may have a configuration issue')
+    }
   } finally {
     requestsLoading.value = false
   }
