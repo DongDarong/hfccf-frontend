@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
-import Button from '@/components/buttons/Button.vue'
 import Pagination from '@/components/data-display/Pagination.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { fetchMyPreschoolStudents } from '@/modules/preschool/services/preschoolApi'
@@ -15,7 +14,6 @@ defineOptions({
 
 const { t } = useLanguage()
 
-const students = ref([])
 const allStudents = ref([])
 const selectedStudentDetail = ref(null)
 const loadingStudents = ref(false)

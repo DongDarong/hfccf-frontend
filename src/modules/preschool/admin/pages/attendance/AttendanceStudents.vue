@@ -100,7 +100,6 @@ const classPlaceholder = computed(() => t(`${pageCopyKey.value}.placeholders.cla
 const notePlaceholder = computed(() => t(`${pageCopyKey.value}.placeholders.note`))
 const saveButtonLabel = computed(() => t(`${pageCopyKey.value}.actions.save`))
 const savingButtonLabel = computed(() => t(`${pageCopyKey.value}.actions.saving`))
-const backButtonLabel = computed(() => t(`${pageCopyKey.value}.actions.back`))
 const todayButtonLabel = computed(() => t(`${pageCopyKey.value}.actions.today`))
 const markAllPresentLabel = computed(() => t(`${pageCopyKey.value}.actions.markAllPresent`))
 const markAllAbsentLabel = computed(() => t(`${pageCopyKey.value}.actions.markAllAbsent`))
@@ -131,7 +130,6 @@ const visibleStudents = computed(() => {
 })
 const markedCount = computed(() => Object.values(attendanceMap.value).filter((entry) => entry.status).length)
 const summary = computed(() => t(`${pageCopyKey.value}.summary`, { marked: markedCount.value, total: visibleStudents.value.length }))
-const backRouteName = computed(() => isTeacherView.value ? 'dashboard-preschool-teacher' : 'dashboard-preschool-admin-attendance')
 const sessionProgress = computed(() => resolveSessionProgress(selectedSession.value || {}, Object.values(attendanceMap.value)))
 const sessionProgressLabel = computed(() => t('preschoolAttendanceSessionsPage.progress', { marked: sessionProgress.value.marked, total: sessionProgress.value.total, pending: sessionProgress.value.pending }))
 const sessionStatusLabel = computed(() => t(`preschoolAttendanceSessionsPage.statuses.${getSessionStatusKey(selectedSessionStatus.value)}`) || selectedSessionStatus.value)
@@ -622,9 +620,6 @@ watch(visibleStudents, (studentList) => {
         <div class="mt-3 flex flex-wrap items-center gap-2">
           <Button type="button" variant="ghost" size="md" rounded="xl" :disabled="loading || Boolean(selectedSessionId)" @click="selectedDate = todayIso()">
             {{ todayButtonLabel }}
-          </Button>
-          <Button type="button" variant="ghost" size="md" rounded="xl" @click="router.push({ name: backRouteName })">
-            {{ backButtonLabel }}
           </Button>
         </div>
       </div>

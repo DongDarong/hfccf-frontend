@@ -1,7 +1,7 @@
 export default {
   preschoolTeacherPage: {
     classes: {
-      title: 'My Classes',
+      title: 'Classes',
       subtitle: 'View the Preschool classes currently assigned to you.',
       loading: 'Loading your classes...',
       searchPlaceholder: 'Search by class name or code...',
@@ -39,6 +39,8 @@ export default {
       studentName: 'Student Name',
       gender: 'Gender',
       dob: 'Date of Birth',
+      students: 'Students',
+      totalStudents: 'total students',
     },
   },
 }

@@ -326,11 +326,11 @@ export default {
     quickStats: 'Quick Stats',
     cards: {
       students: {
-        title: 'My Students',
+        title: 'Students',
         label: 'Students in your classes',
       },
       classes: {
-        title: 'My Classes',
+        title: 'Classes',
         label: 'Assigned classes',
       },
       attendance: {

@@ -61,16 +61,28 @@ const isEditable = computed(() => {
 
 async function loadFilterOptions() {
   try {
-    const [lifecycleRes, classesRes] = await Promise.all([
-      fetchAcademicLifecycle(),
+    // Fetch classes
+    const classesRes = await (
       isTeacherView.value
         ? fetchMyPreschoolClasses({ page: 1, perPage: 100 })
-        : fetchPreschoolClasses({ page: 1, perPage: 100 }),
-    ])
+        : fetchPreschoolClasses({ page: 1, perPage: 100 })
+    )
 
-    const activeAcademicYear = (lifecycleRes.academicYears || []).find(item => item.isCurrent)
-      || (lifecycleRes.academicYears || []).find(item => String(item.status || '').toLowerCase() === 'active')
-    academicYearId.value = activeAcademicYear?.id || ''
+    // Try to fetch academic lifecycle, but handle 403 gracefully
+    let lifecycleRes = null
+    try {
+      lifecycleRes = await fetchAcademicLifecycle()
+      const activeAcademicYear = (lifecycleRes.academicYears || []).find(item => item.isCurrent)
+        || (lifecycleRes.academicYears || []).find(item => String(item.status || '').toLowerCase() === 'active')
+      academicYearId.value = activeAcademicYear?.id || ''
+    } catch (lifecycleError) {
+      // If fetching academic lifecycle fails (e.g., 403 Forbidden), continue without it
+      if (lifecycleError?.response?.status === 403) {
+        console.warn('Access denied to academic lifecycle settings, continuing without it')
+      } else {
+        throw lifecycleError
+      }
+    }
 
     filterOptions.value.classes = (classesRes.items || []).map(c => ({
       label: c.name,
