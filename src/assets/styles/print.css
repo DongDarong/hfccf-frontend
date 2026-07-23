@@ -385,7 +385,26 @@
   /* Page setup */
   @page {
     size: A4 portrait;
-    margin: 25.4mm;
+    margin: 12.7mm;
+  }
+
+  /* PDF Document Styling */
+  .pdf-document {
+    page-break-inside: avoid;
+  }
+
+  .pdf-header {
+    page-break-inside: avoid;
+    border-bottom: 2px solid #000 !important;
+  }
+
+  .pdf-section {
+    page-break-inside: avoid;
+  }
+
+  .pdf-footer {
+    page-break-inside: avoid;
+    border-top: 1px solid #000 !important;
   }
 
   /* Avoid breaking key elements */

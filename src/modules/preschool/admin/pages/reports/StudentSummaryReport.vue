@@ -4,8 +4,6 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
-import html2pdf from 'html2pdf.js'
-import * as XLSX from 'xlsx'
 import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchPreschoolClasses,
@@ -14,10 +12,10 @@ import {
   fetchPreschoolAttendance,
 } from '@/modules/preschool/services/preschoolApi'
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
-import StudentIdentityCard from './components/StudentIdentityCard.vue'
-import StudentAttendanceSummary from './components/StudentAttendanceSummary.vue'
+import StudentProfilePDFDocument from './components/StudentProfilePDFDocument.vue'
 import ClassSummaryTable from './components/ClassSummaryTable.vue'
 import ReportSwitcher from './components/ReportSwitcher.vue'
+import ReportExportToolbar from './components/ReportExportToolbar.vue'
 
 defineOptions({
   name: 'StudentSummaryReportPage',
@@ -28,7 +26,6 @@ const { t } = useLanguage()
 const loading = ref(false)
 const reportGenerated = ref(false)
 const errorMessage = ref('')
-const exportLoading = ref(false)
 const scopeType = ref('individual')
 const academicYearId = ref('')
 const classId = ref('')
@@ -41,7 +38,10 @@ const filterOptions = ref({
 })
 
 const reportData = ref({
+  reportType: 'summary',
+  scope: 'individual',
   student: null,
+  class: null,
   attendance: null,
   classStudents: [],
 })
@@ -112,9 +112,15 @@ async function generateIndividualReport() {
       perPage: 1000,
     })
 
+    const selectedClass = filterOptions.value.classes.find(c => c.value === classId.value)
+
     reportData.value = {
+      reportType: 'summary',
+      scope: 'individual',
       student: studentData,
+      class: selectedClass ? { id: selectedClass.value, name: selectedClass.label } : null,
       attendance: attendanceData,
+      classStudents: [],
     }
 
     reportGenerated.value = true
@@ -155,7 +161,7 @@ async function generateClassReport() {
           const attendancePercentage = calculateAttendancePercentage(attendance)
 
           return {
-            student,
+            ...student,
             attendancePercentage,
           }
         }),
@@ -164,8 +170,15 @@ async function generateClassReport() {
       classStudents.push(...batchResults)
     }
 
+    const selectedClass = filterOptions.value.classes.find(c => c.value === classId.value)
+
     reportData.value = {
+      reportType: 'summary',
+      scope: 'class',
+      class: selectedClass ? { id: selectedClass.value, name: selectedClass.label } : null,
       classStudents,
+      student: null,
+      attendance: null,
     }
 
     reportGenerated.value = true
@@ -194,110 +207,18 @@ function resetFilters() {
   studentId.value = filterOptions.value.students[0]?.value || ''
   reportGenerated.value = false
   reportData.value = {
+    reportType: 'summary',
+    scope: 'individual',
     student: null,
+    class: null,
     attendance: null,
     classStudents: [],
   }
 }
 
-async function exportReport(format) {
-  try {
-    exportLoading.value = true
-
-    const timestamp = new Date().toISOString().split('T')[0]
-    const reportTypeLabel = scopeType.value === 'individual' ? 'Individual' : 'Class'
-    const filename = `StudentSummaryReport_${reportTypeLabel}_${timestamp}`
-
-    if (format === 'pdf') {
-      await exportToPdf(filename)
-    } else if (format === 'excel') {
-      exportToExcel(filename)
-    } else if (format === 'print') {
-      window.print()
-    }
-  } catch (error) {
-    errorMessage.value = 'Failed to export report'
-    console.error('Error exporting report:', error)
-  } finally {
-    exportLoading.value = false
-  }
-}
-
-async function exportToPdf(filename) {
-  const element = document.querySelector('.preschool-student-summary-report-content')
-  if (!element) {
-    throw new Error('Report content not found')
-  }
-
-  const options = {
-    margin: 10,
-    filename: `${filename}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
-  }
-
-  await html2pdf().set(options).from(element).save()
-}
-
-function exportToExcel(filename) {
-  const workbook = XLSX.utils.book_new()
-
-  // Metadata
-  const metaData = [
-    ['Student Summary Report'],
-    ['Type', scopeType.value === 'individual' ? 'Individual' : 'Class'],
-    ['Generated On', new Date().toLocaleString()],
-    ['Academic Year', filterOptions.value.academicYears.find(y => y.value === academicYearId.value)?.label || 'All'],
-  ]
-
-  if (scopeType.value === 'individual') {
-    metaData.push(['Student', reportData.value.student?.firstName + ' ' + reportData.value.student?.lastName || 'N/A'])
-  } else {
-    metaData.push(['Class', filterOptions.value.classes.find(c => c.value === classId.value)?.label || 'All Classes'])
-  }
-
-  const metaSheet = XLSX.utils.aoa_to_sheet(metaData)
-  XLSX.utils.book_append_sheet(workbook, metaSheet, 'Report Info')
-
-  // Student details (if individual)
-  if (scopeType.value === 'individual' && reportData.value.student) {
-    const studentData = [
-      ['First Name', reportData.value.student.firstName || ''],
-      ['Last Name', reportData.value.student.lastName || ''],
-      ['Enrollment Number', reportData.value.student.enrollmentNumber || ''],
-      ['Date of Birth', reportData.value.student.dateOfBirth || ''],
-    ]
-    const studentSheet = XLSX.utils.aoa_to_sheet(studentData)
-    XLSX.utils.book_append_sheet(workbook, studentSheet, 'Student Info')
-  }
-
-  // Attendance summary
-  if (reportData.value.attendance) {
-    const attendanceData = [
-      ['Metric', 'Value'],
-      ['Total Days', reportData.value.attendance.totalDays || 0],
-      ['Present', reportData.value.attendance.presentDays || 0],
-      ['Absent', reportData.value.attendance.absentDays || 0],
-      ['Attendance Rate', reportData.value.attendance.attendanceRate || '0%'],
-    ]
-    const attendanceSheet = XLSX.utils.aoa_to_sheet(attendanceData)
-    XLSX.utils.book_append_sheet(workbook, attendanceSheet, 'Attendance')
-  }
-
-  // Class students (if class report)
-  if (scopeType.value === 'class' && reportData.value.classStudents.length > 0) {
-    const studentList = reportData.value.classStudents.map(s => [
-      s.firstName || '',
-      s.lastName || '',
-      s.enrollmentNumber || '',
-    ])
-    studentList.unshift(['First Name', 'Last Name', 'Enrollment Number'])
-    const classSheet = XLSX.utils.aoa_to_sheet(studentList)
-    XLSX.utils.book_append_sheet(workbook, classSheet, 'Class Students')
-  }
-
-  XLSX.writeFile(workbook, `${filename}.xlsx`)
+function handleExportError(error) {
+  errorMessage.value = error.error || 'Failed to export report'
+  console.error('Export failed:', error)
 }
 
 onMounted(() => {
@@ -425,48 +346,41 @@ onMounted(() => {
 
       <!-- Individual Student Report -->
       <template v-if="reportGenerated && scopeType === 'individual' && reportData.student">
-        <div class="preschool-student-summary-report-content">
-          <StudentIdentityCard :student="reportData.student" />
-          <StudentAttendanceSummary :attendance="reportData.attendance" />
+        <div class="report-export-content">
+          <StudentProfilePDFDocument :student="reportData.student" :attendance="reportData.attendance" />
         </div>
 
         <!-- Export Toolbar -->
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Export</h2>
-          <div class="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
-              <i class="pi pi-file-pdf mr-2" /> PDF
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
-              <i class="pi pi-file-excel mr-2" /> Excel
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
-              <i class="pi pi-print mr-2" /> Print
-            </Button>
-          </div>
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            {{ t('preschoolReportsPage.export') || 'Export' }}
+          </h2>
+          <ReportExportToolbar
+            :report-type="reportData.reportType"
+            :report-data="reportData"
+            :report-name="reportData.student?.fullName || 'Report'"
+            @export:error="handleExportError"
+          />
         </div>
       </template>
 
       <!-- Class Report -->
       <template v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length > 0">
-        <div class="preschool-student-summary-report-content">
+        <div class="report-export-content">
           <ClassSummaryTable :students="reportData.classStudents" />
         </div>
 
         <!-- Export Toolbar -->
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Export</h2>
-          <div class="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
-              <i class="pi pi-file-pdf mr-2" /> PDF
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
-              <i class="pi pi-file-excel mr-2" /> Excel
-            </Button>
-            <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
-              <i class="pi pi-print mr-2" /> Print
-            </Button>
-          </div>
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            {{ t('preschoolReportsPage.export') || 'Export' }}
+          </h2>
+          <ReportExportToolbar
+            :report-type="reportData.reportType"
+            :report-data="reportData"
+            :report-name="reportData.class?.name || 'Class Report'"
+            @export:error="handleExportError"
+          />
         </div>
       </template>
 
