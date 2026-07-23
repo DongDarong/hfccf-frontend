@@ -66,175 +66,147 @@ const attendanceSummary = computed(() => {
 
 <template>
   <div class="pdf-document">
-    <!-- Header Section -->
-    <div class="pdf-header">
-      <div class="pdf-header__logo-section">
-        <img
-          src="@/assets/images/hfccf-logo.png"
-          alt="HFCCF Logo"
-          class="pdf-header__logo"
-        />
-      </div>
-
-      <div class="pdf-header__center">
-        <h1 class="pdf-header__org-name">HFCCF</h1>
-        <h1 class="pdf-header__org-name-kh">{{ t('preschoolReportsPage.organization') || 'មជ្ឈមណ្ឌល HFCCF' }}</h1>
-        <p class="pdf-header__title">{{ t('preschoolReportsPage.studentProfile') || 'Student Profile' }}</p>
-        <p class="pdf-header__title-kh">{{ t('preschoolReportsPage.studentProfileKh') || 'ឯកសារ សម្ភាសន៍ដោយផ្ទាល់' }}</p>
-      </div>
-
-      <div class="pdf-header__photo-section">
-        <Avatar
-          v-if="student.avatarUrl"
-          :image="student.avatarUrl"
-          size="xlarge"
-          shape="circle"
-          class="pdf-header__photo"
-        />
-        <div v-else class="pdf-header__photo-placeholder">
-          <i class="pi pi-user text-4xl" />
-        </div>
-      </div>
+    <!-- Organization Header -->
+    <div class="header-section">
+      <p class="org-name-kh">ព្រះរាជាណាចព្ដរកម្ពុជា</p>
+      <p class="org-motto">ជាតិ សាសនា ព្រះម្ហារ</p>
+      <hr class="divider" />
+      <p class="org-label">អង្គការម្ូលនិធិរតីសង្ឃម្ឹរមាុ ររម្ពុជា</p>
+      <p class="org-subtitle">HFCCF - មជ្ឈមណ្ឌលសម្រាប់ក្មេងរៀង</p>
     </div>
 
-    <!-- Divider -->
-    <div class="pdf-divider" />
-
-    <!-- Student Identity Section -->
-    <div class="pdf-section">
-      <h2 class="pdf-section__title">{{ t('preschoolReportsPage.studentInformation') || 'Student Information' }}</h2>
-
-      <div class="pdf-grid pdf-grid--2col">
-        <!-- Row 1: Names -->
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.khmerName') || 'Khmer Name' }}</label>
-          <p class="pdf-value">{{ student.fullName || '—' }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.latinName') || 'Latin Name' }}</label>
-          <p class="pdf-value">{{ student.latinName || '—' }}</p>
-        </div>
-
-        <!-- Row 2: Code & Gender -->
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.studentCode') || 'Student Code' }}</label>
-          <p class="pdf-value">{{ student.studentCode || student.publicId || '—' }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.gender') || 'Gender' }}</label>
-          <p class="pdf-value">{{ student.gender || '—' }}</p>
-        </div>
-
-        <!-- Row 3: DOB & Nationality -->
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.dateOfBirth') || 'Date of Birth' }}</label>
-          <p class="pdf-value">{{ formatDate(student.dateOfBirth) }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.nationality') || 'Nationality' }}</label>
-          <p class="pdf-value">{{ student.nationality || '—' }}</p>
-        </div>
-
-        <!-- Row 4: Ethnicity & Religion (if available) -->
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.ethnicity') || 'Ethnicity' }}</label>
-          <p class="pdf-value">{{ student.ethnicity || '—' }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.status') || 'Status' }}</label>
-          <p class="pdf-value">{{ student.status || '—' }}</p>
-        </div>
-
-        <!-- Row 5: Class & Academic Year -->
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.class') || 'Class' }}</label>
-          <p class="pdf-value">{{ student.classes?.[0]?.name || '—' }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.academicYear') || 'Academic Year' }}</label>
-          <p class="pdf-value">{{ student.classes?.[0]?.academicYear || '—' }}</p>
-        </div>
-
-        <!-- Row 6: Enrollment Date -->
-        <div class="pdf-grid__item pdf-grid__item--full">
-          <label class="pdf-label">{{ t('preschoolReportsPage.enrollmentDate') || 'Enrollment Date' }}</label>
-          <p class="pdf-value">{{ formatDate(student.classes?.[0]?.enrolledAt) }}</p>
-        </div>
-      </div>
+    <!-- Title -->
+    <div class="title-section">
+      <h1 class="document-title">ឯកសារលម្អិតលិខិត</h1>
+      <p class="document-subtitle">ព័ត៌មានលម្អិតលិខិត</p>
     </div>
 
-    <!-- Guardian Section -->
-    <div class="pdf-section">
-      <h2 class="pdf-section__title">{{ t('preschoolReportsPage.guardianInformation') || 'Guardian Information' }}</h2>
-
-      <div class="pdf-grid pdf-grid--2col">
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.guardianName') || 'Guardian Name' }}</label>
-          <p class="pdf-value">{{ student.guardianName || '—' }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.relationship') || 'Relationship' }}</label>
-          <p class="pdf-value">{{ student.guardianType || '—' }}</p>
-        </div>
-
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.phone') || 'Phone' }}</label>
-          <p class="pdf-value">{{ student.guardianPhone || '—' }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.placeOfBirth') || 'Place of Birth' }}</label>
-          <p class="pdf-value">{{ student.placeOfBirth || '—' }}</p>
-        </div>
-
-        <div class="pdf-grid__item pdf-grid__item--full">
-          <label class="pdf-label">{{ t('preschoolReportsPage.address') || 'Address' }}</label>
-          <p class="pdf-value">{{ student.address || student.currentResidenceDisplay || '—' }}</p>
+    <!-- Main Content -->
+    <div class="content-section">
+      <!-- Photo Column -->
+      <div class="photo-column">
+        <div class="photo-container">
+          <Avatar
+            v-if="student.avatarUrl"
+            :image="student.avatarUrl"
+            size="xlarge"
+            shape="circle"
+            class="student-photo"
+          />
+          <div v-else class="photo-placeholder">
+            <i class="pi pi-user" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Attendance Summary Section -->
-    <div v-if="props.attendance" class="pdf-section">
-      <h2 class="pdf-section__title">{{ t('preschoolReportsPage.attendanceSummary') || 'Attendance Summary' }}</h2>
+      <!-- Info Column -->
+      <div class="info-column">
+        <!-- Student Information Section -->
+        <div class="info-section">
+          <h2 class="section-title">ព័ត៌មាននលម្អិតលិខិត</h2>
 
-      <div class="pdf-grid pdf-grid--2col">
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.attendancePercentage') || 'Attendance %' }}</label>
-          <p class="pdf-value pdf-value--large">{{ attendanceSummary.percentage }}%</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.totalRecords') || 'Total Records' }}</label>
-          <p class="pdf-value pdf-value--large">{{ attendanceSummary.total }}</p>
+          <div class="info-row">
+            <span class="info-label">គោតនាម-នាម៖</span>
+            <span class="info-value">{{ student.fullName || '—' }}</span>
+            <span class="info-label">គេទ៖</span>
+            <span class="info-value">{{ student.gender || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">គ្មោះជាឡាតាំង៖</span>
+            <span class="info-value">{{ student.latinName || '—' }}</span>
+            <span class="info-label">លេខលេងសម្គាល់៖</span>
+            <span class="info-value">{{ student.studentCode || student.publicId || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">ថ្ងៃខែឆ្នាំកំណើត៖</span>
+            <span class="info-value">{{ formatDate(student.dateOfBirth) }}</span>
+            <span class="info-label">សញ្ជាតិ៖</span>
+            <span class="info-value">{{ student.nationality || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">ជនជាតិ៖</span>
+            <span class="info-value">{{ student.ethnicity || '—' }}</span>
+            <span class="info-label">ស្ថានភាព៖</span>
+            <span class="info-value">{{ student.status || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">ថ្នាក់៖</span>
+            <span class="info-value">{{ student.classes?.[0]?.name || '—' }}</span>
+            <span class="info-label">ឆ្នាំសិក្សា៖</span>
+            <span class="info-value">{{ student.classes?.[0]?.academicYear || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">ថ្ងៃចូលរៀន៖</span>
+            <span class="info-value">{{ formatDate(student.classes?.[0]?.enrolledAt) }}</span>
+          </div>
         </div>
 
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.present') || 'Present' }}</label>
-          <p class="pdf-value">{{ attendanceSummary.present }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.absent') || 'Absent' }}</label>
-          <p class="pdf-value">{{ attendanceSummary.absent }}</p>
+        <!-- Guardian Information Section -->
+        <div class="info-section">
+          <h2 class="section-title">ព័ត៌មានលម្អិតលិខិត</h2>
+
+          <div class="info-row">
+            <span class="info-label">គោតនាម-នាម៖</span>
+            <span class="info-value">{{ student.guardianName || '—' }}</span>
+            <span class="info-label">ទំនាស់ស័ក្ដិ៖</span>
+            <span class="info-value">{{ student.guardianType || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">ថ្ងៃខែឆ្នាំកំណើត៖</span>
+            <span class="info-value">—</span>
+            <span class="info-label">លេខទូរស័ព្ទ៖</span>
+            <span class="info-value">{{ student.guardianPhone || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">ទីកន្លែងកំណើត៖</span>
+            <span class="info-value">{{ student.placeOfBirth || '—' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">អាសយដ្ឋាន៖</span>
+            <span class="info-value">{{ student.address || student.currentResidenceDisplay || '—' }}</span>
+          </div>
         </div>
 
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.late') || 'Late' }}</label>
-          <p class="pdf-value">{{ attendanceSummary.late }}</p>
-        </div>
-        <div class="pdf-grid__item">
-          <label class="pdf-label">{{ t('preschoolReportsPage.excused') || 'Excused' }}</label>
-          <p class="pdf-value">{{ attendanceSummary.excused }}</p>
+        <!-- Attendance Section -->
+        <div v-if="props.attendance" class="info-section">
+          <h2 class="section-title">សង្ខេបការចូលរៀន</h2>
+
+          <div class="info-row">
+            <span class="info-label">ភាគរយការចូលរៀន៖</span>
+            <span class="info-value">{{ attendanceSummary.percentage }}%</span>
+            <span class="info-label">ចំនួនថ្ងៃសរុប៖</span>
+            <span class="info-value">{{ attendanceSummary.total }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">វត្តមាន៖</span>
+            <span class="info-value">{{ attendanceSummary.present }}</span>
+            <span class="info-label">អវត្តមាន៖</span>
+            <span class="info-value">{{ attendanceSummary.absent }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">មកយឺត៖</span>
+            <span class="info-value">{{ attendanceSummary.late }}</span>
+            <span class="info-label">បានលិច៖</span>
+            <span class="info-value">{{ attendanceSummary.excused }}</span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="pdf-footer">
-      <p class="pdf-footer__text">
-        {{ t('preschoolReportsPage.generatedBy') || 'Generated by' }} HFCCF Preschool Management System
-      </p>
-      <p class="pdf-footer__text">
-        {{ t('preschoolReportsPage.generatedDate') || 'Generated on' }} {{ formatDate(new Date().toISOString()) }}
-      </p>
+    <div class="footer-section">
+      <p>បង្កើតដោយ HFCCF Preschool Management System</p>
+      <p>ថ្ងៃបង្កើត៖ {{ formatDate(new Date().toISOString()) }}</p>
     </div>
   </div>
 </template>
@@ -243,211 +215,187 @@ const attendanceSummary = computed(() => {
 .pdf-document {
   background: white;
   color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Khmer OS', 'Arial Unicode MS', sans-serif;
   max-width: 210mm;
   margin: 0 auto;
-  padding: 0;
+  padding: 20mm;
+  line-height: 1.6;
 }
 
 /* Header Section */
-.pdf-header {
-  display: grid;
-  grid-template-columns: 80px 1fr 100px;
-  gap: 1rem;
-  align-items: center;
+.header-section {
+  text-align: center;
+  margin-bottom: 20px;
   border-bottom: 2px solid #000;
-  padding: 1.5rem 2rem;
-  margin-bottom: 1rem;
+  padding-bottom: 15px;
 }
 
-.pdf-header__logo-section {
+.org-name-kh {
+  font-size: 14pt;
+  font-weight: bold;
+  margin: 0 0 3px 0;
+  letter-spacing: 1px;
+}
+
+.org-motto {
+  font-size: 11pt;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  letter-spacing: 1px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #000;
+  margin: 5px 0;
+}
+
+.org-label {
+  font-size: 10pt;
+  font-weight: bold;
+  margin: 5px 0 3px 0;
+}
+
+.org-subtitle {
+  font-size: 9pt;
+  margin: 0;
+  color: #333;
+}
+
+/* Title Section */
+.title-section {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.document-title {
+  font-size: 16pt;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  letter-spacing: 1px;
+}
+
+.document-subtitle {
+  font-size: 12pt;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+/* Content Section */
+.content-section {
   display: flex;
-  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-.pdf-header__logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-}
-
-.pdf-header__center {
+.photo-column {
+  flex: 0 0 auto;
   text-align: center;
 }
 
-.pdf-header__org-name {
-  margin: 0;
-  font-size: 18pt;
-  font-weight: bold;
-  color: #000;
-  letter-spacing: 0.05em;
-}
-
-.pdf-header__org-name-kh {
-  margin: 0.25rem 0 0 0;
-  font-size: 14pt;
-  font-weight: bold;
-  color: #000;
-}
-
-.pdf-header__title {
-  margin: 0.5rem 0 0 0;
-  font-size: 14pt;
-  font-weight: bold;
-  color: #333;
-}
-
-.pdf-header__title-kh {
-  margin: 0.25rem 0 0 0;
-  font-size: 12pt;
-  font-weight: bold;
-  color: #333;
-}
-
-.pdf-header__photo-section {
+.photo-container {
+  width: 120px;
+  height: 150px;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
 }
 
-.pdf-header__photo {
-  width: 90px !important;
-  height: 90px !important;
+.student-photo {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
-  border: 1px solid #ccc;
 }
 
-.pdf-header__photo-placeholder {
-  width: 90px;
-  height: 90px;
+.photo-placeholder {
+  width: 120px;
+  height: 150px;
   border: 1px solid #ccc;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f5f5f5;
   color: #999;
+  font-size: 48px;
 }
 
-/* Divider */
-.pdf-divider {
-  height: 0;
-  border-top: 1px solid #ccc;
-  margin: 0.5rem 2rem;
+.info-column {
+  flex: 1;
+  min-width: 0;
 }
 
-/* Section Styling */
-.pdf-section {
-  margin: 1.5rem 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e0e0e0;
+/* Info Sections */
+.info-section {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
 }
 
-.pdf-section:last-of-type {
+.info-section:last-child {
   border-bottom: none;
 }
 
-.pdf-section__title {
-  margin: 0 0 1rem 0;
+.section-title {
   font-size: 11pt;
   font-weight: bold;
-  color: #000;
+  margin: 0 0 6px 0;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border-bottom: 1px solid #000;
-  padding-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+  color: #000;
 }
 
-/* Grid Layout */
-.pdf-grid {
+/* Info Rows */
+.info-row {
   display: grid;
-  gap: 1rem;
-  margin: 0;
-}
-
-.pdf-grid--2col {
-  grid-template-columns: 1fr 1fr;
-}
-
-.pdf-grid__item {
-  display: flex;
-  flex-direction: column;
-}
-
-.pdf-grid__item--full {
-  grid-column: 1 / -1;
-}
-
-.pdf-label {
-  display: block;
-  font-size: 8pt;
-  font-weight: bold;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
-}
-
-.pdf-value {
-  display: block;
-  margin: 0;
+  grid-template-columns: 120px 1fr 120px 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
   font-size: 10pt;
-  color: #000;
-  font-weight: 500;
-  line-height: 1.4;
-  word-wrap: break-word;
+  align-items: baseline;
 }
 
-.pdf-value--large {
-  font-size: 14pt;
+.info-label {
   font-weight: bold;
+  color: #000;
+  padding-right: 5px;
+}
+
+.info-value {
+  color: #000;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Footer */
-.pdf-footer {
-  margin-top: 2rem;
-  padding: 1rem 2rem;
-  border-top: 1px solid #000;
+.footer-section {
   text-align: center;
-  font-size: 8pt;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #000;
+  font-size: 9pt;
   color: #666;
 }
 
-.pdf-footer__text {
-  margin: 0.25rem 0;
+.footer-section p {
+  margin: 3px 0;
 }
 
-/* Print Media Query */
+/* Print Media */
 @media print {
   .pdf-document {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    background: white;
   }
 
-  .pdf-header,
-  .pdf-section,
-  .pdf-footer {
+  .content-section {
     page-break-inside: avoid;
   }
 
-  /* Ensure no extra spacing in print */
-  body {
-    margin: 0;
-    padding: 0;
-  }
-
-  .pdf-header {
-    padding: 12.7mm 12.7mm;
-  }
-
-  .pdf-section {
-    margin: 10mm 12.7mm;
-  }
-
-  .pdf-footer {
-    margin-top: 10mm;
-    padding: 8mm 12.7mm;
+  .info-section {
+    page-break-inside: avoid;
   }
 }
 </style>
