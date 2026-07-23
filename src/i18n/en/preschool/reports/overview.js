@@ -19,6 +19,7 @@ export default {
     reportYear: 'Year',
     generateReport: 'Generate Report',
     reset: 'Reset',
+    loadingData: 'Loading data...',
     emptyState: 'Select a report type and filters, then click "Generate Report" to view results.',
     reportTypes: {
       'student-summary': 'Student Summary',

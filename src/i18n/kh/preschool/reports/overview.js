@@ -19,6 +19,7 @@ export default {
     reportYear: 'ឆ្នាំ',
     generateReport: 'បង្កើតរបាយការណ៍',
     reset: 'កំណត់ឡើងវិញ',
+    loadingData: 'កំពុងផ្ទុកទិន្នន័យ...',
     emptyState: 'ជ្រើសរើសប្រភេទរបាយការណ៍ និងតម្រង រួចចុច "បង្កើតរបាយការណ៍" ដើម្បីមើលលទ្ធផល។',
     reportTypes: {
       'student-summary': 'ឆ្លើយសង្ខេបសិស្ស',
