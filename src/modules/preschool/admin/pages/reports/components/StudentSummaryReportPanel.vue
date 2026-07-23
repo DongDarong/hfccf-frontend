@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
-import html2pdf from 'html2pdf.js'
 import * as XLSX from 'xlsx'
 import { useLanguage } from '@/composables/useLanguage'
 import {
@@ -12,6 +11,7 @@ import {
   fetchPreschoolAttendance,
 } from '@/modules/preschool/services/preschoolApi'
 import { fetchAcademicLifecycle } from '@/modules/preschool/services/api/preschoolAcademicLifecycleApi'
+import { downloadStudentSummaryReportPdf } from '@/modules/preschool/services/api/preschoolReportsApi'
 import StudentIdentityCard from './StudentIdentityCard.vue'
 import StudentAttendanceSummary from './StudentAttendanceSummary.vue'
 import ClassSummaryTable from './ClassSummaryTable.vue'
@@ -46,7 +46,7 @@ const reportData = ref({
 async function loadFilterOptions() {
   try {
     const lifecycle = await fetchAcademicLifecycle()
-    filterOptions.value.academicYears = (lifecycle.academicYears || []).map(ay => ({
+    filterOptions.value.academicYears = (lifecycle.academicYears || []).map((ay) => ({
       label: ay.label || ay.code,
       value: ay.id,
     }))
@@ -56,7 +56,7 @@ async function loadFilterOptions() {
     }
 
     const classes = await fetchPreschoolClasses()
-    filterOptions.value.classes = (classes.items || []).map(c => ({
+    filterOptions.value.classes = (classes.items || []).map((c) => ({
       label: c.name,
       value: c.id,
     }))
@@ -66,7 +66,8 @@ async function loadFilterOptions() {
       await loadStudents()
     }
   } catch {
-    errorMessage.value = t('preschoolReportsPage.messages.loadFailed') || 'Failed to load filter options'
+    errorMessage.value =
+      t('preschoolReportsPage.messages.loadFailed') || 'Failed to load filter options'
   }
 }
 
@@ -78,7 +79,7 @@ async function loadStudents() {
 
   try {
     const students = await fetchPreschoolStudents({ classId: classId.value, perPage: 100 })
-    filterOptions.value.students = (students.items || []).map(s => ({
+    filterOptions.value.students = (students.items || []).map((s) => ({
       label: `${s.fullName} (${s.studentCode || s.publicId})`,
       value: s.id,
     }))
@@ -175,7 +176,11 @@ async function generateClassReport() {
 
 function calculateAttendancePercentage(attendanceData) {
   if (!attendanceData || attendanceData.total === 0) return 0
-  return Math.round((attendanceData.items?.filter(a => a.status === 'present').length || 0) / attendanceData.total * 100)
+  return Math.round(
+    ((attendanceData.items?.filter((a) => a.status === 'present').length || 0) /
+      attendanceData.total) *
+      100,
+  )
 }
 
 function generateReport() {
@@ -221,87 +226,44 @@ async function exportReport(format) {
 }
 
 async function exportToPdf(filename) {
-  const element = document.querySelector('.preschool-student-summary-report-content')
-  if (!element) {
-    throw new Error('Report content not found')
-  }
-
-  const clonedElement = element.cloneNode(true)
-
-  const options = {
-    margin: [15, 15, 15, 15],
-    filename: `${filename}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      letterRendering: true,
-    },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
-    // onclone is called when html2canvas clones the element
-    // This is where we can safely sanitize styles
-    onclone: (clonedDocument) => {
-      sanitizeColorsInDocument(clonedDocument)
-    },
-  }
-
   try {
-    await html2pdf()
-      .set(options)
-      .from(clonedElement)
-      .save()
+    const file = await downloadStudentSummaryReportPdf({
+      mode: scopeType.value,
+      academicYearId: academicYearId.value,
+      classId: classId.value,
+      studentId: studentId.value,
+      filename: `${filename}.pdf`,
+    })
+
+    if (file?.blob) {
+      downloadPdfBlob(file.blob, file.filename || `${filename}.pdf`)
+    }
   } catch (error) {
-    throw new Error(`PDF generation failed: ${error.message}`)
+    const message = error instanceof Error ? error.message : 'Unknown PDF generation error'
+    throw new Error(`PDF generation failed: ${message}`, {
+      cause: error,
+    })
   }
 }
 
-/**
- * Sanitize oklch() and unsupported CSS colors in cloned document
- * Called by html2pdf's onclone callback when element is in memory clone
- */
-function sanitizeColorsInDocument(clonedDocument) {
-  if (!clonedDocument) return
+function downloadPdfBlob(pdfBlob, filename) {
+  if (!(pdfBlob instanceof Blob) || pdfBlob.size === 0) {
+    throw new Error('Generated PDF blob is empty.')
+  }
 
-  // Get all elements in the cloned document
-  const allElements = clonedDocument.querySelectorAll('*')
+  const objectUrl = URL.createObjectURL(pdfBlob)
+  const link = document.createElement('a')
+  link.href = objectUrl
+  link.download = filename
+  link.style.display = 'none'
 
-  allElements.forEach((element) => {
-    try {
-      // Get the element's inline style attribute to check for oklch
-      const styleAttr = element.getAttribute('style') || ''
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 
-      if (styleAttr.includes('oklch') || styleAttr.includes('color-mix')) {
-        // If there's oklch or color-mix in inline styles, override with safe colors
-        element.style.color = '#111827'
-        element.style.backgroundColor = '#ffffff'
-        element.style.borderColor = '#cbd5e1'
-      }
-
-      // Also try to get computed styles and replace
-      try {
-        const computedStyle = clonedDocument.defaultView?.getComputedStyle(element)
-        if (computedStyle) {
-          // Check each color property for oklch
-          if (computedStyle.color?.includes('oklch') || computedStyle.color?.includes('color-mix')) {
-            element.style.color = '#111827'
-          }
-          if (computedStyle.backgroundColor?.includes('oklch') || computedStyle.backgroundColor?.includes('color-mix')) {
-            element.style.backgroundColor = '#ffffff'
-          }
-          if (computedStyle.borderColor?.includes('oklch') || computedStyle.borderColor?.includes('color-mix')) {
-            element.style.borderColor = '#cbd5e1'
-          }
-        }
-      } catch (computedError) {
-        // Ignore computed style errors, we already tried inline styles
-      }
-    } catch (error) {
-      console.debug(`Color sanitization error: ${error.message}`)
-    }
-  })
+  setTimeout(() => {
+    URL.revokeObjectURL(objectUrl)
+  }, 0)
 }
 
 function exportToExcel(filename) {
@@ -311,13 +273,23 @@ function exportToExcel(filename) {
     ['Student Summary Report'],
     ['Type', scopeType.value === 'individual' ? 'Individual' : 'Class'],
     ['Generated On', new Date().toLocaleString()],
-    ['Academic Year', filterOptions.value.academicYears.find(y => y.value === academicYearId.value)?.label || 'All'],
+    [
+      'Academic Year',
+      filterOptions.value.academicYears.find((y) => y.value === academicYearId.value)?.label ||
+        'All',
+    ],
   ]
 
   if (scopeType.value === 'individual') {
-    metaData.push(['Student', reportData.value.student?.firstName + ' ' + reportData.value.student?.lastName || 'N/A'])
+    metaData.push([
+      'Student',
+      reportData.value.student?.firstName + ' ' + reportData.value.student?.lastName || 'N/A',
+    ])
   } else {
-    metaData.push(['Class', filterOptions.value.classes.find(c => c.value === classId.value)?.label || 'All Classes'])
+    metaData.push([
+      'Class',
+      filterOptions.value.classes.find((c) => c.value === classId.value)?.label || 'All Classes',
+    ])
   }
 
   const metaSheet = XLSX.utils.aoa_to_sheet(metaData)
@@ -347,7 +319,7 @@ function exportToExcel(filename) {
   }
 
   if (scopeType.value === 'class' && reportData.value.classStudents.length > 0) {
-    const studentList = reportData.value.classStudents.map(s => [
+    const studentList = reportData.value.classStudents.map((s) => [
       s.firstName || '',
       s.lastName || '',
       s.enrollmentNumber || '',
@@ -423,22 +395,14 @@ onMounted(() => {
           </span>
           <div class="flex items-center gap-6 pt-2">
             <label class="flex items-center gap-2">
-              <input
-                v-model="scopeType"
-                type="radio"
-                value="individual"
-                class="rounded"
-              />
+              <input v-model="scopeType" type="radio" value="individual" class="rounded" />
               <span class="text-sm text-slate-700">{{ t('preschoolReportsPage.individual') }}</span>
             </label>
             <label class="flex items-center gap-2">
-              <input
-                v-model="scopeType"
-                type="radio"
-                value="class"
-                class="rounded"
-              />
-              <span class="text-sm text-slate-700">{{ t('preschoolReportsPage.entireClass') }}</span>
+              <input v-model="scopeType" type="radio" value="class" class="rounded" />
+              <span class="text-sm text-slate-700">{{
+                t('preschoolReportsPage.entireClass')
+              }}</span>
             </label>
           </div>
         </label>
@@ -457,19 +421,16 @@ onMounted(() => {
       >
         {{ t('preschoolReportsPage.generateReport') }}
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="md"
-        rounded="lg"
-        @click="resetFilters"
-      >
+      <Button type="button" variant="ghost" size="md" rounded="lg" @click="resetFilters">
         {{ t('preschoolReportsPage.reset') }}
       </Button>
     </div>
 
     <!-- Error Message -->
-    <div v-if="errorMessage" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+    <div
+      v-if="errorMessage"
+      class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+    >
       {{ errorMessage }}
     </div>
 
@@ -484,13 +445,34 @@ onMounted(() => {
       <div class="rounded-xl border border-slate-200 bg-slate-50 p-6">
         <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Export</h2>
         <div class="flex flex-wrap items-center gap-3">
-          <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            :loading="exportLoading"
+            @click="exportReport('pdf')"
+          >
             <i class="pi pi-file-pdf mr-2" /> PDF
           </Button>
-          <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            :loading="exportLoading"
+            @click="exportReport('excel')"
+          >
             <i class="pi pi-file-excel mr-2" /> Excel
           </Button>
-          <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            :loading="exportLoading"
+            @click="exportReport('print')"
+          >
             <i class="pi pi-print mr-2" /> Print
           </Button>
         </div>
@@ -498,7 +480,9 @@ onMounted(() => {
     </template>
 
     <!-- Class Report -->
-    <template v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length > 0">
+    <template
+      v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length > 0"
+    >
       <div class="preschool-student-summary-report-content">
         <ClassSummaryTable :students="reportData.classStudents" />
       </div>
@@ -507,13 +491,34 @@ onMounted(() => {
       <div class="rounded-xl border border-slate-200 bg-slate-50 p-6">
         <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Export</h2>
         <div class="flex flex-wrap items-center gap-3">
-          <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('pdf')">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            :loading="exportLoading"
+            @click="exportReport('pdf')"
+          >
             <i class="pi pi-file-pdf mr-2" /> PDF
           </Button>
-          <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('excel')">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            :loading="exportLoading"
+            @click="exportReport('excel')"
+          >
             <i class="pi pi-file-excel mr-2" /> Excel
           </Button>
-          <Button type="button" variant="secondary" size="md" rounded="lg" :loading="exportLoading" @click="exportReport('print')">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            rounded="lg"
+            :loading="exportLoading"
+            @click="exportReport('print')"
+          >
             <i class="pi pi-print mr-2" /> Print
           </Button>
         </div>
@@ -521,13 +526,19 @@ onMounted(() => {
     </template>
 
     <!-- Class Report Empty State -->
-    <div v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length === 0" class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+    <div
+      v-if="reportGenerated && scopeType === 'class' && reportData.classStudents.length === 0"
+      class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center"
+    >
       <i class="pi pi-user-minus text-4xl text-slate-300" />
       <p class="mt-4 text-slate-600">No students found in this class.</p>
     </div>
 
     <!-- Initial Empty State -->
-    <div v-if="!reportGenerated" class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+    <div
+      v-if="!reportGenerated"
+      class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center"
+    >
       <i class="pi pi-inbox text-4xl text-slate-300" />
       <p class="mt-4 text-slate-600">
         {{ t('preschoolReportsPage.emptyState') }}

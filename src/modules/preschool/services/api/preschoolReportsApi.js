@@ -73,3 +73,33 @@ export async function fetchClassroomReport(classId, periodLabel = '', options = 
 
   return normalizeClassroomReportBundle(unwrapApiData(response) || {})
 }
+
+function resolveAttachmentFilename(headers = {}, fallback = 'StudentSummaryReport.pdf') {
+  const disposition = String(headers['content-disposition'] || headers['Content-Disposition'] || '')
+  const match = disposition.match(/filename="?([^";]+)"?/i)
+  if (match?.[1]) {
+    return match[1]
+  }
+
+  return fallback
+}
+
+export async function downloadStudentSummaryReportPdf(params = {}, options = {}) {
+  const mode = String(params.mode || 'individual').trim() === 'class' ? 'class' : 'individual'
+  const response = await http.get('/preschool/reports/student-summary/download', {
+    params: buildQueryParams({
+      mode,
+      academic_year_id: params.academicYearId || '',
+      class_id: params.classId || '',
+      student_id: mode === 'individual' ? params.studentId || '' : '',
+    }),
+    responseType: 'blob',
+    signal: options.signal,
+  })
+
+  return {
+    blob: response.data,
+    filename: resolveAttachmentFilename(response.headers, params.filename || 'StudentSummaryReport.pdf'),
+    mimeType: String(response.headers?.['content-type'] || ''),
+  }
+}

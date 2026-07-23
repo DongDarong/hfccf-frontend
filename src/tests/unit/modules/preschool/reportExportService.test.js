@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { reportExportService } from '@/modules/preschool/services/reportExportService'
 
+vi.mock('html2pdf.js', () => ({
+  default: (...args) => globalThis.html2pdf(...args),
+}))
+
 describe('reportExportService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -233,7 +237,6 @@ describe('reportExportService', () => {
       if (element) {
         Object.defineProperty(element, 'offsetHeight', { value: 100, configurable: true })
       }
-      vi.mock('html2pdf.js')
     })
 
     it('throws error if report content element not found', async () => {
@@ -375,7 +378,6 @@ describe('reportExportService', () => {
       if (element) {
         Object.defineProperty(element, 'offsetHeight', { value: 100, configurable: true })
       }
-      // Mock html2pdf
       vi.stubGlobal('html2pdf', () => ({
         set: () => ({
           from: () => ({

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import http from '@/services/http'
 import {
+  downloadStudentSummaryReportPdf,
   fetchClassroomReport,
   fetchReportPeriods,
   fetchStudentReportPeriod,
@@ -141,6 +142,40 @@ describe('preschool reports api', () => {
         period_type: 'monthly',
         report_period_id: 12,
       }),
+      signal: undefined,
+    })
+  })
+
+  it('downloads Student Summary PDFs as a backend Blob attachment', async () => {
+    http.get.mockResolvedValueOnce({
+      data: new Blob(['pdf'], { type: 'application/pdf' }),
+      headers: {
+        'content-disposition': 'attachment; filename="StudentSummaryReport_Individual_2026-07-24.pdf"',
+        'content-type': 'application/pdf',
+      },
+    })
+
+    await expect(
+      downloadStudentSummaryReportPdf({
+        mode: 'individual',
+        academicYearId: 1,
+        classId: 2,
+        studentId: 3,
+        filename: 'StudentSummaryReport_Individual_2026-07-24.pdf',
+      }),
+    ).resolves.toMatchObject({
+      filename: 'StudentSummaryReport_Individual_2026-07-24.pdf',
+      mimeType: 'application/pdf',
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/reports/student-summary/download', {
+      params: expect.objectContaining({
+        mode: 'individual',
+        academic_year_id: 1,
+        class_id: 2,
+        student_id: 3,
+      }),
+      responseType: 'blob',
       signal: undefined,
     })
   })
