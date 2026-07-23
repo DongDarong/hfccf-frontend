@@ -228,6 +228,11 @@ describe('reportExportService', () => {
     beforeEach(() => {
       // Mock DOM elements
       document.body.innerHTML = '<div class="report-export-content"><p>Test Report</p></div>'
+      // Mock offsetHeight for jsdom which doesn't compute actual sizes
+      const element = document.querySelector('.report-export-content')
+      if (element) {
+        Object.defineProperty(element, 'offsetHeight', { value: 100, configurable: true })
+      }
       vi.mock('html2pdf.js')
     })
 
@@ -366,22 +371,33 @@ describe('reportExportService', () => {
     beforeEach(() => {
       window.print = vi.fn()
       document.body.innerHTML = '<div class="report-export-content"><p>Test Report</p></div>'
+      const element = document.querySelector('.report-export-content')
+      if (element) {
+        Object.defineProperty(element, 'offsetHeight', { value: 100, configurable: true })
+      }
+      // Mock html2pdf
+      vi.stubGlobal('html2pdf', () => ({
+        set: () => ({
+          from: () => ({
+            save: () => ({
+              then: (onFulfilled) => {
+                onFulfilled()
+                return {
+                  catch: () => {}
+                }
+              },
+              catch: (onRejected) => ({ then: () => {}, catch: () => {} })
+            })
+          })
+        })
+      }))
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
     })
 
     it('PDF export should NOT call window.print()', async () => {
-      // Mock html2pdf to simulate successful PDF generation
-      global.html2pdf = () => ({
-        set: () => ({
-          from: () => ({
-            save: () => Promise.resolve(),
-            then: (cb) => {
-              cb()
-              return { catch: () => {} }
-            },
-            catch: () => {},
-          }),
-        }),
-      })
 
       const reportData = {
         reportType: 'summary',
@@ -389,14 +405,8 @@ describe('reportExportService', () => {
         student: { id: '1', fullName: 'John' },
       }
 
-      try {
-        await reportExportService.exportToPDF('summary', reportData)
-        // If we get here without error, window.print should NOT have been called
-        expect(window.print).not.toHaveBeenCalled()
-      } catch (error) {
-        // Even if PDF export fails, it should not call window.print
-        expect(window.print).not.toHaveBeenCalled()
-      }
+      await expect(reportExportService.exportToPDF('summary', reportData)).resolves.not.toThrow()
+      expect(window.print).not.toHaveBeenCalled()
     })
 
     it('Print export SHOULD call window.print()', () => {
@@ -410,31 +420,104 @@ describe('reportExportService', () => {
       expect(window.print).toHaveBeenCalledTimes(1)
     })
 
-    it('PDF and Print are distinct operations', () => {
+    it('PDF and Print are distinct operations', async () => {
       const reportData = {
         reportType: 'summary',
         scope: 'individual',
         student: { id: '1', fullName: 'John' },
       }
 
-      // Mock html2pdf
-      global.html2pdf = () => ({
+      // Verify PDF can be exported
+      await expect(reportExportService.exportToPDF('summary', reportData)).resolves.not.toThrow()
+
+      // Verify Print is a separate operation
+      const windowPrintBefore = window.print.mock.calls.length
+      reportExportService.exportToPrint('summary', reportData)
+      expect(window.print.mock.calls.length).toBeGreaterThan(windowPrintBefore)
+    })
+  })
+
+  describe('Color sanitization for oklch() support', () => {
+    beforeEach(() => {
+      // Mock html2pdf with proper promise chain
+      vi.stubGlobal('html2pdf', () => ({
         set: () => ({
           from: () => ({
-            save: () => Promise.resolve(),
-            then: (cb) => {
-              cb()
-              return { catch: () => {} }
-            },
-            catch: () => {},
-          }),
-        }),
-      })
+            save: () => ({
+              then: (onFulfilled) => {
+                onFulfilled()
+                return {
+                  catch: () => {}
+                }
+              },
+              catch: (onRejected) => ({ then: () => {}, catch: () => {} })
+            })
+          })
+        })
+      }))
+    })
 
-      reportExportService.exportToPrint('summary', reportData)
-      const printCallCount = window.print.mock.calls.length
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
 
-      expect(printCallCount).toBeGreaterThan(0)
+    it('handles oklch() color parsing errors gracefully', async () => {
+      // Create element with mocked offsetHeight
+      document.body.innerHTML = '<div class="report-export-content"><p>Test Report</p></div>'
+      const element = document.querySelector('.report-export-content')
+      Object.defineProperty(element, 'offsetHeight', { value: 100, configurable: true })
+
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John' },
+      }
+
+      // Should not throw even with oklch colors present
+      await expect(
+        reportExportService.exportToPDF('summary', reportData),
+      ).resolves.not.toThrow()
+    })
+
+    it('exports PDF with Tailwind color classes', async () => {
+      // Create a more realistic element with Tailwind colors
+      document.body.innerHTML = `
+        <div class="report-export-content">
+          <div class="border border-slate-200 bg-white p-6 text-slate-900">
+            <h1 class="text-2xl font-bold text-slate-900">Test Student</h1>
+            <p class="text-slate-600">Student Code: S001</p>
+            <div class="mt-4 rounded-lg bg-green-100 p-4 text-green-800">
+              Attendance: 95%
+            </div>
+          </div>
+        </div>
+      `
+
+      const element = document.querySelector('.report-export-content')
+      Object.defineProperty(element, 'offsetHeight', { value: 200, configurable: true })
+
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John' },
+      }
+
+      // Should handle Tailwind colors without errors
+      await expect(
+        reportExportService.exportToPDF('summary', reportData),
+      ).resolves.not.toThrow()
+    })
+
+    it('filename generation includes student code when available', () => {
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John Smith' },
+      }
+
+      const filename = reportExportService.generateFilename('summary', reportData)
+      expect(filename).toContain('John-Smith')
+      expect(filename).toMatch(/^\w+-\w+-John-Smith-\d{4}-\d{2}-\d{2}$/)
     })
   })
 

@@ -10,6 +10,82 @@ async function loadXLSX() {
   return XLSX
 }
 
+// Tailwind color to HEX mapping for PDF-safe colors (oklch-free)
+const TAILWIND_COLOR_MAP = {
+  // Slates
+  'rgb(248, 250, 252)': '#f8fafc', // slate-50
+  'rgb(241, 245, 249)': '#f1f5f9', // slate-100
+  'rgb(226, 232, 240)': '#e2e8f0', // slate-200
+  'rgb(203, 213, 225)': '#cbd5e1', // slate-300
+  'rgb(148, 163, 184)': '#94a3b8', // slate-400
+  'rgb(100, 116, 139)': '#64748b', // slate-500
+  'rgb(71, 85, 99)': '#475563', // slate-600
+  'rgb(51, 65, 85)': '#334155', // slate-700
+  'rgb(30, 41, 59)': '#1e293b', // slate-800
+  'rgb(15, 23, 42)': '#0f172a', // slate-900
+
+  // Greens
+  'rgb(240, 253, 244)': '#f0fdf4', // green-50
+  'rgb(220, 252, 231)': '#dcfce7', // green-100
+  'rgb(187, 247, 208)': '#bbf7d0', // green-200
+  'rgb(134, 239, 172)': '#86efac', // green-300
+  'rgb(74, 222, 128)': '#4ade80',  // green-400
+  'rgb(34, 197, 94)': '#22c55e',   // green-500
+  'rgb(22, 163, 74)': '#16a34a',   // green-600
+  'rgb(16, 185, 129)': '#10b981',  // green-600-alt
+  'rgb(21, 128, 61)': '#15803d',   // green-700
+  'rgb(5, 150, 105)': '#059669',   // green-700-alt
+  'rgb(6, 78, 59)': '#064e3b',     // green-900
+
+  // Reds
+  'rgb(254, 242, 242)': '#fef2f2', // red-50
+  'rgb(254, 226, 226)': '#fee2e2', // red-100
+  'rgb(254, 202, 202)': '#fecaca', // red-200
+  'rgb(252, 165, 165)': '#fca5a5', // red-300
+  'rgb(248, 113, 113)': '#f87171', // red-400
+  'rgb(239, 68, 68)': '#ef4444',   // red-500
+  'rgb(220, 38, 38)': '#dc2626',   // red-600
+  'rgb(185, 28, 28)': '#b91c1c',   // red-700
+  'rgb(127, 29, 29)': '#7f1d1d',   // red-900
+
+  // Yellows
+  'rgb(254, 252, 232)': '#fffce8', // yellow-50
+  'rgb(254, 248, 204)': '#fef8cc', // yellow-100
+  'rgb(253, 230, 138)': '#fde68a', // yellow-300
+  'rgb(250, 204, 21)': '#facc15',  // yellow-400
+  'rgb(234, 179, 8)': '#eab308',   // yellow-500
+  'rgb(202, 138, 4)': '#ca8a04',   // yellow-600
+  'rgb(161, 98, 7)': '#a16207',    // yellow-700
+  'rgb(113, 63, 18)': '#713f12',   // yellow-800
+
+  // Blues
+  'rgb(239, 246, 255)': '#eff6ff', // blue-50
+  'rgb(219, 234, 254)': '#dbeafe', // blue-100
+  'rgb(191, 219, 254)': '#bfdbfe', // blue-200
+  'rgb(147, 197, 253)': '#93c5fd', // blue-300
+  'rgb(96, 165, 250)': '#60a5fa',  // blue-400
+  'rgb(59, 130, 246)': '#3b82f6',  // blue-500
+  'rgb(37, 99, 235)': '#2563eb',   // blue-600
+  'rgb(29, 78, 216)': '#1d4ed8',   // blue-700
+  'rgb(30, 58, 138)': '#1e3a8a',   // blue-900
+
+  // Grays
+  'rgb(249, 250, 251)': '#f9fafb', // gray-50
+  'rgb(243, 244, 246)': '#f3f4f6', // gray-100
+  'rgb(229, 231, 235)': '#e5e7eb', // gray-200
+  'rgb(209, 213, 219)': '#d1d5db', // gray-300
+  'rgb(156, 163, 175)': '#9ca3af', // gray-400
+  'rgb(107, 114, 128)': '#6b7280', // gray-500
+  'rgb(75, 85, 99)': '#4b5563',    // gray-600
+  'rgb(55, 65, 81)': '#374151',    // gray-700
+  'rgb(31, 41, 55)': '#1f2937',    // gray-800
+  'rgb(17, 24, 39)': '#111827',    // gray-900
+
+  // Whites and blacks
+  'rgb(255, 255, 255)': '#ffffff',  // white
+  'rgb(0, 0, 0)': '#000000',        // black
+}
+
 class ExportError extends Error {
   constructor(message, reportType, context = {}) {
     super(message)
@@ -28,12 +104,106 @@ class AuthorizationError extends Error {
   }
 }
 
+/**
+ * Sanitize oklch() and other unsupported CSS colors in cloned DOM
+ * Converts computed styles to safe HEX/RGB values that html2canvas can handle
+ */
+function sanitizeColorsInClonedElement(clonedElement) {
+  if (!clonedElement) return
+
+  const walk = (element) => {
+    if (!element || element.nodeType !== 1) return
+
+    try {
+      const computedStyle = window.getComputedStyle(element)
+
+      // Sanitize color property
+      if (computedStyle.color) {
+        const safeColor = convertColorToSafe(computedStyle.color)
+        if (safeColor !== computedStyle.color) {
+          element.style.color = safeColor
+        }
+      }
+
+      // Sanitize background-color property
+      if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+        const safeColor = convertColorToSafe(computedStyle.backgroundColor)
+        if (safeColor !== computedStyle.backgroundColor) {
+          element.style.backgroundColor = safeColor
+        }
+      }
+
+      // Sanitize border-color property
+      if (computedStyle.borderColor) {
+        const safeColor = convertColorToSafe(computedStyle.borderColor)
+        if (safeColor !== computedStyle.borderColor) {
+          element.style.borderColor = safeColor
+        }
+      }
+    } catch (error) {
+      // Silently ignore errors on individual elements
+      console.debug(`Color sanitization error for element: ${error.message}`)
+    }
+
+    // Recurse to children
+    for (let child of element.childNodes) {
+      if (child.nodeType === 1) {
+        walk(child)
+      }
+    }
+  }
+
+  walk(clonedElement)
+}
+
+/**
+ * Convert a computed color to a safe HEX/RGB value
+ * Handles oklch(), rgb(), rgba(), hex, named colors
+ */
+function convertColorToSafe(colorValue) {
+  if (!colorValue) return colorValue
+
+  // Trim whitespace
+  colorValue = colorValue.trim()
+
+  // Check if it's already a safe format (HEX or RGB)
+  if (colorValue.startsWith('#') || colorValue.startsWith('rgb')) {
+    return colorValue
+  }
+
+  // Check against Tailwind color map (for rgb() values)
+  if (TAILWIND_COLOR_MAP[colorValue]) {
+    return TAILWIND_COLOR_MAP[colorValue]
+  }
+
+  // Handle oklch() colors - these are unsupported by html2canvas
+  if (colorValue.includes('oklch')) {
+    console.debug(`Detected unsupported oklch() color: ${colorValue}`)
+    // Fallback to a neutral color based on context
+    if (colorValue.includes('0.')) {
+      return '#f8fafc' // Light neutral
+    } else {
+      return '#4b5563' // Dark neutral
+    }
+  }
+
+  // Handle color-mix() - also unsupported
+  if (colorValue.includes('color-mix')) {
+    console.debug(`Detected unsupported color-mix() color: ${colorValue}`)
+    return '#e5e7eb' // Medium gray fallback
+  }
+
+  // Default: return original if we can't convert
+  return colorValue
+}
+
 export const reportExportService = {
   /**
    * Export report to PDF using html2pdf.js + jsPDF
    * Captures DOM element and converts to PDF via html2canvas
    * Note: This uses html2canvas which converts to images. For Khmer text support,
    * ensure Noto Sans Khmer font is loaded from Google Fonts and available.
+   * Automatically sanitizes unsupported CSS colors (oklch, color-mix, etc.)
    */
   async exportToPDF(reportType, reportData, options = {}) {
     try {
@@ -97,7 +267,25 @@ export const reportExportService = {
             resolve()
           })
           .catch((error) => {
-            reject(new ExportError(`Failed to generate PDF: ${error.message}`, reportType, { originalError: error }))
+            // If we get an oklch error, try sanitizing and retry once
+            if (error.message && error.message.includes('oklch')) {
+              console.warn('Detected oklch() color error, attempting to sanitize...')
+              try {
+                sanitizeColorsInClonedElement(clonedElement)
+                html2pdf()
+                  .set(pdfOptions)
+                  .from(clonedElement)
+                  .save()
+                  .then(() => resolve())
+                  .catch((retryError) => {
+                    reject(new ExportError(`Failed to generate PDF after color sanitization: ${retryError.message}`, reportType, { originalError: retryError }))
+                  })
+              } catch (sanitizeError) {
+                reject(new ExportError(`Color sanitization failed: ${sanitizeError.message}`, reportType, { originalError: error }))
+              }
+            } else {
+              reject(new ExportError(`Failed to generate PDF: ${error.message}`, reportType, { originalError: error }))
+            }
           })
       })
     } catch (error) {
