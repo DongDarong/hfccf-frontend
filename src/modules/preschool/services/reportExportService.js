@@ -30,8 +30,10 @@ class AuthorizationError extends Error {
 
 export const reportExportService = {
   /**
-   * Export report to PDF using html2pdf.js
-   * Captures DOM element and converts to PDF
+   * Export report to PDF using html2pdf.js + jsPDF
+   * Captures DOM element and converts to PDF via html2canvas
+   * Note: This uses html2canvas which converts to images. For Khmer text support,
+   * ensure Noto Sans Khmer font is loaded from Google Fonts and available.
    */
   async exportToPDF(reportType, reportData, options = {}) {
     try {
@@ -58,8 +60,14 @@ export const reportExportService = {
       const orientation = options.orientation || 'portrait'
       const margin = options.margin || [25.4, 25.4, 25.4, 25.4]
 
-      // Clone element and remove unsupported CSS colors for html2pdf compatibility
+      // Clone element to avoid modifying DOM
       const clonedElement = element.cloneNode(true)
+
+      // Remove UI elements from cloned element (filters, buttons, export controls)
+      const elementsToRemove = clonedElement.querySelectorAll('.no-print, [data-no-print]')
+      elementsToRemove.forEach(el => el.remove())
+
+      // Strip unsupported CSS colors for html2pdf compatibility
       this._stripUnsupportedCSSFromElement(clonedElement)
 
       const pdfOptions = {
@@ -72,17 +80,26 @@ export const reportExportService = {
           allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
+          letterRendering: true,
           ignoreElements: (element) => {
-            return element.classList && element.classList.contains('no-print')
+            return element.classList && (element.classList.contains('no-print') || element.hasAttribute('data-no-print'))
           }
         },
         jsPDF: { orientation, unit: 'mm', format: 'a4' },
       }
 
-      html2pdf()
-        .set(pdfOptions)
-        .from(clonedElement)
-        .save()
+      return new Promise((resolve, reject) => {
+        html2pdf()
+          .set(pdfOptions)
+          .from(clonedElement)
+          .save()
+          .then(() => {
+            resolve()
+          })
+          .catch((error) => {
+            reject(new ExportError(`Failed to generate PDF: ${error.message}`, reportType, { originalError: error }))
+          })
+      })
     } catch (error) {
       if (error instanceof ExportError) {
         throw error
@@ -166,11 +183,22 @@ export const reportExportService = {
 
   /**
    * Export report to print using browser print dialog
-   * Styled by print.css media query
+   * Report content is shown, UI elements hidden via @media print CSS
+   * Print-only CSS must hide filters, buttons, export controls, and other UI
    */
   exportToPrint(reportType, reportData) {
     try {
       this.validateExportData(reportType, reportData)
+
+      const element = document.querySelector('.report-export-content')
+      if (!element) {
+        throw new ExportError(
+          'Report content element not found. Please regenerate the report.',
+          reportType,
+          { elementClass: '.report-export-content' },
+        )
+      }
+
       window.print()
     } catch (error) {
       if (error instanceof ExportError) {
@@ -233,7 +261,7 @@ export const reportExportService = {
     }
 
     return filename
-      .replace(/[<>:"/\\|?*]/g, '-') // Remove illegal characters
+      .replace(/[<>:"/\\|?*',.]/g, '-') // Remove illegal characters including quotes and punctuation
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .trim()

@@ -346,7 +346,7 @@ onMounted(() => {
 
       <!-- Individual Student Report -->
       <template v-if="reportGenerated && scopeType === 'individual' && reportData.student">
-        <div class="report-export-content">
+        <div class="report-export-content print-only-content">
           <StudentProfilePDFDocument :student="reportData.student" :attendance="reportData.attendance" />
         </div>
 
@@ -400,3 +400,31 @@ onMounted(() => {
     </section>
   </MainLayout>
 </template>
+
+<style scoped>
+@media print {
+  /* Hide all UI and controls during print */
+  :deep(.space-y-6) > * {
+    display: none !important;
+  }
+
+  /* Show only the report content */
+  :deep(.print-only-content) {
+    display: block !important;
+  }
+
+  /* Print styles for the report document */
+  :deep(.pdf-document) {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20mm !important;
+    page-break-after: avoid;
+  }
+
+  /* Ensure content is properly sized for printing */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
+</style>

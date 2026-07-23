@@ -793,6 +793,7 @@ export default {
       waitlist: 'Waitlist',
     },
     sportTypes: {
+      league: 'League',
       football: 'Football',
       basketball: 'Basketball',
       volleyball: 'Volleyball',

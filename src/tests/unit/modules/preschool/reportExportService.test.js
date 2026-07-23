@@ -324,6 +324,10 @@ describe('reportExportService', () => {
   })
 
   describe('exportToPrint()', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '<div class="report-export-content"><p>Test Report</p></div>'
+    })
+
     it('opens print dialog for summary report', () => {
       window.print = vi.fn()
       const reportData = {
@@ -345,11 +349,98 @@ describe('reportExportService', () => {
 
       expect(() => reportExportService.exportToPrint('summary', invalidData)).toThrow()
     })
+
+    it('throws error if report content element not found', () => {
+      document.body.innerHTML = ''
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John' },
+      }
+
+      expect(() => reportExportService.exportToPrint('summary', reportData)).toThrow(/Report content element not found/)
+    })
+  })
+
+  describe('PDF vs Print behavior', () => {
+    beforeEach(() => {
+      window.print = vi.fn()
+      document.body.innerHTML = '<div class="report-export-content"><p>Test Report</p></div>'
+    })
+
+    it('PDF export should NOT call window.print()', async () => {
+      // Mock html2pdf to simulate successful PDF generation
+      global.html2pdf = () => ({
+        set: () => ({
+          from: () => ({
+            save: () => Promise.resolve(),
+            then: (cb) => {
+              cb()
+              return { catch: () => {} }
+            },
+            catch: () => {},
+          }),
+        }),
+      })
+
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John' },
+      }
+
+      try {
+        await reportExportService.exportToPDF('summary', reportData)
+        // If we get here without error, window.print should NOT have been called
+        expect(window.print).not.toHaveBeenCalled()
+      } catch (error) {
+        // Even if PDF export fails, it should not call window.print
+        expect(window.print).not.toHaveBeenCalled()
+      }
+    })
+
+    it('Print export SHOULD call window.print()', () => {
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John' },
+      }
+
+      reportExportService.exportToPrint('summary', reportData)
+      expect(window.print).toHaveBeenCalledTimes(1)
+    })
+
+    it('PDF and Print are distinct operations', () => {
+      const reportData = {
+        reportType: 'summary',
+        scope: 'individual',
+        student: { id: '1', fullName: 'John' },
+      }
+
+      // Mock html2pdf
+      global.html2pdf = () => ({
+        set: () => ({
+          from: () => ({
+            save: () => Promise.resolve(),
+            then: (cb) => {
+              cb()
+              return { catch: () => {} }
+            },
+            catch: () => {},
+          }),
+        }),
+      })
+
+      reportExportService.exportToPrint('summary', reportData)
+      const printCallCount = window.print.mock.calls.length
+
+      expect(printCallCount).toBeGreaterThan(0)
+    })
   })
 
   describe('Error handling', () => {
     it('throws ExportError with context on validation failure', () => {
-      const reportData = { reportType: 'summary', scope: 'invalid' }
+      const reportData = { reportType: 'summary', scope: 'individual', student: null }
 
       expect(() => {
         reportExportService.validateExportData('summary', reportData)

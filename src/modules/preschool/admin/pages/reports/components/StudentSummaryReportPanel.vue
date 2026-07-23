@@ -226,24 +226,29 @@ async function exportToPdf(filename) {
     throw new Error('Report content not found')
   }
 
+  const clonedElement = element.cloneNode(true)
+
   const options = {
-    margin: 10,
+    margin: [15, 15, 15, 15],
     filename: `${filename}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 2,
       useCORS: true,
       logging: false,
-      allowTaint: true
+      allowTaint: true,
+      backgroundColor: '#ffffff',
     },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
   }
 
   try {
-    await html2pdf().set(options).from(element).save()
-  } catch {
-    // Fallback: use print dialog if PDF export fails
-    window.print()
+    await html2pdf()
+      .set(options)
+      .from(clonedElement)
+      .save()
+  } catch (error) {
+    throw new Error(`PDF generation failed: ${error.message}`)
   }
 }
 
@@ -478,3 +483,30 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+@media print {
+  /* Hide all UI elements during print */
+  .space-y-5,
+  .rounded-xl.border.border-slate-200.bg-slate-50.p-6,
+  .rounded-xl.border.border-slate-200.bg-white.p-6,
+  .flex.flex-wrap.items-center.gap-3 {
+    display: none !important;
+  }
+
+  /* Show only the report content */
+  .preschool-student-summary-report-content {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: white;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure content is visible */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
+</style>

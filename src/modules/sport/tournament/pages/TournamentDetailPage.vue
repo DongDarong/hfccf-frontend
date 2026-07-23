@@ -48,6 +48,29 @@ const pageSubtitle = computed(() =>
   tournament.value?.description || t('sportTournament.detail.notFoundMessage'),
 )
 
+const attachedTeams = computed(() => {
+  const teams = tournamentTeams.attachedTeams
+  return Array.isArray(teams) ? teams : (teams?.value || [])
+})
+
+const selectableTeams = computed(() => {
+  const teams = tournamentTeams.selectableTeams
+  return Array.isArray(teams) ? teams : (teams?.value || [])
+})
+
+const removingTeamId = computed(() => {
+  const id = tournamentTeams.removingTeamId
+  return typeof id === 'string' ? id : (id?.value ?? '')
+})
+
+const teamManagementPending = computed(() => {
+  return Boolean(
+    tournamentTeams.isLoading?.value ||
+    tournamentTeams.isAttaching?.value ||
+    removingTeamId.value
+  )
+})
+
 const overviewCards = computed(() => {
   const stats = tournament.value?.statistics || {}
 
@@ -71,17 +94,17 @@ const overviewCards = computed(() => {
     {
       title: t('sportTournament.detail.metrics.matches'),
       titleKey: 'sportTournament.detail.metrics.matches',
-      value: stats.matches ?? 0,
-      label: t('sportTournament.detail.metrics.completedMatches'),
-      labelKey: 'sportTournament.detail.metrics.completedMatches',
+      value: stats.totalMatches ?? stats.matches ?? 0,
+      label: t('sportTournament.detail.metrics.fixturesGenerated'),
+      labelKey: 'sportTournament.detail.metrics.fixturesGenerated',
       status: 'success',
     },
     {
       title: t('sportTournament.detail.metrics.completedMatches'),
       titleKey: 'sportTournament.detail.metrics.completedMatches',
       value: stats.completedMatches ?? 0,
-      label: t('sportTournament.detail.metrics.fixturesGenerated'),
-      labelKey: 'sportTournament.detail.metrics.fixturesGenerated',
+      label: t('sportTournament.detail.metrics.matches'),
+      labelKey: 'sportTournament.detail.metrics.matches',
       status: 'error',
     },
   ]
@@ -215,56 +238,66 @@ async function handleRemoveTeam(teamId) {
           </div>
 
           <div class="sport-tournament-detail__hero-actions">
-            <Button
-              type="button"
-              outlined
-              class="rounded-xl"
-              :label="t('sportTournament.detail.backToList')"
-              @click="goBack"
-            />
+            <div class="sport-tournament-detail__primary-actions">
               <Button
                 type="button"
                 outlined
                 class="rounded-xl"
-                :label="t('sportTournament.detail.manageGroups')"
-                @click="goToGroups"
-              />
-              <Button
-                type="button"
-                outlined
-                class="rounded-xl"
-                :label="t('sportTournament.detail.manageFixtures')"
-                @click="goToFixtures"
-              />
-              <Button
-                type="button"
-                outlined
-                class="rounded-xl"
-                :label="t('sportTournament.detail.manageStandings')"
-                @click="goToStandings"
-              />
-              <Button
-                type="button"
-                outlined
-                class="rounded-xl"
-                :label="t('sportTournament.detail.manageResults')"
-                @click="goToResults"
-              />
-              <Button
-                type="button"
-                outlined
-                class="rounded-xl"
-                :label="t('sportTournament.detail.manageKnockout')"
-                :disabled="!canUseKnockout"
-                @click="goToKnockout"
+                :label="t('sportTournament.detail.backToList')"
+                @click="goBack"
               />
               <Button
                 type="button"
                 class="rounded-xl"
                 :label="t('sportTournament.detail.editTournament')"
                 :disabled="!canEdit"
-              @click="goToEdit"
-            />
+                @click="goToEdit"
+              />
+            </div>
+
+            <div class="sport-tournament-detail__management-actions">
+              <Button
+                type="button"
+                outlined
+                size="sm"
+                class="rounded-lg"
+                :label="t('sportTournament.detail.manageGroups')"
+                @click="goToGroups"
+              />
+              <Button
+                type="button"
+                outlined
+                size="sm"
+                class="rounded-lg"
+                :label="t('sportTournament.detail.manageFixtures')"
+                @click="goToFixtures"
+              />
+              <Button
+                type="button"
+                outlined
+                size="sm"
+                class="rounded-lg"
+                :label="t('sportTournament.detail.manageStandings')"
+                @click="goToStandings"
+              />
+              <Button
+                type="button"
+                outlined
+                size="sm"
+                class="rounded-lg"
+                :label="t('sportTournament.detail.manageResults')"
+                @click="goToResults"
+              />
+              <Button
+                type="button"
+                outlined
+                size="sm"
+                class="rounded-lg"
+                :label="t('sportTournament.detail.manageKnockout')"
+                :disabled="!canUseKnockout"
+                @click="goToKnockout"
+              />
+            </div>
           </div>
         </div>
 
@@ -290,10 +323,10 @@ async function handleRemoveTeam(teamId) {
         />
 
         <TournamentTeamManagement
-          :teams="tournamentTeams.attachedTeams"
-          :available-teams="tournamentTeams.selectableTeams"
-          :removing-team-id="tournamentTeams.removingTeamId"
-          :pending="tournamentTeams.isLoading || tournamentTeams.isAttaching || Boolean(tournamentTeams.removingTeamId)"
+          :teams="attachedTeams"
+          :available-teams="selectableTeams"
+          :removing-team-id="removingTeamId"
+          :pending="teamManagementPending"
           @attach="handleAttachTeam"
           @remove="handleRemoveTeam"
         />
@@ -425,8 +458,26 @@ async function handleRemoveTeam(teamId) {
 .sport-tournament-detail__hero-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   align-self: flex-start;
+}
+
+.sport-tournament-detail__primary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.sport-tournament-detail__primary-actions button {
+  width: 100%;
+}
+
+.sport-tournament-detail__management-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .sport-tournament-detail__stats {
@@ -474,9 +525,8 @@ async function handleRemoveTeam(teamId) {
     grid-template-columns: 1fr;
   }
 
-  .sport-tournament-detail__hero-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .sport-tournament-detail__management-actions {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -490,6 +540,10 @@ async function handleRemoveTeam(teamId) {
   }
 
   .sport-tournament-detail__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .sport-tournament-detail__management-actions {
     grid-template-columns: 1fr;
   }
 }
