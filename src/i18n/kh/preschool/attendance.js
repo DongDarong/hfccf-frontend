@@ -580,4 +580,19 @@ export default {
       noStudents: 'មិនមានសិស្សនៅក្នុងថ្នាក់នេះទេ',
     },
   },
+
+  // ── Report Exports ─────────────────────────────────────────────────────
+  preschoolReportsExport: {
+    title: 'នាំចេញរបាយការណ៍',
+    pdf: 'PDF',
+    excel: 'Excel',
+    print: 'បោះពុម្ព',
+    exporting: 'កំពុងនាំចេញ…',
+    success: 'របាយការណ៍បានលេចចេញដោយជោគជ័យ។',
+    error: 'មិនបានលេចចេញរបាយការណ៍ទេ។ សូមព្យាយាមម្តងទៀត។',
+    dialogTitle: 'នាំចេញរបាយការណ៍',
+    fileName: 'របាយការណ៍',
+    pageSize: 'A4',
+    orientation: 'បញ្ឈរ',
+  },
 }

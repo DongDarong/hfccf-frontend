@@ -7,6 +7,16 @@ defineProps({
     required: true,
   },
 })
+
+const formatDate = (dateString) => {
+  if (!dateString) return '—'
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return '—'
+  }
+}
 </script>
 
 <template>
@@ -68,7 +78,7 @@ defineProps({
       <div>
         <p class="text-xs font-semibold uppercase text-slate-500">Enrollment Date</p>
         <p class="mt-1 text-sm text-slate-900">
-          {{ student.classes?.[0]?.enrolledAt || '—' }}
+          {{ formatDate(student.classes?.[0]?.enrolledAt) }}
         </p>
       </div>
 
