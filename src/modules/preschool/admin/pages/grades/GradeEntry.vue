@@ -94,16 +94,6 @@ function mapGenderToKhmer(value) {
   return fallback(value)
 }
 
-function mapStatusToKhmer(value) {
-  const status = String(value || '').toLowerCase()
-  if (status === 'draft') return 'ព្រាង'
-  if (status === 'submitted') return 'បានដាក់ស្នើ'
-  if (status === 'returned') return 'បានបញ្ជូនត្រឡប់'
-  if (status === 'finalized') return 'បានបញ្ចប់'
-  if (status === 'archived') return 'បានរក្សាទុក'
-  return fallback(value)
-}
-
 function selectedClassLabel() {
   return filterOptions.value.classes.find(c => String(c.value) === String(classId.value))?.label || '—'
 }
@@ -128,7 +118,6 @@ function currentGradeRows() {
       fallback(student.className || selectedClassLabel()),
       scoreValue(studentGrade.score),
       fallback(studentGrade.grade),
-      mapStatusToKhmer(submissionStatus.value),
     ]
   })
 }
@@ -167,7 +156,6 @@ function applyExcelLayout(sheet, lastColumnIndex, tableStartRow, tableEndRow) {
     { wch: 22 },
     { wch: 10 },
     { wch: 12 },
-    { wch: 16 },
   ]
   sheet['!rows'] = [
     { hpt: 24 },
@@ -428,7 +416,6 @@ function exportToExcel() {
         `ខែ៖ ${selectedMonthLabel()} ឆ្នាំ៖ ${year.value}`,
         '',
         '',
-        '',
       ],
       [],
       [
@@ -440,7 +427,6 @@ function exportToExcel() {
         'ថ្នាក់',
         'ពិន្ទុ',
         'និទ្ទេស',
-        'ស្ថានភាព',
       ],
       ...currentGradeRows(),
       [],
@@ -448,7 +434,7 @@ function exportToExcel() {
     ]
 
     const sheet = XLSX.utils.aoa_to_sheet(rows)
-    applyExcelLayout(sheet, 8, tableHeaderRow, tableHeaderRow + students.value.length)
+    applyExcelLayout(sheet, 7, tableHeaderRow, tableHeaderRow + students.value.length)
     XLSX.utils.book_append_sheet(workbook, sheet, 'បញ្ជីពិន្ទុសិស្ស')
     XLSX.writeFile(workbook, `GradeEntry_${month.value}_${year.value}.xlsx`)
   } catch {

@@ -183,10 +183,11 @@ describe('GradeEntry exports', () => {
       'ថ្នាក់',
       'ពិន្ទុ',
       'និទ្ទេស',
-      'ស្ថានភាព',
     ])
-    expect(rows[7]).toEqual([1, 'PS-GRADE-0001', 'សុភា រ៉ា', 'ស្រី', '2020-01-15', 'Lotus', 0, 'A', 'ព្រាង'])
+    expect(rows[7]).toEqual([1, 'PS-GRADE-0001', 'សុភា រ៉ា', 'ស្រី', '2020-01-15', 'Lotus', 0, 'A'])
     expect(rows[8][6]).toBe('')
+    expect(rows[6]).toHaveLength(8)
+    expect(rows[7]).toHaveLength(8)
     expect(XLSX.utils.book_append_sheet).toHaveBeenCalledWith(expect.any(Object), expect.any(Object), 'បញ្ជីពិន្ទុសិស្ស')
     expect(XLSX.writeFile).toHaveBeenCalledWith(expect.any(Object), 'GradeEntry_7_2026.xlsx')
   })

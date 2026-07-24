@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   fetchSportMatches,
+  fetchSportMatchesReport,
+  downloadSportMatchesReportPdf,
   fetchSportMatch,
   createSportMatch,
   updateSportMatch,
@@ -89,6 +91,67 @@ describe('sportMatchesApi', () => {
           sort_direction: 'asc',
         }),
       }))
+    })
+  })
+
+  describe('fetchSportMatchesReport', () => {
+    it('loads canonical report rows and summary with all filters', async () => {
+      mockHttpGet.mockResolvedValueOnce({
+        data: {
+          data: {
+            summary: { total_matches: 2, completed_matches: 1, scheduled_matches: 1, total_teams: 2 },
+            matches: [{
+              id: 'm1',
+              homeTeamName: 'QA Home',
+              awayTeamName: 'QA Away',
+              divisionId: 'd1',
+              tournamentName: 'QA Cup',
+              scheduledAt: '2026-07-05T00:00:00Z',
+              homeScore: 0,
+              awayScore: 1,
+              status: 'completed',
+            }],
+          },
+        },
+      })
+
+      const result = await fetchSportMatchesReport({
+        dateFrom: new Date('2026-07-01T00:00:00Z'),
+        dateTo: new Date('2026-07-31T00:00:00Z'),
+        divisionId: 'd1',
+        teamId: 't1',
+        tournamentId: 'cup1',
+      })
+
+      expect(mockHttpGet).toHaveBeenCalledWith('/sport/reports/matches', expect.objectContaining({
+        params: expect.objectContaining({
+          date_from: '2026-07-01',
+          date_to: '2026-07-31',
+          division_id: 'd1',
+          team_id: 't1',
+          tournament_id: 'cup1',
+        }),
+      }))
+      expect(result.summary.totalMatches).toBe(2)
+      expect(result.matches[0].homeTeam).toBe('QA Home')
+      expect(result.matches[0].date).toContain('2026-07-05')
+      expect(result.matches[0].homeScore).toBe(0)
+    })
+  })
+
+  describe('downloadSportMatchesReportPdf', () => {
+    it('requests a Blob from the canonical PDF endpoint', async () => {
+      const blob = new Blob(['%PDF-1.4'])
+      mockHttpGet.mockResolvedValueOnce({
+        data: blob,
+        headers: { 'content-disposition': 'attachment; filename="SportReport_matches.pdf"', 'content-type': 'application/pdf' },
+      })
+
+      const result = await downloadSportMatchesReportPdf({ dateFrom: '2026-07-01', dateTo: '2026-07-31' })
+
+      expect(mockHttpGet).toHaveBeenCalledWith('/sport/reports/matches/download', expect.objectContaining({ responseType: 'blob' }))
+      expect(result.blob).toBe(blob)
+      expect(result.filename).toBe('SportReport_matches.pdf')
     })
   })
 
