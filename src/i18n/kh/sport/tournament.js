@@ -793,6 +793,7 @@ export default {
       waitlist: 'បញ្ជីរង់ចាំ',
     },
     sportTypes: {
+      league: 'លីග',
       football: 'បាល់ទាត់',
       basketball: 'បាល់បោះ',
       volleyball: 'បាល់ទះ',

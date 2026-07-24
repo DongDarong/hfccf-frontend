@@ -4,8 +4,6 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
-import html2pdf from 'html2pdf.js'
-import * as XLSX from 'xlsx'
 import { useLanguage } from '@/composables/useLanguage'
 import {
   fetchPreschoolClasses,
@@ -17,7 +15,7 @@ import MonthlyAttendanceReport from './components/MonthlyAttendanceReport.vue'
 import YearlyAttendanceReport from './components/YearlyAttendanceReport.vue'
 import ReportSwitcher from './components/ReportSwitcher.vue'
 import FilterSummary from './components/FilterSummary.vue'
-import ExportMenu from './components/ExportMenu.vue'
+import ReportExportToolbar from './components/ReportExportToolbar.vue'
 import ReportStatistics from './components/ReportStatistics.vue'
 import { fetchAllPages } from './reportPaginationHelper'
 
@@ -30,7 +28,6 @@ const { t } = useLanguage()
 const loading = ref(false)
 const reportGenerated = ref(false)
 const errorMessage = ref('')
-const exportLoading = ref(false)
 
 const reportPeriod = ref('monthly')
 const academicYearId = ref('')
@@ -44,10 +41,22 @@ const filterOptions = ref({
 })
 
 const reportData = ref({
+  reportType: 'attendance',
+  mode: 'monthly',
+  period: { year: new Date().getFullYear(), month: new Date().getMonth() + 1 },
+  summary: {
+    present: 0,
+    absent: 0,
+    late: 0,
+    excused: 0,
+    percentage: 0,
+  },
+  items: [],
+  monthlyBreakdown: [],
+  class: null,
   monthlyAttendance: [],
   yearlyAttendance: [],
   students: [],
-  classInfo: null,
 })
 
 const months = computed(() => [
@@ -153,13 +162,49 @@ async function generateReport() {
       }),
     ])
 
-    if (reportPeriod.value === 'monthly') {
-      reportData.value.monthlyAttendance = attendanceData.items || []
-    } else {
-      reportData.value.yearlyAttendance = attendanceData.items || []
+    const attendanceItems = attendanceData.items || []
+    const students = studentsData.items || []
+    const selectedClass = filterOptions.value.classes.find(c => c.value === classId.value)
+
+    // Calculate summary
+    const summary = {
+      present: attendanceItems.filter(a => a.status === 'present').length,
+      absent: attendanceItems.filter(a => a.status === 'absent').length,
+      late: attendanceItems.filter(a => a.status === 'late').length,
+      excused: attendanceItems.filter(a => a.status === 'excused').length,
+      percentage: attendanceItems.length > 0
+        ? Math.round((attendanceItems.filter(a => a.status === 'present').length / attendanceItems.length) * 100)
+        : 0,
     }
 
-    reportData.value.students = studentsData.items || []
+    if (reportPeriod.value === 'monthly') {
+      reportData.value = {
+        reportType: 'attendance',
+        mode: 'monthly',
+        period: { year: selectedYear.value, month: selectedMonth.value },
+        summary,
+        items: attendanceItems,
+        monthlyBreakdown: [],
+        class: selectedClass ? { id: selectedClass.value, name: selectedClass.label } : null,
+        monthlyAttendance: attendanceItems,
+        yearlyAttendance: [],
+        students,
+      }
+    } else {
+      reportData.value = {
+        reportType: 'attendance',
+        mode: 'yearly',
+        period: { year: selectedYear.value },
+        summary,
+        items: attendanceItems,
+        monthlyBreakdown: [],
+        class: selectedClass ? { id: selectedClass.value, name: selectedClass.label } : null,
+        monthlyAttendance: [],
+        yearlyAttendance: attendanceItems,
+        students,
+      }
+    }
+
     reportGenerated.value = true
   } catch (error) {
     errorMessage.value = error?.message || 'Failed to generate report'
@@ -173,10 +218,22 @@ function resetFilters() {
   selectedMonth.value = new Date().getMonth() + 1
   selectedYear.value = new Date().getFullYear()
   reportData.value = {
+    reportType: 'attendance',
+    mode: 'monthly',
+    period: { year: new Date().getFullYear(), month: new Date().getMonth() + 1 },
+    summary: {
+      present: 0,
+      absent: 0,
+      late: 0,
+      excused: 0,
+      percentage: 0,
+    },
+    items: [],
+    monthlyBreakdown: [],
+    class: null,
     monthlyAttendance: [],
     yearlyAttendance: [],
     students: [],
-    classInfo: null,
   }
 }
 
@@ -184,115 +241,9 @@ function changeReportPeriod() {
   reportGenerated.value = false
 }
 
-async function exportReport(format) {
-  try {
-    exportLoading.value = true
-
-    const timestamp = new Date().toISOString().split('T')[0]
-    const reportTypeLabel = reportPeriod.value === 'monthly' ? 'Monthly' : 'Yearly'
-    const filename = `AttendanceReport_${reportTypeLabel}_${timestamp}`
-
-    if (format === 'pdf') {
-      await exportToPdf(filename)
-    } else if (format === 'excel') {
-      exportToExcel(filename)
-    } else if (format === 'csv') {
-      exportToCsv(filename)
-    } else if (format === 'print') {
-      window.print()
-    }
-  } catch (error) {
-    errorMessage.value = 'Failed to export report'
-    console.error('Error exporting report:', error)
-  } finally {
-    exportLoading.value = false
-  }
-}
-
-async function exportToPdf(filename) {
-  const element = document.querySelector('.preschool-attendance-report-content')
-  if (!element) {
-    throw new Error('Report content not found')
-  }
-
-  const options = {
-    margin: 10,
-    filename: `${filename}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
-  }
-
-  await html2pdf().set(options).from(element).save()
-}
-
-function exportToExcel(filename) {
-  const workbook = XLSX.utils.book_new()
-
-  // Class info and metadata
-  const metaData = [
-    ['Attendance Report'],
-    ['Type', reportPeriod.value === 'monthly' ? 'Monthly' : 'Yearly'],
-    ['Generated On', new Date().toLocaleString()],
-    ['Academic Year', filterOptions.value.academicYears.find(y => y.value === academicYearId.value)?.label || 'All'],
-    ['Class', reportData.value.classInfo?.name || 'All Classes'],
-  ]
-  if (reportPeriod.value === 'monthly') {
-    metaData.push(['Month', `${selectedMonth.value}/${selectedYear.value}`])
-  } else {
-    metaData.push(['Year', selectedYear.value])
-  }
-
-  const metaSheet = XLSX.utils.aoa_to_sheet(metaData)
-  XLSX.utils.book_append_sheet(workbook, metaSheet, 'Report Info')
-
-  // Attendance data
-  if (reportPeriod.value === 'monthly' && reportData.value.monthlyAttendance.length > 0) {
-    const attendanceSheet = XLSX.utils.aoa_to_sheet(reportData.value.monthlyAttendance)
-    XLSX.utils.book_append_sheet(workbook, attendanceSheet, 'Monthly Attendance')
-  } else if (reportPeriod.value === 'yearly' && reportData.value.yearlyAttendance.length > 0) {
-    const attendanceSheet = XLSX.utils.aoa_to_sheet(reportData.value.yearlyAttendance)
-    XLSX.utils.book_append_sheet(workbook, attendanceSheet, 'Yearly Attendance')
-  }
-
-  // Students list
-  if (reportData.value.students.length > 0) {
-    const studentData = reportData.value.students.map(s => [
-      s.firstName || '',
-      s.lastName || '',
-      s.enrollmentNumber || '',
-    ])
-    studentData.unshift(['First Name', 'Last Name', 'Enrollment Number'])
-    const studentSheet = XLSX.utils.aoa_to_sheet(studentData)
-    XLSX.utils.book_append_sheet(workbook, studentSheet, 'Students')
-  }
-
-  XLSX.writeFile(workbook, `${filename}.xlsx`)
-}
-
-function exportToCsv(filename) {
-  const records = reportPeriod.value === 'monthly'
-    ? reportData.value.monthlyAttendance
-    : reportData.value.yearlyAttendance
-
-  if (records.length === 0) return
-
-  const headers = Object.keys(records[0])
-  const csvContent = [
-    headers.join(','),
-    ...records.map(record => headers.map(h => {
-      const value = record[h]
-      return typeof value === 'string' && value.includes(',') ? `"${value}"` : value
-    }).join(',')),
-  ].join('\n')
-
-  const blob = new Blob([csvContent], { type: 'text/csv' })
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${filename}.csv`
-  link.click()
-  window.URL.revokeObjectURL(url)
+function handleExportError(error) {
+  errorMessage.value = error.error || 'Failed to export report'
+  console.error('Export failed:', error)
 }
 
 onMounted(() => {
@@ -431,7 +382,7 @@ onMounted(() => {
           :class-label="selectedClassLabel"
         />
 
-        <div class="preschool-attendance-report-content rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="report-export-content rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <MonthlyAttendanceReport
             v-if="reportPeriod === 'monthly'"
             :attendance-records="reportData.monthlyAttendance"
@@ -448,8 +399,15 @@ onMounted(() => {
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-900">Export</h3>
-          <ExportMenu :loading="exportLoading" @export="exportReport" />
+          <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-900">
+            {{ t('preschoolReportsPage.export') || 'Export' }}
+          </h3>
+          <ReportExportToolbar
+            :report-type="reportData.reportType"
+            :report-data="reportData"
+            :report-name="`${reportPeriod === 'monthly' ? selectedMonth : selectedYear}-Report`"
+            @export:error="handleExportError"
+          />
         </div>
       </template>
 

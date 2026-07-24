@@ -10,13 +10,6 @@ const route = useRoute()
 
 const REPORTS = [
   {
-    key: 'student-summary',
-    label: 'Student Summary',
-    routeName: 'dashboard-preschool-admin-reports-student-summary',
-    icon: 'pi-user-check',
-    color: 'blue',
-  },
-  {
     key: 'attendance',
     label: 'Attendance',
     routeName: 'dashboard-preschool-admin-reports-attendance',

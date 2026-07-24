@@ -18,6 +18,8 @@ export default {
   submit: 'Submit',
   close: 'Close',
   continue: 'Continue',
+  next: 'Next',
+  previous: 'Previous',
   enabled: 'Enabled',
   disabled: 'Disabled',
   reset: 'Reset',

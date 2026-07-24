@@ -7,7 +7,6 @@ import HeaderSection from '@/components/navigation/HeaderSection.vue'
 import Button from '@/components/buttons/Button.vue'
 import Select from 'primevue/select'
 import Dialog from 'primevue/dialog'
-import html2pdf from 'html2pdf.js'
 import * as XLSX from 'xlsx'
 import { useLanguage } from '@/composables/useLanguage'
 import {
@@ -17,6 +16,7 @@ import {
   fetchMyPreschoolStudents,
   fetchAcademicLifecycle,
 } from '@/modules/preschool/services/preschoolApi'
+import { downloadGradeEntryReportPdf } from '@/modules/preschool/services/api/preschoolGradeApi'
 import { useGradeData } from '@/modules/preschool/composables/useGradeData'
 import { useGradeMutations } from '@/modules/preschool/composables/useGradeMutations'
 
@@ -57,6 +57,117 @@ const isEditable = computed(() => {
   // No draft exists until the first score is saved.
   return !status || ['DRAFT', 'RETURNED'].includes(status)
 })
+
+const khmerMonthLabels = [
+  '',
+  'មករា',
+  'កុម្ភៈ',
+  'មីនា',
+  'មេសា',
+  'ឧសភា',
+  'មិថុនា',
+  'កក្កដា',
+  'សីហា',
+  'កញ្ញា',
+  'តុលា',
+  'វិច្ឆិកា',
+  'ធ្នូ',
+]
+
+function fallback(value) {
+  const normalized = String(value ?? '').trim()
+  return normalized === '' ? '—' : normalized
+}
+
+function formatDate(value) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return fallback(value)
+  return date.toISOString().slice(0, 10)
+}
+
+function mapGenderToKhmer(value) {
+  const gender = String(value || '').toLowerCase()
+  if (gender === 'male') return 'ប្រុស'
+  if (gender === 'female') return 'ស្រី'
+  if (gender === 'other') return 'ផ្សេងៗ'
+  return fallback(value)
+}
+
+function selectedClassLabel() {
+  return filterOptions.value.classes.find(c => String(c.value) === String(classId.value))?.label || '—'
+}
+
+function selectedMonthLabel() {
+  return khmerMonthLabels[Number(month.value)] || fallback(submissionContext.value.month)
+}
+
+function scoreValue(value) {
+  return value === 0 || value ? value : ''
+}
+
+function currentGradeRows() {
+  return students.value.map((student, index) => {
+    const studentGrade = getStudentGrade(student.id)
+    return [
+      index + 1,
+      String(student.code ?? ''),
+      fallback(student.name),
+      mapGenderToKhmer(student.gender),
+      formatDate(student.dateOfBirth),
+      fallback(student.className || selectedClassLabel()),
+      scoreValue(studentGrade.score),
+      fallback(studentGrade.grade),
+    ]
+  })
+}
+
+function downloadPdfBlob(pdfBlob, filename) {
+  if (!(pdfBlob instanceof Blob) || pdfBlob.size === 0) {
+    throw new Error('Generated PDF blob is empty.')
+  }
+
+  const objectUrl = URL.createObjectURL(pdfBlob)
+  const link = document.createElement('a')
+  link.href = objectUrl
+  link.download = filename || `GradeEntry_${month.value}_${year.value}.pdf`
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+}
+
+function applyExcelLayout(sheet, lastColumnIndex, tableStartRow, tableEndRow) {
+  sheet['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: lastColumnIndex } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: lastColumnIndex } },
+    { s: { r: 3, c: 0 }, e: { r: 3, c: lastColumnIndex } },
+    { s: { r: 4, c: 0 }, e: { r: 4, c: 1 } },
+    { s: { r: 4, c: 2 }, e: { r: 4, c: 4 } },
+    { s: { r: 4, c: 5 }, e: { r: 4, c: lastColumnIndex } },
+  ]
+  sheet['!cols'] = [
+    { wch: 8 },
+    { wch: 18 },
+    { wch: 28 },
+    { wch: 12 },
+    { wch: 16 },
+    { wch: 22 },
+    { wch: 10 },
+    { wch: 12 },
+  ]
+  sheet['!rows'] = [
+    { hpt: 24 },
+    { hpt: 22 },
+    { hpt: 8 },
+    { hpt: 26 },
+    { hpt: 22 },
+    { hpt: 8 },
+    ...Array.from({ length: Math.max(tableEndRow - tableStartRow + 1, 1) }, () => ({ hpt: 22 })),
+  ]
+  sheet['!freeze'] = { xSplit: 0, ySplit: tableStartRow }
+}
 
 
 async function loadFilterOptions() {
@@ -147,7 +258,7 @@ async function refreshGrades() {
 
   try {
     errorMessage.value = ''
-    const response = await loadMonthlyEntry(classId.value, new Date().getMonth() + 1, new Date().getFullYear())
+    const response = await loadMonthlyEntry(classId.value, month.value, year.value)
 
     // Capture submission context
     submissionContext.value = {
@@ -265,18 +376,14 @@ async function submitAllGrades() {
 async function exportToPdf() {
   try {
     exportLoading.value = true
-    const element = document.querySelector('.grade-entry-content')
-    if (!element) throw new Error('Grade entry content not found')
-
-    const options = {
-      margin: 10,
+    const file = await downloadGradeEntryReportPdf({
+      academicYearId: academicYearId.value,
+      classId: classId.value,
+      month: month.value,
+      year: year.value,
       filename: `GradeEntry_${month.value}_${year.value}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' },
-    }
-
-    await html2pdf().set(options).from(element).save()
+    })
+    downloadPdfBlob(file.blob, file.filename || `GradeEntry_${month.value}_${year.value}.pdf`)
   } catch {
     toast.add({
       severity: 'error',
@@ -293,23 +400,42 @@ function exportToExcel() {
   try {
     exportLoading.value = true
     const workbook = XLSX.utils.book_new()
-
-    const metadata = [
-      ['Grade Entry Report'],
-      ['Month', t(`common.months.${month.value}`)],
-      ['Year', year.value],
-      ['Class', filterOptions.value.classes.find(c => c.value === classId.value)?.label || 'All'],
+    const generatedDate = new Date().toISOString().slice(0, 10)
+    const tableHeaderRow = 7
+    const rows = [
+      ['ព្រះរាជាណាចក្រកម្ពុជា'],
+      ['ជាតិ សាសនា ព្រះមហាក្សត្រ'],
       [],
-      ['Student Name', 'Student Code', 'Score'],
+      ['បញ្ជីពិន្ទុសិស្សប្រចាំខែ'],
+      [
+        `ថ្នាក់៖ ${selectedClassLabel()}`,
+        '',
+        `ឆ្នាំសិក្សា៖ ${fallback(submissionContext.value.academicYear)}`,
+        '',
+        '',
+        `ខែ៖ ${selectedMonthLabel()} ឆ្នាំ៖ ${year.value}`,
+        '',
+        '',
+      ],
+      [],
+      [
+        'ល.រ',
+        'អត្តលេខសិស្ស',
+        'គោត្តនាម-នាម',
+        'ភេទ',
+        'ថ្ងៃខែឆ្នាំកំណើត',
+        'ថ្នាក់',
+        'ពិន្ទុ',
+        'និទ្ទេស',
+      ],
+      ...currentGradeRows(),
+      [],
+      [`កាលបរិច្ឆេទបង្កើត៖ ${generatedDate}`],
     ]
 
-    const data = students.value.map(s => {
-      const studentGrade = getStudentGrade(s.id)
-      return [s.name, s.code, studentGrade.score || '']
-    })
-
-    const sheet = XLSX.utils.aoa_to_sheet([...metadata, ...data])
-    XLSX.utils.book_append_sheet(workbook, sheet, 'Grades')
+    const sheet = XLSX.utils.aoa_to_sheet(rows)
+    applyExcelLayout(sheet, 7, tableHeaderRow, tableHeaderRow + students.value.length)
+    XLSX.utils.book_append_sheet(workbook, sheet, 'បញ្ជីពិន្ទុសិស្ស')
     XLSX.writeFile(workbook, `GradeEntry_${month.value}_${year.value}.xlsx`)
   } catch {
     toast.add({

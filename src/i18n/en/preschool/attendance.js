@@ -666,4 +666,19 @@ export default {
       noStudents: 'No students found in this class',
     },
   },
+
+  // ── Report Exports ─────────────────────────────────────────────────────
+  preschoolReportsExport: {
+    title: 'Export Report',
+    pdf: 'PDF',
+    excel: 'Excel',
+    print: 'Print',
+    exporting: 'Exporting…',
+    success: 'Report exported successfully.',
+    error: 'Failed to export report. Please try again.',
+    dialogTitle: 'Export Report',
+    fileName: 'Report',
+    pageSize: 'A4',
+    orientation: 'Portrait',
+  },
 }

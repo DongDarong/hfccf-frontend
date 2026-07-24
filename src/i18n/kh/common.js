@@ -18,6 +18,8 @@ export default {
   submit: 'ដាក់ស្នើ',
   close: 'បិទ',
   continue: 'បន្ត',
+  next: 'បន្ទាប់',
+  previous: 'មុន',
   enabled: 'បើក',
   disabled: 'បិទ',
   reset: 'កំណត់ឡើងវិញ',

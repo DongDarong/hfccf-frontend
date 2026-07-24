@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import http from '@/services/http'
 import {
+  downloadMonthlyAttendanceReportPdf,
+  downloadStudentSummaryReportPdf,
   fetchClassroomReport,
+  fetchMonthlyAttendanceReport,
   fetchReportPeriods,
   fetchStudentReportPeriod,
   fetchStudentReports,
@@ -140,6 +143,127 @@ describe('preschool reports api', () => {
       params: expect.objectContaining({
         period_type: 'monthly',
         report_period_id: 12,
+      }),
+      signal: undefined,
+    })
+  })
+
+  it('downloads Student Summary PDFs as a backend Blob attachment', async () => {
+    http.get.mockResolvedValueOnce({
+      data: new Blob(['pdf'], { type: 'application/pdf' }),
+      headers: {
+        'content-disposition': 'attachment; filename="StudentSummaryReport_Individual_2026-07-24.pdf"',
+        'content-type': 'application/pdf',
+      },
+    })
+
+    await expect(
+      downloadStudentSummaryReportPdf({
+        mode: 'individual',
+        academicYearId: 1,
+        classId: 2,
+        studentId: 3,
+        filename: 'StudentSummaryReport_Individual_2026-07-24.pdf',
+      }),
+    ).resolves.toMatchObject({
+      filename: 'StudentSummaryReport_Individual_2026-07-24.pdf',
+      mimeType: 'application/pdf',
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/reports/student-summary/download', {
+      params: expect.objectContaining({
+        mode: 'individual',
+        academic_year_id: 1,
+        class_id: 2,
+        student_id: 3,
+      }),
+      responseType: 'blob',
+      signal: undefined,
+    })
+  })
+
+  it('downloads Monthly Attendance PDFs as a backend Blob attachment', async () => {
+    http.get.mockResolvedValueOnce({
+      data: new Blob(['pdf'], { type: 'application/pdf' }),
+      headers: {
+        'content-disposition': 'attachment; filename="AttendanceReport_Monthly_2026-07_2026-07-24.pdf"',
+        'content-type': 'application/pdf',
+      },
+    })
+
+    await expect(
+      downloadMonthlyAttendanceReportPdf({
+        academicYearId: 7,
+        classId: 3,
+        month: 7,
+        year: 2026,
+        dateFrom: '2026-07-01',
+        dateTo: '2026-07-31',
+        filename: 'AttendanceReport_Monthly_2026-07-24.pdf',
+      }),
+    ).resolves.toMatchObject({
+      filename: 'AttendanceReport_Monthly_2026-07_2026-07-24.pdf',
+      mimeType: 'application/pdf',
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/reports/attendance/monthly/download', {
+      params: expect.objectContaining({
+        academic_year_id: 7,
+        class_id: 3,
+        month: 7,
+        year: 2026,
+        date_from: '2026-07-01',
+        date_to: '2026-07-31',
+      }),
+      responseType: 'blob',
+      signal: undefined,
+    })
+  })
+
+  it('fetches canonical Monthly Attendance report data with the same filters as the PDF export', async () => {
+    http.get.mockResolvedValueOnce({
+      data: {
+        data: {
+          class: { id: 3, name: 'Lotus' },
+          academicYear: { id: 7, label: 'Academic Year 2026' },
+          month: 7,
+          year: 2026,
+          dateFrom: '2026-07-01',
+          dateTo: '2026-07-31',
+          dayCount: 31,
+          students: [{ id: 1, fullName: 'Sokha' }],
+          attendanceRecords: [{ studentId: 1, status: 'present' }],
+          summary: { totalStudents: 1, totalRecords: 1, present: 1 },
+          compatibility: { includes_null_academic_year_attendance_records: true },
+        },
+      },
+    })
+
+    await expect(
+      fetchMonthlyAttendanceReport({
+        academicYearId: 7,
+        classId: 3,
+        month: 7,
+        year: 2026,
+        dateFrom: '2026-07-01',
+        dateTo: '2026-07-31',
+      }),
+    ).resolves.toMatchObject({
+      classInfo: { id: 3, name: 'Lotus' },
+      dateFrom: '2026-07-01',
+      dateTo: '2026-07-31',
+      students: [{ id: 1, fullName: 'Sokha' }],
+      attendanceRecords: [{ studentId: 1, status: 'present' }],
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/preschool/reports/attendance/monthly', {
+      params: expect.objectContaining({
+        academic_year_id: 7,
+        class_id: 3,
+        month: 7,
+        year: 2026,
+        date_from: '2026-07-01',
+        date_to: '2026-07-31',
       }),
       signal: undefined,
     })

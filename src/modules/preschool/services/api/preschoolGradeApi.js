@@ -49,6 +49,35 @@ export async function fetchGradeMonthlyEntry(classId, month, year) {
   }
 }
 
+function resolveAttachmentFilename(headers = {}, fallback = 'GradeEntry.pdf') {
+  const disposition = String(headers['content-disposition'] || headers['Content-Disposition'] || '')
+  const match = disposition.match(/filename="?([^";]+)"?/i)
+  if (match?.[1]) {
+    return match[1]
+  }
+
+  return fallback
+}
+
+export async function downloadGradeEntryReportPdf(params = {}, options = {}) {
+  const response = await http.get('/preschool/grades/download', {
+    params: buildQueryParams({
+      academic_year_id: params.academicYearId || '',
+      class_id: params.classId || '',
+      month: params.month || '',
+      year: params.year || '',
+    }),
+    responseType: 'blob',
+    signal: options.signal,
+  })
+
+  return {
+    blob: response.data,
+    filename: resolveAttachmentFilename(response.headers, params.filename || 'GradeEntry.pdf'),
+    mimeType: String(response.headers?.['content-type'] || ''),
+  }
+}
+
 export async function fetchStudentGrades(studentId) {
   const response = await http.get(`/preschool/students/${studentId}/grades`)
   return response.data
