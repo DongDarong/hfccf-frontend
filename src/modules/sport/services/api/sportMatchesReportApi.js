@@ -27,26 +27,35 @@ export async function fetchSportMatchesReport(params = {}, options = {}) {
 
   return {
     filters: data.filters || {},
+    filterLabels: {
+      division: data.filter_labels?.division || 'All',
+      team: data.filter_labels?.team || 'All',
+      tournament: data.filter_labels?.tournament || 'All',
+    },
     summary: {
       totalMatches: Number(summary.total_matches ?? 0),
       completedMatches: Number(summary.completed_matches ?? 0),
-      upcomingMatches: Number(summary.upcoming_matches ?? 0),
+      scheduledMatches: Number(summary.scheduled_matches ?? 0),
+      totalTeams: Number(summary.total_teams ?? 0),
     },
     matches: Array.isArray(data.matches)
       ? data.matches.map((row) => ({
-          matchId: Number(row.match_id ?? 0),
-          homeTeamId: Number(row.home_team_id ?? 0),
-          awayTeamId: Number(row.away_team_id ?? 0),
-          homeTeam: String(row.home_team ?? ''),
-          awayTeam: String(row.away_team ?? ''),
-          homeScore: Number(row.home_score ?? 0),
-          awayScore: Number(row.away_score ?? 0),
-          scheduledAt: row.scheduled_at ?? null,
+          id: String(row.id ?? ''),
+          homeTeamId: Number(row.homeTeamId ?? 0),
+          awayTeamId: Number(row.awayTeamId ?? 0),
+          homeTeamName: String(row.homeTeamName ?? ''),
+          awayTeamName: String(row.awayTeamName ?? ''),
+          homeScore: Number(row.homeScore ?? 0),
+          awayScore: Number(row.awayScore ?? 0),
+          score: String(row.score ?? ''),
+          date: row.date ?? null,
+          scheduledAt: row.scheduledAt ?? null,
+          venue: String(row.venue ?? ''),
           status: String(row.status ?? ''),
-          tournamentId: Number(row.tournament_id ?? 0),
-          tournamentName: String(row.tournament_name ?? ''),
-          divisionId: Number(row.division_id ?? 0),
-          divisionName: String(row.division_name ?? ''),
+          tournamentId: Number(row.tournamentId ?? 0),
+          tournamentName: String(row.tournamentName ?? ''),
+          divisionId: Number(row.divisionId ?? 0),
+          divisionName: String(row.divisionName ?? ''),
         }))
       : [],
   }

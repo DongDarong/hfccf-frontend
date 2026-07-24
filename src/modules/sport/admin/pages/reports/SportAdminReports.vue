@@ -392,23 +392,27 @@ async function exportToExcel(filename) {
   const workbook = XLSX.utils.book_new()
 
   if (reportType.value === 'matches') {
-    const rows = [
-      ['No.', 'Tournament', 'Division', 'Home Team', 'Away Team', 'Score', 'Date', 'Venue', 'Status'],
-      ...filteredMatches.value.map((match, index) => [
-        index + 1,
-        match.tournamentName || match.tournament?.name || '',
-        match.divisionName || match.division || '',
-        match.homeTeam || '',
-        match.awayTeam || '',
-        `${match.homeScore ?? 0} - ${match.awayScore ?? 0}`,
-        match.date || match.scheduledAt || '',
-        match.venue || '',
-        match.status || '',
-      ]),
-    ]
+    const exportData = await downloadSportMatchesReportExcel({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value,
+      divisionId: selectedDivision.value,
+      teamId: selectedTeam.value,
+      tournamentId: selectedTournament.value,
+      filename: `${filename}.xlsx`,
+    })
 
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rows), 'Matches')
-    XLSX.writeFile(workbook, `${filename}.xlsx`)
+    if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
+      throw new Error('Sport Matches Excel export returned an empty file.')
+    }
+
+    const url = URL.createObjectURL(exportData.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = exportData.filename || `${filename}.xlsx`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
     return
   }
 
@@ -662,14 +666,17 @@ onMounted(() => {
         <TabView>
           <!-- Matches Tab -->
           <TabPanel :header="t('sportAdminReports.tabs.matches') || 'Matches'">
-            <DataTable :value="filteredMatches" striped-rows>
-              <Column field="homeTeam" :header="t('sportAdminReports.table.homeTeam') || 'Home Team'" />
-              <Column field="awayTeam" :header="t('sportAdminReports.table.awayTeam') || 'Away Team'" />
-              <Column field="homeScore" :header="t('sportAdminReports.table.score') || 'Score'"
-                :body="(rowData) => `${rowData.homeScore} - ${rowData.awayScore}`" />
+            <DataTable v-if="matchesData && matchesData.length > 0" :value="matchesData" striped-rows>
               <Column field="date" :header="t('sportAdminReports.table.date') || 'Date'" />
+              <Column field="tournamentName" :header="t('sportAdminReports.table.tournament') || 'Tournament'" />
+              <Column field="divisionName" :header="t('sportAdminReports.table.division') || 'Division'" />
+              <Column field="homeTeamName" :header="t('sportAdminReports.table.homeTeam') || 'Home Team'" />
+              <Column field="awayTeamName" :header="t('sportAdminReports.table.awayTeam') || 'Away Team'" />
+              <Column field="score" :header="t('sportAdminReports.table.score') || 'Score'" />
+              <Column field="venue" :header="t('sportAdminReports.table.venue') || 'Venue'" />
               <Column field="status" :header="t('sportAdminReports.table.status') || 'Status'" />
             </DataTable>
+            <p v-else>{{ t('sportAdminReports.noData') || 'No matches data available' }}</p>
           </TabPanel>
 
           <!-- Standings Tab -->
