@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { reportExportService } from '@/modules/preschool/services/reportExportService'
 
 vi.mock('html2pdf.js', () => ({
@@ -381,15 +381,7 @@ describe('reportExportService', () => {
       vi.stubGlobal('html2pdf', () => ({
         set: () => ({
           from: () => ({
-            save: () => ({
-              then: (onFulfilled) => {
-                onFulfilled()
-                return {
-                  catch: () => {}
-                }
-              },
-              catch: (onRejected) => ({ then: () => {}, catch: () => {} })
-            })
+            save: () => Promise.resolve()
           })
         })
       }))
@@ -445,15 +437,7 @@ describe('reportExportService', () => {
       vi.stubGlobal('html2pdf', () => ({
         set: () => ({
           from: () => ({
-            save: () => ({
-              then: (onFulfilled) => {
-                onFulfilled()
-                return {
-                  catch: () => {}
-                }
-              },
-              catch: (onRejected) => ({ then: () => {}, catch: () => {} })
-            })
+            save: () => Promise.resolve()
           })
         })
       }))

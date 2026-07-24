@@ -22,6 +22,7 @@ import {
 import {
   fetchSportMatchesReport,
   downloadSportMatchesReportPdf,
+  downloadSportMatchesReportExcel,
 } from '@/modules/sport/services/api/sportMatchesReportApi'
 import { fetchSportTournaments } from '@/modules/sport/services/api/sportTournamentsApi'
 import {

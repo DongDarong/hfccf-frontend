@@ -216,7 +216,6 @@ describe('Assessment Report Exports', () => {
     })
 
     it('categorizes assessments consistently', () => {
-      const validCategories = ['Math', 'Language', 'Science', 'Arts', 'Physical Education']
       const data = {
         reportType: 'assessment',
         scope: 'individual',
@@ -229,7 +228,7 @@ describe('Assessment Report Exports', () => {
       }
 
       data.assessments.forEach(assessment => {
-        // Verify category is one of expected categories or custom
+        // Verify category is present and not empty
         expect(assessment.category).toBeTruthy()
       })
     })
