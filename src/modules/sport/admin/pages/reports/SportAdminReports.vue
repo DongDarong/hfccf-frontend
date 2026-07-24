@@ -18,15 +18,22 @@ import {
   fetchSportDivisions,
   fetchSportTeams,
   fetchSportPlayers,
+} from '@/modules/sport/services/sportApi'
+import {
   fetchSportMatchesReport,
   downloadSportMatchesReportPdf,
-} from '@/modules/sport/services/sportApi'
+} from '@/modules/sport/services/api/sportMatchesReportApi'
 import { fetchSportTournaments } from '@/modules/sport/services/api/sportTournamentsApi'
 import {
   fetchSportStandingsReport,
   downloadSportStandingsReportPdf,
   downloadSportStandingsReportExcel,
 } from '@/modules/sport/services/api/sportStandingsReportsApi'
+import {
+  fetchSportPlayerStatisticsReport,
+  downloadSportPlayerStatisticsReportPdf,
+  downloadSportPlayerStatisticsReportExcel,
+} from '@/modules/sport/services/api/sportPlayerStatisticsApi'
 
 defineOptions({
   name: 'SportAdminReportsPage',
@@ -54,6 +61,7 @@ const tournaments = ref([])
 const players = ref([])
 const matchesData = ref([])
 const standingsData = ref([])
+const playersData = ref([])
 const statisticsData = ref({})
 
 // Computed
@@ -164,6 +172,21 @@ async function generateReport() {
       })
 
       standingsData.value = report.standings
+      statisticsData.value = report.summary
+      reportGenerated.value = true
+      return
+    }
+
+    if (reportType.value === 'players') {
+      const report = await fetchSportPlayerStatisticsReport({
+        dateFrom: dateFrom.value,
+        dateTo: dateTo.value,
+        divisionId: selectedDivision.value,
+        teamId: selectedTeam.value,
+        tournamentId: selectedTournament.value,
+      })
+
+      playersData.value = report.players
       statisticsData.value = report.summary
       reportGenerated.value = true
       return
@@ -293,6 +316,31 @@ async function exportToPdf(filename) {
     return
   }
 
+  if (reportType.value === 'players') {
+    const exportData = await downloadSportPlayerStatisticsReportPdf({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value,
+      divisionId: selectedDivision.value,
+      teamId: selectedTeam.value,
+      tournamentId: selectedTournament.value,
+      filename: `${filename}.pdf`,
+    })
+
+    if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
+      throw new Error('Sport Player Statistics PDF export returned an empty file.')
+    }
+
+    const url = URL.createObjectURL(exportData.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = exportData.filename || `${filename}.pdf`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    return
+  }
+
   const element = document.querySelector('.sport-admin-reports__pdf-export')
   if (!element) {
     throw new Error('PDF report content not found')
@@ -376,6 +424,31 @@ async function exportToExcel(filename) {
 
     if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
       throw new Error('Sport Standings Excel export returned an empty file.')
+    }
+
+    const url = URL.createObjectURL(exportData.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = exportData.filename || `${filename}.xlsx`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    return
+  }
+
+  if (reportType.value === 'players') {
+    const exportData = await downloadSportPlayerStatisticsReportExcel({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value,
+      divisionId: selectedDivision.value,
+      teamId: selectedTeam.value,
+      tournamentId: selectedTournament.value,
+      filename: `${filename}.xlsx`,
+    })
+
+    if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
+      throw new Error('Sport Player Statistics Excel export returned an empty file.')
     }
 
     const url = URL.createObjectURL(exportData.blob)
@@ -619,7 +692,21 @@ onMounted(() => {
 
           <!-- Players Tab -->
           <TabPanel :header="t('sportAdminReports.tabs.players') || 'Players'">
-            <p>{{ t('sportAdminReports.noData') || 'Player statistics will appear here' }}</p>
+            <DataTable v-if="playersData.length > 0" :value="playersData" class="p-datatable-sm">
+              <Column field="rankPosition" :header="t('sportAdminReports.table.position') || 'Rank'" />
+              <Column field="playerName" :header="t('sportAdminReports.table.player') || 'Player'" />
+              <Column field="teamName" :header="t('sportAdminReports.table.team') || 'Team'" />
+              <Column field="playingPosition" :header="t('sportAdminReports.table.position') || 'Position'" />
+              <Column field="appearances" :header="t('sportAdminReports.table.appearances') || 'Appearances'" />
+              <Column field="goals" :header="t('sportAdminReports.table.goals') || 'Goals'" />
+              <Column field="assists" :header="t('sportAdminReports.table.assists') || 'Assists'" />
+              <Column field="yellowCards" :header="t('sportAdminReports.table.yellowCards') || 'Yellow Cards'" />
+              <Column field="redCards" :header="t('sportAdminReports.table.redCards') || 'Red Cards'" />
+              <Column field="penaltyGoals" :header="t('sportAdminReports.table.penaltyGoals') || 'Penalty Goals'" />
+              <Column field="ownGoals" :header="t('sportAdminReports.table.ownGoals') || 'Own Goals'" />
+              <Column field="disciplinePoints" :header="t('sportAdminReports.table.disciplinePoints') || 'Discipline Points'" />
+            </DataTable>
+            <p v-else>{{ t('sportAdminReports.noData') || 'No player statistics data available' }}</p>
           </TabPanel>
 
           <!-- Attendance Tab -->
@@ -805,18 +892,35 @@ onMounted(() => {
             <table class="pdf-report-table">
               <thead>
                 <tr>
+                  <th>Rank</th>
                   <th>Player</th>
                   <th>Team</th>
-                  <th>Position</th>
-                  <th>Goals</th>
-                  <th>Assists</th>
-                  <th>Cards</th>
-                  <th>Minutes</th>
+                  <th>Apps</th>
+                  <th>G</th>
+                  <th>A</th>
+                  <th>YC</th>
+                  <th>RC</th>
+                  <th>PG</th>
+                  <th>OG</th>
+                  <th>DP</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colspan="7" class="pdf-empty-state">No player statistics data available for this report.</td>
+                <tr v-if="playersData.length === 0">
+                  <td colspan="11" class="pdf-empty-state">No player statistics data available for this report.</td>
+                </tr>
+                <tr v-for="player in playersData" :key="`${player.playerId}-${player.teamId}`">
+                  <td>{{ player.rankPosition }}</td>
+                  <td>{{ player.playerName }}</td>
+                  <td>{{ player.teamName }}</td>
+                  <td>{{ player.appearances }}</td>
+                  <td>{{ player.goals }}</td>
+                  <td>{{ player.assists }}</td>
+                  <td>{{ player.yellowCards }}</td>
+                  <td>{{ player.redCards }}</td>
+                  <td>{{ player.penaltyGoals }}</td>
+                  <td>{{ player.ownGoals }}</td>
+                  <td>{{ player.disciplinePoints }}</td>
                 </tr>
               </tbody>
             </table>
