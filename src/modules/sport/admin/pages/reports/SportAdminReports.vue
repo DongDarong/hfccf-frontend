@@ -10,6 +10,7 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import logoUrl from '@/assets/images/logo.jpg'
 import { useLanguage } from '@/composables/useLanguage'
 import html2pdf from 'html2pdf.js'
 import * as XLSX from 'xlsx'
@@ -17,8 +18,15 @@ import {
   fetchSportDivisions,
   fetchSportTeams,
   fetchSportPlayers,
+  fetchSportMatchesReport,
+  downloadSportMatchesReportPdf,
 } from '@/modules/sport/services/sportApi'
 import { fetchSportTournaments } from '@/modules/sport/services/api/sportTournamentsApi'
+import {
+  fetchSportStandingsReport,
+  downloadSportStandingsReportPdf,
+  downloadSportStandingsReportExcel,
+} from '@/modules/sport/services/api/sportStandingsReportsApi'
 
 defineOptions({
   name: 'SportAdminReportsPage',
@@ -45,6 +53,7 @@ const teams = ref([])
 const tournaments = ref([])
 const players = ref([])
 const matchesData = ref([])
+const standingsData = ref([])
 const statisticsData = ref({})
 
 // Computed
@@ -130,6 +139,36 @@ async function generateReport() {
     loading.value = true
     errorMessage.value = ''
 
+    if (reportType.value === 'matches') {
+      const report = await fetchSportMatchesReport({
+        dateFrom: dateFrom.value,
+        dateTo: dateTo.value,
+        divisionId: selectedDivision.value,
+        teamId: selectedTeam.value,
+        tournamentId: selectedTournament.value,
+      })
+
+      matchesData.value = report.matches
+      statisticsData.value = report.summary
+      reportGenerated.value = true
+      return
+    }
+
+    if (reportType.value === 'standings') {
+      const report = await fetchSportStandingsReport({
+        dateFrom: dateFrom.value,
+        dateTo: dateTo.value,
+        divisionId: selectedDivision.value,
+        teamId: selectedTeam.value,
+        tournamentId: selectedTournament.value,
+      })
+
+      standingsData.value = report.standings
+      statisticsData.value = report.summary
+      reportGenerated.value = true
+      return
+    }
+
     // Build report based on type
     // Simulate fetching report data
     // In real implementation, call backend API
@@ -191,7 +230,7 @@ async function exportReport(format) {
     if (format === 'pdf') {
       await exportToPdf(filename)
     } else if (format === 'excel') {
-      exportToExcel(filename)
+      await exportToExcel(filename)
     } else if (format === 'print') {
       window.print()
     }
@@ -204,24 +243,151 @@ async function exportReport(format) {
 }
 
 async function exportToPdf(filename) {
-  const element = document.querySelector('.sport-admin-reports__report-content')
+  if (reportType.value === 'matches') {
+    const exportData = await downloadSportMatchesReportPdf({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value,
+      divisionId: selectedDivision.value,
+      teamId: selectedTeam.value,
+      tournamentId: selectedTournament.value,
+      filename: `${filename}.pdf`,
+    })
+
+    if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
+      throw new Error('Sport Matches PDF export returned an empty file.')
+    }
+
+    const url = URL.createObjectURL(exportData.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = exportData.filename || `${filename}.pdf`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    return
+  }
+
+  if (reportType.value === 'standings') {
+    const exportData = await downloadSportStandingsReportPdf({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value,
+      divisionId: selectedDivision.value,
+      teamId: selectedTeam.value,
+      tournamentId: selectedTournament.value,
+      filename: `${filename}.pdf`,
+    })
+
+    if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
+      throw new Error('Sport Standings PDF export returned an empty file.')
+    }
+
+    const url = URL.createObjectURL(exportData.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = exportData.filename || `${filename}.pdf`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    return
+  }
+
+  const element = document.querySelector('.sport-admin-reports__pdf-export')
   if (!element) {
-    throw new Error('Report content not found')
+    throw new Error('PDF report content not found')
   }
 
   const options = {
-    margin: 10,
+    margin: [10, 10, 14, 10],
     filename: `${filename}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
+    html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
   }
 
-  await html2pdf().set(options).from(element).save()
+  await html2pdf()
+    .set(options)
+    .from(element)
+    .toPdf()
+    .get('pdf')
+    .then(pdf => {
+      const pageCount = pdf.internal.getNumberOfPages()
+      pdf.setFontSize(8)
+      pdf.setTextColor(100, 116, 139)
+      for (let page = 1; page <= pageCount; page += 1) {
+        pdf.setPage(page)
+        pdf.text(`Page ${page} of ${pageCount}`, 190, 287, { align: 'right' })
+      }
+    })
+    .save()
 }
 
-function exportToExcel(filename) {
+function formatReportDate(value) {
+  if (!value) return 'N/A'
+  return new Date(value).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function formatMatchScore(match) {
+  return `${match.homeScore ?? 0} - ${match.awayScore ?? 0}`
+}
+
+function selectedOptionLabel(options, value) {
+  return options.find(option => option.value === value)?.label || 'All'
+}
+
+async function exportToExcel(filename) {
   const workbook = XLSX.utils.book_new()
+
+  if (reportType.value === 'matches') {
+    const rows = [
+      ['No.', 'Tournament', 'Division', 'Home Team', 'Away Team', 'Score', 'Date', 'Venue', 'Status'],
+      ...filteredMatches.value.map((match, index) => [
+        index + 1,
+        match.tournamentName || match.tournament?.name || '',
+        match.divisionName || match.division || '',
+        match.homeTeam || '',
+        match.awayTeam || '',
+        `${match.homeScore ?? 0} - ${match.awayScore ?? 0}`,
+        match.date || match.scheduledAt || '',
+        match.venue || '',
+        match.status || '',
+      ]),
+    ]
+
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rows), 'Matches')
+    XLSX.writeFile(workbook, `${filename}.xlsx`)
+    return
+  }
+
+  if (reportType.value === 'standings') {
+    const exportData = await downloadSportStandingsReportExcel({
+      dateFrom: dateFrom.value,
+      dateTo: dateTo.value,
+      divisionId: selectedDivision.value,
+      teamId: selectedTeam.value,
+      tournamentId: selectedTournament.value,
+      filename: `${filename}.xlsx`,
+    })
+
+    if (!(exportData.blob instanceof Blob) || exportData.blob.size === 0) {
+      throw new Error('Sport Standings Excel export returned an empty file.')
+    }
+
+    const url = URL.createObjectURL(exportData.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = exportData.filename || `${filename}.xlsx`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    return
+  }
 
   // Statistics sheet
   const statsData = [
@@ -435,7 +601,20 @@ onMounted(() => {
 
           <!-- Standings Tab -->
           <TabPanel :header="t('sportAdminReports.tabs.standings') || 'Standings'">
-            <p>{{ t('sportAdminReports.noData') || 'Standings data will appear here' }}</p>
+            <DataTable v-if="standingsData && standingsData.length > 0" :value="standingsData" striped-rows>
+              <Column field="rankPosition" :header="t('sportAdminReports.table.position') || 'Position'" />
+              <Column field="teamName" :header="t('sportAdminReports.table.team') || 'Team'" />
+              <Column field="tournamentName" :header="t('sportAdminReports.table.tournament') || 'Tournament'" />
+              <Column field="played" :header="t('sportAdminReports.table.played') || 'Played'" />
+              <Column field="wins" :header="t('sportAdminReports.table.wins') || 'Won'" />
+              <Column field="draws" :header="t('sportAdminReports.table.draws') || 'Draw'" />
+              <Column field="losses" :header="t('sportAdminReports.table.losses') || 'Lost'" />
+              <Column field="goalsFor" :header="t('sportAdminReports.table.goalsFor') || 'Goals For'" />
+              <Column field="goalsAgainst" :header="t('sportAdminReports.table.goalsAgainst') || 'Goals Against'" />
+              <Column field="goalDifference" :header="t('sportAdminReports.table.goalDifference') || 'Goal Difference'" />
+              <Column field="points" :header="t('sportAdminReports.table.points') || 'Points'" />
+            </DataTable>
+            <p v-else>{{ t('sportAdminReports.noData') || 'No standings data available' }}</p>
           </TabPanel>
 
           <!-- Players Tab -->
@@ -448,6 +627,224 @@ onMounted(() => {
             <p>{{ t('sportAdminReports.noData') || 'Attendance data will appear here' }}</p>
           </TabPanel>
         </TabView>
+        </div>
+
+        <!-- Isolated printable document used only by the PDF exporter. -->
+        <div class="sport-admin-reports__pdf-export" aria-hidden="true">
+          <header class="pdf-report-header">
+            <div class="pdf-report-brand">
+              <img :src="logoUrl" alt="HFCCF" class="pdf-report-logo" />
+              <div>
+                <div class="pdf-report-organization">អង្គការសម្រាប់ក្តីសង្ឃឹមរបស់កុមារ</div>
+                <div class="pdf-report-organization-en">Sport Management System</div>
+              </div>
+            </div>
+            <div class="pdf-report-heading">
+              <h1>{{ reportTitle }}</h1>
+              <p>Sport Management System</p>
+            </div>
+            <div class="pdf-report-meta">
+              <div><strong>Division</strong> {{ selectedOptionLabel(divisions, selectedDivision) }}</div>
+              <div><strong>Team</strong> {{ selectedOptionLabel(teams, selectedTeam) }}</div>
+              <div><strong>Tournament</strong> {{ selectedOptionLabel(tournaments, selectedTournament) }}</div>
+              <div><strong>Period</strong> {{ formatReportDate(dateFrom) }} – {{ formatReportDate(dateTo) }}</div>
+              <div><strong>Generated</strong> {{ formatReportDate(new Date()) }}</div>
+            </div>
+          </header>
+
+          <section class="pdf-report-section pdf-summary-section">
+            <h2>Summary</h2>
+            <table class="pdf-statistics-table">
+              <tbody>
+                <tr>
+                  <th>Total Matches</th>
+                  <th>Completed Matches</th>
+                  <th>Total Teams</th>
+                  <th>Total Players</th>
+                </tr>
+                <tr>
+                  <td>{{ statisticsData.totalMatches || 0 }}</td>
+                  <td>{{ statisticsData.completedMatches || 0 }}</td>
+                  <td>{{ statisticsData.totalTeams || 0 }}</td>
+                  <td>{{ statisticsData.totalPlayers || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'overview' || reportType === 'matches'" class="pdf-report-section">
+            <h2>Match Summary</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th class="pdf-number-column">No.</th>
+                  <th>Date</th>
+                  <th>Tournament</th>
+                  <th>Home Team</th>
+                  <th>Away Team</th>
+                  <th class="pdf-score-column">Score</th>
+                  <th>Venue</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(match, index) in filteredMatches" :key="`pdf-match-${match.id}`">
+                  <td class="pdf-number-column">{{ index + 1 }}</td>
+                  <td>{{ match.date || 'N/A' }}</td>
+                  <td>{{ match.tournamentName || match.tournament || selectedOptionLabel(tournaments, match.tournamentId) }}</td>
+                  <td>{{ match.homeTeam || 'N/A' }}</td>
+                  <td>{{ match.awayTeam || 'N/A' }}</td>
+                  <td class="pdf-score-column">{{ formatMatchScore(match) }}</td>
+                  <td>{{ match.venue || 'N/A' }}</td>
+                  <td>{{ match.status || 'N/A' }}</td>
+                </tr>
+                <tr v-if="filteredMatches.length === 0">
+                  <td colspan="8" class="pdf-empty-state">No match data available for this period.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'overview'" class="pdf-report-section">
+            <h2>Team Summary</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Total teams</td>
+                  <td>{{ statisticsData.totalTeams || 0 }}</td>
+                </tr>
+                <tr>
+                  <td>Upcoming matches</td>
+                  <td>{{ statisticsData.upcomingMatches || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'overview'" class="pdf-report-section">
+            <h2>Player Summary</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Total players</td>
+                  <td>{{ statisticsData.totalPlayers || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'overview'" class="pdf-report-section">
+            <h2>Attendance Summary</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Average attendance</td>
+                  <td>{{ statisticsData.averageAttendance || 0 }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'standings'" class="pdf-report-section">
+            <h2>Standings</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Team</th>
+                  <th>Played</th>
+                  <th>Won</th>
+                  <th>Draw</th>
+                  <th>Lost</th>
+                  <th>Goals For</th>
+                  <th>Goals Against</th>
+                  <th>Goal Difference</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(standing, index) in standingsData" :key="`pdf-standing-${index}`">
+                  <td>{{ standing.rankPosition }}</td>
+                  <td>{{ standing.teamName }}</td>
+                  <td>{{ standing.played }}</td>
+                  <td>{{ standing.wins }}</td>
+                  <td>{{ standing.draws }}</td>
+                  <td>{{ standing.losses }}</td>
+                  <td>{{ standing.goalsFor }}</td>
+                  <td>{{ standing.goalsAgainst }}</td>
+                  <td>{{ standing.goalDifference }}</td>
+                  <td>{{ standing.points }}</td>
+                </tr>
+                <tr v-if="standingsData.length === 0">
+                  <td colspan="10" class="pdf-empty-state">No standings data available for this report.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'players'" class="pdf-report-section">
+            <h2>Player Statistics</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Team</th>
+                  <th>Position</th>
+                  <th>Goals</th>
+                  <th>Assists</th>
+                  <th>Cards</th>
+                  <th>Minutes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" class="pdf-empty-state">No player statistics data available for this report.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section v-if="reportType === 'attendance'" class="pdf-report-section">
+            <h2>Attendance Summary</h2>
+            <table class="pdf-report-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Team</th>
+                  <th>Attendance Records</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="3" class="pdf-empty-state">No attendance data available for this report.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <footer class="pdf-report-footer">
+            <span>Prepared by: HFCCF Sport Administration</span>
+            <span>Reviewed by: ____________________</span>
+            <span>Generated: {{ formatReportDate(new Date()) }}</span>
+          </footer>
         </div>
 
         <!-- Export Actions -->
@@ -629,6 +1026,183 @@ onMounted(() => {
 :deep(.p-datatable) {
   border: none;
   background: transparent;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+.sport-admin-reports__pdf-export {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+  width: 190mm;
+  box-sizing: border-box;
+  padding: 0;
+  background: #ffffff;
+  color: #111827;
+  font-family: Arial, "Noto Sans Khmer", sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.pdf-report-header {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #1e3a5f;
+}
+
+.pdf-report-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pdf-report-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.pdf-report-organization {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.pdf-report-organization-en {
+  margin-top: 2px;
+  font-size: 9px;
+  color: #475569;
+}
+
+.pdf-report-heading {
+  text-align: center;
+}
+
+.pdf-report-heading h1 {
+  margin: 0;
+  color: #1e3a5f;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.pdf-report-heading p {
+  margin: 4px 0 0;
+  color: #475569;
+  font-size: 10px;
+}
+
+.pdf-report-meta {
+  text-align: right;
+  color: #475569;
+  font-size: 9px;
+}
+
+.pdf-report-meta div + div {
+  margin-top: 3px;
+}
+
+.pdf-report-section {
+  margin-top: 12px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.pdf-report-section h2 {
+  margin: 0 0 5px;
+  padding: 4px 7px;
+  border-left: 3px solid #1e3a5f;
+  color: #1e3a5f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pdf-report-table,
+.pdf-statistics-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.pdf-report-table th,
+.pdf-report-table td,
+.pdf-statistics-table th,
+.pdf-statistics-table td {
+  border: 1px solid #64748b;
+  padding: 5px 6px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.pdf-report-table th,
+.pdf-statistics-table th {
+  background: #e8eef5;
+  color: #1e293b;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.pdf-report-table td {
+  color: #1f2937;
+  font-size: 9px;
+}
+
+.pdf-statistics-table {
+  table-layout: fixed;
+}
+
+.pdf-statistics-table th,
+.pdf-statistics-table td {
+  width: 25%;
+  text-align: center;
+}
+
+.pdf-statistics-table td {
+  color: #1e3a5f;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.pdf-number-column {
+  width: 8%;
+  text-align: center !important;
+}
+
+.pdf-score-column {
+  width: 12%;
+  text-align: center !important;
+}
+
+.pdf-empty-state {
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+}
+
+.pdf-section-empty {
+  padding: 8px;
+  border: 1px solid #94a3b8;
+  font-size: 9px;
+}
+
+.pdf-report-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 7px;
+  border-top: 1px solid #94a3b8;
+  color: #64748b;
+  font-size: 8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 @media (max-width: 768px) {
