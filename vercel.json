@@ -1,0 +1,39 @@
+{
+  "name": "hfccf-frontend",
+  "version": 2,
+  "env": {
+    "VITE_API_BASE_URL": {
+      "description": "Backend API base URL",
+      "required": true,
+      "example": "https://api.hfccf.dev/api"
+    }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm ci --legacy-peer-deps",
+  "devCommand": "npm run dev",
+  "framework": "vue",
+  "regions": ["sfo1"],
+  "projectSettings": {
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "installCommand": "npm ci --legacy-peer-deps"
+  },
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
